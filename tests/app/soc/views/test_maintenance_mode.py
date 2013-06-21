@@ -54,7 +54,7 @@ class RootMaintenanceModeTest(GSoCDjangoTestCase):
     is in maintenance mode.
     """
     url = '/gsoc/homepage/' + self.gsoc.key().name()
-    
+
     # the page should be accessible
     response = self.get(url)
     self.assertResponseOK(response)

@@ -20,7 +20,7 @@ from soc.models import document as document_model
 def getVisibilities(data):
   """Returns a list of document visibilities for the current user
   based on the data specified in request data.
-  
+
   Args:
     data: a RequestData object specified for this request
 

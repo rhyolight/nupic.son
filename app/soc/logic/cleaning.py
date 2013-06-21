@@ -405,7 +405,7 @@ def clean_feed_url(field_name):
 
 def clean_birth_date(field_name):
   """Clean method for cleaning birth date.
-  
+
   Args:
     field_name: the name of the field needed cleaning
     program: program entity that the field refers to
@@ -422,7 +422,7 @@ def clean_birth_date(field_name):
         birth_date, form.program):
       raise forms.ValidationError(
           'Your age does not allow you to participate in the program.')
-    
+
     return birth_date
   return wrapper
 

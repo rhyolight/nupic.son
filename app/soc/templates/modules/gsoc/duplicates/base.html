@@ -22,7 +22,7 @@ limitations under the License.
 {% else %}
 <strong>There are no existing duplicate proposals at the time of
 last calculation</strong><br/>
-{% endif %} 
+{% endif %}
 </ul>
 
 <span id="duplicates_calc_status">
@@ -33,7 +33,7 @@ last calculation</strong><br/>
 </span>&nbsp;&nbsp;&nbsp;&nbsp;
 
 <span id="duplicates_calc_time">
-  Last calculated at: 
+  Last calculated at:
   <strong>
   {% if duplicates_status.calculated_on %}
   {{ duplicates_status.calculated_on|date:"jS F Y H:i" }}

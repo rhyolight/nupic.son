@@ -37,7 +37,7 @@ class GCIComment(db.Model):
   content = db.TextProperty(required=False, verbose_name=ugettext('Content'))
 
   #: Property containing the human readable string that should be
-  #: shown for the comment when something in the task changes, 
+  #: shown for the comment when something in the task changes,
   #: code.google.com issue tracker style
   changes = db.StringListProperty(
       default=[], verbose_name=ugettext('Changes in the task'))

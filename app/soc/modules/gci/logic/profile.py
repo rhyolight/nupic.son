@@ -97,7 +97,7 @@ def sendFirstTaskConfirmationTxn(profile, task):
 
   if not profile.student_info:
     raise ValueError('Only students can be queried for closed tasks.')
-  
+
   context = notifications.getFirstTaskConfirmationContext(profile)
   return mailer.getSpawnMailTaskTxn(context, parent=task)
 

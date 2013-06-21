@@ -85,7 +85,7 @@ class GCITask(db.Model):
   description.help_text = ugettext('Complete description of the task')
 
   #: Field indicating the difficulty level of the Task.
-  difficulty_level = db.StringProperty(required=False, 
+  difficulty_level = db.StringProperty(required=False,
       verbose_name=ugettext('Difficulty'), choices=DIFFICULTIES)
 
   #: Field indicating the types of the Task

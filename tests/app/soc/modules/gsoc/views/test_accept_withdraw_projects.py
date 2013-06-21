@@ -38,8 +38,8 @@ class AcceptProposalsTest(test_utils.GSoCDjangoTestCase):
         'modules/gsoc/accept_withdraw_projects/_project_list.html')
     self.assertTemplateUsed(response,
         'modules/gsoc/accept_withdraw_projects/base.html')
-    self.assertTemplateUsed(response, 'soc/_program_select.html') 
-    self.assertTemplateUsed(response, 'soc/list/lists.html') 
+    self.assertTemplateUsed(response, 'soc/_program_select.html')
+    self.assertTemplateUsed(response, 'soc/list/lists.html')
     self.assertTemplateUsed(response, 'soc/list/list.html')
 
   def testLoneUserAccessForbidded(self):

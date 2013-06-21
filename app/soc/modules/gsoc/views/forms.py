@@ -54,7 +54,7 @@ ValidationError = forms.ValidationError
 class GSoCModelForm(forms.ModelForm):
   """Django ModelForm class which uses our implementation of BoundField.
   """
-  
+
   def __init__(self, *args, **kwargs):
     super(GSoCModelForm, self).__init__(
         GSoCBoundField, *args, **kwargs)

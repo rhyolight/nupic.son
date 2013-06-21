@@ -1094,7 +1094,7 @@ class StudentsList(Template):
 
       student_infos = db.get(keys)
       prefetched_student_info_dict = dict(
-          (student_info.parent_key(), student_info) 
+          (student_info.parent_key(), student_info)
           for student_info in student_infos if student_info
           )
 

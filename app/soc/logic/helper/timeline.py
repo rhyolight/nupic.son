@@ -46,7 +46,7 @@ def isBeforeEvent(entity, event):
 
 
 def isActivePeriod(entity, period):
-  """Returns true iff the current DateTime is between period_start 
+  """Returns true iff the current DateTime is between period_start
      and period_end.
 
   Args:
@@ -102,7 +102,7 @@ def isAfterEvent(entity, event):
 
 
 def getDateTimeByName(entity, name):
-  """Returns the DateTime property with the given name. 
+  """Returns the DateTime property with the given name.
 
   Args:
     entity: Instance of a timeline model.

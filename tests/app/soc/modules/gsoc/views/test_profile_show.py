@@ -185,12 +185,12 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     self.assertIn('submit_enrollment_link', context)
 
     self.assertEqual(1, len(context['links']))
-    
-    expected_page_name = '%s Profile - %s' % (self.data.program.short_name, 
+
+    expected_page_name = '%s Profile - %s' % (self.data.program.short_name,
                                               student.profile.name())
     actual_page_name = context['page_name']
     self.assertEqual(expected_page_name, actual_page_name)
-    
+
     expected_program_name = self.data.program.name
     actual_program_name = context['program_name']
     self.assertEqual(expected_program_name, actual_program_name)

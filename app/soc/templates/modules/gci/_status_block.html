@@ -24,11 +24,11 @@
   </div>
   <!-- end .block.block-status -->
 {% else %}
-  <div class="block block-status block-status-sm"> 
-    <div class="block-status-user"> 
+  <div class="block block-status block-status-sm">
+    <div class="block-status-user">
       You are logged in as: <a href="{{ profile_link }}">{{ user_email }}</a> (<a href="{{ logout_link }}">change</a>)
       {% if link_id %}<p>Your username is: {{ link_id }}</p>{% endif %}
-    </div> 
-  </div> 
-  <!-- end .block.block-status.block-status-sm --> 
+    </div>
+  </div>
+  <!-- end .block.block-status.block-status-sm -->
 {% endif %}

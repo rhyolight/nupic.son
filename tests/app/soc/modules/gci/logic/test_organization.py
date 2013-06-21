@@ -32,25 +32,25 @@ from tests.test_utils import SoCTestCase
 class OrganizationTest(SoCTestCase):
   """Tests the logic for GCIOrganization.
   """
-  
+
   def setUp(self):
     self.init()
     self.gci_program_helper = GCIProgramHelper()
     self.program = self.gci_program_helper.createProgram()
     self.task_helper = GCITaskHelper(self.program)
-  
+
   def testGetRemainingTaskQuota(self):
-    """Tests if the remaining task quota that can be published by a given 
+    """Tests if the remaining task quota that can be published by a given
     organization is correctly returned.
     """
     gci_program_helper = GCIProgramHelper()
     org = gci_program_helper.createOrg()
     org.task_quota_limit = 5
     org.put()
-    
+
     mentor = GCIProfileHelper(self.program, False).createOtherUser(
         'mentor@gmail.com').createMentor(org)
-    
+
     student = GCIProfileHelper(self.program, False).createOtherUser(
         'student@gmail.com').createStudent()
     #valid tasks.

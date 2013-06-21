@@ -544,7 +544,7 @@ class ModelForm(djangoforms.ModelForm):
       commit: optional bool, default True; if true, the model instance
         is also saved to the datastore.
       key_name: the key_name of the new model instance, default None
-      parent: instance or Key instance for the entity that is the new 
+      parent: instance or Key instance for the entity that is the new
         entity's parent; None by default
 
     Returns:

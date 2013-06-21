@@ -119,7 +119,7 @@ class ModelReadOnlyTemplate(object):
     The readonly template will be rendered for the data in this model instance.
     """
     self.instance = instance
-    
+
     for name, field in self.hidden_fields.items():
       self.hidden_fields[name] = getattr(self.instance, name)
 

@@ -19,7 +19,7 @@
 def makeSiblingTemplatesList(templates, new_template_file,
                              default_template=None):
   """Converts template paths into a list of "sibling" templates.
-  
+
   Args:
     templates: search list of templates (or just a single template not in a
       list) from which template paths will be extracted (discarding the final
@@ -28,7 +28,7 @@ def makeSiblingTemplatesList(templates, new_template_file,
       template path
     default_template: a default template (or a list of them) to append to the
       end of the generated "sibling" template paths; default is None
- 
+
   Returns:
     A list of potential "sibling" templates named by new_template_file located
     in the paths of the templates in the supplied list.  For example, from:
@@ -51,12 +51,12 @@ def makeSiblingTemplatesList(templates, new_template_file,
   return sibling_templates + default_template
 
 
-def unescape(html): 
+def unescape(html):
   """Returns the given HTML with ampersands, quotes and carets decoded.
-  """ 
-  if not isinstance(html, basestring): 
-    html = str(html) 
-  
+  """
+  if not isinstance(html, basestring):
+    html = str(html)
+
   html.replace('&#39;',"'").replace('&lt;', '<')
   html.replace('&gt;', '>').replace('&quot;', '"').replace('&amp;', '&')
   return html

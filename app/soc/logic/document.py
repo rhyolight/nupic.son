@@ -33,7 +33,7 @@ def getDocumentQueryForRoles(data, visibilities):
 
   num_visibilities = len(visibilities)
 
-  # When number of visibilities is 0, then the profile should belong 
+  # When number of visibilities is 0, then the profile should belong
   # to a host, so we apply no filtering.
   if num_visibilities == 1:
     query.filter('dashboard_visibility', visibilities[0])

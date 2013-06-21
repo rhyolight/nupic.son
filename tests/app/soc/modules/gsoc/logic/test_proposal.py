@@ -54,7 +54,7 @@ class ProposalTest(unittest.TestCase):
     self.foo_proposals = seeder_logic.seedn(
         proposal_model.GSoCProposal, 2, proposal_properties)
 
-    #Create organization which has slots to be allocated. We create both 
+    #Create organization which has slots to be allocated. We create both
     #rejected and accepted proposals for this organization entity.
     org_properties = {'scope':self.program, 'slots': 5}
     self.bar_organization = seeder_logic.seed(GSoCOrganization, org_properties)

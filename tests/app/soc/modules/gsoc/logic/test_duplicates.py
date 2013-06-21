@@ -49,7 +49,7 @@ class DuplicatesTest(unittest.TestCase):
 
   def setUp(self):
     """Setup required to test the functions.
-    
+
     Two different program entities are created with their own set of students
     assigned to them. Some of the students in each program have duplicate
     proposals and some not.
@@ -63,7 +63,7 @@ class DuplicatesTest(unittest.TestCase):
       student = self.createStudent(email, self.program1)
       self.gsoc_students.append(student)
 
-    #Create a GSoCProposalDuplicate entity for all the students 
+    #Create a GSoCProposalDuplicate entity for all the students
     #in self.gsoc_students for program1.
     self.proposal_duplicates = []
     for student in self.gsoc_students:
@@ -81,7 +81,7 @@ class DuplicatesTest(unittest.TestCase):
       student = self.createStudent(email, self.program2)
       self.other_gsoc_students.append(student)
 
-    #Create a GSoCProposalDuplicate entity for all the students 
+    #Create a GSoCProposalDuplicate entity for all the students
     #in self.other_gsoc_students for program2.
     self.other_proposal_duplicates = []
     for student in self.other_gsoc_students:

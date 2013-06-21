@@ -186,7 +186,7 @@ class ModelPrefetcher(Prefetcher):
 
   def __init__(self, model, fields, parent=False):
     """Initializes a new instance for the specified values.
-    
+
     Args:
       model: model for which data will be prefetched
       fields: list of model fields which will be prefetched
@@ -205,7 +205,7 @@ class ModelPrefetcher(Prefetcher):
     Args:
       entities: a list of entities belonging to the model specified with
          the prefetcher
-    
+
     Returns:
       a tuple which contains an empty list and an empty dictionary
     """
@@ -243,7 +243,7 @@ class ListModelPrefetcher(Prefetcher):
 
   def __init__(self, model, fields, list_fields, parent=False):
     """Initializes a new instance for the specified values.
-    
+
     Args:
       model: model for which data will be prefetched
       fields: list of model fields which will be prefetched
@@ -332,7 +332,7 @@ class ListConfiguration(object):
     self._row_button_functions = {}
 
     self._templates = {}
-    
+
     self._features = None
 
     if add_key_column:
@@ -453,7 +453,7 @@ class ListConfiguration(object):
     Args:
       col_id: a unique identifier of the column that the button should be
           displayed on
-      button_id: a unique identifier of the button which should be 
+      button_id: a unique identifier of the button which should be
           unique per column
       type: type of the button
       classes: css classes that should be appended to the button
@@ -618,7 +618,7 @@ class ListConfiguration(object):
   def addTemplateColumn(self, col_id, name, template, **kwargs):
     """Adds a new template column.
     """
-      
+
     self._addColumn(col_id, name, lambda *args, **kwargs: '' , **kwargs)
 
     if self._templates.get(col_id):

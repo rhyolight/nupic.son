@@ -267,7 +267,7 @@ class ConvertProposalsTest(
       # assert task completed with OK status
       self.assertEqual(response.status_code, httplib.OK)
 
-      # try getting a convert task for the next organization 
+      # try getting a convert task for the next organization
       convert_tasks = self.get_tasks(url=MAIN_URL)
 
       if convert_tasks:

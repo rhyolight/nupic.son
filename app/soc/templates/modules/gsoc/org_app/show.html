@@ -41,24 +41,24 @@ limitations under the License.
   </div>
     <!-- begin profile block -->
     {{ record.render }}
-  
+
   {% if main_admin_url %}
   <div id="{{ css_prefix }}" class="block block-form">
     <div id="block-{{ css_prefix }}-content" class="model-readonly">
-      <div id="org-app-show-group" class="block block-org-app-group">  
+      <div id="org-app-show-group" class="block block-org-app-group">
         <h4 id="title-section-org-app-show-group"><a href="{{ main_admin_url }}">Main Admin Info</a></h4>
       </div>
     </div>
   </div>
   <div id="{{ css_prefix }}" class="block block-form">
     <div id="block-{{ css_prefix }}-content" class="model-readonly">
-      <div id="org-app-show-group" class="block block-org-app-group">  
+      <div id="org-app-show-group" class="block block-org-app-group">
         <h4 id="title-section-org-app-show-group"><a href="{{ backup_admin_url }}">Backup Admin Info</a></h4>
       </div>
     </div>
   </div>
-  {% endif %}  
-    
+  {% endif %}
+
   <!-- end profile block -->
 
 {% endif %}

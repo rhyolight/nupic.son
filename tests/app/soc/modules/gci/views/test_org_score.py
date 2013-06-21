@@ -58,7 +58,7 @@ class ChooseOrganizationForOrgScorePageTest(GCIDjangoTestCase):
   def testStudentCannotAccess(self):
     self.data.createStudent()
     response = self.get(self.url)
-    self.assertErrorTemplatesUsed(response)    
+    self.assertErrorTemplatesUsed(response)
 
   def testHostCanAccess(self):
     self.data.createHost()

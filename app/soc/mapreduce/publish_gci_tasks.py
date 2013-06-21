@@ -33,7 +33,7 @@ def process(task):
 
   program = GCIProgram.get_by_key_name(program_key)
 
-  if (task.program.key() == program.key() and 
+  if (task.program.key() == program.key() and
       (task.status == 'Unapproved'or task.status == 'Unpublished')):
     task.status = 'Open'
     yield operation.db.Put(task)

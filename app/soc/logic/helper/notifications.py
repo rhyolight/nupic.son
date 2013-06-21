@@ -158,7 +158,7 @@ def userConnectionContext(data, connection, recipients, message):
   subject = DEF_NEW_USER_CONNECTION % {'org' : connection.organization.name}
   connection_url = data.redirect.show_connection(connection.parent(),
       connection).url(full=True)
-      
+
   message_properties = {
       'connection_url' : connection_url,
       'link_id' : connection.parent().link_id,
@@ -207,7 +207,7 @@ def anonymousConnectionContext(data, email, anonymous_connection, message):
   Args:
     data: A RequestData object for the connection views.
     email: Email address of the user meeting the above criteria.
-    anonymous_connection: A AnonymousConnection placeholder object. 
+    anonymous_connection: A AnonymousConnection placeholder object.
     message: The contents of the message field from the connection form.
   Returns:
     A dictionary containing a context for the mail message to be sent to

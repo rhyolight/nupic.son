@@ -18,7 +18,7 @@
 
 from soc.tasks.org_app_survey import BulkProcessing
 
-from soc.modules.gci.logic.models.org_app_survey import logic as org_app_logic 
+from soc.modules.gci.logic.models.org_app_survey import logic as org_app_logic
 from soc.modules.gci.logic.models.program import logic as program_logic
 
 

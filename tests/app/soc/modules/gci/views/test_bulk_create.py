@@ -99,7 +99,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testBulkTaskCreateAfterClaimEndForNoRole(self):
-    """Tests the bulk task create view after the task claim deadline 
+    """Tests the bulk task create view after the task claim deadline
     for users with no role.
     """
     self.timeline.taskClaimEnded()
@@ -114,7 +114,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testBulkTaskCreateAfterClaimEndForOrgAdmin(self):
-    """Tests the bulk task create view after the task claim deadline 
+    """Tests the bulk task create view after the task claim deadline
     for org admins.
     """
     self.timeline.taskClaimEnded()
@@ -129,7 +129,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testBulkTaskCreateAfterClaimEndForMentor(self):
-    """Tests the bulk task create view after the task claim deadline 
+    """Tests the bulk task create view after the task claim deadline
     for mentors.
     """
     self.timeline.taskClaimEnded()
@@ -144,7 +144,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testBulkTaskCreateAfterClaimEndForStudent(self):
-    """Tests the bulk task create view after the task claim deadline 
+    """Tests the bulk task create view after the task claim deadline
     for students.
     """
     self.timeline.taskClaimEnded()

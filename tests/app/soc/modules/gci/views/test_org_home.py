@@ -27,11 +27,11 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 class OrgHomeTest(GCIDjangoTestCase):
   """Tests the GCI org homepage.
   """
-  
+
   def setUp(self):
     self.init()
     self.url = '/gci/org/' + self.org.key().name()
-    
+
   def assertTemplatesUsed(self, response):
     """Asserts if all the templates required to correctly render the page
     were used.
@@ -45,7 +45,7 @@ class OrgHomeTest(GCIDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gci/org_home/_about_us.html')
     self.assertTemplateUsed(response, 'soc/list/lists.html')
     self.assertTemplateUsed(response, 'soc/list/list.html')
-    
+
 
   def testAboutUs(self):
     """Tests if all the required data of an org is displayed.

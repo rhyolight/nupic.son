@@ -447,7 +447,7 @@ class StudentEvaluationTest(GSoCDjangoTestCase):
         'frm-t1309871149671-item': 'one line text message',
         'frm-t1309871322655-item': ['Option 2', 'Option 3'],
         'frm-t1309871157535-item': """A quick brown fox jumped over a lazy dog.
-        A quick brown fox jumped over a lazy dog. A quick brown fox jumped 
+        A quick brown fox jumped over a lazy dog. A quick brown fox jumped
         over a lazy dog. A quick brown fox jumped over a lazy dog.""",
         }
     response = self.post(url, postdata)
@@ -460,7 +460,7 @@ class StudentEvaluationTest(GSoCDjangoTestCase):
         'frm-t1309871149671-item': 'one line text message',
         'frm-t1309871322655-item': ['Option 2', 'Option 3'],
         'frm-t1309871157535-item': """A quick brown fox jumped over a lazy dog.
-        A quick brown fox jumped over a lazy dog. A quick brown fox jumped 
+        A quick brown fox jumped over a lazy dog. A quick brown fox jumped
         over a lazy dog. A quick brown fox jumped over a lazy dog.""",
         'frm-t1310822212610-item': "Wa Wa",
         }

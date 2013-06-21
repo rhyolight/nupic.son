@@ -50,7 +50,7 @@ class GSoCGradingRecord(db.Model):
   #: The GSoCGradingSurveyGroup to which this record belongs
   grading_survey_group = db.ReferenceProperty(
       required=True, reference_class=
-          grading_survey_group_model.GSoCGradingSurveyGroup, 
+          grading_survey_group_model.GSoCGradingSurveyGroup,
       collection_name='gsoc_grading_records')
 
   #: Mentor's GSoCGradingProjectSurveyRecord for this evaluation. Iff exists.
@@ -66,7 +66,7 @@ class GSoCGradingRecord(db.Model):
       collection_name='gsoc_student_grading_records')
 
   #: Grade decision set for this grading record.
-  #: pass: Iff the mentor_record states that the student has passed. 
+  #: pass: Iff the mentor_record states that the student has passed.
   #:       And if a ProjectSurvey has been set in the GradingSurveyGroup
   #:       then the student_record must be set as well.
   #: fail: If the mentor_record states that the student has failed. The

@@ -118,7 +118,7 @@ class TestAccounts(unittest.TestCase):
     """
     default_developer_setting = os.environ.get('USER_IS_ADMIN', None)
     default_account_setting = os.environ.get('USER_EMAIL', None)
-    #test currently logged in user  
+    #test currently logged in user
     try:
       os.environ['USER_EMAIL'] = 'test@example.com'
       os.environ['USER_IS_ADMIN'] = '0'
@@ -135,7 +135,7 @@ class TestAccounts(unittest.TestCase):
       else:
         os.environ['USER_IS_ADMIN'] = default_developer_setting
 
-    #test currently logged in user as a developer  
+    #test currently logged in user as a developer
     try:
       os.environ['USER_EMAIL'] = 'test@example.com'
       os.environ['USER_IS_ADMIN'] = '1'

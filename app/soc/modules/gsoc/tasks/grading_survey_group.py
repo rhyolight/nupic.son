@@ -222,7 +222,7 @@ class GradingRecordTasks(object):
     # set the sender
     (_, sender_address) = mail_dispatcher.getDefaultMailSender()
     mail_context['sender'] = sender_address
-  
+
     # set the receiver and subject
     mail_context['to'] = student_entity.email
     mail_context['cc'] = []

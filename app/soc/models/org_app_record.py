@@ -60,7 +60,7 @@ class OrgAppRecord(SurveyRecord):
       required=True, choices=licenses.LICENSES,
       verbose_name=ugettext('Main Organization License'))
 
-  #: field storing the user which first created the OrgApplicationRecord and 
+  #: field storing the user which first created the OrgApplicationRecord and
   #: is therefore the main admin if the application is accepted.
   main_admin = db.ReferenceProperty(
       reference_class=soc.models.user.User, required=True,

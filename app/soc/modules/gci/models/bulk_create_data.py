@@ -35,7 +35,7 @@ class GCIBulkCreateData(db.Model):
   #: their csv may contain an error.
   total_tasks = db.IntegerProperty(default=0, required=True)
 
-  #: A required relationship to the organization for which the tasks are 
+  #: A required relationship to the organization for which the tasks are
   #: created.
   org = db.ReferenceProperty(reference_class=GCIOrganization, required=True,
                              collection_name='bulk_create_data')

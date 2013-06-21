@@ -30,7 +30,7 @@ class BulkProcessing(object):
     Args:
       program_logic: Program Logic instance
       org_app_logic: OrgAppSurveyLogic instance
-      path: the URL to use for this 
+      path: the URL to use for this
     """
 
     self.program_logic = program_logic

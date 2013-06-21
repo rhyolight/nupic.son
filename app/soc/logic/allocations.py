@@ -230,7 +230,7 @@ class Allocator(object):
     slots_left = available_slots - sum(allocations.values())
 
     # add leftover slots, sorted by slack, decending
-    for org, slack in sorted(slack.iteritems(), 
+    for org, slack in sorted(slack.iteritems(),
         key=lambda (k, v): v, reverse=True):
       if slots_left < 1:
         break

@@ -77,7 +77,7 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     response = self.get(create_url)
     self.assertResponseOK(response)
     self.assertOrgProfilePageTemplatesUsed(response)
-    
+
     postdata = {
         'home': self.createDocument().key(), 'program': self.gci,
         'scope': self.gci, 'irc_channel': 'irc://example.com',

@@ -57,8 +57,8 @@ class AllOrganizationTasksPageTest(GCIDjangoTestCase):
   def testStudentCannotAccess(self):
     self.data.createStudent()
     response = self.get(self.url)
-    self.assertErrorTemplatesUsed(response) 
-    self.assertResponseForbidden(response)   
+    self.assertErrorTemplatesUsed(response)
+    self.assertResponseForbidden(response)
 
   def testHostCanAccess(self):
     self.data.createHost()

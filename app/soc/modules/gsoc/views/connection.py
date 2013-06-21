@@ -63,7 +63,7 @@ def create_connection_txn(data, profile, organization,
     recipients: List of one or more recipients for the notification email.
     org_state: Org state for the connection.
     user_state: User state for the connection.
-  
+
   Returns:
     The newly created Connection entity.
   """

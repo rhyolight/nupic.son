@@ -282,7 +282,7 @@ class TestDicts(unittest.TestCase):
     self.assertEqual(dicts.split(target), expected)
 
   def testGroupDictBy(self):
-    """Not tested because dicts.groupDictBy is not used in the code base 
+    """Not tested because dicts.groupDictBy is not used in the code base
     presently.
     """
     pass

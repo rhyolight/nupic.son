@@ -43,7 +43,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
 
   def assertConnectionShowTemplatesUsed(self, response):
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 
+    self.assertTemplateUsed(response,
         'modules/gsoc/connection/show_connection.html')
     self.assertTemplateUsed(response, 'modules/gsoc/base.html')
 
@@ -58,7 +58,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     other_data = GSoCProfileHelper(self.gsoc, self.dev_test)
     other_data.createOtherUser('to_be_admin@example.com')
     other_data.notificationSettings(new_invites=True)
-    
+
     # Test POST to OrgConnectionPage.
     expected = {
         'parent' : other_data.user,
@@ -89,7 +89,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     self.assertEmailSent(bcc=other_data.profile.email, n=1)
     new_connection = GSoCConnection.all().ancestor(other_data.user).get()
     self.assertIsNotNone(new_connection)
-    
+
   def testConnectionUserAction(self):
     self.data.createProfile()
 
@@ -105,7 +105,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
 
     # Test GET.
     url = '/gsoc/connection/%s/%s' % (
-        self.data.profile.key().name(), 
+        self.data.profile.key().name(),
         long(new_connection.key().id()))
     response = self.get(url)
     self.assertConnectionShowTemplatesUsed(response)
@@ -141,7 +141,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     other_data = GSoCProfileHelper(self.gsoc, self.dev_test)
     other_data.createProfile()
 
-    # Create the connection. 
+    # Create the connection.
     properties = {
         'parent' : other_data.user,
         'profile' : other_data.profile,
@@ -153,7 +153,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
 
     # Test GET.
     url = '/gsoc/connection/%s/%s' % (
-        other_data.profile.key().name(), 
+        other_data.profile.key().name(),
         long(new_connection.key().id()))
     response = self.get(url)
     self.assertConnectionShowTemplatesUsed(response)

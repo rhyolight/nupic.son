@@ -123,7 +123,7 @@ class DashboardTest(test_utils.GCIDjangoTestCase):
         'data': data,
         'button_id': button_id
         }
-    
+
     response = self.post(self._getDashboardUrl(), post_data)
     self.assertResponseOK(response)
 

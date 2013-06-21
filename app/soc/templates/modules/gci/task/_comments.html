@@ -19,7 +19,7 @@
 
   {% for comment_item in comments %}
     <div id="c{{ comment.key.id }}" class="single-comment">
-      
+
       <span class="single-comment-author">
       {% if comment_item.author_link %}
       <a href="{{ comment_item.author_link }}">{{ comment_item.entity.created_by.name }}</a>

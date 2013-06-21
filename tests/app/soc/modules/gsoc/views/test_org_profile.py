@@ -249,7 +249,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     org which does not exists a 404 is shown.
     """
     self.data.createOrgAdmin(self.org)
-    suffix = '%s/%s/%s' % (self.sponsor.link_id, self.gsoc.link_id, 
+    suffix = '%s/%s/%s' % (self.sponsor.link_id, self.gsoc.link_id,
                            'non_existing_link_id')
     url = '/gsoc/profile/organization/' + suffix
     import httplib

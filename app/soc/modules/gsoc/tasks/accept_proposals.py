@@ -149,7 +149,7 @@ class ProposalAcceptanceTask(object):
     # Requeue this task for continuation
     except DeadlineExceededError:
       taskqueue.add(url=request.path, params=params)
-  
+
     # Exit this task successfully
     return responses.terminateTask()
 

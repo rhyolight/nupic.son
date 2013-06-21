@@ -28,7 +28,7 @@ def getOrCreateStatusForProgram(program_entity):
   program or creates a new one.
 
   Args:
-    program_entity: Program entity to get or create the 
+    program_entity: Program entity to get or create the
         ProposalDuplicatesStatus for.
   """
   q = GSoCProposalDuplicatesStatus.all().filter('program', program_entity)

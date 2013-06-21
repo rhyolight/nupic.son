@@ -14,12 +14,12 @@ limitations under the License.
 
 <div class="action-button">
   <span class="text">{{ title }}:</span>
-  <span 
+  <span
   class="button {% if state == "disable" %}disabled{% endif %}"
   id="{{ id }}-enable">
     {{ enable_label|default:"Enable" }}
   </span>
-  <span 
+  <span
   class="button {% if state == "enable" %}disabled{% endif %}"
   id="{{ id }}-disable">
     {{ disable_label|default:"Disable" }}

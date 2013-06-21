@@ -3,9 +3,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #   http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,20 +26,20 @@ import soc.models.linkable
 class User(soc.models.linkable.Linkable):
   """A user and associated login credentials, the fundamental identity entity.
 
-  User is a separate Model class from Person because the same login 
-  ID may be used to, for example, serve as Contributor in one Program 
+  User is a separate Model class from Person because the same login
+  ID may be used to, for example, serve as Contributor in one Program
   and a Reviewer in another.
 
-  Also, this allows a Person to, in the future, re-associate that 
+  Also, this allows a Person to, in the future, re-associate that
   Person entity with a different Google Account if necessary.
 
-  A User entity participates in the following relationships implemented 
+  A User entity participates in the following relationships implemented
   as a db.ReferenceProperty elsewhere in another db.Model:
 
    persons)  a 1:many relationship of Person entities identified by the
      User.  This relation is implemented as the 'persons' back-reference
      Query of the Person model 'user' reference.
-     
+
    documents)  a 1:many relationship of Document entities identified by the
      User.  This relation is implemented as the 'user' back-reference
      Query of the Document model 'user' reference.
@@ -63,8 +63,8 @@ class User(soc.models.linkable.Linkable):
     return self.key().name()
 
   #: A Google Account, which also provides a "private" email address.
-  #: This email address is only used in an automated fashion by 
-  #: Melange web applications and is not made visible to other users 
+  #: This email address is only used in an automated fashion by
+  #: Melange web applications and is not made visible to other users
   #: of any Melange application.
   account = db.UserProperty(required=True,
       verbose_name=ugettext('User account'))
@@ -129,7 +129,7 @@ class User(soc.models.linkable.Linkable):
 
   #: field storing the status of this User.
   #: valid: Is just that, it's a valid User.
-  #: invalid: This means that this User has been excluded 
+  #: invalid: This means that this User has been excluded
   #:          from using the website.
   status = db.StringProperty(required=True, default='valid',
       choices=['valid', 'invalid'],)

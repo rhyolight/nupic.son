@@ -60,7 +60,7 @@ class TimelineTest(unittest.TestCase):
     self.assertFalse(timeline.isBeforePeriod(self.timeline, 'other_event'))
 
   def testIsBeforeEvent(self):
-    """Tests if a correct bool is returned if current DateTime 
+    """Tests if a correct bool is returned if current DateTime
     is before a given event.
     """
     #program has not started.
@@ -114,7 +114,7 @@ class TimelineTest(unittest.TestCase):
     self.assertFalse(timeline.isBeforeEvent(self.timeline, 'other_event'))
 
   def testIsActivePeriod(self):
-    """Tests if a correct boolean is returned if the current DateTime is 
+    """Tests if a correct boolean is returned if the current DateTime is
     between period_start and period_end.
     """
     #program is going on.

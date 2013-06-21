@@ -136,7 +136,7 @@ class SurveyReminderTask(object):
       survey_key: specifies the key name for the ProjectSurvey to send
                   reminders for
       survey_type: either project or grading depending on the type of Survey
-      project_key: encoded Key which specifies the project to send a reminder 
+      project_key: encoded Key which specifies the project to send a reminder
                    for
 
     Args:

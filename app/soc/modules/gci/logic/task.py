@@ -535,7 +535,7 @@ def transitFromNeedsWork(task):
   """Makes a state transition of a GCI Task from NeedsWork state
   to Reopened state.
 
-  A task that has been marked as Needs(more)Work will NOT get a deadline 
+  A task that has been marked as Needs(more)Work will NOT get a deadline
   extension and will be reopened immediately.
 
   Args:

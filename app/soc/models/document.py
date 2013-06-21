@@ -3,9 +3,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #   http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -64,7 +64,7 @@ ACCEPTED_STUDENT_VISIBILITY = DashboardVisibility(
 
 class Document(soc.models.linkable.Linkable):
   """Model of a Document.
-  
+
   Document is used for things like FAQs, front page text, etc.
 
   The specific way that the properties and relations inherited from Work

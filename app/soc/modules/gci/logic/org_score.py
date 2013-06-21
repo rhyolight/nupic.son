@@ -39,11 +39,11 @@ def updateOrgScoreTxn(task):
 
   def txn():
     org_score_query = queryForAncestorAndOrg(student_key, org_key)
-  
+
     org_score = org_score_query.get()
     if not org_score:
       org_score = GCIOrgScore(parent=student_key, org=org_key)
-  
+
     org_score.tasks.append(task.key())
     org_score.put()
 

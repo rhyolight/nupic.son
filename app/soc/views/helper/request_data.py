@@ -259,7 +259,7 @@ class RequestData(object):
     if not self._isSet(self._gae_user):
       self._gae_user = users.get_current_user()
     return self._gae_user
-    
+
   @property
   def is_developer(self):
     """Returns the is_developer field."""

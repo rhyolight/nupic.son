@@ -31,7 +31,7 @@ from tests import program_utils
 
 class ProfileTest(unittest.TestCase):
   """Tests the logic for GCI profiles."""
-  
+
   def setUp(self):
     program = seeder_logic.seed(program_model.GCIProgram)
 
@@ -49,7 +49,7 @@ class ProfileTest(unittest.TestCase):
     #should be returned.
     expected_keys = []
     actual_keys = profile_logic.queryAllMentorsKeysForOrg(self.foo_org)
-    self.assertEqual(expected_keys, actual_keys) 
+    self.assertEqual(expected_keys, actual_keys)
 
     actual_keys = profile_logic.queryAllMentorsKeysForOrg(self.bar_org)
     self.assertEqual(expected_keys,actual_keys)
@@ -127,7 +127,7 @@ class ProfileTest(unittest.TestCase):
 
     student_properties = {'is_student': True, 'scope': program}
     student = seeder_logic.seed(GCIProfile, student_properties)
-    
+
     mentor_properties = {'mentor_for': [self.foo_org.key()],
                          'is_mentor': True}
     foo_mentor = seeder_logic.seed(GCIProfile, mentor_properties)

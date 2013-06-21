@@ -113,7 +113,7 @@ class GradingRecordsList(Template):
         described in lists.Prefetcher.prefetch
       """
       prefetcher = lists.prefetchFields(
-          GSoCGradingRecord, ['mentor_record', 'student_record'], 
+          GSoCGradingRecord, ['mentor_record', 'student_record'],
           entities, parent=True)
 
       mentor_records_map = collections.defaultdict(list)

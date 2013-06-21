@@ -216,10 +216,10 @@ class StudentList(Template):
         'description': ugettext(
             'List of participating students'),
     }
-  
+
   def _addAddressColumns(self, list_config):
     """Adds address columns to the specified list config.
-  
+
     Columns added:
       * res_street
       * res_street_extra
@@ -240,7 +240,7 @@ class StudentList(Template):
     """
     list_config.addPlainTextColumn('res_street', 'Street',
         (lambda e, sp, *args: sp[e.parent_key()].res_street), hidden=True)
-    list_config.addPlainTextColumn('res_street_extra', 'Street Extra', 
+    list_config.addPlainTextColumn('res_street_extra', 'Street Extra',
         (lambda e, sp, *args: sp[e.parent_key()].res_street_extra), hidden=True)
     list_config.addPlainTextColumn('res_city', 'City',
         (lambda e, sp, *args: sp[e.parent_key()].res_city), hidden=True)
@@ -257,16 +257,16 @@ class StudentList(Template):
     list_config.addPlainTextColumn('ship_street', 'Ship Street',
         (lambda e, sp, *args: sp[e.parent_key()].shipping_street()), hidden=True)
     list_config.addPlainTextColumn('ship_street_extra', 'Ship Street Extra',
-        (lambda e, sp, *args: sp[e.parent_key()].shipping_street_extra()), 
+        (lambda e, sp, *args: sp[e.parent_key()].shipping_street_extra()),
         hidden=True)
     list_config.addPlainTextColumn('ship_city', 'Ship City',
         (lambda e, sp, *args: sp[e.parent_key()].shipping_city()), hidden=True)
-    list_config.addPlainTextColumn('ship_state', 'Ship State', 
+    list_config.addPlainTextColumn('ship_state', 'Ship State',
         (lambda e, sp, *args: sp[e.parent_key()].shipping_state()), hidden=True)
     list_config.addPlainTextColumn('ship_country', 'Ship Country',
         (lambda e, sp, *args: sp[e.parent_key()].shipping_country()), hidden=True)
     list_config.addPlainTextColumn('ship_postalcode', 'Ship Postalcode',
-        (lambda e, sp, *args: sp[e.parent_key()].shipping_postalcode()), 
+        (lambda e, sp, *args: sp[e.parent_key()].shipping_postalcode()),
         hidden=True)
     list_config.addPlainTextColumn('tshirt_style', 'T-Shirt Style',
         (lambda e, sp, *args: sp[e.parent_key()].tshirt_style), hidden=True)

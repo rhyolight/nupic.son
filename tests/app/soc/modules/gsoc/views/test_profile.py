@@ -86,7 +86,7 @@ class ProfileViewTest(GSoCDjangoTestCase):
 
     url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
     response = self.get(url)
-    self.assertResponseForbidden(response)    
+    self.assertResponseForbidden(response)
 
     url = '/gsoc/profile/org_admin/' + self.gsoc.key().name()
     response = self.get(url)
@@ -101,7 +101,7 @@ class ProfileViewTest(GSoCDjangoTestCase):
 
     url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
     response = self.get(url)
-    self.assertResponseForbidden(response)  
+    self.assertResponseForbidden(response)
 
     url = '/gsoc/profile/org_admin/' + self.gsoc.key().name()
     response = self.get(url)
@@ -113,7 +113,7 @@ class ProfileViewTest(GSoCDjangoTestCase):
 
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.get(url)
-    self.assertResponseForbidden(response)    
+    self.assertResponseForbidden(response)
 
     url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
     response = self.get(url)

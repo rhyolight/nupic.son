@@ -59,7 +59,7 @@ class GSoCStudentInfo(profile.StudentInfo):
     soc.modules.gsoc.models.profile.Profile
   """
 
-  #: number of proposals 
+  #: number of proposals
   number_of_proposals = db.IntegerProperty(default=0)
 
   #: number of projects

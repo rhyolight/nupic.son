@@ -262,7 +262,7 @@ COUNTRY_INFO = {
 COUNTRIES_AND_TERRITORIES = sorted(COUNTRY_INFO.keys())
 
 # Mapping of countries to their CCTLD
-COUNTRIES_TO_CCTLD = dict((k, c) for k, (c, _) in COUNTRY_INFO.items()) 
+COUNTRIES_TO_CCTLD = dict((k, c) for k, (c, _) in COUNTRY_INFO.items())
 
 # Mapping of countries to their continent
 COUNTRIES_TO_CONTINENT = dict((k, c) for k, (_, c) in COUNTRY_INFO.items())

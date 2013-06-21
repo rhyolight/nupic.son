@@ -451,7 +451,7 @@ def _getUpdateLinkText(data):
   Args:
     request: a RequestData object
 
-  Returns: a string with the text to be used with update project link 
+  Returns: a string with the text to be used with update project link
   """
   if data.timeline.afterFormSubmissionStart():
     return 'Update or Upload Code Samples'

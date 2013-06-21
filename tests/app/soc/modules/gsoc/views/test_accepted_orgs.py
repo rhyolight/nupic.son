@@ -22,7 +22,7 @@ from tests import test_utils
 
 class AcceptedOrgsPublicPageTest(test_utils.GSoCDjangoTestCase):
   """Tests the page to display accepted organization."""
-  
+
   def setUp(self):
     self.init()
     self.url1 = '/gsoc/accepted_orgs/' + self.gsoc.key().name()
@@ -34,10 +34,10 @@ class AcceptedOrgsPublicPageTest(test_utils.GSoCDjangoTestCase):
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response,
         'modules/gsoc/accepted_orgs/base.html')
-    self.assertTemplateUsed(response, 
+    self.assertTemplateUsed(response,
         'modules/gsoc/admin/_accepted_orgs_list.html')
-    self.assertTemplateUsed(response, 'soc/_program_select.html') 
-    self.assertTemplateUsed(response, 'soc/list/lists.html') 
+    self.assertTemplateUsed(response, 'soc/_program_select.html')
+    self.assertTemplateUsed(response, 'soc/list/lists.html')
     self.assertTemplateUsed(response, 'soc/list/list.html')
 
   def testPageForbiddenBeforeOrgsAnnounced(self):

@@ -42,12 +42,12 @@ class ProfileViewTest(GCIDjangoTestCase):
     self.url = '/gci/profile/%(program_suffix)s' % {
         'program_suffix': program_suffix
         }
-    
+
     self.validated_url = self.url + '?validated'
 
     self.student_url = '/gci/profile/%(role)s/%(program_suffix)s' % {
         'role': 'student',
-        'program_suffix': program_suffix                                                            
+        'program_suffix': program_suffix
         }
 
     self.birth_date = str(date.today() - timedelta(365*15))
@@ -144,7 +144,7 @@ class ProfileViewTest(GCIDjangoTestCase):
 
     url = '/gci/profile/mentor/' + self.gci.key().name()
     response = self.get(url)
-    self.assertResponseForbidden(response)    
+    self.assertResponseForbidden(response)
 
     url = '/gci/profile/org_admin/' + self.gci.key().name()
     response = self.get(url)
@@ -159,7 +159,7 @@ class ProfileViewTest(GCIDjangoTestCase):
 
     url = '/gci/profile/mentor/' + self.gci.key().name()
     response = self.get(url)
-    self.assertResponseForbidden(response)  
+    self.assertResponseForbidden(response)
 
     url = '/gci/profile/org_admin/' + self.gci.key().name()
     response = self.get(url)
@@ -171,7 +171,7 @@ class ProfileViewTest(GCIDjangoTestCase):
 
     url = '/gci/profile/student/' + self.gci.key().name()
     response = self.get(url)
-    self.assertResponseForbidden(response)    
+    self.assertResponseForbidden(response)
 
     url = '/gci/profile/mentor/' + self.gci.key().name()
     response = self.get(url)

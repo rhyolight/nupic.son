@@ -174,7 +174,7 @@ def allScoresForProgramQuery(program):
   """Returns the query to fetch all the scores for the specified program.
 
   Args:
-    program: GCIProgram entity for which the query should filter the program 
+    program: GCIProgram entity for which the query should filter the program
   """
   return GCIScore.all().filter('program =', program)
 

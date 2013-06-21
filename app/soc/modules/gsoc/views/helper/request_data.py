@@ -305,11 +305,11 @@ class RequestData(request_data.RequestData):
       else:
         self._organization = None
     return self._organization
- 
+
   def _setOrganization(self, organization):
     """Sets the organization field to the specified value."""
     self._organization = organization
- 
+
   # TODO(daniel): organization should be immutable. All the parts, which
   # actually try to override this value, should be changed
   organization = property(_getOrganization, _setOrganization)
@@ -542,7 +542,7 @@ class RedirectHelper(request_data.RedirectHelper):
     super(RedirectHelper, self).document(document)
     self._url_name = 'show_gsoc_document'
     return self
- 
+
   def acceptedOrgs(self):
     """Sets the _url_name to the list all the accepted orgs."""
     super(RedirectHelper, self).acceptedOrgs()
@@ -608,7 +608,7 @@ class RedirectHelper(request_data.RedirectHelper):
     else:
       self._url_name = 'gsoc_invitation'
     return self
-  
+
   def connect_user(self, user=None, organization=None):
     """Sets the _url_name for a gsoc_user_connection redirect.
 
@@ -617,13 +617,13 @@ class RedirectHelper(request_data.RedirectHelper):
     Args:
       user: The User instance for which one wishes to establish a connection to
         an organization.
-      organization: The GSoCOrganization instance to which a user is trying 
+      organization: The GSoCOrganization instance to which a user is trying
         to connect.
-    """  
+    """
     if not user:
       assert 'user' in self._data.kwargs
       user = self._data.kwargs['user']
-  
+
     self.connect_org(organization=organization)
     self.kwargs['link_id'] = user.link_id
     return self
@@ -631,9 +631,9 @@ class RedirectHelper(request_data.RedirectHelper):
   def connect_org(self, organization=None):
     """Sets the _url_name for a gsoc_org_connection redirect.
 
-    Intended for use when generating a url for a redirect to 
+    Intended for use when generating a url for a redirect to
     UserConnectionPage.
-    
+
     Args:
       organization: Override the current organization (if any) provided
         by the RequestData object. Intended specifically for the call
@@ -644,16 +644,16 @@ class RedirectHelper(request_data.RedirectHelper):
     else:
       current_org = self._data.organization
     self.organization(current_org)
-    # We need to reassign the kwarg to the org's link_id since it's 
+    # We need to reassign the kwarg to the org's link_id since it's
     # being set to the Organization object
     self.kwargs['organization'] = current_org.link_id
     self._url_name = url_names.GSOC_USER_CONNECTION
     return self
-  
+
   def show_connection(self, user, connection):
     """ Sets up kwargs for a gsoc_show_connection redirect.
     Args:
-      user: the user involved in the connection 
+      user: the user involved in the connection
       connection: the org involved in the connection
     """
     if not user:
@@ -668,9 +668,9 @@ class RedirectHelper(request_data.RedirectHelper):
 
   def profile_anonymous_connection(self, role, connection_hash):
     """ Sets up kwargs for the gsoc_profile_anonymous_connection reirect.
-    
+
     Args:
-      role: Role (org admin | mentor) to which the user will be promoted 
+      role: Role (org admin | mentor) to which the user will be promoted
           after their profile is created.
       connection_hash: The hashed key of an AnonymousConnection object.
     """

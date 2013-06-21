@@ -383,12 +383,12 @@ class CleaningTest(GSoCDjangoTestCase):
     self.form.cleaned_data = {field_name: field_value}
     self.form.fields = {field_name: forms.URLField()}
     self.assertEqual(clean_field(self.form), field_value)
-    # Test that None will be returned if the value of the url field 
+    # Test that None will be returned if the value of the url field
     # is an empty string
     field_value = ''
     self.form.cleaned_data = {field_name: field_value}
     self.assertEqual(clean_field(self.form), u'')
-    # Test that forms.ValidationError error will be raised 
+    # Test that forms.ValidationError error will be raised
     # if the value of the url field is not a valid url
     field_value = 'exampleabc'
     self.form.cleaned_data = {field_name: field_value}
@@ -418,7 +418,7 @@ class CleaningTest(GSoCDjangoTestCase):
     self.form.cleaned_data = cleaned_data_before
     expected = string_field_value.split()
     self.assertEqual(clean_field(self.form), expected)
-    
+
     string_field_value = "a, b, c, a"
     clean_field = cleaning.str2set(string_field, separator=',')
     cleaned_data_before = {string_field: string_field_value}
@@ -495,7 +495,7 @@ class CleaningTest(GSoCDjangoTestCase):
     self.form.cleaned_data = {field_name: field_value}
     self.form.fields = {field_name: forms.URLField()}
     self.assertEqual(clean_field(self.form), field_value)
-	
+
   def testCleanBirthdate(self):
     """Tests cleaning.clean_birth_date."""
     field_name = 'test_date_of_birth'

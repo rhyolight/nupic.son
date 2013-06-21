@@ -3,9 +3,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #   http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,7 @@ class Group(soc.models.linkable.Linkable):
   #: Required field storing name of the group.
   name = db.StringProperty(required=True,
       verbose_name=ugettext('Name'))
-  name.help_text = ugettext('Complete, formal name of the group.')  
+  name.help_text = ugettext('Complete, formal name of the group.')
   name.group = ugettext("1. Public Info")
 
   #: Required field storing short name of the group.
@@ -60,7 +60,7 @@ class Group(soc.models.linkable.Linkable):
       verbose_name=ugettext('Description'))
   description.group = ugettext("1. Public Info")
 
-  #: Optional public mailing list.     
+  #: Optional public mailing list.
   pub_mailing_list = db.StringProperty(required=False,
       verbose_name=ugettext('Public Mailing List'))
   pub_mailing_list.help_text = ugettext(

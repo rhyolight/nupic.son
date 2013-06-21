@@ -27,21 +27,21 @@ STR_TYPES = (datetime.datetime)
 
 def filter(target, keys):
   """Filters a dictonary to only allow items with the given keys.
-  
+
   Args:
     target: The dictionary that is to be filtered
     keys: The list with keys to filter the dictionary on
-  
+
   Returns:
-    A dictionary that only contains the (key,value) from target that 
+    A dictionary that only contains the (key,value) from target that
     have their key in keys.
   """
   result = {}
-  
+
   for key, value in target.iteritems():
     if key in keys:
       result[key] = value
-  
+
   return result
 
 

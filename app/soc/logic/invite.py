@@ -54,7 +54,7 @@ def acceptInvite(request_data):
 
 
 def rejectInvite(request_data):
-  """Rejects a invitation. 
+  """Rejects a invitation.
   """
   invite_key = request_data.invite.key()
 
@@ -84,7 +84,7 @@ def withdrawInvite(request_data):
 
 
 def resubmitInvite(request_data):
-  """Resubmits an invitation. 
+  """Resubmits an invitation.
   """
   invite_key = request_data.invite.key()
 

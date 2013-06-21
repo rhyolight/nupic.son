@@ -44,13 +44,13 @@ TERMS_OF_SERVICE_GROUP = ugettext(
 
 class StudentInfo(db.Model):
   """The model which contains some detailed information which are necessary
-  only when the user has a student role. 
+  only when the user has a student role.
 
   Parent:
     soc.models.role.Profile
   """
 
-  school_name = db.StringProperty(required=True, 
+  school_name = db.StringProperty(required=True,
       verbose_name=ugettext('School Name'))
   school_name.group = EDUCATION_GROUP
   school_name.help_text = ugettext(

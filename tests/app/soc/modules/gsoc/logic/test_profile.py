@@ -525,7 +525,7 @@ class CountOrgAdminsTest(unittest.TestCase):
     # seed the other org admin who is active
     org_admin_properties['status'] = 'active'
     org_admin = seeder_logic.seed(
-        profile_model.GSoCProfile, org_admin_properties)  
+        profile_model.GSoCProfile, org_admin_properties)
 
     # only active org admin counted
     org_admins = profile_logic.countOrgAdmins(self.organization_one.key())

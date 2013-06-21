@@ -52,11 +52,11 @@ class AcceptedOrgsPublicList(org_list.OrgList):
         lambda e, *args: url_helper.urlize(e.ideas, name="[ideas page]"),
         hidden=True)
 
-    # TODO(nathaniel): squeeze this back into a lambda expression    
-    # in the call to setRowAction below.    
-    def _rowAction(e, *args):    
-      # TODO(nathaniel): make this .organization call unnecessary.    
-      self.data.redirect.organization(organization=e)    
+    # TODO(nathaniel): squeeze this back into a lambda expression
+    # in the call to setRowAction below.
+    def _rowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=e)
       return self.data.redirect.urlOf(url_names.GSOC_ORG_HOME)
 
     list_config.setRowAction(_rowAction)
@@ -110,11 +110,11 @@ class AcceptedOrgsAdminList(org_list.OrgList):
     list_config.addHtmlColumn('org_admin', 'Org Admins',
         lambda e, *args: args[0][e.key()])
 
-    # TODO(nathaniel): squeeze this back into a lambda expression    
-    # in the call to setRowAction below.    
-    def _rowAction(e, *args):    
-      # TODO(nathaniel): make this .organization call unnecessary.    
-      self.data.redirect.organization(organization=e)    
+    # TODO(nathaniel): squeeze this back into a lambda expression
+    # in the call to setRowAction below.
+    def _rowAction(e, *args):
+      # TODO(nathaniel): make this .organization call unnecessary.
+      self.data.redirect.organization(organization=e)
       return self.data.redirect.urlOf(url_names.GSOC_ORG_HOME)
 
     list_config.setRowAction(_rowAction)

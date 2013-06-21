@@ -36,12 +36,12 @@ def profile_main_as_html():
   stream = StringIO.StringIO()
   stats = pstats.Stats(prof, stream=stream)
   # stats.strip_dirs()  # Don't; too many modules are named __init__.py.
-  
+
   # 'time', 'cumulative' or 'calls'
-  stats.sort_stats('time')  
-  
+  stats.sort_stats('time')
+
   # Optional arg: how many to print
-  stats.print_stats() 
+  stats.print_stats()
   # The rest is optional.
   # stats.print_callees()
   # stats.print_callers()
@@ -58,7 +58,7 @@ def profile_main_as_logs():
   import cProfile
   import pstats
   import StringIO
-  
+
   prof = cProfile.Profile()
   prof = prof.runctx("real_main()", globals(), locals())
   stream = StringIO.StringIO()

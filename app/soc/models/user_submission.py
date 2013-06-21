@@ -39,7 +39,7 @@ class UserSubmission(db.Model):
 
   #: Program to which this submission belongs to
   program = db.ReferenceProperty(
-      reference_class=Program, required=True, 
+      reference_class=Program, required=True,
       collection_name='submissions')
 
   #: Organization to which this submission belongs to
@@ -64,4 +64,3 @@ class UserSubmission(db.Model):
   submitted_on = db.DateTimeProperty(
       required=True, auto_now_add=True,
       verbose_name=ugettext('Submitted on'))
-  

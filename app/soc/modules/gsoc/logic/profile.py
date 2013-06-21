@@ -28,7 +28,7 @@ def queryAllMentorsKeysForOrg(org, limit=1000):
   Args:
     org: the organization entity for which we need to get all the mentors
     limit: the maximum number of entities that must be fetched
-    
+
   returns:
     List of all the mentors for the organization
   """
@@ -49,7 +49,7 @@ def queryAllMentorsKeysForOrg(org, limit=1000):
 def queryProfilesForUser(user):
   """Returns a query that fetches all GSoC profiles created for the specified
   User
-  
+
   Args:
     user: User entity for which the profiles are created
   """
@@ -233,7 +233,7 @@ def canResignAsOrgAdminForOrg(profile, org_key):
   """
   if org_key not in profile.org_admin_for:
     raise ValueError(
-        'The specified profile is not an organization administrator for %s' % 
+        'The specified profile is not an organization administrator for %s' %
         org_key.name())
 
   # retrieve keys of other org admins

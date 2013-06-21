@@ -94,7 +94,7 @@ class InviteViewTest(BaseInviteTest):
     self.data.createOrgAdmin(self.org)
 
     invitee = self._invitee()
-    
+
     post_data = {
         'identifiers': invitee.user.link_id,
         }
@@ -109,7 +109,7 @@ class InviteViewTest(BaseInviteTest):
     self.data.createOrgAdmin(self.org)
 
     invitee = self._invitee()
-    
+
     post_data = {
         'identifiers': invitee.user.link_id,
         }
@@ -208,7 +208,7 @@ class InviteViewTest(BaseInviteTest):
 
     invite = GCIRequest.all().fetch(10)
     self.assertEqual(len(invite), 2)
-    # we would prefer self.assertEqual(len(invite), 1) 
+    # we would prefer self.assertEqual(len(invite), 1)
 
   def testInviteByInvalidEmailAddressForbidden(self):
     self.data.createOrgAdmin(self.org)
@@ -371,7 +371,7 @@ class ManageInviteTest(BaseInviteTest):
         'withdraw': ''
         }
     response = self.post(self._manageInviteUrl(self.invite), post_data)
-    self.assertResponseForbidden(response)    
+    self.assertResponseForbidden(response)
 
   def _manageInviteUrl(self, invite):
     return '/gci/invite/manage/%s/%s/%s/%s' % (

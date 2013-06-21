@@ -201,7 +201,7 @@ def pylint(options):
     # Add google_appengine directory to path.
     path = options.project_dir.abspath() / 'thirdparty' / 'google_appengine'
     sys.path.insert(0, path)
-    
+
     # Specify PyLint RC file.
     path = options.project_dir.abspath() / 'scripts' / 'pylint' / 'pylintrc'
     arguments.append('--rcfile=' + path)

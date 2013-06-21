@@ -145,7 +145,7 @@ def sendParentalConsentFormRequired(user_entity, program_entity):
 def getFirstTaskConfirmationContext(student):
   """Sends notification to the GCI student, when he or she completes their
   first task.
-  
+
   Args:
     student: the student who should receive the confirmation
   """

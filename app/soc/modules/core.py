@@ -106,7 +106,7 @@ class Core(object):
   def __init__(self):
     """Creates a new instance of the Core.
     """
-    
+
     # pylint: disable=C0103
     self.API_VERSION = 1
 
