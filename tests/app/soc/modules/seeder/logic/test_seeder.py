@@ -14,11 +14,12 @@
 
 """Tests for soc.modules.seeder.logic.seeder."""
 
+import unittest
+
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from soc.modules.seeder.logic import seeder
 
-import ndb_models
-import unittest
+from tests.app.soc.modules.seeder.logic import ndb_models
 
 
 class SeederTest(unittest.TestCase):
