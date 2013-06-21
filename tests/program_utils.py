@@ -179,6 +179,7 @@ class GSoCProgramHelper(ProgramHelper):
     self.program_timeline = self.seed(GSoCTimeline, properties)
 
     properties = {'timeline': self.program_timeline,
+                  'key_name': self.program_timeline.key().name(),
                   'status': 'visible', 'apps_tasks_limit': 20,
                   'scope': self.sponsor, 'sponsor': self.sponsor,
                   'student_agreement': None, 'events_page': None,
