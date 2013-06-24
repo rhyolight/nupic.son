@@ -14,8 +14,6 @@
 
 """Module containing the Summer Of Code callback."""
 
-from summerofcode.views import project_manage
-
 
 class Callback(object):
   """Callback object that handles interaction between the core."""
