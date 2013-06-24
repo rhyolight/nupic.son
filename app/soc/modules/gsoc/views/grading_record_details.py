@@ -21,6 +21,8 @@ from google.appengine.ext import db
 
 from django import http
 
+from melange.request import exception
+
 from soc.views import forms
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
@@ -28,12 +30,79 @@ from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic import grading_record
+from soc.modules.gsoc.logic import survey
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
+from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+class GradingGroupCreate(GSoCRequestHandler):
+  """View to display GradingRecord details.
+  """
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'grading_records/group/%s$' % url_patterns.PROGRAM,
+         self, name='gsoc_grading_group'),
+    ]
+
+  def checkAccess(self, data, check, mutator):
+    check.isHost()
+
+  def context(self, data, check, mutator):
+    return {
+        'page_name': 'Grading Group Create Page',
+        'err': bool(data.GET.get('err', False))
+        }
+
+  def post(self, data, check, mutator):
+    """Handles the POST request when creating a Grading Group"""
+    student_survey = None
+    grading_survey = None
+    survey_type = None
+
+    if 'midterm' in data.POST:
+      student_survey = survey.getMidtermProjectSurveyForProgram(data.program)
+      grading_survey = survey.getMidtermGradingProjectSurveyForProgram(
+          data.program)
+      survey_type = 'Midterm'
+    elif 'final' in data.POST:
+      student_survey = survey.getFinalProjectSurveyForProgram(data.program)
+      grading_survey = survey.getFinalGradingProjectSurveyForProgram(
+          data.program)
+      survey_type = 'Final'
+    else:
+      raise exception.BadRequest('No valid evaluation type present')
+
+    if not student_survey or not grading_survey:
+      data.redirect.program()
+      return data.redirect.to('gsoc_grading_group', extra=['err=1'])
+
+    q = GSoCGradingSurveyGroup.all()
+    q.filter('student_survey', student_survey)
+    q.filter('grading_survey', grading_survey)
+
+    existing_group = q.get()
+
+    if existing_group:
+      data.redirect.id(existing_group.key().id())
+    else:
+      props = {
+          'name': '%s - %s Evaluation' %(data.program.name, survey_type),
+          'program': data.program,
+          'grading_survey': grading_survey,
+          'student_survey': student_survey,
+      }
+      new_group = GSoCGradingSurveyGroup(**props)
+      new_group.put()
+      data.redirect.id(new_group.key().id())
+
+    return data.redirect.to('gsoc_grading_record_overview')
+
+  def templatePath(self):
+    return 'modules/gsoc/grading_record/create_group.html'
 
 class GradingRecordsOverview(GSoCRequestHandler):
   """View to display all GradingRecords for a single group."""

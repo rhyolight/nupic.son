@@ -14,8 +14,6 @@
 
 """Module for the admin pages."""
 
-import logging
-
 from google.appengine.api import taskqueue
 from google.appengine.api import users
 from google.appengine.ext import db
@@ -39,7 +37,7 @@ from soc.views.template import Template
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
-from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.project import GSoCProject
@@ -406,6 +404,7 @@ class EvaluationsDashboard(Dashboard):
     """
     mentor_evaluations = MentorEvaluationsDashboard(data)
     student_evaluations = StudentEvaluationsDashboard(data)
+    evaluation_group = EvaluationGroupDashboard(data)
 
     r = data.redirect
     r.program()
@@ -433,6 +432,13 @@ class EvaluationsDashboard(Dashboard):
             'title': 'Student Evaluations',
             'link': '',
             'subpage_links': student_evaluations.getSubpagesLink(),
+        },
+        {
+            'name': 'evaluation_group',
+            'description': ugettext('Manage the results of the evaluation'),
+            'title': 'Evalutation Group',
+            'link': '',
+            'subpage_links': evaluation_group.getSubpagesLink(),
         },
     ]
 
@@ -631,20 +637,31 @@ class EvaluationGroupDashboard(Dashboard):
     Args:
       data: The RequestData object
     """
+    r = data.redirect
+    r.program()
+
     subpages = [
         {
             'name': 'edit_evaluation_group',
             'description': ugettext('Create evaluation group'),
             'title': 'Create',
-            'link': '#'
-        },
-        {
-            'name': 'view_evaluation_group',
-            'description': ugettext('View evaluation group'),
-            'title': 'View',
-            'link': '#'
+            'link': r.urlOf('gsoc_grading_group')
         },
     ]
+
+    q = GSoCGradingSurveyGroup.all()
+    q.filter('program', data.program)
+
+    for group in q:
+      r.id(group.key().id())
+      subpages.append(
+        {
+            'name': 'view_evaluation_group_%s' % group.key().id(),
+            'description': ugettext('View this group'),
+            'title': 'View %s' % group.name,
+            'link': r.urlOf('gsoc_grading_record_overview')
+        }
+      )
 
     super(EvaluationGroupDashboard, self).__init__(data, subpages)
 
