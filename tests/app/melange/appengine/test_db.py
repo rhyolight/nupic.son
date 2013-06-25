@@ -16,7 +16,10 @@
 
 import unittest
 
-from melange.appengine import db
+from google.appengine.ext import db
+from google.appengine.ext import ndb
+
+from melange.appengine import db as melange_db
 
 
 class EmailValidatorTest(unittest.TestCase):
@@ -32,12 +35,12 @@ class EmailValidatorTest(unittest.TestCase):
 
   def testValidEmail(self):
     """Tests that the function returns normally on a valid email."""
-    db.email_validator(None, 'test@example.com')
+    melange_db.email_validator(None, 'test@example.com')
 
   def testInvalidEmail(self):
     """Tests that the function returns ValueError on an invalid email."""
     with self.assertRaises(ValueError):
-      db.email_validator(None, 'invalid_email_address')
+      melange_db.email_validator(None, 'invalid_email_address')
 
 
 class LinkValidatorTest(unittest.TestCase):
@@ -53,9 +56,51 @@ class LinkValidatorTest(unittest.TestCase):
 
   def testValidLink(self):
     """Tests that the function returns normally on a valid URL."""
-    db.link_validator(None, 'http://www.melange.com')
+    melange_db.link_validator(None, 'http://www.melange.com')
 
   def testInvalidLink(self):
     """Tests that the function returns ValueError on an invalid URL."""
     with self.assertRaises(ValueError):
-      db.link_validator(None, 'invalid_url_address')
+      melange_db.link_validator(None, 'invalid_url_address')
+
+
+class TestToDict(unittest.TestCase):
+  """Unit tests for toDict function."""
+  
+  def testForDBModel(self):
+    """Tests whether a correct dict is returned for a db model."""
+    class Books(db.Model):
+      item_freq = db.StringProperty()
+      freq = db.IntegerProperty()
+      details = db.TextProperty()
+      released = db.BooleanProperty()
+
+    entity = Books()
+    entity.item_freq = '5'
+    entity.freq = 4
+    entity.details = 'Test Entity'
+    entity.released = True
+    entity.put()
+
+    expected_dict = {'freq': 4, 'item_freq': '5', 'details': 'Test Entity',
+                     'released': True}
+    self.assertEqual(melange_db.toDict(entity), expected_dict)
+
+  def testForNDBModel(self):
+    """Tests whether a correct dict is returned for a db model."""
+    class Books(ndb.Model):
+      item_freq = ndb.StringProperty()
+      freq = ndb.IntegerProperty()
+      details = ndb.TextProperty()
+      released = ndb.BooleanProperty()
+
+    entity = Books()
+    entity.item_freq = '5'
+    entity.freq = 4
+    entity.details = 'Test Entity'
+    entity.released = True
+    entity.put()
+
+    expected_dict = {'freq': 4, 'item_freq': '5', 'details': 'Test Entity',
+                     'released': True}
+    self.assertEqual(melange_db.toDict(entity), expected_dict)
