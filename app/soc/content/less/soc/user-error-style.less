@@ -14,6 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 /* @group Typography */
+@import "common.less";
+
+@image_user_error: "@{images_location}/melange-user-error-background.png";
+
 body,
 button,
 input,
@@ -94,7 +98,7 @@ a:visited,
 
 /* @group error */
 body.error {
-	background: url(../images/melange-user-error-background.png) top center no-repeat;
+	background: url(@image_user_error) top center no-repeat;
 	background-color: #fff;
 }
 
