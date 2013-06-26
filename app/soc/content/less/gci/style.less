@@ -1,3 +1,4 @@
+@import "common.less";
 /*
 cog colors
 
@@ -6,6 +7,68 @@ medium: ffd800
 hard: f51a4a
 
 */
+
+// Images locations
+@image_arrow_blue_sm: "@{images_gci_location}/arrow-blue-sm.png";
+@image_arrow_white_lg: "@{images_gci_location}/arrow-white-lg.png";
+@image_arrow_white_sm: "@{images_gci_location}/arrow-white-sm.png";
+@image_arrow_red_sm: "@{images_gci_location}/arrow-red-sm.png";
+@image_block_cog_current_task: "@{images_gci_location}/block-cog-current-task.png";
+@image_block_cog_featured: "@{images_gci_location}/block-cog-featured.png";
+@image_block_cog_featured_student: "@{images_gci_location}/block-cog-featured-student.png";
+@image_block_cog_task: "@{images_gci_location}/block-cog-task.png";
+@image_block_comments_bg: "@{images_gci_location}/block-comments-bg.gif";
+@image_block_form_bg: "@{images_gci_location}/block-form-bg.png";
+
+@image_block_how_it_works_bg: "@{images_gci_location}/block-how-it-works-bg.gif";
+@image_block_how_it_works_more: "@{images_gci_location}/block-how-it-works-more.jpg";
+@image_block_how_it_works_repeat: "@{images_gci_location}/block-how-it-works-repeat.png";
+@image_block_how_it_works_repeat_arrow: "@{images_gci_location}/block-how-it-works-repeat-arrow.png";
+@image_block_how_it_works_start: "@{images_gci_location}/block-how-it-works-start.png";
+@image_block_how_it_works_step1: "@{images_gci_location}/block-how-it-works-step1.png";
+@image_block_how_it_works_step1_arrow: "@{images_gci_location}/block-how-it-works-step1-arrow.png";
+@image_block_how_it_works_step1_cog: "@{images_gci_location}/block-how-it-works-step1-cog.png";
+@image_block_how_it_works_step2: "@{images_gci_location}/block-how-it-works-step2.png";
+@image_block_how_it_works_step2_arrow: "@{images_gci_location}/block-how-it-works-step2-arrow.png";
+@image_block_how_it_works_step2_3_cog: "@{images_gci_location}/block-how-it-works-step2-3-cog.png";
+@image_block_how_it_works_step2_cog_center: "@{images_gci_location}/block-how-it-works-step2-cog-center.png";
+@image_block_how_it_works_step3: "@{images_gci_location}/block-how-it-works-step3.png";
+@image_block_how_it_works_step3_arrow: "@{images_gci_location}/block-how-it-works-step3-arrow.png";
+@image_block_how_it_works_step3_cog_center: "@{images_gci_location}/block-how-it-works-step3-cog-center.png";
+
+@image_block_leaderboard_top_trophy: "@{images_gci_location}/block-leaderboard-top-trophy.png";
+@image_block_leaderboard_content_bg: "@{images_gci_location}/block-leaderboard-content-bg.png";
+
+@image_block_stopwatch_sm: "@{images_gci_location}/stopwatch-sm.png";
+
+@image_block_task_action_bg: "@{images_gci_location}/block-task-action-bg.png";
+@image_block_task_open: "@{images_gci_location}/block-task-open.png";
+@image_block_task_title_bg: "@{images_gci_location}/block-task-title-bg.gif";
+@image_block_task_uploaded_code_bg: "@{images_gci_location}/block-task-uploaded-code-bg.gif";
+@image_block_timeline_watch: "@{images_gci_location}/block-timeline-watch.png";
+@image_block_timeline_watch_back: "@{images_gci_location}/block-timeline-watch-back.png";
+@image_block_timeline_watch_dial: "@{images_gci_location}/block-timeline-watch-dial.png";
+@image_block_timeline_watch_front: "@{images_gci_location}/block-timeline-watch-front.png";
+@image_block_timeline_watch_percent_25: "@{images_gci_location}/block-timeline-watch-percent-25.png";
+@image_block_timeline_watch_percent_33: "@{images_gci_location}/block-timeline-watch-percent-33.png";
+@image_block_timeline_watch_percent_50: "@{images_gci_location}/block-timeline-watch-percent-50.png";
+@image_block_timeline_watch_percent_75: "@{images_gci_location}/block-timeline-watch-percent-75.png";
+@image_block_user_welcome_bg: "@{images_gci_location}/block-user-welcome-bg.png";
+
+@image_body_bg: "@{images_gci_location}/body-bg.gif";
+
+@image_cog_grey_sm: "@{images_gci_location}/cog-grey-sm.png";
+
+@image_dashboard_task_cog_easy: "@{images_gci_location}/dashboard-task-cog-easy.png";
+@image_dashboard_task_cog_hard: "@{images_gci_location}/dashboard-task-cog-hard.png";
+@image_dashboard_task_cog_medium: "@{images_gci_location}/dashboard-task-cog-medium.png";
+@image_dashboard_task_cog_easy_complete: "@{images_gci_location}/dashboard-task-cog-easy-complete.png";
+@image_dashboard_task_cog_hard_complete: "@{images_gci_location}/dashboard-task-cog-hard-complete.png";
+@image_dashboard_task_cog_medium_complete: "@{images_gci_location}/dashboard-task-cog-medium-complete.png";
+@image_dashboard_task_icons: "@{images_gci_location}/dashboard-task-icons.png";
+@image_dashboard_task_single_bg: "@{images_gci_location}/dashboard-task-single-bg.gif";
+
+@image_extend_deadline_top_arrow: "@{images_gci_location}/extend-deadline-top-arrow.png";
 
 /* @group Normalize.css */
 @import url("normalize.css");
@@ -202,7 +265,7 @@ button::-moz-focus-inner, input[type="button"]::-moz-focus-inner, input[type="su
 a.btn,
 input.button,
 input.btn {
-    background: #c53926 url(../../images/gci/arrow-white-lg.png) 95% 50% no-repeat;
+    background: #c53926 url(@image_arrow_white_lg) 95% 50% no-repeat;
     border: none;
         border-radius: 3px;
         -moz-border-radius: 3px;
@@ -228,7 +291,7 @@ input.btn {
 form input[type="submit"].task-btn,
 a.task-btn,
 input.task-btn {
-    background: #fff url(../../images/gci/dashboard-task-icons.png) 7px 5px no-repeat;
+    background: #fff url(@image_dashboard_task_icons) 7px 5px no-repeat;
     border: none;
     border-radius: 10px;
     -moz-border-radius: 10px;
@@ -317,7 +380,7 @@ input.delete-btn {
 
 /* @group Layout */
 body {
-    background:url(../../images/gci/body-bg.gif) top center no-repeat;
+    background:url(@image_body_bg) top center no-repeat;
 }
 .header {
     height: 143px;
@@ -446,12 +509,12 @@ body {
         padding: 4px 0 4px 25px;
     }
     .block .block-footer a {
-        background:url(../../images/gci/arrow-white-sm.png) right center no-repeat;
+        background:url(@image_arrow_white_sm) right center no-repeat;
         color: #fff;
         padding-right: 9px;
     }
     .block-comments {
-        background: #e0e0e0 url(../../images/gci/block-comments-bg.gif) 0 0 repeat-x;
+        background: #e0e0e0 url(@image_block_comments_bg) 0 0 repeat-x;
         padding: 15px 20px 20px 38px;
     }
         .block-comments .block-comments-title {
@@ -539,7 +602,7 @@ body {
             padding-left: 10px;
         }
     .block-task-uploaded-code {
-        background: #52b8ef url(../../images/gci/block-task-uploaded-code-bg.gif) 0 0 repeat-x;
+        background: #52b8ef url(@image_block_task_uploaded_code_bg) 0 0 repeat-x;
         color: #fff;
         padding: 15px 18px 20px 38px;
     }
@@ -646,7 +709,7 @@ body {
 
 /* BEGIN Stopwatch and countdown*/
 .stopwatch .stopwatch-watch {
-    background:url(../../images/gci/block-timeline-watch.png) 0 0 no-repeat;
+    background:url(@image_block_timeline_watch) 0 0 no-repeat;
     height: 85px;
     width: 79px;
     float: left;
@@ -654,7 +717,7 @@ body {
     margin-left: -15px;
 }
 .stopwatch-svgcanvas {
-  background-image:url(../../images/gci/block-timeline-watch-back.png);
+  background-image:url(@image_block_timeline_watch_back);
   height: 91px;
   width: 91px;
   position: relative;
@@ -663,25 +726,25 @@ body {
   margin-left: -15px;
 }
 .stopwatch-front {
-  background-image:url(../../images/gci/block-timeline-watch-front.png);
+  background-image:url(@image_block_timeline_watch_front);
   display: none;
 }
 .stopwatch-dial {
-  background-image:url(../../images/gci/block-timeline-watch-dial.png);
+  background-image:url(@image_block_timeline_watch_dial);
   display: none;
 }
 
     .stopwatch.percent-25 .stopwatch-watch {
-        background-image:url(../../images/gci/block-timeline-watch-percent-25.png);
+        background-image:url(@image_block_timeline_watch_percent_25);
     }
     .stopwatch.percent-33 .stopwatch-watch {
-        background-image:url(../../images/gci/block-timeline-watch-percent-33.png);
+        background-image:url(@image_block_timeline_watch_percent_33);
     }
     .stopwatch.percent-50 .stopwatch-watch {
-        background-image:url(../../images/gci/block-timeline-watch-percent-50.png);
+        background-image:url(@image_block_timeline_watch_percent_50);
     }
     .stopwatch.percent-75 .stopwatch-watch {
-        background-image:url(../../images/gci/block-timeline-watch-percent-75.png);
+        background-image:url(@image_block_timeline_watch_percent_75);
     }
     .stopwatch .stopwatch-remaining {
         float: right;
@@ -775,7 +838,7 @@ body {
 
 /* BEGIN accepted organizations block */
 .block-accepted-organizations {
-  background: #E0E0E0 url(../../images/gci/block-form-bg.png) 0 0 repeat-x;
+  background: #E0E0E0 url(@image_block_form_bg) 0 0 repeat-x;
   border: 1px solid #B4B4B4;
   padding: 13px 20px;
 }
@@ -826,7 +889,7 @@ body {
 
 /*Difficulties*/
 .block-featured-task .cog {/*Featured task, homepage block*/
-    background-image:url(../../images/gci/block-cog-featured.png);
+    background-image:url(@image_block_cog_featured);
     height: 77px;
     width: 73px;
 }
@@ -840,7 +903,7 @@ body {
         background-position: 0 -155px;
     }
 .block-student-featured-task .cog {/*Featured task, student dashboard block*/
-    background-image:url(../../images/gci/block-cog-featured-student.png);
+    background-image:url(@image_block_cog_featured_student);
     height: 79px;
     width: 78px;
 }
@@ -854,7 +917,7 @@ body {
         background-position: 0 -158px;
     }
 .block-status .cog {/*Sidebar current task block*/
-    background-image:url(../../images/gci/block-cog-current-task.png);
+    background-image:url(@image_block_cog_current_task);
     height: 62px;
     width: 62px;
 }
@@ -877,25 +940,25 @@ body {
     width: 70px;
 }
     .task-single.level-hard .cog {
-        background-image:url(../../images/gci/dashboard-task-cog-hard.png);
+        background-image:url(@image_dashboard_task_cog_hard);
     }
     .task-single.level-medium .cog {
-        background-image:url(../../images/gci/dashboard-task-cog-medium.png);
+        background-image:url(@image_dashboard_task_cog_medium);
     }
     .task-single.level-easy .cog {
-        background-image:url(../../images/gci/dashboard-task-cog-easy.png);
+        background-image:url(@image_dashboard_task_cog_easy);
     }
 .block-completed-tasks .task-single {/*Student completed tasks*/
 
 }
     .block-completed-tasks .task-single.level-hard .cog {
-        background-image:url(../../images/gci/dashboard-task-cog-hard-complete.png);
+        background-image:url(@image_dashboard_task_cog_hard_complete);
     }
     .block-completed-tasks .task-single.level-medium .cog {
-        background-image:url(../../images/gci/dashboard-task-cog-medium-complete.png);
+        background-image:url(@image_dashboard_task_cog_medium_complete);
     }
     .block-completed-tasks .task-single.level-easy .cog {
-        background-image:url(../../images/gci/dashboard-task-cog-easy-complete.png);
+        background-image:url(@image_dashboard_task_cog_easy_complete);
     }
 .block-pager {/*Generic pager*/
     padding: 5px 0;
@@ -937,7 +1000,7 @@ body {
         line-height: 15px;
     }
 .block-page {/*General page*/
-  background: #e0e0e0 url(../../images/gci/block-form-bg.png) 0 0 repeat-x;
+  background: #e0e0e0 url(@image_block_form_bg) 0 0 repeat-x;
   border: 1px solid #b4b4b4;
   padding: 13px 20px;
 }
@@ -995,7 +1058,7 @@ body {
 	text-transform: uppercase;
 }
 	.block-filter-sort a.block-filter-sort-link {
-		background:url(../../images/gci/arrow-blue-sm.png) right center no-repeat;
+		background:url(@image_arrow_blue_sm) right center no-repeat;
 		color: #0f649d;
 		font-weight: bold;
 		padding-right: 13px;
@@ -1123,7 +1186,7 @@ body {
             border-bottom: 1px solid #b62f23;
         }
         .block-status .block-status-action a span {
-            background:url(../../images/gci/arrow-white-sm.png) right center no-repeat;
+            background:url(@image_arrow_white_sm) right center no-repeat;
             padding-right: 10px;
         }
         .block-status .block-status-action a:first-child {
@@ -1180,7 +1243,7 @@ body {
 
 /* @group Homepage blocks */
 .block-how-it-works {/*How Code-In Works*/
-    background: #e0e0e0 url(../../images/gci/block-how-it-works-bg.gif) 0 0 repeat-x;
+    background: #e0e0e0 url(@image_block_how_it_works_bg) 0 0 repeat-x;
     border: 1px solid #b4b4b4;
     padding: 8px 18px 18px 18px;
 }
@@ -1234,11 +1297,11 @@ body {
             -o-transition: all 1s ease-in-out;
         }
         .block-how-it-works-step1 .cog {
-            background-image:url(../../images/gci/block-how-it-works-step1-cog.png);
+            background-image:url(@image_block_how_it_works_step1_cog);
         }
         .block-how-it-works-step2 .cog,
         .block-how-it-works-step3 .cog {
-            background-image:url(../../images/gci/block-how-it-works-step2-3-cog.png);
+            background-image:url(@image_block_how_it_works_step2_3_cog);
         }
         .block-how-it-works-step .cog-center {
             height: 45px;
@@ -1249,10 +1312,10 @@ body {
             z-index: 100;
         }
         .block-how-it-works-step2 .cog-center {
-            background-image:url(../../images/gci/block-how-it-works-step2-cog-center.png);
+            background-image:url(@image_block_how_it_works_step2_cog_center);
         }
         .block-how-it-works-step3 .cog-center {
-            background-image:url(../../images/gci/block-how-it-works-step3-cog-center.png);
+            background-image:url(@image_block_how_it_works_step3_cog_center);
         }
         .block-how-it-works-step:hover .cog {
             -webkit-transform: rotate(180deg);
@@ -1260,14 +1323,14 @@ body {
             -o-transform: rotate(180deg);
         }
         .block-how-it-works-step1 {
-            background: #0c99e5 url(../../images/gci/block-how-it-works-step1.png) 8% 82% no-repeat;
+            background: #0c99e5 url(@image_block_how_it_works_step1) 8% 82% no-repeat;
             width: 220px;
         }
         .block-how-it-works-step2 {
-            background: #52b8ef url(../../images/gci/block-how-it-works-step2.png) 16% 85% no-repeat;
+            background: #52b8ef url(@image_block_how_it_works_step2) 16% 85% no-repeat;
         }
         .block-how-it-works-step3 {
-            background: #7ccffb url(../../images/gci/block-how-it-works-step3.png) 16% 85% no-repeat;
+            background: #7ccffb url(@image_block_how_it_works_step3) 16% 85% no-repeat;
         }
         .block-how-it-works-repeat {
             background: #cd402c;
@@ -1288,7 +1351,7 @@ body {
                 margin: 0 auto;
             }
             .block-how-it-works-repeat .block-how-it-works-repeat-caption .repeat-icon {
-                background:url(../../images/gci/block-how-it-works-repeat.png) 0 0 no-repeat;
+                background:url(@image_block_how_it_works_repeat) 0 0 no-repeat;
                 float: left;
                 height: 19px;
                 margin: 11px 7px 0 0;
@@ -1325,20 +1388,20 @@ body {
                 width: 23px;
             }
             .block-how-it-works-step1 .arrow {
-                background-image:url(../../images/gci/block-how-it-works-step1-arrow.png);
+                background-image:url(@image_block_how_it_works_step1_arrow);
             }
             .block-how-it-works-step2 .arrow {
-                background-image:url(../../images/gci/block-how-it-works-step2-arrow.png);
+                background-image:url(@image_block_how_it_works_step2_arrow);
             }
             .block-how-it-works-step3 .arrow {
-                background-image:url(../../images/gci/block-how-it-works-step3-arrow.png);
+                background-image:url(@image_block_how_it_works_step3_arrow);
                 height: 14px;
                 width: 26px;
                 left: 96px;
                 bottom: -14px;
             }
             .block-how-it-works-repeat .arrow {
-                background-image:url(../../images/gci/block-how-it-works-repeat-arrow.png);
+                background-image:url(@image_block_how_it_works_repeat_arrow);
                 height: 15px;
                 width: 28px;
                 top: -11px;
@@ -1351,7 +1414,7 @@ body {
         width: 320px;
     }
         .block-how-it-works .block-how-it-works-more {
-            background:url(../../images/gci/block-how-it-works-more.jpg) 0 0 no-repeat;
+            background:url(@image_block_how_it_works_more) 0 0 no-repeat;
         }
         .block-how-it-works .block-how-it-works-more .block-how-it-works-more-caption {
             background:rgba(0, 130, 200, 0.9);
@@ -1375,7 +1438,7 @@ body {
             padding: 4px 8px;
         }
     .block-how-it-works .block-how-it-works-start {
-        background:url(../../images/gci/block-how-it-works-start.png) top right no-repeat;
+        background:url(@image_block_how_it_works_start) top right no-repeat;
         float: right;
         height: 133px;
         width: 320px;
@@ -1406,7 +1469,7 @@ body {
             margin: 0px auto;
         }
         .block-start-link a.start-link {
-            background: #c53926 url(../../images/gci/arrow-white-lg.png) 95% 50% no-repeat;
+            background: #c53926 url(@image_arrow_white_lg) 95% 50% no-repeat;
                 border-radius: 3px;
                 -moz-border-radius: 3px;
                 -webkit-border-radius: 3px;
@@ -1514,7 +1577,7 @@ body {
         padding: 4px 0 4px 25px;
     }
     .block .readmore a {
-        background:url(../../images/gci/arrow-white-sm.png) right center no-repeat;
+        background:url(@image_arrow_white_sm) right center no-repeat;
         color: #fff;
         padding-right: 9px;
     }
@@ -1558,12 +1621,12 @@ body {
         color: #d14936;
     }
     .block-user-message a.more {
-        background:url(../../images/gci/arrow-red-sm.png) right center no-repeat;
+        background:url(@image_arrow_red_sm) right center no-repeat;
         font-weight: bold;
         padding-right: 11px;
     }
 .block-user-welcome {
-    background: #e0e0e0 url(../../images/gci/block-user-welcome-bg.png) 0 0 repeat-x;
+    background: #e0e0e0 url(@image_block_user_welcome_bg) 0 0 repeat-x;
     border: 1px solid #b4b4b4;
     padding: 18px 38px 18px 13px;
 }
@@ -1666,7 +1729,7 @@ body {
         padding: 3px 0 3px 12px;
     }
     .task-single {
-        background:url(../../images/gci/dashboard-task-single-bg.gif) 0 0 repeat-y;
+        background:url(@image_dashboard_task_single_bg) 0 0 repeat-y;
         background-color: #e0e0e0;
         font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
         padding: 3px 0;
@@ -1816,7 +1879,7 @@ body {
                 padding-left: 2px;
             }
         .block-task .block-title .block-task-action {
-            background:url(../../images/gci/block-task-action-bg.png) center left no-repeat;
+            background:url(@image_block_task_action_bg) center left no-repeat;
             float: right;
             padding: 6px 0 10px 0;
             width: 229px;
@@ -1907,7 +1970,7 @@ body {
 		width: 213px;
         }
 		.block-task .block-task-countdown #deadline-extend .deadline-extend-top {
-			background:url(../../images/gci/extend-deadline-top-arrow.png) top center no-repeat;
+			background:url(@image_extend_deadline_top_arrow) top center no-repeat;
 			display: block;
 			height: 20px;
 			width: 100%;
@@ -1965,7 +2028,7 @@ body {
 			margin: 0 7px;
 		}
 		.block-task .block-task-countdown #deadline-extend form .task-btn {
-			background: #fff url(../../images/gci/dashboard-task-icons.png) no-repeat scroll 8px -81px;
+			background: #fff url(@image_dashboard_task_icons) no-repeat scroll 8px -81px;
 			-moz-box-shadow: none;
 			-webkit-box-shadow: none;
 			box-shadow: none;
@@ -2018,7 +2081,7 @@ body {
 }
     .block-task-mentor .cog,
     .block-task-student .cog  {
-        background-image:url(../../images/gci/block-cog-task.png);
+        background-image:url(@image_block_cog_task);
         height: 103px;
         width: 98px;
     }
@@ -2036,7 +2099,7 @@ body {
         }
     .block-task-mentor .block-title,
     .block-task-student .block-title {
-        background: #0082c8 url(../../images/gci/block-task-title-bg.gif) top right repeat-y;
+        background: #0082c8 url(@image_block_task_title_bg) top right repeat-y;
         font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
         font-size: 12px;
         font-weight: normal;
@@ -2094,7 +2157,7 @@ body {
 }
     .block-task-mentor.block-task-open .cog,
     .block-task-student.block-task-open .cog {
-        background-image: url(../../images/gci/block-cog-task-open.png);
+        background-image: url(@image_block_task_open);
     }
     .block-task-open .block-task-action {
         text-align: center;
@@ -2154,7 +2217,7 @@ body {
 			float: right;
 		}
 		.block-leaderboard-top .block-leaderboard-top-title .trophy {
-			background:url(../../images/gci/block-leaderboard-top-trophy.png) 0 0 no-repeat;
+			background:url(@image_block_leaderboard_top_trophy) 0 0 no-repeat;
 			height: 160px;
 			width: 500px;
 			position: absolute;
@@ -2163,7 +2226,7 @@ body {
 		}
 
 	.block-leaderboard-top .block-leaderboard-top-content {
-		background: #d0e8f9 url(../../images/gci/block-leaderboard-content-bg.png) 0 0 repeat-x;
+		background: #d0e8f9 url(@image_block_leaderboard_content_bg) 0 0 repeat-x;
 		border-left: 1px solid #cae2f2;
 		border-right: 1px solid #cae2f2;
 		border-bottom: 1px solid #98a9b6;
@@ -2335,7 +2398,7 @@ body {
 
 /* @group Forms */
 .block-form {
-    background: #e0e0e0 url(../../images/gci/block-form-bg.png) 0 0 repeat-x;
+    background: #e0e0e0 url(@image_block_form_bg) 0 0 repeat-x;
     border: 1px solid #b4b4b4;
     padding: 13px 20px;
 }
@@ -2533,7 +2596,7 @@ div.tos {
     width: 220px;
 }
     .form-row-task-completion-time .form-row-task-completion-time-inner {
-        background: #b6dcf7 url(../../images/gci/stopwatch-sm.png) 5px 5px no-repeat;
+        background: #b6dcf7 url(@image_block_stopwatch_sm) 5px 5px no-repeat;
         font-size: 18px;
         padding: 10px 0 10px 50px;
     }
@@ -2545,7 +2608,7 @@ div.tos {
     width: 165px;
 }
     .form-row-task-difficulty-inner {
-        background: #b6dcf7 url(../../images/gci/cog-grey-sm.png) 5px 5px no-repeat;
+        background: #b6dcf7 url(@image_cog_grey_sm) 5px 5px no-repeat;
         padding: 10px 0 10px 50px;
     }
 .form-row-task-assigned-mentor {

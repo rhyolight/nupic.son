@@ -1,8 +1,11 @@
+@import "common.less";
 /*////////////////
 
   Menu
 
 ////////////////*/
+// Images locations
+@image_nav_bg: "@{images_gsoc_location}/nav-bg.gif";
 
 /* New menu container */
 #menu-container {
@@ -11,7 +14,7 @@
 /* New menu container */
 
 #main-menu {
-    background:url(../../images/gsoc/nav-bg.gif) 0 0 repeat;
+    background:url(@image_nav_bg) 0 0 repeat;
     margin-right: 0;
     float: left;
     width: 220px;
@@ -61,7 +64,7 @@
             background: #e67a25;
 
             ul {/*submenu under an active top level*/
-                background:url(../../images/gsoc/nav-bg.gif) 0 0 repeat;
+                background:url(@image_nav_bg) 0 0 repeat;
             }
         }
         li.parent.active {/*top level active list item w/ submenu - for use when the top level is highlighted but the submenu is not*/

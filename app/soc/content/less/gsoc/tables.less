@@ -1,8 +1,14 @@
+@import "common.less";
 /*////////////////
 
   Tables
 
 ////////////////*/
+
+// Images locations
+@image_table_sort_asc: "@{images_gsoc_location}/table-sort-asc.gif";
+@image_table_sort_desc: "@{images_gsoc_location}/table-sort-desc.gif";
+@image_ranking: "@{images_gsoc_location}/ranking.png";
 
 .tablesorter {/*all tables used in the dashboard*/
     border: 1px solid #e7e7e7;
@@ -25,10 +31,10 @@
         background-repeat: no-repeat;
     }
     .headerSortUp span {/*asc arrow*/
-        background-image:url(../../images/gsoc/table-sort-asc.gif);
+        background-image:url(@image_table_sort_asc);
     }
     .headerSortDown span {/*desc arrow*/
-        background-image: url(../../images/gsoc/table-sort-desc.gif);
+        background-image: url(@image_table_sort_desc);
     }
 
     tbody {/*table body*/
@@ -41,7 +47,7 @@
                 text-decoration: none;
             }
             a.rank {/*ranking arrows - default is down on*/
-                background:url(../../images/gsoc/ranking.png) 0 0 no-repeat;
+                background:url(@image_ranking) 0 0 no-repeat;
                 display: block;
                 float: left;
                 height: 6px;
