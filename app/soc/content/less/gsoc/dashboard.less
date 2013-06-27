@@ -1,8 +1,34 @@
+@import "common.less";
+
 /*////////////////
 
   Iconic Dashboard
 
 ////////////////*/
+
+// Images locations
+@images_dashboard_location: "@{images_soc_location}/dashboard";
+
+@image_accept_proposals: "@{images_dashboard_location}/accept_proposals.png";
+@image_allocate: "@{images_dashboard_location}/allocate.png";
+@image_create: "@{images_dashboard_location}/create.png";
+@image_date: "@{images_dashboard_location}/date.png";
+@image_duplicates: "@{images_dashboard_location}/duplicates.png";
+@image_edit: "@{images_dashboard_location}/edit.png";
+@image_grade: "@{images_dashboard_location}/grade.png";
+@image_lookup: "@{images_dashboard_location}/lookup.png";
+@image_mail: "@{images_dashboard_location}/mail.png";
+@image_marker: "@{images_dashboard_location}/marker.png";
+@image_proposals: "@{images_dashboard_location}/proposals.png";
+@image_report: "@{images_dashboard_location}/report.png";
+@image_requests: "@{images_dashboard_location}/requests.png";
+@image_settings: "@{images_dashboard_location}/settings.png";
+@image_todo: "@{images_dashboard_location}/todo.png";
+@image_transfer: "@{images_dashboard_location}/transfer.png";
+@image_users: "@{images_dashboard_location}/users.png";
+@image_view: "@{images_dashboard_location}/view.png";
+@image_withdraw: "@{images_dashboard_location}/withdraw.png";
+
 .dashboard {
   min-height: 500px;
 }
@@ -81,43 +107,43 @@
 
 /* icons entry */
 .column-entry.lookup_profile {
-  background-image: url(../../images/soc/dashboard/lookup.png);
+  background-image: url(@image_lookup);
 }
 .column-entry.allocate_slots,
 .column-entry.slots_allocation
 {
-  background-image: url(../../images/soc/dashboard/allocate.png);
+  background-image: url(@image_allocate);
 }
 .column-entry.slots_transfer {
-  background-image: url(../../images/soc/dashboard/transfer.png);
+  background-image: url(@image_transfer);
 }
 .column-entry.duplicates {
-  background-image: url(../../images/soc/dashboard/duplicates.png);
+  background-image: url(@image_duplicates);
 }
 .column-entry.proposals_submitted,
 .column-entry.manage_proposals,
 .column-entry.proposals {
-  background-image: url(../../images/soc/dashboard/proposals.png);
+  background-image: url(@image_proposals);
 }
 .column-entry.accept_proposals,
 .column-entry.manage_projects,
 .column-entry.mentoring_projects
 {
-  background-image: url(../../images/soc/dashboard/accept_proposals.png);
+  background-image: url(@image_accept_proposals);
 }
 .column-entry.withdraw_projects {
-  background-image: url(../../images/soc/dashboard/withdraw.png);
+  background-image: url(@image_withdraw);
 }
 .column-entry.reminder_emails {
-  background-image: url(../../images/soc/dashboard/mail.png);
+  background-image: url(@image_mail);
 }
 .column-entry.program_settings,
 .column-entry.edit_program
 {
-  background-image: url(../../images/soc/dashboard/settings.png);
+  background-image: url(@image_settings);
 }
 .column-entry.edit_timeline {
-  background-image: url(../../images/soc/dashboard/date.png);
+  background-image: url(@image_date);
 }
 
 .column-entry.adminning_organizations,
@@ -125,13 +151,13 @@
 .column-entry.students,
 .column-entry.manage_organizations
 {
-  background-image: url(../../images/soc/dashboard/users.png);
+  background-image: url(@image_users);
 }
 .column-entry.participant_locations {
-  background-image: url(../../images/soc/dashboard/marker.png);
+  background-image: url(@image_marker);
 }
 .column-entry.report_statistic {
-  background-image: url(../../images/soc/dashboard/report.png);
+  background-image: url(@image_report);
 }
 .column-entry.todo,
 .column-entry.org_app,
@@ -140,35 +166,35 @@
 .column-entry.mentor_evaluations,
 .column-entry.student_evaluations
 {
-  background-image: url(../../images/soc/dashboard/todo.png);
+  background-image: url(@image_todo);
 }
 .column-entry.evaluation_group
 {
-  background-image: url(../../images/soc/dashboard/grade.png);
+  background-image: url(@image_grade);
 }
 .column-entry.create_mentor_evaluation,
 .column-entry.create_student_evaluation,
 .column-entry.create_evaluation_group
 {
-  background-image: url(../../images/soc/dashboard/create.png);
+  background-image: url(@image_create);
 }
 .column-entry.edit_mentor_evaluation,
 .column-entry.edit_student_evaluation,
 .column-entry.edit_evaluation_group
 {
-  background-image: url(../../images/soc/dashboard/edit.png);
+  background-image: url(@image_edit);
 }
 .column-entry.view_mentor_evaluation,
 .column-entry.view_student_evaluation,
 .column-entry.view_evaluation_group,
 .column-entry.projects
 {
-  background-image: url(../../images/soc/dashboard/view.png);
+  background-image: url(@image_view);
 }
 .column-entry.requests,
 .column-entry.org_admin_requests
 {
-  background-image: url(../../images/soc/dashboard/requests.png);
+  background-image: url(@image_requests);
 }
 
 /* notify icon */

@@ -1,11 +1,14 @@
+@import "common.less";
 /*//////////////////
 
    Global styles
 
 //////////////////*/
+// Images locations
+@image_body_bg: "@{images_gsoc_location}/body-bg.png";
 
 body {
-    background:url(../../images/gsoc/body-bg.png) repeat;
+    background:url(@image_body_bg) repeat;
     color: #000;
     font: ~"13px/1.5em" Arial, 'Helvetica Neue', Helvetica, sans-serif;
 }

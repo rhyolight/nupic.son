@@ -97,7 +97,7 @@ module.exports = function(grunt) {
       },
       production: {
         options: {
-          paths: ['<%= meta.src.css_dir %>']
+          paths: ['<%= meta.src.less_dir %>']
         },
         files: {
           /* Build common SOC files */

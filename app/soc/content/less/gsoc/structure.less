@@ -1,8 +1,20 @@
+@import "common.less";
 /*////////////////
 
   LessCSS
 
 ////////////////*/
+
+// Images locations
+@image_form_submit_bg: "@{images_gsoc_location}/form-submit-bg.png";
+@image_form_submit_bg_blue: "@{images_gsoc_location}/form-submit-bg-blue.png";
+@image_header_bg: "@{images_gsoc_location}/header-bg.png";
+@image_home_block_1_bg_center: "@{images_gsoc_location}/home-block-1-bg-center.gif";
+@image_home_block_1_list_1: "@{images_gsoc_location}/home-block-1-list-1.png";
+@image_home_block_1_list_2: "@{images_gsoc_location}/home-block-1-list-2.png";
+@image_home_block_1_list_3: "@{images_gsoc_location}/home-block-1-list-3.png";
+@image_home_block_students: "@{images_gsoc_location}/home-block-students-bg.gif";
+@image_social_icons: "@{images_gsoc_location}/social-icons.png";
 
 @darkblue: #00538b;
 @orange: #d5620e;
@@ -25,7 +37,7 @@
 ////////////////*/
 
 #page-header {/*logo and globe*/
-    background: #fff url(../../images/gsoc/header-bg.png) bottom left repeat-x;
+    background: #fff url(@image_header_bg) bottom left repeat-x;
     height: 181px;
     width: 100%;
     .grid_12 {
@@ -139,7 +151,7 @@
                 margin: 0 0 0 12px;
             }
             ol {/*numbered list*/
-                background:url(../../images/gsoc/home-block-1-bg-center.gif) center center no-repeat;
+                background:url(@image_home_block_1_bg_center) center center no-repeat;
                 float: left;
                 height: 218px;
                 list-style-type: none;
@@ -164,17 +176,17 @@
                     }
                 }
                 li.first {
-                    background-image:url(../../images/gsoc/home-block-1-list-1.png);
+                    background-image:url(@image_home_block_1_list_1);
                 }
                 li.second {
-                    background-image:url(../../images/gsoc/home-block-1-list-2.png);
+                    background-image:url(@image_home_block_1_list_2);
 
                     strong {
                         padding-top: 22px;
                     }
                 }
                 li.third {
-                    background-image:url(../../images/gsoc/home-block-1-list-3.png);
+                    background-image:url(@image_home_block_1_list_3);
                 }
             }
             .description p {
@@ -192,13 +204,13 @@
         width: 429px;
 
         .block-students {/*students apply now block*/
-            background:url(../../images/gsoc/home-block-students-bg.gif) 0 0 repeat-y;
+            background:url(@image_home_block_students) 0 0 repeat-y;
             color: #004371;
             padding-bottom: 5px;
             text-align: center;
 
             h3 {
-                *background:url(../../images/gsoc/home-block-students-bg.gif) 0 0 no-repeat;
+                *background:url(@image_home_block_students) 0 0 no-repeat;
                 font-size: 35px;
                 font-weight: bold;
                 line-height: 1.9em;
@@ -259,13 +271,13 @@
         }
 
         .block-mentors {/*mentors apply now block*/
-            background:url(../../images/gsoc/home-block-students-bg.gif) 0 0 no-repeat;
+            background:url(@image_home_block_students) 0 0 no-repeat;
             color: #004371;
             text-align: center;
             padding-bottom: 15px;
 
             h3 {
-                *background:url(../../images/gsoc/home-block-students-bg.gif) 0 0 no-repeat;
+                *background:url(@image_home_block_students) 0 0 no-repeat;
                 font-size: 35px;
                 font-weight: bold;
                 line-height: 1.9em;
@@ -307,13 +319,13 @@
             }
         }
         .block-orgs {/*orgs apply now block*/
-            background:url(../../images/gsoc/home-block-students-bg.gif) 0 0 no-repeat;
+            background:url(@image_home_block_students) 0 0 no-repeat;
             color: #004371;
             text-align: center;
             padding-bottom: 15px;
 
             h3 {
-                *background:url(../../images/gsoc/home-block-students-bg.gif) 0 0 no-repeat;
+                *background:url(@image_home_block_students) 0 0 no-repeat;
                 font-size: 33px;
                 font-weight: bold;
                 line-height: 1.9em;
@@ -388,7 +400,7 @@
         .block-connect {/*social network block*/
 
             .social {
-                background-image:url(../../images/gsoc/social-icons.png);
+                background-image:url(@image_social_icons);
                 background-position: 0 0;
                 background-repeat: no-repeat;
                 height: 31px;
@@ -499,7 +511,7 @@
             margin-right: 10px;
             padding-right: 10px;
         }
-        .button-mixin (@button-background: url("../../images/gsoc/form-submit-bg.png") repeat scroll 0 0 transparent, @button-color: white) {
+        .button-mixin (@button-background: url(@image_form_submit_bg) repeat scroll 0 0 transparent, @button-color: white) {
             background: @button-background;
             color: @button-color;
             width: 90px;
@@ -512,7 +524,7 @@
             cursor: pointer;
         }
         .button.disabled {
-            .button-mixin(url("../../images/gsoc/form-submit-bg-blue.png") repeat scroll 0 0 transparent, @grey);
+            .button-mixin(url(@image_form_submit_bg_blue) repeat scroll 0 0 transparent, @grey);
             cursor: default;
         }
     }
@@ -678,7 +690,7 @@
             padding: 3px 0 0 0;
 
             a {
-                background-image:url(../../images/gsoc/social-icons.png);
+                background-image:url(@image_social_icons);
                 background-position: 0 -34px;
                 background-repeat: no-repeat;
                 height: 14px;
