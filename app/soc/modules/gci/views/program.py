@@ -89,7 +89,7 @@ class EditProgramForm(gci_forms.GCIModelForm):
   class Meta:
     css_prefix = 'edit_program_form'
     model = program_model.GCIProgram
-    exclude = ['link_id', 'scope', 'timeline', 'task_types']
+    exclude = ['link_id', 'scope', 'timeline', 'task_types', 'program_id']
 
   def clean(self):
     """Cleans the data input by the user as a response to the form.

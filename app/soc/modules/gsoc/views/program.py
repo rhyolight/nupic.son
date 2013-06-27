@@ -98,7 +98,7 @@ class EditProgramForm(forms.GSoCModelForm):
     model = program.GSoCProgram
     exclude = [
         'link_id', 'scope', 'timeline', 'min_slots',
-        'slots_allocation', 'student_max_age']
+        'slots_allocation', 'student_max_age', 'program_id']
 
 
 class GSoCProgramMessagesForm(forms.GSoCModelForm):
