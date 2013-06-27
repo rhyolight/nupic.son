@@ -83,7 +83,8 @@ class CreateProgramForm(forms.GSoCModelForm):
         'scope', 'timeline', 'slots_allocation', 'events_page',
         'student_max_age', 'min_slots', 'org_admin_agreement',
         'mentor_agreement', 'student_agreement', 'about_page',
-        'connect_with_us_page', 'help_page', 'link_id']
+        'connect_with_us_page', 'help_page', 'link_id',
+        'sponsor']
 
 
 class EditProgramForm(forms.GSoCModelForm):
@@ -98,7 +99,8 @@ class EditProgramForm(forms.GSoCModelForm):
     model = program.GSoCProgram
     exclude = [
         'link_id', 'scope', 'timeline', 'min_slots',
-        'slots_allocation', 'student_max_age', 'program_id']
+        'slots_allocation', 'student_max_age', 'program_id',
+        'sponsor']
 
 
 class GSoCProgramMessagesForm(forms.GSoCModelForm):
