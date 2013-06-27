@@ -47,9 +47,10 @@ class CreateProgramPage(object):
       form.cleaned_data['timeline'] = timeline
       form.cleaned_data['scope'] = data.sponsor
       form.cleaned_data['sponsor'] = data.sponsor
+      form.cleaned_data['link_id'] = form.cleaned_data['program_id']
 
       key_name = '%s/%s' % (
-          data.sponsor.key().name(), form.cleaned_data['link_id'])
+          data.sponsor.key().name(), form.cleaned_data['program_id'])
 
       program = form.create(key_name=key_name, commit=False)
 
@@ -75,10 +76,10 @@ class CreateProgramPage(object):
       A new timeline for the program which is being created
     """
     key_name = '%s/%s' % (
-        data.sponsor.key().name(), form.cleaned_data['link_id'])
+        data.sponsor.key().name(), form.cleaned_data['program_id'])
 
     properties = {
-        'link_id': form.cleaned_data['link_id'],
+        'link_id': form.cleaned_data['program_id'],
         'scope': data.sponsor,
         }
 

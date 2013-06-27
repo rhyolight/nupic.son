@@ -57,7 +57,7 @@ class CreateProgramForm(gci_forms.GCIModelForm):
     exclude = [
         'scope', 'timeline', 'org_admin_agreement', 'events_page',
         'mentor_agreement', 'student_agreement', 'about_page',
-        'connect_with_us_page', 'help_page', 'task_types']
+        'connect_with_us_page', 'help_page', 'task_types', 'link_id']
 
   def clean(self):
     """Cleans the data input by the user as a response to the form."""

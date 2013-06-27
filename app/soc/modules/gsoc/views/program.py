@@ -83,7 +83,7 @@ class CreateProgramForm(forms.GSoCModelForm):
         'scope', 'timeline', 'slots_allocation', 'events_page',
         'student_max_age', 'min_slots', 'org_admin_agreement',
         'mentor_agreement', 'student_agreement', 'about_page',
-        'connect_with_us_page', 'help_page']
+        'connect_with_us_page', 'help_page', 'link_id']
 
 
 class EditProgramForm(forms.GSoCModelForm):

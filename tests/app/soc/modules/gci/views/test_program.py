@@ -27,7 +27,7 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
   """Tests GCICreateProgramPage view.
   """
 
-  DEF_LINK_ID = 'melange'
+  DEF_PROGRAM_ID = 'melange'
 
   def assertProgramTemplatesUsed(self, response):
     """Asserts that all the templates from the program were used."""
@@ -41,7 +41,7 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
     """
     # TODO(daniel): test task types somehow
     return {
-        'link_id': self.DEF_LINK_ID,
+        'program_id': self.DEF_PROGRAM_ID,
         'name': 'Melange Program',
         'short_name': 'MP',
         'description': 'This is a Melange Program',
@@ -83,11 +83,11 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
     return '/'.join([
         '/gci/program/edit',
         self.sponsor.key().name(),
-        self.DEF_LINK_ID]) + '?validated'
+        self.DEF_PROGRAM_ID]) + '?validated'
 
   def _getProgramKeyName(self):
     """Returns a key name of the newly created program."""
-    return '/'.join([self.sponsor.key().name(), self.DEF_LINK_ID])
+    return '/'.join([self.sponsor.key().name(), self.DEF_PROGRAM_ID])
 
   def setUp(self):
     self.init()
