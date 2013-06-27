@@ -39,16 +39,14 @@ class Program(linkable_model.Linkable):
   """The Program model, representing a Program ran by a Sponsor."""
 
   #: Identifier of the program which is be the last part of its unique key name
-  # TODO(daniel): change required to True once existing programs are converted
-  program_id = db.StringProperty(required=False,
+  program_id = db.StringProperty(required=True,
       verbose_name=translation.ugettext('Program ID'))
   program_id.help_text = translation.ugettext(
       'Used as part of various URL links throughout the site.')
 
   #: Reference to the sponsor of the program. Its key_name is used as the first
   #: part of program's unique key name
-  # TODO(daniel): change required to True once existing programs are converted
-  sponsor = db.ReferenceProperty(required=False,
+  sponsor = db.ReferenceProperty(required=True,
       reference_class=sponsor_model.Sponsor, collection_name='programs',
       verbose_name=translation.ugettext('Sponsor'))
 
