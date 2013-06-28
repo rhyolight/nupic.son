@@ -1,9 +1,18 @@
-/* No underline for <a> elements inside lists */
 .ui-jqgrid a.listsnoul {
+  /* No underline for <a> elements inside lists */
   text-decoration: none;
 }
+
 .alternate_row {
   background: #F4F4F4;
 }
-table.ui-jqgrid-btable tr.jqgfirstrow td { border: none; }
-table.ui-jqgrid-btable { height: 1px; }
+
+table {
+  &.ui-jqgrid-btable {
+    height: 1px;
+
+    tr.jqgfirstrow td {
+      border: none;
+    }
+  }
+}
