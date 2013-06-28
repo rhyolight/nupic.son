@@ -1,0 +1,576 @@
+.block-user-message {/*User messages*/
+    background: #ffeb8e;
+    border: 1px solid #ff9c00;
+    padding: 10px 15px;
+    text-align: center;
+}
+    .block-user-message a {
+        color: #d14936;
+    }
+    .block-user-message a.more {
+        background:url(@image_arrow_red_sm) right center no-repeat;
+        font-weight: bold;
+        padding-right: 11px;
+    }
+.block-user-welcome {
+    background: #e0e0e0 url(@image_block_user_welcome_bg) 0 0 repeat-x;
+    border: 1px solid #b4b4b4;
+    padding: 18px 38px 18px 13px;
+}
+    .block-user-welcome .block-user-welcome-title {
+        float: left;
+    }
+    .block-user-welcome .subhead,
+    .block-user-welcome .name {
+        display: block;
+        float: left;
+    }
+    .block-user-welcome .subhead,
+    .user-ranking-item .cap {
+        color: #0f649d;
+        font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+        font-size: 18px;
+        font-weight: bold;
+        line-height: 20px;
+        text-transform: uppercase;
+    }
+    .block-user-welcome .name {
+        clear: left;
+        color: #c53926;
+        font-family: 'Oswald', sans-serif;
+        font-size: 38px;
+        line-height: 38px;
+        text-transform: uppercase;
+    }
+    .block-user-welcome .btn {
+        float: right;
+        margin-top: 15px;
+    }
+    .block-user-welcome .user-ranking {
+        float: left;
+        margin-left: 30px;
+    }
+.block.block-tabs {/*Default tab styles*/
+    background: none;
+}
+.block-user-tabs {/*Dashboard-specific tab styles*/
+
+}
+  .block-user-tabs.ui-tabs {
+    border: none;
+    border-radius: 0px;
+    -moz-border-radius: 0px;
+    -webkit-border-radius: 0px;
+    padding: 0;
+  }
+    .block-user-tabs.ui-tabs .ui-tabs-nav {
+  background: none;
+  border: none;
+  border-bottom: 6px solid #0082c8;
+  border-radius: 0px;
+  -moz-border-radius: 0px;
+  -webkit-border-radius: 0px;
+  font-weight: normal;
+        padding: 0;
+    }
+  .block-user-tabs.ui-tabs .ui-tabs-nav li {
+    background: #e0e0e0;
+    border: none;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    -moz-border-radius-topleft: 10px;
+    -moz-border-radius-topright: 10px;
+    -webkit-border-top-left-radius: 10px;
+    -webkit-border-top-right-radius: 10px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 20px;
+    font-weight: normal;
+    text-transform: uppercase;
+  }
+    .block-user-tabs.ui-tabs .ui-tabs-nav li a {
+      color: #6d6e71;
+      padding: 7px 15px 0px 15px;
+    }
+  .block-user-tabs.ui-tabs .ui-tabs-nav li.ui-state-active {
+    background: #0082c8;
+  }
+    .block-user-tabs.ui-tabs .ui-tabs-nav li.ui-state-active a {
+      color: #fff;
+    }
+    .block-user-tabs.ui-tabs .ui-tabs-panel {
+  border: none;
+  border-radius: 0px;
+  -moz-border-radius: 0px;
+  -webkit-border-radius: 0px;
+  padding: 0;
+    }
+    .block-user-tabs .task-group {
+
+    }
+    .block-user-tabs .task-group-title {
+        background: #59bbff;
+        color: #fff;
+        display: block;
+        font-size: 18px;
+        font-weight: bold;
+        padding: 3px 0 3px 12px;
+    }
+    .task-single {
+        background:url(@image_dashboard_task_single_bg) 0 0 repeat-y;
+        background-color: #e0e0e0;
+        font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+        padding: 3px 0;
+    }
+        .task-single.even {
+            background-color: #ebebeb;
+        }
+        .task-single .task-single-title {
+            display: block;
+            float: left;
+            font-size: 17px;
+            line-height: 18px;
+            margin: 6px 0 2px 0;
+            width: 440px;
+        }
+            .task-single.task-single-admin .task-single-title,
+            .task-single.task-single-admin .task-single-content-bottom {
+                width: 380px;
+            }
+            .task-single.task-single-admin .task-single-content-bottom {
+                float: left;
+            }
+            .task-single.task-single-admin .task-single-admin-btns {
+                float: right;
+                width: 200px;
+            }
+        .task-single .task-single-check {
+            float: left;
+            margin-right: 8px;
+        }
+            .task-single .task-single-check .checker {
+                margin: 8px 0 0 0;
+            }
+        .task-single .task-single-content {
+            overflow: hidden;
+        }
+        .task-single .task-single-content .task-single-content-bottom {
+            clear: left;
+        }
+        .task-single .task-single-content-col1,
+        .task-single .task-single-content-col2,
+        .task-single .task-single-content-col3 {
+            float: left;
+            width: 33%;
+        }
+            .task-single.task-single-admin .task-single-content-col1,
+            .task-single.task-single-admin .task-single-content-col2 {
+                width: 50%;
+            }
+        .task-single form input[type="submit"].task-btn,
+        .task-single .task-btn {
+            float: right;
+        }
+            .task-single.task-single-admin .task-btn {
+                margin: 7px 8px 3px 0;
+                padding-left: 20px;
+                padding-right: 0;
+                text-align: left;
+                width: 85px;
+            }
+        .task-single .task-single-info {
+            display: block;
+            text-transform: uppercase;
+        }
+            .block-user-tabs .task-single-student {
+
+            }
+            .block-user-tabs .task-single-difficulty {
+
+            }
+                .task-single.level-hard .task-single-difficulty .emph {
+                    color: #ed174f;
+                }
+                .task-single.level-medium .task-single-difficulty .emph {
+                    color: #ae9300;
+                }
+                .task-single.level-easy .task-single-difficulty .emph {
+                    color: #218c1b;
+                }
+            .block-user-tabs .task-single-deadline {
+
+            }
+            .block-user-tabs .task-single-status {
+
+            }
+                .task-single-in-progress .task-single-status .emph {
+                    color: #0082c8;
+                }
+                .task-single-in-progress .task-single-complete .emph {
+                    color: #000;
+                }
+        .task-group .task-group-actions {
+            background: #d3d3d3;
+            border-bottom: 6px solid #0082c8;
+            padding: 8px 0 8px 47px;
+        }
+            .task-group .task-group-actions .task-group-actions-select-all {
+                float: left;
+                margin-right: 5px;
+            }
+                .task-group .task-group-actions .task-group-actions-select-all .task-group-actions-select-all-text {
+                    color: #0f649d;
+                    font-size: 14px;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                }
+            .task-group .task-group-actions .task-btn {
+                margin: 2px 10px 0 0;
+            }
+        .task-group .task-group-pager {
+            background: #ebebeb;
+            padding: 5px 0;
+        }
+    .task-group .task-group-pager ul {
+      margin-bottom: 0;
+    }
+    .task-group .task-group-pager ul li {
+        font-size: 17px;
+        font-weight: bold;
+    }
+.block-task {/*Task block styles*/
+
+}
+    .block-task .block-title {
+        color: #fff;
+    }
+        .block-task .block-title .block-task-title {
+            display: block;
+            float: left;
+            padding-top: 10px;
+            padding-bottom: 5px;
+            width: 350px;
+        }
+            .block-task .block-title .block-task-title .title {
+                font-family: 'Oswald', sans-serif;
+                font-size: 24px;
+                line-height: 30px;
+                text-transform: uppercase;
+            }
+            .block-task .block-title .block-task-title .project {
+                display: block;
+                font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+                font-size: 12px;
+                font-weight: bold;
+                line-height: 18px;
+                padding-top: 5px;
+                padding-left: 2px;
+            }
+        .block-task .block-title .block-task-action {
+            background:url(@image_block_task_action_bg) center left no-repeat;
+            float: right;
+            padding: 6px 0 10px 0;
+            width: 229px;
+        }
+            .block-task .block-title .block-task-action .block-task-action-title {
+                display: block;
+                color: #d14936;
+                font-size: 15px;
+                font-weight: bold;
+                line-height: 18px;
+                margin-bottom: 4px;
+                text-align: center;
+            }
+            .block-task .block-title .block-task-action .task-btn {
+                float: left;
+                margin-bottom: 2px;
+                margin-left: 37px;
+            }
+            .block-task .block-title .block-task-action .task-btn-edit {
+                clear: left;
+            }
+            .block-task .block-title .block-task-action .task-btn-delete {
+                margin-left: 0;
+            }
+    .block-task-difficulty {
+        background: #d14a37;
+        color: #faafa5;
+        display: block;
+        font-size: 13px;
+        font-weight: bold;
+        line-height: 16px;
+        padding: 4px 0 6px 84px;
+        text-transform: uppercase;
+    }
+        .block-task-difficulty .emph {
+            color: #fff;
+            padding-right: 5px;
+        }
+        .block-task-difficulty .mentor .emph {
+            padding-right: 0;
+        }
+        .block-task-difficulty .mentor .emph,
+        .block-task-difficulty .remaining .emph {
+            text-transform: none;
+        }
+        .block-task.level-easy .block-task-difficulty .difficulty .emph {
+            color: #21e917;
+        }
+        .block-task.level-medium .block-task-difficulty .difficulty .emph {
+            color: #ffd800;
+        }
+        .block-task.level-hard .block-task-difficulty .difficulty .emph {
+            color: #751204;
+        }
+    .block-task .block-content {
+        background: #d0e8f9;
+        padding: 0;
+    }
+        .block-task .block-content .block-task-description {
+            padding: 30px 25px 20px 40px;
+        }
+        .block-task .block-content .block-task-description p {
+            margin-bottom: 10px;
+        }
+        .block-task .block-task-countdown {
+            background: #b6dcf7;
+            float: right;
+            position: relative;
+            width: 250px;
+        }
+            .block-task .block-task-countdown .stopwatch {
+                margin: 20px 25px 20px 20px;
+            }
+        .block-task .block-task-countdown .task-btn-extended-deadline {
+            background-position: 20px -81px;
+            margin-top: 0;
+            margin-left: 22px;
+            margin-right: 0;
+            padding-left: 35px;
+            padding-right: 25px;
+        }
+        .block-task .block-task-countdown #deadline-extend {
+    display: none;
+    position: absolute;
+    bottom: -55px;
+    left: 18px;
+    height: 76px;
+    width: 213px;
+        }
+    .block-task .block-task-countdown #deadline-extend .deadline-extend-top {
+      background:url(@image_extend_deadline_top_arrow) top center no-repeat;
+      display: block;
+      height: 20px;
+      width: 100%;
+    }
+    .block-task .block-task-countdown #deadline-extend .deadline-extend-content {
+      background: #0082c8;
+      -moz-border-radius: 7px;
+      -webkit-border-radius: 7px;
+      border-radius: 7px;
+      color: #fff;
+      height: 56px;
+    }
+    .block-task .block-task-countdown #deadline-extend #deadline-extend-close {
+      cursor: pointer;
+      position: absolute;
+      top: 19px;
+      right: 5px;
+      color: #fff;
+      display: block;
+      font-size: 12px;
+      font-weight: bold;
+      text-decoration: none;
+      text-transform: none;
+      z-index: 100;
+    }
+    .block-task .block-task-countdown #deadline-extend form {
+
+    }
+    .block-task .block-task-countdown #deadline-extend form .form-row {
+      color: #fff;
+      float: left;
+      font-size: 18px;
+      margin: 0;
+      width: auto;
+    }
+    .block-task .block-task-countdown #deadline-extend form .form-row input[type="text"] {
+      float: left;
+      font-size: 24px;
+      margin: 12px 0 0 0;
+      width: 30px;
+    }
+    .block-task .block-task-countdown #deadline-extend span.plus,
+    .block-task .block-task-countdown #deadline-extend span.time {
+      float: left;
+      font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+      font-weight: normal !important;
+    }
+    .block-task .block-task-countdown #deadline-extend span.plus {
+      font-size: 26px;
+      line-height: 56px;
+      margin: 0 4px 0 8px;
+    }
+    .block-task .block-task-countdown #deadline-extend span.time {
+      line-height: 56px;
+      margin: 0 7px;
+    }
+    .block-task .block-task-countdown #deadline-extend form .task-btn {
+      background: #fff url(@image_dashboard_task_icons) no-repeat scroll 8px -81px;
+      -moz-box-shadow: none;
+      -webkit-box-shadow: none;
+      box-shadow: none;
+      border: none;
+      border-radius: 10px;
+      -moz-border-radius: 10px;
+      -webkit-border-radius: 10px;
+      color: #0F649D;
+      display: block;
+      float: left;
+      font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+      font-size: 12px;
+      font-weight: bold;
+      line-height: normal !important;
+      margin: 17px 0 0 0;
+      padding: 3px 13px 4px 20px;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+.block-student-featured-task {/*Student featured task*/
+    border-top-right-radius: 12px;
+    -moz-border-radius-topright: 12px;
+    -webkit-border-top-right-radius: 12px;
+}
+    .block-student-featured-task .block-title {
+        border-top-right-radius: 12px;
+        -moz-border-radius-topright: 12px;
+        -webkit-border-top-right-radius: 12px;
+        font-size: 20px;
+        line-height: 25px;
+        padding-left: 84px;
+    }
+    .block-student-featured-task .block-title .project {
+        display: block;
+        font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+        font-size: 12px;
+        font-weight: bold;
+        line-height: 18px;
+        padding-left: 2px;
+        text-transform: none;
+    }
+    .block-student-featured-task .block-footer {
+        padding-left: 38px;
+    }
+    .block-student-featured-task .block-footer a:first-child {
+        margin-right: 20px;
+    }
+.block-task-mentor {
+
+}
+    .block-task-mentor .cog,
+    .block-task-student .cog  {
+        background-image:url(@image_block_cog_task);
+        height: 103px;
+        width: 98px;
+    }
+        .block-task-mentor.level-easy .cog,
+        .block-task-student.level-easy .cog {
+            background-position: 0 0;
+        }
+        .block-task-mentor.level-medium .cog,
+        .block-task-student.level-medium .cog {
+            background-position: 0 -103px;
+        }
+        .block-task-mentor.level-hard .cog,
+        .block-task-student.level-hard .cog {
+            background-position: 0 -206px;
+        }
+    .block-task-mentor .block-title,
+    .block-task-student .block-title {
+        background: #0082c8 url(@image_block_task_title_bg) top right repeat-y;
+        font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+        font-size: 12px;
+        font-weight: normal;
+        line-height: 18px;
+        margin: 0;
+        padding-left: 105px;
+        padding-top: 0;
+        padding-bottom: 0;
+        text-transform: none;
+    }
+    .block-task-mentor .block-task-difficulty,
+    .block-task-student .block-task-difficulty {
+        font-size: 14px;
+        padding-left: 105px;
+        padding-right: 10px;
+    }
+.block-completed-tasks {/*Student completed task*/
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    -moz-border-radius-topleft: 12px;
+    -moz-border-radius-topright: 12px;
+    -webkit-border-top-left-radius: 12px;
+    -webkit-border-top-right-radius: 12px;
+}
+    .block-completed-tasks .block-title {
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        -moz-border-radius-topleft: 12px;
+        -moz-border-radius-topright: 12px;
+        -webkit-border-top-left-radius: 12px;
+        -webkit-border-top-right-radius: 12px;
+        font-size: 20px;
+        line-height: 25px;
+    }
+    .block-completed-tasks .task-single .task-single-title {
+        margin-top: 15px;
+        width: auto;
+    }
+    .block-completed-tasks .task-single .task-single-content-bottom {
+        padding-left: 2px;
+    }
+    .block-completed-tasks .task-single .task-single-info {
+        text-transform: none;
+    }
+.block-task-claimed {/*Student claimed task*/
+
+}
+    .block-task-claimed .block-title .block-task-action .block-task-action-title {
+        color: #666;
+        font-size: 17px;
+        margin-top: 10px;
+    }
+.block-task-open {/*Student open task*/
+
+}
+    .block-task-mentor.block-task-open .cog,
+    .block-task-student.block-task-open .cog {
+        background-image: url(@image_block_task_open);
+    }
+    .block-task-open .block-task-action {
+        text-align: center;
+    }
+    .block-task-open .block-task-action .btn {
+        display: inline-block;
+        float: none;
+        margin: 15px 0 10px 0;
+    }
+.block-task-owned {/*Student owned task*/
+
+}
+    .block-task-owned .block-title .block-task-action .block-task-action-title {
+        color: #d14936;
+        font-size: 22px;
+        line-height: 22px;
+        margin: 7px 20px 10px 20px;
+    }
+    .block-task-owned .block-title .block-task-action  {
+        text-align: center;
+    }
+    .block-task-owned .block-title .block-task-action .task-btn {
+        background-position: 12px -16px;
+        display: inline-block;
+        float: none;
+        margin: 0 0 10px 0;
+        padding-left: 25px;
+        padding-right: 15px;
+    }
