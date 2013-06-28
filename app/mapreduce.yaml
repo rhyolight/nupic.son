@@ -46,6 +46,13 @@ mapreduce:
     params:
     - name: entity_kind
 
+- name: SetProgramId
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.set_program_id.process
+    params:
+    - name: entity_kind
+
 - name: GSoCConvertProjectMentors
   mapper:
     input_reader: mapreduce.input_readers.DatastoreInputReader
