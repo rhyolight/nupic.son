@@ -150,6 +150,7 @@ def seed(request, *args, **kwargs):
   program_properties = {
       'key_name': 'google/gsoc2009',
       'link_id': 'gsoc2009',
+      'program_id': 'gsoc2009',
       'sponsor': google,
       'scope': google,
       'name': 'Google Summer of Code 2009',
@@ -177,6 +178,7 @@ def seed(request, *args, **kwargs):
   program_properties.update({
       'key_name': 'google/gsoc2010',
       'link_id': 'gsoc2010',
+      'program_id': 'gsoc2010',
       'name': 'Google Summer of Code 2010',
       'description': 'This is the program for GSoC 2010.',
       'short_name': 'GSoC 2010',
@@ -207,6 +209,7 @@ def seed(request, *args, **kwargs):
   program_properties.update({
       'key_name': 'google/gci2009',
       'link_id': 'gci2009',
+      'program_id': 'gci2009',
       'name': 'Google Code In Contest 2009',
       'short_name': 'GCI 2009',
       'group_label': 'GCI',
