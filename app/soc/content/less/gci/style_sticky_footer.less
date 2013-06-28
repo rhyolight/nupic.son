@@ -1,6 +1,33 @@
-* {margin:0;padding:0;}
-html, body {height: 100%;}
-#wrap {min-height: 100%;}
-#main {overflow:auto; padding-bottom: 80px;}
-#footer {position: relative; margin-top: -80px; height: 80px; clear:both;}
-body:before {content:""; height:100%; float:left; width:0; margin-top:-32767px;}
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+#wrap {
+  min-height: 100%;
+}
+
+#main {
+  overflow: auto;
+  padding-bottom: 80px;
+}
+
+#footer {
+  clear: both;
+  height: 80px;
+  margin-top: -80px;
+  position: relative;
+}
+
+body:before {
+  content: "";
+  height: 100%;
+  float: left;
+  width: 0;
+  margin-top: -32767px;
+}
