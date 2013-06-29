@@ -1,9 +1,3 @@
-/*////////////////
-
-  LessCSS
-
-////////////////*/
-
 @lightblue: #238bd2;
 @grey: #f6f6f6;
 
@@ -13,37 +7,46 @@
 
 //////////////////////////*/
 
-.model-readonly {/*all model read-only page styling elements*/
-    .row-mixins (@backgroundcolor) {/*styling for each property in the model*/
-        background: @backgroundcolor;
-        padding-top: 5px;
-        padding-bottom: 5px;
-        display: block;
-        overflow: hidden;
-        width: 100%;
+.model-readonly {
+  /*all model read-only page styling elements*/
+  .row-mixins (@backgroundcolor) {
+    /*styling for each property in the model*/
+    background: @backgroundcolor;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    display: block;
+    overflow: hidden;
+    width: 100%;
 
-        label {/*verbose name of each model property*/
-            clear: left;
-            float: left;
-            font-weight: bold;
-            color: @lightblue;
-            margin-right: 10px;
-            padding-right: 20px;
-            text-align: right;
-            width: 200px;
-        }
-        span.readonly-row-content {/*actual value stored in the property*/
-            float: right;
-            padding: 0;
-            width: 390px;
-        }
+    label {
+      /*verbose name of each model property*/
+      clear: left;
+      float: left;
+      font-weight: bold;
+      color: @lightblue;
+      margin-right: 10px;
+      padding-right: 20px;
+      text-align: right;
+      width: 200px;
     }
-    .row-odd {/*styling for odd rows*/
-        .row-mixins(@grey);
+
+    span.readonly-row-content {
+      /*actual value stored in the property*/
+      float: right;
+      padding: 0;
+      width: 390px;
     }
-    .row-even {/*styling for odd rows*/
-        .row-mixins(white);
-    }
+  }
+
+  .row-odd {
+    /*styling for odd rows*/
+    .row-mixins(@grey);
+  }
+
+  .row-even {
+    /*styling for odd rows*/
+    .row-mixins(white);
+  }
 }
 
 .hidden-row {
