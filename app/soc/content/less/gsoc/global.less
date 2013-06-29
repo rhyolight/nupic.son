@@ -4,24 +4,38 @@
    Global styles
 
 //////////////////*/
+
 // Images locations
 @image_body_bg: "@{images_gsoc_location}/body-bg.png";
 
 body {
-    background:url(@image_body_bg) repeat;
-    color: #000;
-    font: ~"13px/1.5em" Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  background:url(@image_body_bg) repeat;
+  color: #000;
+  font: ~"13px/1.5em" Arial, 'Helvetica Neue', Helvetica, sans-serif;
 }
-img.alignright {
+
+img {
+  &.alignright {
     float: right;
     padding: 0 0 5px 10px;
-}
-img.alignleft {
+  }
+
+  &.alignleft {
     float: left;
     padding: 0 10px 5px 0;
+  }
 }
+
 .disabled {
-    color: grey !important;
+  color: grey !important;
 }
-::selection	{ background: #efac4c; color: #fff; }
-::-moz-selection { background: #efac4c; color: #fff; }
+
+::selection	{
+  background: #efac4c;
+  color: #fff;
+}
+
+::-moz-selection {
+  background: #efac4c;
+  color: #fff;
+}
