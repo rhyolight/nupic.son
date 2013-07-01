@@ -1,264 +1,314 @@
 @import "common.less";
-/*////////////////
-
-  LessCSS
-
-////////////////*/
 
 // Images locations
-@image_survey_background: "@{images_location}/ui-icons_ef8c08_256x240.png";
 @image_grippie: "@{images_gsoc_location}/grippie.png";
+@image_survey_background: "@{images_location}/ui-icons_ef8c08_256x240.png";
 
 /* @group Global */
-button, input, textarea {
-    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
-    font-size: 13px;
+button,
+input,
+textarea {
+  font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  font-size: 13px;
 }
-a, a:active, a:visited {
-    color: #f28c00;
-    text-decoration: none;
+
+a,
+a:active,
+a:visited {
+  color: #f28c00;
+  text-decoration: none;
 }
-input::-moz-focus-inner {/*Remove FF button padding*/
-    border: 0;
-    padding: 0;
+
+input::-moz-focus-inner {
+  /*Remove FF button padding*/
+  border: 0;
+  padding: 0;
 }
+
 .clearfix {
-    zoom: 1; /* IE < 8 */
-    &:before, &:after {
-        content: ".";
-        display: block;
-        height: 0;
-        visibility: hidden;
-    }
-    &:after {
-        clear: both;
-    }
+  zoom: 1; /* IE < 8 */
+
+  &:before,
+  &:after {
+    content: ".";
+    display: block;
+    height: 0;
+    visibility: hidden;
+  }
+
+  &:after {
+    clear: both;
+  }
 }
 /* @end */
 
 /* @group Wrappers */
-#form-wrap {/*Form wrap DIV*/
-    margin: 0 auto;
-    width: 550px;
+#form-wrap {
+  /*Form wrap DIV*/
+  margin: 0 auto;
+  width: 550px;
 }
-#form-builder {/*Parent UL*/
-    margin: 10px 0;
+
+#form-builder {
+  /*Parent UL*/
+  margin: 10px 0;
+  padding: 0;
+
+  ul,
+  ul li {
+    margin: 0;
+    list-style-type: none;
     padding: 0;
+  }
 
-    ul, ul li {
-        margin: 0;
-        padding: 0;
-        list-style-type: none;
+  .frmb {
+    /*Each form item*/
+    li {
+      margin: 10px 0;
     }
-    .frmb {/*Each form item*/
-        li {
-            margin: 10px 0;
-        }
-    }
-    .legend {/*Form item title*/
-        background: #6EB5E5;
-        color: #fff;
-        cursor: move;
-        font-size: 14px;
-        padding: 5px;
-    }
-    .legend .toggle-form {
-        background: #f6f6f6 url(@image_survey_background) 0 0 no-repeat;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        -moz-border-radius: 4px;
-        -webkit-border-radius: 4px;
-        height: 16px;
-        width: 16px;
-        display: block;
-        text-indent: -9999em;
-        font-size: 1px;
-        overflow: hidden;
-        line-height: 0;
-        background-position: -16px -192px;
-        float: right;
+  }
 
-        &.closed {/*Show*/
-            background-position: 0 -192px;
-        }
-    }
-    .del-button {/*Delete*/
-        background: #f6f6f6;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        -moz-border-radius: 4px;
-        -webkit-border-radius: 4px;
-        clear: both;
-        color: #b6b6b6;
-        display: block;
-        float: right;
-        font-size: 11px;
-        font-weight: bold;
-        height: 16px;
-        line-height: 16px;
-        margin: 0 5px 0 0;
-        padding: 0 4px;
-        text-decoration: none;
-        text-transform: uppercase;
-    }
-    a {
+  .legend {
+    /*Form item title*/
+    background: #6EB5E5;
+    color: #fff;
+    cursor: move;
+    font-size: 14px;
+    padding: 5px;
 
-        &.remove, &.add {/*Checkbox Add & Remove*/
-            background: #f6f6f6;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            -moz-border-radius: 4px;
-            -webkit-border-radius: 4px;
-            display: block;
-            float: left;
-            font-size: 11px;
-            font-weight: bold;
-            height: 16px;
-            line-height: 16px;
-            margin: 3px 0 0 5px;
-            padding: 0 4px;
-            text-transform: uppercase;
-            color: #f28c00;
-            text-decoration: none;
-        }
-        &.add {
-            margin: 0;
+    .toggle-form {
+      background: #f6f6f6 url(@image_survey_background) 0 0 no-repeat;
+      background-position: -16px -192px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      -moz-border-radius: 4px;
+      -webkit-border-radius: 4px;
+      display: block;
+      float: right;
+      font-size: 1px;
+      height: 16px;
+      line-height: 0;
+      overflow: hidden;
+      text-indent: -9999em;
+      width: 16px;
 
-            &:hover {/*Hover states*/
-                border: 1px solid #fbcb09;
-                background-color: #fdf5ce;
-            }
-        }
+      &.closed {
+        /*Show*/
+        background-position: 0 -192px;
+      }
     }
-    .legend .toggle-form:hover,
-    .del-button:hover,
-    a.remove:hover {/*Hover states*/
-        border: 1px solid #fbcb09;
+  }
+
+  .del-button {
+    /*Delete*/
+    background: #f6f6f6;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    color: #b6b6b6;
+    clear: both;
+    display: block;
+    float: right;
+    font-size: 11px;
+    font-weight: bold;
+    height: 16px;
+    line-height: 16px;
+    margin: 0 5px 0 0;
+    padding: 0 4px;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  a {
+    &.remove,
+    &.add {
+      /*Checkbox Add & Remove*/
+      background: #f6f6f6;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      -moz-border-radius: 4px;
+      -webkit-border-radius: 4px;
+      color: #f28c00;
+      display: block;
+      float: left;
+      font-size: 11px;
+      font-weight: bold;
+      height: 16px;
+      line-height: 16px;
+      margin: 3px 0 0 5px;
+      padding: 0 4px;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+
+    &.add {
+      margin: 0;
+
+      &:hover {
+        /*Hover states*/
         background-color: #fdf5ce;
+        border: 1px solid #fbcb09;
+      }
     }
-    .del-button:hover {
-        color: #f28c00;
-    }
+  }
+
+  .legend .toggle-form:hover,
+  .del-button:hover,
+  a.remove:hover {
+    /*Hover states*/
+    background-color: #fdf5ce;
+    border: 1px solid #fbcb09;
+  }
+
+  .del-button:hover {
+    color: #f28c00;
+  }
 }
 /* @end */
 
 /* @group Buttons/Triggers */
 #form-wrap {
-    .frmb-submit {/*Style all button elements*/
-        background: #E57E30;
-        border: 0;
-        color: #fff;
-        display: block;
-        float: left;
-        font-size: 14px;
-        font-weight: bold;
-        margin-top: 10px;
-        padding: 3px 7px;
-    }
+  .frmb-submit {
+    /*Style all button elements*/
+    background: #E57E30;
+    border: 0;
+    color: #fff;
+    display: block;
+    float: left;
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 10px;
+    padding: 3px 7px;
+  }
 
-    #preview-form {
-        margin-left: 10px;
-    }
+  #preview-form {
+    margin-left: 10px;
+  }
 }
 /* @end */
 
 /* @group Form Items */
-.frm-holder {/*Container for .frm-elements*/
-    background: #fff;
-    border-left: 1px solid #DEDEDE;
-    border-right: 1px solid #DEDEDE;
-    border-bottom: 1px solid #DEDEDE;
-    display: block;
-    overflow: hidden;
-    padding: 8px 0;
+.frm-holder {
+  /*Container for .frm-elements*/
+  background: #fff;
+  border-bottom: 1px solid #DEDEDE;
+  border-left: 1px solid #DEDEDE;
+  border-right: 1px solid #DEDEDE;
+  display: block;
+  overflow: hidden;
+  padding: 8px 0;
 }
-.frm-elements {/*Inner form item contrainer*/
-    label {
-        width: 120px;
-        float: left;
-        margin: 0 15px;
-        line-height: 24px;
-    }
-    .false-label {
-        width: 120px;
-        float: left;
-        margin: 0 15px;
-        line-height: 24px;
-    }
-    input[type=text] {
-        float: left;
-        width: 280px;
-    }
-    .fields {
-        float: left;
 
-        input[type=checkbox], input[type=radio] {
-            float: left;
-            margin: 5px 10px 0 0;
-        }
-        input[type=text] {
-            width: 220px;
-            margin-top: 0;
-        }
-        div {
-            background:url(@image_grippie) 0 0 repeat-y;
-            clear: both;
-            float: left;
-            width: 350px;
-            padding-left: 10px;
-            margin-bottom: 5px;
-            &.add-area {
-                background: none;
-            }
-            &:hover {
-                cursor: move;
-            }
-        }
-        label.auto {
-            width: auto;
-            margin: 0 0 5px 0;
-        }
-        .remove {
-            float: right;
-        }
-        .add-area {
-            display: block;
-            margin-top: 5px;
-            overflow: hidden;
-            width: 295px;
-        }
+.frm-elements {
+  /*Inner form item contrainer*/
+  label {
+    float: left;
+    line-height: 24px;
+    margin: 0 15px;
+    width: 120px;
+  }
+
+  .false-label {
+    float: left;
+    line-height: 24px;
+    margin: 0 15px;
+    width: 120px;
+  }
+
+  input[type=text] {
+    float: left;
+    width: 280px;
+  }
+
+  .fields {
+    float: left;
+
+    input[type=checkbox],
+    input[type=radio] {
+      float: left;
+      margin: 5px 10px 0 0;
     }
-    .false-label, .fields {
-        margin-top: 10px;
+
+    input[type=text] {
+      width: 220px;
+      margin-top: 0;
     }
+
+    div {
+      background: url(@image_grippie) 0 0 repeat-y;
+      clear: both;
+      float: left;
+      margin-bottom: 5px;
+      padding-left: 10px;
+      width: 350px;
+
+      &.add-area {
+        background: none;
+      }
+
+      &:hover {
+        cursor: move;
+      }
+    }
+
+    label.auto {
+      margin: 0 0 5px 0;
+      width: auto;
+    }
+
+    .remove {
+      float: right;
+    }
+
+    .add-area {
+      display: block;
+      margin-top: 5px;
+      overflow: hidden;
+      width: 295px;
+    }
+  }
+
+  .false-label, .fields {
+    margin-top: 10px;
+  }
 }
+
 .frm-fld-req {
-    clear: both;
-    display: block;
-    padding-top: 10px;
-    input {
-        margin: 4px 0 0 0;
-    }
+  clear: both;
+  display: block;
+  padding-top: 10px;
+
+  input {
+    margin: 4px 0 0 0;
+  }
 }
+
 .frm-fld-other {
-    clear: both;
-    display: block;
-    padding-top: 10px;
-    input {
-        margin: 4px 0 0 0;
-    }
+  clear: both;
+  display: block;
+  padding-top: 10px;
+  input {
+    margin: 4px 0 0 0;
+  }
 }
-.frm-elements:after, .frm-fld:after {
-    content:".";
-    display:block;
-    height:0;
-    clear:both;
-    visibility:hidden;
+
+.frm-elements:after,
+.frm-fld:after {
+  clear: both;
+  content: ".";
+  display: block;
+  height: 0;
+  visibility: hidden;
 }
-.frm-elements, .frm-fld {
-    display:inline-block;
+
+.frm-elements,
+.frm-fld {
+  display: inline-block;
 }
-.frm-elements, .frm-fld {
-    display:block;
+
+.frm-elements,
+.frm-fld {
+  display: block;
 }
 /* @end */

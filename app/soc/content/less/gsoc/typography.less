@@ -1,19 +1,13 @@
-/*////////////////
-
-  LessCSS
-
-////////////////*/
-
 @darkblue: #00538b;
 @lightblue: #238bd2;
 @lightbluebg: #6eb5e5;
 @grey: #f6f6f6;
 
 .imagereplace {
-    display: block;
-    font-size: 0;
-    line-height: 0;
-    text-indent: -9999em;
+  display: block;
+  font-size: 0;
+  line-height: 0;
+  text-indent: -9999em;
 }
 
 /*////////////////
@@ -29,113 +23,224 @@ hr {
 	height: 0;
 }
 
-a, a:link {
-    color: @darkblue;
-    text-decoration: underline;
+a,
+a:link {
+  color: @darkblue;
+  text-decoration: underline;
 }
 
 
-h1, h2, h3, h4, h5, h6, p, ul, ol, pre, code, dl {
-    line-height: 1.5em;
-    margin: 0 0 1.5em 0;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+ul,
+ol,
+pre,
+code,
+dl {
+  line-height: 1.5em;
+  margin: 0 0 1.5em 0;
 }
-h1, h2, h3, h4, h5, h6 {
-    color: @lightblue;
-    font-weight: bold;
-}
-h1 {
-    font-size: 27px;
-    margin: 0 0 5px 0;
-}
-h1.dashboard-title {
-    margin: 0;
-}
+
+h1,
+h2,
+h3,
+h4,
+h5,
 h6 {
-    font-size: 14px;
-    margin: 0;
+  color: @lightblue;
+  font-weight: bold;
 }
+
+h1 {
+  font-size: 27px;
+  margin: 0 0 5px 0;
+
+  &.dashboard-title {
+    margin: 0;
+  }
+}
+
+h6 {
+  font-size: 14px;
+  margin: 0;
+}
+
 p {
-    font-size: 12px;
+  font-size: 12px;
 }
 
 #main .grid_9 {
-    ul, ol { margin-left: 1.1em; }
-    ol { margin-left: 1.5em; }
-    ul li, ol li { list-style-position: outside; }
-    ul { list-style: disc; }
-    ul ul { margin-left: 1em; font-size: 1em; list-style: circle;}
-    ul ul ul { list-style: square; }
-    ol ol { margin-left: 1.5em; font-size: 1em; }
-    ol { list-style-type: decimal; }
-    ol ol { list-style: upper-alpha; }
-    ol ol ol { list-style: lower-roman; }
-    ol ol ol ol { list-style: lower-alpha; }
-    ul ul, ul ul ul, ol ol, ol ol ol, ul ol, ol ul { margin-bottom:0; }
-    dt { font-weight: bold; }
-    dd { margin-bottom: 1.5em; }
-    strong { font-weight: bold; }
-    cite, em, i { font-style: italic; }
-    ins { text-decoration:none; }
-    abbr { border-bottom: 1px dotted #000; cursor: help; }
-    sup, sub { height: 0; line-height: 1; vertical-align: baseline; _vertical-align: bottom; position: relative; font-size: .8em; }
-    sup { bottom: 1ex; }
-    sub { top: .5ex; }
-    code { line-height: 1.5em; }
-    pre { background: #000; color: #fff; display: block; line-height: 1.5em; margin: 0 0 1.5em 2em; padding: 0;
-        white-space: pre-wrap;
-        white-space: -moz-pre-wrap !important;
-        white-space: -pre-wrap;
-        white-space: -o-pre-wrap;
-        word-wrap: break-word;
+  ul,
+  ol {
+    margin-left: 1.1em;
+  }
+
+  ol {
+    list-style-type: decimal;
+    margin-left: 1.5em;
+    ol {
+      list-style: upper-alpha;
+      margin-left: 1.5em;
+      font-size: 1em;
+
+      ol {
+        list-style: lower-roman;
+
+        ol {
+          list-style: lower-alpha;
+        }
+      }
     }
-    pre code {
+  }
+
+  ul li,
+  ol li {
+    list-style-position: outside;
+  }
+
+  ul {
+    list-style: disc;
+
+    ul {
+      font-size: 1em;
+      list-style: circle;
+      margin-left: 1em;
+
+      ul {
+        list-style: square;
+      }
+    }
+  }
+
+  ul ul,
+  ul ul ul,
+  ol ol,
+  ol ol ol,
+  ul ol,
+  ol ul {
+    margin-bottom:0;
+  }
+
+  dt {
+    font-weight: bold;
+  }
+
+  dd {
+    margin-bottom: 1.5em;
+  }
+
+  strong {
+    font-weight: bold;
+  }
+
+  cite,
+  em,
+  i {
+    font-style: italic;
+  }
+
+  ins {
+    text-decoration: none;
+  }
+
+  abbr {
+    border-bottom: 1px dotted #000;
+    cursor: help;
+  }
+
+  sup,
+  sub {
+    font-size: .8em;
+    height: 0;
+    line-height: 1;
+    position: relative;
+    vertical-align: baseline;
+    _vertical-align: bottom;
+  }
+
+  sup {
+    bottom: 1ex;
+  }
+
+  sub {
+    top: .5ex;
+  }
+
+  code {
+    line-height: 1.5em;
+  }
+
+  pre {
+    background: #000;
+    color: #fff;
+    display: block;
+    line-height: 1.5em;
+    margin: 0 0 1.5em 2em;
+    padding: 0;
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap !important;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
+
+    code {
+      color: #fff;
+      display: block;
+      margin: 0 0 0 2em;
+      padding: 1.2em 0;
+    }
+  }
+
+  blockquote {
+    border-left: 2px solid #ccc;
+    margin: 0 0 0 2em;
+    padding: 0 0 0 1em;
+
+    cite {
+      display: block;
+      font-size: .9em;
+      margin: .4em 0 0 0;
+    }
+  }
+
+  q {
+    font-style: italic;
+  }
+
+  .pager {
+    padding: 10px 0;
+
+    p {
+      font-size: 14px;
+      margin: 0;
+      text-align: center;
+      text-transform: uppercase;
+
+      span {
+        color: #188dd0;
+        font-weight: bold;
+      }
+
+      a.prev,
+      a.next {
+        background: #a5cadd;
         color: #fff;
-    	margin: 0 0 0 2em;
-    	padding: 1.2em 0;
-    	display: block;
+        font-weight: bold;
+        padding: 3px 7px;
+      }
     }
-    blockquote {
-        border-left:  2px solid #ccc;
-        margin: 0 0 0 2em;
-        padding: 0 0 0 1em;
-
-        cite {
-            display: block;
-            font-size: .9em;
-            margin: .4em 0 0 0;
-        }
-    }
-    q {
-        font-style: italic;
-    }
-    .pager {
-        padding: 10px 0;
-        p {
-            font-size: 14px;
-            margin: 0;
-            text-align: center;
-            text-transform: uppercase;
-
-            span {
-                color: #188dd0;
-                font-weight: bold;
-            }
-
-            a.prev, a.next {
-                background: #a5cadd;
-                color: #fff;
-                font-weight: bold;
-                padding: 3px 7px;
-            }
-        }
-    }
-
+  }
 }
 
 
 /*////////////////
 
-    Melange custom styles
+  Melange custom styles
 
 ////////////////*/
 
@@ -143,26 +248,31 @@ p {
 h1#project-page-title {
   margin: 0;
 }
+
 h2#project-page-student-name {
   font-size: 21px;
   font-weight: normal;
   line-height: 1.3em;
   margin: 0 0 1em 0;
 }
-/* Override color for embedded document */
-#document-content div {
-  color: black;
-}
+
 #document-content {
   padding-top: 0.5em;
+
+  div {
+    /* Override color for embedded document */
+    color: black;
+  }
 }
-#tos-content div {
+
+#tos-content {
+  height: 400px;
+  margin-bottom:10px;
+  overflow: auto;
+  padding-top: 0.5em;
+
+  div {
     color: black;
     font-size: 10px;
-}
-#tos-content {
-  padding-top: 0.5em;
-    height: 400px;
-    overflow: auto;
-    margin-bottom:10px;
+  }
 }
