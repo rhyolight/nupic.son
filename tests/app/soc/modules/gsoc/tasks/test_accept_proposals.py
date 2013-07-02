@@ -100,7 +100,7 @@ class AcceptProposalsTest(
     self.org.slots = 5
     self.org.put()
 
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
   def testConvertProposals(self):
     """Tests convert proposal task runs successfully."""

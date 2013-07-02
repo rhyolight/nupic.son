@@ -68,7 +68,7 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     """Tests that only the assigned org admin for an organization can edit the
     org profile.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
     self.data.createProfile()
     self.record.createOrgAppRecord('new_org', self.data.user, self.data.user)
 

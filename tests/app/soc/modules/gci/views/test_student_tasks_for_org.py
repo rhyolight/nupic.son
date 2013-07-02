@@ -29,7 +29,7 @@ class TestStudentTasksForOrganizationPage(GCIDjangoTestCase):
     """
     super(TestStudentTasksForOrganizationPage, self).setUp()
     self.init()
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     # Create a task, status published
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)

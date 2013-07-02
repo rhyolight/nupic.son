@@ -48,7 +48,7 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
 
   def testWithdrawProjects(self):
     self.data.createHost()
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
     url = '/gsoc/withdraw_projects/' + self.gsoc.key().name()
     response = self.get(url)
@@ -76,7 +76,7 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
   def testWithdrawProject(self):
     """Test if withdrawing a project updates all the datastore properties."""
     self.data.createHost()
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
     # list response with projects
     mentor_profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)

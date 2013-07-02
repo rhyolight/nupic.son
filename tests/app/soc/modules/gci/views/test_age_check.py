@@ -29,7 +29,7 @@ class AgeCheckTest(GCIDjangoTestCase):
 
   def setUp(self):
     self.init()
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
 
   def assertAgeCheckTemplatesUsed(self, response):
     """Asserts that all the templates were used.

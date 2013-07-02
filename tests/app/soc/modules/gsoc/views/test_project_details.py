@@ -111,7 +111,7 @@ class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
 
   def testProjectDetails(self):
     self.data.createStudent()
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
     project = self.createProject()
 
@@ -126,7 +126,7 @@ class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
     self.assertProjectDetailsTemplateUsed(response)
 
   def testFeaturedProjectButton(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
     student = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
     student.createOtherUser('student@example.com')
@@ -163,7 +163,7 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
         project.parent_key().name(), project.key().id())
 
   def testLoneUserAccessForbidden(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
     url = self._getProjectUpdateUrl(project)
@@ -172,7 +172,7 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testMentorAccessForbidden(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
     mentor = self.data.createMentor(self.org)
     project = _createProjectForMentor(
@@ -184,7 +184,7 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testOrgAdminAccessGranted(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
     self.data.createOrgAdmin(self.org)
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
@@ -194,7 +194,7 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseOK(response)
 
   def testOrgAdminForAnotherOrgForbidden(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
     another_org = self.createOrg()
     self.data.createOrgAdmin(another_org)
@@ -206,7 +206,7 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testHostAccessGranted(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
     self.data.createHost()
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
@@ -216,7 +216,7 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseOK(response)
 
   def testStudentAccessTheirProjectGranted(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
     student = self.data.createStudent()
     project = _createProjectForStudent(
@@ -227,7 +227,7 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseOK(response)
 
   def testStudentAccessOtherProjectForbidden(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
     student = self.data.createStudent()
     project = _createProjectForStudent(self.gsoc, self.org, self.dev_test)

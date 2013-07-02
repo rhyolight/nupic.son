@@ -109,7 +109,7 @@ class GradingRecordsOverviewTest(test_utils.GSoCDjangoTestCase):
   def setUp(self):
     self.init()
     self.data.createHost()
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
   def createGradingSurveyGroup(self):
     """Create the grading survey group used to manager evaluations.

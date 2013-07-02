@@ -42,34 +42,34 @@ class HomepageViewTest(GSoCDjangoTestCase):
     """
     url = '/gsoc/homepage/' + self.gsoc.key().name()
 
-    self.timeline.offSeason()
+    self.timeline_helper.offSeason()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
-    self.timeline.kickoff()
+    self.timeline_helper.kickoff()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
-    self.timeline.orgsAnnounced()
+    self.timeline_helper.orgsAnnounced()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
   def testHomepageDuringSignup(self):
     """Tests the student homepage during the signup period.
     """
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
@@ -103,7 +103,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
   def testHomepageAfterStudentsAnnounced(self):
     """Tests the student homepage after the student's have been announced.
     """
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
@@ -116,7 +116,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     """Tests the student hompepage during the signup period with an existing user.
     """
     self.data.createProfile()
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)

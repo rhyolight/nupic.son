@@ -133,7 +133,7 @@ class DashboardTest(GSoCDjangoTestCase):
 
   def testDashboardAsMentor(self):
     self.data.createMentor(self.org)
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertDashboardComponentTemplatesUsed(response)
@@ -141,7 +141,7 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardAsMentorWithProject(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
     student.createOtherUser('student@example.com').createStudent()
     self.data.createMentorWithProject(self.org, student.profile)

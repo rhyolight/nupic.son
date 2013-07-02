@@ -41,7 +41,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """
     super(TaskViewTest, self).setUp()
     self.init()
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     # Create a task, status published
     profile = GCIProfileHelper(self.gci, self.dev_test)
@@ -639,7 +639,7 @@ class WorkSubmissionDownloadTest(GCIDjangoTestCase):
     """Creates a published task for self.org."""
     super(WorkSubmissionDownloadTest, self).setUp()
     self.init()
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     # Create a status-published task.
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)

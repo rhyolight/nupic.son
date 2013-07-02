@@ -172,7 +172,7 @@ class ProposalsPageTest(GSoCDjangoTestCase):
 
   def testListProposals(self):
     self.data.createHost()
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
 
     url = '/gsoc/admin/proposals/' + self.org.key().name()
     response = self.get(url)
@@ -215,7 +215,7 @@ class ProjectsPageTest(GSoCDjangoTestCase):
 
   def testListProjects(self):
     self.data.createHost()
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
     url = '/gsoc/admin/projects/' + self.org.key().name()
     response = self.get(url)

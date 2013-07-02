@@ -42,7 +42,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """Tests the bulk task create view before the program is public
     for users with no role.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createProfile()
@@ -57,7 +57,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """Tests the bulk task create view before the program is
     public for org admins.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOrgAdmin(self.org)
@@ -72,7 +72,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """Tests the bulk task create view before the program is
     public for mentors.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createMentor(self.org)
@@ -87,7 +87,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """Tests the bulk task create view before the program is
     public for students.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createStudent()
@@ -102,7 +102,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """Tests the bulk task create view after the task claim deadline
     for users with no role.
     """
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createProfile()
@@ -117,7 +117,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """Tests the bulk task create view after the task claim deadline
     for org admins.
     """
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOrgAdmin(self.org)
@@ -132,7 +132,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """Tests the bulk task create view after the task claim deadline
     for mentors.
     """
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createMentor(self.org)
@@ -147,7 +147,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """Tests the bulk task create view after the task claim deadline
     for students.
     """
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createStudent()
@@ -162,7 +162,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """Tests the bulk task create view during the program
     for users with no role.
     """
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createProfile()
@@ -177,7 +177,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """Tests the bulk task create view during the program
     for org admins.
     """
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOrgAdmin(self.org)
@@ -192,7 +192,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """Tests the bulk task create view during the program
     for mentors.
     """
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createMentor(self.org)
@@ -207,7 +207,7 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """Tests the bulk task create view during the program
     for students.
     """
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createStudent()

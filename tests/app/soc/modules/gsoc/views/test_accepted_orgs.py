@@ -41,7 +41,7 @@ class AcceptedOrgsPublicPageTest(test_utils.GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'soc/list/list.html')
 
   def testPageForbiddenBeforeOrgsAnnounced(self):
-    self.timeline.kickoff()
+    self.timeline_helper.kickoff()
     response = self.get(self.url3)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
@@ -54,7 +54,7 @@ class AcceptedOrgsPublicPageTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
     response = self.get(self.url3)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
@@ -70,11 +70,11 @@ class AcceptedOrgsPublicPageTest(test_utils.GSoCDjangoTestCase):
   def testPageAllowedAfterOrgsAnnounced(self):
     # a list functions which change the timeline properties
     period_setters = [
-        self.timeline.orgsAnnounced,
-        self.timeline.studentSignup,
-        self.timeline.postStudentSignup,
-        self.timeline.studentsAnnounced,
-        self.timeline.formSubmission
+        self.timeline_helper.orgsAnnounced,
+        self.timeline_helper.studentSignup,
+        self.timeline_helper.postStudentSignup,
+        self.timeline_helper.studentsAnnounced,
+        self.timeline_helper.formSubmission
         ]
 
     for period_setter in period_setters:
@@ -94,7 +94,7 @@ class AcceptedOrgsPublicPageTest(test_utils.GSoCDjangoTestCase):
       self.assertAcceptedOrgsPageTemplatesUsed(response)
 
   def testAcceptedOrgList(self):
-    self.timeline.orgsAnnounced()
+    self.timeline_helper.orgsAnnounced()
 
     org_properties = {
         'scope': self.gsoc,

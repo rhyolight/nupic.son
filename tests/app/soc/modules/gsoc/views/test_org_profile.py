@@ -72,7 +72,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
   def testOrgProfileCreateOffSeason(self):
     """Tests that it is Ok to create an org profile during off season.
     """
-    self.timeline.offSeason()
+    self.timeline_helper.offSeason()
     self.data.createOrgAdmin(self.org)
     record = self.createOrgAppRecord()
 
@@ -84,7 +84,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
   def testOrgProfileEditOffSeason(self):
     """Tests that it is Ok to edit an org profile during off season.
     """
-    self.timeline.offSeason()
+    self.timeline_helper.offSeason()
     self.data.createOrgAdmin(self.org)
 
     url = '/gsoc/profile/organization/' + self.org.key().name()
@@ -190,7 +190,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
   def testNoProfileUserCantEditOrgProfile(self):
     """Tests that a user without a profile can not edit an org profile.
     """
-    self.timeline.kickoff()
+    self.timeline_helper.kickoff()
     url = '/gsoc/profile/organization/' + self.org.key().name()
     self.data.createUser()
     response = self.get(url)
@@ -200,11 +200,11 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     """Tests that only the assigned org admin for an organization can edit the
     org profile.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
     #make the current user to be a mentor for self.org and test for 403.
     self.data.createMentor(self.org)
     url = '/gsoc/profile/organization/' + self.org.key().name()
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
@@ -238,7 +238,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     self.assertOrgProfilePageTemplatesUsed(response)
     self.assertIn('slot_transfer_page_link', response.context)
 
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertOrgProfilePageTemplatesUsed(response)
@@ -259,7 +259,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
   def testAnOrgAdminCanUpdateOrgProfile(self):
     """Tests if an org admin can update the profile for its organization.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
     self.data.createOrgAdmin(self.org)
 
     orig_new_org = self.org.new_org

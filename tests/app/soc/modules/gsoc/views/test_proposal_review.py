@@ -63,7 +63,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     self.data.createStudent()
     self.data.notificationSettings()
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
 
     proposal = self.createProposal({'scope': self.data.profile,
                                     'parent': self.data.profile})
@@ -296,7 +296,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
   def testWithdrawProposalButton(self):
     self.data.createStudentWithProposal(self.org, None)
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
 
     proposal = GSoCProposal.all().ancestor(self.data.profile).get()
     number_of_proposals = self.data.profile.student_info.number_of_proposals

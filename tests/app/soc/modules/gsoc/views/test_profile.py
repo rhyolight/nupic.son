@@ -37,40 +37,40 @@ class ProfileViewTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
 
   def testCreateProfilePage(self):
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertProfileTemplatesUsed(response)
 
   def testCreateMentorProfilePage(self):
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
     url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertProfileTemplatesUsed(response)
 
   def testRedirectWithStudentProfilePage(self):
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
     self.data.createStudent()
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseRedirect(response)
 
   def testForbiddenWithStudentProfilePage(self):
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
     self.data.createStudent()
     url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testForbiddenWithMentorProfilePage(self):
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
     self.data.createMentor(self.org)
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testEditProfilePage(self):
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
     self.data.createProfile()
     url = '/gsoc/profile/' + self.gsoc.key().name()
     response = self.get(url)
@@ -78,7 +78,7 @@ class ProfileViewTest(GSoCDjangoTestCase):
 
   def testRegistrationTimeline(self):
     # no registration should be available just after the program is started
-    self.timeline.kickoff()
+    self.timeline_helper.kickoff()
 
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.get(url)
@@ -93,7 +93,7 @@ class ProfileViewTest(GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
     # only org admins should be able to register in org sign up period
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.get(url)
@@ -109,7 +109,7 @@ class ProfileViewTest(GSoCDjangoTestCase):
 
     # only org admins and mentors should be able to register after the orgs
     # are announced
-    self.timeline.orgsAnnounced()
+    self.timeline_helper.orgsAnnounced()
 
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.get(url)
@@ -127,7 +127,7 @@ class ProfileViewTest(GSoCDjangoTestCase):
     from soc.modules.gsoc.models.profile import GSoCProfile
     from soc.modules.gsoc.models.profile import GSoCStudentInfo
 
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
     self.data.createUser()
 
     suffix = "%(program)s" % {

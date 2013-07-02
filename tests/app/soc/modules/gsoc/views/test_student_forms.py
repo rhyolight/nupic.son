@@ -49,7 +49,7 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
   def testStudentAccessForbidden(self):
     # access should be forbidden because at this point students are not
     # permitted to upload their forms
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
     mentor = self._createNewMentor()
     self.data.createStudentWithProject(self.org, mentor)
@@ -58,7 +58,7 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
     self._assertAccessForbiddenForUrl(self._getTaxFormUrl())
 
   def testStudentAccessGranted(self):
-    self.timeline.formSubmission()
+    self.timeline_helper.formSubmission()
 
     mentor = self._createNewMentor()
     self.data.createStudentWithProject(self.org, mentor)

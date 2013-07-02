@@ -52,7 +52,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
 
     self.data.createStudent()
     self.data.notificationSettings()
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
     response = self.get(url)
     self.assertProposalTemplatesUsed(response)
@@ -90,7 +90,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
 
     self.data.createStudent()
     self.data.notificationSettings()
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
 
     override = {
         'program': self.gsoc, 'score': 0, 'nr_scores': 0, 'mentor': None,
@@ -116,27 +116,27 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     period is not active.
     """
     self.data.createStudent()
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.timeline.offSeason()
+    self.timeline_helper.offSeason()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.timeline.kickoff()
+    self.timeline_helper.kickoff()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.timeline.orgsAnnounced()
+    self.timeline_helper.orgsAnnounced()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
@@ -150,7 +150,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
 
     self.data.createStudentWithProposal(self.org, mentor.profile)
     self.data.notificationSettings()
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
 
     proposal = proposal_model.GSoCProposal.all().get()
 
@@ -187,7 +187,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     mentor.createMentor(self.org)
 
     self.data.createStudentWithProposal(self.org, mentor.profile)
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
     proposal = proposal_model.GSoCProposal.all().get()
 
@@ -212,7 +212,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
 
     self.data.createStudentWithProposal(self.org, mentor.profile)
     self.data.notificationSettings()
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
 
     proposal = proposal_model.GSoCProposal.all().get()
 
@@ -242,7 +242,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
 
     self.data.createStudentWithProposal(self.org, mentor.profile)
     self.data.notificationSettings()
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
 
     proposal = proposal_model.GSoCProposal.all().get()
 
