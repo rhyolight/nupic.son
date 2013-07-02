@@ -47,7 +47,7 @@ class AcceptProposalsTest(
 
   def _createHost(self):
     """Sets program host."""
-    self.host = self.data
+    self.host = self.profile_helper
     self.host.createHost()
     self.host.createProfile()
 

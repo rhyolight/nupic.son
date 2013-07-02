@@ -51,7 +51,7 @@ class AdminDashboardTest(GSoCDjangoTestCase):
     self.assertAdminBaseTemplatesUsed(response)
 
   def testAdminDashboard(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     url = '/gsoc/admin/' + self.gsoc.key().name()
     response = self.get(url)
@@ -92,7 +92,7 @@ class LookupProfileTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gsoc/admin/lookup.html')
 
   def testLookupProfile(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     # rendered with default base layout
     url = '/gsoc/admin/lookup/' + self.gsoc.key().name()
@@ -108,13 +108,13 @@ class LookupProfileTest(GSoCDjangoTestCase):
     self.assertTrue(response.context['error'])
 
     # valid post data submitted to lookup form
-    self.data.createProfile()
+    self.profile_helper.createProfile()
     postdata.update({
-        'email': self.data.profile.email
+        'email': self.profile_helper.profile.email
         })
     response = self.post(post_url, postdata)
     new_url = '/gsoc/profile/admin/%s/%s' % (
-        self.gsoc.key().name(),self.data.profile.link_id)
+        self.gsoc.key().name(),self.profile_helper.profile.link_id)
     self.assertResponseRedirect(response, new_url)
 
     response = self.post(post_url, {})
@@ -125,7 +125,7 @@ class LookupProfileTest(GSoCDjangoTestCase):
     # submit valid data to lookup form
     response = self.post(post_url, postdata)
     new_url = '/gsoc/profile/admin/%s/%s' % (
-        self.gsoc.key().name(),self.data.profile.link_id)
+        self.gsoc.key().name(),self.profile_helper.profile.link_id)
     self.assertResponseRedirect(response, new_url)
 
 
@@ -171,7 +171,7 @@ class ProposalsPageTest(GSoCDjangoTestCase):
         'modules/gsoc/admin/_proposals_list.html')
 
   def testListProposals(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
     self.timeline_helper.studentSignup()
 
     url = '/gsoc/admin/proposals/' + self.org.key().name()
@@ -186,7 +186,8 @@ class ProposalsPageTest(GSoCDjangoTestCase):
     # test list with student's proposal
     self.mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
     self.mentor.createMentor(self.org)
-    self.data.createStudentWithProposals(self.org, self.mentor.profile, 1)
+    self.profile_helper.createStudentWithProposals(
+        self.org, self.mentor.profile, 1)
     response = self.getListResponse(url, 0)
     self.assertIsJsonResponse(response)
     data = response.context['data']['']
@@ -214,7 +215,7 @@ class ProjectsPageTest(GSoCDjangoTestCase):
         'modules/gsoc/admin/_projects_list.html')
 
   def testListProjects(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
     self.timeline_helper.studentsAnnounced()
 
     url = '/gsoc/admin/projects/' + self.org.key().name()
@@ -229,7 +230,8 @@ class ProjectsPageTest(GSoCDjangoTestCase):
     # test list with student's proposal
     self.mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
     self.mentor.createMentor(self.org)
-    self.data.createStudentWithProjects(self.org, self.mentor.profile, 1)
+    self.profile_helper.createStudentWithProjects(
+        self.org, self.mentor.profile, 1)
     response = self.getListResponse(url, 0)
     self.assertIsJsonResponse(response)
     data = response.context['data']['']

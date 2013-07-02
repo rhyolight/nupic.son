@@ -39,7 +39,7 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
   def createInvitation(self):
     """Creates and returns an accepted invitation for the current user.
     """
-    return self.data.createInvitation(self.org, 'mentor')
+    return self.profile_helper.createInvitation(self.org, 'mentor')
 
   def assertInviteTemplatesUsed(self, response):
     """Asserts that all the templates from the dashboard were used.
@@ -55,7 +55,7 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
 
   def testInviteOrgAdmin(self):
     # test GET
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     url = '/gsoc/invite/org_admin/' + self.org.key().name()
     response = self.get(url)
     self.assertInviteTemplatesUsed(response)
@@ -125,13 +125,13 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
     self.assertEmailSent(to=other_data.profile.email, n=3)
 
   def testInviteMentor(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     url = '/gsoc/invite/mentor/' + self.org.key().name()
     response = self.get(url)
     self.assertInviteTemplatesUsed(response)
 
   def testViewInvite(self):
-    self.data.createProfile()
+    self.profile_helper.createProfile()
     invitation = self.createInvitation()
     url = '/gsoc/invitation/%s/%s/%s' % (
         self.gsoc.key().name(),
@@ -153,7 +153,7 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
     response = self.post(url, postdata)
     self.assertResponseRedirect(response)
 
-    profile = db.get(self.data.profile.key())
+    profile = db.get(self.profile_helper.profile.key())
     self.assertEqual(1, profile.mentor_for.count(self.org.key()))
     self.assertTrue(profile.is_mentor)
     self.assertFalse(profile.is_student)
@@ -168,7 +168,7 @@ class InviteTest(MailTestCase, GSoCDjangoTestCase):
     response = self.post(url, postdata)
     self.assertResponseRedirect(response)
 
-    profile = db.get(self.data.profile.key())
+    profile = db.get(self.profile_helper.profile.key())
     self.assertEqual(1, profile.mentor_for.count(self.org.key()))
     self.assertEqual(1, profile.org_admin_for.count(self.org.key()))
     self.assertFalse(profile.is_student)

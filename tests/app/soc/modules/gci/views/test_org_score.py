@@ -46,27 +46,27 @@ class ChooseOrganizationForOrgScorePageTest(GCIDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testMentorCannotAccess(self):
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
 
   def testOrgAdminCannotAccess(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
 
   def testStudentCannotAccess(self):
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
 
   def testHostCanAccess(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
     response = self.get(self.url)
     self.assertPageTemplatesUsed(response)
 
   def testActiveOrgsAreDisplayed(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     org_properties = {
         'scope': self.gci, 'status': 'active', 'program': self.gci,
@@ -83,7 +83,7 @@ class ChooseOrganizationForOrgScorePageTest(GCIDjangoTestCase):
     self.assertEqual(3, len(list_data))
 
   def testNonActiveOrgsAreNotDisplayed(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     org_properties = {
         'scope': self.gci, 'status': 'invalid', 'program': self.gci,

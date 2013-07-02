@@ -96,7 +96,7 @@ class HomepageViewTest(GCIDjangoTestCase):
   def testHomepageDuringSignupExistingUser(self):
     """Tests the student hompepage during the signup period with an existing user.
     """
-    self.data.createProfile()
+    self.profile_helper.createProfile()
     self.timeline_helper.studentSignup()
     url = '/gci/homepage/' + self.gci.key().name()
     response = self.get(url)

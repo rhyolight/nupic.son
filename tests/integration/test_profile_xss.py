@@ -41,8 +41,8 @@ class ProfileXSSTest(object):
 
     postdata = {
         'link_id': xss_payload,
-        'user': self.data.user,
-        'parent': self.data.user,
+        'user': self.profile_helper.user,
+        'parent': self.profile_helper.user,
         'scope': self.program,
         'status': 'active',
         'email': xss_payload,

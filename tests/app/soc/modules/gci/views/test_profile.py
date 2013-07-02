@@ -110,7 +110,7 @@ class ProfileViewTest(GCIDjangoTestCase):
 
   def testRedirectWithStudentProfilePage(self):
     self.timeline_helper.studentSignup()
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     url = '/gci/profile/student/' + self.gci.key().name()
     response = self.get(url)
     redirect_url = '/gci/profile/' + self.gci.key().name()
@@ -118,7 +118,7 @@ class ProfileViewTest(GCIDjangoTestCase):
 
   def testRedirectWithMentorProfilePage(self):
     self.timeline_helper.studentSignup()
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     url = '/gci/profile/mentor/' + self.gci.key().name()
     response = self.get(url)
     response_url = '/gci/profile/' + self.gci.key().name()
@@ -126,7 +126,7 @@ class ProfileViewTest(GCIDjangoTestCase):
 
   def testForbiddenWithStudentProfilePage(self):
     self.timeline_helper.studentSignup()
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     url = '/gci/profile/mentor/' + self.gci.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
@@ -183,14 +183,14 @@ class ProfileViewTest(GCIDjangoTestCase):
 
   def testForbiddenWithMentorProfilePage(self):
     self.timeline_helper.studentSignup()
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     url = '/gci/profile/student/' + self.gci.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testEditProfilePage(self):
     self.timeline_helper.studentSignup()
-    self.data.createProfile()
+    self.profile_helper.createProfile()
     url = '/gci/profile/' + self.gci.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
@@ -203,7 +203,7 @@ class ProfileViewTest(GCIDjangoTestCase):
   # after the project is over
   #def testEditProfilePageInactive(self):
   #  self.timeline_helper.offSeason()
-  #  self.data.createProfile()
+  #  self.profile_helper.createProfile()
   #  url = '/gci/profile/' + self.gci.key().name()
   #  response = self.get(url)
   #  self.assertResponseForbidden(response)
@@ -238,8 +238,8 @@ class ProfileViewTest(GCIDjangoTestCase):
     from soc.modules.gci.models.profile import GCIStudentInfo
 
     self.timeline_helper.studentSignup()
-    self.data.createUser()
-    self._updateDefaultProps(self.data)
+    self.profile_helper.createUser()
+    self._updateDefaultProps(self.profile_helper)
     postdata = self.default_props
 
     response = self.post(self.student_url, postdata)

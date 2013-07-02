@@ -51,13 +51,13 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testDashboardAsLoneUser(self):
-    self.data.createProfile()
+    self.profile_helper.createProfile()
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertDashboardTemplatesUsed(response)
 
   def testDashboardAsStudent(self):
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertDashboardComponentTemplatesUsed(response)
@@ -68,7 +68,7 @@ class DashboardTest(GSoCDjangoTestCase):
     mentor = GSoCProfileHelper(
         self.gsoc, self.dev_test).createOtherUser(
         'mentor@example.com').createMentor(self.org)
-    self.data.createStudentWithProject(self.org, mentor)
+    self.profile_helper.createStudentWithProject(self.org, mentor)
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertDashboardComponentTemplatesUsed(response)
@@ -78,7 +78,7 @@ class DashboardTest(GSoCDjangoTestCase):
   def testDashboardAsStudentWithProject(self):
     mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
     mentor.createOtherUser('mentor@example.com').createMentor(self.org)
-    self.data.createStudentWithProject(self.org, mentor.profile)
+    self.profile_helper.createStudentWithProject(self.org, mentor.profile)
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertDashboardComponentTemplatesUsed(response)
@@ -88,7 +88,7 @@ class DashboardTest(GSoCDjangoTestCase):
   def testDashboardAsStudentWithEval(self):
     mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
     mentor.createOtherUser('mentor@example.com').createMentor(self.org)
-    self.data.createStudentWithProject(self.org, mentor.profile)
+    self.profile_helper.createStudentWithProject(self.org, mentor.profile)
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertDashboardComponentTemplatesUsed(response)
@@ -112,7 +112,7 @@ class DashboardTest(GSoCDjangoTestCase):
 
   def testDashboardAsHost(self):
     raise skip.SkipTest("TODO(Leo): enable it after code fix.")
-    self.data.createHost()
+    self.profile_helper.createHost()
     mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
     mentor.createOtherUser('mentor@example.com').createMentor(self.org)
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
@@ -124,7 +124,7 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertDashboardTemplatesUsed(response)
 
   def testDashboardAsOrgAdmin(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertDashboardComponentTemplatesUsed(response)
@@ -132,7 +132,7 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardAsMentor(self):
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     self.timeline_helper.studentsAnnounced()
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
@@ -144,7 +144,7 @@ class DashboardTest(GSoCDjangoTestCase):
     self.timeline_helper.studentsAnnounced()
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
     student.createOtherUser('student@example.com').createStudent()
-    self.data.createMentorWithProject(self.org, student.profile)
+    self.profile_helper.createMentorWithProject(self.org, student.profile)
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertDashboardComponentTemplatesUsed(response)
@@ -153,7 +153,7 @@ class DashboardTest(GSoCDjangoTestCase):
 
   def testDashboardRequest(self):
     raise skip.SkipTest("TODO(Leo): enable it after code fix.")
-    self.data.createHost()
+    self.profile_helper.createHost()
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.getListResponse(url, 7)
     self.assertIsJsonResponse(response)

@@ -50,28 +50,28 @@ class ProfileViewTest(GSoCDjangoTestCase):
 
   def testRedirectWithStudentProfilePage(self):
     self.timeline_helper.studentSignup()
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseRedirect(response)
 
   def testForbiddenWithStudentProfilePage(self):
     self.timeline_helper.studentSignup()
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testForbiddenWithMentorProfilePage(self):
     self.timeline_helper.studentSignup()
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testEditProfilePage(self):
     self.timeline_helper.studentSignup()
-    self.data.createProfile()
+    self.profile_helper.createProfile()
     url = '/gsoc/profile/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
@@ -128,7 +128,7 @@ class ProfileViewTest(GSoCDjangoTestCase):
     from soc.modules.gsoc.models.profile import GSoCStudentInfo
 
     self.timeline_helper.studentSignup()
-    self.data.createUser()
+    self.profile_helper.createUser()
 
     suffix = "%(program)s" % {
         'program': self.gsoc.key().name(),
@@ -157,10 +157,10 @@ class ProfileViewTest(GSoCDjangoTestCase):
     props.pop('enrollment_form')
     postdata.update(props)
     postdata.update({
-        'link_id': self.data.user.link_id,
-        'user': self.data.user, 'parent': self.data.user,
+        'link_id': self.profile_helper.user.link_id,
+        'user': self.profile_helper.user, 'parent': self.profile_helper.user,
         'scope': self.gsoc, 'status': 'active',
-        'email': self.data.user.account.email(),
+        'email': self.profile_helper.user.account.email(),
         'mentor_for': [], 'org_admin_for': [],
         'is_org_admin': False, 'is_mentor': False,
         'birth_date':

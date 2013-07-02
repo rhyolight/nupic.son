@@ -44,42 +44,42 @@ class AcceptProposalsTest(test_utils.GSoCDjangoTestCase):
 
   def testLoneUserAccessForbidded(self):
     """Tests that a lone user cannot access the page."""
-    self.data.createUser()
+    self.profile_helper.createUser()
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testStudentAccessForbidded(self):
     """Tests that a student cannot access the page."""
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testMentorAccessForbidded(self):
     """Tests that a mentor cannot access the page."""
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testOrgAdminAccessForbidded(self):
     """Tests that an organization admin cannot access the page."""
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testHostAccessGranted(self):
     """Tests that a program admin can access the page."""
-    self.data.createHost()
+    self.profile_helper.createHost()
     response = self.get(self.url)
     self.assertResponseOK(response)
     self._assertTemplatesUsed(response)
 
   def testAcceptProposal(self):
     """Tests that a proposal is correctly accepted."""
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     mentor = profile_utils.GSoCProfileHelper(
         self.gsoc, False).createMentor(self.org)
@@ -113,7 +113,7 @@ class AcceptProposalsTest(test_utils.GSoCDjangoTestCase):
   def testAcceptTwoProposals(self):
     """Tests that two proposals can be accepted in the same request."""
 
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     mentor = profile_utils.GSoCProfileHelper(
         self.gsoc, False).createMentor(self.org)

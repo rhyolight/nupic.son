@@ -49,7 +49,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
 
   def testConnectionCreate(self):
     # Test GET call.
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     url = '/gsoc/connect/' + self.org.key().name()
     response = self.get(url)
     self.assertConnectionTemplatesUsed(response)
@@ -91,12 +91,12 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     self.assertIsNotNone(new_connection)
 
   def testConnectionUserAction(self):
-    self.data.createProfile()
+    self.profile_helper.createProfile()
 
     # Create the connection to be viewed.
     properties = {
-        'parent' : self.data.user,
-        'profile' : self.data.profile,
+        'parent' : self.profile_helper.user,
+        'profile' : self.profile_helper.profile,
         'organization' : self.org,
         'org_state' : connection.STATE_ACCEPTED,
         'role' : connection.ORG_ADMIN_ROLE
@@ -105,7 +105,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
 
     # Test GET.
     url = '/gsoc/connection/%s/%s' % (
-        self.data.profile.key().name(),
+        self.profile_helper.profile.key().name(),
         long(new_connection.key().id()))
     response = self.get(url)
     self.assertConnectionShowTemplatesUsed(response)
@@ -136,7 +136,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     self.assertNotEqual(None, msg)
 
   def testConnectionOrgAction(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     other_data = GSoCProfileHelper(self.gsoc, self.dev_test)
     other_data.createProfile()

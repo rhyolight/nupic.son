@@ -63,7 +63,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     backup_admin.notificationSettings()
 
     return self.survey_helper.createOrgAppRecord(
-        'test_org', self.data.user, backup_admin_profile.parent())
+        'test_org', self.profile_helper.user, backup_admin_profile.parent())
 
   def assertOrgProfilePageTemplatesUsed(self, response):
     self.assertGSoCTemplatesUsed(response)
@@ -73,7 +73,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     """Tests that it is Ok to create an org profile during off season.
     """
     self.timeline_helper.offSeason()
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     record = self.createOrgAppRecord()
 
     url = '/gsoc/profile/organization/%s?org_id=%s' % (
@@ -85,7 +85,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     """Tests that it is Ok to edit an org profile during off season.
     """
     self.timeline_helper.offSeason()
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     url = '/gsoc/profile/organization/' + self.org.key().name()
     response = self.get(url)
@@ -122,7 +122,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
   def testOrgAdminCanCreateOrgProfile(self):
     """Tests if the org admin for the org can create org profile.
     """
-    self.data.createProfile()
+    self.profile_helper.createProfile()
     record = self.createOrgAppRecord()
 
     base_url = '/gsoc/profile/organization/'
@@ -154,7 +154,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
   def testBackupAdminCanCreateOrgProfile(self):
     """Tests if the backup admin for the org can create org profile.
     """
-    self.data.createProfile()
+    self.profile_helper.createProfile()
     record = self.createOrgAppRecord()
 
     # Swap main admin and backupadmin
@@ -192,7 +192,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     """
     self.timeline_helper.kickoff()
     url = '/gsoc/profile/organization/' + self.org.key().name()
-    self.data.createUser()
+    self.profile_helper.createUser()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
@@ -202,7 +202,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     """
     self.timeline_helper.orgSignup()
     #make the current user to be a mentor for self.org and test for 403.
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     url = '/gsoc/profile/organization/' + self.org.key().name()
     self.timeline_helper.orgSignup()
     response = self.get(url)
@@ -210,13 +210,13 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
 
     from soc.modules.gsoc.models.organization import GSoCOrganization
     other_organization = seeder_logic.seed(GSoCOrganization)
-    self.data.createOrgAdmin(other_organization)
+    self.profile_helper.createOrgAdmin(other_organization)
     url = '/gsoc/profile/organization/' + self.org.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
     #make the current logged in user to be admin for self.org.
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     self.gsoc.allocations_visible = False
     self.gsoc.put()
 
@@ -248,7 +248,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     """Tests that when an org admin tries to access the profile page for an
     org which does not exists a 404 is shown.
     """
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     suffix = '%s/%s/%s' % (self.sponsor.link_id, self.gsoc.link_id,
                            'non_existing_link_id')
     url = '/gsoc/profile/organization/' + suffix
@@ -260,7 +260,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     """Tests if an org admin can update the profile for its organization.
     """
     self.timeline_helper.orgSignup()
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     orig_new_org = self.org.new_org
 

@@ -118,7 +118,7 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertFalse('mentor_request_link' in context)
 
   def assertMentor(self):
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     context = self.homepageContext()
     self.assertNoStudent(context)
 
@@ -196,7 +196,7 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertMentor()
 
   def testOrgAdmin(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     context = self.homepageContext()
     self.assertNoStudent(context)
 
@@ -208,7 +208,7 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertFalse('mentor_request_link' in context)
 
   def testAppliedMentor(self):
-    self.data.createMentorRequest(self.org)
+    self.profile_helper.createMentorRequest(self.org)
     context = self.homepageContext()
     self.assertNoStudent(context)
 
@@ -220,7 +220,7 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertFalse('mentor_request_link' in context)
 
   def testInvitedMentor(self):
-    self.data.createInvitation(self.org, 'mentor')
+    self.profile_helper.createInvitation(self.org, 'mentor')
     context = self.homepageContext()
     self.assertNoStudent(context)
 
@@ -232,7 +232,7 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertFalse('mentor_request_link' in context)
 
   def testInvitedOrgAdmin(self):
-    self.data.createInvitation(self.org, 'org_admin')
+    self.profile_helper.createInvitation(self.org, 'org_admin')
     context = self.homepageContext()
     self.assertNoStudent(context)
 
@@ -245,7 +245,7 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
 
   def testStudentDuringSignup(self):
     self.timeline_helper.studentSignup()
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     context = self.homepageContext()
     self.assertIn('student_apply_block', context)
     self.assertFalse('student_profile_link' in context)
@@ -254,7 +254,7 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
 
   def testStudentPostSignup(self):
     self.timeline_helper.postStudentSignup()
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     context = self.homepageContext()
     self.assertNoStudent(context)
     self.assertNoStudent(context)

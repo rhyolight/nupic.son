@@ -47,7 +47,7 @@ class ProjectListTest(GSoCDjangoTestCase):
 
     self.mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
     self.mentor.createMentor(self.org)
-    self.data.createStudentWithProject(self.org, self.mentor.profile)
+    self.profile_helper.createStudentWithProject(self.org, self.mentor.profile)
     response = self.getListResponse(url, 0)
     self.assertIsJsonResponse(response)
     data = response.context['data']['']

@@ -63,14 +63,14 @@ class RequestTest(MailTestCase, GSoCDjangoTestCase):
     other_admin.notificationSettings()
 
     # test GET
-    self.data.createProfile()
+    self.profile_helper.createProfile()
     url = '/gsoc/request/' + self.org.key().name()
     response = self.get(url)
     self.assertRequestTemplatesUsed(response)
 
     # test POST
     override = {'status': 'pending', 'role': 'mentor', 'type': 'Request',
-                'user': self.data.user, 'org': self.org}
+                'user': self.profile_helper.user, 'org': self.org}
     response, properties = self.modelPost(url, GSoCRequest, override)
 
     request = GSoCRequest.all().get()
@@ -99,7 +99,7 @@ class RequestTest(MailTestCase, GSoCDjangoTestCase):
     self.assertEqual('pending', request.status)
 
   def testAcceptRequest(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     other_data, request = self.createRequest()
     other_data.notificationSettings(request_handled=True)
     url = '/gsoc/request/%s/%s/%s' % (

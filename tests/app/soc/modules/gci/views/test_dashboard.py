@@ -46,17 +46,17 @@ class DashboardTest(test_utils.GCIDjangoTestCase):
     self.assertTemplateUsed(response, 'soc/list/list.html')
 
   def testDashboardAsLoneUser(self):
-    self.data.createUser()
+    self.profile_helper.createUser()
     response = self.get(self._getDashboardUrl())
     self.assertResponseForbidden(response)
 
   def testDashboardAsHost(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
     response = self.get(self._getDashboardUrl())
     self.assertResponseForbidden(response)
 
   def testDashboardAsMentorWithTask(self):
-    self.data.createMentorWithTask('Open', self.org)
+    self.profile_helper.createMentorWithTask('Open', self.org)
     response = self.get(self._getDashboardUrl())
     self.assertDashboardComponentTemplatesUsed(response)
     response = self.getListResponse(self._getDashboardUrl(), 1)
@@ -65,12 +65,12 @@ class DashboardTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(1, len(data['data']['']))
 
   def testDashboardAsStudent(self):
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     response = self.get(self._getDashboardUrl())
     self.assertResponseOK(response)
 
   def testPostPublish(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     # check if Unpublished task may be published
     self._testPostPublish('Unpublished', 'Open', 'publish')
@@ -109,7 +109,7 @@ class DashboardTest(test_utils.GCIDjangoTestCase):
     task_helper = gci_task_utils.GCITaskHelper(self.gci)
 
     task = task_helper.createTask(
-        initial_status, self.org, self.data.profile)
+        initial_status, self.org, self.profile_helper.profile)
 
     data = json.dumps([{'key': str(task.key().id())}])
 
@@ -131,13 +131,13 @@ class DashboardTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(task.status, final_status)
 
   def testMyOrgsTaskList(self):
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     task_helper = gci_task_utils.GCITaskHelper(self.gci)
 
     # create a couple of tasks
-    task_helper.createTask('Open', self.org, self.data.profile)
-    task_helper.createTask('Reopened', self.org, self.data.profile)
+    task_helper.createTask('Open', self.org, self.profile_helper.profile)
+    task_helper.createTask('Reopened', self.org, self.profile_helper.profile)
 
     response = self.get(self._getDashboardUrl())
     self.assertResponseOK(response)

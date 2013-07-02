@@ -115,7 +115,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
   def testHomepageDuringSignupExistingUser(self):
     """Tests the student hompepage during the signup period with an existing user.
     """
-    self.data.createProfile()
+    self.profile_helper.createProfile()
     self.timeline_helper.studentSignup()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)

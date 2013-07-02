@@ -52,7 +52,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     self.assertNotIn('dashboard_link', mainmenu_context)
 
     # Create profile.
-    self.data.createProfile()
+    self.profile_helper.createProfile()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     mainmenu_context = response.context['mainmenu'].context()
@@ -61,7 +61,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     self.assertIn('dashboard_link', mainmenu_context)
 
     # Make the current user the host.
-    self.data.createHost()
+    self.profile_helper.createHost()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     mainmenu_context = response.context['mainmenu'].context()

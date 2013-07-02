@@ -29,19 +29,19 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
     self._assertAccessForbiddenForUrl(self._getTaxFormUrl())
 
   def testMentorAccessForbidden(self):
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     self._assertAccessForbiddenForUrl(self._getEnrollmentFormUrl())
     self._assertAccessForbiddenForUrl(self._getTaxFormUrl())
 
   def testOrgAdminAccessForbidden(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     self._assertAccessForbiddenForUrl(self._getEnrollmentFormUrl())
     self._assertAccessForbiddenForUrl(self._getTaxFormUrl())
 
   def testHostAccessForbidden(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     self._assertAccessForbiddenForUrl(self._getEnrollmentFormUrl())
     self._assertAccessForbiddenForUrl(self._getTaxFormUrl())
@@ -52,7 +52,7 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
     self.timeline_helper.studentsAnnounced()
 
     mentor = self._createNewMentor()
-    self.data.createStudentWithProject(self.org, mentor)
+    self.profile_helper.createStudentWithProject(self.org, mentor)
 
     self._assertAccessForbiddenForUrl(self._getEnrollmentFormUrl())
     self._assertAccessForbiddenForUrl(self._getTaxFormUrl())
@@ -61,7 +61,7 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
     self.timeline_helper.formSubmission()
 
     mentor = self._createNewMentor()
-    self.data.createStudentWithProject(self.org, mentor)
+    self.profile_helper.createStudentWithProject(self.org, mentor)
 
     # check for enrollment form
     url = self._getEnrollmentFormUrl()

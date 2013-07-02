@@ -34,7 +34,7 @@ class GradingGroupCreateTest(test_utils.GSoCDjangoTestCase):
 
   def setUp(self):
     self.init()
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     evaluation_helper = survey_utils.SurveyHelper(self.gsoc, self.dev_test)
     midterm_prop = {'link_id': 'midterm'}
@@ -108,7 +108,7 @@ class GradingRecordsOverviewTest(test_utils.GSoCDjangoTestCase):
 
   def setUp(self):
     self.init()
-    self.data.createHost()
+    self.profile_helper.createHost()
     self.timeline_helper.studentsAnnounced()
 
   def createGradingSurveyGroup(self):
@@ -152,15 +152,16 @@ class GradingRecordsOverviewTest(test_utils.GSoCDjangoTestCase):
     mentor_profile_helper.createOtherUser('mentor@example.com')
     mentor = mentor_profile_helper.createMentor(self.org)
 
-    self.data.createStudentWithProposal(self.org, mentor)
-    self.data.createStudentWithProject(self.org, mentor)
+    self.profile_helper.createStudentWithProposal(self.org, mentor)
+    self.profile_helper.createStudentWithProject(self.org, mentor)
 
     student_profile_helper = profile_utils.GSoCProfileHelper(
         self.gsoc, self.dev_test)
     student_profile_helper.createStudentWithProposal(self.org, mentor)
     student_profile_helper.createStudentWithProject(self.org, mentor)
 
-    project = project_model.GSoCProject.all().ancestor(self.data.profile).get()
+    project = project_model.GSoCProject.all().ancestor(
+        self.profile_helper.profile).get()
     grading_record.updateOrCreateRecordsFor(grading_survey_group, [project])
 
     response = self.getListResponse(url, 0)

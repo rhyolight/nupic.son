@@ -92,31 +92,31 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
 
   def testStudentAccessForbidden(self):
     url = '/gsoc/program/create/' + self.sponsor.key().name()
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     response = self.get(url)
     self.assertErrorTemplatesUsed(response)
 
   def testMentorAccessForbidden(self):
     url = '/gsoc/program/create/' + self.sponsor.key().name()
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     response = self.get(url)
     self.assertErrorTemplatesUsed(response)
 
   def testOrgAdminAccessForbidden(self):
     url = '/gsoc/program/create/' + self.sponsor.key().name()
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     response = self.get(url)
     self.assertErrorTemplatesUsed(response)
 
   def testHostAccessGranted(self):
     url = '/gsoc/program/create/' + self.sponsor.key().name()
-    self.data.createHost()
+    self.profile_helper.createHost()
     response = self.get(url)
     self.assertProgramTemplatesUsed(response)
 
   def testCreateProgramWithRequiredProperties(self):
     url = '/gsoc/program/create/' + self.sponsor.key().name()
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     properties = self._getCreateProgramFormRequiredProperties()
 
@@ -133,7 +133,7 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
 
   def testCreateProgramWithInsufficientData(self):
     url = '/gsoc/program/create/' + self.sponsor.key().name()
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     properties = self._getCreateProgramFormRequiredProperties()
 
@@ -151,7 +151,7 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
 
   def testCreateProgramWithAllData(self):
     url = '/gsoc/program/create/' + self.sponsor.key().name()
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     properties = self._getCreateProgramFormRequiredProperties()
     properties.update(self._getCreateProgramFormOptionalProperties())
@@ -188,14 +188,14 @@ class EditProgramTest(test_utils.GSoCDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testEditProgramAsDeveloper(self):
-    self.data.createDeveloper()
+    self.profile_helper.createDeveloper()
     url = '/gsoc/program/edit/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertProgramTemplatesUsed(response)
 
   def testEditProgram(self):
     from soc.models.document import Document
-    self.data.createHost()
+    self.profile_helper.createHost()
     url = '/gsoc/program/edit/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertProgramTemplatesUsed(response)
@@ -252,31 +252,31 @@ class GSoCProgramMessagesPageTest(test_utils.GSoCDjangoTestCase):
 
   def testStudentAccessForbidden(self):
     url = self._getUrl()
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     response = self.get(url)
     self.assertErrorTemplatesUsed(response)
 
   def testMentorAccessForbidden(self):
     url = self._getUrl()
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     response = self.get(url)
     self.assertErrorTemplatesUsed(response)
 
   def testOrgAdminAccessForbidden(self):
     url = self._getUrl()
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     response = self.get(url)
     self.assertErrorTemplatesUsed(response)
 
   def testHostAccessGranted(self):
     url = self._getUrl()
-    self.data.createHost()
+    self.profile_helper.createHost()
     response = self.get(url)
     self.assertProgramTemplatesUsed(response)
 
   def testEditProgramMessages(self):
     url = self._getUrl()
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     properties = self._getGSoCProgramMessagesFormProperties()
 

@@ -131,25 +131,25 @@ class AcceptedOrgsAdminPageTest(test_utils.GSoCDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testPageForbiddenForStudents(self):
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testPageForbiddenForMentors(self):
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testPageForbiddenForOrgAdmins(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testPageAccessibleForHosts(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
     response = self.get(self.url)
     self.assertResponseOK(response)
     self.assertAcceptedOrgsPageTemplatesUsed(response)

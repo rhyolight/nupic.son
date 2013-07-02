@@ -52,7 +52,7 @@ class AcceptedOrgsPageTest(GCIDjangoTestCase):
     """Tests that the list of the organizations can not be accessed before
     organizations have been announced.
     """
-    self.data.createUser()
+    self.profile_helper.createUser()
     org_properties = {
         'scope': self.gci, 'status': 'active',
         'home': None, 'backup_winner': None, 'program': self.gci,

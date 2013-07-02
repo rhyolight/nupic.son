@@ -37,7 +37,7 @@ class SlotsTest(GSoCDjangoTestCase):
         'modules/gsoc/admin/_accepted_orgs_list.html')
 
   def testAllocateSlots(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
     url = '/gsoc/admin/slots/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertProjectTemplatesUsed(response)
