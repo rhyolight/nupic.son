@@ -42,13 +42,6 @@ limitations under the License.
     dep.uniform,
     dep.counter,
     null,
-    function () {
-      jQuery("select, input:radio, input:file, input:checkbox").uniform();
-      jQuery("#abstract").counter({
-        goal: 500
-      });
-      tinyMCE.init(melange.tinyMceConfig(["melange-public_info-textarea"],
-                                         "advanced"));
-    },
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gsoc/project_details/update.js")
   ]
 {% endblock dependencies %}
