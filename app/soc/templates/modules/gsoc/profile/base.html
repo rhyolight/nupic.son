@@ -21,40 +21,6 @@ limitations under the License.
     dep.jqueryui.datepicker,
     dep.jqueryui.autocomplete,
     null,
-    function () {
-      jQuery("select, input:radio, input:file, input:checkbox").uniform();
-      jQuery("#birth_date").datepicker({
-        changeMonth: true,
-        changeYear: true,
-        dateFormat: "yy-mm-dd",
-        showButtonPanel: true,
-        minDate: "-90y",
-        maxDate: "+0D",
-        yearRange: "-90",
-        defaultDate: '1990-01-01'
-      });
-      var url = "?fmt=json&field=school_name";
-      jQuery.ajax({
-        url: url,
-        success: function(data) {
-          var getSchools = function() {
-            var country = jQuery("#school_country").attr('value');
-            var schools = data[country];
-            if(!schools) {
-                return [];
-            }
-            return schools;
-          };
-          var onchange = function() {
-            jQuery("#school_name").autocomplete({
-                'source': getSchools()
-            });
-          };
-          jQuery("#school_country").change(onchange);
-          // trigger autocomplete for the currently selected country
-          onchange();
-        }
-      })
-    },
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gsoc/profile/base.js")
   ]
 {% endblock dependencies %}
