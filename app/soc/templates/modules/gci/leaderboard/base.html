@@ -54,12 +54,11 @@ limitations under the License.
     dep.melange.program_select,
     dep.melange.clock,
     null,
-    function () {
-      melange.program_select.makeSelector("#program_select");
-
-      jQuery("select, input:radio, input:file, input:checkbox").uniform();
-
-      melange.clock.loadClock({{ complete_percentage }});
-    }
+    tc(
+      "/soc/content/{{ app_version }}/js/templates/modules/gci/leaderboard/base.js",
+      {
+        complete_percentage: {{ complete_percentage }}
+      }
+    )
   ]
 {% endblock dependencies %}

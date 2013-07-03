@@ -58,8 +58,6 @@ limitations under the License.
   [
     dep.melange.uploadform,
     null,
-    function() {
-      melange.asyncUpload(['#consent_form', '#student_id_form']);
-    }
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gci/student_forms/base.js")
   ]
 {% endblock dependencies %}

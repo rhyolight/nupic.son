@@ -17,26 +17,6 @@ limitations under the License.
   [
     dep.melange.datetimepicker,
     null,
-    function () {
-      var config = {
-        changeMonth: true,
-        changeYear: false,
-        dateFormat: "yy-mm-dd",
-        showButtonPanel: true,
-      }
-      var fields_to_enhance = [
-        "#program_start",
-        "#program_end",
-        "#accepted_organization_announced_deadline",
-        "#student_signup_start",
-        "#student_signup_end",
-        "#tasks_publicly_visible",
-        "#task_claim_deadline",
-        "#stop_all_work_deadline",
-        "#work_review_deadline",
-        "#winners_announced_deadline"
-      ].join(",");
-      jQuery(fields_to_enhance).datetimepicker(config);
-    }
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gci/timeline/base.js")
   ]
 {% endblock dependencies %}

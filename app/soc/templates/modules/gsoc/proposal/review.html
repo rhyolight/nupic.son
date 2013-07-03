@@ -176,106 +176,37 @@ limitations under the License.
   {% if scoring_visible %}
   dep.raty,
   {% endif %}
-  function () {
-    /* Apply Uniform CSS to form fields. */
-    /* Only in this case we are customizing the input type checkbox to be
-       only applied for the field with the id is_private since it interferes
-       with the awesome looking action buttons */
-    jQuery("select, input:radio, input:file, input:checkbox#is_private").uniform();
-
-    /* Change all the tooltips to be displayed onhover over a
-      * question mark. Calling this function only once will take
-      * care of all such instances.
-      */
-    melange.action.createCluetip();
-
-    /* Create the project featured button and make it post using ajax. */
-    {% for button in user_actions.toggle_buttons %}
-      melange.action.toggleButton(
-          "{{ button.id }}", "{{ button.type }}", "{{ button.post_url }}",
-          "{{ button.state }}",
-          {checked: "{{ button.labels.checked }}",
-           unchecked: "{{ button.labels.unchecked }}"});
-    {% endfor %}
-
-    {% if public_comments_visible %}
-      tinyMCE.init(melange.tinyMceConfig(["melange-content-textarea"]));
-    {% endif %}
-    {% if scoring_visible %}
-      var initialTotal = {{ scores.total }};
-      var initialNumber = {{ scores.number }};
-      var userInitialScore = {{ scores.user_score }};
-      var maxScore = {{ max_score }};
-
-      var successHandler = function (userScore) {
-        userScore = parseInt(userScore);
-        var newTotal = (initialTotal - userInitialScore + userScore);
-
-        var newNumber = initialNumber;
-        /* the user did not score */
-        if (!userInitialScore && userScore) {
-          newNumber++;
-        }
-        /* the user removed his or her score */
-        if (userInitialScore && !userScore) {
-          newNumber--;
-        }
-
-        var newAverage;
-        var newMessage;
-        if (!newNumber) {
-          newAverage = 0;
-          newMessage = 'No scores yet';
-        } else {
-          newAverage = Math.floor(newTotal / newNumber);
-          newMessage = newAverage + '/' + maxScore + ' out of ' + newNumber + ' users, total: ' + newTotal;
-        }
-        jQuery.fn.raty.start(newAverage, '#score-average-stars');
-        jQuery('#score-average-desc em').html(newMessage);
-      };
-    {% endif %}
-
-    jQuery(document).ready(function() {
-      {% if scoring_visible %}
-        jQuery('#score-average-stars').raty({
-          number: maxScore,
-          readOnly:   true,
-          start:      {{ scores.average }},
-          half:	    true,
-          path:       '/soc/content/' + melange.config.app_version + '/images/gsoc',
-          starHalf:   'proposal-rate-star-half.png',
-          starOff:    'proposal-rate-star-off.png',
-          starOn:     'proposal-rate-star-on.png',
-        });
+  tc(
+    "/soc/content/{{ app_version }}/js/templates/modules/gsoc/proposal/review.js",
+    {
+      {% if user_actions.toggle_buttons %}
+      host_toggle_buttons: [
+        {% for button in user_actions.toggle_buttons %}
+        {
+          id: "{{ button.id }}",
+          type: "{{ button.type }}",
+          post_url: "{{ button.post_url }}",
+          state: "{{ button.state }}",
+          checked_label: "{{ button.labels.checked }}",
+          unchecked_label: "{{ button.labels.unchecked }}"
+        },
+        {% endfor %}
+      ],
       {% endif %}
-    });
-
-    {% if scoring_visible %}
-      hintList = [];
-      for(var i = 0; i < maxScore; i++) {
-        hintList[i] = '' + (i + 1) + ' star(s)';
+      {% if public_comments_visible %}
+      public_comments_visible: true,
+      {% endif %}
+      {% if scoring_visible %}
+      score: {
+        total: {{ scores.total }},
+        number: {{ scores.number }},
+        user_score: {{ scores.user_score }},
+        max_score: {{ max_score }},
+        average: {{ scores.average }},
+        score_action: "{{ score_action }}"
       }
-
-      $('#score-add-stars').raty({
-          cancel: true,
-          cancelPlace:'right',
-          cancelOff: 'proposal-rate-cancel-off.png',
-          cancelOn: 'proposal-rate-cancel-on.png',
-          cancelHint: 'Remove my rating',
-          click: function (value) {
-              jQuery.post("{{ score_action }}", {value: value, xsrf_token: window.xsrf_token});
-              successHandler(value)
-          },
-          half:		false,
-          path:       '/soc/content/' + melange.config.app_version + '/images/gsoc',
-          number: maxScore,
-          start:      {{ scores.user_score }},
-          starHalf:   'proposal-rate-star-half.png',
-          starOff:    'proposal-rate-star-off.png',
-          starOn:     'proposal-rate-star-on.png',
-          hintList:   hintList
-      });
-    {% endif %}
-  }
+      {% endif %}
+    }
+  )
   ]
 {% endblock dependencies %}

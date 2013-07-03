@@ -29,13 +29,8 @@ limitations under the License.
     dep.melange.list,
     dep.hashchange,
     dep.melange.action,
-    function () {
-      /* Change all the tooltips to be displayed onhover over a
-       * question mark. Calling this function only once will take
-       * care of all such instances.
-       */
-      melange.action.createCluetip();
-    },
+    null,
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gci/admin/base.js"),
     tc("/soc/content/{{ app_version }}/js/templates/soc/dashboard/dashboard.js", {
       'dashboard_class': 'dashboard',
       'dashboard_link_class': 'dashboard-link',

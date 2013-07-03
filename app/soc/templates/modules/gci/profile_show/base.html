@@ -52,19 +52,14 @@ limitations under the License.
 
 {% block dependencies %}
   [
-  dep.melange.action,
-  function () {
-    /* Create the project featured button and make it post using ajax. */
-    melange.action.toggleButton(
-        "verify-consent-form", "on_off", "",
-        "{{ verify_consent_form_init }}",
-        {checked: "Verified",
-         unchecked: "Not verified"});
-    melange.action.toggleButton(
-        "verify-student-id-form", "on_off", "",
-        "{{ verify_student_id_form_init }}",
-        {checked: "Verified",
-         unchecked: "Not verified"});
-  }
+    dep.melange.action,
+    null,
+    tc(
+      "/soc/content/{{ app_version }}/js/templates/modules/gci/profile_show/base.js",
+      {
+        verify_consent_form_init: "{{ verify_consent_form_init }}",
+        verify_student_id_form_init: "{{ verify_student_id_form_init }}"
+      }
+    )
   ]
 {% endblock dependencies %}

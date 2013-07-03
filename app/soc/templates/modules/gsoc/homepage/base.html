@@ -69,18 +69,12 @@ limitations under the License.
   {% if program.feed_url %}
     dep.melange.blog,
     null,
-    function () {
-      function initialize() {
-        var blog = new BlogPreview(document.getElementById("blog-feed"));
-        blog.show("{{ program.feed_url|safe }}", 5, "Blog Feed");
+    tc(
+      "/soc/content/{{ app_version }}/js/templates/modules/gsoc/homepage/base.js",
+      {
+        feed_url: "{{ program.feed_url|safe }}"
       }
-
-      jQuery(
-        function () {
-          google.load("feeds","1", {callback:initialize});
-        }
-      );
-    }
+    )
   {% endif %}
   ]
 {% endblock dependencies %}
