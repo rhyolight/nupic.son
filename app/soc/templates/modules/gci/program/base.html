@@ -43,25 +43,13 @@ limitations under the License.
     dep.jqueryui.sortable,
     dep.uniform,
     dep.melange.dynamicoptions,
-    function () {
-      jQuery("select, input:radio, input:file, input:checkbox").uniform();
-      tinyMCE.init(melange.tinyMceConfig(["melange-description-textarea",
-                                         "accepted_orgs_msg"]));
-      melange.autocomplete.makeAutoComplete("org_admin_agreement");
-      melange.autocomplete.makeAutoComplete("mentor_agreement");
-      melange.autocomplete.makeAutoComplete("student_agreement");
-      melange.autocomplete.makeAutoComplete("about_page");
-      melange.autocomplete.makeAutoComplete("events_page");
-      melange.autocomplete.makeAutoComplete("connect_with_us_page");
-      melange.autocomplete.makeAutoComplete("help_page");
-      melange.autocomplete.makeAutoComplete("terms_and_conditions");
-
-      jQuery('#form_row_task_types').dynamicoptions({
-        id: "task-types",
+    null,
+    tc(
+      "/soc/content/{{ app_version }}/js/templates/modules/gci/program/base.js",
+      {
         label: "{{ forms.0.fields.task_types.label }}",
-        initial: '{{ forms.0.task_types_json|safe }}',
-        fields: {task_type_name: 'Tag name'}
-      });
-    }
+        initial: '{{ forms.0.task_types_json|safe }}'
+      }
+    )
   ]
 {% endblock dependencies %}

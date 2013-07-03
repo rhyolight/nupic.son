@@ -22,12 +22,6 @@ limitations under the License.
   [
     dep.uniform,
     null,
-    function () {
-      tinyMCE.init(melange.tinyMceConfig(
-      ["melange-description-textarea", "accepted_orgs_msg",
-       "melange-description-textarea", "rejected_orgs_msg",
-       "melange-description-textarea", "mentor_welcome_msg",
-      ]));
-    }
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gci/program/messages.js")
   ]
 {% endblock dependencies %}

@@ -43,21 +43,12 @@ limitations under the License.
     {% endif %}
     dep.melange.clock,
     null,
-    function () {
-      {% if program.feed_url %}
-        function initialize() {
-          var blog = new BlogPreview(document.getElementById("blog-feed"));
-          blog.show("{{ program.feed_url|safe }}", 3, "What's New");
-        }
-
-        jQuery(
-          function () {
-            google.load("feeds","1", {callback:initialize});
-          }
-        );
-      {% endif %}
-
-      melange.clock.loadClock({{ complete_percentage }});
-    }
+    tc(
+      "/soc/content/{{ app_version }}/js/templates/modules/gci/homepage/base.js",
+      {
+        feed_url: "{{ program.feed_url|safe }}",
+        complete_percentage: {{ complete_percentage }}
+      }
+    )
   ]
 {% endblock dependencies %}

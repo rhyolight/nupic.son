@@ -42,20 +42,7 @@ limitations under the License.
     dep.uniform,
     dep.jqueryui.datepicker,
     null,
-    function () {
-      jQuery("select, input:radio, input:checkbox").uniform();
-
-      jQuery("#birthdate").datepicker({
-        changeMonth: true,
-        changeYear: true,
-        dateFormat: "yy-mm-dd",
-        showButtonPanel: true,
-        minDate: "-90y",
-        maxDate: "+0D",
-        yearRange: "-90",
-        defaultDate: '1990-01-01'
-      });
-    },
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gci/age_check/base.js")
   ]
 {% endblock dependencies %}
 
