@@ -23,6 +23,7 @@ from django import http
 from django.utils import dateformat
 from django.utils.translation import ugettext
 
+from melange.request import access
 from melange.request import exception
 from soc.logic import accounts
 from soc.logic import cleaning
@@ -95,14 +96,13 @@ class LookupForm(gsoc_forms.GSoCModelForm):
 class DashboardPage(base.GSoCRequestHandler):
   """Dashboard for admins."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
         url(r'admin/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_admin_dashboard'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gsoc/admin/base.html'
@@ -738,14 +738,13 @@ class StudentsDashboard(Dashboard):
 class LookupLinkIdPage(base.GSoCRequestHandler):
   """View for the participant profile."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
         url(r'admin/lookup/%s$' % url_patterns.PROGRAM, self,
             name='lookup_gsoc_profile'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gsoc/admin/lookup.html'
@@ -909,14 +908,13 @@ class ProposalsList(Template):
 class ProposalsPage(base.GSoCRequestHandler):
   """View for proposals for particular org."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
         url(r'admin/proposals/%s$' % url_patterns.ORG, self,
             name='gsoc_proposals_org'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gsoc/admin/list.html'
@@ -1007,14 +1005,13 @@ class ProjectsList(Template):
 class ProjectsPage(base.GSoCRequestHandler):
   """View for projects of particular org."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
         url(r'admin/projects/%s$' % url_patterns.ORG, self,
             name='gsoc_projects_org'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gsoc/admin/list.html'
@@ -1045,14 +1042,13 @@ class ProjectsPage(base.GSoCRequestHandler):
 class SurveyReminderPage(base.GSoCRequestHandler):
   """Page to send out reminder emails to fill out a Survey."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
         url(r'admin/survey_reminder/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_survey_reminder_admin'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gsoc/admin/survey_reminder.html'
@@ -1239,14 +1235,13 @@ class StudentsList(Template):
 class StudentsListPage(base.GSoCRequestHandler):
   """View that lists all the students associated with the program."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
         url(r'admin/students/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_students_list_admin'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gsoc/admin/list.html'
@@ -1271,14 +1266,13 @@ class ProjectsListPage(base.GSoCRequestHandler):
 
   LIST_IDX = 1
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
         url(r'admin/all_projects/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_projects_list_admin'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gsoc/admin/list.html'

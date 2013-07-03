@@ -21,6 +21,7 @@ from google.appengine.ext import db
 
 from django import http
 
+from melange.request import access
 from melange.request import exception
 
 from soc.views import forms
@@ -39,17 +40,15 @@ from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 class GradingGroupCreate(GSoCRequestHandler):
-  """View to display GradingRecord details.
-  """
+  """View to display GradingRecord details."""
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     return [
         url(r'grading_records/group/%s$' % url_patterns.PROGRAM,
          self, name='gsoc_grading_group'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def context(self, data, check, mutator):
     return {

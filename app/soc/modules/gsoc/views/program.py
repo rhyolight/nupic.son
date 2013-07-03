@@ -14,12 +14,12 @@
 
 """Module for the program settings pages."""
 
-
 from google.appengine.ext import db
 
 from django import forms as django_forms
 from django.utils import translation
 
+from melange.request import access
 from soc.logic import mail_dispatcher
 from soc.logic.helper import notifications
 from soc.models import document
@@ -214,6 +214,8 @@ class GSoCProgramMessagesForm(forms.GSoCModelForm):
 class GSoCEditProgramPage(base.GSoCRequestHandler):
   """View to edit the program settings."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
         url_patterns.url(r'program/edit/%s$' % soc_url_patterns.PROGRAM, self,
@@ -231,9 +233,6 @@ class GSoCEditProgramPage(base.GSoCRequestHandler):
                   for i in q]
 
     return {'data': json_data}
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gsoc/program/base.html'
@@ -304,15 +303,14 @@ class GSoCCreateProgramPage(soc_program_view.CreateProgramPage,
 class TimelinePage(base.GSoCRequestHandler):
   """View for the participant profile."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
         url_patterns.url(r'timeline/%s$' % soc_url_patterns.PROGRAM, self,
             name='edit_gsoc_timeline'),
         url_patterns.url(r'timeline/edit/%s$' % soc_url_patterns.PROGRAM, self),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gsoc/timeline/base.html'

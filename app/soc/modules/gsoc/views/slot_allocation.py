@@ -21,6 +21,7 @@ from google.appengine.ext import db
 
 from django import http
 
+from melange.request import access
 from melange.request import exception
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
@@ -184,14 +185,13 @@ class SlotsList(org_list.OrgList):
 class SlotsPage(base.GSoCRequestHandler):
   """View for the participant profile."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
         gsoc_url_patterns.url(r'admin/slots/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_slots'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gsoc/admin/list.html'

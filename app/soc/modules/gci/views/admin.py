@@ -20,6 +20,7 @@ from django import forms as djangoforms
 from django import http
 from django.utils.translation import ugettext
 
+from melange.request import access
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic import links
@@ -75,17 +76,15 @@ class LookupForm(gci_forms.GCIModelForm):
 
 
 class DashboardPage(GCIRequestHandler):
-  """Dashboard for admins.
-  """
+  """Dashboard for admins."""
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     return [
         url(r'admin/%s$' % url_patterns.PROGRAM,
          self, name='gci_admin_dashboard'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gci/admin/base.html'
@@ -399,17 +398,15 @@ class ParticipantsDashboard(Dashboard):
 
 
 class LookupLinkIdPage(GCIRequestHandler):
-  """View for the participant profile.
-  """
+  """View for the participant profile."""
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     return [
         url(r'admin/lookup/%s$' % url_patterns.PROGRAM,
          self, name='lookup_gci_profile'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gci/admin/lookup.html'

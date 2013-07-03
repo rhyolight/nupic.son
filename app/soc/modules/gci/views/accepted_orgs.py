@@ -16,6 +16,7 @@
 
 from django.conf.urls.defaults import url as django_url
 
+from melange.request import access
 from melange.request import exception
 from soc.views.helper import lists
 from soc.views.helper import url as url_helper
@@ -166,6 +167,8 @@ class AcceptedOrgsAdminPage(GCIRequestHandler):
   """View for the accepted organizations page for admin with additional info.
   """
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def templatePath(self):
     return 'modules/gci/accepted_orgs/base.html'
 
@@ -174,9 +177,6 @@ class AcceptedOrgsAdminPage(GCIRequestHandler):
         url(r'admin/accepted_orgs/%s$' % url_patterns.PROGRAM, self,
             name='gci_admin_accepted_orgs'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     list_content = AcceptedOrgsAdminList(data).getListData()

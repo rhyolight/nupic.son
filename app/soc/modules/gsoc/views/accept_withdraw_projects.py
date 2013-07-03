@@ -23,6 +23,7 @@ from google.appengine.ext import db
 
 from django import http
 
+from melange.request import access
 from melange.request import exception
 from soc.views.base_templates import ProgramSelect
 from soc.views.helper import lists
@@ -174,6 +175,8 @@ class ProposalList(Template):
 class AcceptProposals(GSoCRequestHandler):
   """View for accepting individual proposals."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def templatePath(self):
     return 'modules/gsoc/accept_withdraw_projects/base.html'
 
@@ -184,10 +187,6 @@ class AcceptProposals(GSoCRequestHandler):
         url(r'admin/proposals/accept/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_admin_accept_proposals')
     ]
-
-  def checkAccess(self, data, check, mutator):
-    """Access checks for the view."""
-    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""
@@ -374,8 +373,9 @@ class ProjectList(Template):
 
 
 class WithdrawProjects(GSoCRequestHandler):
-  """View methods for withdraw projects
-  """
+  """View methods for withdraw projects."""
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
 
   def templatePath(self):
     return 'modules/gsoc/accept_withdraw_projects/base.html'
@@ -388,10 +388,6 @@ class WithdrawProjects(GSoCRequestHandler):
         url(r'withdraw_projects/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_withdraw_projects')
     ]
-
-  def checkAccess(self, data, check, mutator):
-    """Access checks for the view."""
-    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""

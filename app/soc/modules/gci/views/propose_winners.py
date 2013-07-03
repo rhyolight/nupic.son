@@ -19,6 +19,7 @@ from google.appengine.ext import db
 from django import forms
 from django.utils.translation import ugettext
 
+from melange.request import access
 from melange.request import exception
 
 from soc.modules.gci.views.base import GCIRequestHandler
@@ -346,6 +347,8 @@ class ViewProposedWinnersPage(GCIRequestHandler):
   """View with a list of organizations with the proposed Grand Prize Winners.
   """
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def templatePath(self):
     return 'modules/gci/org_list/base.html'
 
@@ -355,9 +358,6 @@ class ViewProposedWinnersPage(GCIRequestHandler):
             r'view_proposed_winners/%s$' % url_patterns.PROGRAM, self,
             name=url_names.GCI_VIEW_PROPOSED_WINNERS),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     list_content = ProposedWinnersForOrgsList(data).getListData()

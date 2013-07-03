@@ -21,6 +21,7 @@ from google.appengine.ext import db
 
 from django import http
 
+from melange.request import access
 from melange.request import exception
 from soc.views import template
 from soc.views.helper import lists
@@ -220,15 +221,14 @@ class SlotsTransferAdminList(template.Template):
 class SlotsTransferAdminPage(base.GSoCRequestHandler):
   """View for the the list of slot transfer requests."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
         gsoc_url_patterns.url(
             r'admin/slots/transfer/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_admin_slots_transfer'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gsoc/slot_transfer_admin/base.html'

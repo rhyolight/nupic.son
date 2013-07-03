@@ -22,6 +22,7 @@ from django import forms as django_forms
 from django import http
 from django.utils.translation import ugettext
 
+from melange.request import access
 from soc.models.document import Document
 from soc.views import forms
 from soc.views import program as soc_program_view
@@ -120,6 +121,8 @@ class GCIProgramMessagesForm(gci_forms.GCIModelForm):
 class GCIEditProgramPage(base.GCIRequestHandler):
   """View to edit the program settings."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
         url_patterns.url(
@@ -138,9 +141,6 @@ class GCIEditProgramPage(base.GCIRequestHandler):
                   for i in q]
 
     return {'data': json_data}
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gci/program/base.html'
@@ -211,6 +211,8 @@ class GCICreateProgramPage(soc_program_view.CreateProgramPage,
 class TimelinePage(base.GCIRequestHandler):
   """View for the participant profile."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
         url_patterns.url(
@@ -219,9 +221,6 @@ class TimelinePage(base.GCIRequestHandler):
         url_patterns.url(
             r'timeline/edit/%s$' % soc_url_patterns.PROGRAM, self),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gci/timeline/base.html'

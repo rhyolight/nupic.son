@@ -17,6 +17,7 @@
 from django.conf.urls.defaults import url as django_url
 from django.utils import html as html_utils
 
+from melange.request import access
 from melange.request import exception
 from soc.views.base_templates import ProgramSelect
 from soc.views.helper import lists
@@ -172,14 +173,13 @@ class AcceptedOrgsAdminPage(GSoCRequestHandler):
 
   LIST_IDX = 0
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
         url(r'admin/accepted_orgs/%s$' % url_patterns.PROGRAM, self,
             name=url_names.GSOC_ORG_LIST_FOR_HOST),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gsoc/admin/list.html'

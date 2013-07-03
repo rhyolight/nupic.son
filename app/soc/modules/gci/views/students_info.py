@@ -16,6 +16,7 @@
 
 from django.utils.translation import ugettext
 
+from melange.request import access
 from melange.request import exception
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
@@ -68,6 +69,8 @@ class AllParticipatingStudentsList(student_list.StudentList):
 class StudentsInfoPage(base.GCIRequestHandler):
   """View for the students info page for the admin."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def templatePath(self):
     return 'modules/gci/students_info/base.html'
 
@@ -76,9 +79,6 @@ class StudentsInfoPage(base.GCIRequestHandler):
         gci_url_patterns.url(r'admin/students_info/%s$' % url_patterns.PROGRAM,
                              self, name=url_names.GCI_STUDENTS_INFO),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     all_participating_students_list = AllParticipatingStudentsList(data)
