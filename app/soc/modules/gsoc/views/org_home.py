@@ -143,7 +143,6 @@ class ProjectList(Template):
   def __init__(self, data):
     self.data = data
 
-    r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
@@ -156,9 +155,9 @@ class ProjectList(Template):
         lambda entity, m, *args: ", ".join(
             [m[i].name() for i in entity.mentors]))
     list_config.setDefaultSort('student')
-    list_config.setRowAction(lambda e, *args, **kwargs:
-        r.project(id=e.key().id_or_name(), student=e.parent().link_id).
-        urlOf('gsoc_project_details'))
+    list_config.setRowAction(lambda e, *args, **kwargs: data.redirect.project(
+        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
+        'gsoc_project_details'))
     self._list_config = list_config
 
   def context(self):

@@ -454,13 +454,12 @@ class MyProposalsComponent(Component):
 
   def __init__(self, data):
     """Initializes this component."""
-    r = data.redirect
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn('org', 'Organization',
                           lambda ent, *args: ent.org.name)
     list_config.setRowAction(lambda e, *args:
-        r.review(e.key().id_or_name(), e.parent().link_id).
+        data.redirect.review(e.key().id_or_name(), e.parent().link_id).
         urlOf('review_gsoc_proposal'))
     self._list_config = list_config
 
@@ -512,8 +511,6 @@ class MyProjectsComponent(Component):
 
   def __init__(self, data):
     """Initializes this component."""
-    r = data.redirect
-
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
@@ -521,9 +518,9 @@ class MyProjectsComponent(Component):
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn('org', 'Organization Name',
         lambda ent, *args: ent.org.name)
-    list_config.setRowAction(lambda e, *args:
-        r.project(id=e.key().id_or_name(), student=e.parent().link_id).
-        urlOf('gsoc_project_details'))
+    list_config.setRowAction(lambda e, *args: data.redirect.project(
+        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
+        'gsoc_project_details'))
     self._list_config = list_config
 
     super(MyProjectsComponent, self).__init__(data)
@@ -747,7 +744,6 @@ class SubmittedProposalsComponent(Component):
   # TODO(nathaniel): Wait, is this seriously a 100+-line *constructor*?
   def __init__(self, data):
     """Initializes this component."""
-    r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
@@ -863,7 +859,7 @@ class SubmittedProposalsComponent(Component):
 
     # row action
     list_config.setRowAction(lambda e, *args:
-        r.review(e.key().id_or_name(), e.parent().link_id).
+        data.redirect.review(e.key().id_or_name(), e.parent().link_id).
         urlOf('review_gsoc_proposal'))
     list_config.setDefaultSort('last_modified_on', 'desc')
 
@@ -1074,7 +1070,6 @@ class ProjectsIMentorComponent(Component):
 
   def __init__(self, data):
     """Initializes this component."""
-    r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
@@ -1085,9 +1080,9 @@ class ProjectsIMentorComponent(Component):
     list_config.addPlainTextColumn('org', 'Organization',
                           lambda ent, *args: ent.org.name)
     list_config.setDefaultSort('title')
-    list_config.setRowAction(lambda e, *args:
-        r.project(id=e.key().id_or_name(), student=e.parent().link_id).
-        urlOf('gsoc_project_details'))
+    list_config.setRowAction(lambda e, *args: data.redirect.project(
+        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
+        'gsoc_project_details'))
     self._list_config = list_config
 
     super(ProjectsIMentorComponent, self).__init__(data)
@@ -1535,7 +1530,6 @@ class TodoComponent(Component):
   """
 
   def __init__(self, data):
-    r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn(
         'key', 'Key', (lambda d, *args: d['key']), hidden=True)
@@ -1556,7 +1550,8 @@ class TodoComponent(Component):
         return url + '#form_row_school_name'
       if key.isdigit():
         project_id = int(key)
-        r.project(id=project_id, student=data.profile.link_id)
+        # TODO(nathaniel): Eliminate this state-setting call.
+        data.redirect.project(id=project_id, student=data.profile.link_id)
         return data.redirect.urlOf(url_names.GSOC_PROJECT_UPDATE)
       return None
 

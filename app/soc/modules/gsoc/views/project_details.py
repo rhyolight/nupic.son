@@ -379,11 +379,12 @@ class UserActions(Template):
   def context(self):
     assert isSet(self.data.project)
 
-    r = self.data.redirect.project()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    self.data.redirect.project()
 
     featured_project = ToggleButtonTemplate(
         self.data, 'on_off', 'Featured', 'project-featured',
-        r.urlOf('gsoc_featured_project'),
+        self.data.redirect.urlOf('gsoc_featured_project'),
         checked=self.data.project.is_featured,
         help_text=self.DEF_FEATURED_PROJECT_HELP,
         labels={
@@ -396,12 +397,11 @@ class UserActions(Template):
         'toggle_buttons': self.toggle_buttons,
         }
 
-    r = self.data.redirect
     all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(
         self.data.project.org)
     context['assign_mentor'] = assign_mentor.AssignMentorFields(
         self.data, self.data.project.mentors,
-        r.project().urlOf('gsoc_project_assign_mentors'),
+        self.data.redirect.project().urlOf('gsoc_project_assign_mentors'),
         all_mentors=all_mentors_keys, mentor_required=True,
         allow_multiple=True)
 

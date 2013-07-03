@@ -411,14 +411,13 @@ class UserInvitesList(Template):
 
   def __init__(self, data):
     self.data = data
-    r = data.redirect
 
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('org', 'From',
         lambda entity, *args: entity.org.name)
     list_config.addSimpleColumn('status', 'Status')
     list_config.setRowAction(
-        lambda e, *args: r.id(e.key().id())
+        lambda e, *args: data.redirect.id(e.key().id())
             .urlOf(url_names.GCI_RESPOND_INVITE))
 
     self._list_config = list_config

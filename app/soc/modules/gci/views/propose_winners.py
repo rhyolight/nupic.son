@@ -249,8 +249,6 @@ class OrganizationsForProposeWinnersList(org_list.OrgList):
   def _getListConfig(self):
     """Returns ListConfiguration object for the list.
     """
-    r = self.data.redirect
-
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.name.strip())
@@ -318,8 +316,6 @@ class ProposedWinnersForOrgsList(org_list.OrgList):
   def _getListConfig(self):
     """Returns ListConfiguration object for the list.
     """
-    r = self.data.redirect
-
     def proposedWinnersFunc(organization, *args):
       profiles = profile_model.GCIProfile.get(organization.proposed_winners)
       return ', '.join([p.name() for p in profiles if p])

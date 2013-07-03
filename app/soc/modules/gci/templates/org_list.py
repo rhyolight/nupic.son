@@ -77,8 +77,6 @@ class BasicOrgList(OrgList):
   def _getListConfig(self):
     """Returns ListConfiguration object for the list.
     """
-    r = self.data.redirect
-
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.name.strip())

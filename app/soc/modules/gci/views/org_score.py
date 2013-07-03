@@ -35,7 +35,6 @@ class OrgScoresList(Template):
 
   def __init__(self, data):
     self.data = data
-    r = data.redirect
 
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key', (lambda ent, *args: "%s" % (
@@ -47,7 +46,7 @@ class OrgScoresList(Template):
     list_config.setDefaultSort('tasks', 'desc')
 
     list_config.setRowAction(
-        lambda e, *args: r.userOrg(user=e.parent().link_id).urlOf(
+        lambda e, *args: data.redirect.userOrg(user=e.parent().link_id).urlOf(
             url_names.GCI_STUDENT_TASKS_FOR_ORG))
 
     self._list_config = list_config

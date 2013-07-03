@@ -53,12 +53,14 @@ class HostActions(Template):
     assert isSet(self.data.url_user)
     assert isSet(self.data.url_profile)
 
-    r = self.data.redirect.profile()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    self.data.redirect.profile()
+
     is_banned = self.data.url_profile.status == 'invalid'
 
     profile_banned = ToggleButtonTemplate(
         self.data, 'on_off', 'Banned', 'user-banned',
-        r.urlOf(self._getActionURLName()),
+        self.data.redirect.urlOf(self._getActionURLName()),
         checked=is_banned,
         help_text=self._getHelpText(),
         labels={

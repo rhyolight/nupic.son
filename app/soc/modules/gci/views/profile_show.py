@@ -44,8 +44,7 @@ class StudentFormsTemplate(Template):
     self.profile = profile
 
   def context(self):
-    r = self.data.redirect
-    base_url = r.profile(self.profile.link_id).urlOf(
+    base_url = self.data.redirect.profile(self.profile.link_id).urlOf(
         url_names.GCI_STUDENT_FORM_DOWNLOAD)
     consent_form_url= '%s?%s' % (base_url, url_names.CONSENT_FORM_GET_PARAM)
     student_id_form_url = '%s?%s' % (
@@ -136,8 +135,10 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
       else:
         context['verify_student_id_form_init'] = 'checked'
 
-      r = data.redirect.profile(profile.link_id)
-      context['student_task_link'] = r.urlOf(url_names.GCI_STUDENT_TASKS)
+      # TODO(nathaniel): Eliminate this state-setting call.
+      data.redirect.profile(profile.link_id)
+      context['student_task_link'] = data.redirect.urlOf(
+          url_names.GCI_STUDENT_TASKS)
 
     return context
 

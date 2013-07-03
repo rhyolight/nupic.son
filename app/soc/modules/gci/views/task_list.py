@@ -35,12 +35,11 @@ class TaskList2(Template):
 
   def __init__(self, data):
     self.data = data
-    r = data.redirect
 
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.setRowAction(
-        lambda e, *args: r.id(e.key().id()).urlOf('gci_view_task'))
+        lambda e, *args: data.redirect.id(e.key().id()).urlOf('gci_view_task'))
 
     self._list_config = list_config
 

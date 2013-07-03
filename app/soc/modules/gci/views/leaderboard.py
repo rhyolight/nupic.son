@@ -38,7 +38,6 @@ class LeaderboardList(Template):
 
   def __init__(self, data):
     self.data = data
-    r = data.redirect
 
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key', (lambda ent, *args: "%s" % (
@@ -51,7 +50,7 @@ class LeaderboardList(Template):
     list_config.setDefaultSort('points', 'desc')
 
     list_config.setRowAction(
-        lambda e, *args: r.profile(e.parent().link_id).urlOf(
+        lambda e, *args: data.redirect.profile(e.parent().link_id).urlOf(
             url_names.GCI_STUDENT_TASKS))
 
     self._list_config = list_config
