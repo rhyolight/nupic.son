@@ -30,8 +30,6 @@ from melange.request import exception
 from melange.request import initialize
 from melange.request import render
 from soc.logic import links
-from soc.views.helper import access_checker
-from soc.views.helper import request_data
 
 
 class RequestHandler(object):
@@ -43,14 +41,15 @@ class RequestHandler(object):
   linker = links.Linker()
   renderer = render.MELANGE_RENDERER
   error_handler = error.MELANGE_ERROR_HANDLER
+  access_checker = None
 
   def context(self, data, check, mutator):
     """Provides a dictionary of values needed to render a template.
 
     Args:
-      data: A request_data.RequestData.
-      check: An access_checker.AccessChecker.
-      mutator: An access_checker.Mutator.
+      data: A soc.views.helper.request_data.RequestData.
+      check: A soc.views.helper.access_checker.AccessChecker.
+      mutator: A soc.views.helper.access_checker.Mutator.
 
     Returns:
       A dictionary of values to be used in rendering a template.
@@ -77,9 +76,9 @@ class RequestHandler(object):
     those to render to construct the page.
 
     Args:
-      data: A request_data.RequestData.
-      check: An access_checker.AccessChecker.
-      mutator: An access_checker.Mutator.
+      data: A soc.views.helper.request_data.RequestData.
+      check: A soc.views.helper.access_checker.AccessChecker.
+      mutator: A soc.views.helper.access_checker.Mutator.
 
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
@@ -106,9 +105,9 @@ class RequestHandler(object):
     """Handler for HTTP GET request with a 'fmt=json' parameter.
 
     Args:
-      data: A request_data.RequestData.
-      check: An access_checker.AccessChecker.
-      mutator: An access_checker.Mutator.
+      data: A soc.views.helper.request_data.RequestData.
+      check: A soc.views.helper.access_checker.AccessChecker.
+      mutator: A soc.views.helper.access_checker.Mutator.
 
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
@@ -163,9 +162,9 @@ class RequestHandler(object):
     with 'fmt=json' parameter.
 
     Args:
-      data: A request_data.RequestData.
-      check: An access_checker.AccessChecker.
-      mutator: An access_checker.Mutator.
+      data: A soc.views.helper.request_data.RequestData.
+      check: A soc.views.helper.access_checker.AccessChecker.
+      mutator: A soc.views.helper.access_checker.Mutator.
 
     Returns:
       An object to be used as the content in a response to a json GET request
@@ -196,9 +195,9 @@ class RequestHandler(object):
     """Handler for HTTP POST request.
 
     Args:
-      data: A request_data.RequestData.
-      check: An access_checker.AccessChecker.
-      mutator: An access_checker.Mutator.
+      data: A soc.views.helper.request_data.RequestData.
+      check: A soc.views.helper.access_checker.AccessChecker.
+      mutator: A soc.views.helper.access_checker.Mutator.
 
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
@@ -222,9 +221,9 @@ class RequestHandler(object):
     """Handler for HTTP HEAD request.
 
     Args:
-      data: A request_data.RequestData.
-      check: An access_checker.AccessChecker.
-      mutator: An access_checker.Mutator.
+      data: A soc.views.helper.request_data.RequestData.
+      check: A soc.views.helper.access_checker.AccessChecker.
+      mutator: A soc.views.helper.access_checker.Mutator.
 
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
@@ -250,9 +249,9 @@ class RequestHandler(object):
     """Handler for HTTP OPTIONS request.
 
     Args:
-      data: A request_data.RequestData.
-      check: An access_checker.AccessChecker.
-      mutator: An access_checker.Mutator.
+      data: A soc.views.helper.request_data.RequestData.
+      check: A soc.views.helper.access_checker.AccessChecker.
+      mutator: A soc.views.helper.access_checker.Mutator.
 
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
@@ -276,9 +275,9 @@ class RequestHandler(object):
     """Handler for HTTP PUT request.
 
     Args:
-      data: A request_data.RequestData.
-      check: An access_checker.AccessChecker.
-      mutator: An access_checker.Mutator.
+      data: A soc.views.helper.request_data.RequestData.
+      check: A soc.views.helper.access_checker.AccessChecker.
+      mutator: A soc.views.helper.access_checker.Mutator.
 
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
@@ -302,9 +301,9 @@ class RequestHandler(object):
     """Handler for HTTP DELETE request.
 
     Args:
-      data: A request_data.RequestData.
-      check: An access_checker.AccessChecker.
-      mutator: An access_checker.Mutator.
+      data: A soc.views.helper.request_data.RequestData.
+      check: A soc.views.helper.access_checker.AccessChecker.
+      mutator: A soc.views.helper.access_checker.Mutator.
 
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
@@ -328,9 +327,9 @@ class RequestHandler(object):
     """Handler for HTTP TRACE request.
 
     Args:
-      data: A request_data.RequestData.
-      check: An access_checker.AccessChecker.
-      mutator: An access_checker.Mutator.
+      data: A soc.views.helper.request_data.RequestData.
+      check: A soc.views.helper.access_checker.AccessChecker.
+      mutator: A soc.views.helper.access_checker.Mutator.
 
     Returns:
       An http.HttpResponse appropriate for the given request parameters.
@@ -370,9 +369,9 @@ class RequestHandler(object):
     satisfied or return normally if the user's request should be satisfied.
 
     Args:
-      data: A request_data.RequestData.
-      check: An access_checker.AccessChecker.
-      mutator: An access_checker.Mutator.
+      data: A soc.views.helper.request_data.RequestData.
+      check: A soc.views.helper.access_checker.AccessChecker.
+      mutator: A soc.views.helper.access_checker.Mutator.
 
     Raises:
       exception.LoginRequired: An exception.LoginRequired indicating
@@ -387,7 +386,9 @@ class RequestHandler(object):
         problem that arose during request processing and describing an
         appropriate response.
     """
-    raise NotImplementedError()
+    # TODO(nathaniel): Eliminate this method entirely after eliminating
+    # all overriding implementations.
+    return self.access_checker.checkAccess(data, check, mutator)
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
