@@ -74,8 +74,9 @@ class TaskList2(Template):
 
 
 class TaskListPage(GCIRequestHandler):
-  """View for the list task page.
-  """
+  """View for the list task page."""
+
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
 
   def templatePath(self):
     return 'modules/gci/task/task_list.html'
@@ -85,9 +86,6 @@ class TaskListPage(GCIRequestHandler):
         url(r'finished_tasks/%s$' % url_patterns.PROGRAM, self,
             name='list_gci_finished_tasks'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    pass
 
   def jsonContext(self, data, check, mutator):
     list_content = TaskList2(data).getListData()

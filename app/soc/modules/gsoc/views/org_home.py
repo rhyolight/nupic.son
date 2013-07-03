@@ -17,6 +17,7 @@
 from django.conf.urls.defaults import url as django_url
 from django.utils.translation import ugettext
 
+from melange.request import access
 from melange.request import exception
 from soc.logic import accounts
 from soc.logic.helper import timeline as timeline_helper
@@ -231,6 +232,8 @@ class GSoCHostActions(HostActions):
 class OrgHome(GSoCRequestHandler):
   """View methods for Organization Home page."""
 
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
   def templatePath(self):
     return 'modules/gsoc/org_home/base.html'
 
@@ -245,10 +248,6 @@ class OrgHome(GSoCRequestHandler):
         django_url(r'^org/show/%s$' % url_patterns.ORG, self),
         django_url(r'^org/home/%s$' % url_patterns.ORG, self),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    """Access checks for GSoC Organization Homepage."""
-    pass
 
   def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""

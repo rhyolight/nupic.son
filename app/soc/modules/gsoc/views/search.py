@@ -16,6 +16,7 @@
 
 import os
 
+from melange.request import access
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.views import base
@@ -24,6 +25,8 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 
 class SearchGsocPage(base.GSoCRequestHandler):
   """View for the search gsoc page."""
+
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     return [
@@ -39,6 +42,3 @@ class SearchGsocPage(base.GSoCRequestHandler):
 
   def templatePath(self):
     return 'modules/gsoc/search.html'
-
-  def checkAccess(self, data, check, mutator):
-    pass

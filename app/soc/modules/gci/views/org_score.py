@@ -14,6 +14,7 @@
 
 """Module for the GCI organization score page."""
 
+from melange.request import access
 from melange.request import exception
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
@@ -84,8 +85,9 @@ class OrgScoresList(Template):
 
 
 class OrgScoresForOrgzanizationPage(GCIRequestHandler):
-  """View for the organizations scores page.
-  """
+  """View for the organizations scores page."""
+
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
 
   def templatePath(self):
     return 'modules/gci/org_score/base.html'
@@ -95,9 +97,6 @@ class OrgScoresForOrgzanizationPage(GCIRequestHandler):
         url(r'org_scores/%s$' % url_patterns.ORG, self,
             name=url_names.GCI_ORG_SCORES),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    pass
 
   def context(self, data, check, mutator):
     return {
