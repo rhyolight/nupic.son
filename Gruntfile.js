@@ -14,6 +14,7 @@ module.exports = function(grunt) {
 				js_dir: './app/soc/content/js',
         tests_dir: './tests',
 				js_files: '<%= meta.src.js_dir %>/**/*.js',
+        js_thirdparty_files: '<%= meta.src.js_dir %>/thirdparty/**/*.*',
 				test_specs: '<%= meta.src.tests_dir %>/**/*_spec.js',
         test_all: '<%= meta.src.tests_dir %>/**/*.js'
 			},
@@ -169,10 +170,38 @@ module.exports = function(grunt) {
           outdir: '<%= meta.reports.yuidoc %>'
         }
       }
+    },
+    jshint: {
+      options: {
+        browser: true,
+        trailing: true,
+        camelcase: true,
+        curly: true,
+        eqeqeq: true,
+        forin: true,
+        immed: true,
+        newcap: true,
+        noarg: true,
+        noempty: true,
+        quotmark: 'double',
+        undef: true,
+        unused: true,
+        maxlen: 80,
+        jquery: true,
+        globals: {
+          '$LAB': true,
+          'google': true,
+          'melange': true,
+          'Modernizr': true,
+          'tinyMCE': true
+        }
+      },
+      uses_defaults: ['<%= meta.src.js_files %>', '!<%= meta.src.js_thirdparty_files %>']
     }
 	});
 
   grunt.loadNpmTasks('grunt-contrib-jasmine');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-yuidoc');
   grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-plato');
