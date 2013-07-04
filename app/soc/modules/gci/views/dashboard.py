@@ -503,15 +503,14 @@ class MyOrgApplicationsComponent(Component):
     return 'modules/gci/dashboard/list_component.html'
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=0, preload_list=False)
 
     return {
         'name': 'org_app',
         'title': 'My organization applications',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext('My organization applications'),
         }
 
@@ -1012,15 +1011,14 @@ class MyOrgsMentorsList(Component):
     return'modules/gci/dashboard/list_component.html'
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=6, preload_list=False)
 
     return {
         'name': 'all_orgs_mentors',
         'title': 'All mentors for my organizations',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext('List of all mentors for my organizations'),
         }
 

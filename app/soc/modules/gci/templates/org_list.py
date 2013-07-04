@@ -31,11 +31,9 @@ class OrgList(Template):
   def context(self):
     description = self._getDescription()
 
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0, description)
-
     return {
-        'lists': [list],
+        'lists': [lists.ListConfigurationResponse(
+            self.data, self._list_config, 0, description)],
     }
 
   def getListData(self):

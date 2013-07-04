@@ -206,13 +206,13 @@ class StudentList(Template):
     return'modules/gci/students_info/_students_list.html'
 
   def context(self):
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=self.idx)
 
     return {
         'name': 'students',
         'title': 'Participating students',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext(
             'List of participating students'),
     }

@@ -403,15 +403,14 @@ class MyOrgApplicationsComponent(Component):
     return 'modules/gsoc/dashboard/list_component.html'
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=self.IDX, preload_list=False)
 
     return {
         'name': 'org_app',
         'title': 'My organization applications',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext('My organization applications'),
         }
 
@@ -473,15 +472,14 @@ class MyProposalsComponent(Component):
     return'modules/gsoc/dashboard/list_component.html'
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=1,
         description=MyProposalsComponent.DESCRIPTION, preload_list=False)
     return {
         'name': 'proposals',
         'title': 'Proposals',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext('List of my submitted proposals'),
         }
 
@@ -554,14 +552,13 @@ class MyProjectsComponent(Component):
     return response_builder.build()
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=2, preload_list=False)
     return {
         'name': 'projects',
         'title': 'Projects',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext('Projects'),
     }
 
@@ -645,15 +642,14 @@ class MyEvaluationsComponent(Component):
     return response_builder.build()
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=3, preload_list=False)
 
     return {
         'name': 'evaluations',
         'title': 'Evaluations',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext('Evaluations'),
     }
 
@@ -714,15 +710,14 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
     return response_builder.build()
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=3, preload_list=False)
 
     return {
         'name': 'evaluations',
         'title': 'My Evaluations',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext('Evaluations that I must complete'),
     }
 
@@ -913,13 +908,13 @@ class SubmittedProposalsComponent(Component):
     if self.has_extra_columns:
       description += self.CUSTOM_COLUMNS
 
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=4, description=description,
         preload_list=False)
     return {
         'name': 'proposals_submitted',
         'title': 'Proposals submitted to my organizations',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext(
             'List of proposals submitted to my organizations'),
         }
@@ -1123,9 +1118,8 @@ class ProjectsIMentorComponent(Component):
     return response_builder.build()
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=5)
 
     if self.data.is_org_admin:
@@ -1136,7 +1130,7 @@ class ProjectsIMentorComponent(Component):
     return {
         'name': 'mentoring_projects',
         'title': title,
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext(title),
     }
 
@@ -1225,15 +1219,14 @@ class OrganizationsIParticipateInComponent(Component):
     return response
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=6, preload_list=False)
 
     return {
         'name': 'adminning_organizations',
         'title': 'My organizations',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext(
             'List of organizations which I participate in'),
     }
@@ -1518,13 +1511,13 @@ class ParticipantsComponent(Component):
     return response_builder.build()
 
   def context(self):
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=9, preload_list=False)
 
     return {
         'name': 'participants',
         'title': 'Members of my organizations',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext(
             'List of your organizations members'),
     }
@@ -1620,13 +1613,13 @@ class TodoComponent(Component):
     return response
 
   def context(self):
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=11, preload_list=False)
 
     return {
         'name': 'todo',
         'title': 'My todos',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext('List of my todos'),
     }
 
@@ -1705,12 +1698,12 @@ class StudentEvaluationComponent(Component):
     return colorize(bool(self.record), "Submitted", "Not submitted")
 
   def context(self):
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=self.IDX, preload_list=False)
 
     return {
         'name': 'student_evaluations',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'title': 'Student Evaluations',
         'description': ugettext(
           'List of student evaluations for my organizations'),

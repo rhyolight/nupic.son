@@ -91,10 +91,9 @@ class OpenTasksList(Template):
 
   def context(self):
     description = 'List of all Open tasks.'
-    list = lists.ListConfigurationResponse(
-        self.data, self.list_config, 0, description)
     return {
-        'lists': [list],
+        'lists': [lists.ListConfigurationResponse(
+            self.data, self.list_config, 0, description)],
     }
 
   def getListData(self):
@@ -134,10 +133,9 @@ class CompletedTasksList(Template):
 
   def context(self):
     description = 'List of all Completed tasks.'
-    list = lists.ListConfigurationResponse(
-        self.data, self.list_config, 1, description)
     return {
-        'lists': [list],
+        'lists': [lists.ListConfigurationResponse(
+            self.data, self.list_config, 1, description)],
     }
 
   def getListData(self):

@@ -103,11 +103,11 @@ class DocumentList(template.Template):
     description = 'List of documents for %s' % (
             self.data.program.name)
 
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, 0, description)
 
     return {
-        'lists': [list],
+        'lists': [list_configuration_response],
     }
 
   def getListData(self):

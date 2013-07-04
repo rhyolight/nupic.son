@@ -289,10 +289,9 @@ class GradingRecordsList(Template):
     self._list_config = list_config
 
   def context(self):
-    """Returns the context for the current template.
-    """
-    list = lists.ListConfigurationResponse(self.data, self._list_config, idx=0)
-    return {'lists': [list]}
+    """Returns the context for the current template."""
+    return {'lists': [lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=0)]}
 
   def listContent(self):
     """Returns the ListContentResponse object that is constructed from the data.

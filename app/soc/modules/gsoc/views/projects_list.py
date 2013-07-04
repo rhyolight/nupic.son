@@ -98,13 +98,13 @@ class ProjectList(Template):
     self._list_config = list_config
 
   def context(self):
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=self.idx,
         description='List of projects accepted into %s' % (
             self.data.program.name))
 
     return {
-        'lists': [list],
+        'lists': [list_configuration_response],
         }
 
   def getListData(self):

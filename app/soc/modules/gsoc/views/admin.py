@@ -862,12 +862,12 @@ class ProposalsList(Template):
   def context(self):
     description = 'List of proposals submitted into %s' % self.data.organization.name
 
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=0, description=description)
     return {
         'name': 'proposals_submitted',
         'title': 'PROPOSALS SUBMITTED TO MY ORGS',
-        'lists': [list],
+        'lists': [list_configuration_response],
         }
 
   def getListData(self):
@@ -966,14 +966,14 @@ class ProjectsList(Template):
     self._list_config = list_config
 
   def context(self):
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=0,
         description='List of projects under %s that ' \
             'accepted into %s' % (
             self.data.organization.name, self.data.program.name))
 
     return {
-        'lists': [list],
+        'lists': [list_configuration_response],
         }
 
   def getListData(self):
@@ -1222,13 +1222,13 @@ class StudentsList(Template):
 
   def context(self):
     description = ugettext('List of participating students')
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=0, description=description)
 
     return {
         'name': 'students',
         'title': 'Participating students',
-        'lists': [list],
+        'lists': [list_configuration_response],
     }
 
 

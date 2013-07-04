@@ -48,11 +48,9 @@ class TaskList2(Template):
     description = 'List of tasks for %s' % (
             self.data.program.name)
 
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0, description)
-
     return {
-        'lists': [list],
+        'lists': [lists.ListConfigurationResponse(
+            self.data, self._list_config, 0, description)],
     }
 
   def getListData(self):
