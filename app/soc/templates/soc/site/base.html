@@ -39,9 +39,6 @@ limitations under the License.
     dep.melange.autocomplete,
     dep.uniform,
     null,
-    function () {
-      jQuery("select, input:radio, input:file, input:checkbox").uniform();
-      melange.autocomplete.makeAutoComplete("tos");
-    }
+    tc("/soc/content/{{ app_version }}/js/templates/soc/site/base.js")
   ]
 {% endblock dependencies %}
