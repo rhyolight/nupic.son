@@ -29,7 +29,6 @@ from soc.modules.gsoc.views import document
 from soc.modules.gsoc.views import duplicates
 from soc.modules.gsoc.views import grading_record_details
 from soc.modules.gsoc.views import homepage
-from soc.modules.gsoc.views import invite
 from soc.modules.gsoc.views import mentor_evaluation
 from soc.modules.gsoc.views import org_app
 from soc.modules.gsoc.views import org_home
@@ -41,7 +40,6 @@ from soc.modules.gsoc.views import project_details
 from soc.modules.gsoc.views import projects_list
 from soc.modules.gsoc.views import proposal
 from soc.modules.gsoc.views import proposal_review
-from soc.modules.gsoc.views import request
 from soc.modules.gsoc.views import search
 from soc.modules.gsoc.views import slot_allocation
 from soc.modules.gsoc.views import slot_transfer
@@ -92,8 +90,6 @@ class Callback(object):
     self.views.append(grading_record_details.GradingRecordDetails())
     self.views.append(grading_record_details.GradingRecordsOverview())
     self.views.append(homepage.Homepage())
-    self.views.append(invite.InvitePage())
-    self.views.append(invite.ShowInvite())
     self.views.append(mentor_evaluation.GSoCMentorEvaluationEditPage())
     self.views.append(mentor_evaluation.GSoCMentorEvaluationPreviewPage())
     self.views.append(mentor_evaluation.GSoCMentorEvaluationRecordsList())
@@ -135,8 +131,6 @@ class Callback(object):
     self.views.append(proposal_review.WishToMentor())
     self.views.append(proposal_review.WithdrawProposal())
     self.views.append(proposal.UpdateProposal())
-    self.views.append(request.RequestPage())
-    self.views.append(request.ShowRequest())
     self.views.append(search.SearchGsocPage())
     self.views.append(slot_allocation.SlotsPage())
     self.views.append(slot_transfer_admin.SlotsTransferAdminPage())
