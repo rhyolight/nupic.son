@@ -8,6 +8,7 @@ module.exports = function(grunt) {
         css_gsoc_dir: '<%= meta.src.css_dir %>/gsoc',
         css_gci_dir: '<%= meta.src.css_dir %>/gci',
         less_dir: 'app/soc/content/less',
+        less_files: 'app/soc/content/less/**/*.less',
         less_soc_dir: '<%= meta.src.less_dir %>/soc',
         less_gsoc_dir: '<%= meta.src.less_dir %>/gsoc',
         less_gci_dir: '<%= meta.src.less_dir %>/gci',
@@ -197,6 +198,18 @@ module.exports = function(grunt) {
         }
       },
       uses_defaults: ['<%= meta.src.js_files %>', '!<%= meta.src.js_thirdparty_files %>']
+    },
+    lesslint: {
+      src: [
+        '<%= meta.src.less_files %>',
+        '!<%= meta.src.less_gci_dir %>/forms_*.less',
+        '!<%= meta.src.less_gci_dir %>/style_*.less'
+      ],
+      options:{
+        less: {
+          paths: ['<%= meta.src.less_dir %>']
+        }
+      }
     }
 	});
 
@@ -204,6 +217,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-yuidoc');
   grunt.loadNpmTasks('grunt-contrib-less');
+  grunt.loadNpmTasks('grunt-lesslint');
   grunt.loadNpmTasks('grunt-plato');
 
   grunt.registerTask('coverage', ['jasmine:coverage']);
