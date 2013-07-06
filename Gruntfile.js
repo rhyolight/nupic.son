@@ -208,6 +208,12 @@ module.exports = function(grunt) {
       options:{
         less: {
           paths: ['<%= meta.src.less_dir %>']
+        },
+        csslint: {
+          'adjoining-classes': false,
+          'ids': false,
+          'qualified-headings': false,
+          'unique-headings': false
         }
       }
     }
