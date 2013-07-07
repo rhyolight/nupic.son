@@ -23,6 +23,8 @@ from mapreduce import context
 from mapreduce import base_handler
 from mapreduce import mapreduce_pipeline
 
+import json
+
 
 NO_OF_SHARDS = 4
 
@@ -34,7 +36,7 @@ def mapProcess(entity):
   list_id_func = eval(params['list_id_func'])
   column_defs = eval(params['column_defs'])
 
-  item = lists.toListItemDict(entity, column_defs)
+  item = json.dumps(lists.toListItemDict(entity, column_defs))
 
   list_id = list_id_func(entity)
 
@@ -42,7 +44,8 @@ def mapProcess(entity):
 
 
 def reduceProcess(list_id, entities):
-  ndb.transaction(lambda: cached_list.cacheItems(list_id, entities))
+  ndb.transaction(
+      lambda: cached_list.cacheItems(list_id, map(json.loads, entities)))
 
 
 class CacheListsPipeline(base_handler.PipelineBase):
