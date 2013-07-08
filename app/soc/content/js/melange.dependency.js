@@ -117,10 +117,6 @@
     tpjs + "jquery/jquery.cluetip.js"
    ];
 
-  s.dimensions = [
-    tpjs + "jquery/jquery.dimensions.js"
-  ];
-
   s.scrollTo = [
     tpjs + "jquery/jquery.scrollTo.js"
   ];
@@ -341,7 +337,6 @@
   ];
 
   s.melange.action = [
-    s.dimensions,
     s.cluetip,
     s.jqueryui.checkboxes,
     null,
