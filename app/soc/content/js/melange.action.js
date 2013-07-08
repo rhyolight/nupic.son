@@ -38,48 +38,40 @@
     */
   var $m = melange.logging.debugDecorator(melange.action);
 
-  melange.error.createErrors([
-  ]);
-
-  $m.toggleButton = function (id, type, post_url, init_state, labels, callback) {
-    var button_id = id;
-    var button_type = type;
-    var button_post_url = post_url;
-    var button_state = init_state;
-    var button_labels = labels;
-
+  $m.toggleButton = function (id, type, postUrl, initState, labels, callback) {
     jQuery(document).ready(function() {
-      jQuery('.' + button_type + ' :checkbox#' + button_id)
+      jQuery("." + type + " :checkbox#" + id)
         .iphoneStyle({
-          checkedLabel: button_labels.checked,
-          uncheckedLabel: button_labels.unchecked
-        }).change(function (){
-          jQuery.post(button_post_url,
-              {id: id, value: button_state, xsrf_token: window.xsrf_token},
-              function(data) {
-            if (button_state == "checked") {
-              button_state = "unchecked";
-            } else if (button_state == "unchecked") {
-              button_state = "checked";
+          checkedLabel: labels.checked,
+          uncheckedLabel: labels.unchecked
+        })
+        .change(function (){
+          jQuery.post(
+            postUrl,
+            {
+              id: id,
+              value: initState,
+              xsrf_token: window.xsrf_token
+            },
+            function() {
+              if (callback !== undefined && typeof(callback) === "function") {
+                callback();
+              }
             }
-            if (callback !== undefined && typeof(callback) === 'function') {
-              callback();
-            }
-          });
-      });
+          );
+        });
     });
   };
 
   $m.createCluetip = function () {
     jQuery(document).ready(function() {
-      jQuery('a.load-tooltip').cluetip({
-        local:true,
-        cursor: 'pointer',
-        showTitle:false,
-        tracking:true,
-        dropShadow:false
+      jQuery("a.load-tooltip").cluetip({
+        local: true,
+        cursor: "pointer",
+        showTitle: false,
+        tracking: true,
+        dropShadow: false
       });
     });
   };
-
 }());
