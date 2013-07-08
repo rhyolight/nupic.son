@@ -274,7 +274,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     response = self.get(url)
 
     proposal = GSoCProposal.get(proposal.key())
-    self.assertFalse(other_mentor.profile.key() in proposal.possible_mentors)
+    self.assertNotIn(other_mentor.profile.key(), proposal.possible_mentors)
 
   def testPubliclyVisibleButton(self):
     self.profile_helper.createStudent()

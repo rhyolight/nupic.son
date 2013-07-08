@@ -105,17 +105,17 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     return response.context
 
   def assertNoStudent(self, context):
-    self.assertFalse('student_apply_block' in context)
-    self.assertFalse('student_profile_link' in context)
-    self.assertFalse('submit_proposal_link' in context)
+    self.assertNotIn('student_apply_block', context)
+    self.assertNotIn('student_profile_link', context)
+    self.assertNotIn('submit_proposal_link', context)
 
   def assertNoMentor(self, context):
-    self.assertFalse('mentor_apply_block' in context)
-    self.assertFalse('mentor_profile_link' in context)
-    self.assertFalse('role' in context)
-    self.assertFalse('mentor_applied' in context)
-    self.assertFalse('invited_role' in context)
-    self.assertFalse('mentor_request_link' in context)
+    self.assertNotIn('mentor_apply_block', context)
+    self.assertNotIn('mentor_profile_link', context)
+    self.assertNotIn('role', context)
+    self.assertNotIn('mentor_applied', context)
+    self.assertNotIn('invited_role', context)
+    self.assertNotIn('mentor_request_link', context)
 
   def assertMentor(self):
     self.profile_helper.createMentor(self.org)
@@ -123,11 +123,11 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertNoStudent(context)
 
     self.assertIn('mentor_apply_block', context)
-    self.assertFalse('mentor_profile_link' in context)
+    self.assertNotIn('mentor_profile_link', context)
     self.assertEqual('a mentor', context['role'])
-    self.assertFalse('mentor_applied' in context)
-    self.assertFalse('invited_role' in context)
-    self.assertFalse('mentor_request_link' in context)
+    self.assertNotIn('mentor_applied', context)
+    self.assertNotIn('invited_role', context)
+    self.assertNotIn('mentor_request_link', context)
 
   def testAnonymousPreSignup(self):
     self.timeline_helper.orgSignup()
@@ -136,24 +136,24 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
 
     self.assertIn('mentor_apply_block', context)
     self.assertIn('mentor_profile_link', context)
-    self.assertFalse('role' in context)
-    self.assertFalse('mentor_applied' in context)
-    self.assertFalse('invited_role' in context)
-    self.assertFalse('mentor_request_link' in context)
+    self.assertNotIn('role', context)
+    self.assertNotIn('mentor_applied', context)
+    self.assertNotIn('invited_role', context)
+    self.assertNotIn('mentor_request_link', context)
 
   def testAnonymousDuringSignup(self):
     self.timeline_helper.studentSignup()
     context = self.homepageContext()
     self.assertIn('student_apply_block', context)
     self.assertIn('student_profile_link', context)
-    self.assertFalse('submit_proposal_link' in context)
+    self.assertNotIn('submit_proposal_link', context)
 
-    self.assertFalse('mentor_apply_block' in context)
+    self.assertNotIn('mentor_apply_block', context)
     self.assertIn('mentor_profile_link', context)
-    self.assertFalse('role' in context)
-    self.assertFalse('mentor_applied' in context)
-    self.assertFalse('invited_role' in context)
-    self.assertFalse('mentor_request_link' in context)
+    self.assertNotIn('role', context)
+    self.assertNotIn('mentor_applied', context)
+    self.assertNotIn('invited_role', context)
+    self.assertNotIn('mentor_request_link', context)
 
   def testAnonymousPostSignup(self):
     self.timeline_helper.postStudentSignup()
@@ -162,22 +162,22 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
 
     self.assertIn('mentor_apply_block', context)
     self.assertIn('mentor_profile_link', context)
-    self.assertFalse('role' in context)
-    self.assertFalse('mentor_applied' in context)
-    self.assertFalse('invited_role' in context)
-    self.assertFalse('mentor_request_link' in context)
+    self.assertNotIn('role', context)
+    self.assertNotIn('mentor_applied', context)
+    self.assertNotIn('invited_role', context)
+    self.assertNotIn('mentor_request_link', context)
 
   def testAnonymousStudentsAnnounced(self):
     self.timeline_helper.studentsAnnounced()
     context = self.homepageContext()
     self.assertNoStudent(context)
 
-    self.assertFalse('mentor_apply_block' in context)
-    self.assertFalse('mentor_profile_link' in context)
-    self.assertFalse('role' in context)
-    self.assertFalse('mentor_applied' in context)
-    self.assertFalse('invited_role' in context)
-    self.assertFalse('mentor_request_link' in context)
+    self.assertNotIn('mentor_apply_block', context)
+    self.assertNotIn('mentor_profile_link', context)
+    self.assertNotIn('role', context)
+    self.assertNotIn('mentor_applied', context)
+    self.assertNotIn('invited_role', context)
+    self.assertNotIn('mentor_request_link', context)
 
   def testMentorPreSignup(self):
     self.timeline_helper.orgSignup()
@@ -201,11 +201,11 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertNoStudent(context)
 
     self.assertIn('mentor_apply_block', context)
-    self.assertFalse('mentor_profile_link' in context)
+    self.assertNotIn('mentor_profile_link', context)
     self.assertEqual('an administrator', context['role'])
-    self.assertFalse('mentor_applied' in context)
-    self.assertFalse('invited_role' in context)
-    self.assertFalse('mentor_request_link' in context)
+    self.assertNotIn('mentor_applied', context)
+    self.assertNotIn('invited_role', context)
+    self.assertNotIn('mentor_request_link', context)
 
   def testAppliedMentor(self):
     self.profile_helper.createMentorRequest(self.org)
@@ -213,11 +213,11 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertNoStudent(context)
 
     self.assertIn('mentor_apply_block', context)
-    self.assertFalse('mentor_profile_link' in context)
-    self.assertFalse('role' in context)
+    self.assertNotIn('mentor_profile_link', context)
+    self.assertNotIn('role', context)
     self.assertIn('mentor_applied', context)
-    self.assertFalse('invited_role' in context)
-    self.assertFalse('mentor_request_link' in context)
+    self.assertNotIn('invited_role', context)
+    self.assertNotIn('mentor_request_link', context)
 
   def testInvitedMentor(self):
     self.profile_helper.createInvitation(self.org, 'mentor')
@@ -225,11 +225,11 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertNoStudent(context)
 
     self.assertIn('mentor_apply_block', context)
-    self.assertFalse('mentor_profile_link' in context)
-    self.assertFalse('role' in context)
-    self.assertFalse('mentor_applied' in context)
+    self.assertNotIn('mentor_profile_link', context)
+    self.assertNotIn('role', context)
+    self.assertNotIn('mentor_applied', context)
     self.assertEqual('a mentor', context['invited_role'])
-    self.assertFalse('mentor_request_link' in context)
+    self.assertNotIn('mentor_request_link', context)
 
   def testInvitedOrgAdmin(self):
     self.profile_helper.createInvitation(self.org, 'org_admin')
@@ -237,18 +237,18 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertNoStudent(context)
 
     self.assertIn('mentor_apply_block', context)
-    self.assertFalse('mentor_profile_link' in context)
-    self.assertFalse('role' in context)
-    self.assertFalse('mentor_applied' in context)
+    self.assertNotIn('mentor_profile_link', context)
+    self.assertNotIn('role', context)
+    self.assertNotIn('mentor_applied', context)
     self.assertEqual('an administrator', context['invited_role'])
-    self.assertFalse('mentor_request_link' in context)
+    self.assertNotIn('mentor_request_link', context)
 
   def testStudentDuringSignup(self):
     self.timeline_helper.studentSignup()
     self.profile_helper.createStudent()
     context = self.homepageContext()
     self.assertIn('student_apply_block', context)
-    self.assertFalse('student_profile_link' in context)
+    self.assertNotIn('student_profile_link', context)
     self.assertIn('submit_proposal_link', context)
     self.assertNoMentor(context)
 

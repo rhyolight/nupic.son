@@ -104,4 +104,4 @@ class HomepageViewTest(GCIDjangoTestCase):
     # TOOD
     #apply_tmpl = response.context['apply']
     #self.assertTrue(apply_tmpl.data.profile)
-    #self.assertFalse('profile_link' in apply_tmpl.context())
+    #self.assertNotIn('profile_link', apply_tmpl.context())

@@ -77,8 +77,8 @@ class ProfileShowPageTest(GSoCDjangoTestCase):
     self.assertIn('program_name', context)
     self.assertIn('profile', context)
     self.assertIn('css_prefix', context)
-    self.assertFalse('submit_tax_link' in context)
-    self.assertFalse('submit_enrollment_link' in context)
+    self.assertNotIn('submit_tax_link', context)
+    self.assertNotIn('submit_enrollment_link', context)
 
     expected_page_name = '%s Profile - %s' % (
         self.profile_helper.program.short_name,
