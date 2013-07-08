@@ -17,6 +17,7 @@
 from django.conf.urls.defaults import url as django_url
 from django.utils.translation import ugettext
 
+from melange.request import access
 from melange.request import exception
 from soc.logic import accounts
 from soc.logic.helper import timeline as timeline_helper
@@ -143,7 +144,6 @@ class ProjectList(Template):
   def __init__(self, data):
     self.data = data
 
-    r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
@@ -156,19 +156,19 @@ class ProjectList(Template):
         lambda entity, m, *args: ", ".join(
             [m[i].name() for i in entity.mentors]))
     list_config.setDefaultSort('student')
-    list_config.setRowAction(lambda e, *args, **kwargs:
-        r.project(id=e.key().id_or_name(), student=e.parent().link_id).
-        urlOf('gsoc_project_details'))
+    list_config.setRowAction(lambda e, *args, **kwargs: data.redirect.project(
+        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
+        'gsoc_project_details'))
     self._list_config = list_config
 
   def context(self):
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=0,
         description='List of projects accepted into %s' % (
             self.data.organization.name))
 
     return {
-        'lists': [list],
+        'lists': [list_configuration_response],
         }
 
   def getListData(self):
@@ -231,6 +231,8 @@ class GSoCHostActions(HostActions):
 class OrgHome(GSoCRequestHandler):
   """View methods for Organization Home page."""
 
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
   def templatePath(self):
     return 'modules/gsoc/org_home/base.html'
 
@@ -245,10 +247,6 @@ class OrgHome(GSoCRequestHandler):
         django_url(r'^org/show/%s$' % url_patterns.ORG, self),
         django_url(r'^org/home/%s$' % url_patterns.ORG, self),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    """Access checks for GSoC Organization Homepage."""
-    pass
 
   def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""

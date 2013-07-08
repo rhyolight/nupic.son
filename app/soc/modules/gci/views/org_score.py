@@ -14,6 +14,7 @@
 
 """Module for the GCI organization score page."""
 
+from melange.request import access
 from melange.request import exception
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
@@ -35,7 +36,6 @@ class OrgScoresList(Template):
 
   def __init__(self, data):
     self.data = data
-    r = data.redirect
 
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key', (lambda ent, *args: "%s" % (
@@ -47,7 +47,7 @@ class OrgScoresList(Template):
     list_config.setDefaultSort('tasks', 'desc')
 
     list_config.setRowAction(
-        lambda e, *args: r.userOrg(user=e.parent().link_id).urlOf(
+        lambda e, *args: data.redirect.userOrg(user=e.parent().link_id).urlOf(
             url_names.GCI_STUDENT_TASKS_FOR_ORG))
 
     self._list_config = list_config
@@ -84,8 +84,9 @@ class OrgScoresList(Template):
 
 
 class OrgScoresForOrgzanizationPage(GCIRequestHandler):
-  """View for the organizations scores page.
-  """
+  """View for the organizations scores page."""
+
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
 
   def templatePath(self):
     return 'modules/gci/org_score/base.html'
@@ -95,9 +96,6 @@ class OrgScoresForOrgzanizationPage(GCIRequestHandler):
         url(r'org_scores/%s$' % url_patterns.ORG, self,
             name=url_names.GCI_ORG_SCORES),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    pass
 
   def context(self, data, check, mutator):
     return {

@@ -18,6 +18,24 @@ import unittest
 
 from nose.plugins import skip
 
+from melange.request import access
+
+
+class Explosive(object):
+  """Raises an exception on any attribute access."""
+
+  def __getattribute__(self, attribute_name):
+    raise ValueError()
+
+
+class AllAllowedAccessCheckerTest(unittest.TestCase):
+  """Tests the AllAllowedAccessChecker class."""
+
+  def testAccessAllowedWithPhonyInputs(self):
+    """Tests that access is allowed without examining inputs."""
+    access_checker = access.AllAllowedAccessChecker()
+    access_checker.checkAccess(Explosive(), Explosive(), Explosive())
+
 
 # TODO(nathaniel): Because the idea of RequestData objects having
 # an "is_host" attribute isn't unified across all program types

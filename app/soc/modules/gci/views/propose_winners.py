@@ -249,8 +249,6 @@ class OrganizationsForProposeWinnersList(org_list.OrgList):
   def _getListConfig(self):
     """Returns ListConfiguration object for the list.
     """
-    r = self.data.redirect
-
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.name.strip())
@@ -270,6 +268,8 @@ class ChooseOrganizationForProposeWinnersPage(GCIRequestHandler):
   he or she is moved to the propose winner page for this organization.
   """
 
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
   def templatePath(self):
     return 'modules/gci/org_list/base.html'
 
@@ -279,9 +279,6 @@ class ChooseOrganizationForProposeWinnersPage(GCIRequestHandler):
             r'org_choose_for_propose_winners/%s$' % url_patterns.PROGRAM, self,
             name=url_names.GCI_ORG_CHOOSE_FOR_PROPOSE_WINNNERS),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    pass
 
   def jsonContext(self, data, check, mutator):
     list_content = OrganizationsForProposeWinnersList(data).getListData()
@@ -318,8 +315,6 @@ class ProposedWinnersForOrgsList(org_list.OrgList):
   def _getListConfig(self):
     """Returns ListConfiguration object for the list.
     """
-    r = self.data.redirect
-
     def proposedWinnersFunc(organization, *args):
       profiles = profile_model.GCIProfile.get(organization.proposed_winners)
       return ', '.join([p.name() for p in profiles if p])

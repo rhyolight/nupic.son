@@ -162,11 +162,12 @@ class UserActions(Template):
   def _mentorContext(self):
     """Construct the context needed for mentor actions.
     """
-    r = self.data.redirect.review()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    self.data.redirect.review()
 
     wish_to_mentor = ToggleButtonTemplate(
         self.data, 'on_off', 'Wish to Mentor', 'wish-to-mentor',
-        r.urlOf('gsoc_proposal_wish_to_mentor'),
+        self.data.redirect.urlOf('gsoc_proposal_wish_to_mentor'),
         checked=self.data.isPossibleMentorForProposal(),
         help_text=self.DEF_WISH_TO_MENTOR_HELP,
         labels = {
@@ -177,7 +178,7 @@ class UserActions(Template):
     if self.data.timeline.afterStudentSignupEnd():
       proposal_modification_button = ToggleButtonTemplate(
           self.data, 'long', 'Proposal Modifications', 'proposal-modification',
-          r.urlOf('gsoc_proposal_modification'),
+          self.data.redirect.urlOf('gsoc_proposal_modification'),
           checked=self.data.proposal.is_editable_post_deadline,
           help_text=self.DEF_PROPOSAL_MODIFICATION_HELP,
           labels = {
@@ -191,7 +192,9 @@ class UserActions(Template):
     """Construct the context needed for org admin actions.
     """
     context = {}
-    r = self.data.redirect.review()
+
+    # TODO(nathaniel): Eliminate this state-setting call.
+    self.data.redirect.review()
 
     ignore_button_checked = False
     if self.data.proposal.status == 'ignored':
@@ -199,7 +202,7 @@ class UserActions(Template):
     if self.data.proposal.status in ['pending', 'ignored']:
       ignore_proposal = ToggleButtonTemplate(
           self.data, 'on_off', 'Ignore Proposal', 'proposal-ignore',
-          r.urlOf('gsoc_proposal_ignore'),
+          self.data.redirect.urlOf('gsoc_proposal_ignore'),
           checked=ignore_button_checked,
           help_text=self.DEF_IGNORE_PROPOSAL_HELP,
           note=self.DEF_IGNORE_PROPOSAL_NOTE,
@@ -211,7 +214,7 @@ class UserActions(Template):
     if not self.proposal_ignored:
       accept_proposal = ToggleButtonTemplate(
           self.data, 'on_off', 'Accept proposal', 'accept-proposal',
-          r.urlOf('gsoc_proposal_accept'),
+          self.data.redirect.urlOf('gsoc_proposal_accept'),
           checked=self.data.proposal.accept_as_project,
           help_text=self.DEF_ACCEPT_PROPOSAL_HELP,
           labels = {
@@ -219,7 +222,6 @@ class UserActions(Template):
               'unchecked': 'No',})
       self.toggle_buttons.append(accept_proposal)
 
-      r = self.data.redirect
       possible_mentors_keys = self.data.proposal.possible_mentors
       all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(
           self.data.proposal_org) if self.data.proposal_org.list_all_mentors \
@@ -231,7 +233,7 @@ class UserActions(Template):
 
       context['assign_mentor'] = assign_mentor.AssignMentorFields(
           self.data, current_mentors,
-          r.review().urlOf('gsoc_proposal_assign_mentor'),
+          self.data.redirect.review().urlOf('gsoc_proposal_assign_mentor'),
           all_mentors_keys, possible_mentors_keys)
 
     return context
@@ -239,11 +241,12 @@ class UserActions(Template):
   def _proposerContext(self):
     """Construct the context needed for proposer actions.
     """
-    r = self.data.redirect.review()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    self.data.redirect.review()
 
     publicly_visible = ToggleButtonTemplate(
         self.data, 'on_off', 'Publicly Visible', 'publicly-visible',
-        r.urlOf('gsoc_proposal_publicly_visible'),
+        self.data.redirect.urlOf('gsoc_proposal_publicly_visible'),
         checked=self.data.proposal.is_publicly_visible,
         help_text=self.DEF_PUBLICLY_VISIBLE_HELP,
         labels = {
@@ -258,7 +261,7 @@ class UserActions(Template):
         checked=False
       withdraw_proposal = ToggleButtonTemplate(
           self.data, 'on_off', 'Withdraw Proposal', 'withdraw-proposal',
-          r.urlOf('gsoc_proposal_withdraw'), checked=checked,
+          self.data.redirect.urlOf('gsoc_proposal_withdraw'), checked=checked,
           help_text=self.DEF_WITHDRAW_PROPOSAL_HELP,
           labels = {
               'checked': 'Yes',

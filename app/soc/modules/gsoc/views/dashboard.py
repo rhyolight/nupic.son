@@ -403,15 +403,14 @@ class MyOrgApplicationsComponent(Component):
     return 'modules/gsoc/dashboard/list_component.html'
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=self.IDX, preload_list=False)
 
     return {
         'name': 'org_app',
         'title': 'My organization applications',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext('My organization applications'),
         }
 
@@ -454,13 +453,12 @@ class MyProposalsComponent(Component):
 
   def __init__(self, data):
     """Initializes this component."""
-    r = data.redirect
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn('org', 'Organization',
                           lambda ent, *args: ent.org.name)
     list_config.setRowAction(lambda e, *args:
-        r.review(e.key().id_or_name(), e.parent().link_id).
+        data.redirect.review(e.key().id_or_name(), e.parent().link_id).
         urlOf('review_gsoc_proposal'))
     self._list_config = list_config
 
@@ -473,15 +471,14 @@ class MyProposalsComponent(Component):
     return'modules/gsoc/dashboard/list_component.html'
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=1,
         description=MyProposalsComponent.DESCRIPTION, preload_list=False)
     return {
         'name': 'proposals',
         'title': 'Proposals',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext('List of my submitted proposals'),
         }
 
@@ -512,8 +509,6 @@ class MyProjectsComponent(Component):
 
   def __init__(self, data):
     """Initializes this component."""
-    r = data.redirect
-
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
@@ -521,9 +516,9 @@ class MyProjectsComponent(Component):
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn('org', 'Organization Name',
         lambda ent, *args: ent.org.name)
-    list_config.setRowAction(lambda e, *args:
-        r.project(id=e.key().id_or_name(), student=e.parent().link_id).
-        urlOf('gsoc_project_details'))
+    list_config.setRowAction(lambda e, *args: data.redirect.project(
+        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
+        'gsoc_project_details'))
     self._list_config = list_config
 
     super(MyProjectsComponent, self).__init__(data)
@@ -554,14 +549,13 @@ class MyProjectsComponent(Component):
     return response_builder.build()
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=2, preload_list=False)
     return {
         'name': 'projects',
         'title': 'Projects',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext('Projects'),
     }
 
@@ -645,15 +639,14 @@ class MyEvaluationsComponent(Component):
     return response_builder.build()
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=3, preload_list=False)
 
     return {
         'name': 'evaluations',
         'title': 'Evaluations',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext('Evaluations'),
     }
 
@@ -714,15 +707,14 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
     return response_builder.build()
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=3, preload_list=False)
 
     return {
         'name': 'evaluations',
         'title': 'My Evaluations',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext('Evaluations that I must complete'),
     }
 
@@ -747,7 +739,6 @@ class SubmittedProposalsComponent(Component):
   # TODO(nathaniel): Wait, is this seriously a 100+-line *constructor*?
   def __init__(self, data):
     """Initializes this component."""
-    r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
@@ -863,7 +854,7 @@ class SubmittedProposalsComponent(Component):
 
     # row action
     list_config.setRowAction(lambda e, *args:
-        r.review(e.key().id_or_name(), e.parent().link_id).
+        data.redirect.review(e.key().id_or_name(), e.parent().link_id).
         urlOf('review_gsoc_proposal'))
     list_config.setDefaultSort('last_modified_on', 'desc')
 
@@ -913,13 +904,13 @@ class SubmittedProposalsComponent(Component):
     if self.has_extra_columns:
       description += self.CUSTOM_COLUMNS
 
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=4, description=description,
         preload_list=False)
     return {
         'name': 'proposals_submitted',
         'title': 'Proposals submitted to my organizations',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext(
             'List of proposals submitted to my organizations'),
         }
@@ -1074,7 +1065,6 @@ class ProjectsIMentorComponent(Component):
 
   def __init__(self, data):
     """Initializes this component."""
-    r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
@@ -1085,9 +1075,9 @@ class ProjectsIMentorComponent(Component):
     list_config.addPlainTextColumn('org', 'Organization',
                           lambda ent, *args: ent.org.name)
     list_config.setDefaultSort('title')
-    list_config.setRowAction(lambda e, *args:
-        r.project(id=e.key().id_or_name(), student=e.parent().link_id).
-        urlOf('gsoc_project_details'))
+    list_config.setRowAction(lambda e, *args: data.redirect.project(
+        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
+        'gsoc_project_details'))
     self._list_config = list_config
 
     super(ProjectsIMentorComponent, self).__init__(data)
@@ -1123,9 +1113,8 @@ class ProjectsIMentorComponent(Component):
     return response_builder.build()
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=5)
 
     if self.data.is_org_admin:
@@ -1136,7 +1125,7 @@ class ProjectsIMentorComponent(Component):
     return {
         'name': 'mentoring_projects',
         'title': title,
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext(title),
     }
 
@@ -1225,15 +1214,14 @@ class OrganizationsIParticipateInComponent(Component):
     return response
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=6, preload_list=False)
 
     return {
         'name': 'adminning_organizations',
         'title': 'My organizations',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext(
             'List of organizations which I participate in'),
     }
@@ -1518,13 +1506,13 @@ class ParticipantsComponent(Component):
     return response_builder.build()
 
   def context(self):
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=9, preload_list=False)
 
     return {
         'name': 'participants',
         'title': 'Members of my organizations',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext(
             'List of your organizations members'),
     }
@@ -1535,7 +1523,6 @@ class TodoComponent(Component):
   """
 
   def __init__(self, data):
-    r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn(
         'key', 'Key', (lambda d, *args: d['key']), hidden=True)
@@ -1556,7 +1543,8 @@ class TodoComponent(Component):
         return url + '#form_row_school_name'
       if key.isdigit():
         project_id = int(key)
-        r.project(id=project_id, student=data.profile.link_id)
+        # TODO(nathaniel): Eliminate this state-setting call.
+        data.redirect.project(id=project_id, student=data.profile.link_id)
         return data.redirect.urlOf(url_names.GSOC_PROJECT_UPDATE)
       return None
 
@@ -1620,13 +1608,13 @@ class TodoComponent(Component):
     return response
 
   def context(self):
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=11, preload_list=False)
 
     return {
         'name': 'todo',
         'title': 'My todos',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext('List of my todos'),
     }
 
@@ -1705,12 +1693,12 @@ class StudentEvaluationComponent(Component):
     return colorize(bool(self.record), "Submitted", "Not submitted")
 
   def context(self):
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=self.IDX, preload_list=False)
 
     return {
         'name': 'student_evaluations',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'title': 'Student Evaluations',
         'description': ugettext(
           'List of student evaluations for my organizations'),

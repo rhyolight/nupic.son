@@ -147,8 +147,8 @@ class MainDashboard(Dashboard):
 
   def context(self):
     """Returns the context of main dashboard."""
-    r = self.data.redirect
-    r.program()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    self.data.redirect.program()
 
     manage_orgs = ManageOrganizationsDashboard(self.data)
     program_settings = ProgramSettingsDashboard(self.data)
@@ -161,7 +161,7 @@ class MainDashboard(Dashboard):
             'description': ugettext(
                 'Lookup profile of mentor or student from various program.'),
             'title': 'Lookup profile',
-            'link': r.urlOf('lookup_gsoc_profile')
+            'link': self.data.redirect.urlOf('lookup_gsoc_profile')
         },
         {
             'name': 'allocate_slots',
@@ -169,14 +169,14 @@ class MainDashboard(Dashboard):
                 'Allocate slots (number of acceptable projects) per '
                 'organization'),
             'title': 'Allocate slots',
-            'link': r.urlOf('gsoc_slots')
+            'link': self.data.redirect.urlOf('gsoc_slots')
         },
         {
             'name': 'slots_transfer',
             'description': ugettext(
                 'Transfer slots for organizations'),
             'title': 'Slots transfer',
-            'link': r.urlOf('gsoc_admin_slots_transfer')
+            'link': self.data.redirect.urlOf('gsoc_admin_slots_transfer')
         },
         {
             'name': 'duplicates',
@@ -184,7 +184,7 @@ class MainDashboard(Dashboard):
                 'Calculate how many duplicate proposals, students that have '
                 'accepted proposals more than one'),
             'title': 'Duplicates',
-            'link': r.urlOf('gsoc_view_duplicates')
+            'link': self.data.redirect.urlOf('gsoc_view_duplicates')
         },
         {
             'name': 'accept_proposals',
@@ -192,7 +192,7 @@ class MainDashboard(Dashboard):
                 'Start proposals into projects conversion'),
             'title': 'Bulk accept proposals and send acceptance/rejection '
                      'emails',
-            'link': r.urlOf('gsoc_accept_proposals')
+            'link': self.data.redirect.urlOf('gsoc_accept_proposals')
         },
         {
             'name': 'manage_proposals',
@@ -200,14 +200,14 @@ class MainDashboard(Dashboard):
                 'Lists all the proposals submitted to the program and lets '
                 'accept individual proposals.'),
             'title': 'Proposals submitted',
-            'link': r.urlOf('gsoc_admin_accept_proposals')
+            'link': self.data.redirect.urlOf('gsoc_admin_accept_proposals')
         },
         {
             'name': 'withdraw_projects',
             'description': ugettext(
                 'Withdraw accepted projects or accept withdrawn projects'),
             'title': 'Accept/withdraw projects',
-            'link': r.urlOf('gsoc_withdraw_projects')
+            'link': self.data.redirect.urlOf('gsoc_withdraw_projects')
         },
         {
             'name': 'students',
@@ -264,8 +264,8 @@ class ProgramSettingsDashboard(Dashboard):
     Args:
       data: The RequestData object
     """
-    r = data.redirect
-    r.program()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.program()
 
     linker = links.Linker()
 
@@ -276,7 +276,7 @@ class ProgramSettingsDashboard(Dashboard):
                 'Edit your program settings such as information, slots, '
                 'documents, etc.'),
             'title': 'Edit program settings',
-            'link': r.urlOf(url_names.GSOC_PROGRAM_EDIT)
+            'link': data.redirect.urlOf(url_names.GSOC_PROGRAM_EDIT)
         },
         {
             'name': 'edit_timeline',
@@ -284,7 +284,7 @@ class ProgramSettingsDashboard(Dashboard):
                 'Edit your program timeline such as program start/end date, '
                 'student signup start/end date, etc.'),
             'title': 'Edit timeline',
-            'link': r.urlOf('edit_gsoc_timeline')
+            'link': data.redirect.urlOf('edit_gsoc_timeline')
         },
         {
             'name': 'edit_program_messages',
@@ -292,14 +292,14 @@ class ProgramSettingsDashboard(Dashboard):
                 'Edit program messages which will be sent in emails '
                 'to the specified participants.'),
             'title': 'Edit messages',
-            'link': r.urlOf(url_names.GSOC_EDIT_PROGRAM_MESSAGES)
+            'link': data.redirect.urlOf(url_names.GSOC_EDIT_PROGRAM_MESSAGES)
         },
         {
             'name': 'documents',
             'description': ugettext(
                 'List of documents from various program.'),
             'title': 'List of documents',
-            'link': r.urlOf('list_gsoc_documents')
+            'link': data.redirect.urlOf('list_gsoc_documents')
         },
         {
             'name': 'create_program',
@@ -340,8 +340,8 @@ class ManageOrganizationsDashboard(Dashboard):
     Args:
       data: The RequestData object
     """
-    r = data.redirect
-    r.program()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.program()
 
     subpages = [
         {
@@ -349,28 +349,28 @@ class ManageOrganizationsDashboard(Dashboard):
             'description': ugettext(
                 'Create or edit organization application'),
             'title': 'Edit organization application',
-            'link': r.urlOf('gsoc_edit_org_app')
+            'link': data.redirect.urlOf('gsoc_edit_org_app')
         },
         {
             'name': 'preview_org_app',
             'description': ugettext(
                 'Preview of the organization application.'),
             'title': 'Preview organization application',
-            'link': r.urlOf('gsoc_preview_org_app')
+            'link': data.redirect.urlOf('gsoc_preview_org_app')
         },
         {
             'name': 'org_app_records',
             'description': ugettext(
                 'List of submitted organization application'),
             'title': 'Organization application records',
-            'link': r.urlOf('gsoc_list_org_app_records')
+            'link': data.redirect.urlOf('gsoc_list_org_app_records')
         },
         {
             'name': 'accepted_orgs',
             'description': ugettext(
                 'List of accepted organizations'),
             'title': 'Accepted Organizations',
-            'link': r.urlOf(url_names.GSOC_ORG_LIST_FOR_HOST),
+            'link': data.redirect.urlOf(url_names.GSOC_ORG_LIST_FOR_HOST),
         },
     ]
 
@@ -406,8 +406,8 @@ class EvaluationsDashboard(Dashboard):
     student_evaluations = StudentEvaluationsDashboard(data)
     evaluation_group = EvaluationGroupDashboard(data)
 
-    r = data.redirect
-    r.program()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.program()
 
     subpages = [
         {
@@ -415,7 +415,7 @@ class EvaluationsDashboard(Dashboard):
             'description': ugettext(
                 'Send reminder emails for evaluations.'),
             'title': 'Send reminder',
-            'link': r.urlOf('gsoc_survey_reminder_admin')
+            'link': data.redirect.urlOf('gsoc_survey_reminder_admin')
         },
         {
             'name': 'mentor_evaluations',
@@ -471,8 +471,8 @@ class MentorEvaluationsDashboard(Dashboard):
     Args:
       data: The RequestData object
     """
-    r = data.redirect
-    r.survey('midterm')
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.survey('midterm')
 
     subpages = [
         {
@@ -480,44 +480,45 @@ class MentorEvaluationsDashboard(Dashboard):
             'description': ugettext('Create or edit midterm evaluation for '
                 'mentors in active program'),
             'title': 'Create or Edit Midterm',
-            'link': r.urlOf('gsoc_edit_mentor_evaluation')
+            'link': data.redirect.urlOf('gsoc_edit_mentor_evaluation')
         },
         {
             'name': 'preview_mentor_evaluation',
             'description': ugettext('Preview midterm evaluation to be '
                 'administered mentors.'),
             'title': 'Preview Midterm Evaluation',
-            'link': r.urlOf('gsoc_preview_mentor_evaluation')
+            'link': data.redirect.urlOf('gsoc_preview_mentor_evaluation')
         },
         {
             'name': 'view_mentor_evaluation',
             'description': ugettext('View midterm evaluation for mentors'),
             'title': 'View Midterm Records',
-            'link': r.urlOf('gsoc_list_mentor_eval_records')
+            'link': data.redirect.urlOf('gsoc_list_mentor_eval_records')
         },
     ]
 
-    r.survey('final')
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.survey('final')
     subpages += [
         {
             'name': 'edit_mentor_evaluation',
             'description': ugettext('Create or edit midterm evaluation for '
                 'mentors in active program'),
             'title': 'Create or Edit Final Evaluation',
-            'link': r.urlOf('gsoc_edit_mentor_evaluation')
+            'link': data.redirect.urlOf('gsoc_edit_mentor_evaluation')
         },
         {
             'name': 'preview_mentor_evaluation',
             'description': ugettext('Preview final evaluation to be '
                 'administered mentors.'),
             'title': 'Preview Final Evaluation',
-            'link': r.urlOf('gsoc_preview_mentor_evaluation')
+            'link': data.redirect.urlOf('gsoc_preview_mentor_evaluation')
         },
         {
             'name': 'view_mentor_evaluation',
             'description': ugettext('View final evaluation for mentors'),
             'title': 'View Final Evaluation Records',
-            'link': r.urlOf('gsoc_list_mentor_eval_records')
+            'link': data.redirect.urlOf('gsoc_list_mentor_eval_records')
         },
     ]
 
@@ -554,8 +555,8 @@ class StudentEvaluationsDashboard(Dashboard):
     Args:
       data: The RequestData object
     """
-    r = data.redirect
-    r.survey('midterm')
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.survey('midterm')
 
     subpages = [
         {
@@ -563,44 +564,45 @@ class StudentEvaluationsDashboard(Dashboard):
             'description': ugettext('Create or edit midterm evaluation for '
                 'students in active program'),
             'title': 'Create or Edit Midterm Evaluation',
-            'link': r.urlOf('gsoc_edit_student_evaluation')
+            'link': data.redirect.urlOf('gsoc_edit_student_evaluation')
         },
         {
             'name': 'preview_student_evaluation',
             'description': ugettext('Preview midterm evaluation to be '
                 'administered to the students.'),
             'title': 'Preview Midterm Evaluation',
-            'link': r.urlOf('gsoc_preview_student_evaluation')
+            'link': data.redirect.urlOf('gsoc_preview_student_evaluation')
         },
         {
             'name': 'view_student_evaluation',
             'description': ugettext('View midterm evaluation for students'),
             'title': 'View Midterm Evaluation Records',
-            'link': r.urlOf('gsoc_list_student_eval_records')
+            'link': data.redirect.urlOf('gsoc_list_student_eval_records')
         },
     ]
 
-    r.survey('final')
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.survey('final')
     subpages += [
         {
             'name': 'edit_student_evaluation',
             'description': ugettext('Create or edit final evaluation for '
                 'students in active program'),
             'title': 'Create or Edit Final Evaluation',
-            'link': r.urlOf('gsoc_edit_student_evaluation')
+            'link': data.redirect.urlOf('gsoc_edit_student_evaluation')
         },
         {
             'name': 'preview_student_evaluation',
             'description': ugettext('Preview final evaluation to be '
                 'administered to the students.'),
             'title': 'Preview Final Evaluation',
-            'link': r.urlOf('gsoc_preview_student_evaluation')
+            'link': data.redirect.urlOf('gsoc_preview_student_evaluation')
         },
         {
             'name': 'view_student_evaluation',
             'description': ugettext('View final evaluation for students'),
             'title': 'View Final Evaluation Records',
-            'link': r.urlOf('gsoc_list_student_eval_records')
+            'link': data.redirect.urlOf('gsoc_list_student_eval_records')
         },
     ]
 
@@ -637,15 +639,15 @@ class EvaluationGroupDashboard(Dashboard):
     Args:
       data: The RequestData object
     """
-    r = data.redirect
-    r.program()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.program()
 
     subpages = [
         {
             'name': 'edit_evaluation_group',
             'description': ugettext('Create evaluation group'),
             'title': 'Create',
-            'link': r.urlOf('gsoc_grading_group')
+            'link': data.redirect.urlOf('gsoc_grading_group')
         },
     ]
 
@@ -659,7 +661,7 @@ class EvaluationGroupDashboard(Dashboard):
             'name': 'view_evaluation_group_%s' % group.key().id(),
             'description': ugettext('View this group'),
             'title': 'View %s' % group.name,
-            'link': r.urlOf('gsoc_grading_record_overview')
+            'link': data.redirect.urlOf('gsoc_grading_record_overview')
         }
       )
 
@@ -695,9 +697,8 @@ class StudentsDashboard(Dashboard):
     Args:
       data: The RequestData object
     """
-
-    r = data.redirect
-    r.program()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.program()
 
     subpages = [
         {
@@ -705,14 +706,14 @@ class StudentsDashboard(Dashboard):
             'description': ugettext(
                 'List of all the students who have registered to the program.'),
             'title': 'All Students',
-            'link': r.urlOf('gsoc_students_list_admin')
+            'link': data.redirect.urlOf('gsoc_students_list_admin')
         },
         {
             'name': 'list_projects',
             'description': ugettext(
                 'List of all the projects who have accepted to the program.'),
             'title': 'All Projects',
-            'link': r.urlOf('gsoc_projects_list_admin')
+            'link': data.redirect.urlOf('gsoc_projects_list_admin')
         },
     ]
 
@@ -862,12 +863,12 @@ class ProposalsList(Template):
   def context(self):
     description = 'List of proposals submitted into %s' % self.data.organization.name
 
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=0, description=description)
     return {
         'name': 'proposals_submitted',
         'title': 'PROPOSALS SUBMITTED TO MY ORGS',
-        'lists': [list],
+        'lists': [list_configuration_response],
         }
 
   def getListData(self):
@@ -966,14 +967,14 @@ class ProjectsList(Template):
     self._list_config = list_config
 
   def context(self):
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=0,
         description='List of projects under %s that ' \
             'accepted into %s' % (
             self.data.organization.name, self.data.program.name))
 
     return {
-        'lists': [list],
+        'lists': [list_configuration_response],
         }
 
   def getListData(self):
@@ -1124,7 +1125,6 @@ class StudentsList(Template):
     """Initializes this component."""
     self.data = data
 
-    r = self.data.redirect
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn(
         'name', 'Name', lambda ent, *args: ent.name())
@@ -1138,8 +1138,8 @@ class StudentsList(Template):
         'birth_date', "Birthdate",
         (lambda ent, *args: dateformat.format(ent.birth_date, BIRTHDATE_FORMAT)),
         hidden=True)
-    list_config.setRowAction(lambda e, *args:
-        r.profile(e.link_id).urlOf(url_names.GSOC_PROFILE_SHOW, secure=True))
+    list_config.setRowAction(lambda e, *args: data.redirect.profile(
+        e.link_id).urlOf(url_names.GSOC_PROFILE_SHOW, secure=True))
 
     def formsSubmitted(ent, si):
       info = si[ent.key()]
@@ -1222,13 +1222,13 @@ class StudentsList(Template):
 
   def context(self):
     description = ugettext('List of participating students')
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=0, description=description)
 
     return {
         'name': 'students',
         'title': 'Participating students',
-        'lists': [list],
+        'lists': [list_configuration_response],
     }
 
 

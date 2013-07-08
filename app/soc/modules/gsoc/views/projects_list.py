@@ -77,7 +77,6 @@ class ProjectList(Template):
 
     self.idx = self.DEFAULT_IDX if idx is None else idx
 
-    r = data.redirect
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key',
         (lambda ent, *args: "%s/%s" % (
@@ -92,19 +91,19 @@ class ProjectList(Template):
         lambda entity, *args: args[0][entity.key()], hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')
-    list_config.setRowAction(lambda e, *args:
-        r.project(id=e.key().id_or_name(), student=e.parent().link_id).
-        urlOf('gsoc_project_details'))
+    list_config.setRowAction(lambda e, *args: data.redirect.project(
+        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
+        'gsoc_project_details'))
     self._list_config = list_config
 
   def context(self):
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=self.idx,
         description='List of projects accepted into %s' % (
             self.data.program.name))
 
     return {
-        'lists': [list],
+        'lists': [list_configuration_response],
         }
 
   def getListData(self):

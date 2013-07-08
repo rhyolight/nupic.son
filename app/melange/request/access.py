@@ -71,6 +71,16 @@ class AccessChecker(object):
     raise NotImplementedError()
 
 
+class AllAllowedAccessChecker(AccessChecker):
+  """AccessChecker that allows all requests for access."""
+
+  def checkAccess(self, data, check, mutator):
+    """See AccessChecker.checkAccess for specification."""
+    pass
+
+ALL_ALLOWED_ACCESS_CHECKER = AllAllowedAccessChecker()
+
+
 # TODO(nathaniel): There's some ninja polymorphism to be addressed here -
 # RequestData doesn't actually have an "is_host" attribute, but its two
 # major subclasses (the GCI-specific and GSoC-specific RequestData classes)

@@ -61,11 +61,9 @@ class MentorsList(Template):
         'List of organization admins and mentors participating in %s' % (
             self.data.program.name)
 
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0, description)
-
     return {
-        'lists': [list],
+        'lists': [lists.ListConfigurationResponse(
+            self.data, self._list_config, 0, description)],
     }
 
   def getListData(self):

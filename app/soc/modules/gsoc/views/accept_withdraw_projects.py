@@ -87,14 +87,14 @@ class ProposalList(Template):
     self._list_config = list_config
 
   def context(self):
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=0,
         description='List of proposals submitted for %s' % (
             self.data.program.name))
 
     return {
         'list_title': 'Submitted Proposals',
-        'lists': [list],
+        'lists': [list_configuration_response],
         }
 
   def post(self):
@@ -262,14 +262,14 @@ class ProjectList(Template):
     self._list_config = list_config
 
   def context(self):
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=0,
         description='List of %s projects whether accepted or withdrawn' % (
             self.data.program.name))
 
     return {
         'list_title': 'Accepted Projects',
-        'lists': [list],
+        'lists': [list_configuration_response],
         }
 
   def post(self):

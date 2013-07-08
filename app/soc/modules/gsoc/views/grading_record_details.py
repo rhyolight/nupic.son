@@ -282,17 +282,15 @@ class GradingRecordsList(Template):
         'mentor_record', 'Evaluation by Mentor', mentorRecordInfo)
 
     list_config.addSimpleColumn('grade_decision', 'Decision')
-    r = data.redirect
     list_config.setRowAction(lambda e, *args:
-        r.grading_record(e).urlOf('gsoc_grading_record_detail'))
+        data.redirect.grading_record(e).urlOf('gsoc_grading_record_detail'))
 
     self._list_config = list_config
 
   def context(self):
-    """Returns the context for the current template.
-    """
-    list = lists.ListConfigurationResponse(self.data, self._list_config, idx=0)
-    return {'lists': [list]}
+    """Returns the context for the current template."""
+    return {'lists': [lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=0)]}
 
   def listContent(self):
     """Returns the ListContentResponse object that is constructed from the data.

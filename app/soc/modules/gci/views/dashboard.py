@@ -358,73 +358,71 @@ class DashboardPage(GCIRequestHandler):
 
   def _getMyInvitationsLink(self, data):
     """Get the link of incoming invitations list (invitations sent to me)."""
-    # TODO(nathaniel): This doesn't appear to be used?
-    r = data.redirect
-    r.program()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.program()
 
     return {
         'name': 'list_invites',
         'description': ugettext(
             'List of all invites which have been sent to me.'),
         'title': 'Invites to me',
-        'link': r.urlOf(url_names.GCI_LIST_INVITES)
+        'link': data.redirect.urlOf(url_names.GCI_LIST_INVITES)
         }
 
   def _getMyOrgInvitationsLink(self, data):
     """Get the link of outgoing invitations list (invitations sent by my orgs).
     """
-    # TODO(nathaniel): This also doesn't appear to be used?
-    r = data.redirect
-    r.program()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.program()
 
     return {
         'name': 'list_org_invites',
         'description': ugettext(
             'List of all invites which have been sent by my organizations.'),
         'title': 'My organization outgoing invitations',
-        'link': r.urlOf(url_names.GCI_LIST_ORG_INVITES)
+        'link': data.redirect.urlOf(url_names.GCI_LIST_ORG_INVITES)
         }
 
   def _getStudentFormsLink(self, data):
     """Get the link for uploading student forms."""
-    r = data.redirect
-    r.program()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.program()
 
     return {
         'name': 'form_uploads',
         'description': ugettext(
             'Upload student id and parental consent forms.'),
         'title': 'Form uploads',
-        'link': r.urlOf(url_names.GCI_STUDENT_FORM_UPLOAD)
+        'link': data.redirect.urlOf(url_names.GCI_STUDENT_FORM_UPLOAD)
         }
 
   def _getMyTasksLink(self, data):
     """Get the link to the list of all the tasks for the student
     who is currently logged in.
     """
-    r = data.redirect
-    r.profile(data.user.link_id)
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.profile(data.user.link_id)
 
     return {
         'name': 'student_tasks',
         'description': ugettext(
             'List of the tasks that you have completed so far in the program'),
         'title': 'My completed tasks',
-        'link': r.urlOf(url_names.GCI_STUDENT_TASKS)
+        'link': data.redirect.urlOf(url_names.GCI_STUDENT_TASKS)
         }
 
   def _getCurrentTaskLink(self, data, current_task):
     """Get the link to the task that the student is currently working on.
     """
-    r = data.redirect
-    r.id(current_task.key().id())
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.id(current_task.key().id())
 
     return {
         'name': 'current_task',
         'description': ugettext(
             'The task you are currently working on'),
         'title': 'My current task',
-        'link': r.urlOf('gci_view_task')
+        'link': data.redirect.urlOf('gci_view_task')
         }
 
   def _getMySubscribedTasksLink(self, data):
@@ -444,15 +442,16 @@ class DashboardPage(GCIRequestHandler):
 
   def _getProposeWinnersLink(self, data):
     """Get the link to the list of organization to propose winners for."""
-    r = data.redirect
-    r.program()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.program()
 
     return {
         'name': 'propose_winners',
         'description': ugettext(
             'Propose the Grand Prize Winners'),
         'title': 'Propose the Grand Prize Winners',
-        'link': r.urlOf(url_names.GCI_ORG_CHOOSE_FOR_PROPOSE_WINNNERS)
+        'link': data.redirect.urlOf(
+            url_names.GCI_ORG_CHOOSE_FOR_PROPOSE_WINNNERS)
         }
 
 
@@ -503,15 +502,14 @@ class MyOrgApplicationsComponent(Component):
     return 'modules/gci/dashboard/list_component.html'
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=0, preload_list=False)
 
     return {
         'name': 'org_app',
         'title': 'My organization applications',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext('My organization applications'),
         }
 
@@ -907,10 +905,8 @@ class MyOrgsListBeforeInviteMentor(MyOrgsList):
             'organization.')}
 
   def _setRowAction(self, request, data):
-    r = data.redirect
-
     self._list_config.setRowAction(
-        lambda e, *args: r.invite('mentor', e)
+        lambda e, *args: data.redirect.invite('mentor', e)
             .urlOf(url_names.GCI_SEND_INVITE))
 
 
@@ -935,10 +931,8 @@ class MyOrgsListBeforeInviteOrgAdmin(MyOrgsList):
             'they will become mentors too.')}
 
   def _setRowAction(self, request, data):
-    r = data.redirect
-
     self._list_config.setRowAction(
-        lambda e, *args: r.invite('org_admin', e)
+        lambda e, *args: data.redirect.invite('org_admin', e)
             .urlOf(url_names.GCI_SEND_INVITE))
 
 
@@ -1012,15 +1006,14 @@ class MyOrgsMentorsList(Component):
     return'modules/gci/dashboard/list_component.html'
 
   def context(self):
-    """Returns the context of this component.
-    """
-    list = lists.ListConfigurationResponse(
+    """Returns the context of this component."""
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=6, preload_list=False)
 
     return {
         'name': 'all_orgs_mentors',
         'title': 'All mentors for my organizations',
-        'lists': [list],
+        'lists': [list_configuration_response],
         'description': ugettext('List of all mentors for my organizations'),
         }
 
@@ -1084,7 +1077,6 @@ class OrgAdminInvitesList(Component):
 
   def __init__(self, data):
     self.data = data
-    r = data.redirect
 
     # GCIRequest entities have user entities as parents, so the keys
     # for the list items should be parent scoped.
@@ -1102,9 +1094,9 @@ class OrgAdminInvitesList(Component):
       list_config.addPlainTextColumn('org', 'From',
         lambda entity, *args: entity.org.name)
 
-    list_config.setRowAction(
-        lambda e, *args: r.userId(e.parent_key().name(), e.key().id())
-            .urlOf(url_names.GCI_MANAGE_INVITE))
+    list_config.setRowAction(lambda e, *args: data.redirect.userId(
+        e.parent_key().name(), e.key().id()).urlOf(
+        url_names.GCI_MANAGE_INVITE))
 
     self.idx = 9
     self._list_config = list_config
