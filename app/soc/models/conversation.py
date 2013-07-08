@@ -14,9 +14,14 @@
 
 """Module containing the Conversation model."""
 
+from google.appengine.ext import db
 from google.appengine.ext import ndb
 
+from datetime import datetime
+
 from django.utils import translation
+
+from soc.models import user as user_model
 
 #: Constants for specifiying the type of recipients
 PROGRAM       = 'Program'       #: Types of users within the program
@@ -29,18 +34,19 @@ class Conversation(ndb.Model):
 
   #: Subject of the conversation
   subject = ndb.TextProperty(required=True,
-                             verbose_name=translation.ugettext("Subject"))
+                             verbose_name=translation.ugettext('Subject'))
 
   #: User who created the conversation.
   #: Optional; If None, conversation was created by Melange.
   creator = ndb.KeyProperty(required=False)
 
   #: When the conversation was created
-  created_on = ndb.DateTimeProperty(auto_now_add=True)
+  created_on = ndb.DateTimeProperty(required=True, auto_now_add=True)
 
   #: When the last message was added
-  last_message_on = ndb.DateTimeProperty(required=False,
-                              verbose_name=translation.ugettext('Last Message'))
+  last_message_on = ndb.DateTimeProperty(
+      default=datetime.min,
+      verbose_name=translation.ugettext('Last Message'))
 
   #: What type of recipients
   recipients_type = ndb.StringProperty(required=True,
@@ -49,12 +55,13 @@ class Conversation(ndb.Model):
   #: Program under which the conversation exists.
   #: If recipient type is 'Program', this is also the scope of recipients.
   program = ndb.KeyProperty(required=True,
-                            verbose_name=translation.ugettext("Program"))
+                            verbose_name=translation.ugettext('Program'))
 
   #: Organization to limit to if recipients type is organization.
   #: Ignored if recipient type is not 'Organization'.
-  organization = ndb.KeyProperty(required=False,
-                              verbose_name=translation.ugettext("Organization"))
+  organization = ndb.KeyProperty(
+      required=False,
+      verbose_name=translation.ugettext('Organization'))
 
   #: Include admins as recipients if recipients type is program,
   #: or organization admins as recipients if recipients type is organization.
@@ -71,12 +78,13 @@ class Conversation(ndb.Model):
   include_students = ndb.BooleanProperty(required=False)
 
   #: Whether users will be automatically added/removed if they start/stop
-  #: matching the criteria defined above.
-  auto_update_users = ndb.BooleanProperty(required=True, default=True,
-                verbose_name=translation.ugettext('Automatically Update Users'))
+  #: matching the criteria defined above. Ignored if recipients type is 'User'.
+  auto_update_users = ndb.BooleanProperty(
+      default=True,
+      verbose_name=translation.ugettext('Automatically Update Users'))
   auto_update_users.help_text = translation.ugettext(
-            'If set, users will be automatically added and removed from the '
-            'conversation if they no longer fit the criteria.')
+      'If set, users will be automatically added and removed from the '
+      'conversation if they no longer fit the criteria.')
 
 
 class ConversationUser(ndb.Model):
@@ -90,18 +98,25 @@ class ConversationUser(ndb.Model):
   """
 
   #: Conversation the preferences apply to
-  conversation = ndb.KeyProperty(kind=Conversation,
-                                 required=True)
+  conversation = ndb.KeyProperty(kind=Conversation, required=True)
+
   #: User the preferences are for
   user = ndb.KeyProperty(required=True)
 
-  #: Time of the last message seen by this user in this conversation
-  last_message_seen_on = ndb.DateTimeProperty(required=False)
+  #: Conversation's Program, to aid with querying
+  program = ndb.ComputedProperty(lambda self: self.conversation.get().program)
 
-  #: Preference for receiving email notifications for new messages in a conversation
+  #: Conversation's last_message_on, to aid with querying
+  last_message_on = ndb.ComputedProperty(
+      lambda self: self.conversation.get().last_message_on)
+
+  #: Time of the last message seen by this user in this conversation
+  last_message_seen_on = ndb.DateTimeProperty(default=datetime.min)
+
+  #: Preference for receiving email notifications for new messages
   enable_notifications = ndb.BooleanProperty(
-                  required=True, default=True,
-                  verbose_name=translation.ugettext('Get Email Notifications'))
+      default=True,
+      verbose_name=translation.ugettext('Get Email Notifications'))
   enable_notifications.help_test = translation.ugettext(
-                  'If set, you will receive email notifications about new '
-                  'messages in this conversation.')
+      'If set, you will receive email notifications about new '
+      'messages in this conversation.')
