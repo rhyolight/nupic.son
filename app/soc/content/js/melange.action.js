@@ -41,19 +41,6 @@
   melange.error.createErrors([
   ]);
 
-  $m.createFloatMenu = function () {
-    var name = "#floatMenu";
-    var menuYloc = null;
-    jQuery(document).ready(function(){
-      menuYloc = parseInt(jQuery(name).css("top").substring(
-          0, jQuery(name).css("top").indexOf("px")))
-      jQuery(window).scroll(function () {
-        offset = menuYloc + jQuery(document).scrollTop()+"px";
-        jQuery(name).animate({top: offset},{duration: 500, queue: false});
-      });
-    });
-  };
-
   $m.toggleButton = function (id, type, post_url, init_state, labels, callback) {
     var button_id = id;
     var button_type = type;
@@ -81,18 +68,6 @@
           });
       });
     });
-  };
-
-  /* This function exists as a show case function to show that this
-   * functionality of chaining the onchange of some other button to
-   * this button is possible. It is currently not used anywhere. */
-  $m.createOnChangeButton = function () {
-    var onchange_checkbox = jQuery('.onchange :checkbox').iphoneStyle();
-    setInterval(function toggleCheckbox() {
-      onchange_checkbox.attr(
-        'checked', !onchange_checkbox.is(':checked')).change();
-      jQuery('span#status').html(onchange_checkbox.is(':checked').toString());
-    }, 2500);
   };
 
   $m.createCluetip = function () {
