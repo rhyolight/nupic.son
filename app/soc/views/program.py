@@ -16,6 +16,8 @@
 
 from google.appengine.ext import db
 
+from melange.request import access
+
 
 class CreateProgramPage(object):
   """View to create a new program.
@@ -24,9 +26,7 @@ class CreateProgramPage(object):
   function will be used by inheriting, module-specific classes.
   """
 
-  def checkAccess(self, data, check, mutator):
-    "See soc.views.base.RequestHandler.checkAccess for specification."
-    check.isHost()
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
 
   def context(self, data, check, mutator):
     """See soc.views.base.RequestHandler.context for specification."""
@@ -120,8 +120,7 @@ class CreateProgramPage(object):
 class ProgramMessagesPage(object):
   """View for the content of program specific messages to be sent."""
 
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
 
   def context(self, data, check, mutator):
     """See soc.views.base.RequestHandler.context for specification."""
