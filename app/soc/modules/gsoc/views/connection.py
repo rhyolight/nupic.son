@@ -830,7 +830,7 @@ class SubmitConnectionMessagePost(GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'connection/message/%s$' % url_patterns.MESSAGE, self,
+         url(r'connection/message/%s$' % url_patterns.CONNECTION_MESSAGE, self,
              name=url_names.GSOC_CONNECTION_MESSAGE),
     ]
 
