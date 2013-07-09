@@ -500,7 +500,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.profile_helper.createMentor(self.org)
 
     profile = self.profile_helper.profile
-    self.assertFalse(profile.key() in self.task.subscribers)
+    self.assertNotIn(profile.key(), self.task.subscribers)
 
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_subscribe')
@@ -524,7 +524,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
-    self.assertFalse(profile.key() in task.subscribers)
+    self.assertNotIn(profile.key(), task.subscribers)
 
   def testPostSubmitWork(self):
     """Tests for submitting work.

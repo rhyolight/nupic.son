@@ -19,8 +19,11 @@ from django.utils import translation
 from melange.request import exception
 from soc.logic import links
 
-_DEF_NOT_HOST = translation.ugettext(
+_MESSAGE_NOT_PROGRAM_ADMINISTRATOR = translation.ugettext(
     'You need to be a program administrator to access this page.')
+
+_MESSAGE_NOT_DEVELOPER = translation.ugettext(
+    'This page is only accessible to developers.')
 
 
 def ensureLoggedIn(self):
@@ -97,6 +100,20 @@ class ProgramAdministratorAccessChecker(AccessChecker):
     elif not data.gae_user:
       raise exception.LoginRequired()
     elif not data.is_host:
-      raise exception.Forbidden(message=_DEF_NOT_HOST)
+      raise exception.Forbidden(message=_MESSAGE_NOT_PROGRAM_ADMINISTRATOR)
 
 PROGRAM_ADMINISTRATOR_ACCESS_CHECKER = ProgramAdministratorAccessChecker()
+
+
+# TODO(nathaniel): Eliminate this or make it a
+# "SiteAdministratorAccessChecker" - there should be no aspects of Melange
+# that require developer action or are limited only to developers.
+class DeveloperAccessChecker(AccessChecker):
+  """AccessChecker that ensures that the user is a developer."""
+
+  def checkAccess(self, data, check, mutator):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.is_developer:
+      raise exception.Forbidden(message=_MESSAGE_NOT_DEVELOPER)
+
+DEVELOPER_ACCESS_CHECKER = DeveloperAccessChecker()

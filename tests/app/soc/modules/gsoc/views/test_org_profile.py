@@ -229,7 +229,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(context['page_name'], 'Organization profile')
     self.assertIn('org_home_page_link', context)
     self.assertIn('page_name', context)
-    self.assertFalse('slot_transfer_page_link' in context)
+    self.assertNotIn('slot_transfer_page_link', context)
 
     self.gsoc.allocations_visible = True
     self.gsoc.put()
@@ -242,7 +242,7 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertOrgProfilePageTemplatesUsed(response)
-    self.assertFalse('slot_transfer_page_link' in response.context)
+    self.assertNotIn('slot_transfer_page_link', response.context)
 
   def test404IsReturnedWhenOrgDoesNotExists(self):
     """Tests that when an org admin tries to access the profile page for an

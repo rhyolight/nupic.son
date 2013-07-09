@@ -19,6 +19,8 @@ import unittest
 from nose.plugins import skip
 
 from melange.request import access
+from melange.request import exception
+from soc.views.helper import request_data
 
 
 class Explosive(object):
@@ -65,3 +67,24 @@ class ProgramAdministratorAccessCheckerTest(unittest.TestCase):
   def testAnonymousDeniedAccess(self):
     """Tests that logged-out users are denied access."""
     raise skip.SkipTest()
+
+
+class DeveloperAccessCheckerTest(unittest.TestCase):
+  """Tests the DeveloperAccessChecker class."""
+
+  def testDeveloperAccessAllowed(self):
+    data = request_data.RequestData(None, None, None)
+    # TODO(nathaniel): Reaching around RequestHandler public API.
+    data._is_developer = True
+
+    access_checker = access.DeveloperAccessChecker()
+    access_checker.checkAccess(data, None, None)
+
+  def testNonDeveloperAccessDenied(self):
+    data = request_data.RequestData(None, None, None)
+    # TODO(nathaniel): Reaching around RequestHandler public API.
+    data._is_developer = False
+
+    access_checker = access.DeveloperAccessChecker()
+    with self.assertRaises(exception.UserError):
+      access_checker.checkAccess(data, None, None)
