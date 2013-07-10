@@ -203,44 +203,6 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertIn('mentor_apply_block', context)
     self.assertNotIn('mentor_profile_link', context)
     self.assertEqual('an administrator', context['role'])
-    self.assertNotIn('mentor_applied', context)
-    self.assertNotIn('invited_role', context)
-    self.assertNotIn('mentor_request_link', context)
-
-  def testAppliedMentor(self):
-    self.profile_helper.createMentorRequest(self.org)
-    context = self.homepageContext()
-    self.assertNoStudent(context)
-
-    self.assertIn('mentor_apply_block', context)
-    self.assertNotIn('mentor_profile_link', context)
-    self.assertNotIn('role', context)
-    self.assertIn('mentor_applied', context)
-    self.assertNotIn('invited_role', context)
-    self.assertNotIn('mentor_request_link', context)
-
-  def testInvitedMentor(self):
-    self.profile_helper.createInvitation(self.org, 'mentor')
-    context = self.homepageContext()
-    self.assertNoStudent(context)
-
-    self.assertIn('mentor_apply_block', context)
-    self.assertNotIn('mentor_profile_link', context)
-    self.assertNotIn('role', context)
-    self.assertNotIn('mentor_applied', context)
-    self.assertEqual('a mentor', context['invited_role'])
-    self.assertNotIn('mentor_request_link', context)
-
-  def testInvitedOrgAdmin(self):
-    self.profile_helper.createInvitation(self.org, 'org_admin')
-    context = self.homepageContext()
-    self.assertNoStudent(context)
-
-    self.assertIn('mentor_apply_block', context)
-    self.assertNotIn('mentor_profile_link', context)
-    self.assertNotIn('role', context)
-    self.assertNotIn('mentor_applied', context)
-    self.assertEqual('an administrator', context['invited_role'])
     self.assertNotIn('mentor_request_link', context)
 
   def testStudentDuringSignup(self):

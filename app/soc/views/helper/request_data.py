@@ -353,26 +353,6 @@ class RequestData(object):
         self._ds_write_disabled = not db.WRITE_CAPABILITY.is_enabled()
     return self._ds_write_disabled
 
-  def appliedTo(self, organization):
-    """Returns true iff the user has applied for the specified organization.
-
-    Organization may either be a key or an organization instance.
-    """
-    query = self._requestQuery(organization)
-    query.filter('type', 'Request')
-    return bool(query.get())
-
-  def invitedTo(self, organization):
-    """Returns the role the user has been invited to,.
-
-    Organization may either be a key or an organization instance.
-    Returns None if no invite was sent.
-    """
-    query = self._requestQuery(organization)
-    query.filter('type', 'Invitation')
-    invite = query.get()
-    return invite.role if invite else None
-
 
 # TODO(nathaniel): This should be immutable.
 class RedirectHelper(object):

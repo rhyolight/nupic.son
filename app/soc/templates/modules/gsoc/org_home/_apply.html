@@ -50,9 +50,6 @@ limitations under the License.
         {% if role %}
           <p>You are already {{ role }} for this organization</p>
         {% endif %}
-        {% if mentor_applied %}
-          <p>You have already applied to be a mentor for this organization</p>
-        {% endif %}
       </p>
       {% if mentor_connect_link %}
         <p id="block-apply-mentors-text-small" class="small">to become mentor for {{ organization.name }}.</p>

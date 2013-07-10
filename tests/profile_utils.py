@@ -349,27 +349,6 @@ class GSoCProfileHelper(ProfileHelper):
     self.seed(GSoCProject, properties)
     return self.profile
 
-  def createMentorRequest(self, org):
-    """Creates a mentor request.
-    """
-    from soc.modules.gsoc.models.request import GSoCRequest
-    self.createProfile()
-    properties = {
-        'role': 'mentor', 'user': self.user, 'org': org,
-        'status': 'pending', 'type': 'Request',
-        'parent': self.user,
-    }
-    return seeder_logic.seed(GSoCRequest, properties=properties)
-
-  def createInvitation(self, org, role):
-    from soc.modules.gsoc.models.request import GSoCRequest
-    self.createProfile()
-    properties = {
-        'role': role, 'user': self.user, 'org': org,
-        'status': 'pending', 'type': 'Invitation',
-        'parent': self.user,
-    }
-    return seeder_logic.seed(GSoCRequest, properties=properties)
 
 class GCIProfileHelper(ProfileHelper):
   """Helper class to aid in manipulating GCI profile data.
