@@ -473,9 +473,13 @@ class AccessChecker(access_checker.AccessChecker):
     self.isLoggedIn()
 
     program = self.data.program
-    r = self.data.redirect.createProfile('org_admin')
+
+    # TODO(nathaniel): Eliminate this state-setting call.
+    self.data.redirect.createProfile('org_admin')
+
     msg = DEF_NO_ORG_ADMIN_PROFILE % (
-          program.short_name, r.urlOf('create_gsoc_profile', secure=True))
+          program.short_name,
+          self.data.redirect.urlOf('create_gsoc_profile', secure=True))
 
     if not self.data.user:
       raise exception.Forbidden(message=msg)

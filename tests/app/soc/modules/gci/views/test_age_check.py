@@ -29,7 +29,7 @@ class AgeCheckTest(GCIDjangoTestCase):
 
   def setUp(self):
     self.init()
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
 
   def assertAgeCheckTemplatesUsed(self, response):
     """Asserts that all the templates were used.
@@ -43,7 +43,7 @@ class AgeCheckTest(GCIDjangoTestCase):
     self.assertResponseRedirect(response)
 
   def testAgeCheckRejectsTooYoung(self):
-    self.data.logout()
+    self.profile_helper.logout()
     url = '/gci/age_check/' + self.gci.key().name()
     birth_date = str(date.today() - timedelta(365*10))
     postdata = {'birth_date': birth_date}
@@ -52,7 +52,7 @@ class AgeCheckTest(GCIDjangoTestCase):
     self.assertEqual('0', response.cookies['age_check'].value)
 
   def testAgeCheckPassedRedirects(self):
-    self.data.logout()
+    self.profile_helper.logout()
     url = '/gci/age_check/' + self.gci.key().name()
     response = self.get(url)
     self.assertAgeCheckTemplatesUsed(response)

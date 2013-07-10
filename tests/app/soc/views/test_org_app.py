@@ -137,7 +137,7 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
     # Make sure we do not have an org app for this test.
     self.org_app.delete()
 
-    self.data.createHost()
+    self.profile_helper.createHost()
     url = '/gsoc/org/application/edit/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertOrgAppCreateOrEditTemplatesUsed(response)
@@ -208,7 +208,7 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
     # Make sure we do not have an org app for this test.
     self.org_app.delete()
 
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     url = '/gsoc/org/application/edit/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
@@ -230,7 +230,7 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
     # Make sure we do not have an org app for this test.
     self.org_app.delete()
 
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     url = '/gsoc/org/application/edit/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
@@ -252,7 +252,7 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
     # Make sure we do not have an org app for this test.
     self.org_app.delete()
 
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     url = '/gsoc/org/application/edit/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
@@ -281,7 +281,7 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
   def testOrgAppTakeWithProfile(self):
     """Tests that any one with a profile can apply as an organization.
     """
-    self.data.createProfile()
+    self.profile_helper.createProfile()
     url = '/gsoc/org/application/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)

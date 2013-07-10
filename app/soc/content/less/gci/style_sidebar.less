@@ -1,0 +1,221 @@
+.block-main-nav {
+  /*Main navigation*/
+  background: #e0e0e0;
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+      font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+      font-size: 15px;
+      font-weight: bold;
+
+      a {
+        background: #e0e0e0;
+        color: #0075b4;
+        display: block;
+        padding: 8px 13px 6px 13px;
+
+        &:hover {
+          background: #59bbff;
+          color: #fff;
+        }
+      }
+
+      &.active a,
+      &.menu-login-register a {
+        background: #59bbff;
+        color: #fff;
+      }
+
+      ul {
+        /*Second level*/
+        margin: 0;
+
+        li {
+          font-size: 13px;
+          a {
+            padding: 0 0 0 30px;
+          }
+        }
+      }
+    }
+  }
+
+  > ul {
+
+    > li {
+
+      &:first-child > a {
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        -moz-border-radius-topleft: 3px;
+        -moz-border-radius-topright: 3px;
+        -webkit-border-top-left-radius: 3px;
+        -webkit-border-top-right-radius: 3px;
+      }
+
+      &:last-child > a {
+        border-bottom-left-radius: 3px;
+        border-bottom-right-radius: 3px;
+        -moz-border-radius-bottomleft: 3px;
+        -moz-border-radius-bottomright: 3px;
+        -webkit-border-bottom-left-radius: 3px;
+        -webkit-border-bottom-right-radius: 3px;
+      }
+    }
+  }
+}
+
+.block-status {
+  /*Current Task*/
+  background: #d0e8f9;
+
+  .block-title {
+    padding-left: 68px;
+    padding-bottom: 5px;
+  }
+
+  .block-status-top {
+    background: #d14936;
+    border-bottom: 1px solid #983527;
+    border-top: 1px solid #983527;
+    color: #fff;
+    padding: 4px 0;
+
+    .emph {
+      color: #faafa5;
+      text-transform: uppercase;
+    }
+
+    .block-status-status,
+    .block-status-time {
+      display: block;
+      font-weight: bold;
+      line-height: 14px;
+      margin-left: 68px;
+    }
+
+    .block-status-status {
+      text-transform: uppercase;
+    }
+  }
+
+  .block-content {
+    padding: 10px;
+  }
+
+  .block-status-task {
+    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+    font-weight: bold;
+    line-height: 20px;
+
+    .block-status-task-link,
+    .block-status-task-project {
+      display: block;
+    }
+
+    .block-status-task-link a {
+      font-size: 17px;
+    }
+
+    .block-status-task-project {
+      margin-top: 3px;
+    }
+  }
+
+  .block-status-action {
+    font-size: 13px;
+    font-weight: bold;
+
+    a {
+      background: #0f649d;
+      border-bottom: 1px solid #0b4973;
+      color: #fff;
+      display: block;
+      float: left;
+      padding: 3px 0;
+      text-align: center;
+
+      &:hover {
+        background: #d14936;
+        border-bottom: 1px solid #b62f23;
+      }
+
+      &:first-child {
+        border-right: 1px solid #0b4973;
+
+        &:hover {
+          border-right: 1px solid #b62f23;
+        }
+      }
+
+      span {
+        background: url(@image_arrow_white_sm) right center no-repeat;
+        padding-right: 10px;
+      }
+
+      &.block-status-action-view {
+        width: 99px;
+      }
+
+      &.block-status-action-dashboard {
+        width: 120px;
+      }
+    }
+
+    &.block-status-action-single {
+      /*One action button*/
+      a {
+        text-align: left;
+        width: 100%;
+        span {
+          padding-left: 15px;
+        }
+      }
+    }
+  }
+
+  .block-status-action-single {
+    a {
+      &:first-child,
+      &:first-child:hover {
+        border-right: none;
+      }
+    }
+  }
+
+  .block-status-user {
+    background: #e2e2e2;
+    border-bottom: 1px solid #a5a5a5;
+    color: #000;
+    line-height: 16px;
+    padding: 7px 7px 7px 13px;
+
+    a {
+      color: #0a5d94;
+    }
+  }
+}
+
+.block-status-sm {
+  /*Same as current task block, condensed content*/
+  background: #E2E2E2;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  -moz-border-radius-topleft: 3px;
+  -moz-border-radius-topright: 3px;
+  -webkit-border-top-left-radius: 3px;
+  -webkit-border-top-right-radius: 3px;
+
+  .block-status-user {
+    background: none;
+    border-bottom: none;
+    padding-top: 10px;
+  }
+}

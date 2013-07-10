@@ -28,7 +28,7 @@ class ProfileXSSTest(object):
 
   def setUp(self):
     self.init()
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
 
   def testSanitization(self):
     xss_payload = '><img src=http://www.google.com/images/srpr/logo4w.png>'
@@ -41,8 +41,8 @@ class ProfileXSSTest(object):
 
     postdata = {
         'link_id': xss_payload,
-        'user': self.data.user,
-        'parent': self.data.user,
+        'user': self.profile_helper.user,
+        'parent': self.profile_helper.user,
         'scope': self.program,
         'status': 'active',
         'email': xss_payload,

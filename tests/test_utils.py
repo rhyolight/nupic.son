@@ -309,8 +309,8 @@ class GSoCTestCase(SoCTestCase):
     self.site = self.program_helper.createSite()
     self.org = self.program_helper.createOrg()
     self.org_app = self.program_helper.createOrgApp()
-    self.timeline = GSoCTimelineHelper(self.gsoc.timeline, self.org_app)
-    self.data = GSoCProfileHelper(self.gsoc, self.dev_test)
+    self.timeline_helper = GSoCTimelineHelper(self.gsoc.timeline, self.org_app)
+    self.profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
 
 
 class GCITestCase(SoCTestCase):
@@ -345,8 +345,8 @@ class GCITestCase(SoCTestCase):
     self.site = self.program_helper.createSite()
     self.org = self.program_helper.createOrg()
     self.org_app = self.program_helper.createOrgApp()
-    self.timeline = GCITimelineHelper(self.gci.timeline, self.org_app)
-    self.data = GCIProfileHelper(self.gci, self.dev_test)
+    self.timeline_helper = GCITimelineHelper(self.gci.timeline, self.org_app)
+    self.profile_helper = GCIProfileHelper(self.gci, self.dev_test)
 
 
 class DjangoTestCase(TestCase):
@@ -440,8 +440,8 @@ class DjangoTestCase(TestCase):
     from soc.modules.seeder.logic.providers.string import (
         DocumentKeyNameProvider)
     properties = {
-        'modified_by': self.data.user,
-        'author': self.data.user,
+        'modified_by': self.profile_helper.user,
+        'author': self.profile_helper.user,
         'home_for': None,
         'prefix': prefix,
         'scope': self.program,

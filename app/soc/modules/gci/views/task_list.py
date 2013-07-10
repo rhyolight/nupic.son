@@ -14,6 +14,7 @@
 
 """Module containing the views for GCI historic task page."""
 
+from melange.request import access
 from melange.request import exception
 from soc.views.helper import url_patterns
 from soc.views.helper import lists
@@ -34,12 +35,11 @@ class TaskList2(Template):
 
   def __init__(self, data):
     self.data = data
-    r = data.redirect
 
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.setRowAction(
-        lambda e, *args: r.id(e.key().id()).urlOf('gci_view_task'))
+        lambda e, *args: data.redirect.id(e.key().id()).urlOf('gci_view_task'))
 
     self._list_config = list_config
 
@@ -47,11 +47,9 @@ class TaskList2(Template):
     description = 'List of tasks for %s' % (
             self.data.program.name)
 
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0, description)
-
     return {
-        'lists': [list],
+        'lists': [lists.ListConfigurationResponse(
+            self.data, self._list_config, 0, description)],
     }
 
   def getListData(self):
@@ -73,8 +71,9 @@ class TaskList2(Template):
 
 
 class TaskListPage(GCIRequestHandler):
-  """View for the list task page.
-  """
+  """View for the list task page."""
+
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
 
   def templatePath(self):
     return 'modules/gci/task/task_list.html'
@@ -84,9 +83,6 @@ class TaskListPage(GCIRequestHandler):
         url(r'finished_tasks/%s$' % url_patterns.PROGRAM, self,
             name='list_gci_finished_tasks'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    pass
 
   def jsonContext(self, data, check, mutator):
     list_content = TaskList2(data).getListData()
@@ -176,6 +172,8 @@ class ChooseOrganizationPage(GCIRequestHandler):
   he or she is moved to the organization tasks for this organization.
   """
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def templatePath(self):
     return 'modules/gci/org_list/base.html'
 
@@ -184,9 +182,6 @@ class ChooseOrganizationPage(GCIRequestHandler):
         url(r'org_choose_for_all_tasks/%s$' % url_patterns.PROGRAM, self,
             name=url_names.GCI_ORG_CHOOSE_FOR_ALL_TASKS),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     list_content = ChooseOrganizationList(data).getListData()
@@ -223,6 +218,8 @@ class AllOrganizationTasksPage(GCIRequestHandler):
   which is specified in the URL.
   """
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def templatePath(self):
     return 'modules/gci/task/task_list.html'
 
@@ -231,9 +228,6 @@ class AllOrganizationTasksPage(GCIRequestHandler):
         url(r'org/tasks/all/%s$' % url_patterns.ORG, self,
             name=url_names.GCI_ORG_TASKS_ALL),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     list_content = AllOrganizationTasksList(data).getListData()

@@ -35,24 +35,6 @@ limitations under the License.
   [
     dep.uniform,
     null,
-    function () {
-      jQuery("select, input:radio, input:file, input:checkbox").uniform();
-
-      /* Add new mentors upon the click of "Add new" link below assign mentors*/
-      var last_id = 1;
-      new_link = function () {
-        var new_mentor = jQuery("select#assign-mentor-0").clone(true);
-        new_mentor = new_mentor.attr(
-            'id', new_mentor.attr('id') + '-new-' + last_id);
-        new_mentor.appendTo("div#select-mentors-wrapper");
-        new_mentor.children('option').each(function () {
-          jQuery(this).removeAttr('selected');
-          jQuery(this).removeAttr('disabled');
-        });
-        new_mentor.uniform();
-        last_id++;
-      }
-      tinyMCE.init(melange.tinyMceConfig(["melange-description-textarea"], "advanced"));
-    }
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gci/task_create/base.js")
   ]
 {% endblock dependencies %}

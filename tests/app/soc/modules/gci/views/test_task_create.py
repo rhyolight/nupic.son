@@ -81,7 +81,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task creation view before the program is public for user with
     no role.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createProfile()
@@ -95,7 +95,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
   def testCreateTaskBeforeOrgsAnnouncedForOrgAdmin(self):
     """Tests the task creation view before the program is public for org admin.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOrgAdmin(self.org)
@@ -109,7 +109,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
   def testCreateTaskBeforeOrgsAnnouncedForMentor(self):
     """Tests the task creation view before the program is public for org admin.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createMentor(self.org)
@@ -123,7 +123,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
   def testCreateTaskBeforeOrgsAnnouncedForStudent(self):
     """Tests the task creation view before the program is public for org admin.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createStudent()
@@ -138,7 +138,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task creation view after the task claim deadline for user with
     no role.
     """
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createProfile()
@@ -152,7 +152,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
   def testCreateTaskAfterClaimEndForOrgAdmin(self):
     """Tests the task creation view after the task claim deadline for org admin.
     """
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOrgAdmin(self.org)
@@ -166,7 +166,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
   def testCreateTaskAfterClaimEndForMentor(self):
     """Tests the task creation view after the task claim deadline for mentor.
     """
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createMentor(self.org)
@@ -180,7 +180,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
   def testCreateTaskAfterClaimEndForStudent(self):
     """Tests the task creation view after the task claim deadline for student.
     """
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createStudent()
@@ -195,7 +195,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task full editing view before the program is public
     for user with no role.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createProfile()
@@ -212,7 +212,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task full editing view before the program is public
     for org admin.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOrgAdmin(self.org)
@@ -229,7 +229,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task full editing view before the program is public
     for mentor.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createMentor(self.org)
@@ -246,7 +246,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task full editing view before the program is public
     for student.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createStudent()
@@ -263,7 +263,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task full editing view after the task claim deadline
     for user with no role.
     """
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createProfile()
@@ -280,7 +280,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task full editing view after the task claim deadline
     for org admin.
     """
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOrgAdmin(self.org)
@@ -297,7 +297,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task full editing view after the task claim deadline for
     mentor.
     """
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
 
     task = self.createTask()
 
@@ -314,7 +314,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task full editing view after the task claim deadline for
     student.
     """
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createStudent()
@@ -331,7 +331,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task post claim editing view before the program is public
     for user with no role.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createProfile()
@@ -348,7 +348,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task post claim editing view before the program is public
     for org admin.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOrgAdmin(self.org)
@@ -365,7 +365,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task post claim editing view before the program is public
     for mentor.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createMentor(self.org)
@@ -382,7 +382,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task post claim editing view before the program is
     public for student.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createStudent()
@@ -399,7 +399,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task post claim editing view after the task claim deadline for
     user with no role.
     """
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createProfile()
@@ -416,7 +416,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task post claim editing view after the task claim deadline
     for org admin.
     """
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOrgAdmin(self.org)
@@ -433,7 +433,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task post claim editing view after the task claim deadline
     for mentor.
     """
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
 
     task = self.createTask(status='Claimed')
 
@@ -450,7 +450,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task post claim editing view after the task claim deadline
     for student.
     """
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createStudent()
@@ -466,7 +466,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
   def testCreateTaskDuringProgramForNoRole(self):
     """Tests the task creation view during the program for user with no role.
     """
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createProfile()
@@ -480,7 +480,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
   def testCreateTaskDuringProgramForOrgAdmin(self):
     """Tests the task creation view during the program for org admin.
     """
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOrgAdmin(self.org)
@@ -494,7 +494,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
   def testCreateTaskDuringProgramForMentor(self):
     """Tests the task creation view during the program for org admin.
     """
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createMentor(self.org)
@@ -508,7 +508,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
   def testCreateTaskDuringProgramForStudent(self):
     """Tests the task creation view during the program for org admin.
     """
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createStudent()
@@ -523,7 +523,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task full editing view during the program for user
     with no role.
     """
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createProfile()
@@ -539,7 +539,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
   def testFullEditTaskDuringProgramForOrgAdmin(self):
     """Tests the task full editing view during the program for org admin.
     """
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOrgAdmin(self.org)
@@ -555,7 +555,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
   def testFullEditTaskDuringProgramForMentor(self):
     """Tests the task full editing view during the program for mentor.
     """
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createMentor(self.org)
@@ -571,7 +571,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
   def testFullEditTaskDuringProgramForStudent(self):
     """Tests the task full editing view during the program for student.
     """
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createStudent()
@@ -588,7 +588,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """Tests the task post claim editing view during the program for user
     with no role.
     """
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createProfile()
@@ -604,7 +604,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
   def testPostClaimEditTaskDuringProgramForOrgAdmin(self):
     """Tests the task post claim editing view during the program for org admin.
     """
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOrgAdmin(self.org)
@@ -620,7 +620,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
   def testPostClaimEditTaskDuringProgramForMentor(self):
     """Tests the task post claim editing view during the program for mentor.
     """
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createMentor(self.org)
@@ -636,7 +636,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
   def testPostClaimEditTaskDuringProgramForStudent(self):
     """Tests the task post claim editing view during the program for student.
     """
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createStudent()

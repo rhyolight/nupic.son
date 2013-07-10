@@ -24,14 +24,6 @@ limitations under the License.
     dep.melange.main,
     dep.melange.uploadform,
     null,
-    function() {
-      jQuery("select, input:radio, input:file, input:checkbox").uniform();
-      var form_name = '#form';
-      jQuery(form_name).submit(function() {
-        var url = melange.getUploadUrl();
-        jQuery(form_name).get(0).setAttribute('action', url);
-        return true;
-      });
-    }
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gsoc/student_forms/base.js")
   ]
 {% endblock dependencies %}

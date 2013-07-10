@@ -11,16 +11,33 @@
 .model-readonly {
   /*all model read-only page styling elements*/
 
-}
+  .row {
+    /*styling for each property in the model*/
+    display: block;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    overflow: hidden;
+    width: 100%;
 
-.model-readonly .row {
-  /*styling for each property in the model*/
+    label {
+      /*verbose name of each model property*/
+      clear: left;
+      color: #238bd2;
+      float: left;
+      font-weight: bold;
+      margin-right: 5px;
+      padding-right: 20px;
+      text-align: right;
+      width: 200px;
+    }
 
-  padding-top: 10px;
-  padding-bottom: 10px;
-  display: block;
-  overflow: hidden;
-  width: 100%;
+    span.readonly-row-content {
+      /*actual value stored in the property*/
+      float: right;
+      padding: 0;
+      width: 390px;
+    }
+  }
 }
 
 .even {
@@ -28,35 +45,12 @@
   background: #f6f6f6;
 }
 
-
 .odd {
   /*styling for odd rows*/
   background: white;
 }
 
-.model-readonly .row label {
-  /*verbose name of each model property*/
-
-  clear: left;
-  float: left;
-  font-weight: bold;
-  color: #238bd2;
-  margin-right: 5px;
-  padding-right: 20px;
-  text-align: right;
-  width: 200px;
-}
-
-.model-readonly .row span.readonly-row-content {
-  /*actual value stored in the property*/
-
-  float: right;
-  padding: 0;
-  width: 390px;
-}
-
 .hidden-row {
   /* styling for hidden field */
-
   display: none;
 }

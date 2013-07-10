@@ -16,6 +16,7 @@
 
 from django.conf.urls.defaults import url as django_url
 
+from melange.request import access
 from melange.request import exception
 from soc.views import document
 from soc.views.base_templates import ProgramSelect
@@ -153,6 +154,8 @@ class GSoCDocumentList(document.DocumentList):
 class DocumentListPage(GSoCRequestHandler):
   """View for the list documents page."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def templatePath(self):
     return 'modules/gsoc/document/document_list.html'
 
@@ -161,9 +164,6 @@ class DocumentListPage(GSoCRequestHandler):
         url(r'documents/%s$' % url_patterns.PROGRAM, self,
             name='list_gsoc_documents'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     list_content = GSoCDocumentList(data).getListData()

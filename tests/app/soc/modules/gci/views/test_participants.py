@@ -40,30 +40,30 @@ class MentorsListAdminPageTest(test_utils.GCIDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testMentorAccessForbidden(self):
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
     self.assertResponseForbidden(response)
 
   def testOrgAdminAccessForbidden(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
     self.assertResponseForbidden(response)
 
   def testStudentAccessForbidden(self):
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
     self.assertResponseForbidden(response)
 
   def testHostAccessGranted(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
     response = self.get(self.url)
     self._assertPageTemplatesUsed(response)
 
   def testMentorsAreDisplayed(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     # seed a couple of mentors
     profile_utils.GCIProfileHelper(self.gci, False).createMentor(self.org)

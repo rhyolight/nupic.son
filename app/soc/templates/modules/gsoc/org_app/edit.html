@@ -40,45 +40,11 @@ limitations under the License.
     dep.formbuilder,
     dep.melange.datetimepicker,
     null,
-    function () {
-      jQuery(document).ready(function(){
-        jQuery("select, input:radio, input:file, input:checkbox").uniform();
-
-        var config = {
-          changeMonth: true,
-          changeYear: false,
-          dateFormat: "yy-mm-dd",
-          showButtonPanel: true,
-        }
-        var fields_to_enhance = [
-          "#survey_start",
-          "#survey_end"
-        ].join(",");
-        jQuery(fields_to_enhance).datetimepicker(config);
-
-        jQuery('#form-builder').formbuilder({
-          save_url: "{{ post_url }}",
-          load_url: "{{ post_url }}",
-          useJson: true,
-        });
-        jQuery(function() {
-          jQuery("#form-wrap ul").sortable({ opacity: 0.6, cursor: 'move'});
-          // Set all options listings (select, radio and checkbox) to be sortable
-          jQuery(".options-wrap").sortable({ items: 'div', opacity: 0.6, cursor: 'move'});
-          jQuery('.add_ck, .add_opt, .add_rd').live("click", function() {
-            // use test of option to see if this is a sortable element
-            // ("one" method doesn't work on click for this element, for some reason)
-            if (jQuery.type(jQuery(this).parent().parent().sortable('option','cursor')) !== "string") {
-              // if the parent element is not already draggable, make it so
-              jQuery(this).parent().parent().sortable({ items: 'div', opacity: 0.6, cursor: 'move'});
-            }
-            return false;
-          });
-        });
-
-      });
-
-      tinyMCE.init(melange.tinyMceConfig(["melange-content-textarea"], "advanced"));
-    }
+    tc(
+      "/soc/content/{{ app_version }}/js/templates/modules/gsoc/org_app/edit.js",
+      {
+        post_url: "{{ post_url }}"
+      }
+    )
   ]
 {% endblock dependencies %}

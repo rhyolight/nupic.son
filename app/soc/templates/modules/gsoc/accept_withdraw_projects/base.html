@@ -35,10 +35,6 @@ limitations under the License.
     css("/soc/content/{{ app_version }}/css/gsoc/user-messages.css"),
     dep.melange.program_select,
     null,
-    function() {
-      jQuery("select, input:radio, input:file, input:checkbox").uniform();
-
-      melange.program_select.makeSelector("#program_select");
-    }
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gsoc/accept_withdraw_projects/base.js", {})
   ]
 {% endblock dependencies %}

@@ -77,7 +77,7 @@ class TaskList(Template):
     return lists.ListModelPrefetcher(GCITask, fields, list_fields)
 
   def _getListConfig(self):
-    r = self.data.redirect
+    self.data.redirect
 
     list_config = lists.ListConfiguration()
 
@@ -105,7 +105,8 @@ class TaskList(Template):
       list_config.addSimpleColumn('status', 'Status')
 
     list_config.setRowAction(
-        lambda e, *args: r.id(e.key().id()).urlOf('gci_view_task'))
+        lambda e, *args: self.data.redirect.id(e.key().id()).urlOf(
+            'gci_view_task'))
 
     return list_config
 

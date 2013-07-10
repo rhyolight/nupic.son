@@ -18,6 +18,7 @@ from google.appengine.ext import db
 
 from django import http
 
+from melange.request import access
 from soc.models.user import User
 from soc.views import readonly_template
 from soc.views.helper import url_patterns
@@ -53,12 +54,14 @@ class HostActions(Template):
     assert isSet(self.data.url_user)
     assert isSet(self.data.url_profile)
 
-    r = self.data.redirect.profile()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    self.data.redirect.profile()
+
     is_banned = self.data.url_profile.status == 'invalid'
 
     profile_banned = ToggleButtonTemplate(
         self.data, 'on_off', 'Banned', 'user-banned',
-        r.urlOf(self._getActionURLName()),
+        self.data.redirect.urlOf(self._getActionURLName()),
         checked=is_banned,
         help_text=self._getHelpText(),
         labels={
@@ -86,6 +89,8 @@ class HostActions(Template):
 class BanProfilePost(object):
   """Handles banning/unbanning of profiles."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
          url_patterns.url(
@@ -94,13 +99,9 @@ class BanProfilePost(object):
              self, name=self._getURLName()),
     ]
 
-  def checkAccess(self, data, check, mutator):
-    """See soc.views.base.RequestHandler.checkAccess for specification."""
-    check.isHost()
-    mutator.profileFromKwargs()
-
   def post(self, data, check, mutator):
     """See soc.views.base.RequestHandler.post for specification."""
+    mutator.profileFromKwargs()
     assert isSet(data.url_profile)
 
     value = data.POST.get('value')

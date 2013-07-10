@@ -38,73 +38,40 @@
     */
   var $m = melange.logging.debugDecorator(melange.action);
 
-  melange.error.createErrors([
-  ]);
-
-  $m.createFloatMenu = function () {
-    var name = "#floatMenu";
-    var menuYloc = null;
-    jQuery(document).ready(function(){
-      menuYloc = parseInt(jQuery(name).css("top").substring(
-          0, jQuery(name).css("top").indexOf("px")))
-      jQuery(window).scroll(function () {
-        offset = menuYloc + jQuery(document).scrollTop()+"px";
-        jQuery(name).animate({top: offset},{duration: 500, queue: false});
-      });
-    });
-  };
-
-  $m.toggleButton = function (id, type, post_url, init_state, labels, callback) {
-    var button_id = id;
-    var button_type = type;
-    var button_post_url = post_url;
-    var button_state = init_state;
-    var button_labels = labels;
-
+  $m.toggleButton = function (id, type, postUrl, initState, labels, callback) {
     jQuery(document).ready(function() {
-      jQuery('.' + button_type + ' :checkbox#' + button_id)
+      jQuery("." + type + " :checkbox#" + id)
         .iphoneStyle({
-          checkedLabel: button_labels.checked,
-          uncheckedLabel: button_labels.unchecked
-        }).change(function (){
-          jQuery.post(button_post_url,
-              {id: id, value: button_state, xsrf_token: window.xsrf_token},
-              function(data) {
-            if (button_state == "checked") {
-              button_state = "unchecked";
-            } else if (button_state == "unchecked") {
-              button_state = "checked";
+          checkedLabel: labels.checked,
+          uncheckedLabel: labels.unchecked
+        })
+        .change(function (){
+          jQuery.post(
+            postUrl,
+            {
+              id: id,
+              value: initState,
+              xsrf_token: window.xsrf_token
+            },
+            function() {
+              if (callback !== undefined && typeof(callback) === "function") {
+                callback();
+              }
             }
-            if (callback !== undefined && typeof(callback) === 'function') {
-              callback();
-            }
-          });
-      });
+          );
+        });
     });
-  };
-
-  /* This function exists as a show case function to show that this
-   * functionality of chaining the onchange of some other button to
-   * this button is possible. It is currently not used anywhere. */
-  $m.createOnChangeButton = function () {
-    var onchange_checkbox = jQuery('.onchange :checkbox').iphoneStyle();
-    setInterval(function toggleCheckbox() {
-      onchange_checkbox.attr(
-        'checked', !onchange_checkbox.is(':checked')).change();
-      jQuery('span#status').html(onchange_checkbox.is(':checked').toString());
-    }, 2500);
   };
 
   $m.createCluetip = function () {
     jQuery(document).ready(function() {
-      jQuery('a.load-tooltip').cluetip({
-        local:true,
-        cursor: 'pointer',
-        showTitle:false,
-        tracking:true,
-        dropShadow:false
+      jQuery("a.load-tooltip").cluetip({
+        local: true,
+        cursor: "pointer",
+        showTitle: false,
+        tracking: true,
+        dropShadow: false
       });
     });
   };
-
 }());

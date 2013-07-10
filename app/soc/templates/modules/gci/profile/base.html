@@ -43,19 +43,7 @@ limitations under the License.
     dep.jqueryui.datepicker,
     dep.dd,
     null,
-    function () {
-      jQuery("select, input:radio, input:file, input:checkbox").not('select[id^=avatar]').uniform();
-      jQuery("#birth_date").datepicker({
-        changeMonth: true,
-        changeYear: true,
-        dateFormat: "yy-mm-dd",
-        showButtonPanel: true,
-        minDate: "-90y",
-        maxDate: "+0D",
-        yearRange: "-90",
-        defaultDate: '1990-01-01'
-      });
-    },
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gci/profile/base.js"),
     tc("/soc/content/{{ app_version }}/js/templates/modules/gci/avatar.js", {
       'prefix_path': "/soc/content/{{ app_version }}/images/gci/avatars/"
     })

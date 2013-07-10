@@ -61,16 +61,16 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
         {'new_proposals' :True, 'public_comments': True,
          'private_comments' :True})
 
-    self.data.createStudent()
-    self.data.notificationSettings()
-    self.timeline.studentSignup()
+    self.profile_helper.createStudent()
+    self.profile_helper.notificationSettings()
+    self.timeline_helper.studentSignup()
 
-    proposal = self.createProposal({'scope': self.data.profile,
-                                    'parent': self.data.profile})
+    proposal = self.createProposal({'scope': self.profile_helper.profile,
+                                    'parent': self.profile_helper.profile})
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        self.data.user.key().name(),
+        self.profile_helper.user.key().name(),
         proposal.key().id())
 
     # test review GET
@@ -85,7 +85,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     # test comment POST
     from soc.modules.gsoc.models.comment import GSoCComment
     url = '/gsoc/proposal/comment/' + suffix
-    override = {'author': self.data.profile, 'is_private': False}
+    override = {'author': self.profile_helper.profile, 'is_private': False}
     response, properties = self.modelPost(url, GSoCComment, override)
     self.assertResponseRedirect(response)
 
@@ -93,15 +93,16 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     self.assertPropertiesEqual(properties, comment)
 
     self.assertEmailSent(to=mentor.profile.email, n=1)
-    self.assertEmailNotSent(to=self.data.profile.email)
+    self.assertEmailNotSent(to=self.profile_helper.profile.email)
 
-    self.data.deleteProfile()
-    self.data.createMentor(self.org)
+    self.profile_helper.deleteProfile()
+    self.profile_helper.createMentor(self.org)
 
     # test score POST
     from soc.modules.gsoc.models.score import GSoCScore
     url = '/gsoc/proposal/score/' + suffix
-    override = {'author': self.data.profile, 'parent': proposal, 'value': 1}
+    override = {
+        'author': self.profile_helper.profile, 'parent': proposal, 'value': 1}
     response, properties = self.modelPost(url, GSoCScore, override)
     self.assertResponseOK(response)
 
@@ -163,7 +164,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
         student.user.key().name(),
         proposal.key().id())
 
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     url = '/gsoc/proposal/ignore/' + suffix
     postdata = {'value': 'unchecked'}
@@ -187,7 +188,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
         student.user.key().name(),
         proposal.key().id())
 
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     url = '/gsoc/proposal/accept/' + suffix
     postdata = {'value': 'unchecked'}
@@ -201,7 +202,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     # accept the proposal as project when the org admin tries to accept
     # the proposal
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     response = self.post(url, postdata)
     self.assertResponseOK(response)
 
@@ -221,7 +222,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
         student.user.key().name(),
         proposal.key().id())
 
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     url = '/gsoc/proposal/modification/' + suffix
     postdata = {'value': 'unchecked'}
@@ -237,7 +238,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     student.createOtherUser('student@example.com')
     student.createStudent()
 
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     other_mentor = self.createMentorWithSettings('other_mentor@example.com')
 
@@ -254,13 +255,14 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     response = self.post(url, postdata)
 
     proposal = GSoCProposal.get(proposal.key())
-    self.assertIn(self.data.profile.key(), proposal.possible_mentors)
+    self.assertIn(self.profile_helper.profile.key(), proposal.possible_mentors)
 
     postdata = {'value': 'checked'}
     response = self.post(url, postdata)
 
     proposal = GSoCProposal.get(proposal.key())
-    self.assertFalse(self.data.profile.key() in proposal.possible_mentors)
+    self.assertNotIn(
+        self.profile_helper.profile.key(), proposal.possible_mentors)
 
     other_mentor.profile.mentor_for = []
     other_mentor.profile.put()
@@ -272,17 +274,17 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     response = self.get(url)
 
     proposal = GSoCProposal.get(proposal.key())
-    self.assertFalse(other_mentor.profile.key() in proposal.possible_mentors)
+    self.assertNotIn(other_mentor.profile.key(), proposal.possible_mentors)
 
   def testPubliclyVisibleButton(self):
-    self.data.createStudent()
+    self.profile_helper.createStudent()
 
-    proposal = self.createProposal({'scope': self.data.profile,
-                                    'parent': self.data.profile})
+    proposal = self.createProposal({'scope': self.profile_helper.profile,
+                                    'parent': self.profile_helper.profile})
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        self.data.user.key().name(),
+        self.profile_helper.user.key().name(),
         proposal.key().id())
 
     url = '/gsoc/proposal/publicly_visible/' + suffix
@@ -295,15 +297,16 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     self.assertTrue(proposal.is_publicly_visible)
 
   def testWithdrawProposalButton(self):
-    self.data.createStudentWithProposal(self.org, None)
-    self.timeline.studentSignup()
+    self.profile_helper.createStudentWithProposal(self.org, None)
+    self.timeline_helper.studentSignup()
 
-    proposal = GSoCProposal.all().ancestor(self.data.profile).get()
-    number_of_proposals = self.data.profile.student_info.number_of_proposals
+    proposal = GSoCProposal.all().ancestor(self.profile_helper.profile).get()
+    number_of_proposals = (
+        self.profile_helper.profile.student_info.number_of_proposals)
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        self.data.user.key().name(),
+        self.profile_helper.user.key().name(),
         proposal.key().id())
 
     url = '/gsoc/proposal/withdraw/' + suffix
@@ -318,7 +321,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     # check that number of proposals is updated
     student_info = profile_model.GSoCStudentInfo.get(
-        self.data.profile.student_info.key())
+        self.profile_helper.profile.student_info.key())
     self.assertEqual(number_of_proposals - 1, student_info.number_of_proposals)
 
     url = '/gsoc/proposal/withdraw/' + suffix
@@ -333,7 +336,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     # check that number of proposals is still the same
     student_info = profile_model.GSoCStudentInfo.get(
-        self.data.profile.student_info.key())
+        self.profile_helper.profile.student_info.key())
     self.assertEqual(number_of_proposals - 1, student_info.number_of_proposals)
 
     url = '/gsoc/proposal/withdraw/' + suffix
@@ -348,7 +351,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     # check that number of proposals is increased again
     student_info = profile_model.GSoCStudentInfo.get(
-        self.data.profile.student_info.key())
+        self.profile_helper.profile.student_info.key())
     self.assertEqual(number_of_proposals, student_info.number_of_proposals)
 
   def testAssignMentor(self):
@@ -364,10 +367,10 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
         student.user.key().name(),
         proposal.key().id())
 
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     url = '/gsoc/proposal/assign_mentor/' + suffix
-    postdata = {'assign_mentor': self.data.profile.key()}
+    postdata = {'assign_mentor': self.profile_helper.profile.key()}
     response = self.post(url, postdata)
 
     self.assertResponseForbidden(response)

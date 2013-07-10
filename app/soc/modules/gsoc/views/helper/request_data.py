@@ -467,19 +467,6 @@ class RequestData(request_data.RequestData):
       organization = organization.key()
     return organization in [i.key() for i in self.mentor_for]
 
-  def _requestQuery(self, organization):
-    """Returns a query to retrieve a Request for this user.
-    """
-    if isinstance(organization, db.Model):
-      organization = organization.key()
-
-    from soc.modules.gsoc.models.request import GSoCRequest
-    query = GSoCRequest.all()
-    query.filter('user', self.user)
-    query.filter('org', organization)
-
-    return query
-
   def isPossibleMentorForProposal(self, mentor_profile=None):
     """Checks if the user is a possible mentor for the proposal in the data.
     """

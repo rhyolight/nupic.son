@@ -47,17 +47,19 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     self.assertResponseNotFound(response)
 
   def testCreateOrgRejectedApp(self):
-    self.data.createUser()
-    self.record.createOrgAppRecord('rejected', self.data.user, self.data.user,
-                                   override={'status': 'rejected'})
+    self.profile_helper.createUser()
+    self.record.createOrgAppRecord(
+        'rejected', self.profile_helper.user, self.profile_helper.user,
+        override={'status': 'rejected'})
 
     url = '/gci/profile/organization/' + self.gci.key().name()
     response = self.get(url + '?org_id=rejected')
     self.assertResponseForbidden(response)
 
   def testCreateOrgNoProfile(self):
-    self.data.createUser()
-    self.record.createOrgAppRecord('new_org', self.data.user, self.data.user)
+    self.profile_helper.createUser()
+    self.record.createOrgAppRecord(
+        'new_org', self.profile_helper.user, self.profile_helper.user)
 
     url = '/gci/profile/organization/' + self.gci.key().name()
     response = self.get(url + '?org_id=new_org')
@@ -68,9 +70,10 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     """Tests that only the assigned org admin for an organization can edit the
     org profile.
     """
-    self.timeline.orgSignup()
-    self.data.createProfile()
-    self.record.createOrgAppRecord('new_org', self.data.user, self.data.user)
+    self.timeline_helper.orgSignup()
+    self.profile_helper.createProfile()
+    self.record.createOrgAppRecord(
+        'new_org', self.profile_helper.user, self.profile_helper.user)
 
     url = '/gci/profile/organization/' + self.gci.key().name()
     create_url = url + '?org_id=new_org'
@@ -86,7 +89,6 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     response, _ = self.modelPost(create_url, organization.GCIOrganization,
                                  postdata)
     self.assertResponseRedirect(response, url + '/new_org?validated')
-    profile = db.get(self.data.profile.key())
+    profile = db.get(self.profile_helper.profile.key())
     self.assertEqual(1, len(profile.org_admin_for))
     self.assertSameEntity(self.gci, profile.program)
-

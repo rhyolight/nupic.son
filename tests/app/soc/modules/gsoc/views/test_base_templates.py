@@ -38,7 +38,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
   def testMainMenuDuringKickoff(self):
     """Tests the main menu before the org signup period.
     """
-    self.timeline.kickoff()
+    self.timeline_helper.kickoff()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     mainmenu_context = response.context['mainmenu'].context()
@@ -52,7 +52,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     self.assertNotIn('dashboard_link', mainmenu_context)
 
     # Create profile.
-    self.data.createProfile()
+    self.profile_helper.createProfile()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     mainmenu_context = response.context['mainmenu'].context()
@@ -61,7 +61,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     self.assertIn('dashboard_link', mainmenu_context)
 
     # Make the current user the host.
-    self.data.createHost()
+    self.profile_helper.createHost()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     mainmenu_context = response.context['mainmenu'].context()
@@ -73,7 +73,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
   def testMainMenuDuringOrgSignup(self):
     """Tests the main menu during the org signup period.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     mainmenu_context = response.context['mainmenu'].context()
@@ -86,7 +86,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
   def testMainMenuDuringOrgsAnnounced(self):
     """Tests the main menu after organizations have been announced.
     """
-    self.timeline.orgsAnnounced()
+    self.timeline_helper.orgsAnnounced()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     mainmenu_context = response.context['mainmenu'].context()
@@ -99,7 +99,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
   def testMainMenuDuringStudentSignup(self):
     """Tests the main menu during student signup period.
     """
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     mainmenu_context = response.context['mainmenu'].context()
@@ -113,7 +113,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     """Tests the main menu after student signup period i.e. during proposal
     ranking phase.
     """
-    self.timeline.postStudentSignup()
+    self.timeline_helper.postStudentSignup()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     mainmenu_context = response.context['mainmenu'].context()
@@ -126,7 +126,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
   def testMainMenuPostStudentsAnnounced(self):
     """Tests the main menu after accepted students have been announced.
     """
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     mainmenu_context = response.context['mainmenu'].context()

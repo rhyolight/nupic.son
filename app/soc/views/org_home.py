@@ -18,6 +18,7 @@ from google.appengine.ext import db
 
 from django import http
 
+from melange.request import access
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
@@ -27,6 +28,8 @@ from soc.views.toggle_button import ToggleButtonTemplate
 class BanOrgPost(object):
   """Handles banning/unbanning of organizations."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
          url_patterns.url(
@@ -34,9 +37,6 @@ class BanOrgPost(object):
              r'organization/ban/%s$' % self._getURLPattern(),
              self, name=self._getURLName()),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost();
 
   def post(self, data, check, mutator):
     """See soc.views.base.RequestHandler.post for specification."""

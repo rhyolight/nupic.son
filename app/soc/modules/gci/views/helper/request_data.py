@@ -462,19 +462,6 @@ class RequestData(request_data.RequestData):
       organization = organization.key()
     return organization in [i.key() for i in self.mentor_for]
 
-  def _requestQuery(self, organization):
-    """Returns a query to retrieve a Request for this user.
-    """
-    if isinstance(organization, db.Model):
-      organization = organization.key()
-
-    from soc.modules.gci.models.request import GCIRequest
-    query = GCIRequest.all()
-    query.filter('user', self.user)
-    query.filter('org', organization)
-
-    return query
-
 
 class RedirectHelper(request_data.RedirectHelper):
   """Helper for constructing redirects.

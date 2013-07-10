@@ -28,7 +28,7 @@ class ListDocumentTest(GSoCDjangoTestCase):
 
   def setUp(self):
     self.init()
-    self.data.createHost()
+    self.profile_helper.createHost()
 
   def testListDocument(self):
     url = '/gsoc/documents/' + self.gsoc.key().name()
@@ -46,7 +46,7 @@ class EditProgramTest(GSoCDjangoTestCase):
 
   def setUp(self):
     self.init()
-    self.data.createUser()
+    self.profile_helper.createUser()
     self.document = self.createDocument()
 
   def testShowDocument(self):
@@ -59,7 +59,7 @@ class EditProgramTest(GSoCDjangoTestCase):
     pass
 
   def testCreateDocumentWithDashboardVisibility(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
     url = '/gsoc/document/edit/gsoc_program/%s/doc' % self.gsoc.key().name()
     response = self.get(url)
     self.assertGSoCTemplatesUsed(response)
@@ -69,8 +69,10 @@ class EditProgramTest(GSoCDjangoTestCase):
     # test POST
     override = {
         'prefix': 'gsoc_program', 'scope': self.gsoc, 'link_id': 'doc',
-        'key_name': DocumentKeyNameProvider(), 'modified_by': self.data.user,
-        'home_for': None, 'author': self.data.user, 'is_featured': None,
+        'key_name': DocumentKeyNameProvider(),
+        'modified_by': self.profile_helper.user,
+        'home_for': None,
+        'author': self.profile_helper.user, 'is_featured': None,
         'write_access': 'admin', 'read_access': 'public',
         'dashboard_visibility': ['student', 'mentor'],
     }
@@ -83,7 +85,7 @@ class EditProgramTest(GSoCDjangoTestCase):
     self.assertPropertiesEqual(properties, document)
 
   def testCreateDocumentNoDashboardVisibility(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
     url = '/gsoc/document/edit/gsoc_program/%s/doc' % self.gsoc.key().name()
     response = self.get(url)
     self.assertGSoCTemplatesUsed(response)
@@ -93,8 +95,10 @@ class EditProgramTest(GSoCDjangoTestCase):
     # test POST
     override = {
         'prefix': 'gsoc_program', 'scope': self.gsoc, 'link_id': 'doc',
-        'key_name': DocumentKeyNameProvider(), 'modified_by': self.data.user,
-        'home_for': None, 'author': self.data.user, 'is_featured': None,
+        'key_name': DocumentKeyNameProvider(),
+        'modified_by': self.profile_helper.user,
+        'home_for': None,
+        'author': self.profile_helper.user, 'is_featured': None,
         'write_access': 'admin', 'read_access': 'public',
         'dashboard_visibility': [],
     }

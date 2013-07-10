@@ -37,14 +37,6 @@ limitations under the License.
   [
     dep.uniform,
     null,
-    function () {
-      jQuery("select, input:radio, input:file, input:checkbox").uniform();
-      var fields = ["melange-description-textarea",
-                    "melange-contrib_template-textarea",
-                    "melange-accepted_student_msg-textarea",
-                    "melange-rejected_student_msg-textarea",
-                    "melange-role_request_message-textarea"];
-      tinyMCE.init(melange.tinyMceConfig(fields, "advanced"));
-    }
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gsoc/org_profile/base.js")
   ]
 {% endblock dependencies %}

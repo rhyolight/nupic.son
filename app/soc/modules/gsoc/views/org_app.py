@@ -20,6 +20,7 @@ import logging
 from django import http
 from django.utils.translation import ugettext
 
+from melange.request import access
 from melange.request import exception
 from soc.logic import org_app as org_app_logic
 from soc.mapreduce.helper import control as mapreduce_control
@@ -80,14 +81,13 @@ class GSoCOrgAppTakeForm(org_app.OrgAppTakeForm):
 class GSoCOrgAppEditPage(GSoCRequestHandler):
   """View for creating/editing organization application."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
          url(r'org/application/edit/%s$' % url_patterns.PROGRAM,
              self, name='gsoc_edit_org_app'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gsoc/org_app/edit.html'

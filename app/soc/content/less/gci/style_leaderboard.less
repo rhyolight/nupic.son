@@ -1,0 +1,243 @@
+.block-leaderboard-top {
+  background: none;
+
+  .block-leaderboard-top-title {
+    background: #0082c8;
+    border-radius: 10px 10px 0 0;
+    -moz-border-radius: 10px 10px 0 0;
+    -webkit-border-radius: 10px 10px 0 0;
+    height: 102px;
+    padding: 0 22px;
+    position: relative;
+
+    h1 {
+      color: #fff;
+      font-family: 'Oswald', sans-serif;
+      font-size: 42px;
+      font-weight: normal;
+      line-height: 102px;
+      text-transform: uppercase;
+
+      .leaderboard-title-left {
+        float: left;
+      }
+
+      .leaderboard-title-right {
+        float: right;
+      }
+    }
+
+    .trophy {
+      background: url(@image_block_leaderboard_top_trophy) 0 0 no-repeat;
+      left: 88px;
+      height: 160px;
+      position: absolute;
+      top: -57px;
+      width: 500px;
+    }
+  }
+
+  .block-leaderboard-top-content {
+    background: #d0e8f9 url(@image_block_leaderboard_content_bg) 0 0 repeat-x;
+    border-bottom: 1px solid #98a9b6;
+    border-left: 1px solid #cae2f2;
+    border-right: 1px solid #cae2f2;
+    padding: 25px 35px 10px 39px;
+  }
+}
+
+.block-leaderboard-scores {
+  /*Generic leaderboard scores*/
+  border-bottom: 1px solid #a6a6a6;
+
+  table {
+    margin: 0;
+    text-align: left;
+    width: 100%;
+  }
+}
+
+.block-leaderboard-top-scores {
+  /*Leaderboard top scores*/
+  table {
+    color: #000;
+    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+    font-weight: bold;
+
+    tr {
+      display: block;
+      padding-bottom: 3px;
+    }
+
+    td {
+      vertical-align: middle;
+    }
+  }
+
+  .block-title {
+    background: #c94837;
+  }
+
+  .block-content {
+    background: #e3e3e3;
+    padding-left: 12px;
+    padding-right: 5px;
+  }
+
+  .leaderboard-top-ranking-number {
+    color: #c94837;
+    font-family: 'Oswald', sans-serif;
+    font-size: 21px;
+    font-weight: normal;
+    width: 24px;
+  }
+
+  .leaderboard-top-color-block {
+    background: #000;
+    height: 39px;
+    width: 39px;
+
+    img {
+      background: #3366cc;
+      height: 39px;
+      width: 39px;
+    }
+
+    &.blue {
+      background: #3366cc;
+    }
+
+    &.orange {
+      background: #ff9900;
+    }
+
+    &.green {
+      background: #669966;
+    }
+
+    &.brown {
+      background: #663300;
+    }
+
+    &.purple {
+      background: #9966cc;
+    }
+
+    &.mauve {
+      background: #cc9999;
+    }
+
+    &.sky-blue {
+      background: #66ccff;
+    }
+
+    &.light-green {
+      background: #99cc66;
+    }
+
+    &.salmon {
+      background: #ff9966;
+    }
+
+    &.red {
+      background: #cc3333;
+    }
+  }
+
+  .leaderboard-top-name {
+    font-size: 16px;
+    padding-left: 8px;
+    width: 200px;
+  }
+
+  .leaderboard-top-points,
+  .leaderboard-top-tasks {
+    padding-left: 8px;
+  }
+
+  .leaderboard-top-points {
+    width: 90px;
+  }
+
+  .leaderboard-top-tasks {
+    width: 70px;
+  }
+}
+
+.block-leaderboard-top-organization .leaderboard-top-organization {
+  width: 90px;
+}
+
+.block-leaderboard-all-scores {
+  /*Leaderboard all scores*/
+
+  .block-content {
+    padding: 9px 9px 0 9px;
+  }
+
+  table {
+    font-size: 13px;
+
+    tr {
+      background: #fff;
+      display: block;
+      padding: 2px 5px 2px 10px;
+
+      &.even {
+        background: #eee;
+      }
+    }
+  }
+
+  .leaderboard-all-number,
+  .leaderboard-all-name {
+    font-weight: bold;
+  }
+
+  .leaderboard-all-number {
+    color: #c94837;
+    width: 24px;
+  }
+
+  .leaderboard-all-name {
+    width: 138px;
+  }
+
+  .leaderboard-all-points {
+    padding-left: 5px;
+    width: 102px;
+  }
+
+  .block-pager {
+    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 8px 0;
+  }
+}
+
+.block-leaderboard-your-score {
+  /*Your score*/
+
+  .user-ranking {
+    margin: 12px 0 0 18px;
+  }
+
+  .btn {
+    margin-left: 13px;
+    margin-top: 15px;
+  }
+}
+
+/* @group previous-leaderboards */
+.block-leaderboard-previous-leaderboards {
+  .block-title {
+    background: #c94837;
+  }
+  .block-content {
+    background: #E3E3E3;
+    padding: 10px;
+    text-align: center;
+  }
+}
+/* @end */

@@ -48,42 +48,42 @@ class HomepageViewTest(GCIDjangoTestCase):
     """
     url = '/gci/homepage/' + self.gci.key().name()
 
-    self.timeline.offSeason()
+    self.timeline_helper.offSeason()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
-    self.timeline.kickoff()
+    self.timeline_helper.kickoff()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
-    self.timeline.orgsAnnounced()
+    self.timeline_helper.orgsAnnounced()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
-    self.timeline.taskClaimEnded()
+    self.timeline_helper.taskClaimEnded()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
-    self.timeline.pencilDown()
+    self.timeline_helper.pencilDown()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
 
   def testHomepageDuringSignup(self):
     """Tests the student homepage during the signup period.
     """
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
     url = '/gci/homepage/' + self.gci.key().name()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
@@ -96,12 +96,12 @@ class HomepageViewTest(GCIDjangoTestCase):
   def testHomepageDuringSignupExistingUser(self):
     """Tests the student hompepage during the signup period with an existing user.
     """
-    self.data.createProfile()
-    self.timeline.studentSignup()
+    self.profile_helper.createProfile()
+    self.timeline_helper.studentSignup()
     url = '/gci/homepage/' + self.gci.key().name()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)
     # TOOD
     #apply_tmpl = response.context['apply']
     #self.assertTrue(apply_tmpl.data.profile)
-    #self.assertFalse('profile_link' in apply_tmpl.context())
+    #self.assertNotIn('profile_link', apply_tmpl.context())

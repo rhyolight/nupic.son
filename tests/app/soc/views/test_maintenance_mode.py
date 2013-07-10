@@ -44,7 +44,7 @@ class RootMaintenanceModeTest(GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseCode(response, 503)
 
-    self.data.createDeveloper()
+    self.profile_helper.createDeveloper()
     # the page should be accessible
     response = self.get(url)
     self.assertResponseRedirect(response, homepage)
@@ -65,7 +65,7 @@ class RootMaintenanceModeTest(GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseCode(response, 503)
 
-    self.data.createDeveloper()
+    self.profile_helper.createDeveloper()
     # the page should be accessible
     response = self.get(url)
     self.assertResponseOK(response)

@@ -14,6 +14,7 @@
 
 """Module containing the view for GCI leaderboard page."""
 
+from melange.request import access
 from melange.request import exception
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
@@ -37,7 +38,6 @@ class LeaderboardList(Template):
 
   def __init__(self, data):
     self.data = data
-    r = data.redirect
 
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key', (lambda ent, *args: "%s" % (
@@ -50,7 +50,7 @@ class LeaderboardList(Template):
     list_config.setDefaultSort('points', 'desc')
 
     list_config.setRowAction(
-        lambda e, *args: r.profile(e.parent().link_id).urlOf(
+        lambda e, *args: data.redirect.profile(e.parent().link_id).urlOf(
             url_names.GCI_STUDENT_TASKS))
 
     self._list_config = list_config
@@ -109,8 +109,9 @@ class AllStudentTasksList(TaskList):
 
 
 class LeaderboardPage(GCIRequestHandler):
-  """View for the leaderboard page.
-  """
+  """View for the leaderboard page."""
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
 
   def templatePath(self):
     return 'modules/gci/leaderboard/base.html'
@@ -120,9 +121,6 @@ class LeaderboardPage(GCIRequestHandler):
         url(r'leaderboard/%s$' % url_patterns.PROGRAM, self,
             name=url_names.GCI_LEADERBOARD),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     list_content = LeaderboardList(data).getListData()

@@ -14,6 +14,7 @@
 
 """Module containing the view for GCI tasks list page."""
 
+from melange.request import access
 from melange.request import exception
 from soc.views.helper import addresses
 from soc.views.helper import url_patterns
@@ -60,11 +61,9 @@ class MentorsList(Template):
         'List of organization admins and mentors participating in %s' % (
             self.data.program.name)
 
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0, description)
-
     return {
-        'lists': [list],
+        'lists': [lists.ListConfigurationResponse(
+            self.data, self._list_config, 0, description)],
     }
 
   def getListData(self):
@@ -92,6 +91,8 @@ class MentorsList(Template):
 class MentorsListAdminPage(GCIRequestHandler):
   """View for the organization admin and mentors page for admin."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def templatePath(self):
     return 'modules/gci/participants/base.html'
 
@@ -100,9 +101,6 @@ class MentorsListAdminPage(GCIRequestHandler):
         url(r'admin/list/mentors/%s$' % url_patterns.PROGRAM, self,
             name='gci_list_mentors'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     list_content = MentorsList(data).getListData()

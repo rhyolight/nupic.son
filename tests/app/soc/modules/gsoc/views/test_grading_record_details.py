@@ -28,14 +28,88 @@ from tests import test_utils
 GRADING_SURVEY_GROUP_NAME = 'Test Grading Survey Group'
 
 
+class GradingGroupCreateTest(test_utils.GSoCDjangoTestCase):
+  """Test GradingGroupSurvey creation page.
+  """
+
+  def setUp(self):
+    self.init()
+    self.profile_helper.createHost()
+
+    evaluation_helper = survey_utils.SurveyHelper(self.gsoc, self.dev_test)
+    midterm_prop = {'link_id': 'midterm'}
+    self.grading_survey = evaluation_helper.createMentorEvaluation(
+            override=midterm_prop)
+    self.student_survey = evaluation_helper.createStudentEvaluation(
+            override=midterm_prop)
+
+  def testCreateGradingSurveyGroupGet(self):
+    """Tests the GET request to the create page.
+    """
+    response = self.get(self.getUrl())
+    self.assertResponseOK(response)
+    self.assertGSoCTemplatesUsed(response)
+    self.assertTemplateUsed(
+        response, 'modules/gsoc/grading_record/create_group.html')
+
+  def testCreateGradingSurveyGroup(self):
+    """Tests the request to create a group.
+    """
+    # Create a group for the midterm eval.
+    response = self.buttonPost(self.getUrl(), 'midterm')
+
+    group = gsg_model.GSoCGradingSurveyGroup.all().get()
+    self.assertResponseRedirect(response, self.getOverviewUrl(group))
+
+    expected_name = '%s - Midterm Evaluation' %self.program.name
+    self.assertEqual(group.name, expected_name)
+    self.assertEqual(group.program.key(), self.program.key())
+    self.assertEqual(group.grading_survey.key(), self.grading_survey.key())
+    self.assertEqual(group.student_survey.key(), self.student_survey.key())
+
+  def testCreateGradingSurveyGroupRedirectsWhenExists(self):
+    """Tests that the create page redirects when the group already exists.
+    """
+    properties = {
+        'name': GRADING_SURVEY_GROUP_NAME,
+        'program': self.program,
+        'grading_survey': self.grading_survey,
+        'student_survey': self.student_survey,
+    }
+    group = self.seed(gsg_model.GSoCGradingSurveyGroup, properties)
+
+    response = self.buttonPost(self.getUrl(), 'midterm')
+    self.assertResponseRedirect(response, self.getOverviewUrl(group))
+
+  def testCreateGradingSurveyGroupErrorsWhenEvalDoesNotExist(self):
+    """Tests that the create page returns an error when the group can not be
+    created.
+    """
+    response = self.buttonPost(self.getUrl(), 'final')
+    self.assertResponseRedirect(response, self.getUrl() + '?err=1')
+
+  def testCreateGradingSurveyGroupBadRequestOnInvalidInput(self):
+    """Tests that a BadRequest response is returned on invalid input data.
+    """
+    response = self.buttonPost(self.getUrl(), 'notARealButton')
+    self.assertResponseBadRequest(response)
+
+  def getUrl(self):
+    return '/gsoc/grading_records/group/%s' % self.program.key().name()
+
+  def getOverviewUrl(self, group):
+    return '/gsoc/grading_records/overview/%s/%d' % (
+        self.program.key().name(), group.key().id())
+
+
 class GradingRecordsOverviewTest(test_utils.GSoCDjangoTestCase):
   """Test grading records overview list page.
   """
 
   def setUp(self):
     self.init()
-    self.data.createHost()
-    self.timeline.studentsAnnounced()
+    self.profile_helper.createHost()
+    self.timeline_helper.studentsAnnounced()
 
   def createGradingSurveyGroup(self):
     """Create the grading survey group used to manager evaluations.
@@ -61,7 +135,7 @@ class GradingRecordsOverviewTest(test_utils.GSoCDjangoTestCase):
   def testGradingRecordsOverviewGet(self):
     grading_survey_group = self.createGradingSurveyGroup()
     url = '/gsoc/grading_records/overview/%s/%d' % (
-        self.program.key().name(), grading_survey_group.key().id(),)
+        self.program.key().name(), grading_survey_group.key().id())
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertGradingRecordsOverviewTemplatesUsed(response)
@@ -78,15 +152,16 @@ class GradingRecordsOverviewTest(test_utils.GSoCDjangoTestCase):
     mentor_profile_helper.createOtherUser('mentor@example.com')
     mentor = mentor_profile_helper.createMentor(self.org)
 
-    self.data.createStudentWithProposal(self.org, mentor)
-    self.data.createStudentWithProject(self.org, mentor)
+    self.profile_helper.createStudentWithProposal(self.org, mentor)
+    self.profile_helper.createStudentWithProject(self.org, mentor)
 
     student_profile_helper = profile_utils.GSoCProfileHelper(
         self.gsoc, self.dev_test)
     student_profile_helper.createStudentWithProposal(self.org, mentor)
     student_profile_helper.createStudentWithProject(self.org, mentor)
 
-    project = project_model.GSoCProject.all().ancestor(self.data.profile).get()
+    project = project_model.GSoCProject.all().ancestor(
+        self.profile_helper.profile).get()
     grading_record.updateOrCreateRecordsFor(grading_survey_group, [project])
 
     response = self.getListResponse(url, 0)

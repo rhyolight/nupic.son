@@ -65,8 +65,6 @@ limitations under the License.
   [
     dep.uniform,
     null,
-    function () {
-      jQuery("select, input:radio, input:file, input:checkbox").uniform();
-    }
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gsoc/connection/show_connection.js")
   ]
 {% endblock dependencies %}

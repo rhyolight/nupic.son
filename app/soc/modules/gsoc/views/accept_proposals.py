@@ -18,6 +18,7 @@ from google.appengine.api import taskqueue
 
 from django import http
 
+from melange.request import access
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.logic import accept_proposals as conversion_logic
@@ -28,6 +29,8 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 class AcceptProposalsPage(GSoCRequestHandler):
   """View for the host to trigger proposals to projets conversion."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def templatePath(self):
     return 'modules/gsoc/accept_proposals/base.html'
 
@@ -36,9 +39,6 @@ class AcceptProposalsPage(GSoCRequestHandler):
         url(r'accept_proposals/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_accept_proposals'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def context(self, data, check, mutator):
     """Returns the context for this page."""

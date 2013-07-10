@@ -50,9 +50,9 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     other_mentor.createMentor(self.org)
     other_mentor.notificationSettings()
 
-    self.data.createStudent()
-    self.data.notificationSettings()
-    self.timeline.studentSignup()
+    self.profile_helper.createStudent()
+    self.profile_helper.notificationSettings()
+    self.timeline_helper.studentSignup()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
     response = self.get(url)
     self.assertProposalTemplatesUsed(response)
@@ -88,9 +88,9 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     other_mentor.createMentor(self.org)
     other_mentor.notificationSettings()
 
-    self.data.createStudent()
-    self.data.notificationSettings()
-    self.timeline.studentSignup()
+    self.profile_helper.createStudent()
+    self.profile_helper.notificationSettings()
+    self.timeline_helper.studentSignup()
 
     override = {
         'program': self.gsoc, 'score': 0, 'nr_scores': 0, 'mentor': None,
@@ -115,28 +115,28 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     """Test the submission of student proposals during the student signup
     period is not active.
     """
-    self.data.createStudent()
-    self.timeline.orgSignup()
+    self.profile_helper.createStudent()
+    self.timeline_helper.orgSignup()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.timeline.offSeason()
+    self.timeline_helper.offSeason()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.timeline.kickoff()
+    self.timeline_helper.kickoff()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.timeline.orgsAnnounced()
+    self.timeline_helper.orgsAnnounced()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
@@ -148,14 +148,15 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     mentor.createMentor(self.org)
     mentor.notificationSettings(proposal_updates=True)
 
-    self.data.createStudentWithProposal(self.org, mentor.profile)
-    self.data.notificationSettings()
-    self.timeline.studentSignup()
+    self.profile_helper.createStudentWithProposal(self.org, mentor.profile)
+    self.profile_helper.notificationSettings()
+    self.timeline_helper.studentSignup()
 
     proposal = proposal_model.GSoCProposal.all().get()
 
     url = '/gsoc/proposal/update/%s/%s/%s' % (
-        self.gsoc.key().name(), self.data.profile.link_id, proposal.key().id())
+        self.gsoc.key().name(), self.profile_helper.profile.link_id,
+        proposal.key().id())
     response = self.get(url)
     self.assertProposalTemplatesUsed(response)
 
@@ -186,21 +187,22 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     mentor.createOtherUser('mentor@example.com')
     mentor.createMentor(self.org)
 
-    self.data.createStudentWithProposal(self.org, mentor.profile)
-    self.timeline.studentsAnnounced()
+    self.profile_helper.createStudentWithProposal(self.org, mentor.profile)
+    self.timeline_helper.studentsAnnounced()
 
     proposal = proposal_model.GSoCProposal.all().get()
 
     url = '/gsoc/proposal/update/%s/%s/%s' % (
-        self.gsoc.key().name(), self.data.profile.link_id, proposal.key().id())
+        self.gsoc.key().name(), self.profile_helper.profile.link_id,
+        proposal.key().id())
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testUpdateNonExistingProposal(self):
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     mock_id = 1
     url = '/gsoc/proposal/update/%s/%s/%s' % (
-        self.gsoc.key().name(), self.data.profile.link_id, mock_id)
+        self.gsoc.key().name(), self.profile_helper.profile.link_id, mock_id)
     response = self.get(url)
     self.assertResponseNotFound(response)
 
@@ -210,14 +212,15 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     mentor.createMentor(self.org)
     mentor.notificationSettings(proposal_updates=True)
 
-    self.data.createStudentWithProposal(self.org, mentor.profile)
-    self.data.notificationSettings()
-    self.timeline.studentSignup()
+    self.profile_helper.createStudentWithProposal(self.org, mentor.profile)
+    self.profile_helper.notificationSettings()
+    self.timeline_helper.studentSignup()
 
     proposal = proposal_model.GSoCProposal.all().get()
 
     url = '/gsoc/proposal/update/%s/%s/%s' % (
-        self.gsoc.key().name(), self.data.profile.link_id, proposal.key().id())
+        self.gsoc.key().name(), self.profile_helper.profile.link_id,
+        proposal.key().id())
 
     # withdraw proposal
     postdata = {
@@ -231,7 +234,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
 
     # check if number of proposals is decreased
     student_info = profile_model.GSoCStudentInfo.get(
-        self.data.profile.student_info.key())
+        self.profile_helper.profile.student_info.key())
     self.assertEqual(0, student_info.number_of_proposals)
 
   def testResubmitProposal(self):
@@ -240,20 +243,21 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     mentor.createMentor(self.org)
     mentor.notificationSettings(proposal_updates=True)
 
-    self.data.createStudentWithProposal(self.org, mentor.profile)
-    self.data.notificationSettings()
-    self.timeline.studentSignup()
+    self.profile_helper.createStudentWithProposal(self.org, mentor.profile)
+    self.profile_helper.notificationSettings()
+    self.timeline_helper.studentSignup()
 
     proposal = proposal_model.GSoCProposal.all().get()
 
     # make the proposal withdrawn so that it can be resubmitted
     proposal.status = proposal_model.STATUS_WITHDRAWN
     proposal.put()
-    self.data.profile.student_info.number_of_proposals -= 1
-    self.data.profile.student_info.put()
+    self.profile_helper.profile.student_info.number_of_proposals -= 1
+    self.profile_helper.profile.student_info.put()
 
     url = '/gsoc/proposal/update/%s/%s/%s' % (
-        self.gsoc.key().name(), self.data.profile.link_id, proposal.key().id())
+        self.gsoc.key().name(), self.profile_helper.profile.link_id,
+        proposal.key().id())
 
     # resubmit proposal
     postdata = {
@@ -267,7 +271,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
 
     # check if number of proposals is increased
     student_info = profile_model.GSoCStudentInfo.get(
-        self.data.profile.student_info.key())
+        self.profile_helper.profile.student_info.key())
     self.assertEqual(
-        self.data.profile.student_info.number_of_proposals + 1,
+        self.profile_helper.profile.student_info.number_of_proposals + 1,
         student_info.number_of_proposals)

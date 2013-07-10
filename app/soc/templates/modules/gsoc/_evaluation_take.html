@@ -82,35 +82,6 @@ limitations under the License.
     dep.jqueryui.effects.blind,
     dep.uniform,
     null,
-    function () {
-      jQuery("select, input:radio, input:file, input:checkbox").uniform();
-
-      jQuery(document).ready(function () {
-
-        jQuery(':checkbox[value="Other"],:radio').each(function () {
-          if (jQuery(this).val() == "Other") {
-            var selector = "#form_row_" + jQuery(this).attr("name") + "-other";
-            if (jQuery(this).parent().attr("class") == "checked") {
-              jQuery(selector).show();
-            } else {
-              jQuery(selector).hide();
-            }
-          }
-        });
-
-        jQuery(':radio').change(function () {
-          var selector = "#form_row_" + jQuery(this).attr("name") + "-other";
-          if (jQuery(this).val() != "Other") {
-            jQuery(selector).hide("Blind");
-          } else {
-            jQuery(selector).show("Blind");
-          }
-        });
-        jQuery(':checkbox[value="Other"]').change(function () {
-          var selector = "#form_row_" + jQuery(this).attr("name") + "-other";
-          jQuery(selector).toggle("Blind");
-        });
-      });
-    }
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gsoc/_evaluation_take.js")
   ]
 {% endblock dependencies %}

@@ -35,7 +35,7 @@ class ProjectListTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gsoc/projects_list/_project_list.html')
 
   def testListProjects(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
     url = '/gsoc/projects/list/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertProjectTemplatesUsed(response)
@@ -47,7 +47,7 @@ class ProjectListTest(GSoCDjangoTestCase):
 
     self.mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
     self.mentor.createMentor(self.org)
-    self.data.createStudentWithProject(self.org, self.mentor.profile)
+    self.profile_helper.createStudentWithProject(self.org, self.mentor.profile)
     response = self.getListResponse(url, 0)
     self.assertIsJsonResponse(response)
     data = response.context['data']['']

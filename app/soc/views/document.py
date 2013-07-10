@@ -86,13 +86,12 @@ class DocumentList(template.Template):
 
   def __init__(self, data, edit_name):
     self.data = data
-    r = data.redirect
 
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.addSimpleColumn('link_id', 'Document ID', hidden=True)
     list_config.setRowAction(
-        lambda e, *args: r.document(e).urlOf(edit_name))
+        lambda e, *args: data.redirect.document(e).urlOf(edit_name))
 
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('title')
@@ -103,11 +102,11 @@ class DocumentList(template.Template):
     description = 'List of documents for %s' % (
             self.data.program.name)
 
-    list = lists.ListConfigurationResponse(
+    list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, 0, description)
 
     return {
-        'lists': [list],
+        'lists': [list_configuration_response],
     }
 
   def getListData(self):

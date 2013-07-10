@@ -50,9 +50,8 @@ limitations under the License.
     dep.hashchange,
     dep.melange.program_select,
     null,
-    function() {
-      melange.program_select.makeSelector("#program_select");
-    },
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gci/dashboard/base.js"),
+    null,
     tc("/soc/content/{{ app_version }}/js/templates/soc/dashboard/dashboard.js", {
       'dashboard_class': 'dashboard',
       'dashboard_link_class': 'dashboard-link',

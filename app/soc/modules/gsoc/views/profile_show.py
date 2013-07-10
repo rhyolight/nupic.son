@@ -135,11 +135,16 @@ class GSoCProfileAdminPage(GSoCRequestHandler):
 
     if profile:
       links = []
-      r = data.redirect.profile()
+
+      # TODO(nathaniel): Eliminate this state-setting call.
+      data.redirect.profile()
+
       for project in GSoCProject.all().ancestor(profile):
-        r.project(project.key().id())
-        links.append(r.urlOf('gsoc_project_details', full=True))
-      r = data.redirect.profile()
+        data.redirect.project(project.key().id())
+        links.append(data.redirect.urlOf('gsoc_project_details', full=True))
+
+      # TODO(nathaniel): Eliminate this state-setting call.
+      data.redirect.profile()
 
       user_role = None
       if profile.is_student:
@@ -152,8 +157,9 @@ class GSoCProfileAdminPage(GSoCRequestHandler):
       context.update({
           'profile': GSoCProfileReadOnlyTemplate(profile),
           'links': links,
-          'submit_tax_link': r.urlOf('gsoc_tax_form_admin'),
-          'submit_enrollment_link': r.urlOf('gsoc_enrollment_form_admin'),
+          'submit_tax_link': data.redirect.urlOf('gsoc_tax_form_admin'),
+          'submit_enrollment_link': data.redirect.urlOf(
+              'gsoc_enrollment_form_admin'),
           'page_name': '%s Profile - %s' % (
               program.short_name, profile.name()),
           'user_role': user_role,

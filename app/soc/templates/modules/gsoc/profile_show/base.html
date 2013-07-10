@@ -71,24 +71,27 @@ limitations under the License.
 {% block dependencies %}
   [
     dep.uniform,
-    dep.melange.main,
     dep.melange.action,
-    function () {
-      /* Change all the tooltips to be displayed onhover over a
-      * question mark. Calling this function only once will take
-      * care of all such instances.
-      */
-      melange.action.createCluetip();
-
-      /* Create the project featured button and make it post using ajax. */
-      {% for button in host_actions.toggle_buttons %}
-        melange.action.toggleButton(
-            "{{ button.id }}", "{{ button.type }}", "{{ button.post_url }}",
-            "{{ button.state }}",
-            {checked: "{{ button.labels.checked }}",
-             unchecked: "{{ button.labels.unchecked }}"});
-      {% endfor %}
-    },
     css("/soc/content/{{ app_version }}/css/gsoc/readonly.css"),
+    null,
+    tc(
+      "/soc/content/{{ app_version }}/js/templates/modules/gsoc/profile_show/base.js",
+      {
+        {% if host_actions.toggle_buttons %}
+        host_toggle_buttons: [
+          {% for button in host_actions.toggle_buttons %}
+          {
+            id: "{{ button.id }}",
+            type: "{{ button.type }}",
+            post_url: "{{ button.post_url }}",
+            state: "{{ button.state }}",
+            checked_label: "{{ button.labels.checked }}",
+            unchecked_label: "{{ button.labels.unchecked }}"
+          },
+          {% endfor %}
+        ]
+        {% endif %}
+      }
+    )
   ]
 {% endblock dependencies %}

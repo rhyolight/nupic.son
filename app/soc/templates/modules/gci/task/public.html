@@ -39,123 +39,18 @@ limitations under the License.
     dep.melange.uploadform,
     dep.jqueryui.dialog,
     null,
-    function () {
-      {% if comments %}
-      fields = ["melange-content-textarea"
+    tc(
+      "/soc/content/{{ app_version }}/js/templates/modules/gci/task/public.js",
+      {
+        {% if comments %}
+        comments: [
+            "melange-content-textarea"
           {% for id in comment_ids %}
             , "melange-content-textarea-{{ id }}"
           {% endfor %}
-      ];
-      tinyMCE.init(melange.tinyMceConfig(fields));
-      {% endif %}
-      <!-- Task pages: Hide/show reply box -->
-      jQuery(document).ready(function(){
-        jQuery(".task-btn-comment-reply").click(function(){
-          jQuery(this).toggleClass("active").next().slideToggle("slow");
-        });
-
-        jQuery(".task-btn-comment-new").click(function(){
-          jQuery(this).toggleClass("active").next().slideToggle("slow");
-        });
-
-		/* If there is an error in the comment form, it should be expanded */
-		jQuery(".form-comment-post-new").each(function() {
-
-		  var errors = jQuery(this).find(".error");
-		  if (errors.length > 0) {
-			jQuery(this).closest("div.block-comments-post-new").slideDown("slow");
-		  }
-
-		});
-
-        jQuery(".task-btn-extended-deadline").click(function() {
-            jQuery("#deadline-extend").toggle();
-        });
-
-        jQuery("#deadline-extend-close").click(function() {
-            jQuery("#deadline-extend").toggle();
-        });
-
-        /* Fancy dynamic remaining time displaying clock */
-        //melange.clock.loadClock({{ complete_percentage }});
-
-        var form_name = "#file-form";
-        jQuery(form_name).submit(function() {
-          var url = melange.getUploadUrl();
-          jQuery(form_name).get(0).setAttribute('action', url);
-          return true;
-        });
-
-        jQuery('input[name="button_unpublish"]').click(function(event) {
-          jQuery('#task_form').data('unpublish_button', true);
-        });
-
-        jQuery('input[name="button_delete"]').click(function(event) {
-          jQuery('#task_form').data('delete_button', true);
-        });
-
-        jQuery('#task_form').submit(function(event) {
-
-          var unpublish_clicked = !!jQuery('#task_form').data('unpublish_button');
-          var unpublish_allowed = !!jQuery('#task_form').data('unpublish_allow');
-          if (unpublish_clicked && unpublish_allowed) {
-            jQuery('#task_form').data('unpublish_allow', false);
-            jQuery('#task_form').data('unpublish_button', false);
-            return true;
-          }
-          if (unpublish_clicked) {
-            jQuery('#task_form').data('unpublish_button', false);
-            event.preventDefault();
-            event.stopPropagation();
-            $("#unpublish-confirm-dialog").dialog({
-              title: "Confirm Unpublish",
-              resizable: false,
-              height:140,
-              modal: true,
-              buttons: {
-                "Unpublish": function() {
-                  $(this).dialog("close");
-                  jQuery('#task_form').data('unpublish_allow', true);
-                  jQuery('input[name="button_unpublish"]').click();
-                },
-                Cancel: function() {
-                  $(this).dialog("close");
-                }
-              }
-            });
-          }
-
-          var delete_clicked = !!jQuery('#task_form').data('delete_button');
-          var delete_allowed = !!jQuery('#task_form').data('delete_allow');
-          if (delete_clicked && delete_allowed) {
-            jQuery('#task_form').data('delete_allow', false);
-            jQuery('#task_form').data('delete_button', false);
-            return true;
-          }
-          if (delete_clicked) {
-            jQuery('#task_form').data('delete_button', false);
-            event.preventDefault();
-            event.stopPropagation();
-            $("#delete-confirm-dialog").dialog({
-              title: "Confirm Delete",
-              resizable: false,
-              height:140,
-              modal: true,
-              buttons: {
-                "Delete": function() {
-                  $(this).dialog("close");
-                  jQuery('#task_form').data('delete_allow', true);
-                  jQuery('input[name="button_delete"]').click();
-                },
-                Cancel: function() {
-                  $(this).dialog("close");
-                }
-              }
-            });
-          }
-
-        });
-      });
-    }
+        ]
+        {% endif %}
+      }
+    )
   ]
 {% endblock dependencies %}

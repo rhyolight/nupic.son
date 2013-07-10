@@ -27,8 +27,6 @@ limitations under the License.
     dep.melange.list,
     dep.melange.program_select,
     null,
-    function() {
-      melange.program_select.makeSelector("#program_select");
-    }
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gci/task/task_list.js")
   ]
 {% endblock dependencies %}

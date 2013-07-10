@@ -18,8 +18,14 @@
 
 from google.appengine.ext import db
 
+from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
+from soc.modules.gsoc.models.project_survey import ProjectSurvey
 
-def getSurveysForProgram(model, program, surveys, limit=1000):
+MIDTERM_ID = 'midterm'
+FINAL_ID = 'final'
+
+
+def getSurveysForProgram(model, program, surveys):
   """Return the survey entity for a given program and the survey link id.
 
   Args:
@@ -30,13 +36,26 @@ def getSurveysForProgram(model, program, surveys, limit=1000):
   """
   q = db.Query(model)
   q.filter('scope', program)
-  link_id_operator = 'link_id'
+
   if isinstance(surveys, list):
-    if len(surveys) > 1:
-      link_id_operator += ' IN'
-    else:
-      surveys = surveys[0]
+    q.filter('link_id IN', surveys)
+    return q.fetch(1000)
+  else:
+    q.filter('link_id', surveys)
+    return q.get()
 
-  q.filter(link_id_operator, surveys)
 
-  return q.fetch(limit)
+def getMidtermProjectSurveyForProgram(program):
+  return getSurveysForProgram(ProjectSurvey, program, MIDTERM_ID)
+
+
+def getMidtermGradingProjectSurveyForProgram(program):
+  return getSurveysForProgram(GradingProjectSurvey, program, MIDTERM_ID)
+
+
+def getFinalProjectSurveyForProgram(program):
+  return getSurveysForProgram(ProjectSurvey, program, FINAL_ID)
+
+
+def getFinalGradingProjectSurveyForProgram(program):
+  return getSurveysForProgram(GradingProjectSurvey, program, FINAL_ID)

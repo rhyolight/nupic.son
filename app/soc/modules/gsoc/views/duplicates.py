@@ -19,6 +19,7 @@ from google.appengine.ext import db
 
 from django import http
 
+from melange.request import access
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
@@ -34,6 +35,8 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 class DuplicatesPage(GSoCRequestHandler):
   """View for the host to see duplicates."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def templatePath(self):
     return 'modules/gsoc/duplicates/base.html'
 
@@ -42,9 +45,6 @@ class DuplicatesPage(GSoCRequestHandler):
         url(r'duplicates/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_view_duplicates'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def context(self, data, check, mutator):
     """Returns the context for this page."""

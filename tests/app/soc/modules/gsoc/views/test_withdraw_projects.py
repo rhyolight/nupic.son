@@ -47,8 +47,8 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
         'modules/gsoc/accept_withdraw_projects/base.html')
 
   def testWithdrawProjects(self):
-    self.data.createHost()
-    self.timeline.studentsAnnounced()
+    self.profile_helper.createHost()
+    self.timeline_helper.studentsAnnounced()
 
     url = '/gsoc/withdraw_projects/' + self.gsoc.key().name()
     response = self.get(url)
@@ -65,8 +65,8 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
     mentor_profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
     mentor_profile_helper.createOtherUser('mentor@example.com')
     mentor = mentor_profile_helper.createMentor(self.org)
-    self.data.createStudentWithProposal(self.org, mentor)
-    self.data.createStudentWithProject(self.org, mentor)
+    self.profile_helper.createStudentWithProposal(self.org, mentor)
+    self.profile_helper.createStudentWithProject(self.org, mentor)
 
     response = self.getListResponse(url, 0)
     self.assertIsJsonResponse(response)
@@ -75,15 +75,15 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
 
   def testWithdrawProject(self):
     """Test if withdrawing a project updates all the datastore properties."""
-    self.data.createHost()
-    self.timeline.studentsAnnounced()
+    self.profile_helper.createHost()
+    self.timeline_helper.studentsAnnounced()
 
     # list response with projects
     mentor_profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
     mentor_profile_helper.createOtherUser('mentor@example.com')
     mentor = mentor_profile_helper.createMentor(self.org)
-    self.data.createStudentWithProposal(self.org, mentor)
-    student = self.data.createStudentWithProject(self.org, mentor)
+    self.profile_helper.createStudentWithProposal(self.org, mentor)
+    student = self.profile_helper.createStudentWithProject(self.org, mentor)
     student_key = student.key()
     orig_number_of_projects = student.student_info.number_of_projects
     orig_project_for_orgs = student.student_info.project_for_orgs

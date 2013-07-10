@@ -14,6 +14,7 @@
 
 """Module containing the view for GCI tasks list page."""
 
+from melange.request import access
 from melange.request import exception
 from soc.views.helper import url_patterns
 
@@ -48,6 +49,8 @@ class TaskListPage(GCIRequestHandler):
 
   TASK_LIST_COLUMNS = ['title', 'organization', 'mentors', 'status']
 
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
   def templatePath(self):
     return 'modules/gci/task/task_list.html'
 
@@ -56,9 +59,6 @@ class TaskListPage(GCIRequestHandler):
         url(r'tasks/%s$' % url_patterns.PROGRAM, self,
             name=url_names.GCI_ALL_TASKS_LIST),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    pass
 
   def jsonContext(self, data, check, mutator):
     list_content = AllTasksList(data).getListData()

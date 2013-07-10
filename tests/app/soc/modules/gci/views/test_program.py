@@ -27,7 +27,7 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
   """Tests GCICreateProgramPage view.
   """
 
-  DEF_LINK_ID = 'melange'
+  DEF_PROGRAM_ID = 'melange'
 
   def assertProgramTemplatesUsed(self, response):
     """Asserts that all the templates from the program were used."""
@@ -41,7 +41,7 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
     """
     # TODO(daniel): test task types somehow
     return {
-        'link_id': self.DEF_LINK_ID,
+        'program_id': self.DEF_PROGRAM_ID,
         'name': 'Melange Program',
         'short_name': 'MP',
         'description': 'This is a Melange Program',
@@ -83,11 +83,11 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
     return '/'.join([
         '/gci/program/edit',
         self.sponsor.key().name(),
-        self.DEF_LINK_ID]) + '?validated'
+        self.DEF_PROGRAM_ID]) + '?validated'
 
   def _getProgramKeyName(self):
     """Returns a key name of the newly created program."""
-    return '/'.join([self.sponsor.key().name(), self.DEF_LINK_ID])
+    return '/'.join([self.sponsor.key().name(), self.DEF_PROGRAM_ID])
 
   def setUp(self):
     self.init()
@@ -99,31 +99,31 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
 
   def testStudentAccessForbidden(self):
     url = self._getCreateProgramUrl()
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     response = self.get(url)
     self.assertErrorTemplatesUsed(response)
 
   def testMentorAccessForbidden(self):
     url = self._getCreateProgramUrl()
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     response = self.get(url)
     self.assertErrorTemplatesUsed(response)
 
   def testOrgAdminAccessForbidden(self):
     url = self._getCreateProgramUrl()
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     response = self.get(url)
     self.assertErrorTemplatesUsed(response)
 
   def testHostAccessGranted(self):
     url = self._getCreateProgramUrl()
-    self.data.createHost()
+    self.profile_helper.createHost()
     response = self.get(url)
     self.assertProgramTemplatesUsed(response)
 
   def testCreateProgramWithRequiredProperties(self):
     url = self._getCreateProgramUrl()
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     properties = self._getCreateProgramFormRequiredProperties()
 
@@ -140,7 +140,7 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
 
   def testCreateProgramWithInsufficientData(self):
     url = self._getCreateProgramUrl()
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     properties = self._getCreateProgramFormRequiredProperties()
 
@@ -158,7 +158,7 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
 
   def testCreateProgramWithAllData(self):
     url = self._getCreateProgramUrl()
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     properties = self._getCreateProgramFormRequiredProperties()
     properties.update(self._getCreateProgramFormOptionalProperties())
@@ -195,14 +195,14 @@ class EditProgramTest(GCIDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testEditProgramAsDeveloper(self):
-    self.data.createDeveloper()
+    self.profile_helper.createDeveloper()
     url = '/gci/program/edit/' + self.gci.key().name()
     response = self.get(url)
     self.assertProgramTemplatesUsed(response)
 
   def testEditProgram(self):
     from soc.models.document import Document
-    self.data.createHost()
+    self.profile_helper.createHost()
     url = '/gci/program/edit/' + self.gci.key().name()
     response = self.get(url)
     self.assertProgramTemplatesUsed(response)

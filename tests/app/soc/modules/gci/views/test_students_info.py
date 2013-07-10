@@ -41,19 +41,19 @@ class StudentsInfoTest(GCIDjangoTestCase):
   def testAccessToTheList(self):
     """Tests only the host can access the list.
     """
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     response = self.get(self.url)
     self.assertResponseForbidden(response)
 
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     response = self.get(self.url)
     self.assertResponseForbidden(response)
 
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     response = self.get(self.url)
     self.assertResponseForbidden(response)
 
-    self.data.createHost()
+    self.profile_helper.createHost()
     response = self.get(self.url)
     self.assertResponseOK(response)
 
@@ -71,7 +71,7 @@ class StudentsInfoTest(GCIDjangoTestCase):
     score.put()
 
     #Set the current user to be the host.
-    self.data.createHost()
+    self.profile_helper.createHost()
     response = self.get(self.url)
     self.assertStudentsInfoTemplatesUsed(response)
 

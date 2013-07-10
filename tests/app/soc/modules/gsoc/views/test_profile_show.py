@@ -37,7 +37,7 @@ class ProfileShowPageTest(GSoCDjangoTestCase):
   def testUserWithoutAProfileCanNotAccessItsProfile(self):
     """Tests that a user which has no profile can not access its profile.
     """
-    self.data.createUser()
+    self.profile_helper.createUser()
     url = '/gsoc/profile/show/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
@@ -66,7 +66,7 @@ class ProfileShowPageTest(GSoCDjangoTestCase):
   def testAStudentWithAProfileCanAccessItsProfilePage(self):
     """Tests that a logged in student with a profile can access its profile page.
     """
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     url = '/gsoc/profile/show/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
@@ -77,15 +77,16 @@ class ProfileShowPageTest(GSoCDjangoTestCase):
     self.assertIn('program_name', context)
     self.assertIn('profile', context)
     self.assertIn('css_prefix', context)
-    self.assertFalse('submit_tax_link' in context)
-    self.assertFalse('submit_enrollment_link' in context)
+    self.assertNotIn('submit_tax_link', context)
+    self.assertNotIn('submit_enrollment_link', context)
 
-    expected_page_name = '%s Profile - %s' % (self.data.program.short_name,
-                                              self.data.profile.name())
+    expected_page_name = '%s Profile - %s' % (
+        self.profile_helper.program.short_name,
+        self.profile_helper.profile.name())
     actual_page_name = context['page_name']
     self.assertEqual(expected_page_name, actual_page_name)
 
-    expected_program_name = self.data.program.name
+    expected_program_name = self.profile_helper.program.name
     actual_program_name = context['program_name']
     self.assertEqual(expected_program_name, actual_program_name)
 
@@ -131,16 +132,16 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
   def testANormalUserCanNotAccessItsAdminProfileUrl(self):
     """Tests that a normal user can not access the its admin profile url.
     """
-    self.data.createStudent()
-    url = '/gsoc/profile/admin/'+self.data.profile.key().name()
+    self.profile_helper.createStudent()
+    url = '/gsoc/profile/admin/'+self.profile_helper.profile.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.data.deleteProfile().createMentor(self.org)
+    self.profile_helper.deleteProfile().createMentor(self.org)
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     response = self.get(url)
     self.assertResponseForbidden(response)
 
@@ -155,20 +156,20 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
 
     url = '/gsoc/profile/admin/' + student.profile.key().name()
 
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.data.deleteProfile().createMentor(self.org)
+    self.profile_helper.deleteProfile().createMentor(self.org)
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.data.deleteProfile().createProfile()
-    self.data.createHost()
+    self.profile_helper.deleteProfile().createProfile()
+    self.profile_helper.createHost()
 
     response = self.get(url)
     self.assertResponseOK(response)
@@ -186,11 +187,11 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
 
     self.assertEqual(1, len(context['links']))
 
-    expected_page_name = '%s Profile - %s' % (self.data.program.short_name,
-                                              student.profile.name())
+    expected_page_name = '%s Profile - %s' % (
+        self.profile_helper.program.short_name, student.profile.name())
     actual_page_name = context['page_name']
     self.assertEqual(expected_page_name, actual_page_name)
 
-    expected_program_name = self.data.program.name
+    expected_program_name = self.profile_helper.program.name
     actual_program_name = context['program_name']
     self.assertEqual(expected_program_name, actual_program_name)

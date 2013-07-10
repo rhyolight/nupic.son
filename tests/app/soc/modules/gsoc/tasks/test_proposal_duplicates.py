@@ -39,7 +39,7 @@ class ProposalDuplicatesTest(GSoCDjangoTestCase, TaskQueueTestCase):
     self.createMentor()
     self.createStudent()
     self.updateOrgSlots()
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
 
   def createMentor(self):
     """Creates a new mentor.

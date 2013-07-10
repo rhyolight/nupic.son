@@ -47,7 +47,7 @@ class AcceptProposalsTest(
 
   def _createHost(self):
     """Sets program host."""
-    self.host = self.data
+    self.host = self.profile_helper
     self.host.createHost()
     self.host.createProfile()
 
@@ -100,7 +100,7 @@ class AcceptProposalsTest(
     self.org.slots = 5
     self.org.put()
 
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
   def testConvertProposals(self):
     """Tests convert proposal task runs successfully."""

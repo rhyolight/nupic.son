@@ -17,8 +17,6 @@ limitations under the License.
   [
     dep.uniform,
     null,
-    function () {
-      jQuery("select, input:checkbox").uniform();
-    },
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gci/propose_winners/base.js")
   ]
 {% endblock dependencies %}

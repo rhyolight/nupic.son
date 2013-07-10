@@ -32,7 +32,7 @@ class ListDocumentTest(GCIDjangoTestCase):
 
   def setUp(self):
     self.init()
-    self.data.createHost()
+    self.profile_helper.createHost()
 
   def testListDocument(self):
     url = '/gci/documents/' + self.gci.key().name()
@@ -51,11 +51,11 @@ class EditProgramTest(GCIDjangoTestCase):
 
   def setUp(self):
     self.init()
-    self.data.createUser()
+    self.profile_helper.createUser()
 
     properties = {
-        'modified_by': self.data.user,
-        'author': self.data.user,
+        'modified_by': self.profile_helper.user,
+        'author': self.profile_helper.user,
         'home_for': None,
         'prefix': 'gci_program',
         'scope': self.program,
@@ -74,7 +74,7 @@ class EditProgramTest(GCIDjangoTestCase):
     pass
 
   def testCreateDocumentWithDashboardVisibility(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
     url = '/gci/document/edit/gci_program/%s/doc' % self.gci.key().name()
     response = self.get(url)
     self.assertGCITemplatesUsed(response)
@@ -84,8 +84,10 @@ class EditProgramTest(GCIDjangoTestCase):
     # test POST
     override = {
         'prefix': 'gci_program', 'scope': self.gci, 'link_id': 'doc',
-        'key_name': DocumentKeyNameProvider(), 'modified_by': self.data.user,
-        'home_for': None, 'author': self.data.user, 'is_featured': None,
+        'key_name': DocumentKeyNameProvider(),
+        'modified_by': self.profile_helper.user,
+        'home_for': None,
+        'author': self.profile_helper.user, 'is_featured': None,
         'write_access': 'admin', 'read_access': 'public',
         'dashboard_visibility': ['student', 'mentor'],
     }
@@ -98,7 +100,7 @@ class EditProgramTest(GCIDjangoTestCase):
     self.assertPropertiesEqual(properties, document)
 
   def testCreateDocumentWithDashboardVisibility(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
     url = '/gci/document/edit/gci_program/%s/doc' % self.gci.key().name()
     response = self.get(url)
     self.assertGCITemplatesUsed(response)
@@ -108,8 +110,10 @@ class EditProgramTest(GCIDjangoTestCase):
     # test POST
     override = {
         'prefix': 'gci_program', 'scope': self.gci, 'link_id': 'doc',
-        'key_name': DocumentKeyNameProvider(), 'modified_by': self.data.user,
-        'home_for': None, 'author': self.data.user, 'is_featured': None,
+        'key_name': DocumentKeyNameProvider(),
+        'modified_by': self.profile_helper.user,
+        'home_for': None,
+        'author': self.profile_helper.user, 'is_featured': None,
         'write_access': 'admin', 'read_access': 'public',
         'dashboard_visibility': [],
     }

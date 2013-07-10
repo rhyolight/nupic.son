@@ -20,6 +20,7 @@ from django import forms as djangoforms
 from django import http
 from django.utils.translation import ugettext
 
+from melange.request import access
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic import links
@@ -75,17 +76,15 @@ class LookupForm(gci_forms.GCIModelForm):
 
 
 class DashboardPage(GCIRequestHandler):
-  """Dashboard for admins.
-  """
+  """Dashboard for admins."""
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     return [
         url(r'admin/%s$' % url_patterns.PROGRAM,
          self, name='gci_admin_dashboard'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gci/admin/base.html'
@@ -127,8 +126,8 @@ class MainDashboard(Dashboard):
   def context(self):
     """Returns the context of main dashboard.
     """
-    r = self.data.redirect
-    r.program()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    self.data.redirect.program()
 
     program_settings = ProgramSettingsDashboard(self.data)
     organizations = OrgDashboard(self.data)
@@ -140,7 +139,7 @@ class MainDashboard(Dashboard):
             'description': ugettext(
                 'Lookup profile of mentor or student from various program.'),
             'title': 'Lookup profile',
-            'link': r.urlOf('lookup_gci_profile')
+            'link': self.data.redirect.urlOf('lookup_gci_profile')
         },
         {
             'name': 'program_settings',
@@ -185,8 +184,8 @@ class ProgramSettingsDashboard(Dashboard):
     Args:
       data: The RequestData object
     """
-    r = data.redirect
-    r.program()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.program()
 
     linker = links.Linker()
 
@@ -197,7 +196,7 @@ class ProgramSettingsDashboard(Dashboard):
                 'Edit your program settings such as information, slots, '
                 'documents, etc.'),
             'title': 'Edit program settings',
-            'link': r.urlOf(url_names.GCI_PROGRAM_EDIT)
+            'link': data.redirect.urlOf(url_names.GCI_PROGRAM_EDIT)
         },
         {
             'name': 'edit_timeline',
@@ -205,7 +204,7 @@ class ProgramSettingsDashboard(Dashboard):
                 'Edit your program timeline such as program start/end date, '
                 'student signup start/end date, etc.'),
             'title': 'Edit timeline',
-            'link': r.urlOf('edit_gci_timeline')
+            'link': data.redirect.urlOf('edit_gci_timeline')
         },
         {
             'name': 'edit_program_messages',
@@ -213,14 +212,14 @@ class ProgramSettingsDashboard(Dashboard):
                 'Edit program messages which will be sent in emails '
                 'to the specified participants.'),
             'title': 'Edit messages',
-            'link': r.urlOf(url_names.GCI_EDIT_PROGRAM_MESSAGES)
+            'link': data.redirect.urlOf(url_names.GCI_EDIT_PROGRAM_MESSAGES)
         },
         {
             'name': 'documents',
             'description': ugettext(
                 'List of documents from various program.'),
             'title': 'List of documents',
-            'link': r.urlOf('list_gci_documents')
+            'link': data.redirect.urlOf('list_gci_documents')
         },
         {
             'name': 'create_program',
@@ -264,8 +263,8 @@ class OrgDashboard(Dashboard):
     Args:
       data: The RequestData object
     """
-    r = data.redirect
-    r.program()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.program()
 
     subpages = [
         {
@@ -273,35 +272,35 @@ class OrgDashboard(Dashboard):
             'description': ugettext(
                 'Create or edit organization application'),
             'title': 'Edit organization application',
-            'link': r.urlOf('gci_edit_org_app')
+            'link': data.redirect.urlOf('gci_edit_org_app')
         },
         {
             'name': 'preview_org_app',
             'description': ugettext(
                 'Preview of the organization application.'),
             'title': 'Preview organization application',
-            'link': r.urlOf('gci_preview_org_app')
+            'link': data.redirect.urlOf('gci_preview_org_app')
         },
         {
             'name': 'org_app_records',
             'description': ugettext(
                 'List of submitted organization application'),
             'title': 'Organization application records',
-            'link': r.urlOf('gci_list_org_app_records')
+            'link': data.redirect.urlOf('gci_list_org_app_records')
         },
         {
             'name': 'accepted_orgs',
             'description': ugettext(
                 'List of accepted organizations'),
             'title': 'Accepted Organizations',
-            'link': r.urlOf('gci_admin_accepted_orgs')
+            'link': data.redirect.urlOf('gci_admin_accepted_orgs')
         },
         {
             'name': 'org_scores',
             'description': ugettext(
                 'List of student scores for the chosen organization'),
             'title': 'Organization Scores',
-            'link': r.urlOf(url_names.GCI_ORG_CHOOSE_FOR_SCORE)
+            'link': data.redirect.urlOf(url_names.GCI_ORG_CHOOSE_FOR_SCORE)
         },
         {
             'name': 'org_tasks',
@@ -309,7 +308,7 @@ class OrgDashboard(Dashboard):
                 'List of tasks that have been created by '
                 'the chosen organization'),
             'title': 'Organization Tasks',
-            'link': r.urlOf(url_names.GCI_ORG_CHOOSE_FOR_ALL_TASKS)
+            'link': data.redirect.urlOf(url_names.GCI_ORG_CHOOSE_FOR_ALL_TASKS)
         },
         {
             'name': 'proposed_winners',
@@ -317,7 +316,7 @@ class OrgDashboard(Dashboard):
                 'List of the Grand Prize Winners that have been proposed by '
                 'organizations'),
             'title': 'Proposed Grand Prize Winners',
-            'link': r.urlOf(url_names.GCI_VIEW_PROPOSED_WINNERS)
+            'link': data.redirect.urlOf(url_names.GCI_VIEW_PROPOSED_WINNERS)
         },
     ]
 
@@ -351,8 +350,8 @@ class ParticipantsDashboard(Dashboard):
     Args:
       data: The RequestData object
     """
-    r = data.redirect
-    r.program()
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.program()
 
     subpages = [
         {
@@ -360,21 +359,21 @@ class ParticipantsDashboard(Dashboard):
             'description': ugettext(
                 'List of all the organization admins and mentors'),
             'title': 'List mentors and admins',
-            'link': r.urlOf('gci_list_mentors')
+            'link': data.redirect.urlOf('gci_list_mentors')
         },
         {
             'name': 'list_students',
             'description': ugettext(
                 'List of all participating students'),
             'title': 'List students',
-            'link': r.urlOf(url_names.GCI_STUDENTS_INFO)
+            'link': data.redirect.urlOf(url_names.GCI_STUDENTS_INFO)
         },
         {
             'name': 'leaderboard',
             'description': ugettext(
                 'Leaderboard for the program'),
             'title': 'Leaderboard',
-            'link': r.urlOf(url_names.GCI_LEADERBOARD)
+            'link': data.redirect.urlOf(url_names.GCI_LEADERBOARD)
         },
     ]
 
@@ -399,17 +398,15 @@ class ParticipantsDashboard(Dashboard):
 
 
 class LookupLinkIdPage(GCIRequestHandler):
-  """View for the participant profile.
-  """
+  """View for the participant profile."""
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     return [
         url(r'admin/lookup/%s$' % url_patterns.PROGRAM,
          self, name='lookup_gci_profile'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gci/admin/lookup.html'

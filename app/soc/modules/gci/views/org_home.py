@@ -16,6 +16,7 @@
 
 from django.utils.translation import ugettext
 
+from melange.request import access
 from melange.request import exception
 from soc.logic import accounts
 from soc.views.helper import lists
@@ -91,10 +92,9 @@ class OpenTasksList(Template):
 
   def context(self):
     description = 'List of all Open tasks.'
-    list = lists.ListConfigurationResponse(
-        self.data, self.list_config, 0, description)
     return {
-        'lists': [list],
+        'lists': [lists.ListConfigurationResponse(
+            self.data, self.list_config, 0, description)],
     }
 
   def getListData(self):
@@ -134,10 +134,9 @@ class CompletedTasksList(Template):
 
   def context(self):
     description = 'List of all Completed tasks.'
-    list = lists.ListConfigurationResponse(
-        self.data, self.list_config, 1, description)
     return {
-        'lists': [list],
+        'lists': [lists.ListConfigurationResponse(
+            self.data, self.list_config, 1, description)],
     }
 
   def getListData(self):
@@ -188,6 +187,8 @@ class GCIHostActions(HostActions):
 class OrgHomepage(GCIRequestHandler):
   """Encapsulates all the methods required to render the org homepage."""
 
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
   def templatePath(self):
     return 'modules/gci/org_home/base.html'
 
@@ -197,9 +198,6 @@ class OrgHomepage(GCIRequestHandler):
             name=url_names.GCI_ORG_HOME),
         url(r'org/home/%s' % url_patterns.ORG, self),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    pass
 
   def jsonContext(self, data, check, mutator):
     idx = lists.getListIndex(data.request)

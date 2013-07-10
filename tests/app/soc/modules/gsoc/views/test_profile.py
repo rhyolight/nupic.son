@@ -37,48 +37,48 @@ class ProfileViewTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
 
   def testCreateProfilePage(self):
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertProfileTemplatesUsed(response)
 
   def testCreateMentorProfilePage(self):
-    self.timeline.studentSignup()
+    self.timeline_helper.studentSignup()
     url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertProfileTemplatesUsed(response)
 
   def testRedirectWithStudentProfilePage(self):
-    self.timeline.studentSignup()
-    self.data.createStudent()
+    self.timeline_helper.studentSignup()
+    self.profile_helper.createStudent()
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseRedirect(response)
 
   def testForbiddenWithStudentProfilePage(self):
-    self.timeline.studentSignup()
-    self.data.createStudent()
+    self.timeline_helper.studentSignup()
+    self.profile_helper.createStudent()
     url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testForbiddenWithMentorProfilePage(self):
-    self.timeline.studentSignup()
-    self.data.createMentor(self.org)
+    self.timeline_helper.studentSignup()
+    self.profile_helper.createMentor(self.org)
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testEditProfilePage(self):
-    self.timeline.studentSignup()
-    self.data.createProfile()
+    self.timeline_helper.studentSignup()
+    self.profile_helper.createProfile()
     url = '/gsoc/profile/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
 
   def testRegistrationTimeline(self):
     # no registration should be available just after the program is started
-    self.timeline.kickoff()
+    self.timeline_helper.kickoff()
 
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.get(url)
@@ -93,7 +93,7 @@ class ProfileViewTest(GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
     # only org admins should be able to register in org sign up period
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
 
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.get(url)
@@ -109,7 +109,7 @@ class ProfileViewTest(GSoCDjangoTestCase):
 
     # only org admins and mentors should be able to register after the orgs
     # are announced
-    self.timeline.orgsAnnounced()
+    self.timeline_helper.orgsAnnounced()
 
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.get(url)
@@ -127,8 +127,8 @@ class ProfileViewTest(GSoCDjangoTestCase):
     from soc.modules.gsoc.models.profile import GSoCProfile
     from soc.modules.gsoc.models.profile import GSoCStudentInfo
 
-    self.timeline.studentSignup()
-    self.data.createUser()
+    self.timeline_helper.studentSignup()
+    self.profile_helper.createUser()
 
     suffix = "%(program)s" % {
         'program': self.gsoc.key().name(),
@@ -157,10 +157,10 @@ class ProfileViewTest(GSoCDjangoTestCase):
     props.pop('enrollment_form')
     postdata.update(props)
     postdata.update({
-        'link_id': self.data.user.link_id,
-        'user': self.data.user, 'parent': self.data.user,
+        'link_id': self.profile_helper.user.link_id,
+        'user': self.profile_helper.user, 'parent': self.profile_helper.user,
         'scope': self.gsoc, 'status': 'active',
-        'email': self.data.user.account.email(),
+        'email': self.profile_helper.user.account.email(),
         'mentor_for': [], 'org_admin_for': [],
         'is_org_admin': False, 'is_mentor': False,
         'birth_date':

@@ -14,6 +14,7 @@
 
 """Module containing the views for GCI documents page."""
 
+from melange.request import access
 from melange.request import exception
 from soc.models import document as document_model
 from soc.views import document
@@ -151,6 +152,8 @@ class GCIDocumentList(document.DocumentList):
 class DocumentListPage(GCIRequestHandler):
   """View for the list documents page."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def templatePath(self):
     return 'modules/gci/document/document_list.html'
 
@@ -159,9 +162,6 @@ class DocumentListPage(GCIRequestHandler):
         url(r'documents/%s$' % url_patterns.PROGRAM, self,
             name='list_gci_documents'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def jsonContext(self, data, check, mutator):
     list_content = GCIDocumentList(data).getListData()

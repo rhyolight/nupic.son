@@ -64,7 +64,7 @@ class GCIOrgAppEditPageTest(test_utils.GCIDjangoTestCase):
     response = self.post(self.url, self.post_params)
     self.assertResponseForbidden(response)
 
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     response = self.get(self.url)
     self.assertResponseOK(response)
@@ -73,7 +73,7 @@ class GCIOrgAppEditPageTest(test_utils.GCIDjangoTestCase):
     """Tests organization applications edit page.
     """
 
-    self.data.createHost()
+    self.profile_helper.createHost()
     response = self.get(self.url)
     self.assertTemplatesUsed(response)
 
@@ -87,7 +87,7 @@ class GCIOrgAppEditPageTest(test_utils.GCIDjangoTestCase):
 
     survey = query.get()
     self.assertEqual(survey.title, self.post_params['title'])
-    self.assertEqual(survey.modified_by.key(), self.data.user.key())
+    self.assertEqual(survey.modified_by.key(), self.profile_helper.user.key())
 
 
 class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
@@ -138,7 +138,7 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     response = self.get(self.take_url)
     self.assertResponseNotFound(response)
 
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     response = self.get(self.take_url)
     self.assertResponseNotFound(response)
 
@@ -146,22 +146,22 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     self.updateOrgAppSurvey()
 
     #Check for non-org members
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     response = self.get(self.take_url)
     self.assertResponseForbidden(response)
-    self.data.removeStudent()
+    self.profile_helper.removeStudent()
 
   def testAccessCheckForOrgMembers(self):
     self.updateOrgAppSurvey()
 
     #OK
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     response = self.get(self.take_url)
     self.assertResponseOK(response)
-    self.data.removeOrgAdmin()
+    self.profile_helper.removeOrgAdmin()
 
     #also check for a mentor who is not admin
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     response = self.get(self.take_url)
     self.assertResponseOK(response)
 
@@ -170,19 +170,19 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     """
     self.updateOrgAppSurvey()
 
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     backup_admin = profile_utils.GCIProfileHelper(self.gci, self.dev_test)
     backup_admin.createMentor(self.org)
 
     response = self.get(self.take_url)
     self.assertTemplatesUsed(response)
 
-    params = {'admin_id': self.data.user.link_id,
+    params = {'admin_id': self.profile_helper.user.link_id,
               'backup_admin_id': backup_admin.user.link_id}
     params.update(self.post_params)
     response = self.post(self.take_url, params)
     query = org_app_record.OrgAppRecord.all()
-    query.filter('main_admin = ', self.data.user)
+    query.filter('main_admin = ', self.profile_helper.user)
     self.assertEqual(query.count(), 1, 'Survey record is not created.')
 
     record = query.get()
@@ -190,7 +190,7 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(record.name, self.post_params['name'])
     self.assertEqual(record.description, self.post_params['description'])
     self.assertEqual(record.license, self.post_params['license'])
-    self.assertEqual(record.main_admin.key(), self.data.user.key())
+    self.assertEqual(record.main_admin.key(), self.profile_helper.user.key())
     self.assertEqual(record.backup_admin.key(), backup_admin.user.key())
 
     retake_url = self.retake_url_raw % (self.gci.key().name(),
@@ -253,9 +253,10 @@ class GCIOrgAppRecordsPageTest(test_utils.MailTestCase,
     return self.post(url, postdata)
 
   def testGetRecords(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
     record = self.record.createOrgAppRecord(
-        'org1', self.data.user, self.data.user, {'status': 'needs review'})
+        'org1', self.profile_helper.user, self.profile_helper.user,
+        {'status': 'needs review'})
 
     response = self.get(self.url)
     self.assertTemplatesUsed(response)

@@ -110,8 +110,8 @@ class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
     return project
 
   def testProjectDetails(self):
-    self.data.createStudent()
-    self.timeline.studentsAnnounced()
+    self.profile_helper.createStudent()
+    self.timeline_helper.studentsAnnounced()
 
     project = self.createProject()
 
@@ -126,13 +126,13 @@ class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
     self.assertProjectDetailsTemplateUsed(response)
 
   def testFeaturedProjectButton(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
     student = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
     student.createOtherUser('student@example.com')
     student.createStudent()
 
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     project = self.createProject()
 
@@ -163,7 +163,7 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
         project.parent_key().name(), project.key().id())
 
   def testLoneUserAccessForbidden(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
     url = self._getProjectUpdateUrl(project)
@@ -172,9 +172,9 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testMentorAccessForbidden(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
-    mentor = self.data.createMentor(self.org)
+    mentor = self.profile_helper.createMentor(self.org)
     project = _createProjectForMentor(
         self.gsoc, self.org, self.dev_test, mentor=mentor)
 
@@ -184,9 +184,9 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testOrgAdminAccessGranted(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
     url = self._getProjectUpdateUrl(project)
@@ -194,10 +194,10 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseOK(response)
 
   def testOrgAdminForAnotherOrgForbidden(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
     another_org = self.createOrg()
-    self.data.createOrgAdmin(another_org)
+    self.profile_helper.createOrgAdmin(another_org)
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
     url = self._getProjectUpdateUrl(project)
@@ -206,9 +206,9 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testHostAccessGranted(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
-    self.data.createHost()
+    self.profile_helper.createHost()
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
     url = self._getProjectUpdateUrl(project)
@@ -216,9 +216,9 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseOK(response)
 
   def testStudentAccessTheirProjectGranted(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
-    student = self.data.createStudent()
+    student = self.profile_helper.createStudent()
     project = _createProjectForStudent(
         self.gsoc, self.org, self.dev_test, student=student)
 
@@ -227,9 +227,9 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseOK(response)
 
   def testStudentAccessOtherProjectForbidden(self):
-    self.timeline.studentsAnnounced()
+    self.timeline_helper.studentsAnnounced()
 
-    student = self.data.createStudent()
+    student = self.profile_helper.createStudent()
     project = _createProjectForStudent(self.gsoc, self.org, self.dev_test)
 
     url = self._getProjectUpdateUrl(project)
@@ -262,7 +262,7 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
     self.assertTrue(request_data)
 
   def testForProjectStudent(self):
-    student = self.data.createStudent()
+    student = self.profile_helper.createStudent()
     project = _createProjectForStudent(
         self.gsoc, self.org, self.dev_test, student=student)
 
@@ -271,7 +271,7 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
     self.assertTrue(project_details._isUpdateLinkVisible(request_data))
 
   def testForOtherStudent(self):
-    student = self.data.createStudent()
+    student = self.profile_helper.createStudent()
     project = _createProjectForStudent(self.gsoc, self.org, self.dev_test)
 
     request_data = TestIsUpdateLinkVisible.MockRequestData(
@@ -279,7 +279,7 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
     self.assertFalse(project_details._isUpdateLinkVisible(request_data))
 
   def testForProjectMentor(self):
-    mentor = self.data.createMentor(self.org)
+    mentor = self.profile_helper.createMentor(self.org)
     project = _createProjectForMentor(
         self.gsoc, self.org, self.dev_test, mentor=mentor)
 
@@ -288,7 +288,7 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
     self.assertFalse(project_details._isUpdateLinkVisible(request_data))
 
   def testForOtherMentor(self):
-    mentor = self.data.createMentor(self.org)
+    mentor = self.profile_helper.createMentor(self.org)
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
     request_data = TestIsUpdateLinkVisible.MockRequestData(
@@ -296,7 +296,7 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
     self.assertFalse(project_details._isUpdateLinkVisible(request_data))
 
   def testForProjectOrgAdmin(self):
-    org_admin = self.data.createOrgAdmin(self.org)
+    org_admin = self.profile_helper.createOrgAdmin(self.org)
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
     request_data = TestIsUpdateLinkVisible.MockRequestData(
@@ -306,7 +306,7 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
   def testForOtherOrgAdmin(self):
     program_helper = program_utils.GSoCProgramHelper()
     another_org = program_helper.createOrg()
-    org_admin = self.data.createOrgAdmin(self.org)
+    org_admin = self.profile_helper.createOrgAdmin(self.org)
     project = _createProjectForMentor(self.gsoc, another_org, self.dev_test)
 
     request_data = TestIsUpdateLinkVisible.MockRequestData(
@@ -314,7 +314,7 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
     self.assertFalse(project_details._isUpdateLinkVisible(request_data))
 
   def testForLoneUser(self):
-    self.data.createUser()
+    self.profile_helper.createUser()
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
     request_data = TestIsUpdateLinkVisible.MockRequestData(

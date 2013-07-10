@@ -58,7 +58,7 @@ class InviteViewTest(BaseInviteTest):
     self.assertResponseForbidden(response)
 
   def testUserCannotInvite(self):
-    self.data.createUser()
+    self.profile_helper.createUser()
 
     url = self._inviteMentorUrl()
     response = self.get(url)
@@ -69,7 +69,7 @@ class InviteViewTest(BaseInviteTest):
     self.assertResponseForbidden(response)
 
   def testMentorCannotInvite(self):
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     url = self._inviteMentorUrl()
     response = self.get(url)
@@ -80,7 +80,7 @@ class InviteViewTest(BaseInviteTest):
     self.assertResponseForbidden(response)
 
   def testOrgAdminCanInvite(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     url = self._inviteMentorUrl()
     response = self.get(url)
@@ -91,7 +91,7 @@ class InviteViewTest(BaseInviteTest):
     self.assertInviteTemplatesUsed(response)
 
   def testInviteOrgAdmin(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     invitee = self._invitee()
 
@@ -106,7 +106,7 @@ class InviteViewTest(BaseInviteTest):
     self.assertPropertiesEqual(self._defaultOrgAdminInviteProperties(), invite)
 
   def testInviteMentor(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     invitee = self._invitee()
 
@@ -121,7 +121,7 @@ class InviteViewTest(BaseInviteTest):
     self.assertPropertiesEqual(self._defaultMentorInviteProperties(), invite)
 
   def testSecondInviteForbidden(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     invitee = self._invitee()
 
     GCIInviteHelper().createMentorInvite(self.org, invitee.user)
@@ -134,7 +134,7 @@ class InviteViewTest(BaseInviteTest):
     self._assertFormValidationError(response, 'identifiers')
 
   def testOrgAdminInviteAfterMentorInvite(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     invitee = self._invitee()
 
     GCIInviteHelper().createMentorInvite(self.org, invitee.user)
@@ -153,7 +153,7 @@ class InviteViewTest(BaseInviteTest):
     # TODO(dhans): this test should fail in the future:
     # a existing mentor invite should be extended to become org_admin one
 
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     invitee = self._invitee()
 
     GCIInviteHelper().createOrgAdminInvite(self.org, invitee.user)
@@ -169,7 +169,7 @@ class InviteViewTest(BaseInviteTest):
     self.assertPropertiesEqual(self._defaultMentorInviteProperties(), invite)
 
   def testInviteByEmailAddress(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     self._invitee()
 
     post_data = {
@@ -183,7 +183,7 @@ class InviteViewTest(BaseInviteTest):
     self.assertPropertiesEqual(self._defaultMentorInviteProperties(), invite)
 
   def testInviteByEmailAddressNotExistingUserForbidden(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     post_data = {
         'identifiers': 'invitee@example.com'
@@ -195,7 +195,7 @@ class InviteViewTest(BaseInviteTest):
 
   def testInviteByEmailAndUsername(self):
     # TODO(dhans): in the perfect world, only one invite should be sent
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     invitee = self._invitee()
 
     post_data = {
@@ -211,7 +211,7 @@ class InviteViewTest(BaseInviteTest):
     # we would prefer self.assertEqual(len(invite), 1)
 
   def testInviteByInvalidEmailAddressForbidden(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     self._testInviteInvalidEmailAddress('@example.com')
     self._testInviteInvalidEmailAddress('John Smith @example.com')
     self._testInviteInvalidEmailAddress('test@example')
@@ -284,28 +284,28 @@ class ManageInviteTest(BaseInviteTest):
     self.assertResponseForbidden(response)
 
   def testUserCannotManageInvite(self):
-    self.data.createUser()
+    self.profile_helper.createUser()
 
     url = self._manageInviteUrl(self.invite)
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testMentorCannotManageInvite(self):
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     url = self._manageInviteUrl(self.invite)
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testOrgAdminCanInvite(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     url = self._manageInviteUrl(self.invite)
     response = self.get(url)
     self.assertInviteTemplatesUsed(response)
 
   def testInvalidPostDataGetsBadRequestResponse(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     # empty post data
     post_data = {}
@@ -320,7 +320,7 @@ class ManageInviteTest(BaseInviteTest):
     self.assertResponseCode(response, httplib.BAD_REQUEST)
 
   def testWithdrawInvite(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     post_data = {
         'withdraw': ''
@@ -332,7 +332,7 @@ class ManageInviteTest(BaseInviteTest):
     self.assertTrue(new_invite.status == 'withdrawn')
 
   def testPendingInviteCannotBeResubmitted(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     post_data = {
         'resubmit': ''
@@ -341,7 +341,7 @@ class ManageInviteTest(BaseInviteTest):
     self.assertResponseForbidden(response)
 
   def testResubmitInvite(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     self.invite.status = 'withdrawn'
     self.invite.put()
@@ -356,7 +356,7 @@ class ManageInviteTest(BaseInviteTest):
     self.assertTrue(new_invite.status == 'pending')
 
   def testAcceptedInviteCannotBeManaged(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     self.invite.status = 'accepted'
     self.invite.put()

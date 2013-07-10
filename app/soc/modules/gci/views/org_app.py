@@ -20,6 +20,7 @@ import logging
 from django import http
 from django.utils.translation import ugettext
 
+from melange.request import access
 from melange.request import exception
 from soc.mapreduce.helper import control as mapreduce_control
 from soc.models.org_app_record import OrgAppRecord
@@ -37,14 +38,13 @@ from soc.modules.gci.views.helper.url_patterns import url
 class GCIOrgAppEditPage(GCIRequestHandler):
   """View for creating/editing organization application."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
          url(r'org/application/edit/%s$' % url_patterns.PROGRAM,
              self, name='gci_edit_org_app'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gci/org_app/edit.html'
@@ -117,14 +117,13 @@ class GCIOrgAppPreviewPage(GCIRequestHandler):
   application for the program specified in the URL.
   """
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
          url(r'org/application/preview/%s$' % url_patterns.PROGRAM,
              self, name='gci_preview_org_app'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
 
   def templatePath(self):
     return 'modules/gci/org_app/take.html'

@@ -44,7 +44,7 @@ class AcceptedOrgsPageTest(GCIDjangoTestCase):
     """Tests that the list of accepted organizations can be accessed only after
     the organizations have been announced.
     """
-    self.timeline.orgSignup()
+    self.timeline_helper.orgSignup()
     response = self.get(self.url)
     self.assertResponseForbidden(response)
 
@@ -52,14 +52,14 @@ class AcceptedOrgsPageTest(GCIDjangoTestCase):
     """Tests that the list of the organizations can not be accessed before
     organizations have been announced.
     """
-    self.data.createUser()
+    self.profile_helper.createUser()
     org_properties = {
         'scope': self.gci, 'status': 'active',
         'home': None, 'backup_winner': None, 'program': self.gci,
     }
     self.seed(GCIOrganization, org_properties)
     self.seed(GCIOrganization, org_properties)
-    self.timeline.orgsAnnounced()
+    self.timeline_helper.orgsAnnounced()
 
     response = self.get(self.url)
     self.assertAcceptedOrgsPageTemplatesUsed(response)

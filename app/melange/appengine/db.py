@@ -16,6 +16,9 @@
 
 from django.core import validators
 
+from google.appengine.ext import db
+from google.appengine.ext import ndb
+
 
 def email_validator(property, value):
   """Validates whether the input value for the specified property
@@ -58,3 +61,23 @@ def link_validator(property, value):
     _LINK_VALIDATOR(value)
   except Exception:
     raise ValueError('%s is not a valid URL.' % value)
+
+
+def toDict(entity):
+  """Returns a dict with all specified values of a datastore entity.
+
+  This function can be dropped when entire transition to ndb API is complete.
+
+  Args:
+    entity: datastore entity to be put in a dictionary
+
+  Raises:
+    TypeError: if the specified entity is not a app engine datastore entity
+  """
+  if isinstance(entity, db.Model):
+    return db.to_dict(entity)
+  elif isinstance(entity, ndb.Model):
+    return entity.to_dict()
+  else:
+    raise TypeError("%s object is not a valid datastore entity" % type(enitity))
+

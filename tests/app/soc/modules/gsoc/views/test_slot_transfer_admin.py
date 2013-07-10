@@ -35,30 +35,30 @@ class SlotsTransferAdminPageTest(test_utils.GSoCDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testStudentAccessForbidden(self):
-    self.data.createStudent()
+    self.profile_helper.createStudent()
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testMentorAccessForbidden(self):
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testOrgAdminAccessForbidden(self):
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testHostAccessGranted(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
     response = self.get(self.url)
     self.assertResponseOK(response)
 
   def testListData(self):
-    self.data.createHost()
+    self.profile_helper.createHost()
 
     properties = {
         'program': self.gsoc,

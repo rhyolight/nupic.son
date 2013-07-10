@@ -189,7 +189,6 @@ def winnersForProgram(data):
   Args:
     data: The RequestData object.
   """
-  r = data.redirect
   program = data.program
 
   q = GCIScore.all()
@@ -210,8 +209,8 @@ def winnersForProgram(data):
   for profile in profiles:
     winner = winners[profile.key()]
     winner['profile'] = profile
-    winner['completed_tasks_link'] = r.profile(profile.link_id).urlOf(
-            url_names.GCI_STUDENT_TASKS)
+    winner['completed_tasks_link'] = data.redirect.profile(
+        profile.link_id).urlOf(url_names.GCI_STUDENT_TASKS)
 
     if profile.avatar:
       avatar_groups = re.findall(forms.RE_AVATAR_COLOR, profile.avatar)

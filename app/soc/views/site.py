@@ -24,6 +24,7 @@ from django.conf.urls.defaults import url as django_url
 from django.forms import widgets as django_widgets
 from django.utils.translation import ugettext
 
+from melange.request import access
 from melange.request import exception
 from soc.logic import cleaning
 from soc.logic import site as site_logic
@@ -70,6 +71,11 @@ class SiteForm(views_forms.ModelForm):
 class EditSitePage(base.RequestHandler):
   """View for the participant profile."""
 
+  # TODO(nathaniel): This page should use something like a "site admin
+  # access checker" - there should be no pages accessible only to
+  # developers.
+  access_checker = access.DEVELOPER_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
         django_url(r'^site/edit$', self, name='edit_site_settings'),
@@ -84,10 +90,6 @@ class EditSitePage(base.RequestHandler):
                  for i in entities]
 
     return {'data': json_data}
-
-  def checkAccess(self, data, check, mutator):
-    if not data.is_developer:
-      raise exception.Forbidden(message=DEF_NO_DEVELOPER)
 
   def templatePath(self):
     # TODO: make this specific to the current active program

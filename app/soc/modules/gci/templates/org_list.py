@@ -31,11 +31,9 @@ class OrgList(Template):
   def context(self):
     description = self._getDescription()
 
-    list = lists.ListConfigurationResponse(
-        self.data, self._list_config, 0, description)
-
     return {
-        'lists': [list],
+        'lists': [lists.ListConfigurationResponse(
+            self.data, self._list_config, 0, description)],
     }
 
   def getListData(self):
@@ -77,8 +75,6 @@ class BasicOrgList(OrgList):
   def _getListConfig(self):
     """Returns ListConfiguration object for the list.
     """
-    r = self.data.redirect
-
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.name.strip())

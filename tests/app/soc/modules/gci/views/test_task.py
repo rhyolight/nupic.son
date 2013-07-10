@@ -41,7 +41,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """
     super(TaskViewTest, self).setUp()
     self.init()
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     # Create a task, status published
     profile = GCIProfileHelper(self.gci, self.dev_test)
@@ -77,7 +77,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """Tests the rendering of the task view.
     """
     # Use a non-logged-in request to the page for that task
-    self.data.clear()
+    self.profile_helper.clear()
 
     url = self._taskPageUrl(self.task)
     response = self.get(url)
@@ -90,7 +90,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostComment(self):
     """Tests leaving a comment on a task.
     """
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     no_comments = self.task.comments()
     self.assertLength(no_comments, 0)
@@ -114,15 +114,15 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     comment = one_comment[0]
     self.assertEqual(comment_title, comment.title)
     self.assertEqual(comment_content, comment.content)
-    self.assertEqual(self.data.user.key(), comment.created_by.key())
-    self.assertEqual(self.data.user.key(), comment.modified_by.key())
+    self.assertEqual(self.profile_helper.user.key(), comment.created_by.key())
+    self.assertEqual(self.profile_helper.user.key(), comment.modified_by.key())
     self.assertEqual(self.task.key(), comment.parent_key())
     self.assertIsNone(comment.reply)
     self.assertMailSentToSubscribers(comment)
 
   def testPostCommentWithEmptyTitle(self):
     """Tests leaving a comment with an empty title."""
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     self.assertLength(self.task.comments(), 0)
 
@@ -144,8 +144,8 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     comment = comments[0]
     self.assertIsNone(comment.title)
     self.assertEqual(comment_content, comment.content)
-    self.assertEqual(self.data.user.key(), comment.created_by.key())
-    self.assertEqual(self.data.user.key(), comment.modified_by.key())
+    self.assertEqual(self.profile_helper.user.key(), comment.created_by.key())
+    self.assertEqual(self.profile_helper.user.key(), comment.modified_by.key())
     self.assertEqual(self.task.key(), comment.parent_key())
     self.assertIsNone(comment.reply)
     self.assertMailSentToSubscribers(comment)
@@ -153,7 +153,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonUnpublish(self):
     """Tests the unpublish button.
     """
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_unpublish')
@@ -165,7 +165,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonUnpublishReopenedTaskForbidden(self):
     """Tests the unpublish button on.
     """
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     url = self._taskPageUrl(self.task)
 
@@ -192,7 +192,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonUnpublishByMentor(self):
     """Tests the unpublish button by a mentor.
     """
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_unpublish')
@@ -202,7 +202,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonUnpublishByStudent(self):
     """Tests the unpublish button by a mentor.
     """
-    self.data.createStudent()
+    self.profile_helper.createStudent()
 
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_unpublish')
@@ -212,7 +212,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonPublishUnpublishedTask(self):
     """Tests the publish button.
     """
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     self.task.status = 'Unpublished'
     self.task.put()
@@ -227,7 +227,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonPublishUnapprovedTask(self):
     """Tests the publish button.
     """
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     self.task.status = 'Unapproved'
     self.task.put()
@@ -253,7 +253,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonPublishByMentor(self):
     """Tests the publish button pressed by a mentor.
     """
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     self.task.status = 'Unpublished'
     self.task.put()
@@ -266,7 +266,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonPublishByStudent(self):
     """Tests the publish button pressed by a student.
     """
-    self.data.createStudent()
+    self.profile_helper.createStudent()
 
     self.task.status = 'Unpublished'
     self.task.put()
@@ -279,7 +279,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonDelete(self):
     """Tests the delete button.
     """
-    self.data.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
 
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_delete')
@@ -291,7 +291,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonAssign(self):
     """Tests the assign button.
     """
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOtherUser('student@example.com').createStudent()
@@ -324,7 +324,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonUnassign(self):
     """Tests the unassign button.
     """
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOtherUser('student@example.com').createStudent()
@@ -352,7 +352,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonClose(self):
     """Tests the close task button.
     """
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOtherUser('student@example.com').createStudent()
@@ -393,7 +393,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonNeedsWork(self):
     """Tests the needs more work for task button.
     """
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOtherUser('student@example.com').createStudent()
@@ -421,7 +421,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonExtendDeadline(self):
     """Tests the extend deadline button.
     """
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOtherUser('student@example.com').createStudent()
@@ -453,7 +453,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonClaim(self):
     """Tests the claim task button.
     """
-    self.data.createStudentWithConsentForms(
+    self.profile_helper.createStudentWithConsentForms(
         consent_form=True, student_id_form=True)
 
     url = self._taskPageUrl(self.task)
@@ -463,7 +463,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'ClaimRequested')
-    self.assertEqual(task.student.key(), self.data.profile.key())
+    self.assertEqual(task.student.key(), self.profile_helper.profile.key())
 
     # check if a comment has been created
     comments = self.task.comments()
@@ -473,10 +473,10 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonUnclaim(self):
     """Tests the unclaim task button.
     """
-    self.data.createStudent()
+    self.profile_helper.createStudent()
 
     self.task.status = 'ClaimRequested'
-    self.task.student = self.data.profile
+    self.task.student = self.profile_helper.profile
     self.task.put()
 
     url = self._taskPageUrl(self.task)
@@ -497,10 +497,10 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonSubscribe(self):
     """Tests the subscribe button.
     """
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
-    profile = self.data.profile
-    self.assertFalse(profile.key() in self.task.subscribers)
+    profile = self.profile_helper.profile
+    self.assertNotIn(profile.key(), self.task.subscribers)
 
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_subscribe')
@@ -512,10 +512,10 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostButtonUnsubscribe(self):
     """Tests the unsubscribe button.
     """
-    self.data.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
 
     # subscribe to the task manually
-    profile = self.data.profile
+    profile = self.profile_helper.profile
     self.task.subscribers.append(profile.key())
     self.task.put()
 
@@ -524,15 +524,15 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
-    self.assertFalse(profile.key() in task.subscribers)
+    self.assertNotIn(profile.key(), task.subscribers)
 
   def testPostSubmitWork(self):
     """Tests for submitting work.
     """
-    self.data.createStudent()
+    self.profile_helper.createStudent()
 
     self.task.status = 'Claimed'
-    self.task.student = self.data.profile
+    self.task.student = self.profile_helper.profile
     # set deadline to far future
     self.task.deadline = datetime.datetime.utcnow() + datetime.timedelta(days=1)
     self.task.put()
@@ -559,17 +559,17 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostSendForReview(self):
     """Tests for submitting work.
     """
-    self.data.createStudent()
+    self.profile_helper.createStudent()
 
     self.task.status = 'Claimed'
-    self.task.student = self.data.profile
+    self.task.student = self.profile_helper.profile
     # set deadline to far future
     self.task.deadline = datetime.datetime.utcnow() + \
         datetime.timedelta(days=1)
     self.task.put()
 
     GCITaskHelper(self.program).createWorkSubmission(
-        self.task, self.data.profile)
+        self.task, self.profile_helper.profile)
 
     url = '%s?send_for_review' % self._taskPageUrl(self.task)
     response = self.post(url)
@@ -581,17 +581,17 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostSendForReviewClosedTaskForbidden(self):
     """Tests for submitting work for a task whose status is Closed.
     """
-    self.data.createStudent()
+    self.profile_helper.createStudent()
 
     self.task.status = 'Closed'
-    self.task.student = self.data.profile
+    self.task.student = self.profile_helper.profile
     # set deadline to far future
     self.task.deadline = datetime.datetime.utcnow() + \
         datetime.timedelta(days=1)
     self.task.put()
 
     GCITaskHelper(self.program).createWorkSubmission(
-        self.task, self.data.profile)
+        self.task, self.profile_helper.profile)
 
     url = '%s?send_for_review' % self._taskPageUrl(self.task)
     response = self.post(url)
@@ -604,14 +604,14 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
   def testPostDeleteSubmission(self):
     """Tests for deleting work.
     """
-    self.data.createStudent()
+    self.profile_helper.createStudent()
 
     self.task.status = 'Claimed'
-    self.task.student = self.data.profile
+    self.task.student = self.profile_helper.profile
     self.task.put()
 
     work = GCITaskHelper(self.program).createWorkSubmission(
-        self.task, self.data.profile)
+        self.task, self.profile_helper.profile)
 
     self.assertLength(self.task.workSubmissions(), 1)
 
@@ -639,7 +639,7 @@ class WorkSubmissionDownloadTest(GCIDjangoTestCase):
     """Creates a published task for self.org."""
     super(WorkSubmissionDownloadTest, self).setUp()
     self.init()
-    self.timeline.tasksPubliclyVisible()
+    self.timeline_helper.tasksPubliclyVisible()
 
     # Create a status-published task.
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
