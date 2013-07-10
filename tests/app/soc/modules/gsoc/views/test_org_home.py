@@ -207,42 +207,6 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertFalse('invited_role' in context)
     self.assertFalse('mentor_request_link' in context)
 
-  def testAppliedMentor(self):
-    self.profile_helper.createMentorRequest(self.org)
-    context = self.homepageContext()
-    self.assertNoStudent(context)
-
-    self.assertIn('mentor_apply_block', context)
-    self.assertFalse('mentor_profile_link' in context)
-    self.assertFalse('role' in context)
-    self.assertIn('mentor_applied', context)
-    self.assertFalse('invited_role' in context)
-    self.assertFalse('mentor_request_link' in context)
-
-  def testInvitedMentor(self):
-    self.profile_helper.createInvitation(self.org, 'mentor')
-    context = self.homepageContext()
-    self.assertNoStudent(context)
-
-    self.assertIn('mentor_apply_block', context)
-    self.assertFalse('mentor_profile_link' in context)
-    self.assertFalse('role' in context)
-    self.assertFalse('mentor_applied' in context)
-    self.assertEqual('a mentor', context['invited_role'])
-    self.assertFalse('mentor_request_link' in context)
-
-  def testInvitedOrgAdmin(self):
-    self.profile_helper.createInvitation(self.org, 'org_admin')
-    context = self.homepageContext()
-    self.assertNoStudent(context)
-
-    self.assertIn('mentor_apply_block', context)
-    self.assertFalse('mentor_profile_link' in context)
-    self.assertFalse('role' in context)
-    self.assertFalse('mentor_applied' in context)
-    self.assertEqual('an administrator', context['invited_role'])
-    self.assertFalse('mentor_request_link' in context)
-
   def testStudentDuringSignup(self):
     self.timeline_helper.studentSignup()
     self.profile_helper.createStudent()

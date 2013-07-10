@@ -94,20 +94,6 @@ class Apply(Template):
       context['role'] = 'a mentor'
       return context
 
-    if self.data.appliedTo(organization):
-      context['mentor_applied'] = True
-      return context
-
-    invited_role = self.data.invitedTo(organization)
-
-    if invited_role == 'mentor':
-      context['invited_role'] = 'a mentor'
-      return context
-
-    if invited_role == 'org_admin':
-      context['invited_role'] = 'an administrator'
-      return context
-
     mentor_connect_link = self.data.redirect.connect_user(
         self.data.user).urlOf(url_names.GSOC_USER_CONNECTION)
     context['mentor_connect_link'] = mentor_connect_link
