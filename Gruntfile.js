@@ -210,9 +210,31 @@ module.exports = function(grunt) {
           paths: ['<%= meta.src.less_dir %>']
         },
         csslint: {
+          /*
+            Disable some CSSlint checks. Some more information about debates
+            around the rules can be found here:
+            http://net.tutsplus.com/articles/should-you-start-using-csslint/
+          */
+          /*
+            Adjoining classes don't work well with IE6, but this can be disabled
+            since we're not officially supporting IE, and also the version
+            that causes problems is very old.
+          */
           'adjoining-classes': false,
+          /*
+            This check is because IDs are less flexible than classes, we'll
+            eventually take care of this when we rebuild our CSS.
+          */
           'ids': false,
+          /*
+            This check would prevent us to define custom styles for headings
+            inside particular elements of the page. Doing this, however, is
+            no less unpredictable then all the rest of CSS.
+          */
           'qualified-headings': false,
+          /*
+            This is disabled since it would prevent the usage of reset sheet.
+          */
           'unique-headings': false
         }
       }
