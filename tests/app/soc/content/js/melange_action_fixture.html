@@ -4,7 +4,10 @@
     <script type="text/javascript" src="./app/soc/content/js/thirdparty/jquery/jquery.ui-checkboxes.js"></script>
   </head>
   <body>
-    <a class="load-tooltip"></a>
+    <a id="tooltip-link" class="load-tooltip" href="#example-tooltip" rel="#example-tooltip">?</a>
+    <div id="example-tooltip" class="tooltip" style="display: none;">
+      Tooltip tooltip
+    </div>
     <div class="on_off">
       <input id="OnOffChecked" type="checkbox" class="on_off" checked="checked"></input>
     </div>

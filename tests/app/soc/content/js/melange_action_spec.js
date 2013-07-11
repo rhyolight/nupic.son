@@ -24,6 +24,25 @@ describe('melange.action', function() {
     });
   });
 
+  describe('createCluetip', function() {
+    it('should create an hidden cluetip div that displays the right content on mouse over', function() {
+       melange.action.createCluetip();
+
+       var $tooltipDiv = jQuery('#example-tooltip');
+       var $cluetipDiv = jQuery('#cluetip');
+       expect($cluetipDiv.length).toEqual(1);
+       expect($cluetipDiv.is(':visible')).toEqual(false);
+
+       jQuery('#tooltip-link').trigger('mouseover');
+       expect($cluetipDiv.is(':visible')).toEqual(true);
+
+       var $tooltipInsideCluetip = $cluetipDiv.find('#example-tooltip');
+       expect($tooltipInsideCluetip.length).toEqual(1);
+       expect($tooltipInsideCluetip.is(':visible')).toEqual(true);
+       expect($tooltipInsideCluetip.html()).toEqual($tooltipDiv.html());
+    });
+  });
+
   describe('toggleButton', function() {
     var buttonId = 'OnOffChecked';
     var buttonType = 'on_off';
