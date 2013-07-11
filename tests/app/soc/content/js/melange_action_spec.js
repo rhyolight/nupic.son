@@ -130,5 +130,54 @@ describe('melange.action', function() {
         return post_returned === true;
       });
     });
+
+    it('should encapsulate the checkbox with a div of proper class', function() {
+      var $button = jQuery('#' + buttonId);
+      var $container = jQuery('#' + buttonId).parents('div.iPhoneCheckContainer');
+      expect($container.length).toEqual(0);
+      callToggleButton();
+      $container = jQuery('#' + buttonId).parents('div.iPhoneCheckContainer');
+      expect($container.length).toEqual(1);
+    });
+
+    it('should initialize the button with proper labels', function() {
+      callToggleButton();
+
+      var $button = jQuery('#' + buttonId);
+      var $container = jQuery('#' + buttonId).parents('div.iPhoneCheckContainer');
+      var $iPhoneLabelOff = $container.find('label.iPhoneCheckLabelOff span');
+      var $iPhoneLabelOn = $container.find('label.iPhoneCheckLabelOn span');
+
+      expect($iPhoneLabelOff.html()).toEqual(buttonUncheckedLabel);
+      expect($iPhoneLabelOn.html()).toEqual(buttonCheckedLabel);
+    });
+
+    it('should let the "on" label be visible if the checkbox is checked', function() {
+      callToggleButton();
+
+      var $button = jQuery('#' + buttonId);
+      var $container = jQuery('#' + buttonId).parents('div.iPhoneCheckContainer');
+      var $handle = $container.find('div.iPhoneCheckHandle');
+      var $iPhoneLabelOff = $container.find('label.iPhoneCheckLabelOff span');
+      var $iPhoneLabelOn = $container.find('label.iPhoneCheckLabelOn span');
+
+      expect(parseFloat($iPhoneLabelOff.css('margin-right'), 10)).toEqual(-parseFloat($handle[0].style.left, 10));
+      expect(parseFloat($iPhoneLabelOn.css('margin-left'), 10)).toEqual(0);
+    });
+
+    it('should let the "off" label be visible if the checkbox is not checked', function() {
+      var $button = jQuery('#' + buttonId);
+      $button.removeAttr('checked');
+
+      callToggleButton();
+
+      var $container = jQuery('#' + buttonId).parents('div.iPhoneCheckContainer');
+      var $handle = $container.find('div.iPhoneCheckHandle');
+      var $iPhoneLabelOff = $container.find('label.iPhoneCheckLabelOff span');
+      var $iPhoneLabelOn = $container.find('label.iPhoneCheckLabelOn span');
+
+      expect(parseFloat($iPhoneLabelOff.css('margin-right'), 10)).toEqual(0);
+      expect(parseFloat($iPhoneLabelOn.css('margin-left'), 10)).toBeLessThan(0);
+    });
   });
 });
