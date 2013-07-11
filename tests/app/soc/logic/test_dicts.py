@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""Tests related to soc.logic.dicts.
-"""
-
+"""Tests of soc.logic.dicts."""
 
 import unittest
 
@@ -25,8 +22,8 @@ from soc.logic import dicts
 
 
 class TestDicts(unittest.TestCase):
-  """Tests functions in dicts module.
-  """
+  """Tests functions in dicts module."""
+
   def setUp(self):
     self.dummy_dict = {'a': '1', 'b': '2', 'c': '3', 'd': '1',
                        'e': '1', 'f': '3', 'g': '7'}
@@ -254,39 +251,6 @@ class TestDicts(unittest.TestCase):
     expected_dict = {}
     self.assertEqual(dicts.rename(target, keys), expected_dict)
 
-  def testSplit(self):
-    """Tests that a dict is split into single-valued pairs.
-    """
-    target = {}
-    expected = [{}]
-    self.assertEqual(dicts.split(target), expected)
-
-    target = {'foo': 'bar'}
-    expected = [{'foo': 'bar'}]
-    self.assertEqual(dicts.split(target), expected)
-
-    target = {'foo': 'bar', 'bar': 'baz'}
-    expected = [{'foo': 'bar', 'bar': 'baz'}]
-    self.assertEqual(dicts.split(target), expected)
-
-    target = {'foo': 'bar', 'bar': ['one', 'two']}
-    expected = [
-        {'foo': 'bar', 'bar': 'one'}, {'foo': 'bar', 'bar': 'two'}]
-    self.assertEqual(dicts.split(target), expected)
-
-    target = {'foo': 'bar', 'bar': ['one', 'two'], 'baz': ['three', 'four']}
-    expected = [{'bar': 'one', 'foo': 'bar', 'baz': 'three'},
-                {'bar': 'two', 'foo': 'bar', 'baz': 'three'},
-                {'bar': 'one', 'foo': 'bar', 'baz': 'four'},
-                {'bar': 'two', 'foo': 'bar', 'baz': 'four'}]
-    self.assertEqual(dicts.split(target), expected)
-
-  def testGroupDictBy(self):
-    """Not tested because dicts.groupDictBy is not used in the code base
-    presently.
-    """
-    pass
-
   def testIdentity(self):
     """Tests if a dict with values equal to keys is returned
     """
@@ -297,11 +261,6 @@ class TestDicts(unittest.TestCase):
     target = {}
     expected_dict = {}
     self.assertEqual(dicts.identity(target), expected_dict)
-
-  def testFormat(self):
-    """Not tested because dicts.format is not used in the code base presently.
-    """
-    pass
 
   def testGroupby(self):
     """Tests if a list of dictionaries is grouped by a group_key.
