@@ -39,6 +39,7 @@ module.exports = function(grunt) {
 			coverage: {
 				src: [
           '<%= meta.src.js_dir %>/melange.js',
+          '<%= meta.src.js_dir %>/melange.action.js',
           '<%= meta.src.js_dir %>/melange.list.js'
         ],
 				options: {
