@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Logic for evaluations.
-"""
+"""Logic for evaluations."""
 
-
-from soc.views.helper.request_data import isAfter
+from melange.utils import time
 
 
 def evaluationRowAdder(evals):
@@ -35,7 +33,7 @@ def evaluationRowAdder(evals):
     # since evals is an object of type Django's SortedDict
     # we can be sure that the evaluations are iterated in the order
     for eval_link_id, eval in evals.items():
-      if isAfter(eval.survey_start):
+      if time.isAfter(eval.survey_start):
         content_response.addRow(entity, eval_link_id, *args)
 
         if failed_eval and \

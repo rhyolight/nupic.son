@@ -24,6 +24,8 @@ from google.appengine.ext import db
 # TODO(nathaniel): Still reticent about having the RequestData object
 # allowed to raise exceptions from the exception module.
 from melange.request import exception
+from melange.utils import time
+
 from soc.logic import program as program_logic
 from soc.models.site import Site
 from soc.views.helper import request_data
@@ -77,7 +79,7 @@ class TimelineHelper(request_data.TimelineHelper):
     if self.orgSignup():
       return ("Org Application Deadline", self.orgSignupEnd())
 
-    if request_data.isBetween(self.orgSignupEnd(), self.orgsAnnouncedOn()):
+    if time.isBetween(self.orgSignupEnd(), self.orgsAnnouncedOn()):
       return ("Accepted Orgs Announced In", self.orgsAnnouncedOn())
 
     if self.orgsAnnounced() and self.beforeStudentSignupStart():
@@ -86,11 +88,11 @@ class TimelineHelper(request_data.TimelineHelper):
     if self.studentSignup():
       return ("Student Application Deadline", self.studentSignupEnd())
 
-    if request_data.isBetween(self.tasksPubliclyVisible(),
+    if time.isBetween(self.tasksPubliclyVisible(),
                               self.tasksClaimEndOn()):
       return ("Tasks Claim Deadline", self.tasksClaimEndOn())
 
-    if request_data.isBetween(self.tasksClaimEndOn(), self.stopAllWorkOn()):
+    if time.isBetween(self.tasksClaimEndOn(), self.stopAllWorkOn()):
       return ("Work Submission Deadline", self.stopAllWorkOn())
 
     return ('', None)
@@ -99,31 +101,31 @@ class TimelineHelper(request_data.TimelineHelper):
     return self.timeline.tasks_publicly_visible
 
   def tasksPubliclyVisible(self):
-    return request_data.isAfter(self.tasksPubliclyVisibleOn())
+    return time.isAfter(self.tasksPubliclyVisibleOn())
 
   def tasksClaimEndOn(self):
     return self.timeline.task_claim_deadline
 
   def tasksClaimEnded(self):
-    return request_data.isAfter(self.tasksClaimEndOn())
+    return time.isAfter(self.tasksClaimEndOn())
 
   def stopAllWorkOn(self):
     return self.timeline.stop_all_work_deadline
 
   def allWorkStopped(self):
-    return request_data.isAfter(self.stopAllWorkOn())
+    return time.isAfter(self.stopAllWorkOn())
 
   def stopAllReviewsOn(self):
     return self.timeline.work_review_deadline
 
   def allReviewsStopped(self):
-    return request_data.isAfter(self.stopAllReviewsOn())
+    return time.isAfter(self.stopAllReviewsOn())
 
   def winnersAnnouncedOn(self):
     return self.timeline.winners_announced_deadline
 
   def winnersAnnounced(self):
-    return request_data.isAfter(self.winnersAnnouncedOn())
+    return time.isAfter(self.winnersAnnouncedOn())
 
   def remainingTime(self):
     """Returns the remaining time in the program a tuple of days, hrs and mins.
