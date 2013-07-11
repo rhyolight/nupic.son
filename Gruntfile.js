@@ -8,6 +8,7 @@ module.exports = function(grunt) {
         css_gsoc_dir: '<%= meta.src.css_dir %>/gsoc',
         css_gci_dir: '<%= meta.src.css_dir %>/gci',
         less_dir: 'app/soc/content/less',
+        less_files: 'app/soc/content/less/**/*.less',
         less_soc_dir: '<%= meta.src.less_dir %>/soc',
         less_gsoc_dir: '<%= meta.src.less_dir %>/gsoc',
         less_gci_dir: '<%= meta.src.less_dir %>/gci',
@@ -197,6 +198,46 @@ module.exports = function(grunt) {
         }
       },
       uses_defaults: ['<%= meta.src.js_files %>', '!<%= meta.src.js_thirdparty_files %>']
+    },
+    lesslint: {
+      src: [
+        '<%= meta.src.less_files %>',
+        '!<%= meta.src.less_gci_dir %>/forms_*.less',
+        '!<%= meta.src.less_gci_dir %>/style_*.less'
+      ],
+      options:{
+        less: {
+          paths: ['<%= meta.src.less_dir %>']
+        },
+        csslint: {
+          /*
+            Disable some CSSlint checks. Some more information about debates
+            around the rules can be found here:
+            http://net.tutsplus.com/articles/should-you-start-using-csslint/
+          */
+          /*
+            Adjoining classes don't work well with IE6, but this can be disabled
+            since we're not officially supporting IE, and also the version
+            that causes problems is very old.
+          */
+          'adjoining-classes': false,
+          /*
+            This check is because IDs are less flexible than classes, we'll
+            eventually take care of this when we rebuild our CSS.
+          */
+          'ids': false,
+          /*
+            This check would prevent us to define custom styles for headings
+            inside particular elements of the page. Doing this, however, is
+            no less unpredictable then all the rest of CSS.
+          */
+          'qualified-headings': false,
+          /*
+            This is disabled since it would prevent the usage of reset sheet.
+          */
+          'unique-headings': false
+        }
+      }
     }
 	});
 
@@ -204,6 +245,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-yuidoc');
   grunt.loadNpmTasks('grunt-contrib-less');
+  grunt.loadNpmTasks('grunt-lesslint');
   grunt.loadNpmTasks('grunt-plato');
 
   grunt.registerTask('coverage', ['jasmine:coverage']);
