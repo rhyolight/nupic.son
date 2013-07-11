@@ -14,6 +14,8 @@
 
 """Module containing the Summer Of Code callback."""
 
+from summerofcode.views import project_manage
+
 
 class Callback(object):
   """Callback object that handles interaction between the core."""
@@ -30,7 +32,7 @@ class Callback(object):
 
   def registerViews(self):
     """Instantiates all view objects."""
-    pass
+    self.views.append(project_manage.ManageProjectProgramAdminView())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered."""
