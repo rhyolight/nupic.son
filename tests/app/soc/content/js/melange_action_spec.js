@@ -66,7 +66,7 @@ describe('melange.action', function() {
       );
     }
 
-    it('should create a button with the correct labels', function() {
+    it('should call iPhoneStyle with the correct parameters', function() {
       spyOn(jQuery.fn, 'iphoneStyle').andCallThrough();
       callToggleButton();
       expect(jQuery.fn.iphoneStyle).toHaveBeenCalled();
@@ -76,7 +76,7 @@ describe('melange.action', function() {
       expect(parameters.uncheckedLabel).toEqual(buttonUncheckedLabel);
     });
 
-    it('should call the proper URL with the proper parameters and call the bound callback', function() {
+    it('should call the passed URL with the proper parameters and call the bound callback', function() {
       var post_returned = false;
       var callback = jasmine.createSpy();
       spyOn(jQuery, 'ajax').andCallFake(function(e) {
