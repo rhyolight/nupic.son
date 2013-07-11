@@ -36,6 +36,10 @@ from soc.logic.helper import xsrfutil
 from soc.middleware import xsrf as xsrf_middleware
 from soc.modules import callback
 
+from tests import profile_utils
+from tests import program_utils
+from tests import timeline_utils
+
 
 class MockRequest(object):
   """Shared dummy request object to mock common aspects of a request.
@@ -277,10 +281,22 @@ class SoCTestCase(unittest.TestCase):
     self.assertEqual(expected_entity.key(), actual_entity.key(), msg)
 
 
+# TODO(nathaniel): Drop "gsoc" attribute in favor of "program".
 class GSoCTestCase(SoCTestCase):
   """GSoCTestCase for GSoC tests.
 
   Common data are seeded and common helpers are created to make testing easier.
+
+  Attributes:
+    gsoc: A GSoCProgram.
+    program: The same GSoCProgram as "gsoc".
+    org: A GSoCOrganization.
+    org_app: An OrgAppSurvey.
+    sponsor: A Sponsor.
+    site: A Site.
+    profile_helper: A GSoCProfileHelper.
+    program_helper: A GSoCProgramHelper.
+    timeline_helper: A GSoCTimelineHelper.
   """
 
   def programType(self):
@@ -288,35 +304,36 @@ class GSoCTestCase(SoCTestCase):
     return 'gsoc'
 
   def init(self):
-    """Performs test setup.
-
-    Sets the following attributes:
-      program_helper: a GSoCProgramHelper instance
-      gsoc/program: a GSoCProgram instance
-      site: a Site instance
-      org: a GSoCOrganization instance
-      org_app: a OrgAppSurvey instance
-      timeline: a GSoCTimelineHelper instance
-      data: a GSoCProfileHelper instance
-    """
-    from tests.program_utils import GSoCProgramHelper
-    from tests.timeline_utils import GSoCTimelineHelper
-    from tests.profile_utils import GSoCProfileHelper
+    """Performs test set-up by seeding data and setting attributes."""
     super(GSoCTestCase, self).init()
-    self.program_helper = GSoCProgramHelper()
+    self.program_helper = program_utils.GSoCProgramHelper()
     self.sponsor = self.program_helper.createSponsor()
     self.gsoc = self.program = self.program_helper.createProgram()
     self.site = self.program_helper.createSite()
     self.org = self.program_helper.createOrg()
     self.org_app = self.program_helper.createOrgApp()
-    self.timeline_helper = GSoCTimelineHelper(self.gsoc.timeline, self.org_app)
-    self.profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+    self.timeline_helper = timeline_utils.GSoCTimelineHelper(
+        self.gsoc.timeline, self.org_app)
+    self.profile_helper = profile_utils.GSoCProfileHelper(
+        self.gsoc, self.dev_test)
 
 
+# TODO(nathaniel): Drop "gci" attribute in favor of "program".
 class GCITestCase(SoCTestCase):
   """GCITestCase for GCI tests.
 
   Common data are seeded and common helpers are created to make testing easier.
+
+  Attributes:
+    gci: A GCIProgram.
+    program: The same GCIProgram as "gci".
+    site: A Site.
+    sponsor: A Sponsor.
+    org: A GCIOrganization.
+    org_app: An OrgAppSurvey.
+    profile_helper: A GCIProfileHelper.
+    program_helper: A GCIProgramHelper.
+    timeline_helper: A GCITimelineHelper.
   """
 
   def programType(self):
@@ -324,29 +341,18 @@ class GCITestCase(SoCTestCase):
     return 'gci'
 
   def init(self):
-    """Performs test setup.
-
-    Sets the following attributes:
-      program_helper: a GCIProgramHelper instance
-      gci/program: a GCIProgram instance
-      site: a Site instance
-      org: a GCIOrganization instance
-      org_app: a OrgAppSurvey instance
-      timeline: a GCITimelineHelper instance
-      data: a GCIProfileHelper instance
-    """
-    from tests.program_utils import GCIProgramHelper
-    from tests.timeline_utils import GCITimelineHelper
-    from tests.profile_utils import GCIProfileHelper
+    """Performs test set-up by seeding data and setting attributes."""
     super(GCITestCase, self).init()
-    self.program_helper = GCIProgramHelper()
+    self.program_helper = program_utils.GCIProgramHelper()
     self.sponsor = self.program_helper.createSponsor()
     self.gci = self.program = self.program_helper.createProgram()
     self.site = self.program_helper.createSite()
     self.org = self.program_helper.createOrg()
     self.org_app = self.program_helper.createOrgApp()
-    self.timeline_helper = GCITimelineHelper(self.gci.timeline, self.org_app)
-    self.profile_helper = GCIProfileHelper(self.gci, self.dev_test)
+    self.timeline_helper = timeline_utils.GCITimelineHelper(
+        self.gci.timeline, self.org_app)
+    self.profile_helper = profile_utils.GCIProfileHelper(
+        self.gci, self.dev_test)
 
 
 class DjangoTestCase(TestCase):
@@ -706,7 +712,7 @@ def runTasks(url = None, name=None, queue_names = None):
 
   task_queue_test_case = gaetestbed.taskqueue.TaskQueueTestCase()
   # Get all tasks with specified url and name in specified task queues
-  tasks = task_queue_test_case.get_tasks(url=url, name=name, 
+  tasks = task_queue_test_case.get_tasks(url=url, name=name,
                                          queue_names=queue_names)
   for task in tasks:
     postdata = task['params']
