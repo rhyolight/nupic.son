@@ -24,6 +24,25 @@ describe('melange.action', function() {
     });
   });
 
+  describe('createCluetip', function() {
+    it('should create an hidden cluetip div that displays the right content on mouse over', function() {
+       melange.action.createCluetip();
+
+       var $tooltipDiv = jQuery('#example-tooltip');
+       var $cluetipDiv = jQuery('#cluetip');
+       expect($cluetipDiv.length).toEqual(1);
+       expect($cluetipDiv.is(':visible')).toEqual(false);
+
+       jQuery('#tooltip-link').trigger('mouseover');
+       expect($cluetipDiv.is(':visible')).toEqual(true);
+
+       var $tooltipInsideCluetip = $cluetipDiv.find('#example-tooltip');
+       expect($tooltipInsideCluetip.length).toEqual(1);
+       expect($tooltipInsideCluetip.is(':visible')).toEqual(true);
+       expect($tooltipInsideCluetip.html()).toEqual($tooltipDiv.html());
+    });
+  });
+
   describe('toggleButton', function() {
     var buttonId = 'OnOffChecked';
     var buttonType = 'on_off';
@@ -47,7 +66,7 @@ describe('melange.action', function() {
       );
     }
 
-    it('should create a button with the correct labels', function() {
+    it('should call iPhoneStyle with the correct parameters', function() {
       spyOn(jQuery.fn, 'iphoneStyle').andCallThrough();
       callToggleButton();
       expect(jQuery.fn.iphoneStyle).toHaveBeenCalled();
@@ -57,7 +76,7 @@ describe('melange.action', function() {
       expect(parameters.uncheckedLabel).toEqual(buttonUncheckedLabel);
     });
 
-    it('should call the proper URL with the proper parameters and call the bound callback', function() {
+    it('should call the passed URL with the proper parameters and call the bound callback', function() {
       var post_returned = false;
       var callback = jasmine.createSpy();
       spyOn(jQuery, 'ajax').andCallFake(function(e) {
@@ -110,6 +129,55 @@ describe('melange.action', function() {
       waitsFor(function() {
         return post_returned === true;
       });
+    });
+
+    it('should encapsulate the checkbox with a div of proper class', function() {
+      var $button = jQuery('#' + buttonId);
+      var $container = jQuery('#' + buttonId).parents('div.iPhoneCheckContainer');
+      expect($container.length).toEqual(0);
+      callToggleButton();
+      $container = jQuery('#' + buttonId).parents('div.iPhoneCheckContainer');
+      expect($container.length).toEqual(1);
+    });
+
+    it('should initialize the button with proper labels', function() {
+      callToggleButton();
+
+      var $button = jQuery('#' + buttonId);
+      var $container = jQuery('#' + buttonId).parents('div.iPhoneCheckContainer');
+      var $iPhoneLabelOff = $container.find('label.iPhoneCheckLabelOff span');
+      var $iPhoneLabelOn = $container.find('label.iPhoneCheckLabelOn span');
+
+      expect($iPhoneLabelOff.html()).toEqual(buttonUncheckedLabel);
+      expect($iPhoneLabelOn.html()).toEqual(buttonCheckedLabel);
+    });
+
+    it('should let the "on" label be visible if the checkbox is checked', function() {
+      callToggleButton();
+
+      var $button = jQuery('#' + buttonId);
+      var $container = jQuery('#' + buttonId).parents('div.iPhoneCheckContainer');
+      var $handle = $container.find('div.iPhoneCheckHandle');
+      var $iPhoneLabelOff = $container.find('label.iPhoneCheckLabelOff span');
+      var $iPhoneLabelOn = $container.find('label.iPhoneCheckLabelOn span');
+
+      expect(parseFloat($iPhoneLabelOff.css('margin-right'), 10)).toEqual(-parseFloat($handle[0].style.left, 10));
+      expect(parseFloat($iPhoneLabelOn.css('margin-left'), 10)).toEqual(0);
+    });
+
+    it('should let the "off" label be visible if the checkbox is not checked', function() {
+      var $button = jQuery('#' + buttonId);
+      $button.removeAttr('checked');
+
+      callToggleButton();
+
+      var $container = jQuery('#' + buttonId).parents('div.iPhoneCheckContainer');
+      var $handle = $container.find('div.iPhoneCheckHandle');
+      var $iPhoneLabelOff = $container.find('label.iPhoneCheckLabelOff span');
+      var $iPhoneLabelOn = $container.find('label.iPhoneCheckLabelOn span');
+
+      expect(parseFloat($iPhoneLabelOff.css('margin-right'), 10)).toEqual(0);
+      expect(parseFloat($iPhoneLabelOn.css('margin-left'), 10)).toBeLessThan(0);
     });
   });
 });
