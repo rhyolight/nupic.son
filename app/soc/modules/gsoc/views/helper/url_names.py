@@ -15,6 +15,7 @@
 """Module for storing GSoC related URL names.
 """
 
+GSOC_ADMIN_MANAGE_PROJECTS_LIST = 'gsoc_admin_manage_projects_list'
 
 GSOC_EDIT_PROGRAM_MESSAGES = 'gsoc_edit_program_messages'
 

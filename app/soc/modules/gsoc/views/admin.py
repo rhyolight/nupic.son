@@ -53,6 +53,8 @@ from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 from soc.modules.gsoc.views import projects_list
 
+from summerofcode.views.helper import urls
+
 
 class LookupForm(gsoc_forms.GSoCModelForm):
   """Django form for the lookup profile page."""
@@ -712,8 +714,16 @@ class StudentsDashboard(Dashboard):
             'name': 'list_projects',
             'description': ugettext(
                 'List of all the projects who have accepted to the program.'),
-            'title': 'All Projects',
+            'title': 'View All Projects',
             'link': data.redirect.urlOf('gsoc_projects_list_admin')
+        },
+        {
+            'name': 'manage_projects',
+            'description': ugettext(
+                'Manage the projects that have accepted to the program.'),
+            'title': 'Manage Projects',
+            'link': data.redirect.urlOf(
+                url_names.GSOC_ADMIN_MANAGE_PROJECTS_LIST)
         },
     ]
 
@@ -1292,3 +1302,81 @@ class ProjectsListPage(base.GSoCRequestHandler):
       'page_name': 'Projects list page',
       'list': projects_list.ProjectList(data, list_query, idx=self.LIST_IDX),
     }
+
+
+class ProjectsListPage(base.GSoCRequestHandler):
+  """View that lists all the projects associated with the program."""
+
+  LIST_IDX = 1
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'admin/all_projects/%s$' % url_patterns.PROGRAM, self,
+            name='gsoc_projects_list_admin'),
+    ]
+
+  def templatePath(self):
+    return 'modules/gsoc/admin/list.html'
+
+  def jsonContext(self, data, check, mutator):
+    list_query = project_logic.getProjectsQuery(program=data.program)
+    list_content = projects_list.ProjectList(
+        data, list_query, idx=self.LIST_IDX).getListData()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exception.Forbidden(message='You do not have access to this data')
+
+  def context(self, data, check, mutator):
+    list_query = project_logic.getProjectsQuery(program=data.program)
+    return {
+      'page_name': 'Projects list page',
+      'list': projects_list.ProjectList(data, list_query, idx=self.LIST_IDX),
+    }
+
+
+class ManageProjectsListPage(base.GSoCRequestHandler):
+  """View that lists all the projects associated with the program and
+  redirects admin to manage page."""
+
+  LIST_IDX = 1
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'admin/manage_projects/%s$' % url_patterns.PROGRAM, self,
+            name=url_names.GSOC_ADMIN_MANAGE_PROJECTS_LIST),
+    ]
+
+  def templatePath(self):
+    return 'modules/gsoc/admin/list.html'
+
+  def jsonContext(self, data, check, mutator):
+    list_query = project_logic.getProjectsQuery(program=data.program)
+    list_content = projects_list.ProjectList(
+        data, list_query, idx=self.LIST_IDX).getListData()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exception.Forbidden(message='You do not have access to this data')
+
+  def context(self, data, check, mutator):
+    list_query = project_logic.getProjectsQuery(program=data.program)
+    return {
+      'page_name': 'Projects list page',
+      'list': projects_list.ProjectList(data, list_query, idx=self.LIST_IDX),
+    }
+
+  def _getManageProjectRowAction(self):
+    """Returns a row action that redirects to the manage project page.
+
+    Returns:
+      a lamba expression that takes a project entity as its first argument
+        and returns URL to the manage project page.
+    """
+    return lambda e, *args: data.redirect.project(
+        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
+        urls.UrlNames.PROJECT_MANAGE_ADMIN)
