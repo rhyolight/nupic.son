@@ -31,8 +31,8 @@ from soc.views.helper import url_patterns
 
 
 from soc.modules.gsoc.models import profile as profile_model
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -78,7 +78,7 @@ class GSoCOrgAppTakeForm(org_app.OrgAppTakeForm):
     return 'modules/gsoc/_form.html'
 
 
-class GSoCOrgAppEditPage(GSoCRequestHandler):
+class GSoCOrgAppEditPage(base.GSoCRequestHandler):
   """View for creating/editing organization application."""
 
   access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
@@ -153,7 +153,7 @@ class GSoCOrgAppEditPage(GSoCRequestHandler):
       return self.get(data, check, mutator)
 
 
-class GSoCOrgAppPreviewPage(GSoCRequestHandler):
+class GSoCOrgAppPreviewPage(base.GSoCRequestHandler):
   """Organization Application preview page.
 
   View for Organization Administrators to preview the organization
@@ -188,7 +188,7 @@ class GSoCOrgAppPreviewPage(GSoCRequestHandler):
     return context
 
 
-class GSoCOrgAppTakePage(GSoCRequestHandler):
+class GSoCOrgAppTakePage(base.GSoCRequestHandler):
   """View for organizations to submit their application."""
 
   def djangoURLPatterns(self):
@@ -275,12 +275,13 @@ class GSoCOrgAppTakePage(GSoCRequestHandler):
       return self.get(data, check, mutator)
 
 
-class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList, GSoCRequestHandler):
+class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList,
+      base.GSoCRequestHandler):
   """View for listing all records of a GSoC Organization application.
   """
 
   def __init__(self, *args, **kwargs):
-    GSoCRequestHandler.__init__(self, *args, **kwargs)
+    base.GSoCRequestHandler.__init__(self, *args, **kwargs)
     org_app.OrgAppRecordsList.__init__(self, 'gsoc_show_org_app')
 
   def djangoURLPatterns(self):
@@ -340,7 +341,7 @@ class OrgAppReadOnlyTemplate(org_app.OrgAppReadOnlyTemplate):
   template_path = 'modules/gsoc/org_app/readonly_template.html'
 
 
-class GSoCOrgAppShowPage(GSoCRequestHandler):
+class GSoCOrgAppShowPage(base.GSoCRequestHandler):
   """View to display the readonly page for organization application.
   """
 

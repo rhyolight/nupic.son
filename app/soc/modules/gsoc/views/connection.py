@@ -33,8 +33,8 @@ from soc.logic.helper import notifications
 from soc.models.user import User
 from soc.modules.gsoc.logic.helper import notifications as gsoc_notifications
 from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_names
@@ -264,7 +264,7 @@ class ConnectionResponseForm(GSoCModelForm):
     return 'modules/gsoc/connection/_response_form.html'
 
 
-class OrgConnectionPage(GSoCRequestHandler):
+class OrgConnectionPage(base.GSoCRequestHandler):
   """Class to encapsulate the methods for an org admin to initiate a
   connection between the organization and a given user.
   """
@@ -407,7 +407,7 @@ class OrgConnectionPage(GSoCRequestHandler):
       return self.get(data, check, mutator)
 
 
-class UserConnectionPage(GSoCRequestHandler):
+class UserConnectionPage(base.GSoCRequestHandler):
   """Class to encapsulate the methods for a user to initiate a connection
   between him or her self and an organization.
   """
@@ -480,7 +480,7 @@ class UserConnectionPage(GSoCRequestHandler):
       return self.get()
 
 
-class ShowConnection(GSoCRequestHandler):
+class ShowConnection(base.GSoCRequestHandler):
   """Class to encapsulate the methods required to display information
   about a Connection for both Users and Org Admins.
   """
@@ -825,7 +825,7 @@ class ShowConnection(GSoCRequestHandler):
 
     db.run_in_transaction(delete_connection_txn)
 
-class SubmitConnectionMessagePost(GSoCRequestHandler):
+class SubmitConnectionMessagePost(base.GSoCRequestHandler):
   """POST request handler for submission of connection messages."""
 
   def djangoURLPatterns(self):

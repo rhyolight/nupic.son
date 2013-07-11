@@ -36,8 +36,8 @@ from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.code_sample import GSoCCodeSample
 from soc.modules.gsoc.views import assign_mentor
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -169,7 +169,7 @@ class UploadCodeSamples(Template):
     return 'modules/gsoc/project_details/_upload_code_samples.html'
 
 
-class ProjectDetailsUpdate(GSoCRequestHandler):
+class ProjectDetailsUpdate(base.GSoCRequestHandler):
   """Encapsulate the methods required to generate Project Details update form.
   """
 
@@ -228,7 +228,7 @@ class ProjectDetailsUpdate(GSoCRequestHandler):
       return self.get(data, check, mutator)
 
 
-class CodeSampleUploadFilePost(GSoCRequestHandler):
+class CodeSampleUploadFilePost(base.GSoCRequestHandler):
   """Handler for POST requests to upload files with code samples."""
 
   def djangoURLPatterns(self):
@@ -281,7 +281,7 @@ class CodeSampleUploadFilePost(GSoCRequestHandler):
     return data.redirect.to('gsoc_project_details')
 
 
-class CodeSampleDownloadFileGet(GSoCRequestHandler):
+class CodeSampleDownloadFileGet(base.GSoCRequestHandler):
   """Handler for POST requests to download files with code samples."""
 
   def djangoURLPatterns(self):
@@ -314,7 +314,7 @@ class CodeSampleDownloadFileGet(GSoCRequestHandler):
           message='id argument in GET data is not a number')
 
 
-class CodeSampleDeleteFilePost(GSoCRequestHandler):
+class CodeSampleDeleteFilePost(base.GSoCRequestHandler):
   """Handler for POST requests to delete code sample files."""
 
   def djangoURLPatterns(self):
@@ -459,7 +459,7 @@ def _getUpdateLinkText(data):
     return 'Update'
 
 
-class ProjectDetails(GSoCRequestHandler):
+class ProjectDetails(base.GSoCRequestHandler):
   """Encapsulate all the methods required to generate GSoC project
   details page.
   """
@@ -508,7 +508,7 @@ class ProjectDetails(GSoCRequestHandler):
     return context
 
 
-class AssignMentors(GSoCRequestHandler):
+class AssignMentors(base.GSoCRequestHandler):
   """View which handles assigning mentor to a project."""
 
   def djangoURLPatterns(self):
@@ -578,7 +578,7 @@ class AssignMentors(GSoCRequestHandler):
     raise exception.MethodNotAllowed()
 
 
-class FeaturedProject(GSoCRequestHandler):
+class FeaturedProject(base.GSoCRequestHandler):
   """View which handles making the project featured by toggle button."""
 
   def djangoURLPatterns(self):

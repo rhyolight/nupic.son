@@ -35,11 +35,11 @@ from soc.modules.gsoc.logic import survey
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
 from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
-class GradingGroupCreate(GSoCRequestHandler):
+class GradingGroupCreate(base.GSoCRequestHandler):
   """View to display GradingRecord details."""
 
   access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
@@ -103,7 +103,7 @@ class GradingGroupCreate(GSoCRequestHandler):
   def templatePath(self):
     return 'modules/gsoc/grading_record/create_group.html'
 
-class GradingRecordsOverview(GSoCRequestHandler):
+class GradingRecordsOverview(base.GSoCRequestHandler):
   """View to display all GradingRecords for a single group."""
 
   def djangoURLPatterns(self):
@@ -323,7 +323,7 @@ class GradingRecordForm(gsoc_forms.GSoCModelForm):
     widgets = forms.choiceWidgets(GSoCGradingRecord, ['grade_decision'])
 
 
-class GradingRecordDetails(GSoCRequestHandler):
+class GradingRecordDetails(base.GSoCRequestHandler):
   """View to display GradingRecord details.
   """
 

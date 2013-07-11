@@ -40,7 +40,7 @@ from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.score import GSoCScore
 from soc.modules.gsoc.views import assign_mentor
-from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper import url_patterns
@@ -300,7 +300,7 @@ class UserActions(Template):
     return "modules/gsoc/proposal/_user_action.html"
 
 
-class ReviewProposal(GSoCRequestHandler):
+class ReviewProposal(base.GSoCRequestHandler):
   """View for the Propsal Review page."""
 
   def djangoURLPatterns(self):
@@ -490,7 +490,7 @@ class ReviewProposal(GSoCRequestHandler):
     return context
 
 
-class PostComment(GSoCRequestHandler):
+class PostComment(base.GSoCRequestHandler):
   """View which handles publishing comments."""
 
   def djangoURLPatterns(self):
@@ -584,7 +584,7 @@ class PostComment(GSoCRequestHandler):
     raise exception.MethodNotAllowed()
 
 
-class PostScore(GSoCRequestHandler):
+class PostScore(base.GSoCRequestHandler):
   """View which handles posting scores."""
 
   def djangoURLPatterns(self):
@@ -675,7 +675,7 @@ class PostScore(GSoCRequestHandler):
     raise exception.MethodNotAllowed()
 
 
-class WishToMentor(GSoCRequestHandler):
+class WishToMentor(base.GSoCRequestHandler):
   """View handling wishing to mentor requests."""
 
   def djangoURLPatterns(self):
@@ -738,7 +738,7 @@ class WishToMentor(GSoCRequestHandler):
     raise exception.MethodNotAllowed()
 
 
-class AssignMentor(GSoCRequestHandler):
+class AssignMentor(base.GSoCRequestHandler):
   """View which handles assigning mentor to a proposal."""
 
   def djangoURLPatterns(self):
@@ -827,7 +827,7 @@ class AssignMentor(GSoCRequestHandler):
     raise exception.MethodNotAllowed()
 
 
-class IgnoreProposal(GSoCRequestHandler):
+class IgnoreProposal(base.GSoCRequestHandler):
   """View which allows org admins to ignore a proposal."""
 
   def djangoURLPatterns(self):
@@ -886,7 +886,7 @@ class IgnoreProposal(GSoCRequestHandler):
     raise exception.MethodNotAllowed()
 
 
-class ProposalModificationPostDeadline(GSoCRequestHandler):
+class ProposalModificationPostDeadline(base.GSoCRequestHandler):
   """View allowing mentors to allow students to modify the proposal."""
 
   def djangoURLPatterns(self):
@@ -941,7 +941,7 @@ class ProposalModificationPostDeadline(GSoCRequestHandler):
     raise exception.MethodNotAllowed()
 
 
-class AcceptProposal(GSoCRequestHandler):
+class AcceptProposal(base.GSoCRequestHandler):
   """View allowing org admins to directly accept the proposal."""
 
   def djangoURLPatterns(self):
@@ -996,7 +996,7 @@ class AcceptProposal(GSoCRequestHandler):
     raise exception.MethodNotAllowed()
 
 
-class ProposalPubliclyVisible(GSoCRequestHandler):
+class ProposalPubliclyVisible(base.GSoCRequestHandler):
   """View allowing the proposer to make the proposal publicly visible."""
 
   def djangoURLPatterns(self):
@@ -1050,7 +1050,7 @@ class ProposalPubliclyVisible(GSoCRequestHandler):
     raise exception.MethodNotAllowed()
 
 
-class WithdrawProposal(GSoCRequestHandler):
+class WithdrawProposal(base.GSoCRequestHandler):
   """View allowing the proposer to withdraw the proposal."""
 
   def djangoURLPatterns(self):

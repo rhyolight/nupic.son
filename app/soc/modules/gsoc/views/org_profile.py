@@ -23,7 +23,7 @@ from soc.views.helper import url_patterns
 from soc.views import org_profile
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
-from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_names
@@ -141,7 +141,7 @@ class OrgCreateProfileForm(OrgProfileForm):
         ['contact_country', 'shipping_country'])
 
 
-class OrgProfilePage(GSoCRequestHandler):
+class OrgProfilePage(base.GSoCRequestHandler):
   """View for the Organization Profile page."""
 
   def djangoURLPatterns(self):

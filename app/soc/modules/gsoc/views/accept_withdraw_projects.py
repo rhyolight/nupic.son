@@ -35,7 +35,7 @@ from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
-from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -172,7 +172,7 @@ class ProposalList(Template):
     return 'modules/gsoc/accept_withdraw_projects/_project_list.html'
 
 
-class AcceptProposals(GSoCRequestHandler):
+class AcceptProposals(base.GSoCRequestHandler):
   """View for accepting individual proposals."""
 
   access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
@@ -372,7 +372,7 @@ class ProjectList(Template):
     return "modules/gsoc/accept_withdraw_projects/_project_list.html"
 
 
-class WithdrawProjects(GSoCRequestHandler):
+class WithdrawProjects(base.GSoCRequestHandler):
   """View methods for withdraw projects."""
 
   access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
