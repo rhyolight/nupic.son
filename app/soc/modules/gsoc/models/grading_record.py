@@ -25,6 +25,12 @@ from soc.modules.gsoc.models import grading_survey_group as grading_survey_group
 from soc.modules.gsoc.models import project_survey_record as project_survey_record_model
 
 
+# constants representing possible grades for records
+GRADE_UNDECIDED = 'undecided'
+GRADE_PASS = 'pass'
+GRADE_FAIL = 'fail'
+
+
 class GSoCGradingRecord(db.Model):
   """Explicitly group SurveyRecords with a common project.
 
@@ -76,8 +82,8 @@ class GSoCGradingRecord(db.Model):
   #:       set the decision will be fail.
   #: undecided: If no mentor_record has been set.
   grade_decision = db.StringProperty(
-      required=True, default='undecided',
-      choices=['pass', 'fail', 'undecided'],
+      required=True, default=GRADE_UNDECIDED,
+      choices=[GRADE_PASS, GRADE_FAIL, GRADE_UNDECIDED],
       verbose_name=ugettext('Grade'))
 
   #: Boolean that states if the grade_decision property has been locked
