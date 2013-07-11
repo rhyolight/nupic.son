@@ -655,7 +655,7 @@ class EvaluationGroupDashboard(Dashboard):
     q.filter('program', data.program)
 
     for group in q:
-      r.id(group.key().id())
+      data.redirect.id(group.key().id())
       subpages.append(
         {
             'name': 'view_evaluation_group_%s' % group.key().id(),
