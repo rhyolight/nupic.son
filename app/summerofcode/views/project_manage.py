@@ -84,7 +84,6 @@ def _getSurveyType(post_data):
   Raises:
     exception.BadRequest: if form name is not recoginized.
   """
-
   if MIDTERM_EXTENSION_FORM_NAME in post_data:
     return project_survey_model.MIDTERM_EVAL
   elif FINAL_EXTENSION_FORM_NAME in post_data:
@@ -126,7 +125,7 @@ def _setPersonalExtension(profile_key, survey_key, form):
   """
 
   @ndb.transactional
-  def set_personal_extension_txn():
+  def setPersonalExtensionTxn():
     """Transaction to set personal extension."""
     start_date = form.cleaned_data['start_date']
     end_date = form.cleaned_data['end_date']
@@ -134,7 +133,7 @@ def _setPersonalExtension(profile_key, survey_key, form):
         profile_key, survey_key, start_date=start_date, end_date=end_date)
   
   if form.is_valid():
-    set_personal_extension_txn()
+    setPersonalExtensionTxn()
     return True
   else:
     return False
@@ -148,17 +147,17 @@ class PersonalExtensionForm(forms.Form):
   end_date = forms.DateTimeField(required=False,
       label=PERSONAL_EXTENSION_FORM_END_DATE_LABEL)
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, name=None, title=None, **kwargs):
     """Initializes the form with the specified values.
 
     Args:
       name: name of the form that is used as an identifier.
       title: title of the form.
     """
-    self.name = kwargs.pop('name', None)
-    self.title = kwargs.pop('title', None)
+    super(PersonalExtensionForm, self).__init__(**kwargs)
+    self.name = name
+    self.title = title
     self.button_value = PERSONAL_EXTENSION_FORM_BUTTON_VALUE
-    super(PersonalExtensionForm, self).__init__(*args, **kwargs)
 
 
 class ManageProjectProgramAdminView(base.GSoCRequestHandler):
@@ -192,7 +191,7 @@ class ManageProjectProgramAdminView(base.GSoCRequestHandler):
       initial = _getInitialValues(extension)
 
       name = _getPersonalExtensionFormName(evaluation.survey_type)
-      extension_forms.append(PersonalExtensionForm(data.POST or None,
+      extension_forms.append(PersonalExtensionForm(data=data.POST or None,
           name=name, title=evaluation.title, initial=initial))     
 
     context = {
@@ -219,7 +218,7 @@ class ManageProjectProgramAdminView(base.GSoCRequestHandler):
           survey_type)
 
     # try setting a personal extension
-    form = PersonalExtensionForm(data.POST)
+    form = PersonalExtensionForm(data=data.POST)
     result = _setPersonalExtension(profile_key, survey_key, form)
 
     if result:
