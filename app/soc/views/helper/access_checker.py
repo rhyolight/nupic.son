@@ -32,6 +32,9 @@ from soc.models.request import INVITATION_TYPE
 from soc.models.request import REQUEST_TYPE
 from soc.views.helper.gdata_apis import oauth as oauth_helper
 
+from summerofcode.logic import survey as survey_logic
+
+
 DEF_AGREE_TO_TOS = ugettext(
     'You must agree to the <a href="%(tos_link)s">site-wide Terms of'
     ' Service</a> in your <a href="/user/edit_profile">User Profile</a>'
@@ -1180,6 +1183,35 @@ class AccessChecker(BaseAccessChecker):
 
     raise exception.Forbidden(message=DEF_PAGE_INACTIVE_OUTSIDE % (
         survey.survey_start, survey.survey_end))
+
+  def isStudentSurveyActive(self, survey, student, show_url=None):
+    """Checks if the student survey can be taken by the specified student.
+
+    Args:
+      survey: a survey entity.
+      student: a student profile entity.
+      show_url: survey show page URL to which the user should be redirected.
+
+    Raises:
+      exception.Redirect: if the active period is over and URL to redirect
+        is specified.
+      exception.Forbidden: if it is not possible to access survey
+        at this time.
+    """
+    active_period = survey_logic.getSurveyActivePeriod(survey)
+    if active_period.state != survey_logic.IN_PERIOD_STATE:
+      # try finding a personal extension for the student
+      extension = survey_logic.getPersonalExtension(
+          student.key(), survey.key())
+      active_period = survey_logic.getSurveyActivePeriod(
+          survey, extension=extension)
+
+      if active_period.state == survey_logic.POST_PERIOD_STATE and show_url:
+        raise exception.Redirect(show_url)
+
+      if active_period.state != survey_logic.IN_PERIOD_STATE:
+        raise exception.Forbidden(message=DEF_PAGE_INACTIVE_OUTSIDE % (
+            active_period.start, active_period.end))
 
   def canUserTakeSurvey(self, survey, taking_access='user'):
     """Checks if the user with the given profile can take the survey.

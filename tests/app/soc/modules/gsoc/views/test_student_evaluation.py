@@ -17,6 +17,8 @@
 import json
 import urllib
 
+from google.appengine.ext import ndb
+
 from django import forms as django_forms
 from django.utils.html import escape
 
@@ -31,6 +33,8 @@ from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 
 from soc.modules.seeder.logic.providers.string import LinkIDProvider
+
+from summerofcode.models import survey as survey_model
 
 
 class StudentEvaluationTest(GSoCDjangoTestCase):
@@ -139,6 +143,11 @@ class StudentEvaluationTest(GSoCDjangoTestCase):
     eval.survey_start = timeline_utils.past(20)
     eval.survey_end = timeline_utils.past(10)
     eval.put()
+
+  def setEvaluationPeriodToFuture(self, evaluation):
+    evaluation.survey_start = timeline_utils.future(delta=10)
+    evaluation.survey_end = timeline_utils.future(delta=20)
+    evaluation.put()
 
   def testCreateEvaluationForStudentWithoutProject(self):
     link_id = LinkIDProvider(ProjectSurvey).getValue()
@@ -410,6 +419,45 @@ class StudentEvaluationTest(GSoCDjangoTestCase):
     response = self.get(url)
     show_url = '%s/show/%s' % (base_url, suffix)
     self.assertResponseRedirect(response, show_url)
+
+  def testAccessBeforeEvaluationStarts(self):
+    """Tests that student cannot access the page before survey starts."""
+    evaluation = self.evaluation.createStudentEvaluation()
+    self.setEvaluationPeriodToFuture(evaluation)
+
+    mentor_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor_profile.createOtherUser('mentor@example.com')
+    mentor = mentor_profile.createMentor(self.org)
+
+    self.profile_helper.createStudentWithProject(self.org, mentor)
+
+    project = GSoCProject.all().get()
+
+    base_url = '/gsoc/eval/student'
+    suffix = "%s/%s/%s/%s" % (
+        self.gsoc.key().name(), evaluation.link_id,
+        project.parent().link_id, project.key().id())
+
+    url = '%s/%s' % (base_url, suffix)
+    response = self.get(url)
+
+    # response is forbidden as the evaluation period has yet to start
+    self.assertResponseForbidden(response)
+
+    # create personal extension
+    # TODO(daniel): NDB migration
+    ndb_profile_key = ndb.Key.from_old_key(self.profile_helper.profile.key())
+    ndb_survey_key = ndb.Key.from_old_key(evaluation.key())
+    start_date = timeline_utils.past()
+
+    extension = survey_model.PersonalExtension(
+        parent=ndb_profile_key, survey=ndb_survey_key, start_date=start_date)
+    extension.put()
+
+    response = self.get(url)
+
+    # with extension it should be possible to access the evaluation
+    self.assertResponseOK(response)
 
   def testTakeEvalForStudent(self):
     eval = self.evaluation.createStudentEvaluation()

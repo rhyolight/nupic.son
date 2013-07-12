@@ -152,6 +152,7 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     mutator.projectFromKwargs()
+    mutator.profileFromKwargs()
     mutator.studentEvaluationFromKwargs()
     mutator.studentEvaluationRecordFromKwargs()
 
@@ -163,7 +164,8 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
     show_url = data.redirect.survey_record(
           data.student_evaluation.link_id).urlOf(
           'gsoc_show_student_evaluation')
-    check.isSurveyActive(data.student_evaluation, show_url)
+    check.isStudentSurveyActive(
+        data.student_evaluation, data.url_profile, show_url=show_url)
 
     check.isProfileActive()
     if data.orgAdminFor(data.project.org):
