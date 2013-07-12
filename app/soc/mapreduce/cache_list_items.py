@@ -17,7 +17,6 @@
 from google.appengine.ext import ndb
 
 from melange.logic import cached_list
-from melange.utils import lists
 
 from mapreduce import context
 from mapreduce import base_handler
@@ -32,20 +31,23 @@ NO_OF_SHARDS = 4
 
 
 def mapProcess(entity):
+  # TODO: (Aruna) Fix this import
+  from melange.utils import lists
+
   ctx = context.get()
   params = ctx.mapreduce_spec.mapper.params
 
-  column_defs = eval(params['column_defs'])
+  list_id = params['list_id']
+  col_funcs = [(c.name, c.col_func) for c in lists.getList(list_id)._columns]
   query_pickle = params['query_pickle']
 
   query = pickle.loads(query_pickle)
+  data_id = lists.getDataId(query)
 
   if(query.filter('__key__', entity.key()).get()):
-    item = json.dumps(lists.toListItemDict(entity, column_defs))
+    item = json.dumps(lists.toListItemDict(entity, col_funcs))
 
-    list_id = hash(query_pickle)
-
-    yield (list_id, item)
+    yield (data_id, item)
 
 
 def reduceProcess(list_id, entities):
@@ -57,16 +59,13 @@ class CacheListsPipeline(base_handler.PipelineBase):
   """A pipeline to read datastore entities and cache them for lists.
 
   Args:
+    list_id: A unique id to identify the list.
     entity_kind: Kind of the entity the DatastoreInputReader should read.
-    column_defs: A string representation of a dictionary that has column names
-      of the list as keys, and lambda functions that create the value for that
-      column for a list item as values. These functions should take one
-      parameter, the entity relevant to one list item.
     query_pickle: A pickled Query object that is used to filter entities that
-      should be cached. 
+      should be cached.
   """
 
-  def run(self, entity_kind, column_defs, query_pickle):
+  def run(self, list_id, entity_kind, query_pickle):
 
     yield mapreduce_pipeline.MapreducePipeline(
       'cache_list_items',
@@ -74,8 +73,8 @@ class CacheListsPipeline(base_handler.PipelineBase):
       'soc.mapreduce.cache_list_items.reduceProcess',
       'mapreduce.input_readers.DatastoreInputReader',
       mapper_params={
+          'list_id': list_id,
           'entity_kind': entity_kind,
-          'column_defs': column_defs,
           'query_pickle': query_pickle
       },
       shards=NO_OF_SHARDS)

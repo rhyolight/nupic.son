@@ -27,20 +27,15 @@ from melange.logic import cached_list
 import pickle
 
 
-# TODO: Complete this list
-CACHED_ENTITY_TYPES = ['GSoCOrganization', 'GSoCProjects', 'GCITasks']
-
-
 class List(object):
   """Represents a list."""
 
-  def __init__(self, index, query, columns, operations_func=None, cached=False):
+  def __init__(self, list_id, index, columns, operations_func=None, cached=False):
     """Initialize a list object.
 
     Args:
+      list_id: A unique id for the list.
       index: Index of the list in the page it is displayed.
-      query: Query that can be used to fetch items for this. Entities related
-        to all the list items in this list, satisfy filters in this query.
       columns: A list of Column objects describing columns in the list.  
       operations_func: A function that will return operations supported by the
         jqgrid list row. This function should take one argument, representing
@@ -48,8 +43,8 @@ class List(object):
       cached: A boolean indicating whether this list should be cached using a
         CachedList entity.  
     """
+    self._list_id = list_id
     self._index = index
-    self._query = query
     self._columns = columns
 
     if operations_func:
@@ -59,7 +54,7 @@ class List(object):
 
     self._cached = cached
 
-  def _getItems(self, start, limit):
+  def _getItems(self, query, start, limit):
     """Get list items in this list.
 
     If the list can be cached but not cached a mapreduce will be started to
@@ -72,17 +67,19 @@ class List(object):
     Retutns:
       A list of dicts each representing an item in the list.  
     """
-    if self.isInCache():
-      return cached_list.getCachedItems(self._list_id, start, limit + 1)
+    # Check whether the list is cached in a CachedList entity.
+    # TODO:(Aruna) Take into consideration whether the list data is valid as
+    # well.
+    if self._cached and cached_list.isCachedListExists(getDataId(query)):
+      return cached_list.getCachedItems(getDataId(query), start, limit + 1)
     elif self._cached:
       # The list can be cached but cached list is not found.
       entity_kind = '%s.%s' % \
-        (self._query._model_class.__module__, self._query._model_class.__name__)
-      column_defs = [{c.name:c.column_def} for c in self._columns]
-      query_pickle = pickle.dumps(self._query)
+        (query._model_class.__module__, query._model_class.__name__)
+      query_pickle = pickle.dumps(query)
 
       cache_list_pipline = cache_list_items.CacheListsPipeline(
-           entity_kind, column_defs, query_pickle)
+           self._list_id, entity_kind, query_pickle)
 
       cache_list_pipline.start()
 
@@ -115,26 +112,22 @@ class List(object):
       else:
         return str(items[-1].key())
 
-  def isInCache(self):
-    """Check whether the list is cached in a CachedList entity."""
-    # TODO:(Aruna) Take into consideration whether the list data is valid as
-    # well.
-    return self._cached and \
-        cached_list.isCachedListExists(getListId(self._query))
 
-  def getListData(self, start, limit):
+  def getListData(self, query, start, limit):
     """Get 'data' section of the json object expected by jqgrid.
 
     Spectification of the json object can be found at
     http://code.google.com/p/soc/wiki/Lists.
 
     Args:
+      query: Query that can be used to fetch items for this. Entities related
+        to all the list items in this list, satisfy filters in this query.
       start: The key of the object that should be the first in the list.
       limit: Number of the elements that should be returned.
 
     Returns: A dict containing the list data.
     """
-    items = self._getItems(start, limit + 1)
+    items = self._getItems(query, start, limit + 1)
     data = [{'columns':item, 'operations': self._getOperations(item)}
                for item in items[0:limit]]
 
@@ -151,27 +144,41 @@ def _getDefaultOperations(item):
   return {}
 
 
-def getListId(query):
-  """Get a unique id for cached list related to a query"""
-  return (hash(pickle.dumps(query)))
+def getDataId(query):
+  """Get a unique 'data id' for a cached list related to a query.
+
+  This id is used to identify data in a list. Two lists with the same data
+  should have the same 'data id'.
+
+  Args:
+    query: A query used to create a list.
+
+  Returns:
+    A string containing an id that is unique for the given query.  
+  """
+  # The query is pickled unpickled and pickled again, and hash is taken.
+  # The reason for pickling twice is that the hash is different between the
+  # original object's pickle string and the one's that is created by unpickling.
+  # But it is the same for all objects created by pickling and upickling many
+  # times after that.
+  return str(hash(pickle.dumps(pickle.loads(pickle.dumps(query)))))
 
 
 class Column(object):
   """Represents a column in a list.
-  
+
   Args:
     col_id: A unique identifier of this column.
     name: The header of the column that is shown to the user.
-    func_string: The string with content of a code of a function to be called 
-          when rendering this column for a single entity. This function should 
-          take an entity as an argument.
+    col_func: A function to be called when rendering this column for a single
+      entity. This function should take an entity as an argument.
     width: The width of the column.
     resizable: Whether the width of the column should be resizable by the
-               end user.
+      end user.
     hidden: Whether the column should be hidden by default.
     searchhidden: Whether this column should be searchable when hidden. 
   """
-  def __init__(self, col_id, name, func_string, width=None, resizable=True,
+  def __init__(self, col_id, name, col_func, width=None, resizable=True,
                hidden=False, searchhidden=True, options=None):
     self.col_id = col_id;
     self.name = name;
@@ -181,10 +188,10 @@ class Column(object):
     self.searchhidden = hidden
     self.options = options
 
-    if not (callable(eval(func_string))):
-      raise TypeError('String %s does not represent a callable function.')
+    if not (callable(col_func)):
+      raise TypeError('%s is not a callable function.' % str(col_func))
     else:
-      self.func_string = func_string
+      self.col_func = col_func
 
 
 def toListItemDict(entity, column_def):
@@ -192,15 +199,45 @@ def toListItemDict(entity, column_def):
 
   Args:
     entity: The datastore entity regarding a list item.
-    column_def: a dictionary that has column names of the list as keys, and
-      lambda functions that create the value for that column for a list item as
-      values. These functions should take one parameter, the entity relevant to
-      one list item.
+    column_def: A list of tuples. Each has a column name of the list, and the
+      lambda functions that create the value for that column for a list item.
+      These functions should take one parameter, the entity relevant to one list
+      item.
 
   Returns:
     A dictionary describing a list item.
   """
   output = {}
-  for col, func in column_def.items():
+  for col, func in column_def:
     output[col] = func(entity)
   return output
+
+
+def getList(list_id):
+  """Get the list instance relevant to a list id.
+
+  Args:
+    list_id: Unique id of the list.
+
+  Returns:
+    A List object with the given id.
+  """
+  return LISTS[list_id]
+
+
+# A list of list ids
+GSOC_PROJECTS_LIST_ID = 'gsoc_projects'
+
+
+# GSoCProjects list
+key = Column('key', 'Key', (lambda entity: '%s/%s' % (
+             entity.parent_key().name(), entity.key().id())), hidden=True)
+student = Column('student', 'Student', lambda entity: entity.parent().name)
+title = Column('title', 'Title', lambda entity: entity.title)
+
+GSOC_PROJECTS_LIST = List(GSOC_PROJECTS_LIST_ID, 0, [key, student], cached=True)
+
+
+LISTS = {
+  GSOC_PROJECTS_LIST_ID: GSOC_PROJECTS_LIST
+}
