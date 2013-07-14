@@ -57,3 +57,21 @@ def getCachedItems(list_id, start, limit):
     raise ValueError('A cached list with id %s does not exist' % list_id)
 
   return cached_list.list_data[start:(start+limit)]
+
+
+def isCachedListExists(list_id):
+  """Check whether a cached list with a list_id exists
+
+  Args:
+    list_id: Id of the list.
+
+  Returns:
+    True if a list with the given list_id exists, False otherwise.  
+  """
+  list_key = ndb.Key(cached_list_model.CachedList, list_id)
+
+  if list_key.get():
+    return True
+  else:
+    return False
+

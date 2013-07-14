@@ -17,57 +17,64 @@
 from google.appengine.ext import ndb
 
 from melange.logic import cached_list
-from melange.utils import lists
 
 from mapreduce import context
 from mapreduce import base_handler
 from mapreduce import mapreduce_pipeline
+
+import json
+
+import pickle
 
 
 NO_OF_SHARDS = 4
 
 
 def mapProcess(entity):
+  # TODO: (Aruna) Fix this import
+  from melange.utils import lists
+
   ctx = context.get()
   params = ctx.mapreduce_spec.mapper.params
 
-  list_id_func = eval(params['list_id_func'])
-  column_defs = eval(params['column_defs'])
+  list_id = params['list_id']
+  col_funcs = [(c.name, c.col_func) for c in lists.getList(list_id)._columns]
+  query_pickle = params['query_pickle']
 
-  item = lists.toListItemDict(entity, column_defs)
+  query = pickle.loads(query_pickle)
+  data_id = lists.getDataId(query)
 
-  list_id = list_id_func(entity)
+  if(query.filter('__key__', entity.key()).get()):
+    item = json.dumps(lists.toListItemDict(entity, col_funcs))
 
-  yield (list_id, item)
+    yield (data_id, item)
 
 
 def reduceProcess(list_id, entities):
-  ndb.transaction(lambda: cached_list.cacheItems(list_id, entities))
+  ndb.transaction(
+      lambda: cached_list.cacheItems(list_id, map(json.loads, entities)))
 
 
 class CacheListsPipeline(base_handler.PipelineBase):
   """A pipeline to read datastore entities and cache them for lists.
 
   Args:
-    kind: Kind of the entity the DatastoreInputReader should read.
-    list_id_func: A string representation of a lambda function. This function
-      should take one parameter, the entity relevant to one list item. It should
-      create an id for the list that list item should belong to.
-    column_defs: A string representation of a dictionary that has column names
-      of the list as keys, and lambda functions that create the value for that
-      column for a list item as values. These functions should take one
-      parameter, the entity relevant to one list item.
+    list_id: A unique id to identify the list.
+    entity_kind: Kind of the entity the DatastoreInputReader should read.
+    query_pickle: A pickled Query object that is used to filter entities that
+      should be cached.
   """
 
-  def run(self, kind, list_id_func, column_defs):
+  def run(self, list_id, entity_kind, query_pickle):
+
     yield mapreduce_pipeline.MapreducePipeline(
       'cache_list_items',
       'soc.mapreduce.cache_list_items.mapProcess',
       'soc.mapreduce.cache_list_items.reduceProcess',
       'mapreduce.input_readers.DatastoreInputReader',
       mapper_params={
-          'entity_kind': kind,
-          'list_id_func': list_id_func,
-          'column_defs': column_defs
+          'list_id': list_id,
+          'entity_kind': entity_kind,
+          'query_pickle': query_pickle
       },
       shards=NO_OF_SHARDS)
