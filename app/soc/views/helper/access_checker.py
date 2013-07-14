@@ -205,9 +205,6 @@ DEF_SCOPE_INACTIVE = ugettext(
 DEF_ID_BASED_ENTITY_NOT_EXISTS = ugettext(
     'The requested %(model)s entity whose id is %(id)s does not exist.')
 
-DEF_STATISTIC_DOES_NOT_EXIST = ugettext(
-    'The statistic whose name is %(key_name)s does not exist.')
-
 DEF_KEYNAME_BASED_ENTITY_NOT_EXISTS = ugettext(
     'The requested %(model)s entity whose keyname is %(key_name)s does not exist.')
 
@@ -1205,17 +1202,6 @@ class AccessChecker(BaseAccessChecker):
       return
 
     raise exception.Forbidden(message=DEF_NO_SURVEY_ACCESS)
-
-  def isStatisticValid(self):
-    """Checks if the URL refers to an existing statistic.
-    """
-    assert isSet(self.data.statistic)
-    # check if the statistic exist
-    if not self.data.statistic:
-      error_msg = DEF_STATISTIC_DOES_NOT_EXIST % {
-          'key_name': self.data.kwargs['id']
-          }
-      raise exception.Forbidden(mesasge=error_msg)
 
   def canRetakeOrgApp(self):
     """Checks if the user can edit the org app record.
