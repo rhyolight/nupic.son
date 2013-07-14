@@ -33,7 +33,7 @@ from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
-from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -183,7 +183,7 @@ class ProjectList(Template):
     return "modules/gsoc/org_home/_project_list.html"
 
 
-class GSoCBanOrgPost(BanOrgPost, GSoCRequestHandler):
+class GSoCBanOrgPost(BanOrgPost, base.GSoCRequestHandler):
   """Handles banning/unbanning of GSoC organizations.
   """
 
@@ -214,7 +214,7 @@ class GSoCHostActions(HostActions):
     return self.DEF_BAN_ORGANIZATION_HELP
 
 
-class OrgHome(GSoCRequestHandler):
+class OrgHome(base.GSoCRequestHandler):
   """View methods for Organization Home page."""
 
   access_checker = access.ALL_ALLOWED_ACCESS_CHECKER

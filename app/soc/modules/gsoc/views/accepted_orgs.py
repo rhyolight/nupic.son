@@ -29,7 +29,7 @@ from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.templates import org_list
-from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -136,7 +136,7 @@ class AcceptedOrgsAdminList(org_list.OrgList):
     return AcceptedOrgsAdminList.ListPrefetcher()
 
 
-class AcceptedOrgsPublicPage(GSoCRequestHandler):
+class AcceptedOrgsPublicPage(base.GSoCRequestHandler):
   """View for public page that lists the accepted organizations."""
 
   def templatePath(self):
@@ -168,7 +168,7 @@ class AcceptedOrgsPublicPage(GSoCRequestHandler):
     }
 
 
-class AcceptedOrgsAdminPage(GSoCRequestHandler):
+class AcceptedOrgsAdminPage(base.GSoCRequestHandler):
   """View for admin-only page that lists the accepted organizations."""
 
   LIST_IDX = 0

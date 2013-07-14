@@ -27,8 +27,8 @@ from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
 
@@ -81,7 +81,7 @@ class GSoCMentorEvaluationTakeForm(gsoc_forms.SurveyTakeForm):
     return True if grade == 'True' else False
 
 
-class GSoCMentorEvaluationEditPage(GSoCRequestHandler):
+class GSoCMentorEvaluationEditPage(base.GSoCRequestHandler):
   """View for creating/editing organization evaluation form.
   """
 
@@ -164,7 +164,7 @@ class GSoCMentorEvaluationEditPage(GSoCRequestHandler):
       return self.get(data, check, mutator)
 
 
-class GSoCMentorEvaluationTakePage(GSoCRequestHandler):
+class GSoCMentorEvaluationTakePage(base.GSoCRequestHandler):
   """View for the organization to submit student evaluation."""
 
   def djangoURLPatterns(self):
@@ -252,7 +252,7 @@ class GSoCMentorEvaluationTakePage(GSoCRequestHandler):
       return self.get(data, check, mutator)
 
 
-class GSoCMentorEvaluationPreviewPage(GSoCRequestHandler):
+class GSoCMentorEvaluationPreviewPage(base.GSoCRequestHandler):
   """View for the host preview mentor evaluation.
   """
 
@@ -286,7 +286,7 @@ class GSoCMentorEvaluationPreviewPage(GSoCRequestHandler):
     return context
 
 
-class GSoCMentorEvaluationRecordsList(GSoCRequestHandler):
+class GSoCMentorEvaluationRecordsList(base.GSoCRequestHandler):
   """View for listing all records of a GSoCGradingProjectSurveyRecord."""
 
   def djangoURLPatterns(self):
@@ -351,7 +351,7 @@ class GSoCMentorEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
     survey_name = 'Mentor Evaluation'
 
 
-class GSoCMentorEvaluationShowPage(GSoCRequestHandler):
+class GSoCMentorEvaluationShowPage(base.GSoCRequestHandler):
   """View to display the readonly page for mentor evaluation."""
 
   def djangoURLPatterns(self):

@@ -22,7 +22,7 @@ from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
-from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -121,7 +121,7 @@ class EnrollmentForm(GSoCModelForm):
       field._link = self._r().urlOf(self._urlName())
 
 
-class FormPage(GSoCRequestHandler):
+class FormPage(base.GSoCRequestHandler):
   """View to upload student forms."""
 
   def djangoURLPatterns(self):
@@ -234,7 +234,7 @@ class FormPage(GSoCRequestHandler):
     return self._r(data).to(self._urlName(data), validated=True)
 
 
-class DownloadForm(GSoCRequestHandler):
+class DownloadForm(base.GSoCRequestHandler):
   """View for downloading a student form."""
 
   def djangoURLPatterns(self):

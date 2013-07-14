@@ -20,10 +20,10 @@ from django.conf.urls.defaults import url as django_url
 from soc.views.helper.gdata_apis import oauth as oauth_helper
 
 # TODO(nathaniel): modules-gsoc code being imported in non modules-gsoc code.
-from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views import base
 
 
-class OAuthRedirectPage(GSoCRequestHandler):
+class OAuthRedirectPage(base.GSoCRequestHandler):
   """Redirect page to Google Documents."""
 
   def djangoURLPatterns(self):
@@ -52,7 +52,7 @@ class OAuthRedirectPage(GSoCRequestHandler):
     pass
 
 
-class OAuthVerifyToken(GSoCRequestHandler):
+class OAuthVerifyToken(base.GSoCRequestHandler):
   """Verify request token and redirect user."""
 
   def djangoURLPatterns(self):
@@ -68,7 +68,7 @@ class OAuthVerifyToken(GSoCRequestHandler):
     return data.redirect.toUrl(next)
 
 
-class PopupOAuthRedirectPage(GSoCRequestHandler):
+class PopupOAuthRedirectPage(base.GSoCRequestHandler):
   """Redirects popup page to Google Documents."""
 
   def djangoURLPatterns(self):
@@ -96,7 +96,7 @@ class PopupOAuthRedirectPage(GSoCRequestHandler):
     return data.redirect.toUrl(url)
 
 
-class PopupOAuthVerified(GSoCRequestHandler):
+class PopupOAuthVerified(base.GSoCRequestHandler):
   """ Calls parent window's methods to indicate successful login."""
 
   def djangoURLPatterns(self):

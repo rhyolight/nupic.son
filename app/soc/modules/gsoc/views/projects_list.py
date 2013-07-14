@@ -25,7 +25,7 @@ from soc.views.template import Template
 
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.models.project import GSoCProject
-from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -129,7 +129,7 @@ class ProjectList(Template):
     return "modules/gsoc/projects_list/_project_list.html"
 
 
-class ListProjects(GSoCRequestHandler):
+class ListProjects(base.GSoCRequestHandler):
   """View methods for listing all the projects accepted into a program."""
 
   def templatePath(self):

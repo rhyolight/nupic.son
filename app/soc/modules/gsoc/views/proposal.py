@@ -28,7 +28,7 @@ from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.logic.helper import notifications
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -47,7 +47,7 @@ class ProposalForm(GSoCModelForm):
 
   clean_content = cleaning.clean_html_content('content')
 
-class ProposalPage(GSoCRequestHandler):
+class ProposalPage(base.GSoCRequestHandler):
   """View for the submit proposal."""
 
   def djangoURLPatterns(self):
@@ -139,7 +139,7 @@ class ProposalPage(GSoCRequestHandler):
       return self.get(data, check, mutator)
 
 
-class UpdateProposal(GSoCRequestHandler):
+class UpdateProposal(base.GSoCRequestHandler):
   """View for the update proposal page.
   """
 

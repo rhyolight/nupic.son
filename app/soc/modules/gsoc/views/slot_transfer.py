@@ -26,9 +26,9 @@ from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.logic.helper import notifications
 from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
-from soc.modules.gsoc.views import readonly_template
-from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms
+from soc.modules.gsoc.views import readonly_template
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -69,7 +69,7 @@ class SlotTransferReadOnlyTemplate(readonly_template.GSoCModelReadOnlyTemplate):
     exclude = ['program']
 
 
-class SlotTransferPage(GSoCRequestHandler):
+class SlotTransferPage(base.GSoCRequestHandler):
   """View for transferring the slots.
   """
 
@@ -125,7 +125,7 @@ class SlotTransferPage(GSoCRequestHandler):
     return context
 
 
-class UpdateSlotTransferPage(GSoCRequestHandler):
+class UpdateSlotTransferPage(base.GSoCRequestHandler):
   """View for transferring the slots."""
 
   def djangoURLPatterns(self):

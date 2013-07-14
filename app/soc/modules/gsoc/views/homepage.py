@@ -23,7 +23,7 @@ from soc.views.template import Template
 
 from soc.modules.gsoc.logic import organization as org_logic
 from soc.modules.gsoc.logic import project as project_logic
-from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -194,7 +194,7 @@ class ConnectWithUs(Template):
     return "modules/gsoc/_connect_with_us.html"
 
 
-class Homepage(GSoCRequestHandler):
+class Homepage(base.GSoCRequestHandler):
   """Encapsulate all the methods required to generate GSoC Home page.
   """
 

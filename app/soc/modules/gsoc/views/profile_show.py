@@ -23,8 +23,8 @@ from soc.views.helper.access_checker import isSet
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import readonly_template
-from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -60,7 +60,7 @@ class GSoCHostActions(profile_show.HostActions):
     return self.DEF_BAN_PROFILE_HELP
 
 
-class GSoCBanProfilePost(profile_show.BanProfilePost, GSoCRequestHandler):
+class GSoCBanProfilePost(profile_show.BanProfilePost, base.GSoCRequestHandler):
   """Handles banning/unbanning of GSoC profiles.
   """
 
@@ -77,7 +77,7 @@ class GSoCBanProfilePost(profile_show.BanProfilePost, GSoCRequestHandler):
     return GSoCProfile
 
 
-class GSoCProfileShowPage(profile_show.ProfileShowPage, GSoCRequestHandler):
+class GSoCProfileShowPage(profile_show.ProfileShowPage, base.GSoCRequestHandler):
   """View to display the read-only profile page.
   """
 
@@ -94,7 +94,7 @@ class GSoCProfileShowPage(profile_show.ProfileShowPage, GSoCRequestHandler):
     return GSoCProfileReadOnlyTemplate(profile)
 
 
-class GSoCProfileAdminPage(GSoCRequestHandler):
+class GSoCProfileAdminPage(base.GSoCRequestHandler):
   """View to display the readonly profile page.
   """
 

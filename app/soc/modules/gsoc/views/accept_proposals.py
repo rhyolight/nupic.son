@@ -22,11 +22,11 @@ from melange.request import access
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.logic import accept_proposals as conversion_logic
-from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-class AcceptProposalsPage(GSoCRequestHandler):
+class AcceptProposalsPage(base.GSoCRequestHandler):
   """View for the host to trigger proposals to projets conversion."""
 
   access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER

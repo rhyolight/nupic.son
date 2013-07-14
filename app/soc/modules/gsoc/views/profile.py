@@ -34,8 +34,8 @@ from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 
@@ -232,7 +232,7 @@ class GSoCStudentInfoForm(gsoc_forms.GSoCModelForm):
   clean_major = cleaning.clean_html_content('major')
 
 
-class GSoCProfilePage(profile.ProfilePage, GSoCRequestHandler):
+class GSoCProfilePage(profile.ProfilePage, base.GSoCRequestHandler):
   """View for the GSoC participant profile."""
 
   def djangoURLPatterns(self):

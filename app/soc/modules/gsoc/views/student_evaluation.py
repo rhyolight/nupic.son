@@ -26,8 +26,8 @@ from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
 
@@ -58,7 +58,7 @@ class GSoCStudentEvaluationTakeForm(gsoc_forms.SurveyTakeForm):
     exclude = ['project', 'org', 'user', 'survey', 'created', 'modified']
 
 
-class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
+class GSoCStudentEvaluationEditPage(base.GSoCRequestHandler):
   """View for creating/editing student evalution."""
 
   def djangoURLPatterns(self):
@@ -141,7 +141,7 @@ class GSoCStudentEvaluationEditPage(GSoCRequestHandler):
       return self.get(data, check, mutator)
 
 
-class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
+class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
   """View for students to submit their evaluation."""
 
   def djangoURLPatterns(self):
@@ -236,7 +236,7 @@ class GSoCStudentEvaluationTakePage(GSoCRequestHandler):
       return self.get(data, check, mutator)
 
 
-class GSoCStudentEvaluationPreviewPage(GSoCRequestHandler):
+class GSoCStudentEvaluationPreviewPage(base.GSoCRequestHandler):
   """View for the host to preview the evaluation.
   """
 
@@ -270,7 +270,7 @@ class GSoCStudentEvaluationPreviewPage(GSoCRequestHandler):
     return context
 
 
-class GSoCStudentEvaluationRecordsList(GSoCRequestHandler):
+class GSoCStudentEvaluationRecordsList(base.GSoCRequestHandler):
   """View for listing all records of a GSoCGProjectSurveyRecord."""
 
   def djangoURLPatterns(self):
@@ -334,7 +334,7 @@ class GSoCStudentEvaluationReadOnlyTemplate(SurveyRecordReadOnlyTemplate):
     survey_name = 'Student Evaluation'
 
 
-class GSoCStudentEvaluationShowPage(GSoCRequestHandler):
+class GSoCStudentEvaluationShowPage(base.GSoCRequestHandler):
   """View to display the readonly page for student evaluation.
   """
 

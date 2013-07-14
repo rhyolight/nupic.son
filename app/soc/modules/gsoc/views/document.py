@@ -23,7 +23,7 @@ from soc.views.base_templates import ProgramSelect
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 
-from soc.modules.gsoc.views.base import GSoCRequestHandler
+from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms
 from soc.modules.gsoc.views.helper.url_patterns import url
 from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
@@ -35,7 +35,7 @@ class GSoCDocumentForm(forms.GSoCModelForm, document.DocumentForm):
   Meta = document.DocumentForm.Meta
 
 
-class EditDocumentPage(GSoCRequestHandler):
+class EditDocumentPage(base.GSoCRequestHandler):
   """Encapsulate all the methods required to edit documents.
   """
 
@@ -83,7 +83,7 @@ class EditDocumentPage(GSoCRequestHandler):
       return self.get(data, check, mutator)
 
 
-class DocumentPage(GSoCRequestHandler):
+class DocumentPage(base.GSoCRequestHandler):
   """Encapsulate all the methods required to show documents."""
 
   def templatePath(self):
@@ -117,7 +117,7 @@ class DocumentPage(GSoCRequestHandler):
     }
 
 
-class EventsPage(GSoCRequestHandler):
+class EventsPage(base.GSoCRequestHandler):
   """Encapsulates all the methods required to show the events page."""
 
   def templatePath(self):
@@ -151,7 +151,7 @@ class GSoCDocumentList(document.DocumentList):
     return 'modules/gsoc/document/_document_list.html'
 
 
-class DocumentListPage(GSoCRequestHandler):
+class DocumentListPage(base.GSoCRequestHandler):
   """View for the list documents page."""
 
   access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
