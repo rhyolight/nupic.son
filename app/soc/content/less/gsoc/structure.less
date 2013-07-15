@@ -10,6 +10,7 @@
 @image_home_block_1_list_3: "@{images_gsoc_location}/home-block-1-list-3.png";
 @image_home_block_students: "@{images_gsoc_location}/home-block-students-bg.gif";
 @image_social_icons: "@{images_gsoc_location}/social-icons.png";
+@image_nav_bg: "@{images_gsoc_location}/nav-bg.gif";
 
 @darkblue: #00538b;
 @orange: #d5620e;
@@ -1107,4 +1108,45 @@ p.reply-logged-in {
     text-align: left;
     width: 85px;
   }
+}
+
+/*////////////////
+
+  Tabs
+
+////////////////*/
+#tabs {
+  border-bottom: 2px solid @orange;
+  padding-left: 20px;
+  padding-top: 13px;
+
+  ul.tabs-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    &.tabs-item {
+      display: inline;
+      font-size: 15px;
+      font-weight: bold;
+
+      a {
+        display: inline-block;
+        padding: 4px 0;
+        text-align: center;
+        text-decoration: none;
+        width: 120px;
+
+        &:hover {
+          background: #e67a25;
+        }
+      }
+    }
+
+    &.selected a {
+      background: url("@{image_nav_bg}");
+    }
+  }  
 }
