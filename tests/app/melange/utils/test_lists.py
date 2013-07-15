@@ -58,3 +58,85 @@ class TestToListItemDict(unittest.TestCase):
                      'released': 'Yes', 'author': 'Foo Bar'}
 
     self.assertEqual(list_item_dict, expected_dict)
+
+
+class TestDatastoreReaderForDB(unittest.TestCase):
+  """Unit tests for DatastoreReaderForDB class."""
+
+  def testGetListData(self):    
+    """Tests getGetListData method."""
+    class TestDBModel(db.Model):
+      name = db.StringProperty()
+      value = db.IntegerProperty()
+
+    for i in range(10):
+      TestDBModel(name='name %s' % i, value=i, key_name='id %s' % i).put()
+
+    name = lists.SimpleColumn('name', 'Name')
+    value = lists.SimpleColumn('value', 'Value')
+
+    list_reader = lists.DatastoreReaderForDB('test_list')
+
+    test_list = lists.List('test_list', 0, TestDBModel, [name, value],
+                           list_reader)
+
+    # A stub for getList function in lists module.
+    def dummyGetList(list_id):
+      return test_list
+
+    lists.getList = dummyGetList
+
+    query = TestDBModel.all()
+    start = str(TestDBModel.get_by_key_name('id 3').key())
+
+    item_list, next_key = list_reader.getListData(query, start, 5)
+
+    expected_list = [{'Name': 'name %s' % i, 'Value': i} for i in range(3, 8)]
+    expected_next_key = str(TestDBModel.get_by_key_name('id 8').key())
+
+    self.assertListEqual(item_list, expected_list)
+    self.assertEqual(next_key, expected_next_key)
+
+
+class TestDatastoreReaderForNDB(unittest.TestCase):
+  """Unit tests for DatastoreReaderForDB class."""
+
+  def testGetListData(self):
+    """Tests getGetListData method."""
+    class TestNDBModel(ndb.Model):
+      name = ndb.StringProperty()
+      value = ndb.IntegerProperty()
+
+    for i in range(10):
+      TestNDBModel(name='name %s' % i, value=i, id='id %s' % i).put()
+
+    name = lists.SimpleColumn('name', 'Name')
+    value = lists.SimpleColumn('value', 'Value')
+
+    list_reader = lists.DatastoreReaderForNDB('test_list')
+
+    test_list = lists.List('test_list', 0, TestNDBModel, [name, value],
+                           list_reader)
+
+    # A stub for getList function in lists module.
+    def dummyGetList(list_id):
+      return test_list
+
+    lists.getList = dummyGetList
+
+    query = TestNDBModel.query()
+    start = str(ndb.Key(TestNDBModel, 'id 3').to_old_key())
+
+    item_list, next_key = list_reader.getListData(query, start, 5)
+
+    expected_list = [{'Name': 'name %s' % i, 'Value': i} for i in range(3, 8)]
+    expected_next_key = str(ndb.Key(TestNDBModel, 'id 8').to_old_key())
+
+    self.assertListEqual(item_list, expected_list)
+    self.assertEqual(next_key, expected_next_key)
+
+
+class TestCacheReader(unittest.TestCase):
+  """Unit tests for CacheReader class"""
+  # TODO:(Aruna)complete this class
+  pass

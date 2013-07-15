@@ -20,6 +20,9 @@
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.timeline import GSoCTimeline
 
+from google.appengine.ext import ndb
+from google.appengine.ext import db
+
 from soc.mapreduce import cache_list_items
 
 from melange.logic import cached_list
@@ -27,56 +30,113 @@ from melange.logic import cached_list
 import pickle
 
 
+FINAL_BATCH = 'done'
+
+
 class List(object):
   """Represents a list."""
 
-  def __init__(self, list_id, index, columns, operations_func=None,
-               cached=False):
+  def __init__(self, list_id, index, model_class, columns, datastore_reader,
+               cache_reader=None, operations_func=None):
     """Initialize a list object.
 
     Args:
       list_id: A unique id for the list.
       index: Index of the list in the page it is displayed.
-      columns: A list of Column objects describing columns in the list.  
+      model_class: Model class of the entities used to create list items.
+      columns: A list of Column objects describing columns in the list.
+      datastore_reader: A ListReader to read data from the datastore.
+      cache_reader: A ListReader to read list data from the cache.
       operations_func: A function that will return operations supported by the
         jqgrid list row. This function should take one argument, representing
         the relevant list item.
-      cached: A boolean indicating whether this list should be cached using a
-        CachedList entity.  
     """
     self._list_id = list_id
     self._index = index
+    self.model_class = model_class
     self.columns = columns
+    self._cache_reader = cache_reader
+    self._datastore_reader = datastore_reader
 
     if operations_func:
       self._getOperations = operations_func
     else:
       self._getOperations = _getDefaultOperations
 
-    self._cached = cached
+  def getListData(self, query, start=None, limit=50):
+    """Get 'data' section of the json object expected by jqgrid.
 
-  def _getItems(self, query, start, limit):
-    """Get list items in this list.
-
-    If the list can be cached but not cached a mapreduce will be started to
-    cache list items, and live data will be sent to the current request.  
+    Spectification of the json object can be found at
+    http://code.google.com/p/soc/wiki/Lists.
 
     Args:
+      query: Query that can be used to fetch items for this list. Entities
+        related to all the list items in this list, satisfy filters in this
+        query.
       start: The key of the object that should be the first in the list.
       limit: Number of the elements that should be returned.
 
-    Retutns:
-      A list of dicts each representing an item in the list.  
+    Returns: A dict containing the list data.
     """
-    # Check whether the list is cached in a CachedList entity.
-    # TODO:(Aruna) Take into consideration whether the list data is valid as
-    # well.
-    if self._cached and cached_list.isCachedListExists(getDataId(query)):
-      return cached_list.getCachedItems(getDataId(query), start, limit + 1)
-    elif self._cached:
-      # The list can be cached but cached list is not found.
+    if self._cache_reader:
+      items, next_item = self._cache_reader.getListData(query, start, limit)
+      if not items:
+        # A cache miss. Fetch data using the datastore reader.
+        items, next_item = self._datastore_reader.getListData(
+                                                      query, start, limit)
+    else:
+      items, next_item = self._datastore_reader.getListData(query, start, limit)
+
+    data = [{'columns':item, 'operations': self._getOperations(item)}
+               for item in items[0:limit]]
+
+    if not start:
+      start = ''
+
+    return {'data': {start: data}, 'next': next_item}
+
+
+class ListDataReader(object):
+  """Base class for list data readers."""
+  def __init__(self, list_id):
+    """Initializes a ListDataReader.
+
+    Args:
+      list_id: The id of the list this reader reads data for.
+    """
+    self._list_id = list_id
+
+  def getListData(self, query, start, limit):
+    """Get list items for a list.
+
+    Implementing subclasses must override this method.
+
+    Args:
+      query: Query that will be used to fetch datastore entities relevant to the
+        list.
+      start: The key of the object that should be the first in the list.
+      limit: Number of the elements that should be returned.
+
+    Returns:
+      A Tuple whose first element is a list of list items and whose second
+      element is the index of the first list item of the next batch. None if
+      the list items cannot be read.
+    """
+    raise NotImplementedError
+
+
+class CacheReader(ListDataReader):
+  """List reader for reding list data from cache."""
+  def __init__(self, list_id):
+    super(CacheReader, self).__init__(list_id)
+
+  def getListData(self, query, start=None, limit=50):
+    """See ListDataReader.getListData for specification."""
+    if cached_list.isCachedListExists(getDataId(query)):
+      return (cached_list.getCachedItems(getDataId(query)), FINAL_BATCH)
+    else:
       entity_kind = '%s.%s' % \
-        (query._model_class.__module__, query._model_class.__name__)
+          (query._model_class.__module__, query._model_class.__name__)
       query_pickle = pickle.dumps(query)
 
       cache_list_pipline = cache_list_items.CacheListsPipeline(
@@ -84,60 +144,53 @@ class List(object):
 
       cache_list_pipline.start()
 
-      # TODO: fetch live data for this request
+      # return None because cache is not hit
+      return None, None
+
+
+class DatastoreReaderForDB(ListDataReader):
+  """List reader for reading list data from datastore using db queries."""
+  def __init__(self, list_id):
+    super(DatastoreReaderForDB, self).__init__(list_id)
+
+  def getListData(self, query, start=None, limit=50):
+    """See ListDataReader.getListData for specification."""
+    if start:
+      query.filter('__key__ >=', db.Key(start))
+
+    entities = query.fetch(limit + 1)
+
+    if len(entities) == limit + 1:
+      next_key = str(entities[-1].key())
     else:
-      # TODO: fetch live data
-      pass
+      next_key = FINAL_BATCH
 
-  def _getNext(self, items, start, limit):
-    """Get the index of the first elemnet of the next batch.
+    col_funcs = [(c.name, c.col_func) for c in getList(self._list_id).columns]
+    items = [toListItemDict(entity, col_funcs) for entity in entities]
+    return (items[:limit], next_key)
 
-    When jqgrid asks for batches of list items it will use start (key of the
-    first item)  and limit (number of items in the batch) parameters to define
-    a batch. This method is used to get the key of the first element of the
-    next batch.
 
-    Args:
-      items: A list of items retrieved from the datastore for this batch.
-      start: key of the first element of this batch.
-      limit: No of items requested from the datastore for this batch.
+class DatastoreReaderForNDB(ListDataReader):
+  """List reader for reading list data from datastore using ndb queries."""
+  def __init__(self, list_id):
+    super(DatastoreReaderForNDB, self).__init__(list_id)
 
-    Returns:
-      The key of the next element if current batch is not the last batch  
-    """
-    if len(items) < limit:
-      return 'done'
+  def getListData(self, query, start=None, limit=50):
+    """See ListDataReader.getListData for specification."""
+    if start:
+      model_class = getList(self._list_id).model_class
+      query = query.filter(model_class.key >= ndb.Key(urlsafe=start))
+
+    entities = query.fetch(limit + 1)
+
+    if len(entities) == limit + 1:
+      next_key = str(entities[-1].key.to_old_key())
     else:
-      if self.isInCache():
-        return start + limit - 1
-      else:
-        return str(items[-1].key())
+      next_key = FINAL_BATCH
 
-
-  def getListData(self, query, start, limit):
-    """Get 'data' section of the json object expected by jqgrid.
-
-    Spectification of the json object can be found at
-    http://code.google.com/p/soc/wiki/Lists.
-
-    Args:
-      query: Query that can be used to fetch items for this. Entities related
-        to all the list items in this list, satisfy filters in this query.
-      start: The key of the object that should be the first in the list.
-      limit: Number of the elements that should be returned.
-
-    Returns: A dict containing the list data.
-    """
-    items = self._getItems(query, start, limit + 1)
-    data = [{'columns':item, 'operations': self._getOperations(item)}
-               for item in items[0:limit]]
-
-    next_item = self._getNext(items, start, limit + 1)
-
-    if not start:
-      start = ''
-
-    return {'data': {start: data}, 'next': next_item}
+    col_funcs = [(c.name, c.col_func) for c in getList(self._list_id).columns]
+    items = [toListItemDict(entity, col_funcs) for entity in entities]
+    return (items[:limit], next_key)
 
 
 def _getDefaultOperations(item):
@@ -231,12 +284,21 @@ GSOC_PROJECTS_LIST_ID = 'gsoc_projects'
 
 
 # GSoCProjects list
+from soc.modules.gsoc.models import project
+
 key = Column('key', 'Key', (lambda entity: '%s/%s' % (
              entity.parent_key().name(), entity.key().id())), hidden=True)
-student = Column('student', 'Student', lambda entity: entity.parent().name)
+student = Column('student', 'Student', lambda entity: entity.parent().name())
 title = Column('title', 'Title', lambda entity: entity.title)
+org = Column('org', 'Organization', lambda entity: entity.org.name)
+status = Column('status', 'Status', lambda entity: entity.status)
 
-GSOC_PROJECTS_LIST = List(GSOC_PROJECTS_LIST_ID, 0, [key, student], cached=True)
+cache_reader = CacheReader(GSOC_PROJECTS_LIST_ID)
+datastore_reader = DatastoreReaderForDB(GSOC_PROJECTS_LIST_ID)
+
+GSOC_PROJECTS_LIST = List(GSOC_PROJECTS_LIST_ID, 0, project.GSoCProject,
+                          [key, student, title, org, status], datastore_reader,
+                          cache_reader=cache_reader)
 
 
 LISTS = {
