@@ -30,7 +30,8 @@ import pickle
 class List(object):
   """Represents a list."""
 
-  def __init__(self, list_id, index, columns, operations_func=None, cached=False):
+  def __init__(self, list_id, index, columns, operations_func=None,
+               cached=False):
     """Initialize a list object.
 
     Args:
@@ -45,7 +46,7 @@ class List(object):
     """
     self._list_id = list_id
     self._index = index
-    self._columns = columns
+    self.columns = columns
 
     if operations_func:
       self._getOperations = operations_func
