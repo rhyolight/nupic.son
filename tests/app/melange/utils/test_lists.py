@@ -45,12 +45,12 @@ class TestToListItemDict(unittest.TestCase):
     entity.owner = Author(name='Foo Bar').put()
     entity.put()
 
-    columns = {
-        'details': lambda ent: ent.details,
-        'freq': lambda ent: '%s - %s' % (ent.item_freq, ent.freq),
-        'released': lambda ent: "Yes" if ent.released else "No",
-        'author': lambda ent: ent.owner.name
-    }
+    columns = [
+        ('details', lambda ent: ent.details),
+        ('freq', lambda ent: '%s - %s' % (ent.item_freq, ent.freq)),
+        ('released', lambda ent: "Yes" if ent.released else "No"),
+        ('author', lambda ent: ent.owner.name)
+    ]
 
     list_item_dict = lists.toListItemDict(entity, columns)
 
