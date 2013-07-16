@@ -249,6 +249,13 @@ class Program(linkable_model.Linkable):
       "URL of the irc channel for the program in "
       "the format irc://<channel>@server")
 
+  #: Whether the messaging system is enabled
+  messaging_enabled = db.BooleanProperty(default=False,
+      verbose_name=translation.ugettext('Messaging Enabled'))
+  messaging_enabled.group = GENERAL_INFO_GROUP
+  messaging_enabled.help_text = translation.ugettext(
+      'Indicates if the messaging system should be enabled.')
+
   def getProgramMessages(self):
     def get_or_create_txn():
       entity = type(self)._messages_model.all().ancestor(self).get()
