@@ -101,7 +101,7 @@ class GSoCProfileAdminPage(base.GSoCRequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'profile/admin/%s$' % url_patterns.PROFILE,
-         self, name=url_names.GSOC_PROFILE_SHOW),
+         self, name=url_names.GSOC_PROFILE_SHOW_ADMIN),
     ]
 
   def checkAccess(self, data, check, mutator):

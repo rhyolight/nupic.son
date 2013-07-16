@@ -378,9 +378,10 @@ class GSoCOrgAppShowPage(base.GSoCRequestHandler):
       # admin info should be available only to the hosts
       if data.is_host:
         context['main_admin_url'] = data.redirect.profile(
-            record.main_admin.link_id).urlOf(url_names.GSOC_PROFILE_SHOW)
+            record.main_admin.link_id).urlOf(url_names.GSOC_PROFILE_SHOW_ADMIN)
         context['backup_admin_url'] = data.redirect.profile(
-            record.backup_admin.link_id).urlOf(url_names.GSOC_PROFILE_SHOW)
+            record.backup_admin.link_id).urlOf(
+                url_names.GSOC_PROFILE_SHOW_ADMIN)
 
     if data.timeline.surveyPeriod(data.org_app):
       if record:

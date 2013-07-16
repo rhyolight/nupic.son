@@ -768,7 +768,8 @@ class LookupLinkIdPage(base.GSoCRequestHandler):
       # TODO(nathaniel): Find a cleaner way to do this rather than
       # generating a response and then tossing it.
       data.redirect.profile(profile.link_id)
-      response = data.redirect.to(url_names.GSOC_PROFILE_SHOW, secure=True)
+      response = data.redirect.to(
+          url_names.GSOC_PROFILE_SHOW_ADMIN, secure=True)
       raise exception.Redirect(response['Location'])
     else:
       return {
@@ -1139,7 +1140,7 @@ class StudentsList(Template):
         (lambda ent, *args: dateformat.format(ent.birth_date, BIRTHDATE_FORMAT)),
         hidden=True)
     list_config.setRowAction(lambda e, *args: data.redirect.profile(
-        e.link_id).urlOf(url_names.GSOC_PROFILE_SHOW, secure=True))
+        e.link_id).urlOf(url_names.GSOC_PROFILE_SHOW_ADMIN, secure=True))
 
     def formsSubmitted(ent, si):
       info = si[ent.key()]

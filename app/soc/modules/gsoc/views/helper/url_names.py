@@ -19,7 +19,7 @@
 GSOC_EDIT_PROGRAM_MESSAGES = 'gsoc_edit_program_messages'
 
 GSOC_PROFILE_BAN = 'gsoc_profile_ban'
-GSOC_PROFILE_SHOW = 'gsoc_profile_show'
+GSOC_PROFILE_SHOW_ADMIN = 'gsoc_profile_show_admin'
 
 GSOC_PROGRAM_CREATE = 'gsoc_program_create'
 GSOC_PROGRAM_EDIT = 'gsoc_program_edit'
