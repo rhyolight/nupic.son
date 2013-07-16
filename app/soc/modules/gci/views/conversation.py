@@ -43,6 +43,7 @@ class ConversationPage(GCIRequestHandler):
   def checkAccess(self, data, check, mutator):
     check.isProgramVisible()
     check.isProfileActive()
+    check.isMessagingEnabled()
     mutator.conversationFromKwargs()
     check.isUserInConversation()
 

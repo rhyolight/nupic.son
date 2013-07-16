@@ -91,6 +91,7 @@ class ConversationsPage(GCIRequestHandler):
     """See soc.views.base.RequestHandler.checkAccess for full specification."""
     check.isProgramVisible()
     check.isProfileActive()
+    check.isMessagingEnabled()
 
   def jsonContext(self, data, check, mutator):
     """See soc.views.base.RequestHandler.jsonContext for full specification."""
