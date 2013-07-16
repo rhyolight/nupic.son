@@ -18,6 +18,16 @@
     {% if admin_link %}
     <li id="menu-admin"><a href="{{ admin_link }}">Admin Dashboard</a></li>
     {% endif %}
+    {% if messages_link %}
+    <li id="menu-messages">
+      <a href="{{ messages_link }}">
+        Messages
+        {% if num_unread_messages > 0 %}
+          <span class="badge">{{ num_unread_messages }}</span>
+        {% endif %}
+      </a>
+    </li>
+    {% endif %}
     {% if about_link %}
     <li id="menu-about"><a href="{{ about_link }}">About</a></li>
     {% endif %}

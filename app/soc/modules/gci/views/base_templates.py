@@ -16,6 +16,8 @@
 
 import datetime
 
+from google.appengine.ext import ndb
+
 from google.appengine.api import users
 
 from django.core.urlresolvers import reverse
@@ -25,6 +27,7 @@ from soc.logic import links
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic.program import getMostRecentProgram
+from soc.modules.gci.logic import conversation as gciconversation_logic
 
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
 from soc.modules.gci.models.task import GCITask
@@ -61,6 +64,13 @@ def siteMenuContext(data):
 
   if data.profile:
     context['dashboard_link'] = redirect.dashboard().url()
+
+  if data.program.messaging_enabled and data.gae_user:
+    context['messages_link'] = redirect.urlOf(url_names.GCI_CONVERSATIONS)
+    context['num_unread_messages'] = (
+        gciconversation_logic.numUnreadMessagesForProgramAndUser(
+            ndb.Key.from_old_key(data.program.key()),
+            ndb.Key.from_old_key(data.user.key())))
 
   if data.timeline.tasksPubliclyVisible():
     # TODO(nathaniel): make this .program() call unnecessary.
