@@ -18,6 +18,12 @@ import unittest
 import urllib
 
 from soc.logic import links
+from soc.models import profile as profile_model
+from soc.models import program as program_model
+from soc.models import user as user_model
+from soc.modules.gci.views.helper import url_names as gci_url_names
+from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
 
 TEST_PROGRAM_NAME = 'test_program'
 TEST_SPONSOR_KEY_NAME = 'test_sponsor_key_name'
@@ -98,6 +104,28 @@ class TestLinker(unittest.TestCase):
 
   def testSite(self):
     self.assertEqual('/site/edit', self.linker.site('edit_site_settings'))
+
+  def testProfile(self):
+    # seed a program
+    program = seeder_logic.seed(program_model.Program)
+    program.program_id = program.link_id
+    program.sponsor = program.scope
+
+    # seed a user
+    user = seeder_logic.seed(user_model.User)
+
+    # seed a profile
+    profile_properties = {
+        'program': program,
+        'scope': program,
+        'parent': user
+        }
+    profile = seeder_logic.seed(profile_model.Profile, profile_properties)
+
+    self.assertEqual(
+        '/gci/profile/show/%s/%s' % (
+            profile.program.key().name(), profile.parent_key().name()),
+        self.linker.profile(profile, gci_url_names.GCI_PROFILE_SHOW_ADMIN))
 
   def testProgram(self):
     self.assertEqual(

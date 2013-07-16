@@ -59,6 +59,25 @@ class Linker(object):
     """
     return urlresolvers.reverse(url_name)
 
+  def profile(self, profile, url_name):
+    """Returns the URL of a profile's named page.
+
+    Args:
+      profile: A profile entity.
+      url_name: The name with which a URL was registered with Django.
+
+    Returns:
+      The URL of the page matching the given name for the given profile.
+    """
+    # TODO(daniel): program's key should be acquired in a more efficient way
+    program = profile.program
+    kwargs = {
+        'program': program.program_id,
+        'sponsor': program.sponsor.key().name(),
+        'user': profile.parent_key().name()
+        }
+    return urlresolvers.reverse(url_name, kwargs=kwargs)
+
   def program(self, program, url_name):
     """Returns the URL of a program's named page.
 
