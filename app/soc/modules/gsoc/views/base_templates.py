@@ -116,7 +116,7 @@ class MainMenu(template.Template):
       self.data.redirect.program()
       if self.data.timeline.programActive():
         context['profile_link'] = self.data.redirect.urlOf(
-            'edit_gsoc_profile', secure=True)
+            url_names.GSOC_PROFILE_EDIT, secure=True)
       else:
         context['profile_link'] = self.data.redirect.urlOf(
             url_names.GSOC_PROFILE_SHOW, secure=True)

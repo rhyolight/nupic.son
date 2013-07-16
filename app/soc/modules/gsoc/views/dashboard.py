@@ -1539,7 +1539,7 @@ class TodoComponent(Component):
         return data.redirect.urlOf('gsoc_enrollment_form', secure=True)
       if key == 'school_name':
         data.redirect.program()
-        url = data.redirect.urlOf('edit_gsoc_profile', secure=True)
+        url = data.redirect.urlOf(url_names.GSOC_PROFILE_EDIT, secure=True)
         return url + '#form_row_school_name'
       if key.isdigit():
         project_id = int(key)

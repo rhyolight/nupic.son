@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Module for the GSoC profile page."""
 
 from google.appengine.ext import db
@@ -255,7 +254,7 @@ class GSoCProfilePage(profile.ProfilePage, base.GSoCRequestHandler):
     if 'role' in data.kwargs:
       role = data.kwargs['role']
       kwargs = dicts.filter(data.kwargs, ['sponsor', 'program'])
-      edit_url = reverse('edit_gsoc_profile', kwargs=kwargs)
+      edit_url = reverse(url_names.GSOC_PROFILE_EDIT, kwargs=kwargs)
       if role == 'student':
         check.canApplyStudent(edit_url)
       else:
@@ -299,7 +298,7 @@ class GSoCProfilePage(profile.ProfilePage, base.GSoCRequestHandler):
     return 'gsoc'
 
   def _getEditProfileURLName(self):
-    return 'edit_gsoc_profile'
+    return url_names.GSOC_PROFILE_EDIT
 
   def _getCreateProfileURLName(self):
     return 'create_gsoc_profile'

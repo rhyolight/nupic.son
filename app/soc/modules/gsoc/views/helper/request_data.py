@@ -743,6 +743,6 @@ class RedirectHelper(request_data.RedirectHelper):
   def editProfile(self):
     """Returns the URL for the edit profile page."""
     self.program()
-    self._url_name = 'edit_gsoc_profile'
+    self._url_name = url_names.GSOC_PROFILE_EDIT
 
     return self
