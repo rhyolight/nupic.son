@@ -37,18 +37,19 @@ def cacheItems(list_id, items):
   cached_list.put()
 
 
-def getCachedItems(list_id, start, limit):
+def getCachedItems(list_id, start=0, limit=None):
   """Retrieve stored items from a cached list.
 
   Args:
-    list_id: The unique id of the CachedList entity
-    start: The starting index of the items returned
-    limit: Number of items returned. If the number of items in the list, after
-      given starting index is less than specified here, only that number of
-      items will be returned
+    list_id: The unique id of the CachedList entity.
+    start: The starting index of the items returned.
+    limit: Number of items to be returned. If the number of items in the list,
+      after given starting index is less than specified here, only that number
+      of items will be returned. If None, all the items after the starting index
+      are returned.
 
   Returns:
-    A list of dicts each representing an item in the cached list
+    A list of dicts each representing an item in the cached list.
   """
   list_key = ndb.Key(cached_list_model.CachedList, list_id)
   cached_list = list_key.get()
@@ -56,7 +57,10 @@ def getCachedItems(list_id, start, limit):
   if not cached_list:
     raise ValueError('A cached list with id %s does not exist' % list_id)
 
-  return cached_list.list_data[start:(start+limit)]
+  if limit:
+    return cached_list.list_data[start:(start + limit)]
+  else:
+    return cached_list.list_data[start:]
 
 
 def isCachedListExists(list_id):
