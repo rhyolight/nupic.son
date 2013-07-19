@@ -160,6 +160,7 @@ class ProfileShowPage(object):
         'user': user_template,
         'profile': profile_template,
         'css_prefix': css_prefix,
+        'tabs': self._getTabs(data)
         }
 
   def _getUserReadOnlyTemplate(self, user):
@@ -167,6 +168,17 @@ class ProfileShowPage(object):
 
   def _getProfileReadOnlyTemplate(self, profile):
     raise NotImplementedError
+
+  def _getTabs(self, data):
+    """Returns navigational tabs for the page.
+
+    Args:
+      data: A RequestData describing the current request.
+
+    Returns:
+      Tabs to be placed on the page, or None if they are not defined.
+    """
+    return None
 
   def _getProfile(self, data):
     """Returns the profile entity whose information should be displayed.

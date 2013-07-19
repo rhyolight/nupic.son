@@ -29,6 +29,8 @@ from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+from summerofcode.templates import tabs
+
 
 class GSoCProfileReadOnlyTemplate(readonly_template.GSoCModelReadOnlyTemplate):
   """Template to construct read-only GSoCProfile data.
@@ -93,6 +95,10 @@ class GSoCProfileShowPage(profile_show.ProfileShowPage, base.GSoCRequestHandler)
   def _getProfileReadOnlyTemplate(self, profile):
     return GSoCProfileReadOnlyTemplate(profile)
 
+  def _getTabs(self, data):
+    """See profile_show.ProfileShowPage._getTabs for specification."""
+    return tabs.profileTabs(
+        data, selected_tab_id=tabs.VIEW_PROFILE_TAB_ID)
 
 class GSoCProfileAdminPage(base.GSoCRequestHandler):
   """View to display the readonly profile page.
