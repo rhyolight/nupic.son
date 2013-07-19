@@ -310,16 +310,27 @@ class AccessChecker(access_checker.AccessChecker):
       raise exception.Forbidden(message=DEF_NOT_ORG_ADMIN_FOR_ORG_APP % {
           'org_name': self.data.org_app_record.name})
 
-  def hasProfileOrRedirectToCreate(self):
-    """Checks if user has a profile and redirect to create an org admin
-    profile for the organization listed in the GET data if the user does
-    not have a profile.
+  def hasProfileOrRedirectToCreate(self, role, get_params=None):
+    """Checks if user has a profile and redirects to "Create Profile" page
+    if a profile is not present.
+
+    Args:
+      role: type of profile that should potentially be created. May be one
+        of: org_admin, mentor, student.
+      get_params: optional dictionary with GET parameters that should be
+        appended to the redirect URL
     """
     if not self.data.profile:
-      org_id = self.data.GET['org_id']
+      get_params = get_params or {}
       profile_url = self.data.redirect.createProfile('org_admin').urlOf(
           'create_gci_profile', secure=True)
-      raise exception.Redirect(profile_url + '?new_org=' + org_id)
+
+      if len(get_params):
+        profile_url += '?'
+        for param, value in get_params.iteritems():
+          profile_url += '%s=%s' % (param, value)
+
+      raise exception.Redirect(profile_url)
 
   def isBeforeAllWorkStopped(self):
     """Raises exception.UserError if all work on tasks has stopped."""
