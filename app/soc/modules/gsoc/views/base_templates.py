@@ -114,12 +114,8 @@ class MainMenu(template.Template):
 
     if self.data.profile and self.data.profile.status == 'active':
       self.data.redirect.program()
-      if self.data.timeline.programActive():
-        context['profile_link'] = self.data.redirect.urlOf(
-            url_names.GSOC_PROFILE_EDIT, secure=True)
-      else:
-        context['profile_link'] = self.data.redirect.urlOf(
-            url_names.GSOC_PROFILE_SHOW, secure=True)
+      context['profile_link'] = self.data.redirect.urlOf(
+          url_names.GSOC_PROFILE_SHOW, secure=True)
 
     if self.data.is_host:
       self.data.redirect.program()
