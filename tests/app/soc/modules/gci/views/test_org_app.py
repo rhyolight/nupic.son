@@ -97,6 +97,9 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
   def setUp(self):
     self.init()
 
+    # make org up survey active
+    self.updateOrgAppSurvey()
+
     self.take_url = '/gci/org/application/%s' % self.gci.key().name()
     self.retake_url_raw = '/gci/org/application/%s/%s'
 
@@ -143,8 +146,6 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     self.assertResponseNotFound(response)
 
   def testAccessCheckForNonOrgMembers(self):
-    self.updateOrgAppSurvey()
-
     #Check for non-org members
     self.profile_helper.createStudent()
     response = self.get(self.take_url)
@@ -152,8 +153,6 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     self.profile_helper.removeStudent()
 
   def testAccessCheckForOrgMembers(self):
-    self.updateOrgAppSurvey()
-
     #OK
     self.profile_helper.createOrgAdmin(self.org)
     response = self.get(self.take_url)
@@ -168,8 +167,6 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
   def testOrgAppSurveyTakePage(self):
     """Tests organizationn application survey take/retake page.
     """
-    self.updateOrgAppSurvey()
-
     self.profile_helper.createOrgAdmin(self.org)
     backup_admin = profile_utils.GCIProfileHelper(self.gci, self.dev_test)
     backup_admin.createMentor(self.org)
