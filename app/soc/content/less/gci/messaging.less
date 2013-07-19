@@ -142,3 +142,35 @@
   }
 }
 
+.block .reply_form { /* Box for reply form */
+  background-color: @messageBackground;
+  -moz-border-radius: @messageBorderRadius;
+  -webkit-border-radius: @messageBorderRadius;
+  border-radius: @messageBorderRadius;
+  margin-bottom: @messageMargin;
+  padding: 10px;
+
+  .fieldset-conversation-reply {
+    legend span {
+      color: #305bbd;
+      font-family: Oswald, sans-serif;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .submit {
+      float: right;
+      margin-top: 16px;
+    }
+  }
+
+  &:first-child {
+    margin-top: @messageMargin;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}

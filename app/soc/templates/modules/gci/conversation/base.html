@@ -41,14 +41,35 @@ limitations under the License.
         </div>
       </div>
     {% endfor %}
+    <div class="reply_form">
+      <form action="{{ reply_action }}" method="post" id="form" class="form-conversation-reply">
+        <fieldset id="form-conversation-reply-fieldset" class="fieldset-conversation-reply">
+          <legend><span>Send a reply</span></legend>
+            <div id="form_row_content" class="row content">
+              <textarea id="melange-content-textarea" name="content" rows="10" cols="40"></textarea>
+            </div>
+          <div id="form-conversation-reply-fieldset-button-row" class="row button-row">
+            <input id="form-conversation-reply-submit" type="submit" value="Send" class="button submit"/>
+          </div>
+        </fieldset>
+      </form>
+    </div>
   </div>
 </div>
 {% endblock page_content %}
 
+{% block synchronous_scripts %}
+  <script type='text/javascript' src="/tiny_mce/tiny_mce.js"></script>
+  {{ block.super }}
+{% endblock synchronous_scripts %}
+
 {% block dependencies %}
   [
     tc(
-      "/soc/content/{{ app_version }}/js/templates/modules/gci/conversation/base.js"
+      "/soc/content/{{ app_version }}/js/templates/modules/gci/conversation/base.js",
+      {
+        tinymce_inputs: ["melange-content-textarea"]
+      }
     )
   ]
 {% endblock dependencies %}

@@ -14,6 +14,10 @@
 
 """Module containing the conversation view with messages."""
 
+from django import forms as django_forms
+from django.core import urlresolvers
+from django.utils import translation
+from django.utils import html
 
 from google.appengine.ext import ndb
 from google.appengine.ext import db
@@ -22,12 +26,71 @@ from soc.views.helper import url_patterns
 from soc.views.helper import access_checker
 
 from soc.logic.helper import timeformat as timeformat_helper
+from soc.logic import cleaning
+
 from soc.modules.gci.logic import conversation as gciconversation_logic
 from soc.modules.gci.logic import message as gcimessage_logic
+
+from soc.modules.gci.models import message as gcimessage_model
 
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
+from soc.modules.gci.views import forms as gciforms_view
+
+from melange.request import exception
+
+DEF_BLANK_MESSAGE = translation.ugettext('Your message cannot be blank.')
+
+
+class PostReply(GCIRequestHandler):
+  """View which handles submitting replies."""
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'conversation/reply/%s$' % url_patterns.ID, self,
+            name=url_names.GCI_CONVERSATION_REPLY),
+    ]
+
+  def checkAccess(self, data, check, mutator):
+    check.isProgramVisible()
+    check.isProfileActive()
+    check.isMessagingEnabled()
+    mutator.conversationFromKwargs()
+    check.isUserInConversation()
+
+  def createReplyFromForm(self, data):
+    """Creates a new message based on the data inserted into the form.
+
+    Args:
+      data: A RequestData object for the current request.
+
+    Returns:
+      A newly created message entity.
+    """
+    assert access_checker.isSet(data.conversation)
+    assert access_checker.isSet(data.user)
+
+    content = cleaning.sanitize_html_string(
+        data.request.POST['content'].strip())
+
+    if len(html.strip_tags(content).strip()) == 0:
+        raise exception.Forbidden(message=DEF_BLANK_MESSAGE)
+
+    author = ndb.Key.from_old_key(data.user.key())
+
+    return gciconversation_logic.createMessage(
+        data.conversation.key, author, content)
+
+  def post(self, data, check, mutator):
+    message = self.createReplyFromForm(data)
+    return data.redirect.id().to(
+        name=url_names.GCI_CONVERSATION,
+        anchor='m%d' % message.key.integer_id())
+
+  def get(self, data, check, mutator):
+    """This view only handles POST."""
+    raise exception.MethodNotAllowed()
 
 
 class ConversationPage(GCIRequestHandler):
@@ -75,4 +138,6 @@ class ConversationPage(GCIRequestHandler):
         'conversation': data.conversation,
         'num_users': num_users,
         'messages': messages,
+        'reply_action': urlresolvers.reverse(url_names.GCI_CONVERSATION_REPLY, 
+            kwargs=data.kwargs)
     }

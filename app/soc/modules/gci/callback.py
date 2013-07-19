@@ -126,6 +126,7 @@ class Callback(object):
     self.views.append(task_create.TaskCreatePage())
     self.views.append(conversations.ConversationsPage())
     self.views.append(conversation.ConversationPage())
+    self.views.append(conversation.PostReply())
 
     # Google Appengine Tasks
     self.views.append(bulk_create_tasks.BulkCreateTask())

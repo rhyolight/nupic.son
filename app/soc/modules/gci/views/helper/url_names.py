@@ -75,4 +75,5 @@ GCI_PROFILE_SHOW = 'gci_profile_show'
 GCI_PROFILE_SHOW_ADMIN = 'gci_profile_show_admin'
 
 GCI_CONVERSATION = 'gci_conversation'
+GCI_CONVERSATION_REPLY = 'gci_conversation_reply'
 GCI_CONVERSATIONS = 'gci_conversations'
