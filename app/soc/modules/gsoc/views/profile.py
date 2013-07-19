@@ -38,6 +38,8 @@ from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 
+from summerofcode.templates import tabs
+
 
 def _handleAnonymousConnection(data, profile):
   """Handler for automatically created and accepting a new connection.
@@ -269,6 +271,8 @@ class GSoCProfilePage(profile.ProfilePage, base.GSoCRequestHandler):
     # GSoC has a special "you are logged in" message on top of the form
     context['form_top_msg'] = LoggedInMsg(data, apply_role=True)
 
+    context['tabs'] = tabs.profileTabs(
+        data, selected_tab_id=tabs.EDIT_PROFILE_TAB_ID)
     return context
 
   def templatePath(self):
