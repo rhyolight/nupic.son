@@ -91,12 +91,20 @@ class Header(Template):
       # resolve to the correct module URL prefix.
       gci_link = reverse('gci_homepage', kwargs=gci_kwargs)
 
-    return {
+    context = {
         'home_link': self.data.redirect.homepage().url(),
         'program_link_id': self.data.program.link_id,
         'gci_link': gci_link,
-    }
+        }
 
+    # TODO(nathaniel): This should be "the one application-wide linker object"
+    # rather than a one-off instantiation.
+    linker = links.Linker()
+    if self.data.gae_user:
+      context['logout_link'] = linker.logout(self.data.request)
+      context['user_email'] = self.data.gae_user.email()
+
+    return context
 
 class MainMenu(Template):
   """MainMenu template.
