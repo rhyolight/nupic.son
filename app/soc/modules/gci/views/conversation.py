@@ -16,10 +16,12 @@
 
 
 from google.appengine.ext import ndb
+from google.appengine.ext import db
 
 from soc.views.helper import url_patterns
 from soc.views.helper import access_checker
 
+from soc.logic.helper import timeformat as timeformat_helper
 from soc.modules.gci.logic import conversation as gciconversation_logic
 from soc.modules.gci.logic import message as gcimessage_logic
 
@@ -51,11 +53,26 @@ class ConversationPage(GCIRequestHandler):
     assert access_checker.isSet(data.conversation)
     assert access_checker.isSet(data.user)
 
+    # Marks the conversation as "read" for the user
     gciconversation_logic.markAllReadForConversationAndUser(
         data.conversation.key,
         ndb.Key.from_old_key(data.user.key()))
 
+    num_users = (
+        gciconversation_logic.queryConversationUserForConversation(
+            data.conversation.key).count())
+
+    messages = gcimessage_logic.queryForConversation(
+        data.conversation.key).order(gcimessage_model.GCIMessage.sent_on)
+
+    for message in messages:
+      message.author_name = db.get(ndb.Key.to_old_key(message.author)).name
+      message.sent_on_relative = timeformat_helper.relativeTime(message.sent_on)
+      message.sent_on_ctime = message.sent_on.ctime()
+
     return {
         'page_name': data.conversation.subject,
-        'conversation': data.conversation
+        'conversation': data.conversation,
+        'num_users': num_users,
+        'messages': messages,
     }

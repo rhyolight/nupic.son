@@ -19,5 +19,36 @@ limitations under the License.
 {% endblock stylesheets %}
 
 {% block page_content %}
-  <h1>Conversation "{{ conversation.subject }}" will be displayed here.</h1>
+<div class="block block-text">
+  <div class="block-title">
+      <div class="controls">
+        <a class="notimplemented" title="{{ num_users }} user{{ num_users|pluralize:" is,s are" }} involved in this conversation.">{{ num_users }} user{{ num_users|pluralize:",s" }}</a>
+      </div>
+      {{ conversation.subject }}
+  </div>
+  <div class="block-content">
+    {% for message in messages %}
+      <div class="message" id="m{{ message.key.id }}">
+        <div class="title">
+          <div class="controls">
+            <a href="#m{{ message.key.id }}">Link</a>
+          </div>
+          <span class="divided-section author">{{ message.author_name }}</span>
+          <span class="divided-section" title="{{ message.sent_on_ctime }}">{{ message.sent_on_relative }}</span>
+        </div>
+        <div class="content">
+          {{ message.content|safe }}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
 {% endblock page_content %}
+
+{% block dependencies %}
+  [
+    tc(
+      "/soc/content/{{ app_version }}/js/templates/modules/gci/conversation/base.js"
+    )
+  ]
+{% endblock dependencies %}

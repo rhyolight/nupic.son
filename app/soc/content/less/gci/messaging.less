@@ -2,6 +2,11 @@
 @badgeRadius: 4px;
 @mediumBlue: #87b3f0;
 @mediumGreen: #71ab77;
+@messageBorderRadius: 2px;
+@messageMargin: 20px;
+@messageBackground: #94caf0;
+@targetMessageBoxShadow: 0 0 15px #3bae29;
+@targetMessageBorderColor: #00a50b;
 
 .conversation-list-row { /* Styled div in the conversation list */
   white-space: normal;
@@ -65,3 +70,75 @@
     font-weight: bold;
   }
 }
+
+.block .message { /* Box for each message */
+  background-color: @messageBackground;
+  -moz-border-radius: @messageBorderRadius;
+  -webkit-border-radius: @messageBorderRadius;
+  border-radius: @messageBorderRadius;
+  margin-bottom: @messageMargin;
+
+  .content {
+    padding: 10px;
+  }
+
+  &:first-child {
+    margin-top: @messageMargin;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &:target {
+    border: 1px solid @targetMessageBorderColor;
+    -moz-border-radius: @messageBorderRadius + 1px;
+    -webkit-border-radius: @messageBorderRadius + 1px;
+    border-radius: @messageBorderRadius + 1px;
+    -webkit-box-shadow: @targetMessageBoxShadow;
+    box-shadow: @targetMessageBoxShadow;
+  }
+
+  > .title {
+    background-color: #1a88d5;
+    color: #ffffff;
+    -moz-border-radius-topleft: @messageBorderRadius;
+    -moz-border-radius-topright: @messageBorderRadius;
+    -webkit-border-top-left-radius: @messageBorderRadius;
+    -webkit-border-top-right-radius: @messageBorderRadius;
+    border-top-left-radius: @messageBorderRadius;
+    border-top-right-radius: @messageBorderRadius;
+    padding: 1px 3px 1px 4px;
+
+    .author {
+      font-weight: bold;
+    }
+
+    .controls {
+      float: right;
+
+      a {
+        background-color: #4ab2e9;
+        -moz-border-radius: 2px;
+        -webkit-border-radius: 2px;
+        border-radius: 2px;
+        color: #ffffff;
+        padding: 0 6px;
+
+        &:hover {
+          background-color: #00a6ff;
+        }
+      }
+    }
+
+    .divided-section {
+      border-right: solid 1px #ffffff;
+      padding-right: 4px;
+
+      &:last-child {
+        border-right: none;
+      }
+    }
+  }
+}
+
