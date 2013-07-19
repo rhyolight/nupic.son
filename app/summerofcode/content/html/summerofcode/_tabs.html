@@ -1,0 +1,9 @@
+<div id="tabs">
+  <ul class="tabs-list">
+    {% for tab in tabs.tabs %}
+      <li class="tabs-item {% ifequal tab.tab_id tabs.selected_tab_id %}selected{% endifequal %}">
+        <a href="{{ tab.url }}">{{ tab.name }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</div>

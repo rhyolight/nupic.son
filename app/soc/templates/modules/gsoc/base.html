@@ -48,6 +48,9 @@ limitations under the License.
         <!-- #menu-container.grid_3 -->
 
         <div class="grid_9">
+          {% if tabs %}
+            {{ tabs.render }}
+          {% endif %}
           <div class="content">
                {% if ds_write_disabled %}
                 <div id="user-message" class="error">
