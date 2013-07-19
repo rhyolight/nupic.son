@@ -28,6 +28,8 @@ from soc.models import org_app_record
 from tests import test_utils
 from tests import survey_utils
 from tests import profile_utils
+from tests import program_utils
+from tests import timeline_utils
 
 
 class GCIOrgAppEditPageTest(test_utils.GCIDjangoTestCase):
@@ -135,6 +137,97 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     self.org_app.survey_end = survey_end
     self.org_app.put()
 
+  def testLoneUserAccessDenied(self):
+    """Tests that users without profiles cannot access the page."""
+    self.profile_helper.createUser()
+    response = self.get(self.take_url)
+    self.assertResponseForbidden(response)
+
+  def testCodeInStudentAccessDenied(self):
+    """Tests that Code-In student cannot access the page."""
+    self.profile_helper.createStudent()
+    response = self.get(self.take_url)
+    self.assertResponseForbidden(response)
+
+  def testSummerOfCodeStudentAccessDenied(self):
+    """Tests that Summer Of Code student cannot access the page."""
+    # seed Summer Of Code program
+    soc_program = program_utils.GSoCProgramHelper().createProgram()
+
+    # seed Summer Of Code student
+    profile_utils.GSoCProfileHelper(soc_program, False).createStudent()
+
+    response = self.get(self.take_url)
+    self.assertResponseForbidden(response)
+
+  def testSummerOfCodeProfileAccessDenied(self):
+    """Tests that Summer Of Code profile (no role) cannot access the page."""
+    # seed Summer Of Code program
+    soc_program = program_utils.GSoCProgramHelper().createProgram()
+
+    # seed Summer Of Code student
+    profile_utils.GSoCProfileHelper(soc_program, False).createProfile()
+
+    response = self.get(self.take_url)
+    self.assertResponseForbidden(response)
+
+  def testSummerOfCodeOrgAdminAccessGranted(self):
+    """Tests that Summer Of Code org admins need a new profile first."""
+    # seed Summer Of Code program and organization
+    soc_program_helper = program_utils.GSoCProgramHelper()
+    soc_program = soc_program_helper.createProgram()
+    soc_org = soc_program_helper.createOrUpdateOrg()
+
+    # seed Summer Of Code org admin
+    profile_utils.GSoCProfileHelper(soc_program, False).createOrgAdmin(soc_org)
+
+    response = self.get(self.take_url)
+    self.assertResponseRedirect(response)
+
+  def testCodeInOrgAdminAccessGranted(self):
+    """Tests that Code In org admins can access the page."""
+    self.profile_helper.createOrgAdmin(self.org)
+
+    response = self.get(self.take_url)
+    self.assertResponseOK(response)
+
+  def testOtherCodeInOrgAdminRedirected(self):
+    """Tests that org admin for another Code In needs a new profile first."""
+    # seed another Code In program and organization
+    ci_program_helper = program_utils.GCIProgramHelper()
+    other_ci_program = ci_program_helper.createProgram()
+    other_ci_org = ci_program_helper.createOrUpdateOrg()
+
+    # seed Code In org admin for that program and organization
+    profile_utils.GCIProfileHelper(other_ci_program, False).createOrgAdmin(
+        other_ci_org)
+
+    # user must create profile for this program first
+    response = self.get(self.take_url)
+    self.assertResponseRedirect(response)
+
+  def testPreActivePeriodAccessDenied(self):
+    """Tests that access is forbidden before org application is active."""
+    # make org application active in the future
+    self.updateOrgAppSurvey(survey_start=timeline_utils.future(delta=100),
+        survey_end=timeline_utils.future(delta=150))
+
+    self.profile_helper.createOrgAdmin(self.org)
+
+    response = self.get(self.take_url)
+    self.assertResponseForbidden(response)
+
+  def testPostActivePeriodAccessDenied(self):
+    """Tests that access is forbidden after org application is closed."""
+    # make org application active in the past
+    self.updateOrgAppSurvey(survey_start=timeline_utils.past(delta=150),
+        survey_end=timeline_utils.past(delta=100))
+
+    self.profile_helper.createOrgAdmin(self.org)
+
+    response = self.get(self.take_url)
+    self.assertResponseForbidden(response)
+
   def testAccessCheckWithoutSurvey(self):
     self.org_app.delete()
 
@@ -144,25 +237,6 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     self.profile_helper.createOrgAdmin(self.org)
     response = self.get(self.take_url)
     self.assertResponseNotFound(response)
-
-  def testAccessCheckForNonOrgMembers(self):
-    #Check for non-org members
-    self.profile_helper.createStudent()
-    response = self.get(self.take_url)
-    self.assertResponseForbidden(response)
-    self.profile_helper.removeStudent()
-
-  def testAccessCheckForOrgMembers(self):
-    #OK
-    self.profile_helper.createOrgAdmin(self.org)
-    response = self.get(self.take_url)
-    self.assertResponseOK(response)
-    self.profile_helper.removeOrgAdmin()
-
-    #also check for a mentor who is not admin
-    self.profile_helper.createMentor(self.org)
-    response = self.get(self.take_url)
-    self.assertResponseOK(response)
 
   def testOrgAppSurveyTakePage(self):
     """Tests organizationn application survey take/retake page.
