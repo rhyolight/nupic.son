@@ -278,17 +278,7 @@ class AccessChecker(access_checker.AccessChecker):
     # to accept organizations which have not participated before
     self.hasNonStudentProfileInAProgram()
 
-    program = self.data.program
-
-    # TODO(nathaniel): Eliminate this state-setting call.
-    self.data.redirect.createProfile('org_admin')
-    msg = DEF_NO_ORG_ADMIN_PROFILE % (
-        program.short_name,
-        self.data.redirect.urlOf('create_gci_profile', secure=True))
-
-    if not validate.hasNonStudentProfileForProgram(
-        self.data.user, program, GCIProfile):
-      raise exception.Forbidden(message=msg)
+    self.hasProfileOrRedirectToCreate('org_admin')
 
   def isOrgAppAccepted(self):
     """Checks if the org app stored in request data is accepted.
