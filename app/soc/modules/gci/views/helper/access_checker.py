@@ -21,7 +21,6 @@ from django.utils.translation import ugettext
 
 from melange.request import exception
 from soc.logic import dicts
-from soc.logic import validate
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 from soc.views.helper import request_data
@@ -41,12 +40,6 @@ DEF_ALL_WORK_STOPPED = ugettext(
 
 DEF_COMMENTING_NOT_ALLOWED = ugettext(
     "No more comments can be placed at this time.")
-
-DEF_NO_ORG_ADMIN_PROFILE = ugettext(
-    'You must have an organization administrator profile to apply to be an '
-    'an organization. If you want to register as an organization '
-    'administrator for %s please <a href="%s">click here</a>, register and '
-    'then come back to this page.')
 
 DEF_NO_TASK_CREATE_PRIV = ugettext(
     'You do not have sufficient privileges to create a new task for %s.' )
@@ -254,13 +247,13 @@ class AccessChecker(access_checker.AccessChecker):
       raise exception.Forbidden(message=DEF_NO_PREV_ORG_MEMBER)
 
     q = GSoCProfile.all(keys_only=True)
-    q.filter('is_student', False)
+    q.filter('is_mentor', True)
     q.filter('status', 'active')
     q.filter('user', self.data.user)
     gsoc_profile = q.get()
 
     q = GCIProfile.all(keys_only=True)
-    q.filter('is_student', False)
+    q.filter('is_mentor', True)
     q.filter('status', 'active')
     q.filter('user', self.data.user)
     gci_profile = q.get()
