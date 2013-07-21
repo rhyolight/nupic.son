@@ -16,8 +16,8 @@
 
 from google.appengine.ext import ndb
 
-# TODO(daniel): replace with logic functions
-from soc.views.helper import request_data
+from melange.utils import time
+
 from summerofcode.models import survey as survey_model
 
 
@@ -76,22 +76,22 @@ class Period(object):
 
     # period right-unbounded
     elif self.start and not self.end:
-      if request_data.isBefore(self.start):
+      if time.isBefore(self.start):
         return PRE_PERIOD_STATE
       else:
         return IN_PERIOD_STATE
 
     # period left-unbounded
     elif not self.start and self.end:
-      if request_data.isAfter(self.end):
+      if time.isAfter(self.end):
         return POST_PERIOD_STATE
       else:
         return IN_PERIOD_STATE
 
     # period bounded
-    elif request_data.isBefore(self.start):
+    elif time.isBefore(self.start):
       return PRE_PERIOD_STATE
-    elif request_data.isAfter(self.end):
+    elif time.isAfter(self.end):
       return POST_PERIOD_STATE
     else:
       return IN_PERIOD_STATE

@@ -64,13 +64,14 @@ class ProjectList(Template):
 
   DEFAULT_IDX = 0
 
-  def __init__(self, data, query, idx=None):
+  def __init__(self, data, query, idx=None, row_action=None):
     """Initializes a new object.
 
     Args:
       data: RequestData object associated with the request
       query: query to be used to retrieve Project entities
       idx: index of the list
+      row_action: an optional function that defines row action.
     """
     self.data = data
     self.query = query
@@ -91,9 +92,12 @@ class ProjectList(Template):
         lambda entity, *args: args[0][entity.key()], hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')
-    list_config.setRowAction(lambda e, *args: data.redirect.project(
-        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
-        'gsoc_project_details'))
+
+    if row_action:
+      list_config.setRowAction(row_action)
+    else:
+      list_config.setRowAction(self._getDefaultRowAction())
+
     self._list_config = list_config
 
   def context(self):
@@ -128,6 +132,17 @@ class ProjectList(Template):
   def templatePath(self):
     return "modules/gsoc/projects_list/_project_list.html"
 
+  def _getDefaultRowAction(self):
+    """Returns defualt row action for this list that redirects to the page
+    with project details.
+
+    Returns:
+      a lambda expression that takes a project entity as its first argument
+        and returns URL to the page with details of that project.
+    """
+    return lambda e, *args: data.redirect.project(
+        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
+        'gsoc_project_details')
 
 class ListProjects(base.GSoCRequestHandler):
   """View methods for listing all the projects accepted into a program."""

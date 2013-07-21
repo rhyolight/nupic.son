@@ -25,32 +25,13 @@ from django.core import urlresolvers
 from django.utils import encoding
 
 from melange.appengine import system
+from melange.utils import time
+
 from soc.logic import program as program_logic
 from soc.logic import site as site_logic
 from soc.logic import user
 from soc.models import sponsor as sponsor_model
 from soc.views.helper import access_checker
-
-
-def isBefore(date):
-  """Returns True iff date is before utcnow().
-
-  Returns False if date is not set.
-  """
-  return date and datetime.datetime.utcnow() < date
-
-
-def isAfter(date):
-  """Returns True iff date is after utcnow().
-
-  Returns False if date is not set.
-  """
-  return date and date < datetime.datetime.utcnow()
-
-
-def isBetween(start, end):
-  """Returns True iff utcnow() is between start and end."""
-  return isAfter(start) and isBefore(end)
 
 
 class TimelineHelper(object):
@@ -83,7 +64,7 @@ class TimelineHelper(object):
     Returns:
       True if he current data is before program start date; False otherwise
     """
-    return isBefore(self.timeline.program_start)
+    return time.isBefore(self.timeline.program_start)
 
   def afterProgramStart(self):
     """Returns a bool indicating whether the program start date has passed
@@ -92,7 +73,7 @@ class TimelineHelper(object):
     Returns:
       True if the current date is after program start date; False otherwise
     """
-    return isAfter(self.timeline.program_start)
+    return time.isAfter(self.timeline.program_start)
 
   def programActiveBetween(self):
     return (self.timeline.program_start, self.timeline.program_end)
@@ -117,7 +98,7 @@ class TimelineHelper(object):
     Returns:
       True if he current data is before student signup date; False otherwise
     """
-    return isBefore(self.studentSignupStart())
+    return time.isBefore(self.studentSignupStart())
 
   def studentSignupEnd(self):
     return self.timeline.student_signup_end
@@ -131,49 +112,49 @@ class TimelineHelper(object):
 
   def programActive(self):
     start, end = self.programActiveBetween()
-    return isBetween(start, end)
+    return time.isBetween(start, end)
 
   def beforeOrgSignupStart(self):
-    return self.org_app and isBefore(self.orgSignupStart())
+    return self.org_app and time.isBefore(self.orgSignupStart())
 
   def afterOrgSignupStart(self):
-    return self.org_app and isAfter(self.orgSignupStart())
+    return self.org_app and time.isAfter(self.orgSignupStart())
 
   def orgSignup(self):
     if not self.org_app:
       return False
     start, end = self.orgSignupBetween()
-    return isBetween(start, end)
+    return time.isBetween(start, end)
 
   def orgsAnnounced(self):
-    return isAfter(self.orgsAnnouncedOn())
+    return time.isAfter(self.orgsAnnouncedOn())
 
   def beforeStudentSignupStart(self):
-    return isBefore(self.studentSignupStart())
+    return time.isBefore(self.studentSignupStart())
 
   def afterStudentSignupStart(self):
-    return isAfter(self.studentSignupStart())
+    return time.isAfter(self.studentSignupStart())
 
   def studentSignup(self):
     start, end = self.studentsSignupBetween()
-    return isBetween(start, end)
+    return time.isBetween(start, end)
 
   def afterStudentSignupEnd(self):
-    return isAfter(self.studentSignupEnd())
+    return time.isAfter(self.studentSignupEnd())
 
   def afterStopAllWorkDeadline(self):
-    return isAfter(self.stopAllWorkDeadline())
+    return time.isAfter(self.stopAllWorkDeadline())
 
   def surveyPeriod(self, survey):
     start = survey.survey_start
     end = survey.survey_end
-    return isAfter(start) and isBefore(end)
+    return time.isAfter(start) and time.isBefore(end)
 
   def afterSurveyStart(self, survey):
-    return isAfter(survey.survey_start)
+    return time.isAfter(survey.survey_start)
 
   def afterSurveyEnd(self, survey):
-    return isAfter(survey.survey_end)
+    return time.isAfter(survey.survey_end)
 
 
 class RequestData(object):

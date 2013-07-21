@@ -20,11 +20,12 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
 from melange.request import exception
+from melange.utils import time
+
 from soc.logic import dicts
 from soc.logic import validate
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
-from soc.views.helper import request_data
 
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import GCITask
@@ -366,7 +367,7 @@ class AccessChecker(access_checker.AccessChecker):
       raise exception.Forbidden(message=DEF_NO_TASK_CREATE_PRIV % (
           self.data.organization.name))
 
-    if (request_data.isBefore(self.data.timeline.orgsAnnouncedOn()) \
+    if (time.isBefore(self.data.timeline.orgsAnnouncedOn()) \
         or self.data.timeline.tasksClaimEnded()):
       raise exception.Forbidden(message=access_checker.DEF_PAGE_INACTIVE)
 
@@ -419,7 +420,7 @@ class AccessChecker(access_checker.AccessChecker):
     """Returns True/False depending on whether orgs can edit task depending
     on where in the program timeline we are currently in.
     """
-    if (request_data.isBefore(self.data.timeline.orgsAnnouncedOn()) \
+    if (time.isBefore(self.data.timeline.orgsAnnouncedOn()) \
         or self.data.timeline.tasksClaimEnded()):
       return False
 

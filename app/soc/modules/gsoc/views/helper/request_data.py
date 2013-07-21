@@ -23,6 +23,7 @@ from google.appengine.ext import db
 # being important here, but that just goes hand-in-hand with my skepticism
 # about the RequestData object raising exceptions generally.
 from melange.request import exception
+from melange.utils import time
 from soc.models import site as site_model
 from soc.logic import program as program_logic
 from soc.views.helper.access_checker import isSet
@@ -97,7 +98,7 @@ class TimelineHelper(request_data.TimelineHelper):
     if self.orgSignup():
       return ("Org Application Deadline", self.orgSignupEnd())
 
-    if request_data.isBetween(self.orgSignupEnd(), self.orgsAnnouncedOn()):
+    if time.isBetween(self.orgSignupEnd(), self.orgsAnnouncedOn()):
       return ("Accepted Orgs Announced In", self.orgsAnnouncedOn())
 
     if self.orgsAnnounced() and self.beforeStudentSignupStart():
@@ -106,16 +107,15 @@ class TimelineHelper(request_data.TimelineHelper):
     if self.studentSignup():
       return ("Student Application Deadline", self.studentSignupEnd())
 
-    if request_data.isBetween(self.studentSignupEnd(),
-                              self.applicationMatchedOn()):
+    if time.isBetween(self.studentSignupEnd(), self.applicationMatchedOn()):
       return ("Proposal Matched Deadline", self.applicationMatchedOn())
 
-    if request_data.isBetween(self.applicationMatchedOn(),
-                              self.applicationReviewEndOn()):
+    if time.isBetween(
+        self.applicationMatchedOn(), self.applicationReviewEndOn()):
       return ("Proposal Scoring Deadline", self.applicationReviewEndOn())
 
-    if request_data.isBetween(self.applicationReviewEndOn(),
-                              self.studentsAnnouncedOn()):
+    if time.isBetween(
+        self.applicationReviewEndOn(), self.studentsAnnouncedOn()):
       return ("Accepted Students Announced", self.studentsAnnouncedOn())
 
     return ('', None)
@@ -124,10 +124,10 @@ class TimelineHelper(request_data.TimelineHelper):
     return self.timeline.accepted_students_announced_deadline
 
   def studentsAnnounced(self):
-    return request_data.isAfter(self.studentsAnnouncedOn())
+    return time.isAfter(self.studentsAnnouncedOn())
 
   def beforeStudentsAnnounced(self):
-    return request_data.isBefore(self.studentsAnnouncedOn())
+    return time.isBefore(self.studentsAnnouncedOn())
 
   def applicationReviewEndOn(self):
     return self.timeline.application_review_deadline
@@ -146,7 +146,7 @@ class TimelineHelper(request_data.TimelineHelper):
         at least one of them have started
     """
     first_survey_start = min([s.survey_start for s in surveys])
-    return request_data.isAfter(first_survey_start)
+    return time.isAfter(first_survey_start)
 
   def formSubmissionStartOn(self):
     """Returns the date after which accepted students may submit their forms.
@@ -165,7 +165,7 @@ class TimelineHelper(request_data.TimelineHelper):
       A bool value which is True if the current time is after students can
         start submitting their forms.
     """
-    return request_data.isAfter(self.formSubmissionStartOn())
+    return time.isAfter(self.formSubmissionStartOn())
 
 
 class RequestData(request_data.RequestData):
