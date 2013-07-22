@@ -27,13 +27,14 @@ import types
 
 import google
 
+import protorpc
+
 from google.appengine import dist
 from google.appengine.api import app_logging
 from google.appengine.api.logservice import logservice
 from google.appengine import dist27 as dist27
 from google.appengine.ext.remote_api import remote_api_stub
 from google.appengine.runtime import request_environment
-from google.appengine.runtime import runtime
 from google.appengine.tools.devappserver2.python import request_state
 from google.appengine.tools.devappserver2.python import stubs
 
@@ -44,10 +45,10 @@ DEFAULT_ENCODING = 'ascii'
 _C_MODULES = frozenset(['numpy', 'Crypto', 'lxml', 'PIL'])
 
 NAME_TO_CMODULE_WHITELIST_REGEX = {
-    'numpy': re.compile(r'numpy\.'),
-    'pycrypto': re.compile(r'Crypto\.'),
-    'lxml': re.compile(r'lxml\.'),
-    'PIL': re.compile(r'(PIL\..*|_imaging|_imagingft|_imagingmath)$'),
+    'numpy': re.compile(r'numpy(\..*)?$'),
+    'pycrypto': re.compile(r'Crypto(\..*)?$'),
+    'lxml': re.compile(r'lxml(\..*)?$'),
+    'PIL': re.compile(r'(PIL(\..*)?|_imaging|_imagingft|_imagingmath)$'),
 }
 
 # Maps App Engine third-party library names to the Python package name for
@@ -110,7 +111,7 @@ def enable_sandbox(config):
     config: The runtime_config_pb2.Config to use to configure the sandbox.
   """
 
-  modules = [os, traceback, google]
+  modules = [os, traceback, google, protorpc]
   c_module = _find_shared_object_c_module()
   if c_module:
     modules.append(c_module)
@@ -138,16 +139,17 @@ def enable_sandbox(config):
   __builtin__.open = stubs.FakeFile
   types.FileType = stubs.FakeFile
   sys.platform = 'linux3'
-
+  enabled_library_regexes = [
+      NAME_TO_CMODULE_WHITELIST_REGEX[lib.name] for lib in config.libraries
+      if lib.name in NAME_TO_CMODULE_WHITELIST_REGEX]
   sys.meta_path = [
       StubModuleImportHook(),
       ModuleOverrideImportHook(_MODULE_OVERRIDE_POLICIES),
       BuiltinImportHook(),
-      CModuleImportHook(
-          [NAME_TO_CMODULE_WHITELIST_REGEX[lib.name] for lib in config.libraries
-           if lib.name in NAME_TO_CMODULE_WHITELIST_REGEX]),
+      CModuleImportHook(enabled_library_regexes),
       path_override_hook,
-      PathRestrictingImportHook()
+      PyCryptoRandomImportHook,
+      PathRestrictingImportHook(enabled_library_regexes)
       ]
   sys.path_importer_cache = {}
   sys.path = python_lib_paths[:]
@@ -157,17 +159,17 @@ def enable_sandbox(config):
   threading = sys.modules['%s.threading' % dist27.__name__]
   thread.start_new_thread = _make_request_id_aware_start_new_thread(
       thread.start_new_thread)
-  runtime.PatchStartNewThread(thread, threading)
-  reload(__import__('threading'))
+  # This import needs to be after enabling the sandbox so it imports the
+  # sandboxed version of the logging module.
+  from google.appengine.runtime import runtime
+  runtime.PatchStartNewThread(thread)
+  threading._start_new_thread = thread.start_new_thread
 
-  __import__('site')
-  # Set the path again because site messes with it.
-  sys.path = python_lib_paths[:]
   os.chdir(config.application_root)
   sandboxed_os = __import__('os')
   request_environment.PatchOsEnviron(sandboxed_os)
   os.__dict__.update(sandboxed_os.__dict__)
-  _init_logging()
+  _init_logging(config.stderr_log_level)
 
 
 def _find_shared_object_c_module():
@@ -184,7 +186,8 @@ def _find_shared_object_c_module():
 
 def _should_keep_module(name):
   """Returns True if the module should be retained after sandboxing."""
-  return (name in ('__builtin__', 'sys', 'codecs', 'encodings', 'google') or
+  return (name in ('__builtin__', 'sys', 'codecs', 'encodings', 'site',
+                   'google') or
           name.startswith('google.') or name.startswith('encodings.') or
 
           # Making mysql available is a hack to make the CloudSQL functionality
@@ -192,12 +195,22 @@ def _should_keep_module(name):
           'mysql' in name.lower())
 
 
-def _init_logging():
+def _init_logging(stderr_log_level):
   logging = __import__('logging')
   logger = logging.getLogger()
 
   console_handler = logging.StreamHandler(sys.stderr)
-  console_handler.setLevel(logging.INFO)
+  if stderr_log_level == 0:
+    console_handler.setLevel(logging.DEBUG)
+  elif stderr_log_level == 1:
+    console_handler.setLevel(logging.INFO)
+  elif stderr_log_level == 2:
+    console_handler.setLevel(logging.WARNING)
+  elif stderr_log_level == 3:
+    console_handler.setLevel(logging.ERROR)
+  elif stderr_log_level == 4:
+    console_handler.setLevel(logging.CRITICAL)
+
   console_handler.setFormatter(logging.Formatter(
       '%(levelname)-8s %(asctime)s %(filename)s:%(lineno)s] %(message)s'))
   logger.addHandler(console_handler)
@@ -246,8 +259,15 @@ def _enable_libraries(libraries):
   library_pattern = os.path.join(os.path.dirname(
       os.path.dirname(google.__file__)), _THIRD_PARTY_LIBRARY_FORMAT_STRING)
   for library in libraries:
+    # Encode the library name/version to convert the Python type
+    # from unicode to str so that Python doesn't try to decode
+    # library pattern from str to unicode (which can cause problems
+    # when the SDK has non-ASCII data in the directory). Encode as
+    # ASCII should be safe as we control library info and are not
+    # likely to have non-ASCII names/versions.
     library_dir = os.path.abspath(
-        library_pattern % {'name': library.name, 'version': library.version})
+        library_pattern % {'name': library.name.encode('ascii'),
+                           'version': library.version.encode('ascii')})
     library_dirs.append(library_dir)
   return library_dirs
 
@@ -284,7 +304,7 @@ class BaseImportHook(object):
       if result is not None:
         break
     else:
-      raise ImportError
+      raise ImportError('No module named %s' % fullname)
     if isinstance(result, tuple):
       return result + (None,)
     else:
@@ -394,8 +414,7 @@ class BaseImportHook(object):
     all_modules = fullname.split('.')
     parent_module_fullname = '.'.join(all_modules[:-1])
     if parent_module_fullname:
-      if __import__(fullname) is None:
-        raise ImportError('Could not find module %s' % fullname)
+      __import__(parent_module_fullname)
       return sys.modules[parent_module_fullname]
     return None
 
@@ -553,8 +572,6 @@ class PathOverrideImportHook(BaseImportHook):
         self._modules[module] = module_path
         if isinstance(module_path, str):
           package_dir = os.path.join(module_path, module)
-          # Packages need to be added to accessible paths so their submodules
-          # are accessible.
           if os.path.isdir(package_dir):
             if module == 'PIL':
               self.extra_sys_paths.append(package_dir)
@@ -808,8 +825,8 @@ class BuiltinImportHook(object):
       return self
     return None
 
-  def load_module(self, unused_fullname):
-    raise ImportError
+  def load_module(self, fullname):
+    raise ImportError('No module named %s' % fullname)
 
 
 class CModuleImportHook(object):
@@ -842,8 +859,8 @@ class CModuleImportHook(object):
       return self
     return None
 
-  def load_module(self, unused_fullname):
-    raise ImportError
+  def load_module(self, fullname):
+    raise ImportError('No module named %s' % fullname)
 
 
 class PathRestrictingImportHook(object):
@@ -857,7 +874,12 @@ class PathRestrictingImportHook(object):
       imp.PY_FROZEN,
       ])
 
+  def __init__(self, enabled_regexes):
+    self._enabled_regexes = enabled_regexes
+
   def find_module(self, fullname, path=None):
+    if any(regex.match(fullname) for regex in self._enabled_regexes):
+      return None
     _, _, submodule_name = fullname.rpartition('.')
     try:
       f, filename, description = imp.find_module(submodule_name, path)
@@ -867,9 +889,39 @@ class PathRestrictingImportHook(object):
       f.close()
     _, _, file_type = description
     if (file_type in self._EXCLUDED_TYPES or
-        stubs.FakeFile.is_file_accessible(filename)):
+        stubs.FakeFile.is_file_accessible(filename) or
+        (filename.endswith('.pyc') and
+         os.path.exists(filename.replace('.pyc', '.py')))):
       return None
     return self
 
-  def load_module(self, unused_fullname):
-    raise ImportError
+  def load_module(self, fullname):
+    raise ImportError('No module named %s' % fullname)
+
+
+class PyCryptoRandomImportHook(BaseImportHook):
+  """An import hook that allows Crypto.Random.OSRNG.new() to work on posix.
+
+  This changes PyCrypto to always use os.urandom() instead of reading from
+  /dev/urandom.
+  """
+
+  def __init__(self, path):
+    self._path = path
+
+  @classmethod
+  def find_module(cls, fullname, path=None):
+    if fullname == 'Crypto.Random.OSRNG.posix':
+      return cls(path)
+    return None
+
+  def load_module(self, fullname):
+    if fullname in sys.modules:
+      return sys.modules[fullname]
+    __import__('Crypto.Random.OSRNG.fallback')
+    module = self._find_and_load_module('posix', fullname, self._path)
+    fallback = sys.modules['Crypto.Random.OSRNG.fallback']
+    module.new = fallback.new
+    module.__loader__ = self
+    sys.modules[fullname] = module
+    return module

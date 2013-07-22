@@ -27,15 +27,10 @@ WSGI applications.  For more information about WSGI, please see:
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
 import cgi
-import cStringIO
 import httplib
 import logging
 import re
 
-from wsgiref import headers as wsgi_headers
-
-from .. import protobuf
-from .. import protojson
 from .. import messages
 from .. import registry
 from .. import remote
@@ -191,9 +186,9 @@ def service_mapping(service_factory, service_path=r'.*', protocols=None):
                             err.message,
                             err.error_name)
     except Exception, err:
-      logging.error('Encountered unexpected error from ProtoRPC '
-                    'method implementation: %s (%s)' % (err.__class__.__name__,
-                                                        err))
+      logging.exception('Encountered unexpected error from ProtoRPC '
+                        'method implementation: %s (%s)' %
+                        (err.__class__.__name__, err))
       return send_rpc_error(httplib.INTERNAL_SERVER_ERROR,
                             remote.RpcState.SERVER_ERROR,
                             'Internal Server Error')

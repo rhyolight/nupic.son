@@ -22,7 +22,6 @@
 
 
 import base64
-import collections
 import datetime
 import logging
 import os
@@ -49,6 +48,7 @@ KINDS_AND_SIZES_VAR = 'kinds_and_sizes'
 MAPREDUCE_MIN_SHARDS = 8
 MAPREDUCE_DEFAULT_SHARDS = 32
 MAPREDUCE_MAX_SHARDS = 256
+RESERVE_KEY_POOL_MAX_SIZE = 1000
 
 
 DATASTORE_ADMIN_OPERATION_KIND = '_AE_DatastoreAdmin_Operation'
@@ -88,7 +88,9 @@ config.BASE_PATH
 
 
 def IsKindNameVisible(kind_name):
-  return not (kind_name.startswith('__') or kind_name in DATASTORE_ADMIN_KINDS)
+  return not (kind_name.startswith('__') or
+              kind_name in DATASTORE_ADMIN_KINDS or
+              kind_name in model._MAP_REDUCE_KINDS)
 
 
 def RenderToResponse(handler, template_file, template_params):
@@ -347,16 +349,8 @@ class MapreduceDoneHandler(webapp.RequestHandler):
       mapreduce_state = model.MapreduceState.get_by_job_id(mapreduce_id)
       mapreduce_params = mapreduce_state.mapreduce_spec.params
 
-      keys = []
-      job_success = True
-      shard_states = model.ShardState.find_by_mapreduce_state(mapreduce_state)
-      for shard_state in shard_states:
-        keys.append(shard_state.key())
-        if not shard_state.result_status == 'success':
-          job_success = False
-
       db_config = _CreateDatastoreConfig()
-      if job_success:
+      if mapreduce_state.result_status == model.MapreduceState.RESULT_SUCCESS:
         operation_key = mapreduce_params.get(
             DatastoreAdminOperation.PARAM_DATASTORE_ADMIN_OPERATION)
         if operation_key is None:
@@ -386,6 +380,12 @@ class MapreduceDoneHandler(webapp.RequestHandler):
                               mapreduce_params['done_callback_handler'])
           db.run_in_transaction(tx)
         if config.CLEANUP_MAPREDUCE_STATE:
+          keys = []
+          shard_states = model.ShardState.find_by_mapreduce_state(
+              mapreduce_state)
+          for shard_state in shard_states:
+            keys.append(shard_state.key())
+
 
           keys.append(mapreduce_state.key())
           keys.append(model.MapreduceControl.get_key_by_job_id(mapreduce_id))
@@ -525,7 +525,8 @@ def RunMapForKinds(operation_key,
                    writer_spec,
                    mapper_params,
                    mapreduce_params=None,
-                   queue_name=None):
+                   queue_name=None,
+                   max_shard_count=None):
   """Run mapper job for all entities in specified kinds.
 
   Args:
@@ -539,6 +540,7 @@ def RunMapForKinds(operation_key,
     mapper_params: custom parameters to pass to mapper.
     mapreduce_params: dictionary parameters relevant to the whole job.
     queue_name: the name of the queue that will be used by the M/R.
+    max_shard_count: maximum value for shards count.
 
   Returns:
     Ids of all started mapper jobs as list of strings.
@@ -549,7 +551,7 @@ def RunMapForKinds(operation_key,
       mapper_params['entity_kind'] = kind
       job_name = job_name_template % {'kind': kind, 'namespace':
                                       mapper_params.get('namespace', '')}
-      shard_count = GetShardCount(kind)
+      shard_count = GetShardCount(kind, max_shard_count)
       jobs.append(StartMap(operation_key, job_name, handler_spec, reader_spec,
                            writer_spec, mapper_params, mapreduce_params,
                            queue_name=queue_name, shard_count=shard_count))
@@ -562,12 +564,16 @@ def RunMapForKinds(operation_key,
     raise
 
 
-def GetShardCount(kind):
+def GetShardCount(kind, max_shard_count=None):
   stat = stats.KindStat.all().filter('kind_name =', kind).get()
   if stat:
 
-    return min(max(MAPREDUCE_MIN_SHARDS, stat.bytes // (32 * 1024 * 1024)),
-               MAPREDUCE_MAX_SHARDS)
+    shard_count = min(max(MAPREDUCE_MIN_SHARDS,
+                          stat.bytes // (32 * 1024 * 1024)),
+                      MAPREDUCE_MAX_SHARDS)
+    if max_shard_count and max_shard_count < shard_count:
+      shard_count = max_shard_count
+    return shard_count
 
   return MAPREDUCE_DEFAULT_SHARDS
 
@@ -628,74 +634,40 @@ def FixKeys(entity_proto, app_id):
   FixPropertyList(entity_proto.raw_property_list())
 
 
-class AllocateMaxIdPool(object):
-  """Mapper pool to keep track of all allocated ids.
+class ReserveKeyPool(object):
+  """Mapper pool which buffers keys with ids to reserve.
 
-  Runs allocate_ids rpcs when flushed.
-
-  This code uses the knowloedge of allocate_id implementation detail.
-  Though we don't plan to change allocate_id logic, we don't really
-  want to depend on it either. We are using this details here to implement
-  batch-style remote allocate_ids.
+  Runs v4 AllocateIds rpc(s) when flushed.
   """
 
-  def __init__(self, app_id):
-    self.app_id = app_id
+  def __init__(self):
+    self.keys = []
 
-    self.ns_to_path_to_max_id = collections.defaultdict(dict)
-
-  def allocate_max_id(self, key):
-    """Record the key to allocate max id.
-
-    Args:
-      key: Datastore key.
-    """
-    path = key.to_path()
-    if len(path) == 2:
-
-
-      path_tuple = ('Foo', 1)
-      key_id = path[-1]
-    else:
-
-
-      path_tuple = (path[0], path[1], 'Foo', 1)
-
-
-      key_id = None
-      for path_element in path[2:]:
-        if isinstance(path_element, (int, long)):
-          key_id = max(key_id, path_element)
-
-    if not isinstance(key_id, (int, long)):
-
-      return
-
-
-    path_to_max_id = self.ns_to_path_to_max_id[key.namespace()]
-    path_to_max_id[path_tuple] = max(key_id, path_to_max_id.get(path_tuple, 0))
+  def reserve_key(self, key):
+    for id_or_name in key.to_path()[1::2]:
+      if isinstance(id_or_name, (int, long)):
+        self.keys.append(key)
+        if len(self.keys) >= RESERVE_KEY_POOL_MAX_SIZE:
+          self.flush()
+        return
 
   def flush(self):
-    for namespace, path_to_max_id in self.ns_to_path_to_max_id.iteritems():
-      for path, max_id in path_to_max_id.iteritems():
-        datastore.AllocateIds(db.Key.from_path(namespace=namespace,
-                                               _app=self.app_id,
-                                               *list(path)),
-                              max=max_id)
-    self.ns_to_path_to_max_id = collections.defaultdict(dict)
+
+    datastore._GetConnection()._reserve_keys(self.keys)
+    self.keys = []
 
 
-class AllocateMaxId(operation.Operation):
-  """Mapper operation to allocate max id."""
+class ReserveKey(operation.Operation):
+  """Mapper operation to reserve key ids."""
 
   def __init__(self, key, app_id):
     self.key = key
     self.app_id = app_id
-    self.pool_id = 'allocate_max_id_%s_pool' % self.app_id
+    self.pool_id = 'reserve_key_%s_pool' % self.app_id
 
   def __call__(self, ctx):
     pool = ctx.get_pool(self.pool_id)
     if not pool:
-      pool = AllocateMaxIdPool(self.app_id)
+      pool = ReserveKeyPool()
       ctx.register_pool(self.pool_id, pool)
-    pool.allocate_max_id(self.key)
+    pool.reserve_key(self.key)

@@ -84,7 +84,7 @@ def _shallow_split(filenames, size_per_shard, parsed_formats, sizes):
   for i, size in enumerate(sizes):
     shard_size += size
     inputs.append(_FileRange(filenames[i], None))
-    if shard_size > size_per_shard:
+    if shard_size >= size_per_shard:
       roots.append(FileFormatRoot(copy.deepcopy(parsed_formats), inputs))
       inputs = []
       shard_size = 0
@@ -347,7 +347,7 @@ class _RootFilesStream(_FilesStream):
       first_format._range = file_input.range
     self.__previous_input_index = self.__input_index
     self.__input_index += 1
-    return files.open(file_input.filename, 'r')
+    return files.open(file_input.filename, 'r', buffering=-1)
 
   def to_json(self):
     result = super(_RootFilesStream, self).to_json()

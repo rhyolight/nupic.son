@@ -26,7 +26,7 @@ import google
 import mox
 import webapp2
 
-from google.appengine.tools import appcfg
+from google.appengine.tools import sdk_update_checker
 from google.appengine.tools.devappserver2.admin import admin_request_handler
 
 
@@ -132,14 +132,37 @@ class GetSDKVersionTest(unittest.TestCase):
                         admin_request_handler._get_sdk_version())
 
   def test_version_file_missing(self):
-    self.mox.StubOutWithMock(appcfg, 'GetVersionObject')
-    appcfg.GetVersionObject().AndReturn(None)
+    self.mox.StubOutWithMock(sdk_update_checker, 'GetVersionObject')
+    sdk_update_checker.GetVersionObject().AndReturn(None)
 
     self.mox.ReplayAll()
     self.assertEqual(admin_request_handler._DEFAULT_SDK_VERSION,
                      admin_request_handler._get_sdk_version())
     self.mox.VerifyAll()
 
+
+class ByteSizeFormatTest(unittest.TestCase):
+  """Tests for the _byte_size_format jinja2 filter."""
+
+  def testOneByte(self):
+    self.assertEqual('1 Byte',
+                     admin_request_handler._byte_size_format('1'))
+
+  def testLessThan1KiB(self):
+    self.assertEqual('123 Bytes',
+                     admin_request_handler._byte_size_format('123'))
+
+  def testLessThan1MiB(self):
+    self.assertEqual('5.5 KiB (5678 Bytes)',
+                     admin_request_handler._byte_size_format('5678'))
+
+  def testLessThan1GiB(self):
+    self.assertEqual('11.8 MiB (12345678 Bytes)',
+                     admin_request_handler._byte_size_format('12345678'))
+
+  def testGreaterThan1GiB(self):
+    self.assertEqual('1.1 GiB (1234567890 Bytes)',
+                     admin_request_handler._byte_size_format('1234567890'))
 
 if __name__ == '__main__':
   unittest.main()

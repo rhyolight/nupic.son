@@ -146,6 +146,15 @@ _DEFAULT_TO_STRING_MAP = {
     messages.EnumField: lambda value: unicode(value.number),
 }
 
+_DEFAULT_FROM_STRING_MAP = {
+    messages.IntegerField: int,
+    messages.FloatField: float,
+    messages.BooleanField: lambda value: value == u'true',
+    messages.BytesField: lambda value: codecs.escape_decode(value)[0],
+    messages.StringField: lambda value: value,
+    messages.EnumField: int,
+}
+
 
 class EnumValueDescriptor(messages.Message):
   """Enum value descriptor.
@@ -342,8 +351,11 @@ def describe_field(field_definition):
   field_descriptor.number = field_definition.number
   field_descriptor.variant = field_definition.variant
 
-  if isinstance(field_definition, (messages.EnumField, messages.MessageField)):
+  if isinstance(field_definition, messages.EnumField):
     field_descriptor.type_name = field_definition.type.definition_name()
+
+  if isinstance(field_definition, messages.MessageField):
+    field_descriptor.type_name = field_definition.message_type.definition_name()
 
   if field_definition.default is not None:
     field_descriptor.default_value = _DEFAULT_TO_STRING_MAP[

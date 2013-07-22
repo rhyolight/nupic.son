@@ -22,8 +22,8 @@ import cStringIO
 import httplib
 import os
 import re
-import socket
 import shutil
+import socket
 import subprocess
 import tempfile
 import unittest
@@ -33,27 +33,42 @@ import google
 import mox
 
 from google.appengine.api import appinfo
-from google.appengine.tools.devappserver2 import errors
-from google.appengine.tools.devappserver2 import login
-from google.appengine.tools.devappserver2 import http_runtime_constants
 from google.appengine.tools.devappserver2 import http_runtime
+from google.appengine.tools.devappserver2 import http_runtime_constants
 from google.appengine.tools.devappserver2 import instance
+from google.appengine.tools.devappserver2 import login
 from google.appengine.tools.devappserver2 import runtime_config_pb2
+from google.appengine.tools.devappserver2 import safe_subprocess
 from google.appengine.tools.devappserver2 import wsgi_test_utils
+
+
+class MockMessage(object):
+  def __init__(self, headers):
+    self.headers = headers
+
+  def __iter__(self):
+    return iter(set(name for name, _ in self.headers))
+
+  def getheaders(self, name):
+    return [value for header_name, value in self.headers if header_name == name]
 
 
 class FakeHttpResponse(object):
   def __init__(self, status, reason, headers, body):
     self.body = body
     self.has_read = False
+    self.partial_read_error = None
     self.status = status
     self.reason = reason
     self.headers = headers
+    self.msg = MockMessage(headers)
 
   def read(self, amt=None):
     if not self.has_read:
       self.has_read = True
       return self.body
+    elif self.partial_read_error:
+      raise self.partial_read_error
     else:
       return ''
 
@@ -61,7 +76,18 @@ class FakeHttpResponse(object):
     return self.headers
 
 
-class ServerConfigurationStub(object):
+# We use a fake Tee to avoid the complexity of a real Tee's thread racing with
+# the mocking framework and possibly surviving (and calling stderr.readline())
+# after a test case completes.
+class FakeTee(object):
+  def __init__(self, buf):
+    self.buf = buf
+
+  def get_buf(self):
+    return self.buf
+
+
+class ModuleConfigurationStub(object):
   def __init__(self, application_root='/tmp', error_handlers=None):
     self.application_root = application_root
     self.error_handlers = error_handlers
@@ -71,7 +97,7 @@ class HttpRuntimeProxyTest(wsgi_test_utils.WSGITestCase):
   def setUp(self):
     self.mox = mox.Mox()
     self.tmpdir = tempfile.mkdtemp()
-    server_configuration = ServerConfigurationStub(
+    module_configuration = ModuleConfigurationStub(
         application_root=self.tmpdir,
         error_handlers=[
             appinfo.ErrorHandlers(error_code='over_quota', file='foo.html'),
@@ -82,14 +108,19 @@ class HttpRuntimeProxyTest(wsgi_test_utils.WSGITestCase):
     self.runtime_config.version_id = 'version'
     self.runtime_config.api_port = 12345
     self.runtime_config.application_root = self.tmpdir
+    self.runtime_config.datacenter = 'us1'
+    self.runtime_config.instance_id = 'abc3dzac4'
+    self.runtime_config.auth_domain = 'gmail.com'
     self.runtime_config_getter = lambda: self.runtime_config
     self.proxy = http_runtime.HttpRuntimeProxy(
-        ['/runtime'], self.runtime_config_getter, server_configuration,
+        ['/runtime'], self.runtime_config_getter, module_configuration,
         env={'foo': 'bar'})
+    self.proxy._port = 23456
     self.process = self.mox.CreateMock(subprocess.Popen)
     self.process.stdin = self.mox.CreateMockAnything()
     self.process.stdout = self.mox.CreateMockAnything()
-    self.mox.StubOutWithMock(subprocess, 'Popen')
+    self.process.stderr = self.mox.CreateMockAnything()
+    self.mox.StubOutWithMock(safe_subprocess, 'start_process')
     self.mox.StubOutWithMock(httplib.HTTPConnection, 'connect')
     self.mox.StubOutWithMock(httplib.HTTPConnection, 'request')
     self.mox.StubOutWithMock(httplib.HTTPConnection, 'getresponse')
@@ -103,7 +134,10 @@ class HttpRuntimeProxyTest(wsgi_test_utils.WSGITestCase):
     self.mox.UnsetStubs()
 
   def test_handle_get(self):
-    response = FakeHttpResponse(200, 'OK', [('Foo', 'Bar')], 'response')
+    response = FakeHttpResponse(200,
+                                'OK',
+                                [('Foo', 'a'), ('Foo', 'b'), ('Var', 'c')],
+                                'response')
     login.get_user_info(None).AndReturn(('', False, ''))
     httplib.HTTPConnection.connect()
     httplib.HTTPConnection.request(
@@ -111,7 +145,6 @@ class HttpRuntimeProxyTest(wsgi_test_utils.WSGITestCase):
         {'HEADER': 'value',
          http_runtime_constants.REQUEST_ID_HEADER: 'request id',
          'X-AppEngine-Country': 'ZZ',
-         'X-Appengine-Internal-Datacenter': 'us1',
          'X-Appengine-Internal-User-Email': '',
          'X-Appengine-Internal-User-Id': '',
          'X-Appengine-Internal-User-Is-Admin': '0',
@@ -132,9 +165,7 @@ class HttpRuntimeProxyTest(wsgi_test_utils.WSGITestCase):
                'SERVER_PROTOCOL': 'HTTP/1.1',
               }
     self.mox.ReplayAll()
-    expected_headers = {
-        'Foo': 'Bar',
-    }
+    expected_headers = [('Foo', 'a'), ('Foo', 'b'), ('Var', 'c')]
     self.assertResponse('200 OK', expected_headers, 'response',
                         self.proxy.handle, environ,
                         url_map=self.url_map,
@@ -144,7 +175,10 @@ class HttpRuntimeProxyTest(wsgi_test_utils.WSGITestCase):
     self.mox.VerifyAll()
 
   def test_handle_post(self):
-    response = FakeHttpResponse(200, 'OK', [('Foo', 'Bar')], 'response')
+    response = FakeHttpResponse(200,
+                                'OK',
+                                [('Foo', 'a'), ('Foo', 'b'), ('Var', 'c')],
+                                'response')
     login.get_user_info('cookie').AndReturn(('user@example.com', True, '12345'))
     httplib.HTTPConnection.connect()
     httplib.HTTPConnection.request(
@@ -155,7 +189,6 @@ class HttpRuntimeProxyTest(wsgi_test_utils.WSGITestCase):
          'CONTENT-LENGTH': '9',
          http_runtime_constants.REQUEST_ID_HEADER: 'request id',
          'X-AppEngine-Country': 'ZZ',
-         'X-Appengine-Internal-Datacenter': 'us1',
          'X-Appengine-Internal-User-Email': 'user@example.com',
          'X-Appengine-Internal-User-Id': '12345',
          'X-Appengine-Internal-User-Is-Admin': '1',
@@ -179,9 +212,7 @@ class HttpRuntimeProxyTest(wsgi_test_utils.WSGITestCase):
                'SERVER_PROTOCOL': 'HTTP/1.1',
               }
     self.mox.ReplayAll()
-    expected_headers = {
-        'Foo': 'Bar',
-    }
+    expected_headers = [('Foo', 'a'), ('Foo', 'b'), ('Var', 'c')]
     self.assertResponse('200 OK', expected_headers, 'response',
                         self.proxy.handle, environ,
                         url_map=self.url_map,
@@ -203,7 +234,6 @@ class HttpRuntimeProxyTest(wsgi_test_utils.WSGITestCase):
         {'HEADER': 'value',
          http_runtime_constants.REQUEST_ID_HEADER: 'request id',
          'X-AppEngine-Country': 'ZZ',
-         'X-Appengine-Internal-Datacenter': 'us1',
          'X-Appengine-Internal-User-Email': '',
          'X-Appengine-Internal-User-Id': '',
          'X-Appengine-Internal-User-Is-Admin': '0',
@@ -239,6 +269,7 @@ class HttpRuntimeProxyTest(wsgi_test_utils.WSGITestCase):
   def test_handle_with_error_no_error_handler(self):
     self.proxy = http_runtime.HttpRuntimeProxy(
         ['/runtime'], self.runtime_config_getter, appinfo.AppInfoExternal())
+    self.proxy._port = 23456
     response = FakeHttpResponse(
         500, 'Internal Server Error',
         [(http_runtime_constants.ERROR_CODE_HEADER, '1')], '')
@@ -249,7 +280,6 @@ class HttpRuntimeProxyTest(wsgi_test_utils.WSGITestCase):
         {'HEADER': 'value',
          http_runtime_constants.REQUEST_ID_HEADER: 'request id',
          'X-AppEngine-Country': 'ZZ',
-         'X-Appengine-Internal-Datacenter': 'us1',
          'X-Appengine-Internal-User-Email': '',
          'X-Appengine-Internal-User-Id': '',
          'X-Appengine-Internal-User-Is-Admin': '0',
@@ -289,7 +319,6 @@ class HttpRuntimeProxyTest(wsgi_test_utils.WSGITestCase):
         {'HEADER': 'value',
          http_runtime_constants.REQUEST_ID_HEADER: 'request id',
          'X-AppEngine-Country': 'ZZ',
-         'X-Appengine-Internal-Datacenter': 'us1',
          'X-Appengine-Internal-User-Email': '',
          'X-Appengine-Internal-User-Id': '',
          'X-Appengine-Internal-User-Is-Admin': '0',
@@ -322,6 +351,144 @@ class HttpRuntimeProxyTest(wsgi_test_utils.WSGITestCase):
                         request_type=instance.NORMAL_REQUEST)
     self.mox.VerifyAll()
 
+  def test_http_response_early_failure(self):
+    header = ('the runtime process gave a bad HTTP response: '
+              'IncompleteRead(0 bytes read)\n\n')
+    stderr0 = "I'm sorry, Dave. I'm afraid I can't do that.\n"
+    self.proxy._stderr_tee = FakeTee(stderr0)
+    login.get_user_info(None).AndReturn(('', False, ''))
+    httplib.HTTPConnection.connect()
+    httplib.HTTPConnection.request(
+        'GET', '/get%20request?key=value', '',
+        {'HEADER': 'value',
+         http_runtime_constants.REQUEST_ID_HEADER: 'request id',
+         'X-AppEngine-Country': 'ZZ',
+         'X-Appengine-Internal-User-Email': '',
+         'X-Appengine-Internal-User-Id': '',
+         'X-Appengine-Internal-User-Is-Admin': '0',
+         'X-Appengine-Internal-User-Nickname': '',
+         'X-Appengine-Internal-User-Organization': '',
+         'X-APPENGINE-INTERNAL-SCRIPT': 'get.py',
+         'X-APPENGINE-INTERNAL-SERVER-NAME': 'localhost',
+         'X-APPENGINE-INTERNAL-SERVER-PORT': '8080',
+         'X-APPENGINE-INTERNAL-SERVER-PROTOCOL': 'HTTP/1.1',
+        })
+    httplib.HTTPConnection.getresponse().AndRaise(httplib.IncompleteRead(''))
+    httplib.HTTPConnection.close()
+    environ = {'HTTP_HEADER': 'value', 'PATH_INFO': '/get request',
+               'QUERY_STRING': 'key=value',
+               'HTTP_X_APPENGINE_INTERNAL_USER_ID': '123',
+               'SERVER_NAME': 'localhost',
+               'SERVER_PORT': '8080',
+               'SERVER_PROTOCOL': 'HTTP/1.1',
+              }
+    self.mox.ReplayAll()
+    expected_headers = {
+        'Content-Type': 'text/plain',
+        'Content-Length': '121',#str(len(header) + len(stderr0)),
+    }
+    self.assertResponse('500 Internal Server Error', expected_headers,
+                        header + stderr0,
+                        self.proxy.handle, environ,
+                        url_map=self.url_map,
+                        match=re.match(self.url_map.url, '/get%20request'),
+                        request_id='request id',
+                        request_type=instance.NORMAL_REQUEST)
+    self.mox.VerifyAll()
+
+  def test_http_response_late_failure(self):
+    line0 = "I know I've made some very poor decisions recently...\n"
+    line1 = "I'm afraid. I'm afraid, Dave.\n"
+    line2 = "Dave, my mind is going. I can feel it.\n"
+    response = FakeHttpResponse(200, 'OK', [], line0)
+    response.partial_read_error = httplib.IncompleteRead('')
+    self.proxy._stderr_tee = FakeTee(line1 + line2)
+    login.get_user_info(None).AndReturn(('', False, ''))
+    httplib.HTTPConnection.connect()
+    httplib.HTTPConnection.request(
+        'GET', '/get%20request?key=value', '',
+        {'HEADER': 'value',
+         http_runtime_constants.REQUEST_ID_HEADER: 'request id',
+         'X-AppEngine-Country': 'ZZ',
+         'X-Appengine-Internal-User-Email': '',
+         'X-Appengine-Internal-User-Id': '',
+         'X-Appengine-Internal-User-Is-Admin': '0',
+         'X-Appengine-Internal-User-Nickname': '',
+         'X-Appengine-Internal-User-Organization': '',
+         'X-APPENGINE-INTERNAL-SCRIPT': 'get.py',
+         'X-APPENGINE-INTERNAL-SERVER-NAME': 'localhost',
+         'X-APPENGINE-INTERNAL-SERVER-PORT': '8080',
+         'X-APPENGINE-INTERNAL-SERVER-PROTOCOL': 'HTTP/1.1',
+        })
+    httplib.HTTPConnection.getresponse().AndReturn(response)
+    httplib.HTTPConnection.close()
+    environ = {'HTTP_HEADER': 'value', 'PATH_INFO': '/get request',
+               'QUERY_STRING': 'key=value',
+               'HTTP_X_APPENGINE_INTERNAL_USER_ID': '123',
+               'SERVER_NAME': 'localhost',
+               'SERVER_PORT': '8080',
+               'SERVER_PROTOCOL': 'HTTP/1.1',
+              }
+    self.mox.ReplayAll()
+    self.assertResponse('200 OK', {},
+                        line0,
+                        self.proxy.handle, environ,
+                        url_map=self.url_map,
+                        match=re.match(self.url_map.url, '/get%20request'),
+                        request_id='request id',
+                        request_type=instance.NORMAL_REQUEST)
+    self.mox.VerifyAll()
+
+  def test_connection_error(self):
+    self.proxy = http_runtime.HttpRuntimeProxy(
+        ['/runtime'], self.runtime_config_getter, appinfo.AppInfoExternal())
+    self.proxy._process = self.mox.CreateMockAnything()
+    self.proxy._port = 23456
+    login.get_user_info(None).AndReturn(('', False, ''))
+    httplib.HTTPConnection.connect().AndRaise(socket.error())
+    self.proxy._process.poll().AndReturn(None)
+    httplib.HTTPConnection.close()
+
+    self.mox.ReplayAll()
+    self.assertRaises(socket.error,
+                      self.proxy.handle(
+                          {'PATH_INFO': '/'},
+                          start_response=None,  # Not used.
+                          url_map=self.url_map,
+                          match=re.match(self.url_map.url, '/get%20error'),
+                          request_id='request id',
+                          request_type=instance.NORMAL_REQUEST).next)
+    self.mox.VerifyAll()
+
+  def test_connection_error_process_quit(self):
+    self.proxy = http_runtime.HttpRuntimeProxy(
+        ['/runtime'], self.runtime_config_getter, appinfo.AppInfoExternal())
+    self.proxy._process = self.mox.CreateMockAnything()
+    self.proxy._port = 123
+    login.get_user_info(None).AndReturn(('', False, ''))
+    httplib.HTTPConnection.connect().AndRaise(socket.error())
+    self.proxy._process.poll().AndReturn(1)
+    self.proxy._stderr_tee = FakeTee('')
+    httplib.HTTPConnection.close()
+
+    self.mox.ReplayAll()
+    expected_headers = {
+        'Content-Type': 'text/plain',
+        'Content-Length': '78',
+    }
+    expected_content = ('the runtime process for the instance running on port '
+                        '123 has unexpectedly quit')
+    self.assertResponse('500 Internal Server Error',
+                        expected_headers,
+                        expected_content,
+                        self.proxy.handle,
+                        {'PATH_INFO': '/'},
+                        url_map=self.url_map,
+                        match=re.match(self.url_map.url, '/get%20error'),
+                        request_id='request id',
+                        request_type=instance.NORMAL_REQUEST)
+    self.mox.VerifyAll()
+
   def test_handle_background_thread(self):
     response = FakeHttpResponse(200, 'OK', [('Foo', 'Bar')], 'response')
     login.get_user_info(None).AndReturn(('', False, ''))
@@ -331,7 +498,6 @@ class HttpRuntimeProxyTest(wsgi_test_utils.WSGITestCase):
         {'HEADER': 'value',
          http_runtime_constants.REQUEST_ID_HEADER: 'request id',
          'X-AppEngine-Country': 'ZZ',
-         'X-Appengine-Internal-Datacenter': 'us1',
          'X-Appengine-Internal-User-Email': '',
          'X-Appengine-Internal-User-Id': '',
          'X-Appengine-Internal-User-Is-Admin': '0',
@@ -364,78 +530,90 @@ class HttpRuntimeProxyTest(wsgi_test_utils.WSGITestCase):
                         request_type=instance.BACKGROUND_REQUEST)
     self.mox.VerifyAll()
 
-  def test_start_and_wait_until_serving_and_quit(self):
-    subprocess.Popen(['/runtime'], stdin=subprocess.PIPE,
-                     stdout=subprocess.PIPE, env={'foo': 'bar'}).AndReturn(
-                         self.process)
-    self.process.stdin.write(base64.b64encode(
-        self.runtime_config.SerializeToString()))
-    self.process.stdin.close()
-    self.process.stdout.readline().AndReturn('34567')
+  def test_start_and_quit(self):
+    ## Test start()
+    # start()
+    safe_subprocess.start_process(
+        ['/runtime'],
+        base64.b64encode(self.runtime_config.SerializeToString()),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env={'foo': 'bar'},
+        cwd=self.tmpdir).AndReturn(self.process)
+    self.process.stdout.readline().AndReturn('30000')
+    self.proxy._stderr_tee = FakeTee('')
+
+    # _can_connect() via start().
+    httplib.HTTPConnection.connect()
+    httplib.HTTPConnection.close()
+
     self.mox.ReplayAll()
     self.proxy.start()
     self.mox.VerifyAll()
     self.mox.ResetAll()
 
-    self.process.poll().AndReturn(None)
-    httplib.HTTPConnection.connect().AndRaise(socket.error)
-    httplib.HTTPConnection.close()
-    self.process.poll().AndReturn(None)
-    httplib.HTTPConnection.connect()
-    httplib.HTTPConnection.close()
-    self.mox.ReplayAll()
-    self.proxy.wait_until_serving()
-    self.mox.VerifyAll()
-    self.mox.ResetAll()
-
+    ## Test quit()
     self.process.kill()
     self.mox.ReplayAll()
     self.proxy.quit()
     self.mox.VerifyAll()
 
-  def test_start_and_wait_until_serving_with_runtime_exit(self):
-    subprocess.Popen(['/runtime'], stdin=subprocess.PIPE,
-                     stdout=subprocess.PIPE, env={'foo': 'bar'}).AndReturn(
-                         self.process)
-    self.process.stdin.write(base64.b64encode(
-        self.runtime_config.SerializeToString()))
-    self.process.stdin.close()
-    self.process.stdout.readline().AndReturn('34567')
+  def test_start_bad_port(self):
+    safe_subprocess.start_process(
+        ['/runtime'],
+        base64.b64encode(self.runtime_config.SerializeToString()),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env={'foo': 'bar'},
+        cwd=self.tmpdir).AndReturn(self.process)
+    self.process.stdout.readline().AndReturn('hello 30001')
+    header = "bad runtime process port ['hello 30001']\n\n"
+    stderr0 = "I've just picked up a fault in the AE35 unit.\n"
+    stderr1 = "It's going to go 100% failure in 72 hours.\n"
+    self.proxy._stderr_tee = FakeTee(stderr0 + stderr1)
+
     self.mox.ReplayAll()
     self.proxy.start()
+    expected_headers = {
+        'Content-Type': 'text/plain',
+        'Content-Length': str(len(header) + len(stderr0) + len(stderr1)),
+    }
+    self.assertResponse('500 Internal Server Error', expected_headers,
+                        header + stderr0 + stderr1,
+                        self.proxy.handle, {},
+                        url_map=self.url_map,
+                        match=re.match(self.url_map.url, '/get%20request'),
+                        request_id='request id',
+                        request_type=instance.NORMAL_REQUEST)
     self.mox.VerifyAll()
-    self.mox.ResetAll()
 
-    self.process.poll().AndReturn(None)
+  def test_start_and_not_serving(self):
+    safe_subprocess.start_process(
+        ['/runtime'],
+        base64.b64encode(self.runtime_config.SerializeToString()),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env={'foo': 'bar'},
+        cwd=self.tmpdir).AndReturn(self.process)
+    self.process.stdout.readline().AndReturn('30002')
+    self.proxy._stderr_tee = FakeTee('')
+
     httplib.HTTPConnection.connect().AndRaise(socket.error)
     httplib.HTTPConnection.close()
-    self.process.returncode = 1
-    self.process.poll().AndReturn(1)
-    self.mox.ReplayAll()
-    self.assertRaises(errors.Error, self.proxy.wait_until_serving)
-    self.mox.VerifyAll()
 
-  def test_start_and_wait_until_serving_with_timeout(self):
-    subprocess.Popen(['/runtime'], stdin=subprocess.PIPE,
-                     stdout=subprocess.PIPE, env={'foo': 'bar'}).AndReturn(
-                         self.process)
-    self.process.stdin.write(base64.b64encode(
-        self.runtime_config.SerializeToString()))
-    self.process.stdin.close()
-    self.process.stdout.readline().AndReturn('34567')
     self.mox.ReplayAll()
     self.proxy.start()
-    self.mox.VerifyAll()
-    self.mox.ResetAll()
-
-    self.process.poll().AndReturn(None)
-    httplib.HTTPConnection.connect().AndRaise(socket.error)
-    httplib.HTTPConnection.close()
-    self.process.poll().AndReturn(None)
-    httplib.HTTPConnection.connect().AndRaise(socket.error)
-    httplib.HTTPConnection.close()
-    self.mox.ReplayAll()
-    self.assertRaises(errors.Error, self.proxy.wait_until_serving, timeout=0.3)
+    expected_headers = {
+        'Content-Type': 'text/plain',
+        'Content-Length': '39',
+    }
+    self.assertResponse('500 Internal Server Error', expected_headers,
+                        'cannot connect to runtime on port 30002',
+                        self.proxy.handle, {},
+                        url_map=self.url_map,
+                        match=re.match(self.url_map.url, '/get%20request'),
+                        request_id='request id',
+                        request_type=instance.NORMAL_REQUEST)
     self.mox.VerifyAll()
 
 

@@ -32,6 +32,7 @@ import logging
 from protorpc import message_types
 
 from google.appengine.ext.endpoints import api_backend
+from google.appengine.ext.endpoints import api_config
 from google.appengine.ext.endpoints import api_exceptions
 
 
@@ -46,29 +47,54 @@ class ApiConfigRegistry(object):
 
   def __init__(self):
 
-    self.__api_roots = set()
+    self.__registered_classes = set()
 
-    self.__api_configs = []
-
+    self.__api_configs = set()
 
     self.__api_methods = {}
 
 
-
-  def register_api(self, api_root_url, config_contents):
-    """Register a single API given its config contents.
+  def register_spi(self, config_contents):
+    """Register a single SPI and its config contents.
 
     Args:
-      api_root_url: URL that uniquely identifies this APIs root.
       config_contents: String containing API configuration.
     """
-    if api_root_url in self.__api_roots:
+    if config_contents is None:
       return
-    self.__api_roots.add(api_root_url)
-    self.__api_configs.append(config_contents)
-    self.__register_methods(config_contents)
+    parsed_config = json.loads(config_contents)
+    self.__register_class(parsed_config)
+    self.__api_configs.add(config_contents)
+    self.__register_methods(parsed_config)
 
-  def __register_methods(self, config_file):
+  def __register_class(self, parsed_config):
+    """Register the class implementing this config, so we only add it once.
+
+    Args:
+      parsed_config: The JSON object with the API configuration being added.
+
+    Raises:
+      ApiConfigurationError: If the class has already been registered.
+    """
+    methods = parsed_config.get('methods')
+    if not methods:
+      return
+
+
+    service_classes = set()
+    for method in methods.itervalues():
+      rosy_method = method.get('rosyMethod')
+      if rosy_method and '.' in rosy_method:
+        method_class = rosy_method.split('.', 1)[0]
+        service_classes.add(method_class)
+
+    for service_class in service_classes:
+      if service_class in self.__registered_classes:
+        raise api_config.ApiConfigurationError(
+            'SPI class %s has already been registered.' % service_class)
+      self.__registered_classes.add(service_class)
+
+  def __register_methods(self, parsed_config):
     """Register all methods from the given api config file.
 
     Methods are stored in a map from method_name to rosyMethod,
@@ -76,15 +102,12 @@ class ApiConfigRegistry(object):
     If no rosyMethod was specified the value will be None.
 
     Args:
-      config_file: json string containing api config.
+      parsed_config: The JSON object with the API configuration being added.
     """
-    try:
-      parsed_config = json.loads(config_file)
-    except (TypeError, ValueError):
-      return None
     methods = parsed_config.get('methods')
     if not methods:
-      return None
+      return
+
     for method_name, method in methods.iteritems():
       self.__api_methods[method_name] = method.get('rosyMethod')
 
@@ -101,7 +124,7 @@ class ApiConfigRegistry(object):
 
   def all_api_configs(self):
     """Return a list of all API configration specs as registered above."""
-    return self.__api_configs
+    return list(self.__api_configs)
 
 
 class BackendServiceImpl(api_backend.BackendService):
@@ -152,8 +175,15 @@ class BackendServiceImpl(api_backend.BackendService):
       Void message.
     """
     Level = api_backend.LogMessagesRequest.LogMessage.Level
+    log = logging.getLogger(__name__)
     for message in request.messages:
       level = message.level if message.level is not None else Level.info
-      logging.log(level.number, message.message)
+
+
+
+      record = logging.LogRecord(name=__name__, level=level.number, pathname='',
+                                 lineno='', msg=message.message, args=None,
+                                 exc_info=None)
+      log.handle(record)
 
     return message_types.VoidMessage()

@@ -32,15 +32,24 @@ except ImportError:
   import simplejson as json
 import logging
 import os
+import re
 import time
 import urllib
 
 import google
 
-from google.appengine.api import memcache
-from google.appengine.api import oauth
-from google.appengine.api import urlfetch
-from google.appengine.api import users
+try:
+
+  from google.appengine.api import memcache
+  from google.appengine.api import oauth
+  from google.appengine.api import urlfetch
+  from google.appengine.api import users
+except ImportError:
+
+  from google.appengine.api import memcache
+  from google.appengine.api import oauth
+  from google.appengine.api import urlfetch
+  from google.appengine.api import users
 
 try:
 
@@ -67,6 +76,8 @@ _ENV_AUTH_EMAIL = 'ENDPOINTS_AUTH_EMAIL'
 _ENV_AUTH_DOMAIN = 'ENDPOINTS_AUTH_DOMAIN'
 _EMAIL_SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
 _TOKENINFO_URL = 'https://www.googleapis.com/oauth2/v1/tokeninfo'
+_MAX_AGE_REGEX = re.compile(r'\s*max-age\s*=\s*(\d+)\s*')
+_CERT_NAMESPACE = '__verify_jwt'
 
 
 class _AppIdentityError(Exception):
@@ -125,7 +136,7 @@ def _is_auth_info_available():
           _ENV_USE_OAUTH_SCOPE in os.environ)
 
 
-def _maybe_set_current_user_vars(method, api_info=None):
+def _maybe_set_current_user_vars(method, api_info=None, request=None):
   """Get user information from the id_token or oauth token in the request.
 
   Used internally by Endpoints to set up environment variables for user
@@ -136,6 +147,7 @@ def _maybe_set_current_user_vars(method, api_info=None):
       should be annotated with @endpoints.method.
     api_info: An api_config._ApiInfo instance. Optional. If None, will attempt
       to parse api_info from the implicit instance of the method.
+    request: The current request, or None.
   """
   if _is_auth_info_available():
     return
@@ -178,28 +190,16 @@ def _maybe_set_current_user_vars(method, api_info=None):
 
     return
 
-  auth_header = os.environ.get('HTTP_AUTHORIZATION')
-  if not auth_header:
-    return
-
-  allowed_auth_schemes = ('OAuth', 'Bearer')
-  for auth_scheme in allowed_auth_schemes:
-    if auth_header.startswith(auth_scheme):
-      token = auth_header[len(auth_scheme) + 1:]
-      break
-  else:
-    return
-
-
-
-
+  token = _get_token(request)
+  if not token:
+    return None
 
 
 
 
 
   if ((scopes == [_EMAIL_SCOPE] or scopes == (_EMAIL_SCOPE,)) and
-      audiences and allowed_client_ids):
+      allowed_client_ids):
     logging.info('Checking for id_token.')
     time_now = long(time.time())
     user = _get_id_token_user(token, audiences, allowed_client_ids, time_now,
@@ -212,12 +212,45 @@ def _maybe_set_current_user_vars(method, api_info=None):
 
   if scopes:
     logging.info('Checking for oauth token.')
-    result = urlfetch.fetch(
-        '%s?%s' % (_TOKENINFO_URL, urllib.urlencode({'access_token': token})))
-    if result.status_code == 200:
-      token_info = json.loads(result.content)
-      _set_oauth_user_vars(token_info, audiences, allowed_client_ids,
-                           scopes, _is_local_dev())
+    if _is_local_dev():
+      _set_bearer_user_vars_local(token, allowed_client_ids, scopes)
+    else:
+      _set_bearer_user_vars(allowed_client_ids, scopes)
+
+
+def _get_token(request):
+  """Get the auth token for this request.
+
+  Auth token may be specified in either the Authorization header or
+  as a query param (either access_token or bearer_token).  We'll check in
+  this order:
+    1. Authorization header.
+    2. bearer_token query param.
+    3. access_token query param.
+
+  Args:
+    request: The current request, or None.
+
+  Returns:
+    The token in the request or None.
+  """
+
+  auth_header = os.environ.get('HTTP_AUTHORIZATION')
+  if auth_header:
+    allowed_auth_schemes = ('OAuth', 'Bearer')
+    for auth_scheme in allowed_auth_schemes:
+      if auth_header.startswith(auth_scheme):
+        return auth_header[len(auth_scheme) + 1:]
+
+
+    return None
+
+
+  if request:
+    for key in ('bearer_token', 'access_token'):
+      token, _ = request.get_unrecognized_field_info(key)
+      if token:
+        return token
 
 
 def _get_id_token_user(token, audiences, allowed_client_ids, time_now, cache):
@@ -252,28 +285,76 @@ def _get_id_token_user(token, audiences, allowed_client_ids, time_now, cache):
 
 
 
-
-
-
     return users.User(email)
+
 
 
 def _set_oauth_user_vars(token_info, audiences, allowed_client_ids, scopes,
                          local_dev):
-  """Validate the oauth token and set endpoints auth user variables.
+  logging.warning('_set_oauth_user_vars is deprecated and will be removed '
+                  'soon.')
+  return _set_bearer_user_vars(allowed_client_ids, scopes)
 
-  If the oauth token is valid, this sets either the ENDPOINTS_AUTH_EMAIL and
-  ENDPOINTS_AUTH_DOMAIN environment variables (in local development) or
-  the ENDPOINTS_USE_OAUTH_SCOPE one.  These provide enough information
-  that our endpoints.get_current_user() function can get the user.
+
+
+def _set_bearer_user_vars(allowed_client_ids, scopes):
+  """Validate the oauth bearer token and set endpoints auth user variables.
+
+  If the bearer token is valid, this sets ENDPOINTS_USE_OAUTH_SCOPE.  This
+  provides enough information that our endpoints.get_current_user() function
+  can get the user.
 
   Args:
-    token_info: Info returned about the oauth token from the tokeninfo endpoint.
-    audiences: List of audiences that are acceptable, or None for first-party.
     allowed_client_ids: List of client IDs that are acceptable.
     scopes: List of acceptable scopes.
-    local_dev: True if we're running a local dev server, false if we're in prod.
   """
+  for scope in scopes:
+    try:
+      client_id = oauth.get_client_id(scope)
+    except oauth.Error:
+
+      continue
+
+
+    if allowed_client_ids and client_id not in allowed_client_ids:
+      logging.warning('Client ID is not allowed: %s', client_id)
+      return
+
+    os.environ[_ENV_USE_OAUTH_SCOPE] = scope
+    logging.debug('Returning user from matched oauth_user.')
+    return
+
+  logging.warning('Oauth framework user didn\'t match oauth token user.')
+  return None
+
+
+def _set_bearer_user_vars_local(token, allowed_client_ids, scopes):
+  """Validate the oauth bearer token on the dev server.
+
+  Since the functions in the oauth module return only example results in local
+  development, this hits the tokeninfo endpoint and attempts to validate the
+  token.  If it's valid, we'll set _ENV_AUTH_EMAIL and _ENV_AUTH_DOMAIN so we
+  can get the user from the token.
+
+  Args:
+    token: String with the oauth token to validate.
+    allowed_client_ids: List of client IDs that are acceptable.
+    scopes: List of acceptable scopes.
+  """
+
+  result = urlfetch.fetch(
+      '%s?%s' % (_TOKENINFO_URL, urllib.urlencode({'access_token': token})))
+  if result.status_code != 200:
+    try:
+      error_description = json.loads(result.content)['error_description']
+    except (ValueError, KeyError):
+      error_description = ''
+    logging.warning('Token info endpoint returned status %s: %s',
+                    result.status_code, error_description)
+    return
+  token_info = json.loads(result.content)
+
+
   if 'email' not in token_info:
     logging.warning('Oauth token doesn\'t include an email address.')
     return
@@ -282,25 +363,10 @@ def _set_oauth_user_vars(token_info, audiences, allowed_client_ids, scopes,
     return
 
 
-
-
-  if audiences or allowed_client_ids:
-    if 'audience' not in token_info:
-      logging.warning('Audience is required and isn\'t specified in token.')
-      return
-
-
-
-
-    if token_info['audience'] in audiences:
-      pass
-    elif (token_info['audience'] == token_info.get('issued_to') and
-          allowed_client_ids is not None and
-          token_info['audience'] in allowed_client_ids):
-      pass
-    else:
-      logging.warning('Oauth token audience isn\'t permitted.')
-      return
+  client_id = token_info.get('issued_to')
+  if allowed_client_ids and client_id not in allowed_client_ids:
+    logging.warning('Client ID is not allowed: %s', client_id)
+    return
 
 
   token_scopes = token_info.get('scope', '').split(' ')
@@ -308,35 +374,10 @@ def _set_oauth_user_vars(token_info, audiences, allowed_client_ids, scopes,
     logging.warning('Oauth token scopes don\'t match any acceptable scopes.')
     return
 
-  if local_dev:
-
-
-
-
-
-    os.environ[_ENV_AUTH_EMAIL] = token_info['email']
-    os.environ[_ENV_AUTH_DOMAIN] = ''
-    return
-
-
-
-  for scope in scopes:
-    try:
-      oauth_user = oauth.get_current_user(scope)
-      oauth_scope = scope
-      break
-    except oauth.Error:
-
-      pass
-  else:
-    logging.warning('Oauth framework couldn\'t find a user.')
-    return None
-  if oauth_user.email() == token_info['email']:
-    os.environ[_ENV_USE_OAUTH_SCOPE] = oauth_scope
-    return
-
-  logging.warning('Oauth framework user didn\'t match oauth token user.')
-  return None
+  os.environ[_ENV_AUTH_EMAIL] = token_info['email']
+  os.environ[_ENV_AUTH_DOMAIN] = ''
+  logging.debug('Local dev returning user from token.')
+  return
 
 
 def _is_local_dev():
@@ -344,10 +385,6 @@ def _is_local_dev():
 
 
 def _verify_parsed_token(parsed_token, audiences, allowed_client_ids):
-  if not audiences:
-    logging.warning('The set of acceptable audiences has not been specified.')
-    return False
-
 
   if parsed_token.get('iss') != 'accounts.google.com':
     logging.warning('Issuer was not valid: %s', parsed_token.get('iss'))
@@ -361,7 +398,7 @@ def _verify_parsed_token(parsed_token, audiences, allowed_client_ids):
 
 
 
-  cid = parsed_token.get('cid')
+  cid = parsed_token.get('azp')
   if aud != cid and aud not in audiences:
     logging.warning('Audience not allowed: %s', aud)
     return False
@@ -388,8 +425,48 @@ def _urlsafe_b64decode(b64string):
   return base64.urlsafe_b64decode(padded)
 
 
+def _get_cert_expiration_time(headers):
+  """Get the expiration time for a cert, given the response headers.
+
+  Get expiration time from the headers in the result.  If we can't get
+  a time from the headers, this returns 0, indicating that the cert
+  shouldn't be cached.
+
+  Args:
+    headers: A dict containing the response headers from the request to get
+      certs.
+
+  Returns:
+    An integer with the number of seconds the cert should be cached.  This
+    value is guaranteed to be >= 0.
+  """
+
+  cache_control = headers.get('Cache-Control', '')
+
+
+
+  for entry in cache_control.split(','):
+    match = _MAX_AGE_REGEX.match(entry)
+    if match:
+      cache_time_seconds = int(match.group(1))
+      break
+  else:
+    return 0
+
+
+  age = headers.get('Age')
+  if age is not None:
+    try:
+      age = int(age)
+    except ValueError:
+      age = 0
+    cache_time_seconds -= age
+
+  return max(0, cache_time_seconds)
+
+
 def _get_cached_certs(cert_uri, cache):
-  certs = cache.get(cert_uri, namespace='verify_jwt')
+  certs = cache.get(cert_uri, namespace=_CERT_NAMESPACE)
   if certs is None:
     logging.info('Cert cache miss')
     try:
@@ -400,8 +477,10 @@ def _get_cached_certs(cert_uri, cache):
 
     if result.status_code == 200:
       certs = json.loads(result.content)
-
-      cache.set(cert_uri, certs, time=24*60*60, namespace='verify_jwt')
+      expiration_time_seconds = _get_cert_expiration_time(result.headers)
+      if expiration_time_seconds:
+        cache.set(cert_uri, certs, time=expiration_time_seconds,
+                  namespace=_CERT_NAMESPACE)
     else:
       logging.error(
           'Certs not available, HTTP request returned %d', result.status_code)

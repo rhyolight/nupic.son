@@ -33,6 +33,8 @@
 """Utility functions for use with the mapreduce library."""
 
 
+
+
 __all__ = [
     "create_datastore_write_config",
     "for_name",
@@ -40,24 +42,34 @@ __all__ = [
     "handler_for_name",
     "is_generator",
     "parse_bool",
-    "HugeTask",
-    "HugeTaskHandler",
+    "total_seconds",
+    "try_serialize_handler",
+    "try_deserialize_handler",
     ]
 
-
-import base64
-import cgi
 import inspect
-import logging
-import zlib
+import pickle
 import types
-import urllib
 
-from google.appengine.api import files
-from google.appengine.api import taskqueue
-from google.appengine.ext import db
 from google.appengine.datastore import datastore_rpc
-from google.appengine.ext.mapreduce import base_handler
+
+
+def total_seconds(td):
+  """convert a timedelta to seconds.
+
+  This is patterned after timedelta.total_seconds, which is only
+  available in python 27.
+
+  Args:
+    td: a timedelta object.
+
+  Returns:
+    total seconds within a timedelta. Rounded up to seconds.
+  """
+  secs = td.seconds + td.days * 24 * 3600
+  if td.microseconds:
+    secs += 1
+  return secs
 
 
 def for_name(fq_name, recursive=False):
@@ -108,9 +120,7 @@ def for_name(fq_name, recursive=False):
     else:
       raise ImportError("Could not find '%s' on path '%s'" % (
                         short_name, module_name))
-  except ImportError, e:
-    logging.debug("Could not import %s from %s. Will try recursively.",
-                  short_name, module_name, exc_info=True)
+  except ImportError:
 
 
     try:
@@ -154,6 +164,39 @@ def handler_for_name(fq_name):
     return getattr(resolved_name.im_class(), resolved_name.__name__)
   else:
     return resolved_name
+
+
+def try_serialize_handler(handler):
+  """Try to serialize map/reduce handler.
+
+  Args:
+    handler: handler function/instance. Handler can be a function or an
+      instance of a callable class. In the latter case, the handler will
+      be serialized across slices to allow users to save states.
+
+  Returns:
+    serialized handler string or None.
+  """
+  if (isinstance(handler, types.InstanceType) or
+      (isinstance(handler, object) and
+       not inspect.isfunction(handler) and
+       not inspect.ismethod(handler)) and
+      hasattr(handler, "__call__")):
+    return pickle.dumps(handler)
+  return None
+
+
+def try_deserialize_handler(serialized_handler):
+  """Reverse function of try_serialize_handler.
+
+  Args:
+    serialized_handler: serialized handler str or None.
+
+  Returns:
+    handler instance or None.
+  """
+  if serialized_handler:
+    return pickle.loads(serialized_handler)
 
 
 def is_generator(obj):
@@ -221,155 +264,3 @@ def create_datastore_write_config(mapreduce_spec):
   else:
 
     return datastore_rpc.Configuration()
-
-
-class _HugeTaskPayload(db.Model):
-  """Model object to store task payload."""
-
-  payload = db.TextProperty()
-
-  @classmethod
-  def kind(cls):
-    """Returns entity kind."""
-    return "_GAE_MR_TaskPayload"
-
-
-class HugeTask(object):
-  """HugeTask is a taskqueue.Task-like class that can store big payloads.
-
-  Payloads are stored either in the task payload itself or in the datastore.
-  Task handlers should inherit from HugeTaskHandler class.
-  """
-
-  PAYLOAD_PARAM = "__payload"
-  PAYLOAD_KEY_PARAM = "__payload_key"
-
-  MAX_TASK_PAYLOAD = 100000
-  MAX_DB_PAYLOAD = 1000000
-
-  def __init__(self,
-               url,
-               params,
-               name=None,
-               eta=None,
-               countdown=None):
-    self.url = url
-    self.params = params
-    self.name = name
-    self.eta = eta
-    self.countdown = countdown
-
-  def add(self, queue_name, transactional=False, parent=None):
-    """Add task to the queue."""
-    payload_str = urllib.urlencode(self.params)
-    if len(payload_str) < self.MAX_TASK_PAYLOAD:
-
-      task = self.to_task()
-      task.add(queue_name, transactional)
-      return
-
-    compressed_payload = base64.b64encode(zlib.compress(payload_str))
-
-    if len(compressed_payload) < self.MAX_TASK_PAYLOAD:
-
-      task = taskqueue.Task(
-          url=self.url,
-          params={self.PAYLOAD_PARAM: compressed_payload},
-          name=self.name,
-          eta=self.eta,
-          countdown=self.countdown)
-      task.add(queue_name, transactional)
-      return
-
-    if len(compressed_payload) > self.MAX_DB_PAYLOAD:
-      raise Exception("Payload to big to be stored in database: %s",
-                      len(compressed_payload))
-
-
-    if not parent:
-      raise Exception("Huge tasks should specify parent entity.")
-
-    payload_entity = _HugeTaskPayload(payload=compressed_payload,
-                                      parent=parent)
-
-    payload_key = payload_entity.put()
-    task = taskqueue.Task(
-        url=self.url,
-        params={self.PAYLOAD_KEY_PARAM: str(payload_key)},
-        name=self.name,
-        eta=self.eta,
-        countdown=self.countdown)
-    task.add(queue_name, transactional)
-
-  def to_task(self):
-    """Convert to a taskqueue task without doing any kind of encoding."""
-    return taskqueue.Task(
-        url=self.url,
-        params=self.params,
-        name=self.name,
-        eta=self.eta,
-        countdown=self.countdown)
-
-  @classmethod
-  def decode_payload(cls, payload_dict):
-    if (not payload_dict.get(cls.PAYLOAD_PARAM) and
-        not payload_dict.get(cls.PAYLOAD_KEY_PARAM)):
-        return payload_dict
-
-    if payload_dict.get(cls.PAYLOAD_PARAM):
-      payload = payload_dict.get(cls.PAYLOAD_PARAM)
-    else:
-      payload_key = payload_dict.get(cls.PAYLOAD_KEY_PARAM)
-      payload_entity = _HugeTaskPayload.get(payload_key)
-      payload = payload_entity.payload
-    payload_str = zlib.decompress(base64.b64decode(payload))
-
-    result = {}
-    for (name, value) in cgi.parse_qs(payload_str).items():
-      if len(value) == 1:
-        result[name] = value[0]
-      else:
-        result[name] = value
-    return result
-
-
-class HugeTaskHandler(base_handler.TaskQueueHandler):
-  """Base handler for processing HugeTasks."""
-
-  class RequestWrapper(object):
-    def __init__(self, request):
-      self._request = request
-
-      self.path = self._request.path
-      self.headers = self._request.headers
-
-      self._encoded = True
-
-      if (not self._request.get(HugeTask.PAYLOAD_PARAM) and
-          not self._request.get(HugeTask.PAYLOAD_KEY_PARAM)):
-          self._encoded = False
-          return
-      self._params = HugeTask.decode_payload(
-          {HugeTask.PAYLOAD_PARAM:
-              self._request.get(HugeTask.PAYLOAD_PARAM),
-           HugeTask.PAYLOAD_KEY_PARAM:
-              self._request.get(HugeTask.PAYLOAD_KEY_PARAM)})
-
-    def get(self, name, default=""):
-      if self._encoded:
-        return self._params.get(name, default)
-      else:
-        return self._request.get(name, default)
-
-    def set(self, name, value):
-      if self._encoded:
-        self._params.set(name, value)
-      else:
-        self._request.set(name, value)
-
-  def __init__(self, *args, **kwargs):
-    base_handler.TaskQueueHandler.__init__(self, *args, **kwargs)
-
-  def _setup(self):
-    base_handler.TaskQueueHandler._setup(self)
-    self.request = self.RequestWrapper(self.request)

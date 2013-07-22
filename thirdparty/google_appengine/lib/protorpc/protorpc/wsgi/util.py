@@ -22,7 +22,6 @@ Small collection of helpful utilities for working with WSGI.
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
-import cStringIO
 import httplib
 import re
 
@@ -73,6 +72,19 @@ def static_page(content='',
   headers = [('content-length', str(len(content))),
              ('content-type', content_type),
             ] + list(headers or [])
+
+  # Ensure all headers are str.
+  for index, (key, value) in enumerate(headers):
+    if isinstance(value, unicode):
+      value = value.encode('utf-8')
+      headers[index] = key, value
+
+    if not isinstance(key, str):
+      raise TypeError('Header key must be str, found: %r' % (key,))
+
+    if not isinstance(value, str):
+      raise TypeError(
+          'Header %r must be type str or unicode, found: %r' % (key, value))
 
   def static_page_application(environ, start_response):
     start_response(status, headers)

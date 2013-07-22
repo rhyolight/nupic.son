@@ -68,13 +68,13 @@ import logging
 import os
 
 from protorpc import messages
-from protorpc import protojson
 from protorpc import remote
-from protorpc.wsgi import service
+from protorpc.wsgi import service as wsgi_service
 
 from google.appengine.ext.endpoints import api_backend_service
 from google.appengine.ext.endpoints import api_config
 from google.appengine.ext.endpoints import api_exceptions
+from google.appengine.ext.endpoints import protojson
 
 package = 'google.appengine.endpoints'
 
@@ -94,8 +94,9 @@ _ERROR_NAME_MAP = dict((httplib.responses[c.http_status], c) for c in [
     api_exceptions.UnauthorizedException,
     ])
 
-_ALL_JSON_CONTENT_TYPES = frozenset([protojson.CONTENT_TYPE] +
-                                    protojson.ALTERNATIVE_CONTENT_TYPES)
+_ALL_JSON_CONTENT_TYPES = frozenset(
+    [protojson.EndpointsProtoJson.CONTENT_TYPE] +
+    protojson.EndpointsProtoJson.ALTERNATIVE_CONTENT_TYPES)
 
 
 
@@ -135,7 +136,7 @@ class EndpointsErrorMessage(messages.Message):
 
 
 
-def _get_app_revision(environ=os.environ):
+def _get_app_revision(environ=None):
   """Gets the app revision (minor app version) of the current app.
 
   Args:
@@ -146,6 +147,8 @@ def _get_app_revision(environ=os.environ):
     The app revision (minor version) of the current app, or None if one couldn't
     be found.
   """
+  if environ is None:
+    environ = os.environ
   if 'CURRENT_VERSION_ID' in environ:
     return environ['CURRENT_VERSION_ID'].split('.')[1]
 
@@ -182,6 +185,9 @@ class _ApiServer(object):
   __HEADER_NAME_PEER = 'HTTP_X_APPENGINE_PEER'
   __GOOGLE_PEER = 'apiserving'
 
+
+  __PROTOJSON = protojson.EndpointsProtoJson()
+
   def __init__(self, api_services, **kwargs):
     """Initialize an _ApiServer instance.
 
@@ -192,6 +198,8 @@ class _ApiServer(object):
 
     Args:
       api_services: List of protorpc.remote.Service classes implementing the API
+        or a list of _ApiDecorator instances that decorate the service classes
+        for an API.
       **kwargs: Passed through to protorpc.wsgi.service.service_handlers except:
         protocols - ProtoRPC protocols are not supported, and are disallowed.
         restricted - If True or unset, the API will only be allowed to serve to
@@ -204,32 +212,55 @@ class _ApiServer(object):
 
     Raises:
       TypeError: if protocols are configured (this feature is not supported).
+      ApiConfigurationError: if there's a problem with the API config.
     """
+    for entry in api_services[:]:
+
+      if isinstance(entry, api_config._ApiDecorator):
+        api_services.remove(entry)
+        api_services.extend(entry.get_api_classes())
+
     protorpc_services = []
     generator = api_config.ApiConfigGenerator()
     self.api_config_registry = api_backend_service.ApiConfigRegistry()
-    for api_service in api_services:
-      config_file = generator.pretty_print_config_to_json(api_service)
+    api_name_version_map = {}
+    for service in api_services:
+      key = (service.api_info.name, service.api_info.version)
+      services = api_name_version_map.setdefault(key, [])
+      if service in services:
+        raise api_config.ApiConfigurationError(
+            'Can\'t add the same class to an API twice: %s' % service.__name__)
+      services.append(service)
+
+    for services in api_name_version_map.values():
+      config_file = generator.pretty_print_config_to_json(services)
 
 
 
-      protorpc_class_name = api_service.__name__
-      root = self.__SPI_PREFIX + protorpc_class_name
-      if not any(service[0] == root or service[1] == api_service
-                 for service in protorpc_services):
-        self.api_config_registry.register_api(root, config_file)
-        protorpc_services.append((root, api_service))
+      self.api_config_registry.register_spi(config_file)
+      for api_service in services:
+        protorpc_class_name = api_service.__name__
+        root = self.__SPI_PREFIX + protorpc_class_name
+        if not any(service[0] == root or service[1] == api_service
+                   for service in protorpc_services):
+          protorpc_services.append((root, api_service))
 
 
     backend_service = api_backend_service.BackendServiceImpl.new_factory(
         self.api_config_registry, _get_app_revision())
     protorpc_services.insert(0, (self.__BACKEND_SERVICE_ROOT, backend_service))
 
+
     if 'protocols' in kwargs:
       raise TypeError('__init__() got an unexpected keyword argument '
                       "'protocols'")
+    protocols = remote.Protocols()
+    protocols.add_protocol(self.__PROTOJSON, 'protojson')
+    remote.Protocols.set_default(protocols)
+
     self.restricted = kwargs.pop('restricted', True)
-    self.service_app = service.service_mappings(protorpc_services, **kwargs)
+    self.service_app = wsgi_service.service_mappings(protorpc_services,
+                                                     **kwargs)
 
   def __is_request_restricted(self, environ):
     """Determine if access to SPI should be denied.
@@ -288,7 +319,7 @@ class _ApiServer(object):
     message = EndpointsErrorMessage(
         state=EndpointsErrorMessage.State.APPLICATION_ERROR,
         error_message=error_message)
-    return status, protojson.encode_message(message)
+    return status, self.__PROTOJSON.encode_message(message)
 
   def protorpc_to_endpoints_error(self, status, body):
     """Convert a ProtoRPC error to the format expected by Google Endpoints.
@@ -304,7 +335,7 @@ class _ApiServer(object):
       Tuple of (http status, body)
     """
     try:
-      rpc_error = protojson.decode_message(remote.RpcStatus, body)
+      rpc_error = self.__PROTOJSON.decode_message(remote.RpcStatus, body)
     except (ValueError, messages.ValidationError):
       rpc_error = remote.RpcStatus()
 
@@ -361,16 +392,6 @@ class _ApiServer(object):
 
       call_context = {}
       body_buffer = cStringIO.StringIO()
-      api_path = environ.get('PATH_INFO')
-
-
-      if api_path.startswith(self.__SPI_PREFIX):
-        protorpc_method_name = self.api_config_registry.lookup_api_method(
-            api_path[len(self.__SPI_PREFIX):])
-        if protorpc_method_name is not None:
-          logging.warning('API method rerouted (old protocol) for: %s',
-                          api_path[len(self.__SPI_PREFIX):])
-          environ['PATH_INFO'] = self.__SPI_PREFIX + protorpc_method_name
       body_iter = self.service_app(environ, StartResponse)
       status = call_context['status']
       headers = call_context['headers']
@@ -403,6 +424,8 @@ def api_server(api_services, **kwargs):
 
   Args:
     api_services: List of protorpc.remote.Service classes implementing the API
+      or a list of _ApiDecorator instances that decorate the service classes
+      for an API.
     **kwargs: Passed through to protorpc.wsgi.service.service_handlers except:
       protocols - ProtoRPC protocols are not supported, and are disallowed.
       restricted - If True or unset, the API will only be allowed to serve to

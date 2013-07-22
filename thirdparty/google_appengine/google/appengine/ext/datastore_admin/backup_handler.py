@@ -67,6 +67,7 @@ from google.appengine.ext import webapp
 from google.appengine.ext.datastore_admin import backup_pb2
 from google.appengine.ext.datastore_admin import utils
 from google.appengine.ext.mapreduce import context
+from google.appengine.ext.mapreduce import datastore_range_iterators as db_iters
 from google.appengine.ext.mapreduce import input_readers
 from google.appengine.ext.mapreduce import model
 from google.appengine.ext.mapreduce import operation as op
@@ -273,13 +274,12 @@ class ConfirmBackupImportHandler(webapp.RequestHandler):
         elif prefix and not prefix.endswith('/'):
           prefix += '/'
         for backup_info_file in list_bucket_files(bucket_name, prefix):
-          if backup_info_file.endswith('.backup_info'):
-            backup_info_file = '/gs/%s/%s' % (bucket_name, backup_info_file)
-
-            if backup_info_specified and backup_info_file == gs_handle:
-              selected_backup_info_file = backup_info_file
-            else:
-              other_backup_info_files.append(backup_info_file)
+          backup_info_path = '/gs/%s/%s' % (bucket_name, backup_info_file)
+          if backup_info_specified and backup_info_path == gs_handle:
+            selected_backup_info_file = backup_info_path
+          elif (backup_info_file.endswith('.backup_info')
+                and backup_info_file.count('.') == 1):
+            other_backup_info_files.append(backup_info_path)
       except Exception, ex:
         error = 'Failed to read bucket: %s' % ex
     template_params = {
@@ -545,20 +545,10 @@ class BackupLinkHandler(webapp.RequestHandler):
     self.response.set_status(400, message)
 
 
-class DatastoreEntityProtoInputReader(input_readers.DatastoreEntityInputReader):
+class DatastoreEntityProtoInputReader(input_readers.RawDatastoreInputReader):
   """An input reader which yields datastore entity proto for a kind."""
 
-  def _iter_key_range(self, k_range):
-    raw_entity_kind = self._get_raw_entity_kind(self._entity_kind)
-    query = k_range.make_ascending_datastore_query(raw_entity_kind,
-                                                   self._filters)
-    connection = datastore_rpc.Connection()
-    query_options = datastore_query.QueryOptions(batch_size=self._batch_size)
-    for batch in query.GetQuery().run(connection, query_options):
-      for entity_proto in batch.results:
-
-        key = datastore_types.Key._FromPb(entity_proto.key())
-        yield key, entity_proto
+  _KEY_RANGE_ITER_CLS = db_iters.KeyRangeEntityProtoIterator
 
 
 class DoBackupHandler(BaseDoHandler):
@@ -1582,7 +1572,7 @@ class RestoreEntity(object):
     if not self.kind_filter or entity.kind() in self.kind_filter:
       yield op.db.Put(entity)
       if self.app_id:
-        yield utils.AllocateMaxId(entity.key(), self.app_id)
+        yield utils.ReserveKey(entity.key(), self.app_id)
 
 
 def validate_gs_bucket_name(bucket_name):

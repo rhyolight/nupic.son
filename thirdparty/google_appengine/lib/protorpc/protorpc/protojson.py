@@ -31,23 +31,17 @@ import cStringIO
 import base64
 import logging
 
+from . import message_types
 from . import messages
+from . import util
 
 __all__ = [
     'ALTERNATIVE_CONTENT_TYPES',
     'CONTENT_TYPE',
+    'MessageJSONEncoder',
     'encode_message',
     'decode_message',
-]
-
-CONTENT_TYPE = 'application/json'
-
-ALTERNATIVE_CONTENT_TYPES = [
-  'application/x-javascript',
-  'text/javascript',
-  'text/x-javascript',
-  'text/x-json',
-  'text/json',
+    'ProtoJson',
 ]
 
 
@@ -60,7 +54,7 @@ def _load_json_module():
   It does a basic check to guess if a loaded version of json is compatible.
 
   Returns:
-    Comptable json module.
+    Compatible json module.
 
   Raises:
     ImportError if there are no json modules or the loaded json module is
@@ -87,11 +81,21 @@ def _load_json_module():
 json = _load_json_module()
 
 
-class _MessageJSONEncoder(json.JSONEncoder):
+# TODO: Rename this to MessageJsonEncoder.
+class MessageJSONEncoder(json.JSONEncoder):
   """Message JSON encoder class.
 
   Extension of JSONEncoder that can build JSON from a message object.
   """
+
+  def __init__(self, protojson_protocol=None, **kwargs):
+    """Constructor.
+
+    Args:
+      protojson_protocol: ProtoJson instance.
+    """
+    super(MessageJSONEncoder, self).__init__(**kwargs)
+    self.__protojson_protocol = protojson_protocol or ProtoJson.get_default()
 
   def default(self, value):
     """Return dictionary instance from a message object.
@@ -108,54 +112,132 @@ class _MessageJSONEncoder(json.JSONEncoder):
       for field in value.all_fields():
         item = value.get_assigned_value(field.name)
         if item not in (None, [], ()):
-          if isinstance(field, messages.BytesField):
-            if field.repeated:
-              item = [base64.b64encode(i) for i in item]
-            else:
-              item = base64.b64encode(item)
-          result[field.name] = item
+          result[field.name] = self.__protojson_protocol.encode_field(
+             field, item)
+      # Handle unrecognized fields, so they're included when a message is
+      # decoded then encoded.
+      for unknown_key in value.all_unrecognized_fields():
+        unrecognized_field, _ = value.get_unrecognized_field_info(unknown_key)
+        result[unknown_key] = unrecognized_field
       return result
     else:
-      return super(_MessageJSONEncoder, self).default(value)
+      return super(MessageJSONEncoder, self).default(value)
 
 
-def encode_message(message):
-  """Encode Message instance to JSON string.
+class ProtoJson(object):
+  """ProtoRPC JSON implementation class.
 
-  Args:
-    Message instance to encode in to JSON string.
-
-  Returns:
-    String encoding of Message instance in protocol JSON format.
-
-  Raises:
-    messages.ValidationError if message is not initialized.
+  Implementation of JSON based protocol used for serializing and deserializing
+  message objects.  Instances of remote.ProtocolConfig constructor or used with
+  remote.Protocols.add_protocol.  See the remote.py module for more details.
   """
-  message.check_initialized()
 
-  return json.dumps(message, cls=_MessageJSONEncoder)
+  CONTENT_TYPE = 'application/json'
+  ALTERNATIVE_CONTENT_TYPES = [
+      'application/x-javascript',
+      'text/javascript',
+      'text/x-javascript',
+      'text/x-json',
+      'text/json',
+  ]
 
+  def encode_field(self, field, value):
+    """Encode a python field value to a JSON value.
 
-def decode_message(message_type, encoded_message):
-  """Merge JSON structure to Message instance.
+    Args:
+      field: A ProtoRPC field instance.
+      value: A python value supported by field.
 
-  Args:
-    message_type: Message to decode data to.
-    encoded_message: JSON encoded version of message.
+    Returns:
+      A JSON serializable value appropriate for field.
+    """
+    if isinstance(field, messages.BytesField):
+      if field.repeated:
+        value = [base64.b64encode(byte) for byte in value]
+      else:
+        value = base64.b64encode(value)
+    elif isinstance(field, message_types.DateTimeField):
+      # DateTimeField stores its data as a RFC 3339 compliant string.
+      if field.repeated:
+        value = [i.isoformat() for i in value]
+      else:
+        value = value.isoformat()
+    return value
 
-  Returns:
-    Decoded instance of message_type.
+  def encode_message(self, message):
+    """Encode Message instance to JSON string.
 
-  Raises:
-    ValueError: If encoded_message is not valid JSON.
-    messages.ValidationError if merged message is not initialized.
-  """
-  if not encoded_message.strip():
-    return message_type()
+    Args:
+      Message instance to encode in to JSON string.
 
-  dictionary = json.loads(encoded_message)
+    Returns:
+      String encoding of Message instance in protocol JSON format.
 
-  def decode_dictionary(message_type, dictionary):
+    Raises:
+      messages.ValidationError if message is not initialized.
+    """
+    message.check_initialized()
+
+    return json.dumps(message, cls=MessageJSONEncoder, protojson_protocol=self)
+
+  def decode_message(self, message_type, encoded_message):
+    """Merge JSON structure to Message instance.
+
+    Args:
+      message_type: Message to decode data to.
+      encoded_message: JSON encoded version of message.
+
+    Returns:
+      Decoded instance of message_type.
+
+    Raises:
+      ValueError: If encoded_message is not valid JSON.
+      messages.ValidationError if merged message is not initialized.
+    """
+    if not encoded_message.strip():
+      return message_type()
+
+    dictionary = json.loads(encoded_message)
+    message = self.__decode_dictionary(message_type, dictionary)
+    message.check_initialized()
+    return message
+
+  def __find_variant(self, value):
+    """Find the messages.Variant type that describes this value.
+
+    Args:
+      value: The value whose variant type is being determined.
+
+    Returns:
+      The messages.Variant value that best describes value's type, or None if
+      it's a type we don't know how to handle.
+    """
+    if isinstance(value, bool):
+      return messages.Variant.BOOL
+    elif isinstance(value, (int, long)):
+      return messages.Variant.INT64
+    elif isinstance(value, float):
+      return messages.Variant.DOUBLE
+    elif isinstance(value, basestring):
+      return messages.Variant.STRING
+    elif isinstance(value, (list, tuple)):
+      # Find the most specific variant that covers all elements.
+      variant_priority = [None, messages.Variant.INT64, messages.Variant.DOUBLE,
+                          messages.Variant.STRING]
+      chosen_priority = 0
+      for v in value:
+        variant = self.__find_variant(v)
+        try:
+          priority = variant_priority.index(variant)
+        except IndexError:
+          priority = -1
+        if priority > chosen_priority:
+          chosen_priority = priority
+      return variant_priority[chosen_priority]
+    # Unrecognized type.
+    return None
+
+  def __decode_dictionary(self, message_type, dictionary):
     """Merge dictionary in to message.
 
     Args:
@@ -166,13 +248,23 @@ def decode_message(message_type, encoded_message):
     message = message_type()
     for key, value in dictionary.iteritems():
       if value is None:
-        message.reset(key)
+        try:
+          message.reset(key)
+        except AttributeError:
+          pass  # This is an unrecognized field, skip it.
         continue
 
       try:
         field = message.field_by_name(key)
       except KeyError:
-        # TODO(rafek): Support saving unknown values.
+        # Save unknown values.
+        variant = self.__find_variant(value)
+        if variant:
+          if key.isdigit():
+            key = int(key)
+          message.set_unrecognized_field(key, value, variant)
+        else:
+          logging.warning('No variant found for unrecognized field: %s', key)
         continue
 
       # Normalize values in to a list.
@@ -184,28 +276,7 @@ def decode_message(message_type, encoded_message):
 
       valid_value = []
       for item in value:
-        if isinstance(field, messages.EnumField):
-          try:
-            item = field.type(item)
-          except TypeError:
-            raise messages.DecodeError('Invalid enum value "%s"' % value[0])
-        elif isinstance(field, messages.BytesField):
-          item = base64.b64decode(item)
-        elif isinstance(field, messages.MessageField):
-          item = decode_dictionary(field.type, item)
-        elif (isinstance(field, messages.FloatField) and
-              isinstance(item, (int, long, basestring))):
-          try:
-            item = float(item)
-          except:
-            pass
-        elif (isinstance(field, messages.IntegerField) and
-              isinstance(item, basestring)):
-          try:
-            item = int(item)
-          except:
-            pass
-        valid_value.append(item)
+        valid_value.append(self.decode_field(field, item))
 
       if field.repeated:
         existing_value = getattr(message, field.name)
@@ -214,6 +285,77 @@ def decode_message(message_type, encoded_message):
         setattr(message, field.name, valid_value[-1])
     return message
 
-  message = decode_dictionary(message_type, dictionary)
-  message.check_initialized()
-  return message
+  def decode_field(self, field, value):
+    """Decode a JSON value to a python value.
+
+    Args:
+      field: A ProtoRPC field instance.
+      value: A serialized JSON value.
+
+    Return:
+      A Python value compatible with field.
+    """
+    if isinstance(field, messages.EnumField):
+      try:
+        return field.type(value)
+      except TypeError:
+        raise messages.DecodeError('Invalid enum value "%s"' % value[0])
+
+    elif isinstance(field, messages.BytesField):
+      try:
+        return base64.b64decode(value)
+      except TypeError, err:
+        raise messages.DecodeError('Base64 decoding error: %s' % err)
+
+    elif isinstance(field, message_types.DateTimeField):
+      try:
+        return util.decode_datetime(value)
+      except ValueError, err:
+        raise messages.DecodeError(err)
+
+    elif isinstance(field, messages.MessageField):
+      return self.__decode_dictionary(field.message_type, value)
+
+    elif (isinstance(field, messages.FloatField) and
+          isinstance(value, (int, long, basestring))):
+      try:
+        return float(value)
+      except:
+        pass
+
+    elif (isinstance(field, messages.IntegerField) and
+          isinstance(value, basestring)):
+      try:
+        return int(value)
+      except:
+        pass
+
+    return value
+
+  @staticmethod
+  def get_default():
+    """Get default instanceof ProtoJson."""
+    try:
+      return ProtoJson.__default
+    except AttributeError:
+      ProtoJson.__default = ProtoJson()
+      return ProtoJson.__default
+
+  @staticmethod
+  def set_default(protocol):
+    """Set the default instance of ProtoJson.
+
+    Args:
+      protocol: A ProtoJson instance.
+    """
+    if not isinstance(protocol, ProtoJson):
+      raise TypeError('Expected protocol of type ProtoJson')
+    ProtoJson.__default = protocol
+
+CONTENT_TYPE = ProtoJson.CONTENT_TYPE
+
+ALTERNATIVE_CONTENT_TYPES = ProtoJson.ALTERNATIVE_CONTENT_TYPES
+
+encode_message = ProtoJson.get_default().encode_message
+
+decode_message = ProtoJson.get_default().decode_message

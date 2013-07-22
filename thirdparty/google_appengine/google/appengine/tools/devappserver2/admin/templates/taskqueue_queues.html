@@ -5,7 +5,7 @@
 <h3>Task Queues</h3>
 
 <table class="ae-table">
-  <caption><strong>Push Queues</strong></caption>
+  <caption>Push Queues</caption>
   <thead>
     <tr>
       <th>Queue Name</th>
@@ -55,7 +55,7 @@
 </table>
 <br/>
 <table class="ae-table">
-  <caption><strong>Pull Queues</strong></caption>
+  <caption>Pull Queues</caption>
   <thead>
     <tr>
       <th>Queue Name</th>
@@ -86,7 +86,7 @@
           <form action="" method="post">
           <input type="hidden" name="xsrf_token" value="{{ xsrf_token }}"/>
           <input type="hidden" name="queue" value="{{ queue.name }}"/>
-          <input type="submit" name="action:purgequeue" value="Purge Queue"
+          <input type="submit" class="ae-button" name="action:purgequeue" value="Purge Queue"
           onclick="return confirm('Are you sure you want to purge all ' +
                                   'tasks from {{ queue.name }}?');"/>
           </form>

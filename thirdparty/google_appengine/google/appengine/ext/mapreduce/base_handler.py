@@ -30,11 +30,12 @@
 
 
 
-"""Base handler class for all mapreduce handlers.
-"""
+"""Base handler class for all mapreduce handlers."""
 
 
 
+
+import httplib
 import logging
 import simplejson
 
@@ -45,6 +46,7 @@ except ImportError:
   pipeline = None
 from google.appengine.ext import webapp
 from google.appengine.ext.mapreduce import errors
+from google.appengine.ext.mapreduce import model
 
 
 class Error(Exception):
@@ -77,12 +79,7 @@ class TaskQueueHandler(BaseHandler):
       self.response.set_status(
           403, message="Task queue handler received non-task queue request")
       return
-    self._setup()
     self.handle()
-
-  def _setup(self):
-    """Called before handle method to set up handler."""
-    pass
 
   def handle(self):
     """To be implemented by subclasses."""
@@ -90,7 +87,18 @@ class TaskQueueHandler(BaseHandler):
 
   def task_retry_count(self):
     """Number of times this task has been retried."""
-    return int(self.request.headers.get("X-AppEngine-TaskRetryCount", 0))
+    return int(self.request.headers.get("X-AppEngine-TaskExecutionCount", 0))
+
+  def retry_task(self):
+    """Ask taskqueue to retry this task.
+
+    Even though raising an exception can cause a task retry, it
+    will flood logs with highly visible ERROR logs. Handlers should uses
+    this method to perform controlled task retries. Only raise exceptions
+    for those deserve ERROR log entries.
+    """
+    self.response.set_status(httplib.SERVICE_UNAVAILABLE, "Retry task")
+    self.response.clear()
 
 
 class JsonHandler(BaseHandler):
@@ -122,7 +130,6 @@ class JsonHandler(BaseHandler):
 
   def _handle_wrapper(self):
     if self.request.headers.get("X-Requested-With") != "XMLHttpRequest":
-      logging.error(self.request.headers)
       logging.error("Got JSON request with no X-Requested-With header")
       self.response.set_status(
           403, message="Got JSON request with no X-Requested-With header")
@@ -145,7 +152,7 @@ class JsonHandler(BaseHandler):
 
     self.response.headers["Content-Type"] = "text/javascript"
     try:
-      output = simplejson.dumps(self.json_response)
+      output = simplejson.dumps(self.json_response, cls=model.JsonEncoder)
     except:
       logging.exception("Could not serialize to JSON")
       self.response.set_status(500, message="Could not serialize to JSON")
@@ -170,6 +177,31 @@ class GetJsonHandler(JsonHandler):
 
   def get(self):
     self._handle_wrapper()
+
+
+class HugeTaskHandler(TaskQueueHandler):
+  """Base handler for processing HugeTasks."""
+
+  class _RequestWrapper(object):
+    def __init__(self, request):
+      self._request = request
+      self._params = model.HugeTask.decode_payload(request)
+
+    def get(self, name, default=""):
+      return self._params.get(name, default)
+
+    def set(self, name, value):
+      self._params[name] = value
+
+    def __getattr__(self, name):
+      return getattr(self._request, name)
+
+  def __init__(self, *args, **kwargs):
+    super(HugeTaskHandler, self).__init__(*args, **kwargs)
+
+  def initialize(self, request, response):
+    super(HugeTaskHandler, self).initialize(request, response)
+    self.request = self._RequestWrapper(self.request)
 
 
 

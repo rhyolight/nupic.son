@@ -39,6 +39,8 @@ __all__ = ['BackendDeadlineExceeded',
            'BlobSizeTooLarge',
            'InternalError',
            'InvalidScope',
+           'NotAllowed',
+           'OperationNotImplemented',
            'Error',
            'create_rpc',
            'make_sign_blob_call',
@@ -87,6 +89,14 @@ class InvalidScope(Error):
   """Invalid scope."""
 
 
+class NotAllowed(Error):
+  """The operation is not allowed."""
+
+
+class OperationNotImplemented(Error):
+  """The operation is not implemented for the service account."""
+
+
 def _to_app_identity_error(error):
   """Translate an application error to an external Error, if possible.
 
@@ -107,6 +117,10 @@ def _to_app_identity_error(error):
       InternalError,
       app_identity_service_pb.AppIdentityServiceError.UNKNOWN_SCOPE:
       InvalidScope,
+      app_identity_service_pb.AppIdentityServiceError.NOT_ALLOWED:
+      NotAllowed,
+      app_identity_service_pb.AppIdentityServiceError.NOT_IMPLEMENTED:
+      OperationNotImplemented,
       }
   if error.application_error in error_map:
     return error_map[error.application_error](error.error_detail)
@@ -395,7 +409,13 @@ def make_get_access_token_call(rpc, scopes, service_account_id=None):
     for scope in scopes:
       request.add_scope(scope)
   if service_account_id:
-    request.set_service_account_id(service_account_id)
+    if isinstance(service_account_id, (int, long)):
+      request.set_service_account_id(service_account_id)
+    elif isinstance(service_account_id, basestring):
+      request.set_service_account_name(service_account_id)
+    else:
+      raise TypeError()
+
   response = app_identity_service_pb.GetAccessTokenResponse()
 
   def get_access_token_result(rpc):
@@ -466,7 +486,7 @@ def get_access_token(scopes, service_account_id=None):
 
   memcache_key = _MEMCACHE_KEY_PREFIX + str(scopes)
   if service_account_id:
-    memcache_key += ',%d' % service_account_id
+    memcache_key += ',%s' % service_account_id
   memcache_value = memcache.get(memcache_key, namespace=_MEMCACHE_NAMESPACE)
   if memcache_value:
     access_token, expires_at = memcache_value

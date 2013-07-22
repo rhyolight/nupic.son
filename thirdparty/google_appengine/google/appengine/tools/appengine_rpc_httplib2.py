@@ -119,7 +119,7 @@ class HttpRpcServerHttpLib2(object):
     self.user_agent = user_agent
     self.source = source
     self.host_override = host_override
-    self.extra_headers = extra_headers
+    self.extra_headers = extra_headers or {}
     self.save_cookies = save_cookies
     self.auth_tries = auth_tries
     self.account_type = account_type
@@ -129,14 +129,16 @@ class HttpRpcServerHttpLib2(object):
     self.rpc_tries = rpc_tries
     self.scheme = secure and 'https' or 'http'
 
+    self.certpath = None
+    self.cert_file_available = False
+    if not self.ignore_certs:
 
 
 
-    self.certpath = os.path.normpath(os.path.join(
-        os.path.dirname(__file__), '..', '..', '..', 'lib', 'cacerts',
-        'cacerts.txt'))
-    self.cert_file_available = (not self.ignore_certs
-                                and os.path.exists(self.certpath))
+      self.certpath = os.path.normpath(os.path.join(
+          os.path.dirname(__file__), '..', '..', '..', 'lib', 'cacerts',
+          'cacerts.txt'))
+      self.cert_file_available = os.path.exists(self.certpath)
 
     self.memory_cache = MemoryCache()
 
@@ -319,18 +321,20 @@ class HttpRpcServerOauth2(HttpRpcServerHttpLib2):
         debug_data=debug_data, secure=secure, ignore_certs=ignore_certs,
         rpc_tries=rpc_tries)
 
-    if save_cookies:
-      self.storage = oauth2client_file.Storage(
-          os.path.expanduser('~/.appcfg_oauth2_tokens'))
-    else:
-      self.storage = NoStorage()
-
-    if not isinstance(source, tuple) or len(source) != 3:
+    if not isinstance(source, tuple) or len(source) not in (3, 4):
       raise TypeError('Source must be tuple (client_id, client_secret, scope).')
 
     self.client_id = source[0]
     self.client_secret = source[1]
     self.scope = source[2]
+    oauth2_credential_file = (len(source) > 3 and source[3]
+                              or '~/.appcfg_oauth2_tokens')
+
+    if save_cookies:
+      self.storage = oauth2client_file.Storage(
+          os.path.expanduser(oauth2_credential_file))
+    else:
+      self.storage = NoStorage()
 
     self.refresh_token = refresh_token
     if refresh_token:

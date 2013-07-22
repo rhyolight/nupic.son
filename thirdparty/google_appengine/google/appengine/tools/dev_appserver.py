@@ -63,6 +63,7 @@ import simplejson
 import StringIO
 import struct
 import tempfile
+import wsgiref.headers
 import yaml
 
 
@@ -130,7 +131,7 @@ from google.appengine.api.system import system_stub
 from google.appengine.api.xmpp import xmpp_service_stub
 from google.appengine.datastore import datastore_sqlite_stub
 from google.appengine.datastore import datastore_stub_util
-
+from google.appengine.ext.cloudstorage import stub_dispatcher as gcs_dispatcher
 from google.appengine import dist
 
 try:
@@ -3476,7 +3477,7 @@ def SetupStubs(app_id, **config):
     address: The host that this dev_appsever is running on. Defaults to
       localhost.
     search_index_path: Path to the file to store search indexes in.
-    clear_search_index: If the search indeces should be cleared on startup.
+    clear_search_index: If the search indices should be cleared on startup.
   """
 
 
@@ -3609,9 +3610,13 @@ def SetupStubs(app_id, **config):
             task_retry_seconds=task_retry_seconds,
             default_http_server='%s:%s' % (serve_address, serve_port)))
 
+    urlmatchers_to_fetch_functions = []
+    urlmatchers_to_fetch_functions.extend(
+        gcs_dispatcher.URLMATCHERS_TO_FETCH_FUNCTIONS)
     apiproxy_stub_map.apiproxy.RegisterStub(
         'urlfetch',
-        urlfetch_stub.URLFetchServiceStub())
+        urlfetch_stub.URLFetchServiceStub(
+            urlmatchers_to_fetch_functions=urlmatchers_to_fetch_functions))
 
     apiproxy_stub_map.apiproxy.RegisterStub(
         'xmpp',
@@ -4180,3 +4185,54 @@ class DevAppserverDispatcher(request_info._LocalFakeDispatcher):
     """
     fake_socket = FakeRequestSocket(method, relative_url, headers, body)
     self._server.AddEvent(0, lambda: (fake_socket, (source_ip, self._port)))
+
+  def add_request(self, method, relative_url, headers, body, source_ip,
+                  server_name=None, version=None, instance_id=None):
+    """Process an HTTP request.
+
+    Args:
+      method: A str containing the HTTP method of the request.
+      relative_url: A str containing path and query string of the request.
+      headers: A list of (key, value) tuples where key and value are both str.
+      body: A str containing the request body.
+      source_ip: The source ip address for the request.
+      server_name: An optional str containing the server name to service this
+          request. If unset, the request will be dispatched to the default
+          server.
+      version: An optional str containing the version to service this request.
+          If unset, the request will be dispatched to the default version.
+      instance_id: An optional str containing the instance_id of the instance to
+          service this request. If unset, the request will be dispatched to
+          according to the load-balancing for the server and version.
+
+    Returns:
+      A request_info.ResponseTuple containing the response information for the
+      HTTP request.
+    """
+    try:
+      header_dict = wsgiref.headers.Headers(headers)
+      connection_host = header_dict.get('host')
+      connection = httplib.HTTPConnection(connection_host)
+
+
+      connection.putrequest(
+          method, relative_url,
+          skip_host='host' in header_dict,
+          skip_accept_encoding='accept-encoding' in header_dict)
+
+      for header_key, header_value in headers:
+        connection.putheader(header_key, header_value)
+      connection.endheaders()
+      connection.send(body)
+
+      response = connection.getresponse()
+      response.read()
+      response.close()
+
+      return request_info.ResponseTuple(
+          '%d %s' % (response.status, response.reason), [], '')
+    except (httplib.HTTPException, socket.error):
+      logging.exception(
+          'An error occured while sending a %s request to "%s%s"',
+          method, connection_host, relative_url)
+      return request_info.ResponseTuple('0', [], '')
