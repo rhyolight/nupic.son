@@ -28,8 +28,8 @@ from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
+
 
 DEF_CANNOT_ACCESS_EVALUATION = ugettext(
     'Organization Administrators can view this evaluation submitted by the '
@@ -187,8 +187,6 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
     context = {
         'page_name': '%s' % data.student_evaluation.title,
         'description': data.student_evaluation.content,
-        'form_top_msg': LoggedInMsg(data, apply_link=False,
-                                    div_name='user-login'),
         'project': data.project.title,
         'forms': [form],
         'error': bool(form.errors),
@@ -260,8 +258,6 @@ class GSoCStudentEvaluationPreviewPage(base.GSoCRequestHandler):
     context = {
         'page_name': '%s' % data.student_evaluation.title,
         'description': data.student_evaluation.content,
-        'form_top_msg': LoggedInMsg(data, apply_link=False,
-                                    div_name='user-login'),
         'project': "The Project Title",
         'forms': [form],
         'error': bool(form.errors),
@@ -379,7 +375,6 @@ class GSoCStudentEvaluationShowPage(base.GSoCRequestHandler):
         'student': student.name(),
         'organization': data.project.org.name,
         'project': data.project.title,
-        'top_msg': LoggedInMsg(data, apply_link=False),
         'css_prefix': GSoCStudentEvaluationReadOnlyTemplate.Meta.css_prefix,
         }
 

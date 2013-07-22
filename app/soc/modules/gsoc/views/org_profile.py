@@ -24,7 +24,6 @@ from soc.views import org_profile
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.views import base
-from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -184,7 +183,6 @@ class OrgProfilePage(base.GSoCRequestHandler):
 
     context = {
         'page_name': "Organization profile",
-        'form_top_msg': LoggedInMsg(data, apply_link=False),
         'forms': [form],
         'error': bool(form.errors),
         }

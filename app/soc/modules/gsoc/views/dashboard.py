@@ -57,7 +57,6 @@ from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.score import GSoCScore
 from soc.modules.gsoc.views import base
-from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -224,7 +223,6 @@ class DashboardPage(base.GSoCRequestHandler):
     return {
         'page_name': data.program.name,
         'user_name': data.profile.name() if data.profile else None,
-        'logged_in_msg': LoggedInMsg(data),
         'program_select': ProgramSelect(data, 'gsoc_dashboard'),
     # TODO(ljvderijk): Implement code for setting dashboard messages.
     #   'alert_msg': 'Default <strong>alert</strong> goes here',

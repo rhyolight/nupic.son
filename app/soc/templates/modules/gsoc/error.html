@@ -19,10 +19,7 @@ limitations under the License.
 {% endblock stylesheets %}
 
 {% block page_content %}
-
-  {{ logged_in_msg.render }}
-
   <div id="flash-message" class="flash-error">
-        <p>{{ message|escape }}</p>
+    <p>{{ message|escape }}</p>
   </div>
 {% endblock page_content %}

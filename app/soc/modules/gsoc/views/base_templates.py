@@ -17,7 +17,6 @@
 from django.core.urlresolvers import reverse
 
 from soc.logic import links
-from soc.views.base_templates import LoggedInMsg
 from soc.views.template import Template
 
 from soc.modules.gci.logic.program import getMostRecentProgram
@@ -162,11 +161,3 @@ class Footer(Template):
 
   def templatePath(self):
     return "modules/gsoc/footer.html"
-
-
-class LoggedInMsg(LoggedInMsg):
-  """Template to render user login message at the top of the profile form.
-  """
-
-  def templatePath(self):
-    return "modules/gsoc/_loggedin_msg.html"

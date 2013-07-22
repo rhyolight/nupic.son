@@ -29,7 +29,6 @@ from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_patterns
 
 EVALUATION_CHOICES = (
@@ -202,8 +201,6 @@ class GSoCMentorEvaluationTakePage(base.GSoCRequestHandler):
     context = {
         'page_name': '%s' % (data.mentor_evaluation.title),
         'description': data.mentor_evaluation.content,
-        'form_top_msg': LoggedInMsg(data, apply_link=False,
-                                    div_name='user-login'),
         'project': data.project.title,
         'student': data.project_owner.name(),
         'forms': [form],
@@ -275,8 +272,6 @@ class GSoCMentorEvaluationPreviewPage(base.GSoCRequestHandler):
     context = {
         'page_name': '%s' % (data.mentor_evaluation.title),
         'description': data.mentor_evaluation.content,
-        'form_top_msg': LoggedInMsg(data, apply_link=False,
-                                    div_name='user-login'),
         'project': 'The Project Title',
         'student': "The Student's Name",
         'forms': [form],
@@ -385,7 +380,6 @@ class GSoCMentorEvaluationShowPage(base.GSoCRequestHandler):
         'student': student.name(),
         'organization': data.project.org.name,
         'project': data.project.title,
-        'top_msg': LoggedInMsg(data, apply_link=False),
         'css_prefix': GSoCMentorEvaluationReadOnlyTemplate.Meta.css_prefix,
         }
 

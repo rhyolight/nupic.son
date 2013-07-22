@@ -20,44 +20,6 @@ from soc.models.site import Site
 from soc.views.template import Template
 
 
-class LoggedInMsg(Template):
-  """Template to render user login message at the top of the profile form.
-  """
-  def __init__(self, data, apply_role=False, apply_link=True, div_name=None):
-    if not div_name:
-      div_name = 'loggedin-message'
-    self.data = data
-    self.apply_link = apply_link
-    self.apply_role = apply_role
-    self.div_name = div_name
-
-    # TODO(nathaniel): Of course, this should be "the one application-wide
-    # linker object", but that unification will have to come later.
-    self._linker = links.Linker()
-
-  def context(self):
-    context = {
-        'logout_link': self._linker.logout(self.data.request),
-        'has_profile': bool(self.data.profile),
-        'div_name': self.div_name,
-    }
-
-    if self.apply_role and self.data.kwargs.get('role'):
-      context['role'] = self.data.kwargs['role']
-
-    if self.data.gae_user:
-      context['user_email'] = self.data.gae_user.email()
-
-    if self.data.user:
-      context['link_id'] = " [username: %s]" % self.data.user.link_id
-
-    if self.apply_link and self.data.timeline.studentSignup() and \
-        self.data.student_info:
-      context['apply_link'] = self.data.redirect.acceptedOrgs().url()
-
-    return context
-
-
 class ProgramSelect(Template):
   """Program select template.
   """
