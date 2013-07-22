@@ -140,7 +140,7 @@ class ProjectList(Template):
       a lambda expression that takes a project entity as its first argument
         and returns URL to the page with details of that project.
     """
-    return lambda e, *args: data.redirect.project(
+    return lambda e, *args: self.data.redirect.project(
         id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
         'gsoc_project_details')
 
