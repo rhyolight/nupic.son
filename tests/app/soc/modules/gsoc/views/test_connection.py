@@ -17,10 +17,10 @@
 
 from google.appengine.ext import db
 
-from soc.models import connection
+from melange.models import connection
 
-from soc.modules.gsoc.models.connection import GSoCConnection
-from soc.modules.gsoc.models.connection_message import GSoCConnectionMessage
+from melange.models.connection import Connection
+from melange.models.connection_message import ConnectionMessage
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
@@ -73,7 +73,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
         'organization' : self.org
         }
     response = self.post(url, data)
-    new_connection = GSoCConnection.all().ancestor(other_data.user).get()
+    new_connection = Connection.all().ancestor(other_data.user).get()
     self.assertPropertiesEqual(expected, new_connection)
     self.assertEmailSent(bcc=other_data.profile.email, n=1)
 
@@ -87,7 +87,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
         }
     response = self.post(url, data)
     self.assertEmailSent(bcc=other_data.profile.email, n=1)
-    new_connection = GSoCConnection.all().ancestor(other_data.user).get()
+    new_connection = Connection.all().ancestor(other_data.user).get()
     self.assertIsNotNone(new_connection)
 
   def testConnectionUserAction(self):
@@ -101,7 +101,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
         'org_state' : connection.STATE_ACCEPTED,
         'role' : connection.ORG_ADMIN_ROLE
         }
-    new_connection = seeder_logic.seed(GSoCConnection, properties)
+    new_connection = seeder_logic.seed(Connection, properties)
 
     # Test GET.
     url = '/gsoc/connection/%s/%s' % (
@@ -114,25 +114,25 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     data = {'responses' : 'reject_org_admin'}
     response = self.post(url, data)
     self.assertResponseRedirect(response)
-    new_connection = GSoCConnection.all().get()
+    new_connection = Connection.all().get()
     self.assertEqual(new_connection.user_state, connection.STATE_REJECTED)
     profile = GSoCProfile.all().get()
     self.assertNotIn(self.org.key(), profile.mentor_for)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
-    msg = GSoCConnectionMessage.all().ancestor(new_connection).get()
+    msg = ConnectionMessage.all().ancestor(new_connection).get()
     self.assertNotEqual(None, msg)
     msg.delete()
 
     data['responses'] = 'accept_org_admin'
     response = self.post(url, data)
     self.assertResponseRedirect(response)
-    new_connection = GSoCConnection.all().get()
+    new_connection = Connection.all().get()
     self.assertEqual(new_connection.user_state, connection.STATE_ACCEPTED)
     profile = GSoCProfile.all().get()
     self.assertIn(self.org.key(), profile.mentor_for)
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertEmailSent(to=profile.email)
-    msg = GSoCConnectionMessage.all().ancestor(new_connection).get()
+    msg = ConnectionMessage.all().ancestor(new_connection).get()
     self.assertNotEqual(None, msg)
 
   def testConnectionOrgAction(self):
@@ -149,7 +149,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
         'user_state' : connection.STATE_ACCEPTED,
         'role' : connection.MENTOR_ROLE
         }
-    new_connection = seeder_logic.seed(GSoCConnection, properties)
+    new_connection = seeder_logic.seed(Connection, properties)
 
     # Test GET.
     url = '/gsoc/connection/%s/%s' % (
@@ -162,23 +162,23 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     data = {'responses' : 'reject_mentor'}
     response = self.post(url, data)
     self.assertResponseRedirect(response)
-    new_connection = GSoCConnection.all().get()
+    new_connection = Connection.all().get()
     self.assertEqual(new_connection.org_state, connection.STATE_REJECTED)
     profile = GSoCProfile.all().filter(
         'link_id =', other_data.profile.link_id).get()
     self.assertNotIn(self.org.key(), profile.mentor_for)
-    msg = GSoCConnectionMessage.all().ancestor(new_connection).get()
+    msg = ConnectionMessage.all().ancestor(new_connection).get()
     self.assertNotEqual(None, msg)
     msg.delete()
 
     data['responses'] = 'accept_mentor'
     response = self.post(url, data)
     self.assertResponseRedirect(response)
-    new_connection = GSoCConnection.all().get()
+    new_connection = Connection.all().get()
     self.assertEqual(new_connection.org_state, connection.STATE_ACCEPTED)
     profile = GSoCProfile.all().filter(
         'link_id =', other_data.profile.link_id).get()
     self.assertIn(self.org.key(), profile.mentor_for)
     self.assertEmailSent(to=profile.email)
-    msg = GSoCConnectionMessage.all().ancestor(new_connection).get()
+    msg = ConnectionMessage.all().ancestor(new_connection).get()
     self.assertNotEqual(None, msg)
