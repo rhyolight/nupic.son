@@ -1357,7 +1357,8 @@ class ManageProjectsListPage(base.GSoCRequestHandler):
   def jsonContext(self, data, check, mutator):
     list_query = project_logic.getProjectsQuery(program=data.program)
     list_content = projects_list.ProjectList(
-        data, list_query, idx=self.LIST_IDX).getListData()
+        data, list_query, idx=self.LIST_IDX,
+        row_action=_getManageProjectRowAction).getListData()
     if list_content:
       return list_content.content()
     else:
@@ -1367,16 +1368,21 @@ class ManageProjectsListPage(base.GSoCRequestHandler):
     list_query = project_logic.getProjectsQuery(program=data.program)
     return {
       'page_name': 'Projects list page',
-      'list': projects_list.ProjectList(data, list_query, idx=self.LIST_IDX),
+      'list': projects_list.ProjectList(data, list_query, idx=self.LIST_IDX,
+          row_action=_getManageProjectRowAction),
     }
 
-  def _getManageProjectRowAction(self):
-    """Returns a row action that redirects to the manage project page.
 
-    Returns:
-      a lamba expression that takes a project entity as its first argument
-        and returns URL to the manage project page.
-    """
-    return lambda e, *args: data.redirect.project(
-        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
-        urls.UrlNames.PROJECT_MANAGE_ADMIN)
+def _getManageProjectRowAction(data):
+  """Returns a row action that redirects to the manage project page.
+
+  Args:
+    data: RequestData object for the current request.
+
+  Returns:
+    a lamba expression that takes a project entity as its first argument
+      and returns URL to the manage project page.
+  """
+  return lambda e, *args: data.redirect.project(
+      id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
+      urls.UrlNames.PROJECT_MANAGE_ADMIN)

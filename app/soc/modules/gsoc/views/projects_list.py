@@ -94,7 +94,7 @@ class ProjectList(Template):
     list_config.setDefaultSort('student')
 
     if row_action:
-      list_config.setRowAction(row_action)
+      list_config.setRowAction(row_action(data))
     else:
       list_config.setRowAction(self._getDefaultRowAction())
 
