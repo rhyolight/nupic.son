@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Module for the GSoC profile page."""
 
 from google.appengine.ext import db
@@ -37,6 +36,8 @@ from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_names
+
+from summerofcode.templates import tabs
 
 
 def _handleAnonymousConnection(data, profile):
@@ -254,13 +255,20 @@ class GSoCProfilePage(profile.ProfilePage, base.GSoCRequestHandler):
     if 'role' in data.kwargs:
       role = data.kwargs['role']
       kwargs = dicts.filter(data.kwargs, ['sponsor', 'program'])
-      edit_url = reverse('edit_gsoc_profile', kwargs=kwargs)
+      edit_url = reverse(url_names.GSOC_PROFILE_EDIT, kwargs=kwargs)
       if role == 'student':
         check.canApplyStudent(edit_url)
       else:
         check.canApplyNonStudent(role, edit_url)
     else:
       check.isProfileActive()
+
+  def context(self, data, check, mutator):
+    """Context for the profile page."""
+    context = super(GSoCProfilePage, self).context(data, check, mutator)
+    context['tabs'] = tabs.profileTabs(
+        data, selected_tab_id=tabs.EDIT_PROFILE_TAB_ID)
+    return context
 
   def templatePath(self):
     return 'modules/gsoc/profile/base.html'
@@ -289,7 +297,7 @@ class GSoCProfilePage(profile.ProfilePage, base.GSoCRequestHandler):
     return 'gsoc'
 
   def _getEditProfileURLName(self):
-    return 'edit_gsoc_profile'
+    return url_names.GSOC_PROFILE_EDIT
 
   def _getCreateProfileURLName(self):
     return 'create_gsoc_profile'

@@ -12,24 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""Tests for user profile related views.
-"""
+"""Tests for user profile related views."""
 
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
-from tests import profile_utils
+from summerofcode.templates import tabs
 
+from tests import profile_utils
 from tests.test_utils import GSoCDjangoTestCase
 
 
 class ProfileViewTest(GSoCDjangoTestCase):
-  """Tests user profile views.
-  """
+  """Tests user profile views."""
 
   def setUp(self):
     self.init()
+
+  def _editProfileUrl(self):
+    """Returns URL for Edit Profile page.
+
+    Returns:
+      URL for Edit Profile page.
+    """
+    return '/gsoc/profile/' + self.gsoc.key().name()
 
   def assertProfileTemplatesUsed(self, response):
     self.assertGSoCTemplatesUsed(response)
@@ -198,3 +204,17 @@ class ProfileViewTest(GSoCDjangoTestCase):
 
     error_dict = response.context['error']
     self.assertIn('email', error_dict)
+
+  def testProfileTabs(self):
+    """Tests that correct profile related tabs are present in context."""
+    self.timeline_helper.orgsAnnounced()
+    self.profile_helper.createProfile()
+
+    response = self.get(self._editProfileUrl())
+
+    # check that tabs are present in context
+    self.assertIn('tabs', response.context)
+
+    # check that tab to "Edit Profile" page is the selected one
+    self.assertEqual(response.context['tabs'].selected_tab_id,
+        tabs.EDIT_PROFILE_TAB_ID)

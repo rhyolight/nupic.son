@@ -17,9 +17,10 @@
 from django.core.urlresolvers import reverse
 
 from soc.logic import links
-from soc.views.template import Template
+from soc.views import template
 
 from soc.modules.gci.logic.program import getMostRecentProgram
+from soc.modules.gsoc.views.helper import url_names
 
 
 def siteMenuContext(data):
@@ -60,9 +61,8 @@ def siteMenuContext(data):
   return context
 
 
-class Header(Template):
-  """MainMenu template.
-  """
+class Header(template.Template):
+  """Header template."""
 
   def __init__(self, data):
     self.data = data
@@ -105,7 +105,7 @@ class Header(Template):
 
     return context
 
-class MainMenu(Template):
+class MainMenu(template.Template):
   """MainMenu template.
   """
 
@@ -121,12 +121,8 @@ class MainMenu(Template):
 
     if self.data.profile and self.data.profile.status == 'active':
       self.data.redirect.program()
-      if self.data.timeline.programActive():
-        context['profile_link'] = self.data.redirect.urlOf(
-            'edit_gsoc_profile', secure=True)
-      else:
-        context['profile_link'] = self.data.redirect.urlOf(
-            'show_gsoc_profile', secure=True)
+      context['profile_link'] = self.data.redirect.urlOf(
+          url_names.GSOC_PROFILE_SHOW, secure=True)
 
     if self.data.is_host:
       self.data.redirect.program()
@@ -138,9 +134,8 @@ class MainMenu(Template):
     return "modules/gsoc/mainmenu.html"
 
 
-class Footer(Template):
-  """Footer template.
-  """
+class Footer(template.Template):
+  """Footer template."""
 
   def __init__(self, data):
     self.data = data

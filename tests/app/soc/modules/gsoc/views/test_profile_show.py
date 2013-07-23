@@ -12,20 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for GSoC read only profile page related views."""
 
-"""Tests for GSoC read only profile page related views.
-"""
-
+from summerofcode.templates import tabs
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 
+
 class ProfileShowPageTest(GSoCDjangoTestCase):
-  """Tests the view for read only profile show page.
-  """
+  """Tests the view for read only profile show page."""
 
   def setUp(self):
     self.init()
+
+  def _viewProfileUrl(self):
+    """Returns URL for View Profile page.
+
+    Returns:
+      URL for View Profile page.
+    """
+    return '/gsoc/profile/show/' + self.gsoc.key().name()
 
   def assertProfileShowTemplateUsed(self, response):
     """Asserts that correct templates were used to render the view.
@@ -38,8 +45,7 @@ class ProfileShowPageTest(GSoCDjangoTestCase):
     """Tests that a user which has no profile can not access its profile.
     """
     self.profile_helper.createUser()
-    url = '/gsoc/profile/show/' + self.gsoc.key().name()
-    response = self.get(url)
+    response = self.get(self._viewProfileUrl())
     self.assertResponseForbidden(response)
 
   def testAUserNotLoggedInIsRedirectedToLoginPage(self):
@@ -50,10 +56,9 @@ class ProfileShowPageTest(GSoCDjangoTestCase):
     current_logged_in_account = os.environ.get('USER_EMAIL', None)
     try:
       os.environ['USER_EMAIL'] = ''
-      url = '/gsoc/profile/show/' + self.gsoc.key().name()
-      response = self.get(url)
+      response = self.get(self._viewProfileUrl())
       expected_redirect_url = 'https://www.google.com/accounts/Login?' + \
-          'continue=http%3A//some.testing.host.tld' + url
+          'continue=http%3A//some.testing.host.tld' + self._viewProfileUrl()
       actual_redirect_url = response.get('location', None)
       self.assertResponseRedirect(response)
       self.assertEqual(expected_redirect_url, actual_redirect_url)
@@ -67,8 +72,7 @@ class ProfileShowPageTest(GSoCDjangoTestCase):
     """Tests that a logged in student with a profile can access its profile page.
     """
     self.profile_helper.createStudent()
-    url = '/gsoc/profile/show/' + self.gsoc.key().name()
-    response = self.get(url)
+    response = self.get(self._viewProfileUrl())
     self.assertResponseOK(response)
     self.assertProfileShowTemplateUsed(response)
 
@@ -90,10 +94,23 @@ class ProfileShowPageTest(GSoCDjangoTestCase):
     actual_program_name = context['program_name']
     self.assertEqual(expected_program_name, actual_program_name)
 
+  def testProfileTabs(self):
+    """Tests that correct profile related tabs are present in context."""
+    self.timeline_helper.orgsAnnounced()
+    self.profile_helper.createProfile()
+
+    response = self.get(self._viewProfileUrl())
+
+    # check that tabs are present in context
+    self.assertIn('tabs', response.context)
+
+    # check that tab to "Edit Profile" page is the selected one
+    self.assertEqual(response.context['tabs'].selected_tab_id,
+        tabs.VIEW_PROFILE_TAB_ID)
+
 
 class ProfileAdminPageTest(GSoCDjangoTestCase):
-  """Tests the view related to readonly profile page.
-  """
+  """Tests the view related to readonly profile page."""
 
   def setUp(self):
     self.init()

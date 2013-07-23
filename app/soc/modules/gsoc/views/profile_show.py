@@ -28,6 +28,8 @@ from soc.modules.gsoc.views import readonly_template
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+from summerofcode.templates import tabs
+
 
 class GSoCProfileReadOnlyTemplate(readonly_template.GSoCModelReadOnlyTemplate):
   """Template to construct read-only GSoCProfile data.
@@ -83,7 +85,7 @@ class GSoCProfileShowPage(profile_show.ProfileShowPage, base.GSoCRequestHandler)
   def djangoURLPatterns(self):
     return [
         url(r'profile/show/%s$' % url_patterns.PROGRAM,
-            self, name='show_gsoc_profile'),
+            self, name=url_names.GSOC_PROFILE_SHOW),
     ]
 
   def templatePath(self):
@@ -92,6 +94,10 @@ class GSoCProfileShowPage(profile_show.ProfileShowPage, base.GSoCRequestHandler)
   def _getProfileReadOnlyTemplate(self, profile):
     return GSoCProfileReadOnlyTemplate(profile)
 
+  def _getTabs(self, data):
+    """See profile_show.ProfileShowPage._getTabs for specification."""
+    return tabs.profileTabs(
+        data, selected_tab_id=tabs.VIEW_PROFILE_TAB_ID)
 
 class GSoCProfileAdminPage(base.GSoCRequestHandler):
   """View to display the readonly profile page.
@@ -100,7 +106,7 @@ class GSoCProfileAdminPage(base.GSoCRequestHandler):
   def djangoURLPatterns(self):
     return [
         url(r'profile/admin/%s$' % url_patterns.PROFILE,
-         self, name=url_names.GSOC_PROFILE_SHOW),
+         self, name=url_names.GSOC_PROFILE_SHOW_ADMIN),
     ]
 
   def checkAccess(self, data, check, mutator):
