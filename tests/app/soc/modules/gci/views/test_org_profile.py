@@ -64,7 +64,9 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     url = '/gci/profile/organization/' + self.gci.key().name()
     response = self.get(url + '?org_id=new_org')
 
-    self.assertResponseRedirect(response)
+    redirect_url = '/gci/profile/org_admin/%s?org_id=new_org' % (
+        self.gci.key().name())
+    self.assertResponseRedirect(response, url=redirect_url)
 
   def testCreateOrg(self):
     """Tests that only the assigned org admin for an organization can edit the
