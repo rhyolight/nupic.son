@@ -154,6 +154,27 @@ def getSurveyActivePeriod(survey, extension=None):
   return Period(start=period_start, end=period_end)
 
 
+def isSurveyActive(survey, profile_key):
+  """Tells whether the specified survey is currently active for the specified
+  profile or not.
+
+  Args:
+    survey: survey entity.
+    profile_key: profile for which survey state is checked.
+
+  Returns:
+    True, if the survey is currently active. False, otherwise.
+  """
+  active_period = getSurveyActivePeriod(survey)
+  if active_period.state == IN_PERIOD_STATE:
+    return True
+  else:
+    # try finding a personal extension for the student
+    extension = getPersonalExtension(profile_key, survey.key())
+    active_period = getSurveyActivePeriod(survey, extension=extension)
+    return active_period.state == IN_PERIOD_STATE
+
+
 def createOrUpdatePersonalExtension(profile_key, survey_key, **kwargs):
   """Creates personal extension for the specified survey and profile.
 
