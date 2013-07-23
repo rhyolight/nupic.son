@@ -77,7 +77,8 @@ class OrgProfilePage(GCIRequestHandler):
       mutator.orgAppFromOrgId()
       check.isOrgAppAccepted()
       check.isUserAdminForOrgApp()
-      check.hasProfileOrRedirectToCreate()
+      check.hasProfileOrRedirectToCreate('org_admin',
+          get_params={'org_id': data.GET['org_id']})
 
   def templatePath(self):
     return 'modules/gci/org_profile/base.html'

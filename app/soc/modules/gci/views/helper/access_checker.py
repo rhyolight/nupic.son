@@ -16,6 +16,8 @@
 for checking access.
 """
 
+import urllib
+
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
@@ -23,7 +25,6 @@ from melange.request import exception
 from melange.utils import time
 
 from soc.logic import dicts
-from soc.logic import validate
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 
@@ -42,12 +43,6 @@ DEF_ALL_WORK_STOPPED = ugettext(
 
 DEF_COMMENTING_NOT_ALLOWED = ugettext(
     "No more comments can be placed at this time.")
-
-DEF_NO_ORG_ADMIN_PROFILE = ugettext(
-    'You must have an organization administrator profile to apply to be an '
-    'an organization. If you want to register as an organization '
-    'administrator for %s please <a href="%s">click here</a>, register and '
-    'then come back to this page.')
 
 DEF_NO_TASK_CREATE_PRIV = ugettext(
     'You do not have sufficient privileges to create a new task for %s.' )
@@ -255,13 +250,13 @@ class AccessChecker(access_checker.AccessChecker):
       raise exception.Forbidden(message=DEF_NO_PREV_ORG_MEMBER)
 
     q = GSoCProfile.all(keys_only=True)
-    q.filter('is_student', False)
+    q.filter('is_mentor', True)
     q.filter('status', 'active')
     q.filter('user', self.data.user)
     gsoc_profile = q.get()
 
     q = GCIProfile.all(keys_only=True)
-    q.filter('is_student', False)
+    q.filter('is_mentor', True)
     q.filter('status', 'active')
     q.filter('user', self.data.user)
     gci_profile = q.get()
@@ -279,17 +274,7 @@ class AccessChecker(access_checker.AccessChecker):
     # to accept organizations which have not participated before
     self.hasNonStudentProfileInAProgram()
 
-    program = self.data.program
-
-    # TODO(nathaniel): Eliminate this state-setting call.
-    self.data.redirect.createProfile('org_admin')
-    msg = DEF_NO_ORG_ADMIN_PROFILE % (
-        program.short_name,
-        self.data.redirect.urlOf('create_gci_profile', secure=True))
-
-    if not validate.hasNonStudentProfileForProgram(
-        self.data.user, program, GCIProfile):
-      raise exception.Forbidden(message=msg)
+    self.hasProfileOrRedirectToCreate('org_admin')
 
   def isOrgAppAccepted(self):
     """Checks if the org app stored in request data is accepted.
@@ -311,16 +296,25 @@ class AccessChecker(access_checker.AccessChecker):
       raise exception.Forbidden(message=DEF_NOT_ORG_ADMIN_FOR_ORG_APP % {
           'org_name': self.data.org_app_record.name})
 
-  def hasProfileOrRedirectToCreate(self):
-    """Checks if user has a profile and redirect to create an org admin
-    profile for the organization listed in the GET data if the user does
-    not have a profile.
+  def hasProfileOrRedirectToCreate(self, role, get_params=None):
+    """Checks if user has a profile and redirects to "Create Profile" page
+    if a profile is not present.
+
+    Args:
+      role: type of profile that should potentially be created. May be one
+        of: org_admin, mentor, student.
+      get_params: optional dictionary with GET parameters that should be
+        appended to the redirect URL
     """
     if not self.data.profile:
-      org_id = self.data.GET['org_id']
+      get_params = get_params or {}
       profile_url = self.data.redirect.createProfile('org_admin').urlOf(
           'create_gci_profile', secure=True)
-      raise exception.Redirect(profile_url + '?new_org=' + org_id)
+
+      if get_params:
+        profile_url += '?' + urllib.urlencode(get_params)
+
+      raise exception.Redirect(profile_url)
 
   def isBeforeAllWorkStopped(self):
     """Raises exception.UserError if all work on tasks has stopped."""
