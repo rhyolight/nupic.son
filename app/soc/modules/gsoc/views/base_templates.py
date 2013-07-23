@@ -17,7 +17,6 @@
 from django.core.urlresolvers import reverse
 
 from soc.logic import links
-from soc.views.base_templates import LoggedInMsg
 from soc.views.template import Template
 
 from soc.modules.gci.logic.program import getMostRecentProgram
@@ -91,12 +90,20 @@ class Header(Template):
       # resolve to the correct module URL prefix.
       gci_link = reverse('gci_homepage', kwargs=gci_kwargs)
 
-    return {
+    context = {
         'home_link': self.data.redirect.homepage().url(),
         'program_link_id': self.data.program.link_id,
         'gci_link': gci_link,
-    }
+        }
 
+    # TODO(nathaniel): This should be "the one application-wide linker object"
+    # rather than a one-off instantiation.
+    linker = links.Linker()
+    if self.data.gae_user:
+      context['logout_link'] = linker.logout(self.data.request)
+      context['user_email'] = self.data.gae_user.email()
+
+    return context
 
 class MainMenu(Template):
   """MainMenu template.
@@ -154,11 +161,3 @@ class Footer(Template):
 
   def templatePath(self):
     return "modules/gsoc/footer.html"
-
-
-class LoggedInMsg(LoggedInMsg):
-  """Template to render user login message at the top of the profile form.
-  """
-
-  def templatePath(self):
-    return "modules/gsoc/_loggedin_msg.html"

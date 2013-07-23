@@ -24,7 +24,6 @@ from soc.views.template import Template
 from soc.modules.gsoc.logic import organization as org_logic
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.views import base
-from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -223,8 +222,6 @@ class Homepage(base.GSoCRequestHandler):
     next_deadline = data.timeline.nextDeadline()
 
     context = {
-        'logged_in_msg': LoggedInMsg(data, apply_link=False,
-                                     div_name='user-login'),
         'timeline': Timeline(data, current_timeline, next_deadline),
         'apply': Apply(data),
         'connect_with_us': ConnectWithUs(data),

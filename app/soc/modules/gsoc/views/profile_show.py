@@ -25,7 +25,6 @@ from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import readonly_template
-from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -128,7 +127,6 @@ class GSoCProfileAdminPage(base.GSoCRequestHandler):
 
     context = {
         'program_name': program.name,
-        'form_top_msg': LoggedInMsg(data, apply_link=False),
         'user': profile_show.UserReadOnlyTemplate(user),
         'css_prefix': GSoCProfileReadOnlyTemplate.Meta.css_prefix,
         }

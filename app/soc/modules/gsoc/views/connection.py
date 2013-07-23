@@ -35,7 +35,6 @@ from soc.modules.gsoc.logic.helper import notifications as gsoc_notifications
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -373,7 +372,6 @@ class OrgConnectionPage(base.GSoCRequestHandler):
       dupes = data.request.GET['dupes'].split(',')
 
     return {
-      'logged_in_msg': LoggedInMsg(data, apply_link=False),
       'page_name': 'Open a connection',
       'program': data.program,
       'connection_form': connection_form,
@@ -462,7 +460,6 @@ class UserConnectionPage(base.GSoCRequestHandler):
         data=data.POST or None)
 
     return {
-      'logged_in_msg': LoggedInMsg(data, apply_link=False),
       'profile_created': data.GET.get('profile') == 'created',
       'page_name': 'Open a connection',
       'program': data.program,

@@ -124,7 +124,6 @@ class GSoCErrorHandler(error.ErrorHandler):
     context = {
         'page_name': message,
         'message': message,
-        'logged_in_msg': base_templates.LoggedInMsg(data, apply_link=False)
     }
 
     return http.HttpResponse(
