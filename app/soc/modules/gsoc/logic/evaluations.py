@@ -16,9 +16,17 @@
 
 from melange.utils import time
 
+from summerofcode.logic import survey as survey_logic
+
 
 def evaluationRowAdder(evals):
   """Add rows for each evaluation for each entity that is fetched.
+
+  Args:
+    evals: a dictionary containing  evaluations.
+
+  Returns:
+    adder function that can be used to add rows to a list of evaluations.
   """
   def adder(content_response, entity, *args):
     # get the last failed evaluation for the project so that an
@@ -33,10 +41,21 @@ def evaluationRowAdder(evals):
     # since evals is an object of type Django's SortedDict
     # we can be sure that the evaluations are iterated in the order
     for eval_link_id, evaluation in evals.items():
-      if time.isAfter(evaluation.survey_start):
-        content_response.addRow(entity, eval_link_id, *args)
+      active_period = survey_logic.getSurveyActivePeriod(evaluation)
+      has_started = active_period != survey_logic.PRE_PERIOD_STATE
+      if not has_started:
+        # try getting an extension for the project
+        extension = survey_logic.getPersonalExtension(
+            entity.parent_key(), evaluation.key())
 
-        if failed_eval and \
+        active_period = survey_logic.getSurveyActivePeriod(
+            evaluation, extension=extension)
+
+        has_started = active_period != survey_logic.PRE_PERIOD_STATE
+
+      content_response.addRow(entity, eval_link_id, *args)
+
+      if failed_eval and \
             failed_eval.key().id_or_name() == evaluation.key().id_or_name():
           break
 
