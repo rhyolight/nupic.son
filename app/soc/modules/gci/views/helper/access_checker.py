@@ -16,6 +16,8 @@
 for checking access.
 """
 
+import urllib
+
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
@@ -308,10 +310,8 @@ class AccessChecker(access_checker.AccessChecker):
       profile_url = self.data.redirect.createProfile('org_admin').urlOf(
           'create_gci_profile', secure=True)
 
-      if len(get_params):
-        profile_url += '?'
-        for param, value in get_params.iteritems():
-          profile_url += '%s=%s' % (param, value)
+      if get_params:
+        profile_url += '?' + urllib.urlencode(get_params)
 
       raise exception.Redirect(profile_url)
 

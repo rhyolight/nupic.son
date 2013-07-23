@@ -78,7 +78,7 @@ class OrgProfilePage(GCIRequestHandler):
       check.isOrgAppAccepted()
       check.isUserAdminForOrgApp()
       check.hasProfileOrRedirectToCreate('org_admin',
-          {'org_id': data.GET['org_id']})
+          get_params={'org_id': data.GET['org_id']})
 
   def templatePath(self):
     return 'modules/gci/org_profile/base.html'
