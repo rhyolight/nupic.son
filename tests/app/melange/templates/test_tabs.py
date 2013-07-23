@@ -19,11 +19,6 @@ import unittest
 from melange.templates import tabs
 
 
-class MockRequestData(object):
-  """Mock implementation of RequestData."""
-  pass
-
-
 TEST_TAB_ID_FMT = 'test_tab_id_%i'
 TEST_TAB_NAME_FMT = 'Test Name %i'
 TEST_TAB_URL_FMT = 'http://www.test%i.com'
@@ -47,8 +42,8 @@ class TabsTest(unittest.TestCase):
 
     self.selected_tab_id = TEST_TAB_ID_FMT % SELECTED_TAB_INDEX
 
-    self.tabs = tabs.Tabs(MockRequestData(), TEMPLATE_PATH, self.tabs_list,
-        self.selected_tab_id)
+    self.tabs = tabs.Tabs('This string is not a real RequestData object',
+        TEMPLATE_PATH, self.tabs_list, self.selected_tab_id)
 
   def testFieldInitialization(self):
     """Tests that correct values of properties are returned."""

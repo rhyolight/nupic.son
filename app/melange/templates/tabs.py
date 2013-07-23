@@ -27,7 +27,6 @@ class Tab(object):
       tab_id: identifier of the tab.
       name: name of the tab that to be displayed on the page.
       url: URL address to which the tab redirects upon clicking.
-      is_selected: whether the tab should be rendered as currently selected.
     """
     self.tab_id = tab_id
     self.name = name
