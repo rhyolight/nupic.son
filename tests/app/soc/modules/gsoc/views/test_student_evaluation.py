@@ -25,7 +25,7 @@ from django.utils.html import escape
 from tests import timeline_utils
 from tests.profile_utils import GSoCProfileHelper
 from tests.survey_utils import SurveyHelper
-from tests.test_utils import GSoCDjangoTestCase
+from tests import test_utils
 
 from soc.views import forms
 
@@ -37,7 +37,7 @@ from soc.modules.seeder.logic.providers.string import LinkIDProvider
 from summerofcode.models import survey as survey_model
 
 
-class StudentEvaluationTest(GSoCDjangoTestCase):
+class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
   """Tests proposal review page.
   """
 
@@ -678,3 +678,63 @@ class StudentEvaluationTest(GSoCDjangoTestCase):
     self.ffPastEval(eval)
     response = self.get(url)
     self.assertEvaluationShowTemplateUsed(response)
+
+
+class GSoCStudentEvaluationPreviewPageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for GSoCStudentEvaluationPreviewPage class."""
+
+  def setUp(self):
+    self.init()
+    self.evaluation = SurveyHelper(
+        self.gsoc, self.dev_test).createStudentEvaluation()
+
+  def _getUrl(self):
+    """Returns URL to preview student evaluation.
+
+    Returns:
+      URL string to preview student evaluation.
+    """
+    return '/gsoc/eval/student/preview/%s/%s' % (
+        self.program.key().name(), self.evaluation.survey_type)
+
+  def _assertTemplatesUsed(self, response):
+    """Asserts that all the evaluation preview templates were used.
+
+    Args:
+      response: HTTP response object.
+    """
+    self.assertGSoCTemplatesUsed(response)
+    self.assertTemplateUsed(response, 'modules/gsoc/form_base.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/_evaluation_take.html')
+
+  def testLoneUserAccessDenied(self):
+    """Tests that users without profiles cannot access the page."""
+    self.profile_helper.createUser()
+    response = self.get(self._getUrl())
+    self.assertResponseForbidden(response)
+
+  def testStudentAccessDenied(self):
+    """Tests that students cannot access the page."""
+    self.profile_helper.createStudent()
+    response = self.get(self._getUrl())
+    self.assertResponseForbidden(response)
+
+  def testMentorAccessDenied(self):
+    """Tests that mentors cannot access the page."""
+    self.profile_helper.createMentor(self.org)
+    response = self.get(self._getUrl())
+    self.assertResponseForbidden(response)
+
+  def testOrgAdminAccessDenied(self):
+    """Tests that org admins cannot access the page."""
+    self.profile_helper.createOrgAdmin(self.org)
+    response = self.get(self._getUrl())
+    self.assertResponseForbidden(response)
+
+  def testProgramAdminAccessGranted(self):
+    """Tests that program administrators can access the page."""
+    self.profile_helper.createHost()
+    response = self.get(self._getUrl())
+    self.assertResponseOK(response)
+    self._assertTemplatesUsed(response)
