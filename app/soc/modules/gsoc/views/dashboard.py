@@ -61,6 +61,8 @@ from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+from summerofcode.logic import survey as survey_logic
+
 DATETIME_FORMAT = 'Y-m-d H:i:s'
 BIRTHDATE_FORMAT = 'd-m-Y'
 BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
@@ -258,7 +260,10 @@ class DashboardPage(base.GSoCRequestHandler):
       # Add a component to show the evaluations
       evals = dictForSurveyModel(
           ProjectSurvey, data.program, ['midterm', 'final'])
-      if evals and data.timeline.afterFirstSurveyStart(evals.values()):
+      any_survey_active = any(
+          survey_logic.isSurveyActive(evaluation, data.profile.key()) 
+              for evaluation in evals.values())
+      if any_survey_active:
         components.append(MyEvaluationsComponent(data, evals))
 
       # Add a component to show all the projects
