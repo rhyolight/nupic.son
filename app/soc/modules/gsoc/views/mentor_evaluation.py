@@ -18,6 +18,8 @@ from django.utils.translation import ugettext
 
 import django
 
+from melange.request import access
+
 from soc.views import forms
 from soc.views import survey
 from soc.views.helper import lists
@@ -250,8 +252,9 @@ class GSoCMentorEvaluationTakePage(base.GSoCRequestHandler):
 
 
 class GSoCMentorEvaluationPreviewPage(base.GSoCRequestHandler):
-  """View for the host preview mentor evaluation.
-  """
+  """View for the host preview mentor evaluation."""
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     return [
@@ -261,12 +264,14 @@ class GSoCMentorEvaluationPreviewPage(base.GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     check.isHost()
-    mutator.mentorEvaluationFromKwargs(raise_not_found=False)
+    
 
   def templatePath(self):
     return 'modules/gsoc/_evaluation_take.html'
 
   def context(self, data, check, mutator):
+    mutator.mentorEvaluationFromKwargs()
+
     form = GSoCMentorEvaluationTakeForm(data.mentor_evaluation)
 
     context = {
