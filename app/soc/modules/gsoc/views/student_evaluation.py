@@ -254,7 +254,7 @@ class GSoCStudentEvaluationPreviewPage(base.GSoCRequestHandler):
     return 'modules/gsoc/_evaluation_take.html'
 
   def context(self, data, check, mutator):
-    mutator.studentEvaluationFromKwargs(raise_not_found=False)
+    mutator.studentEvaluationFromKwargs()
 
     form = GSoCStudentEvaluationTakeForm(data.student_evaluation)
 

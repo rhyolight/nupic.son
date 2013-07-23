@@ -738,3 +738,10 @@ class GSoCStudentEvaluationPreviewPageTest(test_utils.GSoCDjangoTestCase):
     response = self.get(self._getUrl())
     self.assertResponseOK(response)
     self._assertTemplatesUsed(response)
+
+  def testForNonExistingSurvey(self):
+    """Tests that error response is returned for non-existing surveys."""
+    self.profile_helper.createHost()
+    response = self.get('/gsoc/eval/student/preview/%s/fakesurvey' %
+        self.program.key().name())
+    self.assertResponseNotFound(response)
