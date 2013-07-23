@@ -19,7 +19,9 @@ from soc.views.helper import lists
 
 from django.utils.translation import ugettext
 
+from melange.request import access
 from melange.request import exception
+
 from soc.views.helper.access_checker import isSet
 from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 
@@ -237,8 +239,9 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
 
 
 class GSoCStudentEvaluationPreviewPage(base.GSoCRequestHandler):
-  """View for the host to preview the evaluation.
-  """
+  """View for the host to preview the evaluation."""
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     return [
@@ -247,14 +250,12 @@ class GSoCStudentEvaluationPreviewPage(base.GSoCRequestHandler):
              self, name='gsoc_preview_student_evaluation'),
     ]
 
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
-    mutator.studentEvaluationFromKwargs(raise_not_found=False)
-
   def templatePath(self):
     return 'modules/gsoc/_evaluation_take.html'
 
   def context(self, data, check, mutator):
+    mutator.studentEvaluationFromKwargs(raise_not_found=False)
+
     form = GSoCStudentEvaluationTakeForm(data.student_evaluation)
 
     context = {
