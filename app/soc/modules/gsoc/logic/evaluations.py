@@ -32,12 +32,12 @@ def evaluationRowAdder(evals):
 
     # since evals is an object of type Django's SortedDict
     # we can be sure that the evaluations are iterated in the order
-    for eval_link_id, eval in evals.items():
-      if time.isAfter(eval.survey_start):
+    for eval_link_id, evaluation in evals.items():
+      if time.isAfter(evaluation.survey_start):
         content_response.addRow(entity, eval_link_id, *args)
 
         if failed_eval and \
-            failed_eval.key().id_or_name() == eval.key().id_or_name():
+            failed_eval.key().id_or_name() == evaluation.key().id_or_name():
           break
 
   return adder
