@@ -14,7 +14,7 @@
 
 """Logic for evaluations."""
 
-from melange.utils import time
+from summerofcode.logic import survey as survey_logic
 
 from summerofcode.logic import survey as survey_logic
 

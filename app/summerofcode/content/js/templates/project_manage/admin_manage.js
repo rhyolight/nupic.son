@@ -14,26 +14,16 @@
  */
 melange.templates.inherit(
   function (_self, context) {
-	  jQuery("select, input:radio, input:file, input:checkbox").uniform();
-	  jQuery("#id_start_date").datepicker({
-		  changeMonth: true,
-		  changeYear: true,
-		  dateFormat: "yy-mm-dd",
-		  showButtonPanel: true,
-		  minDate: "-1y",
-		  maxDate: "+1y",
-		  yearRange: "-2",
-		  defaultDate: null
-	  });
-	  jQuery("#id_end_date").datepicker({
-		  changeMonth: true,
-		  changeYear: true,
-		  dateFormat: "yy-mm-dd",
-		  showButtonPanel: true,
-		  minDate: "-1y",
-		  maxDate: "+1y",
-		  yearRange: "-2",
-		  defaultDate: null
-	  });
+    var config = {
+        changeMonth: true,
+        changeYear: false,
+        dateFormat: "yy-mm-dd",
+        showButtonPanel: true
+      };
+      var fields_to_enhance = [
+        "#id_start_date",
+        "#id_end_date"
+      ].join(",");
+      jQuery(fields_to_enhance).datetimepicker(config);
   }
 );

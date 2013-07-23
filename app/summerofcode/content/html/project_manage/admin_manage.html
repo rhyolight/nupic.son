@@ -30,6 +30,8 @@ limitations under the License.
 
 {% block page_content %}
 
+{% include "forms/_data_saved_message.html" %}
+
 <h1 id="main-page-title" class="dashboard-title">Manage Student Project</h1>
 
 {% for extension_form in extension_forms %}
@@ -78,7 +80,7 @@ limitations under the License.
   [
     dep.uniform,
     dep.counter,
-    dep.jqueryui.datepicker,
+    dep.melange.datetimepicker,
     null,
     tc("/summerofcode/content/{{ app_version }}/js/templates/project_manage/admin_manage.js")
   ]

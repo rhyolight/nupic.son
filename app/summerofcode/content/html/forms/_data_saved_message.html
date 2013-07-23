@@ -1,0 +1,10 @@
+{% if posted %}
+  {% if error %}
+    <div id="flash-message" class="flash-error">
+    <p>Sorry, we could not save your data. Please fix the errors mentioned below.</p>
+  {% else %}
+    <div id="flash-message" class="flash-success">
+    <p>Data saved successfully.</p>
+  {% endif %}
+  </div>
+{% endif %}

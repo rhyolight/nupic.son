@@ -25,16 +25,7 @@ limitations under the License.
 {% block open_form %}
 <form action="{% if cbox %}?cbox=true{% else %}#{% endif %}" method="post" id="form" class="form-register">
 {% endblock open_form %}
-  {% if posted %}
-    {% if error %}
-      <div id="flash-message" class="flash-error">
-      <p>Sorry, we could not save your data. Please fix the errors mentioned below.</p>
-    {% else %}
-      <div id="flash-message" class="flash-success">
-      <p>Data saved successfully.</p>
-    {% endif %}
-    </div>
-  {% endif %}
+{% include "forms/_data_saved_message.html" %}
 
   {% if form_top_msg %}
     {{ form_top_msg.render }}
