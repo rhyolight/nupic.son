@@ -16,8 +16,6 @@
 
 import json
 
-from nose.plugins import skip
-
 from tests.profile_utils import GSoCProfileHelper
 from tests.survey_utils import SurveyHelper
 from tests.test_utils import GSoCDjangoTestCase
@@ -109,19 +107,6 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
     data = json.loads(response.content)
     self.assertEqual(len(data['data']['']), 2)
-
-  def testDashboardAsHost(self):
-    raise skip.SkipTest("TODO(Leo): enable it after code fix.")
-    self.profile_helper.createHost()
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor.createOtherUser('mentor@example.com').createMentor(self.org)
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com')
-    student.createStudentWithProject(self.org, mentor.profile)
-
-    url = '/gsoc/dashboard/' + self.gsoc.key().name()
-    response = self.get(url)
-    self.assertDashboardTemplatesUsed(response)
 
   def testDashboardAsOrgAdmin(self):
     self.profile_helper.createOrgAdmin(self.org)
