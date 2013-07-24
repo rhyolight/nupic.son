@@ -346,3 +346,15 @@ def getMentors(org_key, keys_only=False, extra_attrs=None):
   _handleExtraAttrs(query, extra_attrs)
 
   return query.fetch(1000)
+
+
+def allFormsSubmitted(student_info):
+  """Tells whether the specified student has submitted all required forms.
+
+  Args:
+    student_info: student info entity.
+
+  Returns:
+    True if all forms has been submitted; False otherwise.
+  """
+  return student_info.getTaxFormKey() and student_info.getEnrollmentFormKey()

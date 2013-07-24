@@ -16,6 +16,8 @@
 
 import unittest
 
+from google.appengine.ext import blobstore
+
 from soc.modules.gsoc.logic import profile as profile_logic
 
 from soc.modules.gsoc.models import profile as profile_model
@@ -1095,3 +1097,36 @@ class BecomeOrgAdminForOrgTest(unittest.TestCase):
 
     # the profile should still be a student
     self.assertTrue(self.profile.is_student)
+
+
+class AllFormsSubmittedTest(unittest.TestCase):
+  """Unit tests for areFormsSubmitted function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.student_info = seeder_logic.seed(profile_model.GSoCStudentInfo)
+
+  def testNoAllFormsSubmitted(self):
+    """Tests when no all required forms has been submitted."""
+    # no forms are submitted
+    forms_submitted = profile_logic.allFormsSubmitted(self.student_info)
+    self.assertFalse(forms_submitted)
+
+    # only tax form is submitted
+    self.student_info.tax_form = blobstore.BlobKey('fake key name')
+    forms_submitted = profile_logic.allFormsSubmitted(self.student_info)
+    self.assertFalse(forms_submitted)
+
+    # only enrollment form is submitted
+    self.student_info.tax_form = None
+    self.student_info.enrollment_form = blobstore.BlobKey('fake key name')
+    forms_submitted = profile_logic.allFormsSubmitted(self.student_info)
+    self.assertFalse(forms_submitted)
+
+  def testAllFormsSubmitted(self):
+    """Tests when all required forms has been submitted."""
+    # both forms are submitted
+    self.student_info.tax_form = blobstore.BlobKey('fake key name')
+    self.student_info.enrollment_form = blobstore.BlobKey('fake key name')
+    forms_submitted = profile_logic.allFormsSubmitted(self.student_info)
+    self.assertTrue(forms_submitted)
