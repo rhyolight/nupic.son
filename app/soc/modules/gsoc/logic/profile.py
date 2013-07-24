@@ -358,3 +358,15 @@ def allFormsSubmitted(student_info):
     True if all forms has been submitted; False otherwise.
   """
   return student_info.getTaxFormKey() and student_info.getEnrollmentFormKey()
+
+
+def hasProject(student_info):
+  """Tells whether the specified student has at least one project assigned.
+
+  Args:
+    student_info: student info entity.
+
+  Returns:
+    True if the student has at least one project; False otherwise.
+  """
+  return bool(student_info.number_of_projects)
