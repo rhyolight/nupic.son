@@ -289,3 +289,25 @@ class GCIConversationTest(unittest.TestCase):
     actual = gciconversation_logic.numUnreadMessagesForProgramAndUser(
         program=self.program_key, user=self.user_keys[1])
     self.assertEqual(expected, actual)
+
+  def testCreateMessage(self):
+    """Test that createMessage correctly creates a new message and updates
+    the conversation's last_message_on time.
+    """
+
+    # Fresh conversation with no messages
+    blank_conversation = self.conv_utils.createConversation(subject='A Subject')
+
+    # Add message
+    message = gciconversation_logic.createMessage(
+        conversation=blank_conversation.key)
+
+    self.assertIsNotNone(message)
+
+    # Get conversation with updated values
+    blank_conversation = blank_conversation.key.get()
+
+    # Conversation's last_message_on should be message's sent_time
+    expected = message.sent_on
+    actual = blank_conversation.last_message_on
+    self.assertEqual(expected, actual)

@@ -14,6 +14,8 @@
 
 """GCIConversationUser logic methods."""
 
+from google.appengine.ext import ndb
+
 from datetime import timedelta
 
 from soc.modules.gci.models import conversation as gciconversation_model
@@ -154,3 +156,57 @@ def markAllReadForConversationAndUser(conversation, user):
 
   conv_user.last_message_seen_on = last_message.sent_on
   conv_user.put()
+
+
+def reputConversationUsers(conversation):
+  """Updates all computed properties in each GCIConversationUser entity for
+  a conversation.
+
+  Args:
+    conversation: Key (ndb) of GCIConversation.
+  """
+  @ndb.tasklet
+  def reput(conv_user):
+    conv_user.put()
+
+  queryConversationUserForConversation(conversation).map(reput)
+
+
+def createMessage(conversation, user=None, content=''):
+  """Creates and returns a new GCIMessage, and updates conversation and
+  conversationusers' last_message_sent_on date.
+
+  Args:
+    conversation: Key (ndb) of GCIConversation.
+    user: Key (ndb) of user who sent the message. Can be None if conversation
+          is created by Melange itself.
+    content: Content of message. This function will not sanitize it for you.
+
+  Returns:
+    The created GCIMessage.
+  """
+  if content is None: return None
+
+  @ndb.transactional
+  def create():
+    message = gcimessage_model.GCIMessage(
+        parent=conversation,
+        conversation=conversation,
+        content=content,
+        author=user)
+    message.put()
+
+    # Update last_message_sent_on in conversation
+    conversation_ent = conversation.get()
+    conversation_ent.last_message_on = message.sent_on
+    conversation_ent.put()
+
+    return message
+
+  message = create()
+
+  # Reput each conversationuser for the conversation to update computed
+  # properties such as last_message_sent_on
+  reputConversationUsers(conversation)
+
+  return message
