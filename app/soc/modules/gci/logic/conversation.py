@@ -112,6 +112,26 @@ def numUnreadMessagesForConversationAndUser(conversation, user):
   return None if query is None else query.count()
 
 
+#TODO(drewgottlieb) use mapreduce for this
+def numUnreadMessagesForProgramAndUser(program, user):
+  """Returns the number of unread messages for all conversations the user is in
+  for a program.
+
+  Args:
+    program: Key (ndb) of GCIProgram.
+    user: Key (ndb) of User.
+  """
+  conv_users = queryForProgramAndUser(program, user).fetch(1000)
+  
+  unread_count = 0
+
+  for conv_user in conv_users:
+    unread_count += numUnreadMessagesForConversationAndUser(
+        conv_user.conversation, user)
+
+  return unread_count
+
+
 def markAllReadForConversationAndUser(conversation, user):
   """Marks all messages in a conversation as read for the user.
 

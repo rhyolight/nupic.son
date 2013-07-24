@@ -256,3 +256,36 @@ class GCIConversationTest(unittest.TestCase):
     with self.assertRaises(Exception):
       gciconversation_logic.markAllReadForConversationAndUser(
           conversation=self.conv_b.key, user=self.user_keys[0])
+
+  def testNumUnreadMessagesForProgramAndUser(self):
+    """Tests that numUnreadMessagesForProgramAndUser computes the correct number
+    of messages for all conversations in a program for a particular user.
+    """
+
+    # Add three new messages to the first conversation, each one minute apart,
+    # starting one minute after the last message.
+    for x in range(3):
+      self.conv_utils.addMessage(
+          conversation=self.conv_a.key,
+          time=(self.conv_a.last_message_on + timedelta(minutes=x+1)))
+
+    # Add two new messages to the second conversation, each one minute apart,
+    # starting one minute after the last message.
+    for x in range(2):
+      self.conv_utils.addMessage(
+          conversation=self.conv_b.key,
+          time=(self.conv_b.last_message_on + timedelta(minutes=x+1)))
+
+    # The first user, who is only in the first conversation, should have
+    # four unread messages
+    expected = 4
+    actual = gciconversation_logic.numUnreadMessagesForProgramAndUser(
+        program=self.program_key, user=self.user_keys[0])
+    self.assertEqual(expected, actual)
+
+    # The second user, who is in both conversations, should have
+    # seven unread messages
+    expected = 7
+    actual = gciconversation_logic.numUnreadMessagesForProgramAndUser(
+        program=self.program_key, user=self.user_keys[1])
+    self.assertEqual(expected, actual)
