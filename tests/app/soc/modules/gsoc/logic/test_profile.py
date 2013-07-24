@@ -180,7 +180,7 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
         'program': self.program,
         'org': self.organization_one,
         }
-    proposal = seeder_logic.seed(
+    seeder_logic.seed(
         proposal_model.GSoCProposal, proposal_properties)
 
     # mentor is involved in organization one because of a proposal
@@ -418,7 +418,7 @@ class GetOrgAdminsTest(unittest.TestCase):
         'org_admin_for': [self.organization_one.key()],
         'status': 'invalid',
     }
-    org_admin = seeder_logic.seed(
+    seeder_logic.seed(
         profile_model.GSoCProfile, org_admin_properties)
 
     # not active org admin not returned
@@ -486,11 +486,10 @@ class CountOrgAdminsTest(unittest.TestCase):
         'org_admin_for': [self.organization_one.key()],
         'status': 'active',
     }
-    seeded_org_admins = set()
     for _ in range(5):
       seeder_logic.seed(profile_model.GSoCProfile, org_admin_properties)
 
-    # seed  org admins for organization one
+    # seed  org admins for organization two
     org_admin_properties = {
         'is_mentor': True,
         'mentor_for': [self.organization_two.key()],
@@ -498,7 +497,6 @@ class CountOrgAdminsTest(unittest.TestCase):
         'org_admin_for': [self.organization_two.key()],
         'status': 'active',
     }
-    seeded_org_admins = set()
     for _ in range(3):
       seeder_logic.seed(profile_model.GSoCProfile, org_admin_properties)
 
@@ -519,13 +517,11 @@ class CountOrgAdminsTest(unittest.TestCase):
         'org_admin_for': [self.organization_one.key()],
         'status': 'invalid',
     }
-    org_admin = seeder_logic.seed(
-        profile_model.GSoCProfile, org_admin_properties)
+    seeder_logic.seed(profile_model.GSoCProfile, org_admin_properties)
 
     # seed the other org admin who is active
     org_admin_properties['status'] = 'active'
-    org_admin = seeder_logic.seed(
-        profile_model.GSoCProfile, org_admin_properties)
+    seeder_logic.seed(profile_model.GSoCProfile, org_admin_properties)
 
     # only active org admin counted
     org_admins = profile_logic.countOrgAdmins(self.organization_one.key())
@@ -610,7 +606,7 @@ class GetMentorsTest(unittest.TestCase):
         'org_admin_for': [],
         'status': 'invalid',
     }
-    mentor = seeder_logic.seed(profile_model.GSoCProfile, mentor_properties)
+    seeder_logic.seed(profile_model.GSoCProfile, mentor_properties)
 
     # not active mentor not returned
     mentors = profile_logic.getMentors(self.organization_one.key())
