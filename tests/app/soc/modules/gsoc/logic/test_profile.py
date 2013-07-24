@@ -125,7 +125,7 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
     self.organization_two = seeder_logic.seed(GSoCOrganization,
@@ -210,7 +210,7 @@ class CanResignAsOrgAdminTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
     self.organization_two = seeder_logic.seed(GSoCOrganization,
@@ -264,7 +264,7 @@ class ResignAsOrgAdminForOrgTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
     self.organization = seeder_logic.seed(GSoCOrganization,
@@ -346,7 +346,7 @@ class GetOrgAdminsTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
     self.organization_two = seeder_logic.seed(GSoCOrganization,
@@ -467,7 +467,7 @@ class CountOrgAdminsTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
     self.organization_two = seeder_logic.seed(GSoCOrganization,
@@ -539,7 +539,7 @@ class GetMentorsTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
     self.organization_two = seeder_logic.seed(GSoCOrganization,
@@ -679,7 +679,7 @@ class ResignAsMentorForOrgTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
 
@@ -754,7 +754,7 @@ class CanBecomeMentorTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed an organization
+    # seed an organization
     self.organization = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
 
@@ -821,7 +821,7 @@ class CanBecomeOrgAdminTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed an organization
+    # seed an organization
     self.organization = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
 
@@ -903,7 +903,7 @@ class BecomeMentorForOrgTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
     self.organization_two = seeder_logic.seed(GSoCOrganization,
@@ -1010,7 +1010,7 @@ class BecomeOrgAdminForOrgTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
     self.organization_two = seeder_logic.seed(GSoCOrganization,
