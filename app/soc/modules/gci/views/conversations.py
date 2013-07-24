@@ -23,6 +23,7 @@ from soc.views.helper import url_patterns
 from soc.modules.gci.logic import conversation as gciconversation_logic
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.templates import conversation_list
+from soc.modules.gci.templates import conversation_list_cell
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
 
@@ -36,18 +37,26 @@ class ConversationsList(conversation_list.ConversationList):
 
   def _getListConfig(self):
     """See ConversationList._getListConfig for full specification."""
+
     list_config = lists.ListConfiguration()
 
+    def createHtml(e, *args):
+      return conversation_list_cell.ConversationListCell(
+          self.data, e.conversation).render()
+
+    list_config.addHtmlColumn('conversation', 'Conversation', createHtml)
     list_config.addPlainTextColumn('subject', 'Subject',
-        lambda e, *args: e.conversation.get().subject)
+        lambda e, *args: e.conversation.get().subject,
+        hidden=True)
     list_config.addPlainTextColumn('last_message_on', 'Last Message Time (raw)',
         lambda e, *args: e.conversation.get().last_message_on,
         hidden=True)
     list_config.addPlainTextColumn('last_message_on_ctime', 'Last Message Time',
-        lambda e, *args: e.conversation.get().last_message_on.ctime())
+        lambda e, *args: e.conversation.get().last_message_on.ctime(),
+        hidden=True)
 
-    list_config.setDefaultPagination(50)
-    list_config.setDefaultSort('last_message_on')
+    list_config.setDefaultPagination(20)
+    list_config.setDefaultSort('last_message_on', order='desc')
 
     return list_config
 

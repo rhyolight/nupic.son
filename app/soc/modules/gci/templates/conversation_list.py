@@ -22,6 +22,11 @@ class ConversationList(template.Template):
   """Template for list of conversations."""
 
   def __init__(self, data):
+    """Initializes template.
+
+    Args:
+      data: RequestData for the request.
+    """
     self.data = data
     self._list_config = self._getListConfig()
 

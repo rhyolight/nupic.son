@@ -13,6 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" media="screen" href="/{{ css_path }}/messaging.css" />
+{% endblock stylesheets %}
+
 {% block page_content %}
 {{ conversations_list.render }}
 {% endblock page_content %}

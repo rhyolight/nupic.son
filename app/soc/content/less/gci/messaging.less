@@ -1,0 +1,67 @@
+@convListRowPadding: 3px;
+@badgeRadius: 4px;
+@mediumBlue: #87b3f0;
+@mediumGreen: #71ab77;
+
+.conversation-list-row { /* Styled div in the conversation list */
+  white-space: normal;
+
+  .badges {
+    margin: 3px;
+    margin-left: 10px;
+
+    .badge {
+      color: white;
+      padding: 2px 4px;
+
+      &:first-child, {
+        -moz-border-radius-topleft: @badgeRadius;
+        -moz-border-radius-bottomleft: @badgeRadius;
+        -webkit-border-top-left-radius: @badgeRadius;
+        -webkit-border-bottom-left-radius: @badgeRadius;
+        border-top-left-radius: @badgeRadius;
+        border-bottom-left-radius: @badgeRadius;
+      }
+
+      &:last-child {
+        -moz-border-radius-topright: @badgeRadius;
+        -moz-border-radius-bottomright: @badgeRadius;
+        -webkit-border-top-right-radius: @badgeRadius;
+        -webkit-border-bottom-right-radius: @badgeRadius;
+        border-top-right-radius: @badgeRadius;
+        border-bottom-right-radius: @badgeRadius;
+      }
+    }
+
+    .num-messages {
+      .badge;
+      background-color: @mediumBlue;
+    }
+
+    .num-new-messages {
+      .badge;
+      background-color: @mediumGreen;
+    }
+  }
+  
+  .inner-row {
+    overflow-x: hidden;
+    overflow-y: visible;
+    padding: @convListRowPadding;
+    padding-bottom: 0;
+
+    &:last-child {
+      padding-bottom: @convListRowPadding;
+    }
+  }
+
+  .last_author,
+  .subject {
+    font-weight: bold;
+  }
+
+  .last-message-time {
+    float: right;
+    font-weight: bold;
+  }
+}
