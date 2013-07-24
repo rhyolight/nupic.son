@@ -152,8 +152,7 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardRequest(self):
-    raise skip.SkipTest("TODO(Leo): enable it after code fix.")
-    self.profile_helper.createHost()
+    self.profile_helper.createOrgAdmin(self.org)
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.getListResponse(url, 7)
     self.assertIsJsonResponse(response)
