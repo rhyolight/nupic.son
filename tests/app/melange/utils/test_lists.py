@@ -19,7 +19,15 @@ import unittest
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
+from melange.models import cached_list as cached_list_model
 from melange.utils import lists
+
+from soc.modules.gsoc.models import organization as org_model
+from soc.modules.gsoc.models import profile as profile_model
+from soc.modules.gsoc.models import program as program_model
+from soc.modules.gsoc.models import project as project_model
+
+from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
 class TestToListItemDict(unittest.TestCase):
@@ -58,6 +66,64 @@ class TestToListItemDict(unittest.TestCase):
                      'released': 'Yes', 'author': 'Foo Bar'}
 
     self.assertEqual(list_item_dict, expected_dict)
+
+
+class TestSimpleColumn(unittest.TestCase):
+  """Unit tests for SimpleColumn class."""
+
+  def testGetListData(self):
+    """Tests getListData method."""
+    class TestModel(db.Model):
+      name = db.StringProperty()
+      value = db.IntegerProperty()
+
+    test_entity = TestModel(name='test_name', value=1)
+
+    name_column = lists.SimpleColumn('name', 'Name')
+    value_column = lists.SimpleColumn('value', 'Value')
+
+    self.assertEqual(test_entity.name, name_column.getValue(test_entity))
+    self.assertEqual(test_entity.value, value_column.getValue(test_entity))
+
+
+class TestGSoCProjectsColumns(unittest.TestCase):
+  """Unit tests for implementations of Column class for GSoCProjects."""
+
+  def setUp(self):
+    self.program = seeder_logic.seed(program_model.GSoCProgram)
+    self.organization = seeder_logic.seed(org_model.GSoCOrganization,
+        {'scope': self.program, 'program': self.program})
+    self.student = seeder_logic.seed(
+        profile_model.GSoCProfile, {'key_name': 'student'})
+
+    # seed a project for above organization, program and student
+    project_properties = {
+        'parent': self.student,
+        'scope': self.program,
+        'org': self.organization
+    }
+
+    self.project = seeder_logic.seed(
+        project_model.GSoCProject, project_properties)
+
+  def testKeyColumn(self):
+    """Tests KeyColumn class."""
+    key_column = lists.KeyColumn('key', 'Key')
+    expected_value = '%s/%s' % (
+        self.project.parent_key().name(), self.project.key().id())
+    self.assertEqual(expected_value, key_column.getValue(self.project))
+
+  def testStudentColumn(self):
+    """Tests StudentColumn class."""
+    student_column = lists.StudentColumn('student', 'Student')
+    expected_value = self.student.key().name()
+    self.assertEqual(expected_value, student_column.getValue(self.project))
+
+  def testOrganizationColumn(self):
+    """Tests OrganizationColumn class."""
+    org_column = lists.OraganizationColumn('organization', 'Organization')
+    expected_value = self.organization.name
+    self.assertEqual(expected_value, org_column.getValue(self.project))
 
 
 class TestDatastoreReaderForDB(unittest.TestCase):

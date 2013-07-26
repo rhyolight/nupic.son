@@ -165,7 +165,7 @@ class DatastoreReaderForDB(ListDataReader):
     else:
       next_key = FINAL_BATCH
 
-    col_funcs = [(c.name, c.col_func) for c in getList(self._list_id).columns]
+    col_funcs = [(c.name, c.getValue) for c in getList(self._list_id).columns]
     items = [toListItemDict(entity, col_funcs) for entity in entities]
     return (items[:limit], next_key)
 
@@ -188,7 +188,7 @@ class DatastoreReaderForNDB(ListDataReader):
     else:
       next_key = FINAL_BATCH
 
-    col_funcs = [(c.name, c.col_func) for c in getList(self._list_id).columns]
+    col_funcs = [(c.name, c.getValue) for c in getList(self._list_id).columns]
     items = [toListItemDict(entity, col_funcs) for entity in entities]
     return (items[:limit], next_key)
 
@@ -219,33 +219,39 @@ def getDataId(query):
 
 
 class Column(object):
-  """Represents a column in a list.
+  """Base class for a column in a list.
 
   Args:
     col_id: A unique identifier of this column.
     name: The header of the column that is shown to the user.
-    col_func: A function to be called when rendering this column for a single
-      entity. This function should take an entity as an argument.
     width: The width of the column.
     resizable: Whether the width of the column should be resizable by the
       end user.
     hidden: Whether the column should be hidden by default.
     searchhidden: Whether this column should be searchable when hidden. 
   """
-  def __init__(self, col_id, name, col_func, width=None, resizable=True,
-               hidden=False, searchhidden=True, options=None):
-    self.col_id = col_id;
-    self.name = name;
+  def __init__(self, col_id, name, width=None, resizable=True, hidden=False,
+               searchhidden=True, options=None):
+    self.col_id = col_id
+    self.name = name
     self.width = width
     self.resizable = resizable
     self.hidden = hidden
     self.searchhidden = hidden
     self.options = options
 
-    if not (callable(col_func)):
-      raise TypeError('%s is not a callable function.' % str(col_func))
-    else:
-      self.col_func = col_func
+  def getValue(self):
+    """This method is called when rendering the column for a single entity.
+
+    This must be overridden by implementing subclasses.
+
+    Args:
+      entity: The entity from which data for this column is taken from.
+
+    Returns:
+      A rendered value for the column.
+    """
+    raise NotImplementedError
 
 
 def toListItemDict(entity, column_def):
@@ -286,12 +292,44 @@ GSOC_PROJECTS_LIST_ID = 'gsoc_projects'
 # GSoCProjects list
 from soc.modules.gsoc.models import project
 
-key = Column('key', 'Key', (lambda entity: '%s/%s' % (
-             entity.parent_key().name(), entity.key().id())), hidden=True)
-student = Column('student', 'Student', lambda entity: entity.parent().name())
-title = Column('title', 'Title', lambda entity: entity.title)
-org = Column('org', 'Organization', lambda entity: entity.org.name)
-status = Column('status', 'Status', lambda entity: entity.status)
+
+class SimpleColumn(Column):
+  """Column object to display a simple attribute.
+  
+  When simply a value of an attribute of the entity is needed to be displayed
+  in a column this class is used. The column id must be the same as the
+  relevant attribute name.
+  """
+  def getValue(self, entity):
+    return getattr(entity, self.col_id)
+
+
+class KeyColumn(Column):
+  """Column object to represent the unique key of the project."""
+  def getValue(self, entity):
+    """See Column.getValue for specification"""
+    return '%s/%s' % (entity.parent_key().name(), entity.key().id())
+
+
+class StudentColumn(Column):
+  """Column object to represent the student"""
+  def getValue(self, entity):
+    """See Column.getValue for specification"""
+    return entity.parent_key().name()
+
+
+class OraganizationColumn(Column):
+  """Column object to represent the organization"""
+  def getValue(self, entity):
+    """See Column.getValue for specification"""
+    return entity.org.name
+
+
+key = KeyColumn('key', 'Key', hidden=True)
+student = StudentColumn('student', 'Student')
+title = SimpleColumn('title', 'Title')
+org = OraganizationColumn('org', 'Organization')
+status = SimpleColumn('status', 'Status')
 
 cache_reader = CacheReader(GSOC_PROJECTS_LIST_ID)
 datastore_reader = DatastoreReaderForDB(GSOC_PROJECTS_LIST_ID)

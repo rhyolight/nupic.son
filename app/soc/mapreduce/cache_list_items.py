@@ -38,7 +38,7 @@ def mapProcess(entity):
   params = ctx.mapreduce_spec.mapper.params
 
   list_id = params['list_id']
-  col_funcs = [(c.name, c.col_func) for c in lists.getList(list_id).columns]
+  col_funcs = [(c.name, c.getValue) for c in lists.getList(list_id).columns]
   query_pickle = params['query_pickle']
 
   query = pickle.loads(query_pickle)
