@@ -426,3 +426,107 @@ def refreshConversationParticipants(conversation):
   # Make sure conversation's creator is included
   if conv.creator is not None:
     addUserToConversation(conversation=conversation, user=conv.creator)
+
+
+def refreshConversationsForUserAndProgram(user, program):
+  """Adds/removes the user to/from conversations that they should be involved in
+  based on the conversation's criteria.
+
+  For example, if there is a conversation that should include all program
+  mentors, and this user is a program mentor who is involved with the program
+  but isn't part of the converation, this function will add the user to that
+  conversation. Likewise, it will remove the user from converstions they have no
+  business being in, unless they're the creator of the conversation or the
+  conversation is for specific users.
+
+  This will only look at conversations that have auto_update_users set as
+  True, and whoose, recipients_type is not 'User'.
+
+  This function will not add a user to a conversation if the user does not fit
+  the conversation's criteria, even if the user is the creator. If the user is
+  _only_ the creator of the conversation, the user's GCIConversationUser entity
+  should have been created when the conversation was initially created.
+
+  Args:
+    user: Key (ndb) of the User.
+    program: Key (ndb) of the GCIProgram.
+  """
+  profile_results = gciprofile_logic.queryProfileForUserAndProgram(
+      user=ndb.Key.to_old_key(user),
+      program=ndb.Key.to_old_key(program)).fetch(1)
+
+  if len(profile_results) == 0:
+    raise Exception('Could not find GCIProfile for user and program.')
+
+  profile = profile_results[0]
+
+  def deleteConvUserIfDoesntBelong(conv_user):
+    if not doesConversationUserBelong(
+        conversation_user=conv_user.key, ignore_auto_update_users=False):
+      conv_user.key.delete()
+
+  # Remove user from any conversations they're in that they don't belong in
+  conv_user_query = queryForProgramAndUser(user=user, program=program)
+  map(deleteConvUserIfDoesntBelong, conv_user_query)
+
+  def addToConversation(conversation):
+    addUserToConversation(conversation=conversation.key, user=user)
+
+  mentor_org_keys = map(lambda key: ndb.Key.from_old_key(key),
+      profile.mentor_for)
+  admin_org_keys = map(lambda key: ndb.Key.from_old_key(key),
+      profile.org_admin_for)
+
+  # Make sure user is added to program conversations they belong in as a
+  # student
+  if profile.is_student:
+    query = (queryConversationsForProgram(program)
+        .filter(gciconversation_model.GCIConversation.recipients_type ==
+            conversation_model.PROGRAM)
+        .filter(gciconversation_model.GCIConversation.auto_update_users == True)
+        .filter(gciconversation_model.GCIConversation.include_students == True))
+    map(addToConversation, query)
+
+  # Make sure user is added to program conversations they belong in as a
+  # mentor
+  if profile.is_mentor:
+    query = (queryConversationsForProgram(program)
+      .filter(gciconversation_model.GCIConversation.recipients_type ==
+          conversation_model.PROGRAM)
+      .filter(gciconversation_model.GCIConversation.auto_update_users == True)
+      .filter(gciconversation_model.GCIConversation.include_mentors == True))
+    map(addToConversation, query)
+
+  # Make sure user is added to program conversations they belong in as an
+  # admin
+  if profile.is_org_admin:
+    query = (queryConversationsForProgram(program)
+        .filter(gciconversation_model.GCIConversation.recipients_type ==
+            conversation_model.PROGRAM)
+        .filter(gciconversation_model.GCIConversation.auto_update_users == True)
+        .filter(gciconversation_model.GCIConversation.include_admins == True))
+    map(addToConversation, query)
+
+  # Make sure user is added to org conversations they belong in as an org
+  # mentor
+  if profile.is_mentor and mentor_org_keys:
+    query = (queryConversationsForProgram(program)
+        .filter(gciconversation_model.GCIConversation.recipients_type ==
+            conversation_model.ORGANIZATION)
+        .filter(gciconversation_model.GCIConversation.auto_update_users == True)
+        .filter(gciconversation_model.GCIConversation.include_mentors == True)
+        .filter(gciconversation_model.GCIConversation.organization.IN(
+            mentor_org_keys)))
+    map(addToConversation, query)
+
+  # Make sure user is added to org conversations they belong in as an org
+  # admin
+  if profile.is_org_admin and admin_org_keys:
+    query = (queryConversationsForProgram(program)
+        .filter(gciconversation_model.GCIConversation.recipients_type ==
+            conversation_model.ORGANIZATION)
+        .filter(gciconversation_model.GCIConversation.auto_update_users == True)
+        .filter(gciconversation_model.GCIConversation.include_admins == True)
+        .filter(gciconversation_model.GCIConversation.organization.IN(
+            admin_org_keys)))
+    map(addToConversation, query)

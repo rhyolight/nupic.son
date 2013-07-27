@@ -646,3 +646,193 @@ class GCIConversationTest(unittest.TestCase):
         gciconversation_logic.queryConversationUserForConversation(
             conversation=conversation.key)))
     self.assertEqual(expected_keys, actual_keys)
+
+  def testRefreshConversationsForUser(self):
+    """Tests that refreshConversationsForUser correctly adds a user to all
+    conversations they should be in but aren't, and removes them from
+    conversations they shouldn't be in.
+    """
+
+    self.conv_a.key.delete()
+    self.conv_b.key.delete()
+
+    # Create a couple dummy organizations
+    org_keys = map(
+        lambda org: ndb.Key.from_old_key(org.key()),
+        list(self.conv_utils.program_helper.createNewOrg() for x in range(2)))
+
+    # Create various dummy users
+    user_admin_key = self.conv_utils.createUser(
+        return_key=True, roles=[conversation_utils.ADMIN],
+        admin_organizations=[org_keys[0]])
+    user_mentor_key = self.conv_utils.createUser(
+        return_key=True, roles=[conversation_utils.MENTOR],
+        mentor_organizations=[org_keys[0], org_keys[1]])
+    user_mentor_student_key = self.conv_utils.createUser(
+        return_key=True,
+        roles=[conversation_utils.MENTOR, conversation_utils.STUDENT])
+    
+    # Conversation for program admins and mentors
+    conv_a = self.conv_utils.createConversation(subject='')
+    conv_a.recipients_type = conversation_model.PROGRAM
+    conv_a.include_admins = True
+    conv_a.include_mentors = True
+    conv_a.put()
+
+    # Conversation for first org's admins
+    conv_b = self.conv_utils.createConversation(subject='')
+    conv_b.recipients_type = conversation_model.ORGANIZATION
+    conv_b.organization = org_keys[0]
+    conv_b.include_admins = True
+    conv_b.put()
+
+    # Conversation for second org's mentors
+    conv_c = self.conv_utils.createConversation(subject='')
+    conv_c.recipients_type = conversation_model.ORGANIZATION
+    conv_c.organization = org_keys[1]
+    conv_c.include_mentors = True
+    conv_c.put()
+
+    # Conversation for program mentors and students
+    conv_d = self.conv_utils.createConversation(subject='')
+    conv_d.recipients_type = conversation_model.PROGRAM
+    conv_d.include_mentors = True
+    conv_d.include_students = True
+    conv_d.put()
+
+    # Conversation for program students, created by a non-student
+    conv_e = self.conv_utils.createConversation(subject='')
+    conv_e.creator = user_admin_key
+    conv_e.recipients_type = conversation_model.PROGRAM
+    conv_e.include_students = True
+    conv_e.put()
+    self.conv_utils.addUser(conversation=conv_e.key, user=conv_e.creator)
+
+    # Conversation for basically nobody, in which the participants should not
+    # be changed after the conversation's creation, and all users are added.
+    # This is to ensure that users won't be removed if the conversation's
+    # auto_update_users property is False.
+    conv_f = self.conv_utils.createConversation(subject='')
+    conv_f.recipients_type = conversation_model.PROGRAM
+    conv_f.auto_update_users = False
+    conv_f.put()
+    self.conv_utils.addUser(conversation=conv_f.key, user=user_admin_key)
+    self.conv_utils.addUser(conversation=conv_f.key, user=user_mentor_key)
+    self.conv_utils.addUser(
+        conversation=conv_f.key, user=user_mentor_student_key)
+
+    # Conversation for that all users fit the criteria to participate in, but
+    # should not be added after the converation's creation.
+    conv_g = self.conv_utils.createConversation(subject='')
+    conv_g.recipients_type = conversation_model.PROGRAM
+    conv_g.include_students = True
+    conv_g.include_mentors = True
+    conv_g.include_admins = True
+    conv_g.auto_update_users = False
+    conv_g.put()
+
+    # Refresh each user's conversations
+    gciconversation_logic.refreshConversationsForUserAndProgram(
+        user=user_admin_key, program=self.program_key)
+    gciconversation_logic.refreshConversationsForUserAndProgram(
+        user=user_mentor_key, program=self.program_key)
+    gciconversation_logic.refreshConversationsForUserAndProgram(
+        user=user_mentor_student_key, program=self.program_key)
+
+    # Test that admin user is in the correct conversations
+    expected_keys = set([conv_a.key, conv_b.key, conv_e.key, conv_f.key])
+    actual_keys = set(map(
+        lambda conv_user: conv_user.conversation,
+        gciconversation_logic.queryForProgramAndUser(
+            program=self.program_key, user=user_admin_key)))
+
+    self.assertEqual(expected_keys, actual_keys)
+
+    # Test that mentor user is in the correct conversations
+    expected_keys = set([conv_a.key, conv_c.key, conv_d.key, conv_f.key])
+    actual_keys = set(map(
+        lambda conv_user: conv_user.conversation,
+        gciconversation_logic.queryForProgramAndUser(
+            program=self.program_key, user=user_mentor_key)))
+    self.assertEqual(expected_keys, actual_keys)
+
+    # Test that mentor/student user is in the correct conversations
+    expected_keys = set([conv_a.key, conv_d.key, conv_e.key, conv_f.key])
+    actual_keys = set(map(
+        lambda conv_user: conv_user.conversation,
+        gciconversation_logic.queryForProgramAndUser(
+            program=self.program_key, user=user_mentor_student_key)))
+    self.assertEqual(expected_keys, actual_keys)
+
+    # Add all three users to all conversations
+    self.conv_utils.addUser(conversation=conv_b.key, user=user_mentor_key)
+    self.conv_utils.addUser(
+        conversation=conv_b.key, user=user_mentor_student_key)
+    self.conv_utils.addUser(conversation=conv_c.key, user=user_admin_key)
+    self.conv_utils.addUser(
+        conversation=conv_c.key, user=user_mentor_student_key)
+    self.conv_utils.addUser(conversation=conv_d.key, user=user_admin_key)
+    self.conv_utils.addUser(conversation=conv_e.key, user=user_mentor_key)
+
+    # Test that admin user is in all conversations
+    expected_keys = set([
+        conv_a.key, conv_b.key, conv_c.key, conv_d.key, conv_e.key, conv_f.key])
+    actual_keys = set(map(
+        lambda conv_user: conv_user.conversation,
+        gciconversation_logic.queryForProgramAndUser(
+            program=self.program_key, user=user_admin_key)))
+
+    self.assertEqual(expected_keys, actual_keys)
+
+    # Test that mentor user is in all conversations
+    expected_keys = set([
+        conv_a.key, conv_b.key, conv_c.key, conv_d.key, conv_e.key, conv_f.key])
+    actual_keys = set(map(
+        lambda conv_user: conv_user.conversation,
+        gciconversation_logic.queryForProgramAndUser(
+            program=self.program_key, user=user_mentor_key)))
+    self.assertEqual(expected_keys, actual_keys)
+
+    # Test that mentor/student user is in all conversations
+    expected_keys = set([
+        conv_a.key, conv_b.key, conv_c.key, conv_d.key, conv_e.key, conv_f.key])
+    actual_keys = set(map(
+        lambda conv_user: conv_user.conversation,
+        gciconversation_logic.queryForProgramAndUser(
+            program=self.program_key, user=user_mentor_student_key)))
+    self.assertEqual(expected_keys, actual_keys)
+
+    # Refresh each user's conversations. Because we just added all users to
+    # all conversations, refreshing each user should actually remove them from
+    # conversations they don't belong to.
+    gciconversation_logic.refreshConversationsForUserAndProgram(
+        user=user_admin_key, program=self.program_key)
+    gciconversation_logic.refreshConversationsForUserAndProgram(
+        user=user_mentor_key, program=self.program_key)
+    gciconversation_logic.refreshConversationsForUserAndProgram(
+        user=user_mentor_student_key, program=self.program_key)
+
+    # Test that admin user is in the correct conversations
+    expected_keys = set([conv_a.key, conv_b.key, conv_e.key, conv_f.key])
+    actual_keys = set(map(
+        lambda conv_user: conv_user.conversation,
+        gciconversation_logic.queryForProgramAndUser(
+            program=self.program_key, user=user_admin_key)))
+
+    self.assertEqual(expected_keys, actual_keys)
+
+    # Test that mentor user is in the correct conversations
+    expected_keys = set([conv_a.key, conv_c.key, conv_d.key, conv_f.key])
+    actual_keys = set(map(
+        lambda conv_user: conv_user.conversation,
+        gciconversation_logic.queryForProgramAndUser(
+            program=self.program_key, user=user_mentor_key)))
+    self.assertEqual(expected_keys, actual_keys)
+
+    # Test that mentor/student user is in the correct conversations
+    expected_keys = set([conv_a.key, conv_d.key, conv_e.key, conv_f.key])
+    actual_keys = set(map(
+        lambda conv_user: conv_user.conversation,
+        gciconversation_logic.queryForProgramAndUser(
+            program=self.program_key, user=user_mentor_student_key)))
+    self.assertEqual(expected_keys, actual_keys)
