@@ -132,20 +132,42 @@ class CacheReader(ListDataReader):
 
   def getListData(self, query, start=None, limit=50):
     """See ListDataReader.getListData for specification."""
-    if cached_list.isCachedListExists(getDataId(query)):
-      return (cached_list.getCachedItems(getDataId(query)), FINAL_BATCH)
+    data_id = getDataId(query)
+
+    if cached_list.isCachedListExists(data_id):
+      if cached_list.isListValid(data_id):
+        return (cached_list.getCachedItems(data_id), FINAL_BATCH)
+      else:
+        self._start_caching(data_id, query)
+
+        # return None because cache is not hit
+        return None, None
+
     else:
-      entity_kind = '%s.%s' % \
-          (query._model_class.__module__, query._model_class.__name__)
-      query_pickle = pickle.dumps(query)
-
-      cache_list_pipline = cache_list_items.CacheListsPipeline(
-           self._list_id, entity_kind, query_pickle)
-
-      cache_list_pipline.start()
+      self._start_caching(data_id, query)
 
       # return None because cache is not hit
       return None, None
+
+  def _start_caching(self, data_id, query):
+    if cached_list.isCachedListExists(data_id) and \
+           cached_list.isProcessRunning(data_id):
+      return
+    # Create an empty cache list, if a cache list with this data id does not
+    # exist
+    cached_list.cacheItems(data_id, [])
+
+    entity_kind = '%s.%s' % \
+        (query._model_class.__module__, query._model_class.__name__)
+    query_pickle = pickle.dumps(query)
+
+    cache_list_pipline = cache_list_items.CacheListsPipeline(
+         self._list_id, entity_kind, query_pickle)
+
+    cache_list_pipline.start()
+
+    # Set the process id regarding this cache list
+    cached_list.cacheProcessStarted(data_id, cache_list_pipline.pipeline_id)
 
 
 class DatastoreReaderForDB(ListDataReader):
@@ -335,7 +357,7 @@ cache_reader = CacheReader(GSOC_PROJECTS_LIST_ID)
 datastore_reader = DatastoreReaderForDB(GSOC_PROJECTS_LIST_ID)
 
 GSOC_PROJECTS_LIST = List(GSOC_PROJECTS_LIST_ID, 0, project.GSoCProject,
-                          [key, student, title, org, status], datastore_reader,
+                          [title, org, status], datastore_reader,
                           cache_reader=cache_reader)
 
 

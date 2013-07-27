@@ -22,3 +22,11 @@ class CachedList(ndb.Model):
 
   # The list of items cached in the list in json format
   list_data = ndb.JsonProperty(repeated=True)
+
+  # Whether datastore entities relevant to the list have changed.
+  # If False, the cached list object contains stale data.
+  valid = ndb.BooleanProperty()
+
+  # A mapereduce pipeline id.
+  # If not None a process is running collecting/adding data for this list.
+  cache_process_id = ndb.StringProperty()

@@ -16,8 +16,6 @@
 
 from google.appengine.ext import ndb
 
-from melange.logic import cached_list
-
 from mapreduce import context
 from mapreduce import base_handler
 from mapreduce import mapreduce_pipeline
@@ -51,6 +49,9 @@ def mapProcess(entity):
 
 
 def reduceProcess(list_id, entities):
+  # TODO: (Aruna) Fix this import
+  from melange.logic import cached_list
+
   ndb.transaction(
       lambda: cached_list.cacheItems(list_id, map(json.loads, entities)))
 
