@@ -35,6 +35,7 @@ from django.test import TestCase
 from soc.logic.helper import xsrfutil
 from soc.middleware import xsrf as xsrf_middleware
 from soc.modules import callback
+from soc.views import template
 
 from tests import profile_utils
 from tests import program_utils
@@ -488,7 +489,7 @@ class DjangoTestCase(TestCase):
             iterable = [value]
           for i in iterable:
             # make it easier to debug render failures
-            if hasattr(i, 'render'):
+            if isinstance(i, template.Template):
               i.render()
 
   def assertErrorTemplatesUsed(self, response):
