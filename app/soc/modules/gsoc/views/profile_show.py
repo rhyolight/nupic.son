@@ -85,22 +85,29 @@ class GSoCBanProfilePost(profile_show.BanProfilePost, base.GSoCRequestHandler):
 
 
 class GSoCProfileShowPage(profile_show.ProfileShowPage, base.GSoCRequestHandler):
-  """View to display the read-only profile page.
-  """
+  """View to display the read-only profile page."""
 
   def djangoURLPatterns(self):
+    """See base.GSoCRequestHandler.djangoURLPatterns for specification."""
     return [
         url(r'profile/show/%s$' % url_patterns.PROGRAM,
             self, name=url_names.GSOC_PROFILE_SHOW),
     ]
 
   def templatePath(self):
+    """See base.GSoCRequestHandler.templatePath for specification."""
     return 'modules/gsoc/profile_show/base.html'
 
   def _getProfileReadOnlyTemplate(self, profile):
+    """See profile_show.ProfileShowPage._getProfileReadOnlyTemplate
+    for specification.
+    """
     return GSoCProfileReadOnlyTemplate(profile)
 
   def _getUserReadOnlyTemplate(self, user):
+    """See profile_show.ProfileShowPage._getUserReadOnlyTemplate
+    for specification.
+    """
     return GSoCUserReadOnlyTemplate(user)
 
   def _getTabs(self, data):

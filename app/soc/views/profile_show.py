@@ -164,9 +164,23 @@ class ProfileShowPage(object):
         }
 
   def _getUserReadOnlyTemplate(self, user):
+    """Returns read-only template to display user data.
+
+    This method should be implemented by concrete subclasses.
+
+    Returns:
+      Template instance to be used to display user data.
+    """
     raise NotImplementedError
 
   def _getProfileReadOnlyTemplate(self, profile):
+    """Returns read-only template to display profile data.
+
+    This method should be implemented by concrete subclasses.
+
+    Returns:
+      Template instance to be used to display user data.
+    """
     raise NotImplementedError
 
   def _getTabs(self, data):
