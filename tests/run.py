@@ -267,6 +267,7 @@ def run_pyunit_tests():
   os.environ['USER_ID'] = '42'
   os.environ['CURRENT_VERSION_ID'] = 'testing-version'
   os.environ['HTTP_HOST'] = 'some.testing.host.tld'
+  os.environ['APPENGINE_RUNTIME'] = 'python27'
   setup_gae_services()
 
   import main as app_main
