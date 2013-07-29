@@ -1014,43 +1014,6 @@ class ProjectsList(Template):
     return "modules/gsoc/admin/_projects_list.html"
 
 
-class ProjectsPage(base.GSoCRequestHandler):
-  """View for projects of particular org."""
-
-  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
-
-  def djangoURLPatterns(self):
-    return [
-        url(r'admin/projects/%s$' % url_patterns.ORG, self,
-            name='gsoc_projects_org'),
-    ]
-
-  def templatePath(self):
-    return 'modules/gsoc/admin/list.html'
-
-  def jsonContext(self, data, check, mutator):
-    list_content = ProjectsList(data.request, data).getListData()
-    if list_content:
-      return list_content.content()
-    else:
-      raise exception.Forbidden(message='You do not have access to this data')
-
-  def post(self, data, check, mutator):
-    """Handler for POST requests."""
-    projects_list = ProjectsList(data.request, data)
-    if projects_list.post():
-      return http.HttpResponse()
-    else:
-      raise exception.Forbidden(message='You cannot change this data')
-
-  def context(self, data, check, mutator):
-    return {
-      'page_name': 'Projects page',
-      # TODO(nathaniel): Drop the first parameter of ProjectsList.
-      'list': ProjectsList(data.request, data),
-    }
-
-
 class SurveyReminderPage(base.GSoCRequestHandler):
   """Page to send out reminder emails to fill out a Survey."""
 
