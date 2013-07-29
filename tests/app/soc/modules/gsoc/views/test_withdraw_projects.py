@@ -52,7 +52,7 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
 
     url = '/gsoc/withdraw_projects/' + self.gsoc.key().name()
     response = self.get(url)
-
+    self.assertResponseOK(response)
     self.assertWithdrawProjects(response)
 
     # list response without any projects

@@ -66,11 +66,13 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
     # check for enrollment form
     url = self._getEnrollmentFormUrl()
     response = self.get(url)
+    self.assertResponseOK(response)
     self._assertStudentFormsTemplatesUsed(response)
 
     # check for tax form
     url = self._getTaxFormUrl()
     response = self.get(url)
+    self.assertResponseOK(response)
     self._assertStudentFormsTemplatesUsed(response)
 
   def _getEnrollmentFormUrl(self):

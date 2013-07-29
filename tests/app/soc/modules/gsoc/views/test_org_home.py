@@ -58,6 +58,7 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
     self.timeline_helper.orgSignup()
     url = '/gsoc/org/' + self.org.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertOrgHomeTemplatesUsed(response, False)
 
   def testOrgHomeDuringStudentSignup(self):
@@ -66,6 +67,7 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
     self.timeline_helper.studentSignup()
     url = '/gsoc/org/' + self.org.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertOrgHomeTemplatesUsed(response, False)
 
   def testOrgHomeAfterStudentProjectsAnnounced(self):
@@ -75,6 +77,7 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
     self.createStudentProjects()
     url = '/gsoc/org/' + self.org.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertOrgHomeTemplatesUsed(response, True)
     data = self.getListData(url, 0)
     self.assertEqual(2, len(data))
@@ -86,6 +89,7 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
     self.createStudentProjects()
     url = '/gsoc/org/' + self.org.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertOrgHomeTemplatesUsed(response, True)
     data = self.getListData(url, 0)
     self.assertEqual(2, len(data))

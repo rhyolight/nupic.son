@@ -658,7 +658,6 @@ class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
     Args:
       response: Django's http.HttpResponse object.
     """
-    self.assertResponseOK(response)
     self.assertTemplateUsed(response, 'modules/gsoc/base.html')
     self.assertTemplateUsed(response, 'modules/gsoc/footer.html')
     self.assertTemplateUsed(response, 'modules/gsoc/header.html')

@@ -40,6 +40,7 @@ class SlotsTest(GSoCDjangoTestCase):
     self.profile_helper.createHost()
     url = '/gsoc/admin/slots/' + self.gsoc.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertProjectTemplatesUsed(response)
 
     data = self.getListData(url, 0)

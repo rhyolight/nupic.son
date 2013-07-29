@@ -216,6 +216,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     # test student evaluation create/edit GET
     url = '/gsoc/eval/student/edit/' + suffix
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertEvaluationCreateTemplateUsed(response)
 
     self.assertContains(
@@ -251,6 +252,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     eval = ProjectSurvey.all().get()
 
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertEvaluationCreateTemplateUsed(response)
 
     self.assertContains(
@@ -484,6 +486,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     # test student evaluation show GET for a for a student who
     # has another project in a different organization
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertEvaluationTakeTemplateUsed(response)
 
     self.assertContains(response, '%s' % (eval.title))
@@ -607,10 +610,12 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     # test student evaluation show GET for a for a student who
     # has another project in a different organization
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertEvaluationShowTemplateUsed(response)
 
     self.ffPastEval(eval)
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertEvaluationShowTemplateUsed(response)
 
   def testShowEvaluationForMentor(self):
@@ -677,6 +682,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
 
     self.ffPastEval(eval)
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertEvaluationShowTemplateUsed(response)
 
 

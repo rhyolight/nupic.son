@@ -123,6 +123,7 @@ class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
     # test project details GET
     url = '/gsoc/project/' + suffix
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertProjectDetailsTemplateUsed(response)
 
   def testFeaturedProjectButton(self):

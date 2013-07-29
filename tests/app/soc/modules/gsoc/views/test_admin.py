@@ -55,6 +55,7 @@ class AdminDashboardTest(GSoCDjangoTestCase):
 
     url = '/gsoc/admin/' + self.gsoc.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertDashboardTemplatesUsed(response)
     self.assertUserActionsTemplatesUsed(response)
 
@@ -85,6 +86,7 @@ class LookupProfileTest(GSoCDjangoTestCase):
     and all contexts were passed
     """
     self.assertIn('base_layout', response.context)
+    self.assertResponseOK(response)
     self.assertGSoCTemplatesUsed(response)
     self.assertEqual(response.context['base_layout'],
         'modules/gsoc/base.html')
@@ -176,6 +178,7 @@ class ProposalsPageTest(GSoCDjangoTestCase):
 
     url = '/gsoc/admin/proposals/' + self.org.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertProposalsPage(response)
 
     response = self.getListResponse(url, 0)
@@ -220,6 +223,7 @@ class ProjectsPageTest(GSoCDjangoTestCase):
 
     url = '/gsoc/admin/projects/' + self.org.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertProjectsPage(response)
 
     response = self.getListResponse(url, 0)

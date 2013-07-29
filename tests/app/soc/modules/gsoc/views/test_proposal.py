@@ -55,6 +55,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     self.timeline_helper.studentSignup()
     url = '/gsoc/proposal/submit/' + self.org.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertProposalTemplatesUsed(response)
 
     # test proposal POST
@@ -158,6 +159,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
         self.gsoc.key().name(), self.profile_helper.profile.link_id,
         proposal.key().id())
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertProposalTemplatesUsed(response)
 
     override = {

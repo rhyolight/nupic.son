@@ -112,6 +112,7 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
     url = '/gsoc/program/create/' + self.sponsor.key().name()
     self.profile_helper.createHost()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertProgramTemplatesUsed(response)
 
   def testCreateProgramWithRequiredProperties(self):
@@ -191,6 +192,7 @@ class EditProgramTest(test_utils.GSoCDjangoTestCase):
     self.profile_helper.createDeveloper()
     url = '/gsoc/program/edit/' + self.gsoc.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertProgramTemplatesUsed(response)
 
   def testEditProgram(self):
@@ -198,6 +200,7 @@ class EditProgramTest(test_utils.GSoCDjangoTestCase):
     self.profile_helper.createHost()
     url = '/gsoc/program/edit/' + self.gsoc.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertProgramTemplatesUsed(response)
 
     response = self.getJsonResponse(url)
@@ -272,6 +275,7 @@ class GSoCProgramMessagesPageTest(test_utils.GSoCDjangoTestCase):
     url = self._getUrl()
     self.profile_helper.createHost()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertProgramTemplatesUsed(response)
 
   def testEditProgramMessages(self):
