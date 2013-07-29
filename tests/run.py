@@ -22,7 +22,6 @@ HERE = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                      '..'))
 appengine_location = os.path.join(HERE, 'thirdparty', 'google_appengine')
 extra_paths = [HERE,
-               os.path.join(appengine_location, 'lib', 'django'),
                os.path.join(appengine_location, 'lib', 'yaml', 'lib'),
                os.path.join(appengine_location, 'lib', 'antlr3'),
                appengine_location,
@@ -51,7 +50,6 @@ def setup_gae_services():
   from google.appengine.api.memcache import memcache_stub
   from google.appengine.api.taskqueue import taskqueue_stub
   from google.appengine.api import datastore_file_stub
-  from google.appengine.dist import use_library
 
   apiproxy_stub_map.apiproxy = apiproxy_stub_map.APIProxyStubMap()
   apiproxy_stub_map.apiproxy.RegisterStub(
@@ -69,9 +67,6 @@ def setup_gae_services():
   apiproxy_stub_map.apiproxy.RegisterStub(
       'capability_service', capability_stub.CapabilityServiceStub())
 
-  # Declare the Django version we need. In production it is defined
-  # in app.yaml configuration file, but it is not read by the test runner
-  use_library('django', '1.2')
 
 def clean_datastore():
   from google.appengine.api import apiproxy_stub_map
@@ -268,6 +263,7 @@ def run_pyunit_tests():
   os.environ['USER_ID'] = '42'
   os.environ['CURRENT_VERSION_ID'] = 'testing-version'
   os.environ['HTTP_HOST'] = 'some.testing.host.tld'
+  os.environ['APPENGINE_RUNTIME'] = 'python27'
   setup_gae_services()
 
   import main as app_main

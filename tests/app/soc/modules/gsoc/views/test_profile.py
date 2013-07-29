@@ -46,12 +46,14 @@ class ProfileViewTest(GSoCDjangoTestCase):
     self.timeline_helper.studentSignup()
     url = '/gsoc/profile/student/' + self.gsoc.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertProfileTemplatesUsed(response)
 
   def testCreateMentorProfilePage(self):
     self.timeline_helper.studentSignup()
     url = '/gsoc/profile/mentor/' + self.gsoc.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertProfileTemplatesUsed(response)
 
   def testRedirectWithStudentProfilePage(self):

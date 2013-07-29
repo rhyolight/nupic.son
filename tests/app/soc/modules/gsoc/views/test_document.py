@@ -33,6 +33,7 @@ class ListDocumentTest(GSoCDjangoTestCase):
   def testListDocument(self):
     url = '/gsoc/documents/' + self.gsoc.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertGSoCTemplatesUsed(response)
 
     response = self.getListResponse(url, 0)
@@ -52,6 +53,7 @@ class EditProgramTest(GSoCDjangoTestCase):
   def testShowDocument(self):
     url = '/gsoc/document/show/' + self.document.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertGSoCTemplatesUsed(response)
 
   def testCreateDocumentRestriction(self):
@@ -62,6 +64,7 @@ class EditProgramTest(GSoCDjangoTestCase):
     self.profile_helper.createHost()
     url = '/gsoc/document/edit/gsoc_program/%s/doc' % self.gsoc.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'modules/gsoc/document/base.html')
     self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
@@ -88,6 +91,7 @@ class EditProgramTest(GSoCDjangoTestCase):
     self.profile_helper.createHost()
     url = '/gsoc/document/edit/gsoc_program/%s/doc' % self.gsoc.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'modules/gsoc/document/base.html')
     self.assertTemplateUsed(response, 'modules/gsoc/_form.html')

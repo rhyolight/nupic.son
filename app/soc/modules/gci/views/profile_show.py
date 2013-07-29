@@ -79,16 +79,25 @@ class GCIProfileReadOnlyTemplate(readonly_template.GCIModelReadOnlyTemplate):
               'tshirt_style', 'tshirt_size', 'gender', 'program_knowledge']
 
 
+class GCIUserReadOnlyTemplate(profile_show.UserReadOnlyTemplate):
+  """Template to construct read-only User data to be displayed on Summer
+  Of Code view.
+  """
+  template_path = readonly_template.GCIModelReadOnlyTemplate.template_path
+
+
 class GCIProfileShowPage(profile_show.ProfileShowPage, base.GCIRequestHandler):
   """View to display the read-only profile page."""
 
   def djangoURLPatterns(self):
+    """See base.GCIRequestHandler.djangoURLPatterns for specification."""
     return [
         url(r'profile/show/%s$' % url_patterns.PROGRAM,
          self, name=url_names.GCI_PROFILE_SHOW),
     ]
 
   def context(self, data, check, mutator):
+    """See base.GCIRequestHandler.context for specification."""
     context = super(GCIProfileShowPage, self).context(data, check, mutator)
 
     profile = self._getProfile(data)
@@ -98,10 +107,20 @@ class GCIProfileShowPage(profile_show.ProfileShowPage, base.GCIRequestHandler):
     return context
 
   def templatePath(self):
+    """See base.GCIRequestHandler.templatePath for specification."""
     return 'modules/gci/profile_show/base.html'
 
   def _getProfileReadOnlyTemplate(self, profile):
+    """See profile_show.ProfileShowPage._getProfileReadOnlyTemplate
+    for specification.
+    """
     return GCIProfileReadOnlyTemplate(profile)
+
+  def _getUserReadOnlyTemplate(self, user):
+    """See profile_show.ProfileShowPage._getUserReadOnlyTemplate
+    for specification.
+    """
+    return GCIUserReadOnlyTemplate(user)
 
 
 class GCIProfileShowAdminPage(GCIProfileShowPage):

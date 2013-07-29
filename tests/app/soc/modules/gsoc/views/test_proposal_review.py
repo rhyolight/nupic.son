@@ -76,6 +76,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     # test review GET
     url = '/gsoc/proposal/review/' + suffix
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertReviewTemplateUsed(response)
 
     self.assertNotContains(
@@ -148,6 +149,7 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     # test review GET
     url = '/gsoc/proposal/review/' + suffix
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'modules/gsoc/proposal/review.html')
 

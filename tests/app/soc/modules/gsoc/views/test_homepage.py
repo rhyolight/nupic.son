@@ -44,26 +44,32 @@ class HomepageViewTest(GSoCDjangoTestCase):
 
     self.timeline_helper.offSeason()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline_helper.kickoff()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline_helper.orgSignup()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline_helper.orgsAnnounced()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline_helper.studentSignup()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertHomepageTemplatesUsed(response)
 
     self.timeline_helper.studentsAnnounced()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertHomepageTemplatesUsed(response)
 
   def testHomepageDuringSignup(self):
@@ -72,6 +78,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     self.timeline_helper.studentsAnnounced()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertHomepageTemplatesUsed(response)
     timeline_tmpl = response.context['timeline']
     apply_context = response.context['apply'].context()
@@ -92,6 +99,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     project.is_featured = True
     project.put()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertHomepageTemplatesUsed(response)
     self.assertTemplateUsed(
         response, 'modules/gsoc/homepage/_featured_project.html')
@@ -106,6 +114,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     self.timeline_helper.studentsAnnounced()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertHomepageTemplatesUsed(response)
     timeline_tmpl = response.context['timeline']
     apply_context = response.context['apply'].context()
@@ -119,6 +128,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     self.timeline_helper.studentSignup()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertHomepageTemplatesUsed(response)
     apply_tmpl = response.context['apply']
     self.assertTrue(apply_tmpl.data.profile)

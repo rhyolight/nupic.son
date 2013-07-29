@@ -55,6 +55,7 @@ class AdminDashboardTest(GSoCDjangoTestCase):
 
     url = '/gsoc/admin/' + self.gsoc.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertDashboardTemplatesUsed(response)
     self.assertUserActionsTemplatesUsed(response)
 
@@ -85,6 +86,7 @@ class LookupProfileTest(GSoCDjangoTestCase):
     and all contexts were passed
     """
     self.assertIn('base_layout', response.context)
+    self.assertResponseOK(response)
     self.assertGSoCTemplatesUsed(response)
     self.assertEqual(response.context['base_layout'],
         'modules/gsoc/base.html')
@@ -129,27 +131,6 @@ class LookupProfileTest(GSoCDjangoTestCase):
     self.assertResponseRedirect(response, new_url)
 
 
-class AcceptedOrgsPageTest(GSoCDjangoTestCase):
-  """Test for accepted orgs that show proposals or projects for each org
-  """
-
-  def setUp(self):
-    self.init()
-
-  def assertAcceptedOrgs(self, response):
-    """Asserts that all the templates from the accepted orgs list were used
-    and all contexts were passed.
-    """
-    self.assertIn('base_layout', response.context)
-    self.assertGSoCTemplatesUsed(response)
-    self.assertEqual(response.context['base_layout'],
-      'modules/gsoc/base.html')
-
-    self.assertTemplateUsed(response, 'modules/gsoc/admin/list.html')
-    self.assertTemplateUsed(response,
-        'modules/gsoc/admin/_accepted_orgs_list.html')
-
-
 class ProposalsPageTest(GSoCDjangoTestCase):
   """Test proposals list page for admin
   """
@@ -176,6 +157,7 @@ class ProposalsPageTest(GSoCDjangoTestCase):
 
     url = '/gsoc/admin/proposals/' + self.org.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertProposalsPage(response)
 
     response = self.getListResponse(url, 0)
@@ -187,50 +169,6 @@ class ProposalsPageTest(GSoCDjangoTestCase):
     self.mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
     self.mentor.createMentor(self.org)
     self.profile_helper.createStudentWithProposals(
-        self.org, self.mentor.profile, 1)
-    response = self.getListResponse(url, 0)
-    self.assertIsJsonResponse(response)
-    data = response.context['data']['']
-    self.assertEqual(1, len(data))
-
-
-class ProjectsPageTest(GSoCDjangoTestCase):
-  """Test projects list for admin
-  """
-
-  def setUp(self):
-    self.init()
-
-  def assertProjectsPage(self, response):
-    """Asserts that all the templates from the accepted projects list were used
-    and all contexts were passed.
-    """
-    self.assertIn('base_layout', response.context)
-    self.assertGSoCTemplatesUsed(response)
-    self.assertEqual(response.context['base_layout'],
-        'modules/gsoc/base.html')
-
-    self.assertTemplateUsed(response, 'modules/gsoc/admin/list.html')
-    self.assertTemplateUsed(response,
-        'modules/gsoc/admin/_projects_list.html')
-
-  def testListProjects(self):
-    self.profile_helper.createHost()
-    self.timeline_helper.studentsAnnounced()
-
-    url = '/gsoc/admin/projects/' + self.org.key().name()
-    response = self.get(url)
-    self.assertProjectsPage(response)
-
-    response = self.getListResponse(url, 0)
-    self.assertIsJsonResponse(response)
-    data = response.context['data']['']
-    self.assertEqual(0, len(data))
-
-    # test list with student's proposal
-    self.mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    self.mentor.createMentor(self.org)
-    self.profile_helper.createStudentWithProjects(
         self.org, self.mentor.profile, 1)
     response = self.getListResponse(url, 0)
     self.assertIsJsonResponse(response)

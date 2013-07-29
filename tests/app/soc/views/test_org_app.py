@@ -140,8 +140,8 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
     self.profile_helper.createHost()
     url = '/gsoc/org/application/edit/' + self.gsoc.key().name()
     response = self.get(url)
-    self.assertOrgAppCreateOrEditTemplatesUsed(response)
     self.assertResponseOK(response)
+    self.assertOrgAppCreateOrEditTemplatesUsed(response)
 
     org_app_key_name = 'gsoc_program/%s/orgapp' % (self.gsoc.key().name(),)
     org_app = org_app_survey.OrgAppSurvey.get_by_key_name(org_app_key_name)

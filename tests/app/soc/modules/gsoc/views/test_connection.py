@@ -52,6 +52,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
     self.profile_helper.createOrgAdmin(self.org)
     url = '/gsoc/connect/' + self.org.key().name()
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertConnectionTemplatesUsed(response)
 
     # Create the user that will receive the connection.
@@ -108,6 +109,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
         self.profile_helper.profile.key().name(),
         long(new_connection.key().id()))
     response = self.get(url)
+    self.assertResponseOK(response)
     self.assertConnectionShowTemplatesUsed(response)
 
     # Test the various User responses to an org admin invite.
@@ -157,6 +159,7 @@ class ConnectionTest(GSoCDjangoTestCase, MailTestCase):
         long(new_connection.key().id()))
     response = self.get(url)
     self.assertConnectionShowTemplatesUsed(response)
+    self.assertResponseOK(response)
 
     # Test the various Org responses.
     data = {'responses' : 'reject_mentor'}

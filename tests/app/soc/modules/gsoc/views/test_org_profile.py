@@ -130,8 +130,8 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     url = base_url + suffix
 
     response = self.get(url)
-    self.assertOrgProfilePageTemplatesUsed(response)
     self.assertResponseOK(response)
+    self.assertOrgProfilePageTemplatesUsed(response)
 
     org_key_name = '%s/%s' % (self.gsoc.key().name(), record.org_id)
     org = organization.GSoCOrganization.get_by_key_name(org_key_name)
@@ -167,8 +167,8 @@ class OrgProfilePageTest(test_utils.GSoCDjangoTestCase):
     url = base_url + suffix
 
     response = self.get(url)
-    self.assertOrgProfilePageTemplatesUsed(response)
     self.assertResponseOK(response)
+    self.assertOrgProfilePageTemplatesUsed(response)
 
     org_key_name = '%s/%s' % (self.gsoc.key().name(), record.org_id)
     org = organization.GSoCOrganization.get_by_key_name(org_key_name)
