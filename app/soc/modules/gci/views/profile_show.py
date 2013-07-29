@@ -79,6 +79,13 @@ class GCIProfileReadOnlyTemplate(readonly_template.GCIModelReadOnlyTemplate):
               'tshirt_style', 'tshirt_size', 'gender', 'program_knowledge']
 
 
+class GCIUserReadOnlyTemplate(profile_show.UserReadOnlyTemplate):
+  """Template to construct read-only User data to be displayed on Summer
+  Of Code view.
+  """
+  template_path = readonly_template.GCIModelReadOnlyTemplate.template_path
+
+
 class GCIProfileShowPage(profile_show.ProfileShowPage, base.GCIRequestHandler):
   """View to display the read-only profile page."""
 
@@ -102,6 +109,9 @@ class GCIProfileShowPage(profile_show.ProfileShowPage, base.GCIRequestHandler):
 
   def _getProfileReadOnlyTemplate(self, profile):
     return GCIProfileReadOnlyTemplate(profile)
+
+  def _getUserReadOnlyTemplate(self, user):
+    return GCIUserReadOnlyTemplate(user)
 
 
 class GCIProfileShowAdminPage(GCIProfileShowPage):

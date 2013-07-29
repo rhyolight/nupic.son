@@ -164,7 +164,7 @@ class ProfileShowPage(object):
         }
 
   def _getUserReadOnlyTemplate(self, user):
-    return UserReadOnlyTemplate(user)
+    raise NotImplementedError
 
   def _getProfileReadOnlyTemplate(self, profile):
     raise NotImplementedError
