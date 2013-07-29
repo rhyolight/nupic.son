@@ -131,27 +131,6 @@ class LookupProfileTest(GSoCDjangoTestCase):
     self.assertResponseRedirect(response, new_url)
 
 
-class AcceptedOrgsPageTest(GSoCDjangoTestCase):
-  """Test for accepted orgs that show proposals or projects for each org
-  """
-
-  def setUp(self):
-    self.init()
-
-  def assertAcceptedOrgs(self, response):
-    """Asserts that all the templates from the accepted orgs list were used
-    and all contexts were passed.
-    """
-    self.assertIn('base_layout', response.context)
-    self.assertGSoCTemplatesUsed(response)
-    self.assertEqual(response.context['base_layout'],
-      'modules/gsoc/base.html')
-
-    self.assertTemplateUsed(response, 'modules/gsoc/admin/list.html')
-    self.assertTemplateUsed(response,
-        'modules/gsoc/admin/_accepted_orgs_list.html')
-
-
 class ProposalsPageTest(GSoCDjangoTestCase):
   """Test proposals list page for admin
   """
