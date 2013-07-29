@@ -50,7 +50,6 @@ def setup_gae_services():
   from google.appengine.api.memcache import memcache_stub
   from google.appengine.api.taskqueue import taskqueue_stub
   from google.appengine.api import datastore_file_stub
-  from google.appengine.dist import use_library
 
   apiproxy_stub_map.apiproxy = apiproxy_stub_map.APIProxyStubMap()
   apiproxy_stub_map.apiproxy.RegisterStub(
@@ -68,9 +67,6 @@ def setup_gae_services():
   apiproxy_stub_map.apiproxy.RegisterStub(
       'capability_service', capability_stub.CapabilityServiceStub())
 
-  # Declare the Django version we need. In production it is defined
-  # in app.yaml configuration file, but it is not read by the test runner
-  use_library('django', '1.2')
 
 def clean_datastore():
   from google.appengine.api import apiproxy_stub_map
