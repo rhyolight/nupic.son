@@ -478,6 +478,9 @@ class DjangoTestCase(TestCase):
 
   def assertRenderAll(self, response):
     """Calls render on all objects that are renderable.
+
+    Args:
+      response: Django's http.HttpResponse object.
     """
     for contexts in response.context or []:
       for context in contexts:
@@ -494,6 +497,9 @@ class DjangoTestCase(TestCase):
 
   def assertErrorTemplatesUsed(self, response):
     """Assert that all the error templates were used.
+
+    Args:
+      response: Django's http.HttpResponse object.
     """
     self.assertNotEqual(response.status_code, httplib.OK)
     # TODO(SRabbelier): update this when we use an error template again
@@ -501,6 +507,10 @@ class DjangoTestCase(TestCase):
 
   def assertResponseCode(self, response, status_code):
     """Asserts that the response status is status_code.
+
+    Args:
+      response: Django's http.HttpResponse object.
+      status_code: expected status code of the response.
     """
     # first ensure that no render failures occurred
     self.assertRenderAll(response)
@@ -530,11 +540,18 @@ class DjangoTestCase(TestCase):
 
   def assertResponseOK(self, response):
     """Asserts that the response status is OK.
+
+    Args:
+      response: Django's http.HttpResponse object.
     """
     self.assertResponseCode(response, httplib.OK)
 
   def assertResponseRedirect(self, response, url=None):
     """Asserts that the response status is FOUND.
+
+    Args:
+      response: Django's http.HttpResponse object.
+      url: expected URL to which the response should redirect.
     """
     self.assertResponseCode(response, httplib.FOUND)
     if url:
@@ -545,6 +562,9 @@ class DjangoTestCase(TestCase):
     """Asserts that the response status is FORBIDDEN.
 
     Does not raise an error if dev_test is set.
+
+    Args:
+      response: Django's http.HttpResponse object.
     """
     if self.dev_test:
       return
@@ -557,12 +577,18 @@ class DjangoTestCase(TestCase):
 
   def assertResponseNotFound(self, response):
     """Asserts that the response status is NOT_FOUND.
+
+    Args:
+      response: Django's http.HttpResponse object.
     """
 
     self.assertResponseCode(response, httplib.NOT_FOUND)
 
   def assertIsJsonResponse(self, response):
     """Asserts that all the templates from the base view were used.
+
+    Args:
+      response: Django's http.HttpResponse object.
     """
     self.assertResponseOK(response)
     self.assertEqual('application/json', response['Content-Type'])
@@ -628,6 +654,9 @@ class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
 
   def assertGSoCTemplatesUsed(self, response):
     """Asserts that all the templates from the base view were used.
+
+    Args:
+      response: Django's http.HttpResponse object.
     """
     self.assertResponseOK(response)
     self.assertTemplateUsed(response, 'modules/gsoc/base.html')
@@ -649,6 +678,9 @@ class GCIDjangoTestCase(DjangoTestCase, GCITestCase):
 
   def assertGCITemplatesUsed(self, response):
     """Asserts that all the templates from the base view were used.
+
+    Args:
+      response: Django's http.HttpResponse object.
     """
     self.assertResponseOK(response)
     for contexts in response.context:
