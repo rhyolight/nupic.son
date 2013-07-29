@@ -22,7 +22,6 @@ HERE = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                      '..'))
 appengine_location = os.path.join(HERE, 'thirdparty', 'google_appengine')
 extra_paths = [HERE,
-               os.path.join(appengine_location, 'lib', 'django'),
                os.path.join(appengine_location, 'lib', 'yaml', 'lib'),
                os.path.join(appengine_location, 'lib', 'antlr3'),
                appengine_location,
