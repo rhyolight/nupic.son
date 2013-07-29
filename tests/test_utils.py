@@ -686,7 +686,7 @@ class GCIDjangoTestCase(DjangoTestCase, GCITestCase):
       for context in contexts:
         for value in context.values():
           # make it easier to debug render failures
-          if hasattr(value, 'render'):
+          if isinstance(value, template.Template):
             value.render()
     self.assertTemplateUsed(response, 'modules/gci/base.html')
     self.assertTemplateUsed(response, 'modules/gci/_footer.html')
