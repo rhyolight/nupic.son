@@ -14,14 +14,19 @@
 
 """GCIConversationUser logic methods."""
 
+from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from datetime import timedelta
 
 from soc.modules.gci.models import conversation as gciconversation_model
 from soc.modules.gci.models import message as gcimessage_model
+from soc.modules.gci.models import profile as gciprofile_model
 
 from soc.modules.gci.logic import message as gcimessage_logic
+from soc.modules.gci.logic import profile as gciprofile_logic
+
+from soc.models import conversation as conversation_model
 
 
 def queryForProgramAndUser(program, user):
@@ -40,6 +45,19 @@ def queryForProgramAndUser(program, user):
       .filter(gciconversation_model.GCIConversationUser.user == user))
 
   return query
+
+
+def queryConversationsForProgram(program):
+  """Creates a query for GCIConversation entities for the given program.
+
+  Args:
+    program: Key (ndb) of GCIProgram.
+
+  Returns:
+    An ndb query for GCIConversations for the program.
+  """
+  return gciconversation_model.GCIConversation.query(
+      gciconversation_model.GCIConversation.program == program)
 
 
 def queryConversationUserForConversation(conversation):
@@ -210,3 +228,201 @@ def createMessage(conversation, user=None, content=''):
   reputConversationUsers(conversation)
 
   return message
+
+
+def addUserToConversation(conversation, user):
+  """Creates a GCIConversationUser adding the user to the conversation, if the
+  user is not already part of the conversation.
+
+  Args:
+    conversation: Key (ndb) of GCIConversation.
+    user: Key (ndb) of User.
+
+  Returns:
+    The created (or existing) GCIConversationUser entity representing the
+    user's involvement.
+  """
+  conv_users = queryConversationUserForConversationAndUser(
+      conversation=conversation, user=user).fetch(1)
+
+  if conv_users:
+    return conv_users[0]
+
+  conv_user = gciconversation_model.GCIConversationUser(
+      conversation=conversation, user=user)
+  conv_user.put()
+
+  return conv_user
+
+
+def removeUserFromConversation(conversation, user):
+  """Removes the GCIConversationUser for a user and conversation, if it exists.
+  Will remove all matching instances, even though there should never be more
+  then one.
+
+  Args:
+    conversation: Key (ndb) of GCIConversation.
+    user: Key (ndb) of User.
+  """
+  keys = queryConversationUserForConversationAndUser(
+      conversation=conversation, user=user).fetch(100, keys_only=True)
+  ndb.delete_multi(keys)
+
+
+def doesConversationUserBelong(
+    conversation_user, ignore_auto_update_users=True):
+  """Decides whether the user in a conversation belongs in the conversation.
+
+  If ignore_auto_update_users is False, True will be returned if the
+  conversation's auto_update_users is False.
+
+  Args:
+    conversation_user: Key (ndb) of a GCIConversationUser representing the
+                       user's involvement in the conversation.
+    ignore_auto_update_users: Whether this should ignore the conversation's
+                              auto_update_users property.
+
+  Returns:
+    Whether the user belongs in the conversation. If the conversation's
+    recipients_type is 'User', True is always returned. Also returns true if
+    the user is the conversation's creator.
+  """
+
+  conversation_user_ent = conversation_user.get()
+
+  return doesUserBelongInConversation(
+      user=conversation_user_ent.user,
+      conversation=conversation_user_ent.conversation,
+      ignore_auto_update_users=ignore_auto_update_users)
+
+def doesUserBelongInConversation(
+    user, conversation, ignore_auto_update_users=True):
+  """Decides whether the user in a conversation belongs in the conversation.
+
+  If ignore_auto_update_users is False, True will be returned if the
+  conversation's auto_update_users is False.
+
+  Args:
+    user: Key (ndb) of a User.
+    conversation: Key (ndb) of a GCIConversation.
+    ignore_auto_update_users: Whether this should ignore the conversation's
+                              auto_update_users property.
+
+  Returns:
+    Whether the user belongs in the conversation. If the conversation's
+    recipients_type is 'User', True is always returned. Also returns true if
+    the user is the conversation's creator.
+  """
+
+  user_ent = db.get(ndb.Key.to_old_key(user))
+  conversation_ent = conversation.get()
+
+  if not conversation_ent.auto_update_users and not ignore_auto_update_users:
+    return True
+
+  if conversation_ent.creator == ndb.Key.from_old_key(user_ent.key()):
+    return True
+
+  profile_results = gciprofile_logic.queryProfileForUserAndProgram(
+      user=user_ent.key(),
+      program=ndb.Key.to_old_key(conversation_ent.program)).fetch(1)
+
+  if len(profile_results) == 0:
+    raise Exception('Could not find GCIProfile for user and program.')
+
+  profile = profile_results[0]
+
+  if conversation_ent.recipients_type == conversation_model.PROGRAM:
+    if conversation_ent.include_admins and profile.is_org_admin:
+      return True
+    elif conversation_ent.include_mentors and profile.is_mentor:
+      return True
+    elif conversation_ent.include_students and profile.is_student:
+      return True
+    else:
+      return False
+  elif conversation_ent.recipients_type == conversation_model.ORGANIZATION:
+    if (conversation_ent.include_admins and profile.is_org_admin and
+        ndb.Key.to_old_key(conversation_ent.organization) in 
+            profile.org_admin_for):
+      return True
+    elif (conversation_ent.include_mentors and profile.is_mentor and
+        ndb.Key.to_old_key(conversation_ent.organization) in
+            profile.mentor_for):
+      return True
+    else:
+      return False
+
+  # This might be reached if conversation recipients_type is 'User'
+  return True
+
+
+def refreshConversationParticipants(conversation):
+  """Creates/deletes GCIConversationUser entities depending on the converation's
+  criteria.
+
+  The conversation's owner is always included in the conversation.
+  If the conversation's recipients_type is 'User', this function will not do
+  anything because it is expected that the GCIConversationUser will be managed
+  elsewhere.
+
+  Args:
+    conversation: Key (ndb) of GCIConversation.
+  """
+  conv = conversation.get()
+  program = db.get(ndb.Key.to_old_key(conv.program))
+
+  def addProfile(profile):
+    addUserToConversation(
+        conversation=conversation,
+        user=ndb.Key.from_old_key(profile.user.key()))
+
+  def deleteConvUserIfDoesntBelong(conv_user):
+    if not doesConversationUserBelong(conversation_user=conv_user.key):
+      conv_user.key.delete()
+
+  # Remove any users included who no longer fit the criteria
+  if conv.recipients_type != conversation_model.USER:
+    conv_user_query = queryConversationUserForConversation(conversation)
+    map(deleteConvUserIfDoesntBelong, conv_user_query)
+
+  # Make sure users who fit the criteria are included
+  if conv.recipients_type == conversation_model.PROGRAM:
+    if conv.include_admins:
+      query = gciprofile_model.GCIProfile.all()
+      query.filter('program =', ndb.Key.to_old_key(conv.program))
+      query.filter('is_org_admin =', True)
+      map(addProfile, query.run(batch_size=1000))
+
+    if conv.include_mentors:
+      query = gciprofile_model.GCIProfile.all()
+      query.filter('program =', ndb.Key.to_old_key(conv.program))
+      query.filter('is_mentor =', True)
+      map(addProfile, query.run(batch_size=1000))
+
+    if conv.include_students:
+      query = gciprofile_model.GCIProfile.all()
+      query.filter('program =', ndb.Key.to_old_key(conv.program))
+      query.filter('is_student =', True)
+      map(addProfile, query.run(batch_size=1000))
+
+  elif conv.recipients_type == conversation_model.ORGANIZATION:
+    org_db_key = ndb.Key.to_old_key(conv.organization)
+
+    if conv.include_admins:
+      query = gciprofile_model.GCIProfile.all()
+      query.filter('program =', ndb.Key.to_old_key(conv.program))
+      query.filter('is_org_admin =', True)
+      query.filter('org_admin_for =', org_db_key)
+      map(addProfile, query.run(batch_size=1000))
+
+    if conv.include_mentors:
+      query = gciprofile_model.GCIProfile.all()
+      query.filter('program =', ndb.Key.to_old_key(conv.program))
+      query.filter('is_mentor =', True)
+      query.filter('mentor_for =', org_db_key)
+      map(addProfile, query.run(batch_size=1000))
+
+  # Make sure conversation's creator is included
+  if conv.creator is not None:
+    addUserToConversation(conversation=conversation, user=conv.creator)

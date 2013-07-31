@@ -36,16 +36,12 @@ class GCIMessage(unittest.TestCase):
   """Tests the logic for GCI messages."""
 
   def setUp(self):
-    program = seeder_logic.seed(gciprogram_model.GCIProgram)
-    self.program_key = ndb.Key.from_old_key(program.key())
-    self.conv_utils = conversation_utils.GCIConversationHelper(self.program_key)
+    self.conv_utils = conversation_utils.GCIConversationHelper()
+    self.program_key = self.conv_utils.program_key
 
     # Ndb keys of two dummy users
-    self.user_keys = []
-    for _ in range(2):
-      self.user_keys.append(seeder_logic.seed(user_model.User))
-    self.user_keys = map(
-        lambda user: ndb.Key.from_old_key(user.key()), self.user_keys)
+    self.user_keys = list(
+        self.conv_utils.createUser(return_key=True) for _ in range(2))
 
     # Conversation created by user 0 including user 1, without initial message
     self.conv = self.conv_utils.createConversation(

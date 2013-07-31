@@ -16,6 +16,9 @@
 
 from datetime import datetime
 
+from google.appengine.ext import db
+from google.appengine.ext import ndb
+
 from soc.models import conversation as conversation_model
 from soc.models import message as message_model
 
@@ -24,20 +27,30 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from soc.modules.gci.models import conversation as gciconversation_model
 from soc.modules.gci.models import message as gcimessage_model
 
+from tests import program_utils
+from tests import profile_utils
+
+# Constants for specifying a profile role in helper functions
+ADMIN   = 'Admin'
+MENTOR  = 'Mentor'
+STUDENT = 'Student'
+
 
 class ConversationHelper(object):
   """Helper class to aid in manipulating conversation data."""
 
-  def __init__(self, program):
+  def __init__(self):
     """Initializes the ConversationHelper.
 
     Args:
       program: Key (ndb) for a program.
     """
-    self.program = program
+    self.program_helper = program_utils.ProgramHelper()
     self.conversation_model_class = conversation_model.Conversation
     self.conversation_user_model_class = conversation_model.ConversationUser
     self.message_model_class = message_model.Message
+    self.program_helper.createProgram()
+    self.program_key = ndb.Key.from_old_key(self.program_helper.program.key())
 
   def createConversation(
       self, subject, content=None, creator=None, time=None, users=None):
@@ -68,7 +81,7 @@ class ConversationHelper(object):
       users.append(creator)
 
     conversation = self.conversation_model_class(
-        program=self.program,
+        program=self.program_key,
         subject=subject,
         creator=creator,
         recipients_type=conversation_model.USER,
@@ -156,18 +169,78 @@ class ConversationHelper(object):
     conv_user.last_message_seen_on = time
     conv_user.put()
 
+  def createUser(
+      self, roles=None, mentor_organizations=None, admin_organizations=None,
+      return_key=False):
+    """Creates a dummy user with a profile.
+
+    Concrete subclasses must implement this method.
+
+    Args:
+      role: A list of role constants for the profile's roles. If None, no roles
+            are given.
+      mentor_organization: A list of GCIOrganizations the profile is mentoring
+                           for. If None, none will be set.
+      admin_organizations: A list of GCIOrganizations the profile is admin for.
+                           If None, none will be set.
+      return_key: Whether just an ndb key for the entity will be returned.
+
+    Returns:
+      If return_key is True, an ndb key for the created user entity is returned.
+      Otherwise, the user entity itself is returned.
+    """
+    raise NotImplementedError()
+
 
 class GCIConversationHelper(ConversationHelper):
   """Helper class to aid in manipulating GCI conversation data."""
 
-  def __init__(self, program):
+  def __init__(self):
     """Initializes the GCIConversationHelper.
 
     Args:
       program: Key (ndb) for a program.
     """
-    self.program = program
+    self.program_helper = program_utils.GCIProgramHelper()
     self.conversation_model_class = gciconversation_model.GCIConversation
     self.conversation_user_model_class = (
         gciconversation_model.GCIConversationUser)
     self.message_model_class = gcimessage_model.GCIMessage
+    self.program_helper.createProgram()
+    self.program_key = ndb.Key.from_old_key(self.program_helper.program.key())
+
+  def createUser(
+      self, roles=None, mentor_organizations=None, admin_organizations=None,
+      return_key=False):
+    """Creates a dummy user with a GCIProfile.
+
+    See ConversationHelper.createUser for full specification.
+    """
+
+    program_ent = db.get(ndb.Key.to_old_key(self.program_key))
+    profile_helper = profile_utils.GCIProfileHelper(program_ent, False)
+
+    roles = set(roles) if roles else set()
+    profile = profile_helper.createProfile()
+
+    if profile is None:
+      raise Exception('profile is none')
+
+    if mentor_organizations:
+      roles.update([MENTOR])
+      profile.mentor_for = map(ndb.Key.to_old_key, mentor_organizations)
+
+    if admin_organizations:
+      roles.update([ADMIN])
+      profile.org_admin_for = map(ndb.Key.to_old_key, admin_organizations)
+
+    profile.is_mentor = MENTOR in roles
+    profile.is_org_admin = ADMIN in roles
+    profile.is_student = STUDENT in roles
+
+    profile.put()
+
+    if return_key:
+      return ndb.Key.from_old_key(profile_helper.user.key())
+    else:
+      return profile_helper.user
