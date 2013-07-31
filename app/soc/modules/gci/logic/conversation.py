@@ -110,3 +110,27 @@ def numUnreadMessagesForConversationAndUser(conversation, user):
   """
   query = queryUnreadMessagesForConversationAndUser(conversation, user)
   return None if query is None else query.count()
+
+
+def markAllReadForConversationAndUser(conversation, user):
+  """Marks all messages in a conversation as read for the user.
+
+  Sets the GCIConversationUser's last_message_seen_on to the last message's
+  sent_on.
+
+  Args:
+    conversation: Key (ndb) of GCIConversation.
+    user: Key (ndb) of User.
+  """
+  conv_user_results = queryConversationUserForConversationAndUser(
+      conversation, user).fetch(1)
+
+  if not conv_user_results:
+    raise Exception('No GCIConversationUser could be found.')
+
+  conv_user = conv_user_results[0]
+
+  last_message = gcimessage_logic.getLastMessageForConversation(conversation)
+
+  conv_user.last_message_seen_on = last_message.sent_on
+  conv_user.put()

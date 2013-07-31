@@ -44,6 +44,10 @@ class ConversationsList(conversation_list.ConversationList):
       return conversation_list_cell.ConversationListCell(
           self.data, e.conversation).render()
 
+    def rowAction(e, *args):
+      self.data.redirect.id(id=e.conversation.integer_id())
+      return self.data.redirect.urlOf(url_names.GCI_CONVERSATION)
+
     list_config.addHtmlColumn('conversation', 'Conversation', createHtml)
     list_config.addPlainTextColumn('subject', 'Subject',
         lambda e, *args: e.conversation.get().subject,
@@ -57,6 +61,7 @@ class ConversationsList(conversation_list.ConversationList):
 
     list_config.setDefaultPagination(20)
     list_config.setDefaultSort('last_message_on', order='desc')
+    list_config.setRowAction(rowAction)
 
     return list_config
 
@@ -79,7 +84,7 @@ class ConversationsPage(GCIRequestHandler):
     specification."""
     return [
         url(r'conversations/%s$' % url_patterns.PROGRAM, self,
-            name='gci_conversations'),
+            name=url_names.GCI_CONVERSATIONS),
     ]
 
   def checkAccess(self, data, check, mutator):

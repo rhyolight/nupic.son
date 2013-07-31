@@ -48,6 +48,7 @@ from soc.modules.gci.views import task_list
 from soc.modules.gci.views import task_create
 from soc.modules.gci.views import subscribed_tasks
 from soc.modules.gci.views import conversations
+from soc.modules.gci.views import conversation
 
 
 class Callback(object):
@@ -124,6 +125,7 @@ class Callback(object):
     self.views.append(task_list.TaskListPage())
     self.views.append(task_create.TaskCreatePage())
     self.views.append(conversations.ConversationsPage())
+    self.views.append(conversation.ConversationPage())
 
     # Google Appengine Tasks
     self.views.append(bulk_create_tasks.BulkCreateTask())

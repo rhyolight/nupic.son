@@ -203,3 +203,56 @@ class GCIConversationTest(unittest.TestCase):
     with self.assertRaises(Exception):
       gciconversation_logic.numUnreadMessagesForConversationAndUser(
           conversation=self.conv_b.key, user=self.user_keys[0])
+
+  def testMarkAllReadForConversationAndUser(self):
+    """Tests that markAllReadForConversationAndUser correctly marks the
+    conversation as read.
+    """
+
+    # Add three new messages to the first conversation, each one minute apart,
+    # starting one minute after the last message.
+    for x in range(3):
+      self.conv_utils.addMessage(
+          conversation=self.conv_a.key,
+          time=(self.conv_a.last_message_on + timedelta(minutes=x+1)))
+
+    # First user should have four unread messages
+    expected = 4
+    actual = gciconversation_logic.numUnreadMessagesForConversationAndUser(
+        conversation=self.conv_a.key, user=self.user_keys[0])
+    self.assertEqual(expected, actual)
+
+    # Mark as read for first user
+    gciconversation_logic.markAllReadForConversationAndUser(
+        conversation=self.conv_a.key, user=self.user_keys[0])
+
+    # First user should have zero unread messages
+    expected = 0
+    actual = gciconversation_logic.numUnreadMessagesForConversationAndUser(
+        conversation=self.conv_a.key, user=self.user_keys[0])
+    self.assertEqual(expected, actual)
+
+    # Add two new messages to the first conversation, each one minute apart,
+    # starting one minute after the last message.
+    for x in range(2):
+      self.conv_utils.addMessage(
+          conversation=self.conv_a.key,
+          time=(self.conv_a.last_message_on + timedelta(minutes=x+1)))
+
+    # First user should have two unread messages
+    expected = 2
+    actual = gciconversation_logic.numUnreadMessagesForConversationAndUser(
+        conversation=self.conv_a.key, user=self.user_keys[0])
+    self.assertEqual(expected, actual)
+
+    # Second user should have six unread messages
+    expected = 6
+    actual = gciconversation_logic.numUnreadMessagesForConversationAndUser(
+        conversation=self.conv_a.key, user=self.user_keys[1])
+    self.assertEqual(expected, actual)
+
+    # An exception should be raised if the user is not involved in the
+    # conversation. The first user is not involved in the second conversation.
+    with self.assertRaises(Exception):
+      gciconversation_logic.markAllReadForConversationAndUser(
+          conversation=self.conv_b.key, user=self.user_keys[0])

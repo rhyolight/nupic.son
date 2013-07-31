@@ -73,3 +73,6 @@ GCI_STUDENTS_INFO = 'gci_students_info'
 
 GCI_PROFILE_SHOW = 'gci_profile_show'
 GCI_PROFILE_SHOW_ADMIN = 'gci_profile_show_admin'
+
+GCI_CONVERSATION = 'gci_conversation'
+GCI_CONVERSATIONS = 'gci_conversations'

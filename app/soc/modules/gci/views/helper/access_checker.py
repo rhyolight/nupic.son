@@ -16,6 +16,8 @@
 for checking access.
 """
 
+from google.appengine.ext import ndb
+
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
@@ -29,6 +31,8 @@ from soc.views.helper import request_data
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.task import UNPUBLISHED
+from soc.modules.gci.models import conversation as gciconversation_model
+from soc.modules.gci.logic import conversation as gciconversation_logic
 
 
 DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT = ugettext(
@@ -75,6 +79,9 @@ DEF_TASK_MAY_NOT_BE_IN_STATES = ugettext(
 DEF_ORG_APP_REJECTED = ugettext(
     'This org application has been rejected')
 
+DEF_NOT_IN_CONVERSATION = ugettext(
+    'You do not have sufficient privileges to view this conversation.')
+
 
 class Mutator(access_checker.Mutator):
   """Helper class for access checking.
@@ -88,6 +95,7 @@ class Mutator(access_checker.Mutator):
     self.data.work_submissions = access_checker.unset
     self.data.is_visible = access_checker.unset
     self.data.full_edit = access_checker.unset
+    self.data.conversation = access_checker.unset
     super(Mutator, self).unsetAll()
 
   def profileFromKwargs(self):
@@ -133,6 +141,26 @@ class Mutator(access_checker.Mutator):
       return
 
     self.taskFromKwargs()
+
+  def conversationFromKwargs(self):
+    """Sets the GCIConversation entity in the RequestData object.
+
+    Args:
+      messages: If true, the messages for this conversation are added to
+                RequestData
+    """
+    id = long(self.data.kwargs['id'])
+    conversation = gciconversation_model.GCIConversation.get_by_id(id)
+
+    if (not conversation or
+        ndb.Key.to_old_key(conversation.program) != self.data.program.key()):
+      error_msg = access_checker.DEF_ID_BASED_ENTITY_NOT_EXISTS % {
+          'model': 'GCIConversation',
+          'id': id
+          }
+      raise exception.NotFound(message=error_msg)
+
+    self.data.conversation = conversation
 
   def orgAppFromOrgId(self):
     org_id = self.data.GET.get('org_id')
@@ -431,6 +459,18 @@ class AccessChecker(access_checker.AccessChecker):
     """
     if not self.timelineAllowsTaskEditing():
       raise exception.Forbidden(message=access_checker.DEF_PAGE_INACTIVE)
+
+  def isUserInConversation(self):
+    """Checks if the user is part of a conversation.
+    """
+    assert access_checker.isSet(self.data.conversation)
+    assert access_checker.isSet(self.data.user)
+
+    query = gciconversation_logic.queryConversationUserForConversationAndUser(
+        self.data.conversation.key, ndb.Key.from_old_key(self.data.user.key()))
+
+    if query.count() == 0:
+      raise exception.Forbidden(message=DEF_NOT_IN_CONVERSATION)
 
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
