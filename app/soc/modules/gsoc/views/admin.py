@@ -438,7 +438,7 @@ class EvaluationsDashboard(Dashboard):
         {
             'name': 'evaluation_group',
             'description': ugettext('Manage the results of the evaluation'),
-            'title': 'Evalutation Group',
+            'title': 'Evaluation Group',
             'link': '',
             'subpage_links': evaluation_group.getSubpagesLink(),
         },
