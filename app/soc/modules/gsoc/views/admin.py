@@ -35,6 +35,7 @@ from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
+from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic.proposal import getProposalsToBeAcceptedForOrg
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
@@ -1061,6 +1062,73 @@ class SurveyReminderPage(base.GSoCRequestHandler):
     }
 
 
+def taxFormSubmittedValue(profile, prefetched_data):
+  """Returns value for 'Tax Form Submitted' column in the list of all students.
+
+  Args:
+    profile: profile entity.
+    prefetched_data: a dict mapping profile keys with prefetched
+      student info entities.
+
+  Returns:
+    'N/A' if the specified student does not have any projects;
+    'No' if the specified student has a project but has yet to submit their
+      tax form;
+    'Yes' if the specified student has a project and has already submitted
+      their tax form;
+  """
+  student_info = prefetched_data[profile.key()]
+  if not profile_logic.hasProject(student_info):
+    return 'N/A'
+  else:
+    return 'Yes' if student_info.getTaxFormKey() else 'No'
+
+
+def enrollmentFormSubmittedValue(profile, prefetched_data):
+  """Returns value for 'Enrollment Form Submitted' column in the
+  list of all students.
+
+  Args:
+    profile: profile entity.
+    prefetched_data: a dict mapping profile keys with prefetched
+      student info entities.
+
+  Returns:
+    'N/A' if the specified student does not have any projects;
+    'No' if the specified student has a project but has yet to submit their
+      enrollment form;
+    'Yes' if the specified student has a project and has already submitted
+      their enrollment form;
+  """
+  student_info = prefetched_data[profile.key()]
+  if not profile_logic.hasProject(student_info):
+    return 'N/A'
+  else:
+    return 'Yes' if student_info.getEnrollmentFormKey() else 'No'
+
+
+def formsSubmittedValue(profile, prefetched_data):
+  """Returns value for 'Forms Submitted' column in the list of all students.
+
+  Args:
+    profile: profile entity.
+    prefetched_data: a dict mapping profile keys with prefetched
+      student info entities.
+
+  Returns:
+    'N/A' if the specified student does not have any projects;
+    'No' if the specified student has a project but has yet to submit
+      at least one of required forms;
+    'Yes' if the specified student has a project and has already submitted
+      all required forms;
+  """
+  student_info = prefetched_data[profile.key()]
+  if not profile_logic.hasProject(student_info):
+    return 'N/A'
+  else:
+    return 'Yes' if profile_logic.allFormsSubmitted(student_info) else 'No'
+
+
 class StudentsList(Template):
   """List configuration for listing all the students involved with the program.
   """
@@ -1123,17 +1191,16 @@ class StudentsList(Template):
 
     list_config.addPlainTextColumn(
         'tax_submitted', "Tax form submitted",
-        lambda ent, si, *args: bool(formsSubmitted(ent, si)[0]),
-        hidden=True)
+        lambda ent, si, *args: taxFormSubmittedValue(ent, si), hidden=True)
 
     list_config.addPlainTextColumn(
         'enroll_submitted', "Enrollment form submitted",
-        lambda ent, si, *args: bool(formsSubmitted(ent, si)[1]),
+        lambda ent, si, *args: enrollmentFormSubmittedValue(ent, si),
         hidden=True)
 
     list_config.addPlainTextColumn(
         'forms_submitted', "Forms submitted",
-        lambda ent, si, *args: all(formsSubmitted(ent, si)))
+        lambda ent, si, *args: formsSubmittedValue(ent, si))
 
     addresses.addAddressColumns(list_config)
 

@@ -91,3 +91,19 @@ class GSoCStudentInfo(profile.StudentInfo):
   school_home_page = db.LinkProperty(
       required=False, verbose_name=ugettext("School Home Page URL"))
   school_home_page.group = profile.EDUCATION_GROUP
+
+  def getTaxFormKey(self):
+    """Returns key of the Blob with Tax Form of the student.
+
+    Returns:
+      Key of the Blob with Tax Form.
+    """
+    return GSoCStudentInfo.tax_form.get_value_for_datastore(self)
+
+  def getEnrollmentFormKey(self):
+    """Returns key of the Blob with Enrollment Form of the student.
+
+    Returns:
+      Key of the Blob with Enrollment Form.
+    """
+    return GSoCStudentInfo.enrollment_form.get_value_for_datastore(self)

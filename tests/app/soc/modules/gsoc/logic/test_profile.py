@@ -16,6 +16,8 @@
 
 import unittest
 
+from google.appengine.ext import blobstore
+
 from soc.modules.gsoc.logic import profile as profile_logic
 
 from soc.modules.gsoc.models import profile as profile_model
@@ -125,7 +127,7 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
     self.organization_two = seeder_logic.seed(GSoCOrganization,
@@ -180,7 +182,7 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
         'program': self.program,
         'org': self.organization_one,
         }
-    proposal = seeder_logic.seed(
+    seeder_logic.seed(
         proposal_model.GSoCProposal, proposal_properties)
 
     # mentor is involved in organization one because of a proposal
@@ -210,7 +212,7 @@ class CanResignAsOrgAdminTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
     self.organization_two = seeder_logic.seed(GSoCOrganization,
@@ -264,7 +266,7 @@ class ResignAsOrgAdminForOrgTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
     self.organization = seeder_logic.seed(GSoCOrganization,
@@ -346,7 +348,7 @@ class GetOrgAdminsTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
     self.organization_two = seeder_logic.seed(GSoCOrganization,
@@ -418,7 +420,7 @@ class GetOrgAdminsTest(unittest.TestCase):
         'org_admin_for': [self.organization_one.key()],
         'status': 'invalid',
     }
-    org_admin = seeder_logic.seed(
+    seeder_logic.seed(
         profile_model.GSoCProfile, org_admin_properties)
 
     # not active org admin not returned
@@ -467,7 +469,7 @@ class CountOrgAdminsTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
     self.organization_two = seeder_logic.seed(GSoCOrganization,
@@ -486,11 +488,10 @@ class CountOrgAdminsTest(unittest.TestCase):
         'org_admin_for': [self.organization_one.key()],
         'status': 'active',
     }
-    seeded_org_admins = set()
     for _ in range(5):
       seeder_logic.seed(profile_model.GSoCProfile, org_admin_properties)
 
-    # seed  org admins for organization one
+    # seed  org admins for organization two
     org_admin_properties = {
         'is_mentor': True,
         'mentor_for': [self.organization_two.key()],
@@ -498,7 +499,6 @@ class CountOrgAdminsTest(unittest.TestCase):
         'org_admin_for': [self.organization_two.key()],
         'status': 'active',
     }
-    seeded_org_admins = set()
     for _ in range(3):
       seeder_logic.seed(profile_model.GSoCProfile, org_admin_properties)
 
@@ -519,13 +519,11 @@ class CountOrgAdminsTest(unittest.TestCase):
         'org_admin_for': [self.organization_one.key()],
         'status': 'invalid',
     }
-    org_admin = seeder_logic.seed(
-        profile_model.GSoCProfile, org_admin_properties)
+    seeder_logic.seed(profile_model.GSoCProfile, org_admin_properties)
 
     # seed the other org admin who is active
     org_admin_properties['status'] = 'active'
-    org_admin = seeder_logic.seed(
-        profile_model.GSoCProfile, org_admin_properties)
+    seeder_logic.seed(profile_model.GSoCProfile, org_admin_properties)
 
     # only active org admin counted
     org_admins = profile_logic.countOrgAdmins(self.organization_one.key())
@@ -539,7 +537,7 @@ class GetMentorsTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
     self.organization_two = seeder_logic.seed(GSoCOrganization,
@@ -610,7 +608,7 @@ class GetMentorsTest(unittest.TestCase):
         'org_admin_for': [],
         'status': 'invalid',
     }
-    mentor = seeder_logic.seed(profile_model.GSoCProfile, mentor_properties)
+    seeder_logic.seed(profile_model.GSoCProfile, mentor_properties)
 
     # not active mentor not returned
     mentors = profile_logic.getMentors(self.organization_one.key())
@@ -679,7 +677,7 @@ class ResignAsMentorForOrgTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
 
@@ -754,7 +752,7 @@ class CanBecomeMentorTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed an organization
+    # seed an organization
     self.organization = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
 
@@ -821,7 +819,7 @@ class CanBecomeOrgAdminTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed an organization
+    # seed an organization
     self.organization = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
 
@@ -903,7 +901,7 @@ class BecomeMentorForOrgTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
     self.organization_two = seeder_logic.seed(GSoCOrganization,
@@ -1010,7 +1008,7 @@ class BecomeOrgAdminForOrgTest(unittest.TestCase):
     # seed a new program
     self.program = seeder_logic.seed(GSoCProgram)
 
-     # seed a couple of organizations
+    # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
         {'program': self.program})
     self.organization_two = seeder_logic.seed(GSoCOrganization,
@@ -1099,3 +1097,56 @@ class BecomeOrgAdminForOrgTest(unittest.TestCase):
 
     # the profile should still be a student
     self.assertTrue(self.profile.is_student)
+
+
+class AllFormsSubmittedTest(unittest.TestCase):
+  """Unit tests for areFormsSubmitted function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.student_info = seeder_logic.seed(profile_model.GSoCStudentInfo)
+
+  def testNoAllFormsSubmitted(self):
+    """Tests when no all required forms has been submitted."""
+    # no forms are submitted
+    forms_submitted = profile_logic.allFormsSubmitted(self.student_info)
+    self.assertFalse(forms_submitted)
+
+    # only tax form is submitted
+    self.student_info.tax_form = blobstore.BlobKey('fake key name')
+    forms_submitted = profile_logic.allFormsSubmitted(self.student_info)
+    self.assertFalse(forms_submitted)
+
+    # only enrollment form is submitted
+    self.student_info.tax_form = None
+    self.student_info.enrollment_form = blobstore.BlobKey('fake key name')
+    forms_submitted = profile_logic.allFormsSubmitted(self.student_info)
+    self.assertFalse(forms_submitted)
+
+  def testAllFormsSubmitted(self):
+    """Tests when all required forms has been submitted."""
+    # both forms are submitted
+    self.student_info.tax_form = blobstore.BlobKey('fake key name')
+    self.student_info.enrollment_form = blobstore.BlobKey('fake key name')
+    forms_submitted = profile_logic.allFormsSubmitted(self.student_info)
+    self.assertTrue(forms_submitted)
+
+
+class HasProjectTest(unittest.TestCase):
+  """Unit tests for hasProject function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.student_info = seeder_logic.seed(profile_model.GSoCStudentInfo)
+
+  def testForStudentWithNoProjects(self):
+    """Tests for student with no projects."""
+    self.student_info.number_of_projects = 0
+    has_project = profile_logic.hasProject(self.student_info)
+    self.assertFalse(has_project)
+
+  def testForStudentWithOneProjects(self):
+    """Tests for student with one project."""
+    self.student_info.number_of_projects = 1
+    has_project = profile_logic.hasProject(self.student_info)
+    self.assertTrue(has_project)
