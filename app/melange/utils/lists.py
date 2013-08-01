@@ -79,13 +79,15 @@ class List(object):
     Returns: A dict containing the list data.
     """
     if self._cache_reader:
-      items, next_item = self._cache_reader.getListData(query, start, limit)
+      items, next_item = self._cache_reader.getListData(
+          self._list_id, query, start, limit)
       if not items:
         # A cache miss. Fetch data using the datastore reader.
         items, next_item = self._datastore_reader.getListData(
-                                                      query, start, limit)
+            self._list_id, query, start, limit)
     else:
-      items, next_item = self._datastore_reader.getListData(query, start, limit)
+      items, next_item = self._datastore_reader.getListData(
+          self._list_id, query, start, limit)
 
     data = [{'columns':item, 'operations': self._getOperations(item)}
                for item in items[0:limit]]
@@ -98,20 +100,14 @@ class List(object):
 
 class ListDataReader(object):
   """Base class for list data readers."""
-  def __init__(self, list_id):
-    """Initializes a ListDataReader.
 
-    Args:
-      list_id: The id of the list this reader reads data for.
-    """
-    self._list_id = list_id
-
-  def getListData(self, query, start, limit):
+  def getListData(self, list_id, query, start, limit):
     """Get list items for a list.
 
     Implementing subclasses must override this method.
 
     Args:
+      list_id: The id of the list this reader reads data for.
       query: Query that will be used to fetch datastore entities relevant to the
         list.
       start: The key of the object that should be the first in the list.
@@ -126,11 +122,9 @@ class ListDataReader(object):
 
 
 class CacheReader(ListDataReader):
-  """List reader for reding list data from cache."""
-  def __init__(self, list_id):
-    super(CacheReader, self).__init__(list_id)
+  """List reader for reading list data from cache."""
 
-  def getListData(self, query, start=None, limit=50):
+  def getListData(self, list_id, query, start=None, limit=50):
     """See ListDataReader.getListData for specification."""
     data_id = getDataId(query)
 
@@ -138,18 +132,18 @@ class CacheReader(ListDataReader):
       if cached_list.isListValid(data_id):
         return (cached_list.getCachedItems(data_id), FINAL_BATCH)
       else:
-        self._start_caching(data_id, query)
+        self._start_caching(list_id, data_id, query)
 
         # return None because cache is not hit
         return None, None
 
     else:
-      self._start_caching(data_id, query)
+      self._start_caching(list_id, data_id, query)
 
       # return None because cache is not hit
       return None, None
 
-  def _start_caching(self, data_id, query):
+  def _start_caching(self, list_id, data_id, query):
     if cached_list.isCachedListExists(data_id) and \
            cached_list.isProcessRunning(data_id):
       return
@@ -162,7 +156,7 @@ class CacheReader(ListDataReader):
     query_pickle = pickle.dumps(query)
 
     cache_list_pipline = cache_list_items.CacheListsPipeline(
-         self._list_id, entity_kind, query_pickle)
+        list_id, entity_kind, query_pickle)
 
     cache_list_pipline.start()
 
@@ -172,10 +166,8 @@ class CacheReader(ListDataReader):
 
 class DatastoreReaderForDB(ListDataReader):
   """List reader for reading list data from datastore using db queries."""
-  def __init__(self, list_id):
-    super(DatastoreReaderForDB, self).__init__(list_id)
 
-  def getListData(self, query, start=None, limit=50):
+  def getListData(self, list_id, query, start=None, limit=50):
     """See ListDataReader.getListData for specification."""
     if start:
       query.filter('__key__ >=', db.Key(start))
@@ -187,20 +179,18 @@ class DatastoreReaderForDB(ListDataReader):
     else:
       next_key = FINAL_BATCH
 
-    col_funcs = [(c.name, c.getValue) for c in getList(self._list_id).columns]
+    col_funcs = [(c.name, c.getValue) for c in getList(list_id).columns]
     items = [toListItemDict(entity, col_funcs) for entity in entities]
     return (items[:limit], next_key)
 
 
 class DatastoreReaderForNDB(ListDataReader):
   """List reader for reading list data from datastore using ndb queries."""
-  def __init__(self, list_id):
-    super(DatastoreReaderForNDB, self).__init__(list_id)
 
-  def getListData(self, query, start=None, limit=50):
+  def getListData(self, list_id, query, start=None, limit=50):
     """See ListDataReader.getListData for specification."""
     if start:
-      model_class = getList(self._list_id).model_class
+      model_class = getList(list_id).model_class
       query = query.filter(model_class.key >= ndb.Key(urlsafe=start))
 
     entities = query.fetch(limit + 1)
@@ -210,7 +200,7 @@ class DatastoreReaderForNDB(ListDataReader):
     else:
       next_key = FINAL_BATCH
 
-    col_funcs = [(c.name, c.getValue) for c in getList(self._list_id).columns]
+    col_funcs = [(c.name, c.getValue) for c in getList(list_id).columns]
     items = [toListItemDict(entity, col_funcs) for entity in entities]
     return (items[:limit], next_key)
 
@@ -353,8 +343,8 @@ title = SimpleColumn('title', 'Title')
 org = OraganizationColumn('org', 'Organization')
 status = SimpleColumn('status', 'Status')
 
-cache_reader = CacheReader(GSOC_PROJECTS_LIST_ID)
-datastore_reader = DatastoreReaderForDB(GSOC_PROJECTS_LIST_ID)
+cache_reader = CacheReader()
+datastore_reader = DatastoreReaderForDB()
 
 GSOC_PROJECTS_LIST = List(GSOC_PROJECTS_LIST_ID, 0, project.GSoCProject,
                           [title, org, status], datastore_reader,
