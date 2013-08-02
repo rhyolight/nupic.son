@@ -18,8 +18,6 @@ from google.appengine.ext import ndb
 
 from melange.models import cached_list as cached_list_model
 
-from soc.mapreduce import cache_list_items
-
 
 def cacheItems(list_id, items):
   """Save a given list of dictionaries in a cached list.
@@ -34,8 +32,7 @@ def cacheItems(list_id, items):
   list_key = ndb.Key(cached_list_model.CachedList, list_id)
   cached_list = list_key.get()
   if not cached_list:
-    cached_list = cached_list_model.CachedList(id=list_id, valid=False,
-                                               cache_process_id=None)
+    cached_list = cached_list_model.CachedList(id=list_id)
   cached_list.list_data.extend(items)
   cached_list.put()
 
@@ -83,8 +80,11 @@ def isCachedListExists(list_id):
     return False
 
 
-def isListValid(list_id):
+def isValid(list_id):
   """Checks whether the cache is valid according to the datastore entities.
+
+  This function checks whether the cached list is updated within the specified
+  time period.
 
   Args:
     list_id: Id of the list.
@@ -94,7 +94,7 @@ def isListValid(list_id):
 
   Returns:
     True if the data in the cache is updated with the datastore entities. False
-    if not (if cache contains stale data).
+    if not.
   """
   list_key = ndb.Key(cached_list_model.CachedList, list_id)
   cached_list = list_key.get()
@@ -102,23 +102,32 @@ def isListValid(list_id):
   if not cached_list:
     raise ValueError('A cached list with id %s does not exist' % list_id)
 
-  if cached_list.valid:
-    # Cached list is set as valid. If no caching process is run this list is
-    # considered as valid.
-    cache_pipeline = cache_list_items.CacheListsPipeline.from_id(
-                       cached_list.cache_process_id)
-    if cache_pipeline:
-      return cache_pipeline.has_finalized
-    else:
-      # Pipeline hase been cleaned.
-      return True
+  if cached_list.state == cached_list_model.VALID:
+    return True
+  else:
+    return False
+
+
+def isProcessing(list_id):
+  """Checks whether a process collecting list data for this list is running.
+  
+  Args:
+    list_id: Id used to identify a CachedList entity.
+  """
+  list_key = ndb.Key(cached_list_model.CachedList, list_id)
+  cached_list = list_key.get()
+
+  if not cached_list:
+    raise ValueError('A cached list with id %s does not exist' % list_id)
+
+  if cached_list.state == cached_list_model.PROCESSING:
+    return True
+  else:
+    return False
 
 
 def setInvalid(list_id):
-  """Sets the list as invalid.
-  
-  This function should be called after updating one or more datastore entities
-  relevant to a cached list.
+  """Changes the list state to indicate the list data is invalidated.
   
   Args:
     list_id: Id used to identify a CachedList entity.
@@ -129,32 +138,15 @@ def setInvalid(list_id):
   if not cached_list:
     raise ValueError('A cached list with id %s does not exist' % list_id)
 
-  cached_list.valid = False
+  cached_list.state = cached_list_model.INVALID
   cached_list.put()
 
 
-def isProcessRunning(list_id):
-  """Checks whether a process collecting list data for this list is running."""
-  list_key = ndb.Key(cached_list_model.CachedList, list_id)
-  cached_list = list_key.get()
-
-  if not cached_list:
-    raise ValueError('A cached list with id %s does not exist' % list_id)
-
-  cache_pipeline = cache_list_items.CacheListsPipeline.from_id(
-                       cached_list.cache_process_id)
-  return cache_pipeline and not cache_pipeline.has_finalized
-
-
-def cacheProcessStarted(list_id, process_id):
-  """Updates information about background processes regarding a cached list.
-
-  This function should be called when a background process to cache items for
-  a list is started.
+def setProcessing(list_id):
+  """Changes the list state to indicate a caching process has been started.
 
   Args:
     list_id: Id used to identify a CachedList entity.
-    process_id: Id of the background process that caches data.
   """
   list_key = ndb.Key(cached_list_model.CachedList, list_id)
   cached_list = list_key.get()
@@ -162,6 +154,21 @@ def cacheProcessStarted(list_id, process_id):
   if not cached_list:
     raise ValueError('A cached list with id %s does not exist' % list_id)
 
-  cached_list.cache_process_id = process_id
-  cached_list.valid = True
+  cached_list.state = cached_list_model.PROCESSING
+  cached_list.put()
+
+
+def setValid(list_id):
+  """Sets the list state to indicate that the list contain up to date data.
+
+  Args:
+    list_id: Id used to identify a CachedList entity.
+  """
+  list_key = ndb.Key(cached_list_model.CachedList, list_id)
+  cached_list = list_key.get()
+
+  if not cached_list:
+    raise ValueError('A cached list with id %s does not exist' % list_id)
+
+  cached_list.state = cached_list_model.VALID
   cached_list.put()

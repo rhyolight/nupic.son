@@ -129,7 +129,7 @@ class CacheReader(ListDataReader):
     data_id = getDataId(query)
 
     if cached_list.isCachedListExists(data_id):
-      if cached_list.isListValid(data_id):
+      if cached_list.isValid(data_id):
         return (cached_list.getCachedItems(data_id), FINAL_BATCH)
       else:
         self._start_caching(list_id, data_id, query)
@@ -144,12 +144,21 @@ class CacheReader(ListDataReader):
       return None, None
 
   def _start_caching(self, list_id, data_id, query):
-    if cached_list.isCachedListExists(data_id) and \
-           cached_list.isProcessRunning(data_id):
+    def prepareCachingTransaction():
+      if cached_list.isCachedListExists(data_id):
+        if cached_list.isProcessing(data_id):
+          return False
+        else:
+          cached_list.setProcessing(data_id)
+          return True
+      else:
+        # Create an empty cache list
+        cached_list.cacheItems(data_id, [])
+        cached_list.setProcessing(data_id)
+        return True
+
+    if not ndb.transaction(prepareCachingTransaction):
       return
-    # Create an empty cache list, if a cache list with this data id does not
-    # exist
-    cached_list.cacheItems(data_id, [])
 
     entity_kind = '%s.%s' % \
         (query._model_class.__module__, query._model_class.__name__)
@@ -159,9 +168,6 @@ class CacheReader(ListDataReader):
         list_id, entity_kind, query_pickle)
 
     cache_list_pipline.start()
-
-    # Set the process id regarding this cache list
-    cached_list.cacheProcessStarted(data_id, cache_list_pipline.pipeline_id)
 
 
 class DatastoreReaderForDB(ListDataReader):

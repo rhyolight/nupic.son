@@ -52,8 +52,13 @@ def reduceProcess(list_id, entities):
   # TODO: (Aruna) Fix this import
   from melange.logic import cached_list
 
-  ndb.transaction(
-      lambda: cached_list.cacheItems(list_id, map(json.loads, entities)))
+  def cacheItemsTransaction():
+    cached_list.cacheItems(list_id, map(json.loads, entities))
+
+    # The caching is done. Now the list can be considered valid.
+    cached_list.setValid(list_id)
+
+  ndb.transaction(cacheItemsTransaction)
 
 
 class CacheListsPipeline(base_handler.PipelineBase):
