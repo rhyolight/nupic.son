@@ -197,6 +197,8 @@ class SoCTestCase(unittest.TestCase):
         probability=1)
     self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
 
+    self.testbed.init_blobstore_stub()
+
   @staticmethod
   def use_hr_schema(func):
     """Wrapper that makes the specified function to be called in HR datastore
