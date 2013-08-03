@@ -39,6 +39,7 @@ class TestCacheItems(unittest.TestCase):
     self.assertIn(new_item1, cached_list.list_data)
     self.assertIn(new_item2, cached_list.list_data)
 
+
 class TestGetCachedItems(unittest.TestCase):
   """Tests getCachedItems function."""
 
@@ -73,6 +74,28 @@ class TestGetCachedItems(unittest.TestCase):
     cached_items = cached_list_logic.getCachedItems('test_list', 100, 3)
     self.assertEqual(0, len(cached_items))
 
+  def testRetrievingWithoutSpecifyingStart(self):
+    """Test whether 0 is taken as the starting index."""
+    cached_items = cached_list_logic.getCachedItems('test_list', limit=3)
+    self.assertListEqual([self.item1, self.item2, self.item3], cached_items)
+
+  def testRetrievingWithoutSpecifyingLimit(self):
+    """Test whether all the items from the starting index is returned."""
+    cached_items = cached_list_logic.getCachedItems('test_list', start=2)
+    self.assertListEqual([self.item3, self.item4, self.item5], cached_items)
+
   def testErrorForNonExsistentList(self):
     with self.assertRaises(ValueError):
       cached_list_logic.getCachedItems('none_existent', 0, 1)
+
+
+class TestIsCachedListExists(unittest.TestCase):
+  """Unit tests for isCachedListExists function."""
+
+  def setUp(self):
+    seeder_logic.seed(cached_list_model.CachedList, {'id': 'cached_list'})
+
+  def testForExistence(self):
+    """Test whether True is returned only when the list exists."""
+    self.assertTrue(cached_list_logic.isCachedListExists('cached_list'))
+    self.assertFalse(cached_list_logic.isCachedListExists('none_existent'))
