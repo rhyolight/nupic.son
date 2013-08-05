@@ -89,7 +89,7 @@ class ModelReadOnlyTemplateMetaclass(type):
 
       dict['fields'] = model_fields
       dict['hidden_fields'] = model_hidden_fields
-      dict['renderers'] = opts.renderers
+      dict['renderers'] = opts.renderers or {}
 
     if opts.css_prefix:
       dict['css_prefix'] = opts.css_prefix
