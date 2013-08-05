@@ -171,22 +171,33 @@ class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
     if self.instance:
       self.schema = SurveySchema(self.instance.survey)
 
-  def __iter__(self):
-    """Iterator yielding groups of record instance's properties to be rendered.
+  def fieldsIterator(self):
+    """Iterates through the fields that were declared for this template.
+
+    Yields:
+      a pair whose first element is a verbose name of a model field and
+      the other element is the value of that field.
     """
     for name, field in self.fields.items():
       renderer = self.renderers.get(name)
       if renderer:
-        val = renderer(self.instance)
+        value = renderer(self.instance)
       else:
-        val = getattr(self.instance, name)
-      yield field.verbose_name, val
+        value = getattr(self.instance, name)
+      yield field.verbose_name, value
 
+  def schemaIterator(self):
+    """Iterates through the survey schema questions.
+
+    Yields:
+      a pair whose first element is a label for a question belonging to
+      the schema and the other element is the answer for that question.
+    """
     if self.schema:
       for field in self.schema:
         field_id = field.getFieldName()
         label = field.getLabel()
-        value = getattr(self.instance, field_id, 'N/A')
+        value = getattr(self.instance, field_id, '-')
         if isinstance(value, list):
           value = ', '.join(value)
 

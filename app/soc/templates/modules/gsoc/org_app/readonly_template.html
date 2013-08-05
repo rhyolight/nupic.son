@@ -1,9 +1,19 @@
 <div id="{{ css_prefix }}" class="block block-form">
   <div id="block-{{ css_prefix }}-content" class="model-readonly">
     <div id="org-app-show-group" class="block block-org-app-group">
-      <h4 id="title-section-org-app-show-group">Application</h4>
+      <h4 id="title-section-org-app-show-group">General Info</h4>
 
-      {% for label, value in record %}
+      {% for label, value in record.fieldsIterator %}
+        <div id="{{ css_prefix }}-{{ name|slugify }}" class="{% if forloop.counter|divisibleby:2 %}row-odd{% else %}row-even{% endif %}">
+          <label>{{ label }}</label>
+          <span class="readonly-row-content">
+            {{ value }}
+          </span>
+        </div>
+      {% endfor %}
+
+      <h4 id="title-section-org-app-show-group">Application</h4>
+      {% for label, value in record.schemaIterator %}
         <div id="{{ css_prefix }}-{{ name|slugify }}" class="{% if forloop.counter|divisibleby:2 %}row-odd{% else %}row-even{% endif %}">
           <label>{{ label }}</label>
           <span class="readonly-row-content">
