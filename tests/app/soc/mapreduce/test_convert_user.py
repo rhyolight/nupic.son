@@ -26,13 +26,14 @@ from google.appengine.ext import db
 from soc.models.user import User
 from soc.mapreduce import convert_user
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+from soc.modules.seeder.logic.providers import string as seeder_string
 
 
 class TestAccounts(unittest.TestCase):
   """Tests for convert_user logic.
   """
   def setUp(self):
-    self.link_id = 'test_user'
+    self.link_id = seeder_string.LinkIDProvider(User).getValue()
 
   def convert(self, email, same_user_id=False):
     account = users.User(email=email)
