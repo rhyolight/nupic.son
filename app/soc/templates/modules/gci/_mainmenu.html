@@ -1,7 +1,8 @@
 {% block site_menu %}
+  <div class="block-title">Menu</div>
   <ul class="menu">
     {% if home_link %}
-    <li class="menu-login-register" id="menu-home"><a href="{{ home_link }}">Home</a></li>
+    <li id="menu-home"><a href="{{ home_link }}">Home</a></li>
     {% endif %}
     {% if login_link %}
     <li id="menu-login"><a href="{{ login_link }}">Login</a></li>
