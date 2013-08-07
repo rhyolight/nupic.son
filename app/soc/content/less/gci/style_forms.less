@@ -1,3 +1,6 @@
+@formBlockBackground: #b6dcf7;
+@formLabelColor: #0f649d;
+
 .block-form {
   background: #e0e0e0 url(@image_block_form_bg) 0 0 repeat-x;
   border: 1px solid #b4b4b4;
@@ -39,7 +42,7 @@ form {
       width: 100%;
 
       span {
-        color: #0f649d;
+        color: @formLabelColor;
         font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
         font-size: 25px;
         font-weight: bold;
@@ -78,7 +81,7 @@ form {
   label {
     &.form-label {
       /*Default form label*/
-      color: #0f649d;
+      color: @formLabelColor;
       display: block;
       font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
       font-size: 18px;
@@ -107,8 +110,7 @@ form {
     padding-left: 2px;
   }
 
-  input[type=text],
-  textarea {
+  .text-input {
     background: #f6f6f6;
     border: 1px solid #d2d2d2;
     box-shadow: inset 2px 2px 5px rgba(0, 0, 0, .09);
@@ -118,6 +120,7 @@ form {
   }
 
   input[type=text] {
+    .text-input;
     height: 28px;
     line-height: 28px;
     padding: 0;
@@ -126,6 +129,7 @@ form {
   }
 
   textarea {
+    .text-input;
     line-height: 20px;
     padding: 8px;
     width: 640px;
@@ -209,6 +213,8 @@ form {
   .form-checkbox-item .checker {
     margin-right: 0;
   }
+
+  margin: 2px;
 }
 
 .form-radio .form-radio-item label {
@@ -269,6 +275,12 @@ div.tos {
   width: 640px;
 }
 
+.inline-input-row {
+  > * {
+    display: inline-block;
+  }
+}
+
 /* @group Task creation */
 .form-row-task-completion-time,
 .form-row-task-difficulty,
@@ -281,7 +293,7 @@ div.tos {
   width: 220px;
 
   .form-row-task-completion-time-inner {
-    background: #b6dcf7 url(@image_block_stopwatch_sm) 5px 5px no-repeat;
+    background: @formBlockBackground url(@image_block_stopwatch_sm) 5px 5px no-repeat;
     font-size: 18px;
     padding: 10px 0 10px 50px;
   }
@@ -297,7 +309,7 @@ div.tos {
 }
 
 .form-row-task-difficulty-inner {
-  background: #b6dcf7 url(@image_cog_grey_sm) 5px 5px no-repeat;
+  background: @formBlockBackground url(@image_cog_grey_sm) 5px 5px no-repeat;
   padding: 10px 0 10px 50px;
 }
 
@@ -306,8 +318,27 @@ div.tos {
 }
 
 .form-row-task-assigned-mentor-inner {
-  background: #b6dcf7;
+  background: @formBlockBackground;
   padding: 10px;
   width: 215px;
 }
+/* @end */
+
+/* @group Conversation creation */
+
+.form-row-conversation-recipients {
+  background: @formBlockBackground;
+  padding: 5px;
+
+  .form-label {
+    font-size: 14px !important;
+  }
+
+  hr {
+    background: lighten(@formBlockBackground, 10%);
+    border: none;
+    margin: 5px auto;
+  }
+}
+
 /* @end */
