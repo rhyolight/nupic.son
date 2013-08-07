@@ -30,7 +30,8 @@ def generate_eligible_student_birth_date(program):
 
 
 def login(user_email, user_id):
-  """Logs in the specified user.
+  """Logs in the specified user by setting the 'USER_EMAIL'
+  and 'USER_ID' environment variables.
 
   Args:
     user_email: the user email as a string, e.g.: 'test@example.com'
@@ -41,7 +42,9 @@ def login(user_email, user_id):
 
 
 def logout():
-  """Logs out the current user."""
+  """Logs out the current user by clearing the 'USER_EMAIL'
+  and 'USER_ID' environment variables.
+  """
   del os.environ['USER_EMAIL']
   del os.environ['USER_ID']
 
