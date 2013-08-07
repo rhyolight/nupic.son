@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from django.utils import translation
 
 """This module contains the view for the site menus."""
 
@@ -111,8 +112,7 @@ class Header(Template):
 
 
 class MainMenu(Template):
-  """MainMenu template.
-  """
+  """MainMenu template."""
 
   def __init__(self, data):
     self.data = data
@@ -211,3 +211,33 @@ class Status(Template):
 
   def templatePath(self):
     return "modules/gci/_status_block.html"
+
+
+LOGIN_LINK_LABEL = translation.ugettext('Login')
+LOGOUT_LINK_LABEL = translation.ugettext('Logout')
+NOT_LOGGED_IN = translation.ugettext('Not Logged In')
+
+
+class LoggedInAs(Template):
+  """LoggedInAs template."""
+
+  def context(self):
+    """See template.Template.context for specification."""
+    context = {}
+
+    # TODO(nathaniel): This should be "the one application-wide linker object"
+    # rather than a one-off instantiation.
+    linker = links.Linker()
+    if self.data.gae_user:
+      context['logged_in_as'] = self.data.gae_user.email()
+      context['link_url'] = linker.logout(self.data.request)
+      context['link_label'] = LOGOUT_LINK_LABEL
+    else:
+      context['logged_in_as'] = NOT_LOGGED_IN
+      context['link_url'] = linker.login(self.data.request)
+      context['link_label'] = LOGIN_LINK_LABEL
+    return context
+
+  def templatePath(self):
+    """See template.Template.template_path for specification."""
+    return 'modules/gci/_logged_in_as.html'
