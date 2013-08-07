@@ -65,7 +65,8 @@ def siteMenuContext(data):
   if data.profile:
     context['dashboard_link'] = redirect.dashboard().url()
 
-  if data.program.messaging_enabled and data.gae_user:
+  if data.program.messaging_enabled and data.user:
+    redirect.program()
     context['messages_link'] = redirect.urlOf(url_names.GCI_CONVERSATIONS)
     context['num_unread_messages'] = (
         gciconversation_logic.numUnreadMessagesForProgramAndUser(
