@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from django.utils.datetime_safe import datetime
 
 """Module containing list utilities."""
 
@@ -27,6 +28,8 @@ from soc.mapreduce import cache_list_items
 
 from melange.logic import cached_list
 
+import datetime
+
 import pickle
 
 
@@ -37,7 +40,8 @@ class List(object):
   """Represents a list."""
 
   def __init__(self, list_id, index, model_class, columns, datastore_reader,
-               cache_reader=None, operations_func=None):
+               cache_reader=None, valid_period=datetime.timedelta(1),
+               operations_func=None):
     """Initialize a list object.
 
     Args:
@@ -57,6 +61,7 @@ class List(object):
     self.columns = columns
     self._cache_reader = cache_reader
     self._datastore_reader = datastore_reader
+    self.valid_period = valid_period
 
     if operations_func:
       self._getOperations = operations_func
@@ -127,12 +132,12 @@ class CacheReader(ListDataReader):
   def getListData(self, list_id, query, start=None, limit=50):
     """See ListDataReader.getListData for specification."""
     data_id = getDataId(query)
-
     if cached_list.isCachedListExists(data_id):
       if cached_list.isValid(data_id):
         return (cached_list.getCachedItems(data_id), FINAL_BATCH)
       else:
-        self._start_caching(list_id, data_id, query)
+        if not cached_list.isProcessing(data_id):
+          self._start_caching(list_id, data_id, query)
 
         # return None because cache is not hit
         return None, None
@@ -149,12 +154,12 @@ class CacheReader(ListDataReader):
         if cached_list.isProcessing(data_id):
           return False
         else:
-          cached_list.setProcessing(data_id)
+          cached_list.setProcessing(data_id, True)
           return True
       else:
         # Create an empty cache list
-        cached_list.cacheItems(data_id, [])
-        cached_list.setProcessing(data_id)
+        cached_list.cacheItems(data_id, [5])
+        cached_list.setProcessing(data_id, True)
         return True
 
     if not ndb.transaction(prepareCachingTransaction):
@@ -228,12 +233,8 @@ def getDataId(query):
   Returns:
     A string containing an id that is unique for the given query.  
   """
-  # The query is pickled unpickled and pickled again, and hash is taken.
-  # The reason for pickling twice is that the hash is different between the
-  # original object's pickle string and the one's that is created by unpickling.
-  # But it is the same for all objects created by pickling and upickling many
-  # times after that.
-  return str(hash(pickle.dumps(pickle.loads(pickle.dumps(query)))))
+  # TODO: ---IMPORTANT--- Implement an actual function to get data id
+  return 'data_id_for_now'
 
 
 class Column(object):
@@ -351,10 +352,12 @@ status = SimpleColumn('status', 'Status')
 
 cache_reader = CacheReader()
 datastore_reader = DatastoreReaderForDB()
+# CachedList should be updated once a day
+valid_period = datetime.timedelta(0, 60)
 
 GSOC_PROJECTS_LIST = List(GSOC_PROJECTS_LIST_ID, 0, project.GSoCProject,
                           [title, org, status], datastore_reader,
-                          cache_reader=cache_reader)
+                          cache_reader=cache_reader, valid_period=valid_period)
 
 
 LISTS = {

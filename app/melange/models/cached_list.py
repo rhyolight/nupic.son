@@ -17,24 +17,14 @@
 from google.appengine.ext import ndb
 
 
-# Possible states of cached lists
-VALID = 0
-INVALID = 1
-PROCESSING = 2
-
-
 class CachedList(ndb.Model):
   """The CachedList model, represents a list cached as a ndb entity."""
 
   # The list of items cached in the list in json format
   list_data = ndb.JsonProperty(repeated=True)
 
-  state = ndb.IntegerProperty()
+  # If True a caching processing is running collecting data for this list
+  is_processing = ndb.BooleanProperty()
 
-
-class CacheProcess(ndb.Model):
-  """Model for a process to collect data for caching."""
-
-  # A mapereduce pipeline id.
-  # If not None a process is running collecting/adding data for this list.
-  cache_process_id = ndb.StringProperty()
+  # When the list should be invalidated
+  valid_through = ndb.DateTimeProperty()

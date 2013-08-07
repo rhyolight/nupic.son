@@ -21,6 +21,8 @@ from melange.logic import cached_list as cached_list_logic
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+import datetime
+
 
 class TestCacheItems(unittest.TestCase):
   """Test cacheItems function."""
@@ -108,48 +110,61 @@ class TestCachedListStates(unittest.TestCase):
     self.valid_list_id = 'valid_cached_list'
     self.invalid_list_id = 'invalid_cached_list'
     self.processing_list_id = 'processing_cached_list'
+    self.not_processing_list_id = 'not_processing_cached_list'
 
     valid_cached_list_properties = {
         'id': self.valid_list_id,
-        'state': cached_list_model.VALID
+        'valid_through': datetime.datetime.max
     }
     self.valid_list = seeder_logic.seed(
         cached_list_model.CachedList, valid_cached_list_properties)
 
     invalid_cached_list_properties = {
         'id': self.invalid_list_id,
-        'state': cached_list_model.INVALID
+        'valid_through': datetime.datetime.min
     }
     self.invalid_list = seeder_logic.seed(
         cached_list_model.CachedList, invalid_cached_list_properties)
 
     processing_cached_list_properties = {
         'id': self.processing_list_id,
-        'state': cached_list_model.PROCESSING
+        'is_processing': True
     }
     self.processing_list = seeder_logic.seed(
         cached_list_model.CachedList, processing_cached_list_properties)
+
+    not_processing_cached_list_properties = {
+        'id': self.not_processing_list_id,
+        'is_processing': False
+    }
+    self.processing_list = seeder_logic.seed(
+        cached_list_model.CachedList, not_processing_cached_list_properties)
 
   def testIsValid(self):
     """Tests isValid function."""
     self.assertTrue(cached_list_logic.isValid(self.valid_list_id))
     self.assertFalse(cached_list_logic.isValid(self.invalid_list_id))
-    self.assertFalse(cached_list_logic.isValid(self.processing_list_id))
 
   def testIsProcessing(self):
     """Tests isProcessing function."""
     self.assertTrue(cached_list_logic.isProcessing(self.processing_list_id))
-    self.assertFalse(cached_list_logic.isProcessing(self.invalid_list_id))
-    self.assertFalse(cached_list_logic.isProcessing(self.valid_list_id))
-
-  def testSetInvalid(self):
-    """Tests setInvalid function."""
-    cached_list_logic.setInvalid(self.valid_list_id)
-    updated_list = cached_list_model.CachedList.get_by_id(self.valid_list_id)
-    self.assertEqual(updated_list.state, cached_list_model.INVALID)
+    self.assertFalse(
+        cached_list_logic.isProcessing(self.not_processing_list_id))
 
   def testSetProcessing(self):
     """Tests setProcessing function."""
-    cached_list_logic.setProcessing(self.invalid_list_id)
+    cached_list_logic.setProcessing(self.not_processing_list_id, True)
+    updated_list = cached_list_model.CachedList.get_by_id(
+        self.not_processing_list_id)
+    self.assertTrue(updated_list.is_processing)
+    cached_list_logic.setProcessing(self.processing_list_id, False)
+    updated_list = cached_list_model.CachedList.get_by_id(
+        self.processing_list_id)
+    self.assertFalse(updated_list.is_processing)
+
+  def testSetValidity(self):
+    """Tests setValidity function."""
+    test_valid_through = datetime.datetime(2000, 1, 1)
+    cached_list_logic.setValidity(self.invalid_list_id, test_valid_through)
     updated_list = cached_list_model.CachedList.get_by_id(self.invalid_list_id)
-    self.assertEqual(updated_list.state, cached_list_model.PROCESSING)
+    self.assertEqual(updated_list.valid_through, test_valid_through)

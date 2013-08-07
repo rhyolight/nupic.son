@@ -18,6 +18,8 @@ from google.appengine.ext import ndb
 
 from melange.models import cached_list as cached_list_model
 
+import datetime
+
 
 def cacheItems(list_id, items):
   """Save a given list of dictionaries in a cached list.
@@ -102,7 +104,8 @@ def isValid(list_id):
   if not cached_list:
     raise ValueError('A cached list with id %s does not exist' % list_id)
 
-  if cached_list.state == cached_list_model.VALID:
+  if cached_list.valid_through and \
+         cached_list.valid_through > datetime.datetime.now():
     return True
   else:
     return False
@@ -113,6 +116,12 @@ def isProcessing(list_id):
   
   Args:
     list_id: Id used to identify a CachedList entity.
+
+  Raises:
+    ValueError if a cached list does not exist for the given list id.  
+
+  Returns:
+    True if a caching process is running. False if not.
   """
   list_key = ndb.Key(cached_list_model.CachedList, list_id)
   cached_list = list_key.get()
@@ -120,17 +129,19 @@ def isProcessing(list_id):
   if not cached_list:
     raise ValueError('A cached list with id %s does not exist' % list_id)
 
-  if cached_list.state == cached_list_model.PROCESSING:
-    return True
-  else:
-    return False
+  return cached_list.is_processing
 
 
-def setInvalid(list_id):
-  """Changes the list state to indicate the list data is invalidated.
-  
+def setProcessing(list_id, is_processing):
+  """Changes the list state to indicate a caching process is running or not.
+
   Args:
     list_id: Id used to identify a CachedList entity.
+    is_processing: bool indicating the whether to setProcessing to True or
+      False.
+    
+  Raises:
+    ValueError if a cached list does not exist for the given list id.
   """
   list_key = ndb.Key(cached_list_model.CachedList, list_id)
   cached_list = list_key.get()
@@ -138,15 +149,20 @@ def setInvalid(list_id):
   if not cached_list:
     raise ValueError('A cached list with id %s does not exist' % list_id)
 
-  cached_list.state = cached_list_model.INVALID
+  cached_list.is_processing = is_processing
   cached_list.put()
 
 
-def setProcessing(list_id):
-  """Changes the list state to indicate a caching process has been started.
+def setValidity(list_id, valid_through):
+  """Sets the time the list is valid through.
 
   Args:
     list_id: Id used to identify a CachedList entity.
+    valid_through: A datetime.datetime value indicating the time and date the
+      validity of the list should be set.
+
+  Raises:
+    ValueError if a cached list does not exist for the given list id.
   """
   list_key = ndb.Key(cached_list_model.CachedList, list_id)
   cached_list = list_key.get()
@@ -154,21 +170,5 @@ def setProcessing(list_id):
   if not cached_list:
     raise ValueError('A cached list with id %s does not exist' % list_id)
 
-  cached_list.state = cached_list_model.PROCESSING
-  cached_list.put()
-
-
-def setValid(list_id):
-  """Sets the list state to indicate that the list contain up to date data.
-
-  Args:
-    list_id: Id used to identify a CachedList entity.
-  """
-  list_key = ndb.Key(cached_list_model.CachedList, list_id)
-  cached_list = list_key.get()
-
-  if not cached_list:
-    raise ValueError('A cached list with id %s does not exist' % list_id)
-
-  cached_list.state = cached_list_model.VALID
+  cached_list.valid_through = valid_through
   cached_list.put()
