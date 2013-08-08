@@ -6,7 +6,7 @@
         <div id="{{ css_prefix }}-{{ group|slugify }}-{{ name|slugify }}" class="{% if forloop.counter|divisibleby:2 %}row-even{% else %}row-odd{% endif %}">
           <label>{{ name }}</label>
           <span class="readonly-row-content">
-            {% if field %}{{ field }}{% else %}N/A{% endif %}
+            {% if field %}{{ field }}{% else %}-{% endif %}
           </span>
         </div>
       {% endfor %}

@@ -27,26 +27,13 @@ limitations under the License.
 
 
 {% block page_content %}
-<div id="organization-name" class="block full home-block-1">
-  <h2 id="title-profile-show">
-    Profile - {{ program_name }}
-  </h2>
-
-  {% if update_link %}
-    <div id="edit-page" class="org-page-link">
-      <a href="{{ update_link }}">Update</a>
-    </div>
-  {% endif %}
+<div id="organization-name" class="full home-block-1">
 
   {% if submit_tax_link and submit_enrollment_link %}
     <div id="submit-link" class="org-page-link">
       <a href="{{ submit_tax_link }}">Submit tax form</a>
       | <a href="{{ submit_enrollment_link }}">Submit enrollment form</a>
     </div>
-  {% endif %}
-
-  {% if user_role %}
-        <h1 align="right"> {{ user_role }} </h1>
   {% endif %}
 </div>
 
