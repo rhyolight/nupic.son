@@ -26,5 +26,5 @@ class CachedList(ndb.Model):
   # If True a caching processing is running collecting data for this list
   is_processing = ndb.BooleanProperty()
 
-  # When the list should be invalidated
+  # When the list data should be invalidated
   valid_through = ndb.DateTimeProperty()

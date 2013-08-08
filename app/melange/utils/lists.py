@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from django.utils.datetime_safe import datetime
 
 """Module containing list utilities."""
 
@@ -51,6 +50,8 @@ class List(object):
       columns: A list of Column objects describing columns in the list.
       datastore_reader: A ListReader to read data from the datastore.
       cache_reader: A ListReader to read list data from the cache.
+      valid_period: datetime.timedelta value indicating the time period a list's
+       cache data should be valid, after a caching process completes.
       operations_func: A function that will return operations supported by the
         jqgrid list row. This function should take one argument, representing
         the relevant list item.
@@ -154,12 +155,12 @@ class CacheReader(ListDataReader):
         if cached_list.isProcessing(data_id):
           return False
         else:
-          cached_list.setProcessing(data_id, True)
+          cached_list.setProcessing(data_id)
           return True
       else:
         # Create an empty cache list
-        cached_list.cacheItems(data_id, [5])
-        cached_list.setProcessing(data_id, True)
+        cached_list.cacheItems(data_id, [])
+        cached_list.setProcessing(data_id)
         return True
 
     if not ndb.transaction(prepareCachingTransaction):

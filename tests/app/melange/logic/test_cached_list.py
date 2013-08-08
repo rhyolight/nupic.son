@@ -41,6 +41,15 @@ class TestCacheItems(unittest.TestCase):
     self.assertIn(new_item1, cached_list.list_data)
     self.assertIn(new_item2, cached_list.list_data)
 
+  def testSettingValidPeriod(self):
+    """Tests whether valid period of cached data is correctly set."""
+    valid_period = datetime.timedelta(2, 4, 6)
+    cached_list_logic.cacheItems('test_list', ['foo', 'bar'], valid_period)
+    cached_list = cached_list_model.CachedList.get_by_id('test_list')
+    self.assertAlmostEqual(cached_list.valid_through,
+                           datetime.datetime.now() + valid_period,
+                           delta=datetime.timedelta(seconds=1))
+
 
 class TestGetCachedItems(unittest.TestCase):
   """Tests getCachedItems function."""
@@ -153,18 +162,16 @@ class TestCachedListStates(unittest.TestCase):
 
   def testSetProcessing(self):
     """Tests setProcessing function."""
-    cached_list_logic.setProcessing(self.not_processing_list_id, True)
+    cached_list_logic.setProcessing(self.not_processing_list_id)
     updated_list = cached_list_model.CachedList.get_by_id(
         self.not_processing_list_id)
     self.assertTrue(updated_list.is_processing)
-    cached_list_logic.setProcessing(self.processing_list_id, False)
-    updated_list = cached_list_model.CachedList.get_by_id(
-        self.processing_list_id)
-    self.assertFalse(updated_list.is_processing)
 
-  def testSetValidity(self):
-    """Tests setValidity function."""
+  def testCacheCompleted(self):
+    """Tests _cacheCompleted function."""
     test_valid_through = datetime.datetime(2000, 1, 1)
-    cached_list_logic.setValidity(self.invalid_list_id, test_valid_through)
+    cached_list_logic._cachingCompleted(
+        self.invalid_list_id, test_valid_through)
     updated_list = cached_list_model.CachedList.get_by_id(self.invalid_list_id)
     self.assertEqual(updated_list.valid_through, test_valid_through)
+    self.assertFalse(updated_list.is_processing)

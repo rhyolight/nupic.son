@@ -60,13 +60,8 @@ def reduceProcess(data_id, entities):
 
   list_id = params['list_id']
 
-  def cacheItemsTransaction():
-    cached_list.cacheItems(data_id, map(json.loads, entities))
-    cached_list.setProcessing(data_id, False)
-    cached_list.setValidity(
-        data_id, datetime.datetime.now() + lists.getList(list_id).valid_period)
-
-  ndb.transaction(cacheItemsTransaction)
+  ndb.transaction(lambda: cached_list.cacheItems(
+      data_id, map(json.loads, entities), lists.getList(list_id).valid_period))
 
 
 class CacheListsPipeline(base_handler.PipelineBase):

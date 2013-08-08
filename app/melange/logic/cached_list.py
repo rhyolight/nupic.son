@@ -21,29 +21,32 @@ from melange.models import cached_list as cached_list_model
 import datetime
 
 
-def cacheItems(list_id, items):
+def cacheItems(data_id, items, valid_period=datetime.timedelta(1)):
   """Save a given list of dictionaries in a cached list.
-  
-  If a list does not exists with the given list_id creates a new CachedList. 
+
+  If a list does not exists with the given data_id, creates a new CachedList. 
   This function should always be run in a transaction.
 
   Args:
-    list_id: A string containing the unique id of the CachedList entity.
+    data_id: A string containing the unique id of the cached list data.
     items: The list of dicts each representing an item in the list.
+    valid_through: A datetime.timedelta value indicating the time period the
+      cached data should be considered valid. Defaults to one day.
   """
-  list_key = ndb.Key(cached_list_model.CachedList, list_id)
+  list_key = ndb.Key(cached_list_model.CachedList, data_id)
   cached_list = list_key.get()
   if not cached_list:
-    cached_list = cached_list_model.CachedList(id=list_id)
+    cached_list = cached_list_model.CachedList(id=data_id)
   cached_list.list_data.extend(items)
   cached_list.put()
+  _cachingCompleted(data_id, datetime.datetime.now() + valid_period)
 
 
-def getCachedItems(list_id, start=0, limit=None):
+def getCachedItems(data_id, start=0, limit=None):
   """Retrieve stored items from a cached list.
 
   Args:
-    list_id: The unique id of the CachedList entity.
+    data_id: A string containing the unique id of the cached list data.
     start: The starting index of the items returned.
     limit: Number of items to be returned. If the number of items in the list,
       after given starting index is less than specified here, only that number
@@ -53,11 +56,11 @@ def getCachedItems(list_id, start=0, limit=None):
   Returns:
     A list of dicts each representing an item in the cached list.
   """
-  list_key = ndb.Key(cached_list_model.CachedList, list_id)
+  list_key = ndb.Key(cached_list_model.CachedList, data_id)
   cached_list = list_key.get()
 
   if not cached_list:
-    raise ValueError('A cached list with id %s does not exist' % list_id)
+    raise ValueError('A cached list with data id %s does not exist' % data_id)
 
   if limit:
     return cached_list.list_data[start:(start + limit)]
@@ -65,16 +68,16 @@ def getCachedItems(list_id, start=0, limit=None):
     return cached_list.list_data[start:]
 
 
-def isCachedListExists(list_id):
-  """Check whether a cached list with a list_id exists
+def isCachedListExists(data_id):
+  """Check whether a cached list with a data_id exists
 
   Args:
-    list_id: Id of the list.
+    data_id: A string containing the unique id of the cached list data.
 
   Returns:
-    True if a list with the given list_id exists, False otherwise.  
+    True if a list with the given data_id exists, False otherwise.  
   """
-  list_key = ndb.Key(cached_list_model.CachedList, list_id)
+  list_key = ndb.Key(cached_list_model.CachedList, data_id)
 
   if list_key.get():
     return True
@@ -82,27 +85,27 @@ def isCachedListExists(list_id):
     return False
 
 
-def isValid(list_id):
+def isValid(data_id):
   """Checks whether the cache is valid according to the datastore entities.
 
   This function checks whether the cached list is updated within the specified
   time period.
 
   Args:
-    list_id: Id of the list.
+    data_id: A string containing the unique id of the cached list data.
 
   Raises:
-    ValueError if a cached list does not exist for the given list id.  
+    ValueError: if a cached list does not exist for the given list id.  
 
   Returns:
     True if the data in the cache is updated with the datastore entities. False
     if not.
   """
-  list_key = ndb.Key(cached_list_model.CachedList, list_id)
+  list_key = ndb.Key(cached_list_model.CachedList, data_id)
   cached_list = list_key.get()
 
   if not cached_list:
-    raise ValueError('A cached list with id %s does not exist' % list_id)
+    raise ValueError('A cached list with data id %s does not exist' % data_id)
 
   if cached_list.valid_through and \
          cached_list.valid_through > datetime.datetime.now():
@@ -111,64 +114,65 @@ def isValid(list_id):
     return False
 
 
-def isProcessing(list_id):
+def isProcessing(data_id):
   """Checks whether a process collecting list data for this list is running.
   
   Args:
-    list_id: Id used to identify a CachedList entity.
+    data_id: A string containing the unique id of the cached list data.
 
   Raises:
-    ValueError if a cached list does not exist for the given list id.  
+    ValueError: if a cached list does not exist for the given list id.  
 
   Returns:
     True if a caching process is running. False if not.
   """
-  list_key = ndb.Key(cached_list_model.CachedList, list_id)
+  list_key = ndb.Key(cached_list_model.CachedList, data_id)
   cached_list = list_key.get()
 
   if not cached_list:
-    raise ValueError('A cached list with id %s does not exist' % list_id)
+    raise ValueError('A cached list with data id %s does not exist' % data_id)
 
   return cached_list.is_processing
 
 
-def setProcessing(list_id, is_processing):
-  """Changes the list state to indicate a caching process is running or not.
+def setProcessing(data_id):
+  """Changes the list state to indicate a caching process is running.
 
   Args:
-    list_id: Id used to identify a CachedList entity.
+    data_id: A string containing the unique id of the cached list data.
     is_processing: bool indicating the whether to setProcessing to True or
       False.
-    
+
   Raises:
-    ValueError if a cached list does not exist for the given list id.
+    ValueError: if a cached list does not exist for the given list id.
   """
-  list_key = ndb.Key(cached_list_model.CachedList, list_id)
+  list_key = ndb.Key(cached_list_model.CachedList, data_id)
   cached_list = list_key.get()
 
   if not cached_list:
-    raise ValueError('A cached list with id %s does not exist' % list_id)
+    raise ValueError('A cached list with data id %s does not exist' % data_id)
 
-  cached_list.is_processing = is_processing
+  cached_list.is_processing = True
   cached_list.put()
 
 
-def setValidity(list_id, valid_through):
-  """Sets the time the list is valid through.
+def _cachingCompleted(data_id, valid_through):
+  """Updates the cached list after a cache data are saved.
 
   Args:
-    list_id: Id used to identify a CachedList entity.
-    valid_through: A datetime.datetime value indicating the time and date the
-      validity of the list should be set.
+    data_id: A string containing the unique id of the cached list data.
+    valid_through: A datetime.datetime value indicating the point at which the
+      list data should be invalidated.
 
   Raises:
-    ValueError if a cached list does not exist for the given list id.
+    ValueError: if a cached list does not exist for the given list id.
   """
-  list_key = ndb.Key(cached_list_model.CachedList, list_id)
+  list_key = ndb.Key(cached_list_model.CachedList, data_id)
   cached_list = list_key.get()
 
   if not cached_list:
-    raise ValueError('A cached list with id %s does not exist' % list_id)
+    raise ValueError('A cached list with data id %s does not exist' % data_id)
 
   cached_list.valid_through = valid_through
+  cached_list.is_processing = False
   cached_list.put()
