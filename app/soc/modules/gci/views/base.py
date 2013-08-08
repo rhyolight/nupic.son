@@ -91,6 +91,7 @@ class GCIRenderer(render.Renderer):
         'header': base_templates.Header(data),
         'mainmenu': base_templates.MainMenu(data),
         'footer': base_templates.Footer(data),
+        'logged_in_as': base_templates.LoggedInAs(data),
     })
     if data.user:
       context['status'] = base_templates.Status(data)

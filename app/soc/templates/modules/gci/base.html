@@ -42,6 +42,10 @@ limitations under the License.
       </div>
       <!-- end .block.block-main-nav -->
 
+      {% if logged_in_as %}
+        {{ logged_in_as.render }}
+      {% endif %}
+
       {% block usermenu %}
         {% comment %}
           Empty here. Can be utilized in derived templates
