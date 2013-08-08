@@ -125,6 +125,10 @@
     tpjs + "jquery/jquery.scrollTo.js"
   ];
 
+  s.textext = [
+    tpjs + "jquery/jquery.textext.js"
+  ];
+
   s.formbuilder = [
     s.scrollTo,
     null,

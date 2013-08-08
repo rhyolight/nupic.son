@@ -22,6 +22,7 @@ melange.templates.inherit(
     jQuery('select, input:checkbox').uniform();
 
     var $recipients_type = jQuery('#recipients_type');
+    var $users = jQuery('#users');
 
     // Set up TinyMCE message editor
     var tinyMceConfig = melange.tinyMceConfig(context.tinymce_inputs, 'basic');
@@ -41,6 +42,52 @@ melange.templates.inherit(
     };
     $recipients_type.change(update_recipients_form);
     update_recipients_form();
+
+    // Textext input for users, with tags for initial values if initial values
+    // are provided. Eval is used because if an initial tags value is provided,
+    // it will be in the format of '["foo", "bar"]'.
+    var existing_tags = []
+    if ($users.val()) {
+      try {
+        var value = eval($users.val());
+        if (value instanceof Array) {
+          existing_tags = value;
+        }
+      } catch (e) {
+        // nothing
+      }
+      $users.val('');
+    }
+    $users.textext({
+        plugins : 'tags',
+        tagsItems: existing_tags
+    });
+
+    // Forces the textext.js input to create a tag out of entered text by
+    // sending the enter key.
+    var creating_tag = false;
+    var create_tag = function(blur) {
+      if (creating_tag) return;
+      creating_tag = true;
+      var event_down = jQuery.Event("keydown");
+      var event_up = jQuery.Event("keyup");
+      event_down.keyCode = 13;
+      event_up.keyCode = 13;
+      $users.triggerHandler(event_down);
+      $users.triggerHandler(event_up);
+      if (blur) $users.blur();
+      creating_tag = false;
+    };
+
+    // Create a tag out of remaining text on blur, or a comma or space is typed.
+    $users.blur(function() { create_tag(true); });
+    $users.bind('keypress', function(event) {
+      var character = String.fromCharCode(event.keyCode);
+      if (character === ',' || character == ' ') {
+        create_tag(false);
+        return false;
+      }
+    });
 
     if ($recipients_type.children().length <= 1) {
       jQuery('#recipients_type-container').hide();
