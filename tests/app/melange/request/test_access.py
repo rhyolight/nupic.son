@@ -20,8 +20,10 @@ from nose.plugins import skip
 
 from melange.request import access
 from melange.request import exception
-from soc.views.helper import request_data
 
+from soc.models import profile as profile_model
+from soc.views.helper import request_data
+from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 class Explosive(object):
   """Raises an exception on any attribute access."""
@@ -88,3 +90,58 @@ class DeveloperAccessCheckerTest(unittest.TestCase):
     access_checker = access.DeveloperAccessChecker()
     with self.assertRaises(exception.UserError):
       access_checker.checkAccess(data, None, None)
+
+
+class NonStudentAccessCheckerTest(unittest.TestCase):
+  """Tests for NonStudentAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.setUp for specification."""
+    # seed a profile
+    profile_properties = {'status': 'active'}
+    self.profile = seeder_logic.seed(profile_model.Profile, profile_properties)
+
+  def testUserWithNoLoggedInAccessDenied(self):
+    """Tests that access is denied for a user that is not logged in."""
+    data = request_data.RequestData(None, None, None)
+    data._gae_user = None
+
+    access_checker = access.NonStudentAccessChecker()
+    with self.assertRaises(exception.LoginRequired):
+      access_checker.checkAccess(data, None, None)
+
+  def testUserWithNoProfileAccessDenied(self):
+    """Tests that access is denied for a user that does not have a profile."""
+    data = request_data.RequestData(None, None, None)
+    data._gae_user = 'unused'
+    data._profile = None
+
+    access_checker = access.NonStudentAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(data, None, None)
+    self.assertEqual(context.exception.message, access._MESSAGE_NO_PROFILE)
+
+  def testStudentAccessDenied(self):
+    """Tests that access is denied for a user with a student profile."""
+    self.profile.is_student = True
+
+    data = request_data.RequestData(None, None, None)
+    data._gae_user = 'unused'
+    data._profile = self.profile
+
+    access_checker = access.NonStudentAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(data, None, None)
+    self.assertEqual(context.exception.message,
+        access._MESSAGE_STUDENTS_DENIED)
+
+  def testNonStudentAccessGranted(self):
+    """Tests that access is granted for users with non-student accounts."""
+    self.profile.is_student = False
+
+    data = request_data.RequestData(None, None, None)
+    data._gae_user = 'unused'
+    data._profile = self.profile
+
+    access_checker = access.NonStudentAccessChecker()
+    access_checker.checkAccess(data, None, None)

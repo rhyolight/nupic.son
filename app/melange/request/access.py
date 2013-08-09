@@ -17,13 +17,21 @@
 from django.utils import translation
 
 from melange.request import exception
+
 from soc.logic import links
+
 
 _MESSAGE_NOT_PROGRAM_ADMINISTRATOR = translation.ugettext(
     'You need to be a program administrator to access this page.')
 
 _MESSAGE_NOT_DEVELOPER = translation.ugettext(
     'This page is only accessible to developers.')
+
+_MESSAGE_NO_PROFILE = translation.ugettext(
+    'You need to have an active profile to access this page.')
+
+_MESSAGE_STUDENTS_DENIED = translation.ugettext(
+    'This page is not accessible to users with student profiles.')
 
 
 def ensureLoggedIn(self):
@@ -117,3 +125,20 @@ class DeveloperAccessChecker(AccessChecker):
       raise exception.Forbidden(message=_MESSAGE_NOT_DEVELOPER)
 
 DEVELOPER_ACCESS_CHECKER = DeveloperAccessChecker()
+
+
+class NonStudentAccessChecker(AccessChecker):
+  """AccessChecker that ensures that the user has a non-student profile."""
+
+  def checkAccess(self, data, check, mutator):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.gae_user:
+      raise exception.LoginRequired()
+
+    if not data.profile or data.profile.status != 'active':
+      raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
+
+    if data.profile.is_student:
+      raise exception.Forbidden(message=_MESSAGE_STUDENTS_DENIED)
+
+NON_STUDENT_ACCESS_CHECKER = NonStudentAccessChecker()
