@@ -30,6 +30,7 @@ from melange.utils import time
 from soc.logic import program as program_logic
 from soc.logic import site as site_logic
 from soc.logic import user
+from soc.models import profile as profile_model
 from soc.models import sponsor as sponsor_model
 from soc.views.helper import access_checker
 
@@ -163,6 +164,7 @@ class RequestData(object):
   Fields:
     site: the singleton site.Site entity
     user: the user entity (if logged in)
+    profile: the profile entity
     request: the request object (as provided by django)
     args: the request args (as provided by djang)
     kwargs: the request kwargs (as provided by django)
@@ -173,6 +175,8 @@ class RequestData(object):
     is_developer: is the current user a developer
     gae_user: the Google Appengine user object
   """
+
+  __profile_model = profile_model.Profile
 
   # class attribute which is assigned to all fields which have not been set
   _unset = object()
@@ -195,6 +199,8 @@ class RequestData(object):
     self._site = self._unset
     self._sponsor = self._unset
     self._user = self._unset
+    self._profile = self._unset
+
     self._GET = self._unset
     self._POST = self._unset
     # TODO(daniel): check if this field is really used
@@ -305,6 +311,18 @@ class RequestData(object):
     if not self._isSet(self._user):
       self._user = user.current()
     return self._user
+
+  @property
+  def profile(self):
+    """Returns the profile property."""
+    if not self._isSet(self._profile):
+      if not self.user or not self.program:
+        self._profile = None
+      else:
+        key_name = '%s/%s' % (self.program.key().name(), self.user.link_id)
+        self._profile = self.__profile_model.get_by_key_name(
+            key_name, parent=self.user)
+    return self._profile
 
   @property
   def GET(self):

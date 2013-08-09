@@ -194,6 +194,8 @@ class RequestData(request_data.RequestData):
     out_of_band: 404 when the program does not exist
   """
 
+  __profile_model = profile_model.GSoCProfile
+
   def __init__(self, request, args, kwargs):
     """Constructs a new RequestData object.
 
@@ -212,7 +214,6 @@ class RequestData(request_data.RequestData):
     self._timeline = self._unset
 
     # user profile specific fields
-    self._profile = self._unset
     self._is_host = self._unset
     self._is_mentor = self._unset
     self._is_student = self._unset
@@ -372,18 +373,6 @@ class RequestData(request_data.RequestData):
             .get_value_for_datastore(self.profile)
         self._student_info = db.get(student_info_key)
     return self._student_info
-
-  @property
-  def profile(self):
-    """Returns the profile property."""
-    if not self._isSet(self._profile):
-      if not self.user or not self.program:
-        self._profile = None
-      else:
-        key_name = '%s/%s' % (self.program.key().name(), self.user.link_id)
-        self._profile = profile_model.GSoCProfile.get_by_key_name(
-            key_name, parent=self.user)
-    return self._profile
 
   @property
   def timeline(self):

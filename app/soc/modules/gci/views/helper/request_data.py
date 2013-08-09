@@ -178,7 +178,6 @@ class RequestData(request_data.RequestData):
     programs: All GCI programs.
     program_timeline: The GCITimeline entity
     timeline: A TimelineHelper entity
-    profile: The GCIProfile entity of the current user
     is_host: is the current user a host of the program
     is_mentor: is the current user a mentor in the program
     is_student: is the current user a student in the program
@@ -191,6 +190,8 @@ class RequestData(request_data.RequestData):
   Raises:
     out_of_band: 404 when the program does not exist
   """
+
+  __profile_model = profile_model.GCIProfile
 
   def __init__(self, request, args, kwargs):
     """Constructs a new RequestData object.
@@ -210,7 +211,6 @@ class RequestData(request_data.RequestData):
     self._timeline = self._unset
 
     # user profile specific fields
-    self._profile = self._unset
     self._is_host = self._unset
     self._is_mentor = self._unset
     self._is_student = self._unset
@@ -370,19 +370,6 @@ class RequestData(request_data.RequestData):
             .get_value_for_datastore(self.profile)
         self._student_info = db.get(student_info_key)
     return self._student_info
-
-  @property
-  def profile(self):
-    """Returns the profile property."""
-    if not self._isSet(self._profile):
-      if not self.user or not self.program:
-        self._profile = None
-      else:
-        key_name = '%s/%s' % (self.program.key().name(), self.user.link_id)
-        self._profile = profile_model.GCIProfile.get_by_key_name(
-            key_name, parent=self.user)
-      pass
-    return self._profile
 
   @property
   def timeline(self):
