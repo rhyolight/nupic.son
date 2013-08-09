@@ -383,7 +383,6 @@ class RequestData(request_data.RequestData):
         key_name = '%s/%s' % (self.program.key().name(), self.user.link_id)
         self._profile = profile_model.GSoCProfile.get_by_key_name(
             key_name, parent=self.user)
-      pass
     return self._profile
 
   @property
