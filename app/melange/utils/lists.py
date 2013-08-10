@@ -158,9 +158,7 @@ class CacheReader(ListDataReader):
           cached_list.setProcessing(data_id)
           return True
       else:
-        # Create an empty cache list
-        cached_list.cacheItems(data_id, [])
-        cached_list.setProcessing(data_id)
+        cached_list.createEmptyProcessingList(data_id)
         return True
 
     if not ndb.transaction(prepareCachingTransaction):
@@ -232,7 +230,7 @@ def getDataId(query):
     query: A query used to create a list.
 
   Returns:
-    A string containing an id that is unique for the given query.  
+    A string containing an id that is unique for the given query. 
   """
   # TODO: ---IMPORTANT--- Implement an actual function to get data id
   return 'data_id_for_now'

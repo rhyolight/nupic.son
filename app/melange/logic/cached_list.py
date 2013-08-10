@@ -38,8 +38,9 @@ def cacheItems(data_id, items, valid_period=datetime.timedelta(1)):
   if not cached_list:
     cached_list = cached_list_model.CachedList(id=data_id)
   cached_list.list_data.extend(items)
+  cached_list.valid_through = datetime.datetime.now() + valid_period
+  cached_list.is_processing = False
   cached_list.put()
-  _cachingCompleted(data_id, datetime.datetime.now() + valid_period)
 
 
 def getCachedItems(data_id, start=0, limit=None):
@@ -78,11 +79,7 @@ def isCachedListExists(data_id):
     True if a list with the given data_id exists, False otherwise.  
   """
   list_key = ndb.Key(cached_list_model.CachedList, data_id)
-
-  if list_key.get():
-    return True
-  else:
-    return False
+  return bool(list_key.get())
 
 
 def isValid(data_id):
@@ -140,8 +137,6 @@ def setProcessing(data_id):
 
   Args:
     data_id: A string containing the unique id of the cached list data.
-    is_processing: bool indicating the whether to setProcessing to True or
-      False.
 
   Raises:
     ValueError: if a cached list does not exist for the given list id.
@@ -156,23 +151,22 @@ def setProcessing(data_id):
   cached_list.put()
 
 
-def _cachingCompleted(data_id, valid_through):
-  """Updates the cached list after a cache data are saved.
+def createEmptyProcessingList(data_id):
+  """Create a cached list with empty list data and in processing state.
 
   Args:
     data_id: A string containing the unique id of the cached list data.
-    valid_through: A datetime.datetime value indicating the point at which the
-      list data should be invalidated.
 
   Raises:
-    ValueError: if a cached list does not exist for the given list id.
+    ValueError: if a cached list already exist for the given list id.
   """
   list_key = ndb.Key(cached_list_model.CachedList, data_id)
   cached_list = list_key.get()
 
-  if not cached_list:
-    raise ValueError('A cached list with data id %s does not exist' % data_id)
+  if cached_list:
+    raise ValueError('A cached list with data id %s already exists' % data_id)
 
-  cached_list.valid_through = valid_through
-  cached_list.is_processing = False
+  cached_list = cached_list_model.CachedList(id=data_id)
+  cached_list.list_data = []
+  cached_list.is_processing = True
   cached_list.put()
