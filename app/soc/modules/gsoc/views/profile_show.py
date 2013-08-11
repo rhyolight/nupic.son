@@ -128,7 +128,6 @@ class GSoCProfileAdminPage(base.GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     check.isHost()
-    mutator.userFromKwargs()
     try:
       mutator.profileFromKwargs()
     except exception.UserError:
@@ -142,7 +141,6 @@ class GSoCProfileAdminPage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     assert isSet(data.program)
-    assert isSet(data.url_user)
 
     user = data.url_user
     profile = data.url_profile

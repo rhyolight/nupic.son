@@ -134,7 +134,6 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
 
   def checkAccess(self, data, check, mutator):
     check.isHost()
-    mutator.userFromKwargs()
     mutator.profileFromKwargs()
 
   def context(self, data, check, mutator):

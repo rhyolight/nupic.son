@@ -25,6 +25,7 @@ from django.core import urlresolvers
 from django.utils import encoding
 
 from melange.appengine import system
+from melange.request import exception
 from melange.utils import time
 
 from soc.logic import program as program_logic
@@ -32,6 +33,7 @@ from soc.logic import site as site_logic
 from soc.logic import user
 from soc.models import profile as profile_model
 from soc.models import sponsor as sponsor_model
+from soc.models import user as user_model
 from soc.views.helper import access_checker
 
 
@@ -174,6 +176,9 @@ class RequestData(object):
     POST: the POST dictionary (from the request object)
     is_developer: is the current user a developer
     gae_user: the Google Appengine user object
+
+  Optional fields (may not be specified for all requests):
+    url_user: user entity for the data in kwargs
   """
 
   __profile_model = profile_model.Profile
@@ -209,6 +214,8 @@ class RequestData(object):
     self._gae_user = self._unset
     self._css_path = self._unset
     self._ds_write_disabled = self._unset
+
+    self._url_user = self._unset
 
     # explicitly copy POST and GET dictionaries so they can be modified
     # the default QueryDict objects used by Django are immutable, but their
@@ -352,6 +359,30 @@ class RequestData(object):
         self._ds_write_disabled = not db.WRITE_CAPABILITY.is_enabled()
     return self._ds_write_disabled
 
+  @property
+  def url_user(self):
+    """Returns url_user property.
+
+    This property represents user entity for a person whose identifier
+    is a part of URL of the processed request.
+
+    Returns:
+      Retrieved user entity.
+
+    Raises:
+      ValueError: if the current request does not contain any user data.
+      exception.NotFound: if the user is not found.
+    """
+    if not self._isSet(self._url_user):
+      key_name = self.kwargs.get('user')
+      if not key_name:
+        raise ValueError('The request does not contain user data.')
+
+      self._url_user = user_model.User.get_by_key_name(key_name)
+
+      if not self._url_user:
+        raise exception.NotFound(message='Requested user does not exist')
+    return self._url_user
 
 # TODO(nathaniel): This should be immutable.
 class RedirectHelper(object):

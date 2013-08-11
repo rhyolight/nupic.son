@@ -249,7 +249,6 @@ class Mutator(object):
     self.data.scope_key_name = unset
     self.data.url_profile = unset
     self.data.url_student_info = unset
-    self.data.url_user = unset
 
   def documentKeyNameFromKwargs(self):
     """Returns the document key fields from kwargs.
@@ -281,22 +280,12 @@ class Mutator(object):
     self.data.key_name = '/'.join(fields)
     self.data.document = document.Document.get_by_key_name(self.data.key_name)
 
-  def userFromKwargs(self):
-    """Retrieves a user_model.User from kwargs."""
-    key_name = self.data.kwargs['user']
-    self.data.url_user = user_model.User.get_by_key_name(key_name)
-
-    if not self.data.url_user:
-      raise exception.NotFound(message='Requested user does not exist')
-
   def profileFromKwargs(self, profile_model):
     """Retrieves a profile from kwargs.
 
     Args:
       profile_model: The datastore model class
     """
-    self.userFromKwargs()
-
     fields = ['sponsor', 'program', 'user']
     key_name = '/'.join(self.data.kwargs[i] for i in fields)
 

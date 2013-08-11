@@ -735,7 +735,6 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
   def checkAccess(self, data, check, mutator):
     check.isProgramVisible()
     check.isProfileActive()
-    mutator.userFromKwargs()
     mutator.connectionFromKwargs()
     data.organization = data.connection.organization
     mutator.commentVisible(data.organization)
