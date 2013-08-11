@@ -4,9 +4,6 @@
     {% if home_link %}
     <li id="menu-home"><a href="{{ home_link }}">Home</a></li>
     {% endif %}
-    {% if login_link %}
-    <li id="menu-login"><a href="{{ login_link }}">Login</a></li>
-    {% endif %}
     {% if register_as_student_link %}
     <li id="menu-help"><a href="{{ register_as_student_link }}">Register as a Student</a></li>
     {% endif %}
@@ -52,9 +49,6 @@
     {% endif %}
     {% if help_link %}
     <li id="menu-help"><a href="{{ help_link }}">FAQ</a></li>
-    {% endif %}
-    {% if logout_link %}
-    <li id="menu-logout"><a href="{{ logout_link }}">Logout</a></li>
     {% endif %}
   </ul>
 {% endblock site_menu %}

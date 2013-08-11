@@ -55,14 +55,6 @@ def siteMenuContext(data):
       'help_link': redirect.document(help_page).url(),
   }
 
-  # TODO(nathaniel): This should be the one canonical application-wide
-  # linker object rather than a one-off instantiation.
-  linker = links.Linker()
-  if data.gae_user:
-    context['logout_link'] = linker.logout(data.request)
-  else:
-    context['login_link'] = linker.login(data.request)
-
   if data.profile:
     context['dashboard_link'] = redirect.dashboard().url()
 
