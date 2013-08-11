@@ -152,3 +152,23 @@ class StartConnectionAsUser(base.GCIRequestHandler):
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
+
+
+class ManageConnectionAsUser(base.GCIRequestHandler):
+  """View manage an existing connection by the user."""
+
+  def djangoURLPatterns(self):
+    """See base.GCIRequestHandler.djangoURLPatterns for specification."""
+    return [
+        ci_url_patterns.url(
+            r'connection/manage/user/%s$' % url_patterns.USER_ORG,
+            self, name=urls.UrlNames.CONNECTION_MANAGE_AS_USER)
+    ]
+
+  def templatePath(self):
+    """See base.GCIRequestHandler.templatePath for specification."""
+    return 'codein/connection/manage_connection_as_user.html'
+
+  def context(self, data, check, mutator):
+    """See base.GCIRequestHandler.context for specification."""
+    return {}
