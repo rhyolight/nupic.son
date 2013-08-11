@@ -167,6 +167,7 @@ class RequestData(object):
     site: the singleton site.Site entity
     user: the user entity (if logged in)
     profile: the profile entity
+    program: the program entity
     request: the request object (as provided by django)
     args: the request args (as provided by djang)
     kwargs: the request kwargs (as provided by django)
@@ -206,6 +207,7 @@ class RequestData(object):
     self._sponsor = self._unset
     self._user = self._unset
     self._profile = self._unset
+    self._program = self._unset
 
     self._GET = self._unset
     self._POST = self._unset
@@ -334,6 +336,13 @@ class RequestData(object):
     return self._profile
 
   @property
+  def program(self):
+    """Returns the program field."""
+    if not self._isSet(self._program):
+      self._getProgramWideFields()
+    return self._program
+
+  @property
   def GET(self):
     """Returns the GET dictionary associated with the processed request."""
     if not self._isSet(self._GET):
@@ -413,6 +422,10 @@ class RequestData(object):
       if not self._url_user:
         raise exception.NotFound(message='Requested user does not exist.')
     return self._url_user
+
+  def _getProgramWideFields(self):
+    """Fetches program wide fields in a single database round-trip."""
+    raise NotImplementedError
 
 
 # TODO(nathaniel): This should be immutable.

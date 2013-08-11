@@ -174,7 +174,6 @@ class RequestData(request_data.RequestData):
     site: The Site entity
     user: The user entity (if logged in)
     css_path: a part of the css to fetch the GCI specific CSS resources
-    program: The GCI program entity that the request is pointing to
     programs: All GCI programs.
     program_timeline: The GCITimeline entity
     timeline: A TimelineHelper entity
@@ -204,7 +203,6 @@ class RequestData(request_data.RequestData):
     super(RequestData, self).__init__(request, args, kwargs)
 
     # program wide fields
-    self._program = self._unset
     self._program_timeline = self._unset
     self._programs = self._unset
     self._org_app = self._unset
@@ -332,13 +330,6 @@ class RequestData(request_data.RequestData):
     return self._org_app
 
   @property
-  def program(self):
-    """Returns the program field."""
-    if not self._isSet(self._program):
-      self._getProgramWideFields()
-    return self._program
-
-  @property
   def program_timeline(self):
     """Returns the program_timeline field."""
     if not self._isSet(self._program_timeline):
@@ -391,7 +382,7 @@ class RequestData(request_data.RequestData):
         self._org_map = {}
 
   def _getProgramWideFields(self):
-    """Fetches program wide fields in a single database round-trip."""
+    """See request_data.RequestData._getProgramWideFields for specification."""
     keys = []
 
     # add program's key

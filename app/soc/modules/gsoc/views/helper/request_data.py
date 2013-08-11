@@ -177,7 +177,6 @@ class RequestData(request_data.RequestData):
     site: The Site entity
     user: The user entity (if logged in)
     css_path: a part of the css to fetch the GSoC specific CSS resources
-    program: The GSoC program entity that the request is pointing to
     programs: All GSoC programs.
     program_timeline: The GSoCTimeline entity
     timeline: A TimelineHelper entity
@@ -335,13 +334,6 @@ class RequestData(request_data.RequestData):
     return self._org_app
 
   @property
-  def program(self):
-    """Returns the program field."""
-    if not self._isSet(self._program):
-      self._getProgramWideFields()
-    return self._program
-
-  @property
   def program_timeline(self):
     """Returns the program_timeline field."""
     if not self._isSet(self._program_timeline):
@@ -394,7 +386,7 @@ class RequestData(request_data.RequestData):
         self._org_map = {}
 
   def _getProgramWideFields(self):
-    """Fetches program wide fields in a single database round-trip."""
+    """See request_data.RequestData._getProgramWideFields for specification."""
     keys = []
 
     # add program's key
