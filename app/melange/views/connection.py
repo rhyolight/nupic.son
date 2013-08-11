@@ -47,18 +47,16 @@ def createConnectionTxn(
     raise exception.Forbidden(
         message=connection_logic.CONNECTION_EXISTS_ERROR %
         (profile.name, organization.name))
-  # Do not create a connection if a user already has a role within the org.
-  if organization.key() in profile.mentor_for:
-    raise exception.Forbidden(message=USER_HAS_ROLE % profile.name())
-  # Generate the new connection.
+
+  # create the new connection.
   new_connection = connection_logic.createConnection(
       profile=profile, org=organization,
       org_role=org_role, user_role=user_role)
-  # Attach any user-provided messages to the connection.
+  # attach any user-provided messages to the connection.
   if message:
     connection_logic.createConnectionMessage(
         connection=new_connection, author=profile, content=message)
-  # Dispatch an email to the user.
+  # dispatch an email to the user.
   notification = context(data=data, connection=new_connection,
       recipients=recipients, message=message)
   sub_txn = mailer.getSpawnMailTaskTxn(notification, parent=new_connection)
