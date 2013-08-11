@@ -15,6 +15,7 @@
 """Module with Code In specific connection views."""
 
 from django import forms as django_forms
+from django import http
 from django.utils import translation
 
 from melange.models import connection as connection_model
@@ -23,6 +24,7 @@ from melange.views import connection as connection_view
 
 from codein.views.helper import urls
 
+from soc.logic import links
 from soc.logic.helper import notifications
 from soc.modules.gci.views import base
 from soc.modules.gci.views import forms as gci_forms
@@ -148,7 +150,12 @@ class StartConnectionAsUser(base.GCIRequestHandler):
           form.cleaned_data['message'],
           notifications.userConnectionContext, [],
           user_role=connection_model.ROLE)
-      # TODO(daniel): redirect to "manage connection" page
+
+      url = links.Linker().userOrg(
+          data.url_profile, data.organization,
+          urls.UrlNames.CONNECTION_MANAGE_AS_USER)
+      return http.HttpResponseRedirect(url)
+
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
