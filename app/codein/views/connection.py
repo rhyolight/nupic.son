@@ -19,9 +19,11 @@ from django.utils import translation
 
 from melange.models import connection as connection_model
 from melange.request import access
+from melange.views import connection as connection_view
 
 from codein.views.helper import urls
 
+from soc.logic.helper import notifications
 from soc.modules.gci.views import base
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_patterns as ci_url_patterns
@@ -138,11 +140,15 @@ class StartConnectionAsUser(base.GCIRequestHandler):
 
   def post(self, data, check, mutator):
     """See base.GCIRequestHandler.post for specification."""
-
     form = _formToStartConnectionAsUser(data=data.POST)
     if form.is_valid():
-      # TODO(daniel): create actual connection
-      pass
+      # TODO(daniel): get actual recipients of notification email
+      connection_view.createConnectionTxn(
+          data, data.url_profile, data.organization,
+          form.cleaned_data['message'],
+          notifications.userConnectionContext, [],
+          user_role=connection_model.ROLE)
+      # TODO(daniel): redirect to "manage connection" page
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
