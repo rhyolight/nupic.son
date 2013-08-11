@@ -14,6 +14,8 @@
 
 """Module containing the Code In callback."""
 
+from codein.views import connection
+
 
 class Callback(object):
   """Callback object that handles interaction between the core."""
@@ -30,7 +32,8 @@ class Callback(object):
 
   def registerViews(self):
     """Instantiates all view objects."""
-    pass
+    self.views.append(connection.ManageConnectionAsUser())
+    self.views.append(connection.StartConnectionAsUser())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered."""
