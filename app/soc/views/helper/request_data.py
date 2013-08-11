@@ -177,6 +177,7 @@ class RequestData(object):
     POST: the POST dictionary (from the request object)
     is_developer: is the current user a developer
     gae_user: the Google Appengine user object
+    timeline: the timeline helper
 
   Optional fields (may not be specified for all requests):
     url_profile: profile entity for the data in kwargs.
@@ -217,6 +218,7 @@ class RequestData(object):
     self._gae_user = self._unset
     self._css_path = self._unset
     self._ds_write_disabled = self._unset
+    self._timeline = self._unset
 
     self._url_profile = self._unset
     self._url_user = self._unset
@@ -369,6 +371,13 @@ class RequestData(object):
       if not self._isSet(self._ds_write_disabled):
         self._ds_write_disabled = not db.WRITE_CAPABILITY.is_enabled()
     return self._ds_write_disabled
+
+  @property
+  def timeline(self):
+    """Returns the timeline field."""
+    if not self._isSet(self._timeline):
+      self._timeline = TimelineHelper(self.program_timeline, None)
+    return self._timeline
 
   @property
   def url_profile(self):

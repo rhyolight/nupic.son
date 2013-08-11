@@ -176,7 +176,6 @@ class RequestData(request_data.RequestData):
     css_path: a part of the css to fetch the GCI specific CSS resources
     programs: All GCI programs.
     program_timeline: The GCITimeline entity
-    timeline: A TimelineHelper entity
     is_host: is the current user a host of the program
     is_mentor: is the current user a mentor in the program
     is_student: is the current user a student in the program
@@ -206,7 +205,6 @@ class RequestData(request_data.RequestData):
     self._program_timeline = self._unset
     self._programs = self._unset
     self._org_app = self._unset
-    self._timeline = self._unset
 
     # user profile specific fields
     self._is_host = self._unset
