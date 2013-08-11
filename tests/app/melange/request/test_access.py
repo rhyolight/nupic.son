@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Tests for melange.request.access."""
 
 import unittest
@@ -22,8 +21,12 @@ from melange.request import access
 from melange.request import exception
 
 from soc.models import profile as profile_model
+from soc.models import program as program_model
 from soc.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+from tests import timeline_utils
+
 
 class Explosive(object):
   """Raises an exception on any attribute access."""
@@ -144,4 +147,64 @@ class NonStudentAccessCheckerTest(unittest.TestCase):
     data._profile = self.profile
 
     access_checker = access.NonStudentAccessChecker()
+    access_checker.checkAccess(data, None, None)
+
+
+class ProgramActiveAccessCheckerTest(unittest.TestCase):
+  """Tests for ProgramActiveAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.setUp for specification."""
+    self.program = seeder_logic.seed(program_model.Program)
+
+  def testForNonExistingProgram(self):
+    """Tests that access is denied if the program does not exist."""
+    data = request_data.RequestData(None, None, None)
+    data._program = None
+
+    access_checker = access.ProgramActiveAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(data, None, None)
+    self.assertEqual(context.exception.message,
+        access._MESSAGE_PROGRAM_NOT_EXISTING)
+
+  def testForNotActiveProgram(self):
+    """Tests that access if denied if the program is not active."""
+    data = request_data.RequestData(None, None, None)
+    data._program = self.program
+    data._timeline = request_data.TimelineHelper(self.program.timeline, None)
+
+    access_checker = access.ProgramActiveAccessChecker()
+
+    # the program is not visible
+    data._program.status = 'invisible'
+    data._program.timeline.program_start = timeline_utils.past()
+    data._program.timeline.program_end = timeline_utils.future()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(data, None, None)
+    self.assertEqual(context.exception.message,
+        access._MESSAGE_PROGRAM_NOT_ACTIVE)
+
+    # the program is has already ended
+    data._program.status = 'visible'
+    data._program.timeline.program_start = timeline_utils.past(delta=100)
+    data._program.timeline.program_end = timeline_utils.past(delta=50)
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(data, None, None)
+    self.assertEqual(context.exception.message,
+        access._MESSAGE_PROGRAM_NOT_ACTIVE)
+
+  def testForActiveProgram(self):
+    """Tests that access is granted if the program is active."""
+
+    data = request_data.RequestData(None, None, None)
+    data._program = self.program
+    data._timeline = request_data.TimelineHelper(self.program.timeline, None)
+
+    access_checker = access.ProgramActiveAccessChecker()
+
+    # program is active and visible
+    data._program.status = 'visible'
+    data._program.timeline.program_start = timeline_utils.past()
+    data._program.timeline.program_end = timeline_utils.future()
     access_checker.checkAccess(data, None, None)

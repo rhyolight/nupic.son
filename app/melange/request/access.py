@@ -30,6 +30,12 @@ _MESSAGE_NOT_DEVELOPER = translation.ugettext(
 _MESSAGE_NO_PROFILE = translation.ugettext(
     'You need to have an active profile to access this page.')
 
+_MESSAGE_PROGRAM_NOT_EXISTING = translation.ugettext(
+    'Requested program does not exist.')
+
+_MESSAGE_PROGRAM_NOT_ACTIVE = translation.ugettext(
+    'Requested program is not active at this moment.')
+
 _MESSAGE_STUDENTS_DENIED = translation.ugettext(
     'This page is not accessible to users with student profiles.')
 
@@ -142,3 +148,22 @@ class NonStudentAccessChecker(AccessChecker):
       raise exception.Forbidden(message=_MESSAGE_STUDENTS_DENIED)
 
 NON_STUDENT_ACCESS_CHECKER = NonStudentAccessChecker()
+
+
+class ProgramActiveAccessChecker(AccessChecker):
+  """AccessChecker that ensures that the program is currently active.
+
+  A program is considered active when the current point of time comes after
+  its start date and before its end date. Additionally, its status has to
+  be set to visible.
+  """
+
+  def checkAccess(self, data, check, mutator):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.program:
+      raise exception.NotFound(message=_MESSAGE_PROGRAM_NOT_EXISTING)
+
+    if data.program.status != 'visible' or not data.timeline.programActive():
+      raise exception.Forbidden(message=_MESSAGE_PROGRAM_NOT_ACTIVE)
+
+PROGRAM_ACTIVE_ACCESS_CHECKER = ProgramActiveAccessChecker()
