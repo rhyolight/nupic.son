@@ -178,7 +178,8 @@ class RequestData(object):
     gae_user: the Google Appengine user object
 
   Optional fields (may not be specified for all requests):
-    url_user: user entity for the data in kwargs
+    url_profile: profile entity for the data in kwargs.
+    url_user: user entity for the data in kwargs.
   """
 
   __profile_model = profile_model.Profile
@@ -215,6 +216,7 @@ class RequestData(object):
     self._css_path = self._unset
     self._ds_write_disabled = self._unset
 
+    self._url_profile = self._unset
     self._url_user = self._unset
 
     # explicitly copy POST and GET dictionaries so they can be modified
@@ -360,11 +362,39 @@ class RequestData(object):
     return self._ds_write_disabled
 
   @property
+  def url_profile(self):
+    """Returns url_profile property.
+
+    This property represents profile entity for a person whose identifier
+    is a part of the URL of the processed request for the program whose
+    identifier is also a part of the URL.
+
+    Returns:
+      Retrieved profile entity.
+
+    Raises:
+      exception.UserError: if no profile entity is found.
+    """
+    if not self._isSet(self._url_profile):
+      try:
+        fields = ['sponsor', 'program', 'user']
+        key_name = '/'.join(self.kwargs[i] for i in fields)
+      except KeyError:
+        raise ValueError('The request does not contain full profile data.')
+
+      self._url_profile = self.__profile_model.get_by_key_name(
+          key_name, parent=db.Key.from_path('User', self.kwargs['user']))
+
+      if not self._url_profile:
+        raise exception.NotFound(message='Requested profile does not exist.')
+    return self._url_profile
+
+  @property
   def url_user(self):
     """Returns url_user property.
 
     This property represents user entity for a person whose identifier
-    is a part of URL of the processed request.
+    is a part of the URL of the processed request.
 
     Returns:
       Retrieved user entity.
@@ -381,8 +411,9 @@ class RequestData(object):
       self._url_user = user_model.User.get_by_key_name(key_name)
 
       if not self._url_user:
-        raise exception.NotFound(message='Requested user does not exist')
+        raise exception.NotFound(message='Requested user does not exist.')
     return self._url_user
+
 
 # TODO(nathaniel): This should be immutable.
 class RedirectHelper(object):

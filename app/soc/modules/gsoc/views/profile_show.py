@@ -16,7 +16,8 @@
 
 from django.utils.translation import ugettext
 
-from melange.request import exception
+from melange.request import access
+
 from soc.views import profile_show
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
@@ -117,24 +118,15 @@ class GSoCProfileShowPage(profile_show.ProfileShowPage, base.GSoCRequestHandler)
 
 
 class GSoCProfileAdminPage(base.GSoCRequestHandler):
-  """View to display the readonly profile page.
-  """
+  """View to display the readonly profile page."""
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     return [
         url(r'profile/admin/%s$' % url_patterns.PROFILE,
          self, name=url_names.GSOC_PROFILE_SHOW_ADMIN),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
-    try:
-      mutator.profileFromKwargs()
-    except exception.UserError:
-      # If the user does not have a profile a page will
-      # still be rendered with just the user portion of
-      # the data.
-      pass
 
   def templatePath(self):
     return 'modules/gsoc/profile_show/base.html'

@@ -16,8 +16,9 @@
 
 from soc.logic import delete_account
 
-from soc.views.helper import url_patterns
+from melange.request import access
 
+from soc.views.helper import url_patterns
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.views import base
 from soc.modules.gci.views.helper import url_patterns as gci_url_patterns
@@ -25,6 +26,8 @@ from soc.modules.gci.views.helper import url_patterns as gci_url_patterns
 
 class ModerateDeleteAccountPage(base.GCIRequestHandler):
   """View for the GCI delete account page."""
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
 
   def templatePath(self):
     return 'modules/gci/moderate_delete_account/base.html'
@@ -35,10 +38,6 @@ class ModerateDeleteAccountPage(base.GCIRequestHandler):
             r'admin/delete_account/%s$' % url_patterns.PROFILE, self,
             name='gci_moderate_delete_account'),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
-    mutator.profileFromKwargs()
 
   def context(self, data, check, mutator):
     profile = data.url_profile

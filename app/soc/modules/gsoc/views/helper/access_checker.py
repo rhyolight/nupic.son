@@ -134,15 +134,7 @@ class Mutator(access_checker.Mutator):
     self.data.public_only = access_checker.unset
     super(Mutator, self).unsetAll()
 
-  def profileFromKwargs(self):
-    """Retrieves profile from the kwargs for GSoC.
-    """
-    super(Mutator, self).profileFromKwargs(GSoCProfile)
-
   def proposalFromKwargs(self):
-    self.profileFromKwargs()
-    assert access_checker.isSet(self.data.url_profile)
-
     # can safely call int, since regexp guarnatees a number
     proposal_id = int(self.data.kwargs['id'])
 
@@ -169,9 +161,6 @@ class Mutator(access_checker.Mutator):
   def projectFromKwargs(self):
     """Sets the project entity in RequestData object.
     """
-    self.profileFromKwargs()
-    assert access_checker.isSet(self.data.url_profile)
-
     # can safely call int, since regexp guarnatees a number
     project_id = int(self.data.kwargs['id'])
 

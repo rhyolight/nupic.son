@@ -101,9 +101,6 @@ class BanProfilePost(object):
 
   def post(self, data, check, mutator):
     """See soc.views.base.RequestHandler.post for specification."""
-    mutator.profileFromKwargs()
-    assert isSet(data.url_profile)
-
     value = data.POST.get('value')
     profile_key = data.url_profile.key()
 
