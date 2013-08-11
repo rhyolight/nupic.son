@@ -359,7 +359,7 @@ class GCIBoundField(forms.BoundField):
         }
 
     return mark_safe(
-        '<label>%s%s%s%s</label>%s' % (
+        '<label class="form-label">%s%s%s%s</label>%s' % (
         self.as_widget(attrs=attrs),
         self.field.label,
         self._render_is_required(),

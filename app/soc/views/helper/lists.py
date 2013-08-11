@@ -18,6 +18,7 @@ import json
 import logging
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django.utils import html
 
@@ -341,8 +342,13 @@ class ListConfiguration(object):
   def _addKeyColumn(self):
     """Adds a column for the key.
     """
-    func = lambda e, *args: str(e.key().id_or_name())
-    self._addColumn('key', 'Key', func, hidden=True)
+    def getKeyName(e, *args):
+      if isinstance(e, ndb.Model):
+        return e.key.id()
+      else:
+        return e.key().id_or_name()
+
+    self._addColumn('key', 'Key', getKeyName, hidden=True)
 
   def setDefaultPagination(self, row_num, row_list=None):
     """Sets the default pagination.

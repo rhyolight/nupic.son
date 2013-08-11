@@ -1,3 +1,5 @@
+@badgecolor: #71ab77;
+
 .block-main-nav {
   /*Main navigation*/
   background: #e0e0e0;
@@ -21,9 +23,23 @@
         display: block;
         padding: 8px 13px 6px 13px;
 
+        .badge {
+          background-color: @badgecolor;
+          -moz-border-radius: 4px;
+          -webkit-border-radius: 4px;
+          border-radius: 4px;
+          color: #ffffff;
+          margin-left: 4px;
+          padding: 2px 5px;
+        }
+
         &:hover {
           background: #59bbff;
-          color: #fff;
+          color: #ffffff;
+
+          .badge {
+            background-color: darken(@badgecolor, 6%)
+          }
         }
       }
 

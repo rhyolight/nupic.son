@@ -214,6 +214,9 @@ DEF_KEYNAME_BASED_ENTITY_NOT_EXISTS = ugettext(
 DEF_KEYNAME_BASED_ENTITY_INVALID = ugettext(
     '%(model)s entity, whose keyname is %(key_name)s, is invalid at this time.')
 
+DEF_MESSAGING_NOT_ENABLED = ugettext(
+    'Messaging is not allowed for this program.')
+
 unset = object()
 
 
@@ -498,6 +501,18 @@ class BaseAccessChecker(object):
       raise exception.Redirect('%s?%s' % (
           self.data.redirect.urlOf('gdata_oauth_redirect'),
           urllib.urlencode({'next': self.data.request.get_full_path()})))
+
+  def isMessagingEnabled(self):
+    """Checks whether the program has messaging enabled. If not, accessing
+    views related to the messaging system is not allowed.
+    """
+    if not self.data.program:
+      raise exception.NotFound(message=DEF_NO_SUCH_PROGRAM)
+
+    self.isProgramVisible()
+
+    if not self.data.program.messaging_enabled:
+      raise exception.Forbidden(message=DEF_MESSAGING_NOT_ENABLED)
 
 
 class DeveloperAccessChecker(BaseAccessChecker):

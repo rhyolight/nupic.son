@@ -1,0 +1,75 @@
+{% extends "modules/gci/base.html" %}
+{% comment %}
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+{% endcomment %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" media="screen" href="/{{ css_path }}/messaging.css" />
+{% endblock stylesheets %}
+
+{% block page_content %}
+<div class="block block-text">
+  <div class="block-title">
+      <div class="controls">
+        <a class="notimplemented" title="{{ num_users }} user{{ num_users|pluralize:" is,s are" }} involved in this conversation.">{{ num_users }} user{{ num_users|pluralize:",s" }}</a>
+      </div>
+      {{ conversation.subject }}
+  </div>
+  <div class="block-content">
+    {% for message in messages %}
+      <div class="message" id="m{{ message.key.id }}">
+        <div class="title">
+          <div class="controls">
+            <a href="#m{{ message.key.id }}">Link</a>
+          </div>
+          <span class="divided-section author">{{ message.author_name }}</span>
+          <span class="divided-section" title="{{ message.sent_on_ctime }}">{{ message.sent_on_relative }}</span>
+        </div>
+        <div class="content">
+          {{ message.content|safe }}
+        </div>
+      </div>
+    {% endfor %}
+    <div class="reply_form">
+      <form action="{{ reply_action }}" method="post" id="form" class="form-conversation-reply">
+        <fieldset id="form-conversation-reply-fieldset" class="fieldset-conversation-reply">
+          <legend><span>Send a reply</span></legend>
+            <div id="form_row_content" class="row content">
+              <textarea id="melange-content-textarea" name="content" rows="10" cols="40"></textarea>
+            </div>
+          <div id="form-conversation-reply-fieldset-button-row" class="row button-row">
+            <input id="form-conversation-reply-submit" type="submit" value="Send" class="button submit"/>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock page_content %}
+
+{% block synchronous_scripts %}
+  <script type='text/javascript' src="/tiny_mce/tiny_mce.js"></script>
+  {{ block.super }}
+{% endblock synchronous_scripts %}
+
+{% block dependencies %}
+  [
+    tc(
+      "/soc/content/{{ app_version }}/js/templates/modules/gci/conversation/base.js",
+      {
+        tinymce_inputs: ["melange-content-textarea"]
+      }
+    )
+  ]
+{% endblock dependencies %}

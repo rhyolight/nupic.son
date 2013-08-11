@@ -84,7 +84,7 @@ class Conversation(ndb.Model):
       verbose_name=translation.ugettext('Automatically Update Users'))
   auto_update_users.help_text = translation.ugettext(
       'If set, users will be automatically added and removed from the '
-      'conversation if they no longer fit the criteria.')
+      'conversation if they start to or no longer fit the criteria.')
 
 
 class ConversationUser(ndb.Model):

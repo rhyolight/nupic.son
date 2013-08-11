@@ -1,0 +1,71 @@
+{% comment %}
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+{% endcomment %}
+
+{{ error.render }}
+
+<div class="block-form-title">
+  <span class="title">{{ title }}</span>
+  <span class="req">* fields required</span>
+</div>
+<form action="#" method="post" class="form-create-task clearfix">
+
+  <div class="form-row form-row-conversation-recipients">
+
+    <div class="inline-input-row">
+      <span id="recipients_type-container">
+        <label class="form-label">Recipients<em>*</em></label>
+        {{ form.bound_fields.recipients_type.render }}
+      </span>
+
+      <span id="organization-container">
+        {{ form.bound_fields.organization.render }}
+      </span>
+    </div>
+
+    <span id="users-container">
+      {% if form.bound_fields.users %}
+        {{ form.bound_fields.users.render }}
+      {% endif %}
+    </span>
+
+    <span id="program-roles-container">
+      {% if form.bound_fields.program_roles %}
+        {{ form.bound_fields.program_roles.render }}
+      {% endif %}
+    </span>
+
+    <span id="organization-roles-container">
+      {% if form.bound_fields.organization_roles %}
+        {{ form.bound_fields.organization_roles.render }}
+      {% endif %}
+    </span>
+    
+    <div id="auto_update_users-row">
+      <hr />
+      {{ form.bound_fields.auto_update_users.render }}
+    </div>
+  </div>
+
+  <div class="form-row">
+    {{ form.bound_fields.subject.render }}
+  </div>
+
+  <div class="form-row">
+    {{ form.bound_fields.message_content.render }}
+  </div>
+
+  <div class="form-row form-row-buttons">
+    <input value="Send" class="button" type="submit">
+  </div>
+</form>

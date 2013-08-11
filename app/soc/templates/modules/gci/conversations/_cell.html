@@ -1,0 +1,32 @@
+<div class="conversation-list-row" title="{{ subject }}">
+  <div class="inner-row">
+    <span class="subject">{{ subject }}</span>
+    <span class="badges">
+      {% if num_messages > 0 %}
+        <span class="num-messages">
+          {{ num_messages }} message{{ num_messages|pluralize:",s" }}
+        </span>
+      {% endif %}
+      {% if num_new_messages > 0 %}
+        <span class="num-new-messages">
+          {{ num_new_messages }} new
+        </span>
+      {% endif %}
+    </span>
+    {% if last_message_time %}
+      <span class="last-message-time" title="{{ last_message_ctime }}">
+        {{ last_message_time }}
+      </span>
+    {% endif %}
+  </div>
+  {% if last_message_content %}
+    <div class="inner-row">
+      Last message by 
+      <span class="last_author">{{ last_message_author }}</span>: 
+      <span class="last_message">"
+        {{ last_message_content|slice:"90" }}
+        {% if last_message_content|length > 90 %}...{% endif %}
+      "</span>
+    </div>
+  {% endif %}
+</div>
