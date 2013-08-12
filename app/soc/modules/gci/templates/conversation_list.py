@@ -35,6 +35,7 @@ class ConversationList(template.Template):
     description = self._getDescription()
 
     return {
+        'title': self._getTitle(),
         'lists': [lists.ListConfigurationResponse(
             self.data, self._list_config, 0, description)],
     }
@@ -69,6 +70,14 @@ class ConversationList(template.Template):
     Concrete subclasses must override this method.
     """
     raise NotImplementedError()
+
+  def _getTitle(self):
+    """Returns the string of the title of the block containing the list.
+
+    Subclasses can override this method to display a different title.
+    Default title is 'Conversations'.
+    """
+    return 'Conversations'
 
   def _getListConfig(self):
     """Returns the soc.views.helper.lists.ListConfiguration which contains

@@ -22,6 +22,7 @@ from django.utils import html
 from google.appengine.ext import ndb
 from google.appengine.ext import db
 
+from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.helper import access_checker
 
@@ -33,6 +34,8 @@ from soc.modules.gci.logic import message as gcimessage_logic
 
 from soc.modules.gci.models import message as gcimessage_model
 
+from soc.modules.gci.templates import conversation_list
+
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
@@ -41,6 +44,35 @@ from soc.modules.gci.views import forms as gciforms_view
 from melange.request import exception
 
 DEF_BLANK_MESSAGE = translation.ugettext('Your message cannot be blank.')
+
+
+class UserList(conversation_list.ConversationList):
+  """List to display all the user's conversations for the program."""
+
+  def _getDescription(self):
+    """See ConversationList._getDescription for full specification."""
+    return 'List of users involved in this conversation.'
+
+  def _getTitle(self):
+    """See ConversationList._getTitle for full specification."""
+    return 'Involved Users'
+
+  def _getListConfig(self):
+    """See ConversationList._getListConfig for full specification."""
+
+    list_config = lists.ListConfiguration()
+
+    list_config.addPlainTextColumn('user', 'Username',
+        lambda e, *args: db.get(ndb.Key.to_old_key(e.user)).name)
+
+    list_config.setDefaultPagination(30)
+
+    return list_config
+
+  def _getQuery(self):
+    """See ConversationList._getQuery for full specification."""
+    return gciconversation_logic.queryConversationUserForConversation(
+        self.data.conversation.key)
 
 
 class PostReply(GCIRequestHandler):
@@ -112,6 +144,14 @@ class ConversationPage(GCIRequestHandler):
     mutator.conversationFromKwargs()
     check.isUserInConversation()
 
+  def jsonContext(self, data, check, mutator):
+    list_content = UserList(data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exception.Forbidden(
+          message=translation.ugettext('You do not have access to this data'))
+
   def context(self, data, check, mutator):
     assert access_checker.isSet(data.conversation)
     assert access_checker.isSet(data.user)
@@ -138,6 +178,7 @@ class ConversationPage(GCIRequestHandler):
         'conversation': data.conversation,
         'num_users': num_users,
         'messages': messages,
+        'user_list': UserList(data),
         'reply_action': urlresolvers.reverse(url_names.GCI_CONVERSATION_REPLY, 
             kwargs=data.kwargs)
     }

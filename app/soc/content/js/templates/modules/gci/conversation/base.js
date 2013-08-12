@@ -14,11 +14,6 @@
  */
 melange.templates.inherit(
   function (_self, context) {
-    // Show alert for unimplemented placeholders
-    jQuery("a.notimplemented").click(function() {
-      alert("Not yet implemented.");
-    });
-
     // Set up TinyMCE reply editor
     tinyMceSettings = melange.tinyMceConfig(context.tinymce_inputs, "basic");
     tinyMceSettings["height"] = 240;

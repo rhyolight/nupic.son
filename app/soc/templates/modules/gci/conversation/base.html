@@ -22,7 +22,7 @@ limitations under the License.
 <div class="block block-text">
   <div class="block-title">
       <div class="controls">
-        <a class="notimplemented" title="{{ num_users }} user{{ num_users|pluralize:" is,s are" }} involved in this conversation.">{{ num_users }} user{{ num_users|pluralize:",s" }}</a>
+        <a href="#users-list" title="{{ num_users }} user{{ num_users|pluralize:" is,s are" }} involved in this conversation.">{{ num_users }} user{{ num_users|pluralize:",s" }}</a>
       </div>
       {{ conversation.subject }}
   </div>
@@ -56,6 +56,10 @@ limitations under the License.
     </div>
   </div>
 </div>
+
+<div id="users-list">
+  {{ user_list.render }}
+</div>
 {% endblock page_content %}
 
 {% block synchronous_scripts %}
@@ -65,6 +69,8 @@ limitations under the License.
 
 {% block dependencies %}
   [
+    dep.melange.list,
+    null,
     tc(
       "/soc/content/{{ app_version }}/js/templates/modules/gci/conversation/base.js",
       {
