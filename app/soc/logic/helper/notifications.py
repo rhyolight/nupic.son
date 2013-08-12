@@ -157,10 +157,11 @@ def userConnectionContext(data, connection, recipients, message):
 
   subject = DEF_NEW_USER_CONNECTION % {'org' : connection.organization.name}
 
-  connection_url = data.redirect.show_user_connection(connection).url(full=True)
+  # TODO(daniel): add actual connection URL
+  # connection_url = data.redirect.show_user_connection(connection).url(full=True)
 
   message_properties = {
-      'connection_url' : connection_url,
+      'connection_url' : '',
       'name' : connection.parent().name(),
       'org_name' : connection.organization.name,
       'message' : message
