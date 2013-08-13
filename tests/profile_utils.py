@@ -371,6 +371,10 @@ class GSoCProfileHelper(ProfileHelper):
                   'proposal': proposal}
     self.seed(GSoCProject, properties)
     return self.profile
+  
+  def createConnection(self, org):
+    self.connection = seed_new_connection(self.profile, org)
+    return self.connection
 
 
 class GCIProfileHelper(ProfileHelper):
