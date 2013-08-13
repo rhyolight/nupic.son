@@ -211,7 +211,7 @@ class GCIConversationHelper(ConversationHelper):
 
   def createUser(
       self, roles=None, mentor_organizations=None, admin_organizations=None,
-      return_key=False):
+      return_key=False, developer=False):
     """Creates a dummy user with a GCIProfile.
 
     See ConversationHelper.createUser for full specification.
@@ -225,6 +225,9 @@ class GCIConversationHelper(ConversationHelper):
 
     if profile is None:
       raise Exception('profile is none')
+
+    if developer:
+      profile.createDeveloper()
 
     if mentor_organizations:
       roles.update([MENTOR])
