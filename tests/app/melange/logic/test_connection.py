@@ -37,10 +37,10 @@ class ConnectionTest(unittest.TestCase):
     self.program = seeder_logic.seed(Program)
     
     self.profile_helper = ProfileHelper(self.program, dev_test=False)
-    self.user = self.profile_helper.createUser()
-    profile_properties = {'link_id': self.user.link_id, 'student_info': None, 
-        'user': self.user,'parent': self.user, 'scope': self.program, 
-        'status': 'active','email': self.user.account.email(),
+    user = self.profile_helper.createUser()
+    profile_properties = {'link_id': user.link_id, 'student_info': None,
+        'user': user,'parent': user, 'scope': self.program,
+        'status': 'active','email': user.account.email(),
         'program': self.program,'mentor_for': [], 'org_admin_for': [],
         'is_org_admin': False, 'is_mentor': False, 'is_student': False
         }
@@ -53,7 +53,7 @@ class ConnectionTest(unittest.TestCase):
         'home': None, 'program': self.program,
         }
     self.org = self.program_helper.seed(Organization, org_properties)
-    self.connection = connection_utils.seed_new_connection(self.user, self.org)
+    self.connection = connection_utils.seed_new_connection(self.profile, self.org)
 
 class ConnectionExistsTest(ConnectionTest): 
   """Unit tests for the connection_logic.connectionExists function."""
@@ -63,10 +63,10 @@ class ConnectionExistsTest(ConnectionTest):
     Organizations can be fetched with this helper.
     """
     self.assertTrue(
-      connection_logic.connectionExists(self.profile.parent(), self.org)) 
+      connection_logic.connectionExists(self.profile, self.org))
     self.connection.delete()
     self.assertFalse(
-      connection_logic.connectionExists(self.profile.parent(), self.org))
+      connection_logic.connectionExists(self.profile, self.org))
 
 class CreateConnectionTest(ConnectionTest):
   """Unit tests for the connection_logic.createConnection function."""
@@ -77,25 +77,22 @@ class CreateConnectionTest(ConnectionTest):
     self.connection.delete()
     connection_logic.createConnection(
         profile=self.profile, org=self.org,
-        user_state=connection.STATE_ACCEPTED,
-        org_state=connection.STATE_UNREPLIED,
-        role=connection.MENTOR_ROLE
+        user_role=connection.NO_ROLE,
+        org_role=connection.MENTOR_ROLE,
         )
     new_connection = connection.Connection.all().get()
-    self.assertEqual(self.user.key(), new_connection.parent().key())
+    self.assertEqual(self.profile.key(), new_connection.parent().key())
     self.assertEqual(self.org.key(), new_connection.organization.key())
-    self.assertEqual(connection.STATE_ACCEPTED, new_connection.user_state)
-    self.assertEqual(connection.STATE_UNREPLIED, new_connection.org_state)
-    self.assertEqual(connection.MENTOR_ROLE, new_connection.role)
+    self.assertEqual(connection.NO_ROLE, new_connection.user_role)
+    self.assertEqual(connection.MENTOR_ROLE, new_connection.org_role)
     
     # Also test to ensure that a connection will not be created if a logically
     # equivalent connection already exists.
     self.assertRaises(
-        exception.UserError, connection_logic.createConnection,
+        ValueError, connection_logic.createConnection,
         profile=self.profile, org=self.org, 
-        user_state=connection.STATE_UNREPLIED, 
-        org_state=connection.STATE_UNREPLIED,
-        role=connection.MENTOR_ROLE
+        user_role=connection.NO_ROLE,
+        org_role=connection.NO_ROLE
         )
 
 class CreateConnectionMessageTest(ConnectionTest):
@@ -132,7 +129,7 @@ class GetConnectionMessagesTest(ConnectionTest):
     organization2 = self.program_helper.createNewOrg(
         {'program' : self.program})
     connection2 = connection_utils.seed_new_connection(
-      self.user, organization2)
+      self.profile, organization2)
 
     # create a few messages for the other connection
     for _ in range(10):
