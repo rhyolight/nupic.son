@@ -156,12 +156,12 @@ def userConnectionContext(data, connection, recipients, message):
   """
 
   subject = DEF_NEW_USER_CONNECTION % {'org' : connection.organization.name}
-  connection_url = data.redirect.show_connection(connection.parent(),
-      connection).url(full=True)
+
+  connection_url = data.redirect.show_user_connection(connection).url(full=True)
 
   message_properties = {
       'connection_url' : connection_url,
-      'link_id' : connection.parent().link_id,
+      'name' : connection.parent().name(),
       'org_name' : connection.organization.name,
       'message' : message
       }
@@ -186,14 +186,13 @@ def orgConnectionContext(data, connection, recipients, message):
   """
 
   subject = DEF_NEW_ORG_CONNECTION % {'org' : connection.organization.name}
-  connection_url = data.redirect.show_connection(connection.parent(),
-      connection).url(full=True)
+  connection_url = data.redirect.show_org_connection(connection).url(full=True)
 
   message_properties = {
       'connection_url' : connection_url,
-      'link_id' : connection.parent().link_id,
+      'name' : connection.parent().name(),
       'org_name' : connection.organization.name,
-      'role' : connection.getUserFriendlyRole(),
+      'role' : connection.getRole(),
       'message' : message
       }
   template = DEF_NEW_ORG_CONNECTION_NOTIFICATION_TEMPLATE
