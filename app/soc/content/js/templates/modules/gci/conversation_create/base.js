@@ -83,7 +83,7 @@ melange.templates.inherit(
     $users.blur(function() { create_tag(true); });
     $users.bind('keypress', function(event) {
       var character = String.fromCharCode(event.keyCode);
-      if (character === ',' || character == ' ') {
+      if (character === ',' || character === ' ') {
         create_tag(false);
         return false;
       }
