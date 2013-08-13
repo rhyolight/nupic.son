@@ -145,14 +145,14 @@ class StartConnectionAsUser(base.GCIRequestHandler):
     form = _formToStartConnectionAsUser(data=data.POST)
     if form.is_valid():
       # TODO(daniel): get actual recipients of notification email
-      connection_view.createConnectionTxn(
+      connection = connection_view.createConnectionTxn(
           data, data.url_profile, data.organization,
           form.cleaned_data['message'],
           notifications.userConnectionContext, [],
           user_role=connection_model.ROLE)
 
       url = links.Linker().userOrg(
-          data.url_profile, data.organization,
+          data.url_profile, connection.key().id(),
           urls.UrlNames.CONNECTION_MANAGE_AS_USER)
       return http.HttpResponseRedirect(url)
 
@@ -168,7 +168,7 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
     """See base.GCIRequestHandler.djangoURLPatterns for specification."""
     return [
         ci_url_patterns.url(
-            r'connection/manage/user/%s$' % url_patterns.USER_ORG,
+            r'connection/manage/user/%s$' % url_patterns.USER_ID,
             self, name=urls.UrlNames.CONNECTION_MANAGE_AS_USER)
     ]
 
