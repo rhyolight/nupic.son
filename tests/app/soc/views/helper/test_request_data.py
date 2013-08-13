@@ -19,6 +19,7 @@ import unittest
 
 from melange.request import exception
 
+from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model
 from soc.models import sponsor as sponsor_model
@@ -108,3 +109,59 @@ class UrlProfilePropertyTest(unittest.TestCase):
     data = request_data.RequestData(None, None, kwargs)
     url_profile = data.url_profile
     self.assertEqual(profile.key(), url_profile.key())
+
+
+class UrlOrgPropertyTest(unittest.TestCase):
+  """Unit tests for url_org property of RequestData class."""
+
+  def testNoOrgData(self):
+    """Tests that error is raised if there is no org data in kwargs."""
+    # no data at all
+    data = request_data.RequestData(None, None, {})
+    with self.assertRaises(ValueError):
+      data.url_org
+
+    # program data but no user identifier
+    kwargs = {
+        'sponsor': 'sponsor_id',
+        'program': 'program_id'
+        }
+    data = request_data.RequestData(None, None, kwargs)
+    with self.assertRaises(ValueError):
+      data.url_org
+
+    # user identifier present but no program data
+    data = request_data.RequestData(None, None, {'organization': 'org_id'})
+    with self.assertRaises(ValueError):
+      data.url_org
+
+  def testOrgDoesNotExist(self):
+    """Tests that error is raised if requested organization does not exist."""
+    kwargs = {
+        'sponsor': 'sponsor_id',
+        'program': 'program_id',
+        'organization': 'org_id'
+        }
+    data = request_data.RequestData(None, None, kwargs)
+    with self.assertRaises(exception.UserError) as context:
+      data.url_org
+    self.assertEqual(context.exception.status, httplib.NOT_FOUND)
+
+  def testOrgExists(self):
+    """Tests that organization is returned correctly if exists."""
+    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+    program = seeder_logic.seed(program_model.Program)
+    org_properties = {
+        'key_name': '%s/%s/test_org' % (sponsor.link_id, program.program_id),
+        'link_id': 'test_org',
+        }
+    org = seeder_logic.seed(org_model.Organization, org_properties)
+
+    kwargs = {
+        'sponsor': sponsor.link_id,
+        'program': program.program_id,
+        'organization': org.link_id
+        }
+    data = request_data.RequestData(None, None, kwargs)
+    url_org = data.url_org
+    self.assertEqual(org.key(), url_org.key())

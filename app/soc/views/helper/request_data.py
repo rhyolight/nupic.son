@@ -31,6 +31,7 @@ from melange.utils import time
 from soc.logic import program as program_logic
 from soc.logic import site as site_logic
 from soc.logic import user
+from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import sponsor as sponsor_model
 from soc.models import user as user_model
@@ -180,10 +181,12 @@ class RequestData(object):
     timeline: the timeline helper
 
   Optional fields (may not be specified for all requests):
+    url_org: organization entity for the data in kwargs.
     url_profile: profile entity for the data in kwargs.
     url_user: user entity for the data in kwargs.
   """
 
+  __org_model = org_model.Organization
   __profile_model = profile_model.Profile
 
   # class attribute which is assigned to all fields which have not been set
@@ -220,6 +223,7 @@ class RequestData(object):
     self._ds_write_disabled = self._unset
     self._timeline = self._unset
 
+    self._url_org = self._unset
     self._url_profile = self._unset
     self._url_user = self._unset
 
@@ -406,6 +410,35 @@ class RequestData(object):
       if not self._url_profile:
         raise exception.NotFound(message='Requested profile does not exist.')
     return self._url_profile
+
+  @property
+  def url_org(self):
+    """Returns url_org property.
+
+    This property represents organization entity whose identifier is a part
+    of the URL of the processed request.
+
+    Returns:
+      Retrieved organization entity.
+
+    Raises:
+      ValueError: if the current request does not contain any
+        organization data.
+      exception.NotFound: if the organization is not found.
+    """
+    if not self._isSet(self._url_org):
+      try:
+        fields = ['sponsor', 'program', 'organization']
+        key_name = '/'.join(self.kwargs[i] for i in fields)
+      except KeyError:
+        raise ValueError(
+            'The request does not contain full organization data.')
+
+      self._url_org = self.__org_model.get_by_key_name(key_name)
+
+      if not self._url_org:
+        raise exception.NotFound('Requested organization does not exist.')
+    return self._url_org
 
   @property
   def url_user(self):

@@ -192,6 +192,7 @@ class RequestData(request_data.RequestData):
     out_of_band: 404 when the program does not exist
   """
 
+  __org_model = org_model.GSoCOrganization
   __profile_model = profile_model.GSoCProfile
 
   def __init__(self, request, args, kwargs):
