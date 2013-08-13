@@ -23,18 +23,24 @@ from django.core.urlresolvers import reverse
 from django.forms.fields import ChoiceField
 from django.utils.translation import ugettext
 
-from melange.request import exception
 from melange.logic import connection as connection_logic
+from melange.logic import role_transitions as role_logic
 from melange.models import connection
 from melange.models.connection_message import ConnectionMessage
+from melange.request import exception
+from melange.utils import rich_bool
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic.helper import notifications
 from soc.models.user import User
+from soc.modules.gsoc.logic import profile as profile_logic
+from soc.modules.gsoc.logic import project as project_logic
+from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.logic.helper import notifications as gsoc_notifications
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
+from soc.modules.gsoc.views.base_templates import LoggedInMsg
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -43,13 +49,19 @@ from soc.views.helper.access_checker import isSet
 from soc.tasks import mailer
 
 
-DEF_NONEXISTANT_USER = 'The user with the email %s does not exist.'
+DEF_INVALID_LINK_ID = '%s is not a valid link id.'
+DEF_NONEXISTANT_LINK_ID = 'No user with the link id %s exists.'
+USER_HAS_ROLE = '%s already has a role with this organization.'
+NO_OTHER_ADMIN = '%s is the only administrator for this organization.'
+
+USER_ASSIGNED_MENTOR = '%s promoted to Mentor.'
+USER_ASSIGNED_ORG_ADMIN = '%s promoted to Org Admin.'
+USER_ASSIGNED_NO_ROLE = '%s no longer has a role for this organizaton.'
 
 @db.transactional
-def create_connection_txn(data, profile, organization,
-    role, message, context, recipients,
-    org_state=connection.STATE_UNREPLIED,
-    user_state=connection.STATE_UNREPLIED):
+def create_connection_txn(
+    data, profile, organization, message, context, recipients,
+    org_role=connection.NO_ROLE, user_role=connection.NO_ROLE):
   """ Create a new Connection entity, attach any messages provided by the
   initiator and send a notification email to the recipient(s).
 
@@ -67,13 +79,16 @@ def create_connection_txn(data, profile, organization,
     The newly created Connection entity.
   """
   if connection_logic.connectionExists(profile.parent(), organization):
-    raise exception.Forbidden(message=connection.CONNECTION_EXISTS_ERROR %
-        (profile.name, organization.name))
-    # Generate the new connection.
+    raise exception.Forbidden(
+      message=connection_logic.CONNECTION_EXISTS_ERROR %
+      (profile.name, organization.name))
+  # Do not create a connection if a user already has a role within the org.
+  if organization.key() in profile.mentor_for:
+    raise exception.Forbidden(message=USER_HAS_ROLE % profile.name())
+  # Generate the new connection.
   new_connection = connection_logic.createConnection(
       profile=profile, org=organization,
-      org_state=org_state, user_state=user_state,
-      role=role)
+      org_role=org_role, user_role=user_role)
   # Attach any user-provided messages to the connection.
   if message:
     connection_logic.createConnectionMessage(
@@ -85,6 +100,19 @@ def create_connection_txn(data, profile, organization,
   sub_txn()
 
   return new_connection
+
+def send_mentor_welcome_mail(data, connection_entity, profile, messages):
+  """Send out a welcome email to new mentors.
+
+  Args:
+    data: RequestData object.
+    profile: GSoCProfile to which to send emails.
+    messages: Program messages.
+  """
+  mentor_mail = notifications.getMentorWelcomeMailContext(
+      profile, data, messages)
+  if mentor_mail:
+    mailer.getSpawnMailTaskTxn(mentor_mail, parent=connection_entity)()
 
 def clean_link_id(link_id):
   """Apply validation filters to a single link id from the user field.
@@ -102,11 +130,11 @@ def clean_link_id(link_id):
     # Catch and re-raise the exception to provide a more helpful error
     # message than "One or more Link_ids is not valid."
     raise gsoc_forms.ValidationError(
-        '"%s" is not a valid link id.' % link_id)
+        DEF_INVALID_LINK_ID % link_id)
   user = User.get_by_key_name(link_id)
   if not user:
     raise gsoc_forms.ValidationError(
-        '%s does not correspond to a profile.' % link_id)
+        DEF_NONEXISTANT_LINK_ID % link_id)
   return user
 
 def clean_email(email):
@@ -131,6 +159,35 @@ def clean_email(email):
   else:
     # The User entity does not exist or they do not have a profile.
     return None
+
+# TODO(drew): Feasible to make this txn safe?
+def canUserResignRoleForOrg(profile_key, org_key):
+  """Determine whether or not a resignation is legal.
+
+  Args:
+    profile: Key of GSoCProfile to evaluate.
+    organization: Key of GSoCOrganization to evaluate
+  Returns:
+    melange.utils.rich_bool.RichBool indicating whether ot not a profile
+    can legally resign and a reason as to why or why not.
+  """
+  profile = db.get(profile_key)
+
+  if org_key in profile.org_admin_for:
+    if not profile_logic.canResignAsOrgAdminForOrg(profile, org_key):
+      return rich_bool.RichBool(
+          value=False, extra=NO_OTHER_ADMIN % profile.name())
+
+  if org_key in profile.mentor_for:
+    if proposal_logic.hasMentorProposalAssigned(
+        profile, org_key=org_key):
+      return rich_bool.RichBool(False,
+          value='There is a proposal assigned to %s.' % profile.name())
+    if project_logic.hasMentorProjectAssigned(profile, org_key=org_key):
+      return rich_bool.RichBool(False,
+          value='There is a project assigned to %s.' % profile.name())
+
+  return rich_bool.RichBool(value=True)
 
 class ConnectionForm(GSoCModelForm):
   """Django form for the Connection page."""
@@ -183,10 +240,10 @@ class OrgConnectionForm(ConnectionForm):
     role_choices = (
       (connection.MENTOR_ROLE, 'Mentor'),
       (connection.ORG_ADMIN_ROLE, 'Org Admin'))
-    self.fields['role'].widget = django_forms.fields.Select(
+    self.fields['org_role'].widget = django_forms.fields.Select(
         choices=role_choices)
-    self.fields['role'].label = ugettext('Role to offer the user(s)')
-    self.fields['role'].help_text = ugettext(
+    self.fields['org_role'].label = ugettext('Role to offer the user(s)')
+    self.fields['org_role'].help_text = ugettext(
         'Role that you are offering to '
         'the specified users in this organization')
 
@@ -209,14 +266,16 @@ class OrgConnectionForm(ConnectionForm):
         if user:
           self.request_data.valid_users.append(user)
         else:
-          self.request_data.anonymous_users.append(user_id)
+          #self.request_data.anonymous_users.append(user_id)
+          raise gsoc_forms.ValidationError(
+              '%s does not correspond to a profile.' % user_id)
       else:
         user = clean_link_id(user_id)
         self.request_data.valid_users.append(user)
 
   class Meta:
     model = connection.Connection
-    fields = ['role']
+    fields = ['org_role']
 
 
 class MessageForm(GSoCModelForm):
@@ -246,18 +305,18 @@ class MessageForm(GSoCModelForm):
 class ConnectionResponseForm(GSoCModelForm):
   """Django form to provide Connection responses in ShowConnection.
   """
-  responses = django_forms.fields.ChoiceField(widget=django_forms.Select())
+  role_response = django_forms.fields.ChoiceField(widget=django_forms.Select())
 
   def __init__(self, request_data=None, choices=None, *args, **kwargs):
     super(ConnectionResponseForm, self).__init__(*args, **kwargs)
 
     self.request_data = request_data
 
-    self.fields['responses'].group = ugettext('1. ')
-    self.fields['responses'].help_text = ugettext(
+    self.fields['role_response'].group = ugettext('1. ')
+    self.fields['role_response'].help_text = ugettext(
         'Select an action to take.')
-    self.fields['responses'].choices = choices
-    self.fields['responses'].required = False
+    self.fields['role_response'].choices = choices
+    self.fields['role_response'].required = False
 
   def templatePath(self):
     return 'modules/gsoc/connection/_response_form.html'
@@ -308,45 +367,23 @@ class OrgConnectionPage(base.GSoCRequestHandler):
       profile = GSoCProfile.all().ancestor(user).get()
       create_connection_txn(
           data=data, profile=profile, organization=data.organization,
-          role=connection_form.cleaned_data['role'],
+          org_role=connection_form.cleaned_data['org_role'],
           message=connection_form.cleaned_data['message'],
           context=notifications.orgConnectionContext,
-          recipients=[profile.email], org_state=connection.STATE_ACCEPTED)
+          recipients=[profile.email])
 
-    # TODO(drew): This entire section below needs to be replaced with code
-    # similar to the lines immediately above or to something else entirely
-    # once the new Connection model is implemented.
-    def create_anonymous_connection_txn(email):
-      # Create the anonymous connection - a placeholder until the user
-      # registers and activates the real connection.
-      new_connection = connection.AnonymousConnection(parent=data.organization)
-      new_connection.role = connection_form.cleaned_data['role']
-      new_connection.put()
+    # TODO(drew):Re-implement anonymous connection.
 
-      # Generate a hash of the object's key for later validation.
-      m = hashlib.md5()
-      m.update(str(new_connection.key()))
-      new_connection.hash_id = unicode(m.hexdigest())
-      new_connection.email = email
-      new_connection.put()
-
-      # Notify the user that they have a pending connection and can register
-      # to accept the elevated role.
-      context = notifications.anonymousConnectionContext(data, email,
-          new_connection, connection_form.cleaned_data['message'])
-      sub_txn = mailer.getSpawnMailTaskTxn(context, parent=new_connection)
-      sub_txn()
-
-    q = connection.AnonymousConnection.all()
-    data.sent_email_to = []
-    data.duplicate_email = []
-    for email in data.anonymous_users:
-      new_q = q.filter('email', email).get()
-      if new_q:
-        data.duplicate_email.append(email)
-      else:
-        data.sent_email_to.append(email)
-        db.run_in_transaction(create_anonymous_connection_txn, email)
+    #q = connection.AnonymousConnection.all()
+    #data.sent_email_to = []
+    #data.duplicate_email = []
+    #for email in data.anonymous_users:
+    #  new_q = q.filter('email', email).get()
+    #  if new_q:
+    #    data.duplicate_email.append(email)
+    #  else:
+    #    data.sent_email_to.append(email)
+    #    db.run_in_transaction(create_anonymous_connection_txn, email)
 
     return True
 
@@ -354,7 +391,8 @@ class OrgConnectionPage(base.GSoCRequestHandler):
     assert isSet(data.organization)
     check.isProgramVisible()
     check.isOrganizationInURLActive()
-    check.hasProfile()
+
+    check.notStudent()
     check.isOrgAdminForOrganization(data.organization)
 
   def context(self, data, check, mutator):
@@ -372,6 +410,7 @@ class OrgConnectionPage(base.GSoCRequestHandler):
       dupes = data.request.GET['dupes'].split(',')
 
     return {
+      'logged_in_msg': LoggedInMsg(data, apply_link=False),
       'page_name': 'Open a connection',
       'program': data.program,
       'connection_form': connection_form,
@@ -388,16 +427,15 @@ class OrgConnectionPage(base.GSoCRequestHandler):
         message and indicate whether or not emails were sent inviting new
         users to join the program (via anonymous connections).
     """
-
     if self._generate(data):
       data.redirect.organization()
       extra = []
-      if len(data.sent_email_to) > 0:
-        emailed = ','.join(data.sent_email_to)
-        extra = ['emailed=%s' % emailed, ]
-      if len(data.duplicate_email) > 0:
-        dupes = ','.join(data.duplicate_email)
-        extra.append('dupes=%s' % dupes)
+      #if len(data.sent_email_to) > 0:
+      #  emailed = ','.join(data.sent_email_to)
+      #  extra = ['emailed=%s' % emailed, ]
+      #if len(data.duplicate_email) > 0:
+      #  dupes = ','.join(data.duplicate_email)
+      #  extra.append('dupes=%s' % dupes)
       return data.redirect.to(url_names.GSOC_ORG_CONNECTION, validated=True,
           extra=extra)
     else:
@@ -445,10 +483,9 @@ class UserConnectionPage(base.GSoCRequestHandler):
 
     create_connection_txn(
         data=data, profile=data.profile, organization=data.organization,
-        role=connection.MENTOR_ROLE,
+        user_role=connection.ROLE, recipients=recipients,
         message=connection_form.cleaned_data['message'],
-        context=notifications.userConnectionContext,
-        recipients=recipients, user_state=connection.STATE_ACCEPTED)
+        context=notifications.userConnectionContext)
 
     return True
 
@@ -460,11 +497,12 @@ class UserConnectionPage(base.GSoCRequestHandler):
         data=data.POST or None)
 
     return {
-      'profile_created': data.GET.get('profile') == 'created',
-      'page_name': 'Open a connection',
-      'program': data.program,
-      'connection_form': connection_form,
-    }
+        'logged_in_msg': LoggedInMsg(data, apply_link=False),
+        'profile_created': data.GET.get('profile') == 'created',
+        'page_name': 'Open a connection',
+        'program': data.program,
+        'connection_form': connection_form,
+        }
 
   def post(self, data, check, mutator):
     """Handler for a GSoC Connection post request for a user."""
@@ -476,358 +514,265 @@ class UserConnectionPage(base.GSoCRequestHandler):
       # TODO(nathaniel): problematic self-call.
       return self.get()
 
-
-class ShowConnection(base.GSoCRequestHandler):
-  """Class to encapsulate the methods required to display information
-  about a Connection for both Users and Org Admins.
+class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
+  """A page to show a connection for eligible members
+  of the organization in question.
   """
-
-  # The actions that will be made available to the user in the dropdown.
-  RESPONSES = {
-    'accept_mentor' : ('accept_mentor', 'Accept Mentor'),
-    'reject_mentor' : ('reject_mentor', 'Reject Mentor'),
-    'accept_org_admin' : ('accept_org_admin', 'Accept Org Admin'),
-    'reject_org_admin' : ('reject_org_admin', 'Reject Org Admin'),
-    'withdraw' : ('withdraw', 'Withdraw'),
-    'delete' : ('delete', 'Delete')
-  }
 
   def templatePath(self):
     return 'modules/gsoc/connection/show_connection.html'
 
   def djangoURLPatterns(self):
     return [
-        url(r'connection/%s$' % url_patterns.CONNECTION, self,
-            name=url_names.GSOC_SHOW_CONNECTION)
+        url(r'connection/%s$' % url_patterns.SHOW_CONNECTION, self,
+            name=url_names.GSOC_SHOW_ORG_CONNECTION)
+        ]
+
+  def templatePath(self):
+    return 'modules/gsoc/connection/show_connection.html'
+
+  def checkAccess(self, data, check, mutator):
+    check.isProgramVisible()
+    check.hasProfile()
+    check.notStudent()
+
+    mutator.connectionFromKwargs()
+    check.canOrgMemberAccessConnection()
+
+  def context(self, data, check, mutator):
+
+    response_form = ConnectionResponseForm(choices=connection.ORG_RESPONSES)
+    message_kwargs = data.kwargs.copy()
+    del message_kwargs['organization']
+
+    message_box = {
+        'form' : MessageForm(data.POST or None),
+        'action' : reverse(url_names.GSOC_CONNECTION_MESSAGE,
+            kwargs=message_kwargs)
+        }
+
+    return {
+        'page_name' : 'Viewing Connection',
+        'header_name' : data.url_profile.name(),
+        'connection' : data.connection,
+        'response_form' : response_form,
+        'message_box' : message_box
+        }
+
+  def _handleMentorSelection(self, data):
+
+    messages = data.program.getProgramMessages()
+
+    @db.transactional(xg=True)
+    def org_selected_mentor_txn():
+      connection_entity = db.get(data.connection.key())
+      connection_entity.org_role = connection.MENTOR_ROLE
+      connection_entity.put()
+
+      profile = db.get(data.connection.parent_key())
+      organization = db.get(data.connection.organization.key())
+      if connection_entity.userRequestedRole():
+        if not profile.is_mentor:
+          send_mentor_welcome_mail(data, connection_entity, profile, messages)
+
+        # Make sure that if a user is going from org admin to mentor that
+        # they can legally resign as org admins.
+        if organization.key() in profile.org_admin_for:
+          if not profile_logic.canResignAsOrgAdminForOrg(
+              profile, organization):
+            raise forms.ValidationError(can_resign.extra())
+
+        role_logic.assignUserMentorRoleForOrg(profile, organization)
+
+        connection_logic.createConnectionMessage(
+            connection=connection_entity, author=None,
+            content=USER_ASSIGNED_MENTOR % profile.name(),
+            auto_generated=True)
+
+    org_selected_mentor_txn()
+
+  def _handleOrgAdminSelection(self, data):
+
+    messages = data.program.getProgramMessages()
+
+    @db.transactional(xg=True)
+    def org_selected_orgadmin_txn():
+      connection_entity = db.get(data.connection.key())
+      connection_entity.org_role = connection.ORG_ADMIN_ROLE
+      connection_entity.put()
+
+      if connection_entity.userRequestedRole():
+        profile = db.get(data.connection.parent_key())
+        organization = db.get(data.connection.organization.key())
+
+        if not profile.is_mentor:
+          send_mentor_welcome_mail(data, connection_entity, profile, messages)
+        role_logic.assignUserOrgAdminRoleForOrg(profile, organization)
+
+        connection_logic.createConnectionMessage(
+            connection=connection_entity, author=None,
+            content=USER_ASSIGNED_ORG_ADMIN % profile.name(),
+            auto_generated=True)
+
+    org_selected_orgadmin_txn()
+
+  def _handleNoRoleSelection(self, data):
+    @db.transactional(xg=True)
+    def org_selected_norole_txn():
+      connection_entity = db.get(data.connection.key())
+      connection_entity.org_role = connection.NO_ROLE
+      connection_entity.put()
+
+      profile = db.get(data.connection.parent_key())
+      org_key = data.connection.organization.key()
+      if org_key in profile.mentor_for:
+        organization = db.get(org_key)
+        role_logic.assignUserNoRoleForOrg(profile, organization)
+
+        connection_logic.createConnectionMessage(
+            connection=connection_entity, author=None,
+            content=USER_ASSIGNED_NO_ROLE % profile.name(),
+            auto_generated=True)
+
+    can_resign = canUserResignRoleForOrg(
+      data.connection.parent_key(), data.connection.organization.key())
+    if can_resign:
+      org_selected_norole_txn()
+    else:
+      raise forms.ValidationError(can_resign.extra())
+
+  def post(self, data, check, mutator):
+    """Handle org selection."""
+    response = data.POST['role_response']
+
+    if response == connection.MENTOR_ROLE:
+      self._handleMentorSelection(data)
+    elif response == connection.ORG_ADMIN_ROLE:
+      self._handleOrgAdminSelection(data)
+    elif response == connection.NO_ROLE:
+      self._handleNoRoleSelection(data)
+
+    return data.redirect.dashboard().to()
+
+class ShowConnectionForUserPage(base.GSoCRequestHandler):
+  """A page to show a connection for the user."""
+
+  def djangoURLPatterns(self):
+    return [
+        url(r'connection/user/%s$' % url_patterns.SHOW_CONNECTION, self,
+            name=url_names.GSOC_SHOW_USER_CONNECTION)
     ]
+
+  def templatePath(self):
+    return 'modules/gsoc/connection/show_connection.html'
 
   def checkAccess(self, data, check, mutator):
     check.isProgramVisible()
     check.hasProfile()
 
     mutator.connectionFromKwargs()
-    mutator.profileFromKwargs()
-    # Add org to request data for access checking methods.
-    data.organization = data.connection.organization
-    check.canViewConnection()
-
-  def getMessages(self, data, limit=1000):
-    """Gets all the messages for the connection."""
-    assert isSet(data.connection)
-
-    query = db.Query(ConnectionMessage).ancestor(data.connection)
-    query.order('created')
-
-    return query.fetch(limit=limit)
-
-  def getMentorChoices(self, choices, unreplied, accepted,
-      rejected, withdrawn=True):
-    """Helper method to clean up the logic for determining what options a
-      user or org admin has for responding to a connection.
-
-      Returns:
-        A list of possible responses that will be used by the page's template
-        to determine which buttons (response actions) to display to the user.
-    """
-    responses = []
-    if unreplied:
-      responses.append(choices['accept'])
-      responses.append(choices['reject'])
-    elif rejected:
-      responses.append(choices['accept'])
-    elif accepted:
-      responses.append(choices['reject'])
-      if not withdrawn:
-        responses.append(choices['withdraw'])
-    return responses
+    check.notOrgAdmin()
+    check.canUserAccessConnection()
 
   def context(self, data, check, mutator):
-    """Handler for Show Connection get request."""
-    # Shortcut for clarity/laziness.
-    c = data.connection
-    is_org_admin = data.orgAdminFor(data.organization)
-    header_name = data.url_user.link_id \
-        if is_org_admin else data.organization.name
 
-    # This isn't pretty by any stretch of the imagination, but it's going
-    # to stay like this for now in the interest of my time and sanity. The
-    # basic rules for displaying options are in the getMentorChoices() method
-    # and the code following includes some tweaks for user/org admin.
-    choices = []
-    if c.isWithdrawn():
-      # Allow an org to delete or re-open the connection.
-      if is_org_admin:
-        if c.isOrgWithdrawn():
-          choices.append(self.RESPONSES['accept_mentor'])
-          choices.append(self.RESPONSES['accept_org_admin'])
-        choices.append(self.RESPONSES['delete'])
-      # Allow the user to re-open the connection.
-      else:
-        if c.isUserWithdrawn():
-          choices.append(self.RESPONSES['accept_mentor'])
-    elif c.isStalemate() or c.isAccepted():
-      # There's nothing else that can be done to the connection in either
-      # case, so the org admin has the option to delete it.
-      if is_org_admin:
-        choices.append(self.RESPONSES['delete'])
-    else:
-      mentor_options = {
-          'accept' : self.RESPONSES['accept_mentor'],
-          'reject' : self.RESPONSES['reject_mentor'],
-          'withdraw' : self.RESPONSES['withdraw']
-          }
-      org_admin_options = {
-          'accept' : self.RESPONSES['accept_org_admin'],
-          'reject' : self.RESPONSES['reject_org_admin'],
-          'withdraw' : self.RESPONSES['withdraw']
-          }
-      if is_org_admin:
-        choices = self.getMentorChoices(mentor_options, c.isOrgUnreplied(),
-            c.isOrgAccepted(), c.isOrgRejected(), c.isOrgWithdrawn())
-        if c.isOrgUnreplied():
-          choices.append(self.RESPONSES['accept_org_admin'])
-        if c.role == connection.ORG_ADMIN_ROLE:
-          choices = choices + self.getMentorChoices(org_admin_options,
-            c.isOrgUnreplied(), c.isOrgAccepted(), c.isOrgRejected(),
-            c.isOrgWithdrawn()
-            )
-          if c.isOrgAccepted():
-            if self.RESPONSES['reject_mentor'] in choices:
-              choices.remove(self.RESPONSES['reject_mentor'])
-      else:
-        choices = self.getMentorChoices(mentor_options, c.isUserUnreplied(),
-            c.isUserAccepted(), c.isUserRejected(), c.isUserWithdrawn())
-        if c.role == connection.ORG_ADMIN_ROLE:
-          choices = choices + self.getMentorChoices(org_admin_options,
-            c.isUserUnreplied(), c.isUserAccepted(), c.isUserRejected(),
-            c.isUserWithdrawn())
+    response_form = ConnectionResponseForm(choices=connection.USER_RESPONSES)
+    message_kwargs = data.kwargs.copy()
+    del message_kwargs['organization']
 
-    if choices.count(self.RESPONSES['withdraw']) > 1:
-      choices.remove(self.RESPONSES['withdraw'])
-
-    response_form = None
-    if len(choices) > 0:
-      response_form = ConnectionResponseForm(
-          request_data=data.POST or None,
-          choices=choices
-          )
-
-    message_form = MessageForm(data.POST or None)
     message_box = {
-        'form' : message_form,
-        'action' : reverse(url_names.GSOC_CONNECTION_MESSAGE,
-             kwargs=data.kwargs.copy())
-        }
+      'form' : MessageForm(data.POST or None),
+      'action' : reverse(url_names.GSOC_CONNECTION_MESSAGE,
+        kwargs=message_kwargs)
+      }
 
     return {
-        'page_name': 'Viewing Connection',
-        'is_admin' : is_org_admin,
-        'header_name': header_name,
-        'connection' : data.connection,
-        'message_box' : message_box,
-        'messages' : self.getMessages(data),
-        'response_form' : response_form
-        }
+      'page_name' : 'Viewing Connection',
+      'header_name' : data.connection.organization.name,
+      'connection' : data.connection,
+      'response_form' : response_form,
+      'message_box' : message_box
+      }
+
+  def _handleRoleSelection(self, data):
+
+    messages = data.program.getProgramMessages()
+
+    @db.transactional(xg=True)
+    def user_selected_role_txn():
+      connection_entity = db.get(data.connection.key())
+      connection_entity.user_role = connection.ROLE
+      connection_entity.put()
+
+      profile = db.get(data.profile.key())
+      organization = db.get(data.connection.organization.key())
+
+      promoted = False
+      if connection_entity.orgOfferedMentorRole():
+        promoted = not profile.is_mentor
+        role_logic.assignUserMentorRoleForOrg(profile, organization)
+        # Generate a message on the connection to indicate the new role.
+        connection_logic.createConnectionMessage(
+            connection=connection_entity, author=None,
+            content=USER_ASSIGNED_MENTOR % profile.name(),
+            auto_generated=True)
+      elif connection_entity.orgOfferedOrgAdminRole():
+        promoted = not profile.is_mentor
+        role_logic.assignUserOrgAdminRoleForOrg(profile, organization)
+        # Generate a message on the connection to indicate the new role.
+        connection_logic.createConnectionMessage(
+            connection=connection_entity, author=None,
+            content=USER_ASSIGNED_ORG_ADMIN % profile.name(),
+            auto_generated=True)
+
+      if promoted:
+        send_mentor_welcome_mail(data, connection_entity, profile, messages)
+
+    user_selected_role_txn()
+
+  def _handleNoRoleSelection(self, data):
+    @db.transactional(xg=True)
+    def user_selected_norole_txn():
+      connection_entity = db.get(data.connection.key())
+      connection_entity.user_role = connection.NO_ROLE
+      connection_entity.put()
+
+      profile = db.get(data.profile.key())
+      organization = db.get(data.connection.organization.key())
+
+      role_logic.assignUserNoRoleForOrg(profile, organization)
+      # Generate a message on the connection to indicate the removed role.
+      connection_logic.createConnectionMessage(
+          connection=connection_entity, author=None,
+          content=USER_ASSIGNED_NO_ROLE % profile.name(),
+          auto_generated=True)
+
+    can_resign = canUserResignRoleForOrg(
+      data.profile.key(), data.connection.organization.key())
+    if can_resign:
+      user_selected_norole_txn()
+    else:
+      raise forms.ValidationError(can_resign.extra())
+
 
   def post(self, data, check, mutator):
-    """Handler for Show GSoC Connection post request."""
+    """Handle user selection."""
+    response = data.POST['role_response']
 
-    # TODO(dcrodman): Figure out why this needs to be computed differently
-    # than in the context() method above.
-    is_org_admin = data.connection.organization.key() in \
-        data.profile.org_admin_for
-    response = data.POST['responses']
+    if response == connection.ROLE:
+      self._handleRoleSelection(data)
+    elif response == connection.NO_ROLE:
+      self._handleNoRoleSelection(data)
 
-    if response == 'accept_mentor':
-      self._acceptMentor(data, is_org_admin)
-    elif response == 'reject_mentor':
-      self._rejectMentor(data, is_org_admin)
-    elif response == 'accept_org_admin':
-      self._acceptOrgAdmin(data, is_org_admin)
-    elif response == 'reject_org_admin':
-      self._rejectOrgAdmin(data, is_org_admin)
-    elif response == 'delete':
-      self._deleteConnection(data)
-    elif response == 'withdraw':
-      self._withdrawConnection(data, is_org_admin)
+    return data.redirect.dashboard().to()
 
-    if response == 'none':
-      return data.redirect.show_connection(user=data.connection.parent(),
-          connection=data.connection)
-    else:
-      data.redirect.dashboard()
-      return data.redirect.to()
-
-  def _acceptMentor(self, data, is_org_admin):
-    """The User has accepted the Mentoring role, so we need to add the user
-    to the organization's list of mentors.
-    """
-
-    profile_key = data.url_profile.key()
-    connection_key = data.connection.key()
-    org_key = data.organization.key()
-    messages = data.program.getProgramMessages()
-
-    def accept_mentor_txn():
-      connection_entity = db.get(connection_key)
-
-      # Reset both parties' states after a connection becomes active again.
-      # The user or org admin re-activating the connection will be marked
-      # as accepted anyway in the next lines.
-      if connection_entity.isWithdrawn():
-        connection_entity.org_state = connection.STATE_UNREPLIED
-        connection_entity.user_state = connection.STATE_UNREPLIED
-
-      if is_org_admin:
-        connection_entity.org_state = connection.STATE_ACCEPTED
-      else:
-        connection_entity.user_state = connection.STATE_ACCEPTED
-      connection_entity.put()
-
-      # If both the org admin and user agree to a mentoring role, promote
-      # the user to a mentor. It is possible for a user to accept only a
-      # mentoring role from an org admin connection, so there need not be
-      # any role check.
-      if connection_entity.isUserAccepted() and \
-          connection_entity.isOrgAccepted():
-        profile = db.get(profile_key)
-
-        # Send out a welcome email to new mentors.
-        if not profile.is_mentor:
-          mentor_mail = notifications.getMentorWelcomeMailContext(
-              profile, data, messages)
-          if mentor_mail:
-            mailer.getSpawnMailTaskTxn(mentor_mail, parent=connection_entity)()
-
-        # This should theoretically never happen, but it improves stability.
-        if org_key not in profile.mentor_for:
-          profile.is_mentor = True
-          profile.mentor_for.append(org_key)
-          profile.mentor_for = list(set(profile.mentor_for))
-          profile.put()
-
-          generate_message_txn(connection_entity,
-              '%s promoted to Mentor.' % profile.link_id)
-
-    db.run_in_transaction(accept_mentor_txn)
-
-  def _rejectMentor(self, data, is_org_admin):
-    connection_key = data.connection.key()
-
-    def decline_mentor_txn():
-      connection_entity = db.get(connection_key)
-      if is_org_admin:
-        connection_entity.org_state = connection.STATE_REJECTED
-      else:
-        connection_entity.user_state = connection.STATE_REJECTED
-      connection_entity.put()
-
-      generate_message_txn(connection_entity, 'Mentor Connection Rejected.')
-
-    db.run_in_transaction(decline_mentor_txn)
-
-  def _acceptOrgAdmin(self, data, is_org_admin):
-    profile_key = data.url_profile.key()
-    connection_key = data.connection.key()
-    org_key = data.organization.key()
-    messages = data.program.getProgramMessages()
-
-    def accept_org_admin_txn():
-      connection_entity = db.get(connection_key)
-
-      # The org accepted a new role for the user, so reset the user's response
-      # to give him or her time to review the change.
-      if connection_entity.role == connection.MENTOR_ROLE:
-        connection_entity.user_state = connection.STATE_UNREPLIED
-        connection_entity.org_state = connection.STATE_UNREPLIED
-
-      connection_entity.role = connection.ORG_ADMIN_ROLE
-
-      if is_org_admin:
-        connection_entity.org_state = connection.STATE_ACCEPTED
-      else:
-        connection_entity.user_state = connection.STATE_ACCEPTED
-
-      connection_entity.put()
-
-      if connection_entity.isOrgAccepted() and connection_entity.isUserAccepted():
-        profile = db.get(profile_key)
-
-        # Send out a welcome email to new mentors.
-        if not profile.is_mentor:
-          mentor_mail = notifications.getMentorWelcomeMailContext(
-              profile, data, messages)
-          if mentor_mail:
-            mailer.getSpawnMailTaskTxn(mentor_mail, parent=connection_entity)()
-
-        # Org Admins are mentors by default, so we have to promote the
-        # user twice - one to mentor, one to org admin.
-        if org_key not in profile.mentor_for:
-          profile.is_mentor = True
-          profile.mentor_for.append(org_key)
-          profile.mentor_for = list(set(profile.mentor_for))
-
-        if org_key not in profile.org_admin_for:
-          profile.is_org_admin = True
-          profile.org_admin_for.append(org_key)
-          profile.org_admin_for = list(set(profile.org_admin_for))
-          profile.put()
-
-          generate_message_txn(connection_entity,
-              '%s promoted to Org Admin.' % profile.link_id)
-
-    db.run_in_transaction(accept_org_admin_txn)
-
-  def _rejectOrgAdmin(self, data, is_org_admin):
-    connection_key = data.connection.key()
-
-    def decline_org_admin_txn():
-      connection_entity = db.get(connection_key)
-      if is_org_admin:
-        # Org can just 'withdraw' the org admin offer.
-        connection_entity.org_state = connection.STATE_REJECTED
-      else:
-        # User rejecting an org admin offer rejects both.
-        connection_entity.user_state = connection.STATE_REJECTED
-      connection_entity.put()
-
-      generate_message_txn(connection_entity, 'Org Admin Connection Rejected.')
-
-    db.run_in_transaction(decline_org_admin_txn)
-
-
-  def _withdrawConnection(self, data, is_org_admin):
-    connection_key = data.connection.key()
-
-    def withdraw_connection_txn():
-      # Mark the connection on the user or org side as 'Rejected' and add an auto-comment
-      connection_entity = db.get(connection_key)
-      if is_org_admin:
-        connection_entity.org_state = connection.STATE_WITHDRAWN
-      else:
-        connection_entity.user_state = connection.STATE_WITHDRAWN
-      connection_entity.put()
-
-      generate_message_txn(connection_entity, 'Connection withdrawn.')
-
-    db.run_in_transaction(withdraw_connection_txn)
-
-  def _deleteConnection(self, data):
-    connection_key = data.connection.key()
-
-    def delete_connection_txn():
-      connection_entity = db.get(connection_key)
-      db.delete(ConnectionMessage.all().ancestor(connection_entity))
-      connection_entity.delete()
-
-    db.run_in_transaction(delete_connection_txn)
 
 class SubmitConnectionMessagePost(base.GSoCRequestHandler):
   """POST request handler for submission of connection messages."""
 
   def djangoURLPatterns(self):
     return [
-         url(r'connection/message/%s$' % url_patterns.CONNECTION_MESSAGE, self,
+         url(r'connection/message/%s$' % url_patterns.MESSAGE, self,
              name=url_names.GSOC_CONNECTION_MESSAGE),
     ]
 
@@ -838,8 +783,6 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
     mutator.connectionFromKwargs()
     data.organization = data.connection.organization
     mutator.commentVisible(data.organization)
-
-    check.isOrgAdmin()
 
   def createMessageFromForm(self, data):
     """Creates a new message based on the data inserted in the form.

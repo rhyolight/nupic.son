@@ -191,15 +191,6 @@ class Mutator(access_checker.Mutator):
     else:
       self.data.project_owner = self.data.project.parent()
 
-  def connectionFromKwargs(self):
-    """Set the connection entity in the RequestData object."""
-    self.userFromKwargs()
-
-    self.data.connection = Connection.get_by_id(
-        long(self.data.kwargs['id']), self.data.url_user)
-    if not self.data.connection:
-      raise exception.Forbidden(message='This connection does not exist.')
-
   def anonymousConnectionFromKwargs(self):
     """Set the anonymous_connection entity in the RequestData object.
     """
