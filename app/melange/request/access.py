@@ -39,6 +39,9 @@ _MESSAGE_PROGRAM_NOT_ACTIVE = translation.ugettext(
 _MESSAGE_STUDENTS_DENIED = translation.ugettext(
     'This page is not accessible to users with student profiles.')
 
+_MESSAGE_NOT_USER_IN_URL = translation.ugettext(
+    'You are not logged in as the user in the URL.')
+
 
 def ensureLoggedIn(self):
   """Ensures that the user is logged in.
@@ -167,3 +170,18 @@ class ProgramActiveAccessChecker(AccessChecker):
       raise exception.Forbidden(message=_MESSAGE_PROGRAM_NOT_ACTIVE)
 
 PROGRAM_ACTIVE_ACCESS_CHECKER = ProgramActiveAccessChecker()
+
+
+class IsUrlUserAccessChecker(AccessChecker):
+  """AccessChecker that ensures that the logged in user is the user whose
+  identifier is set in URL data.
+  """
+
+  def checkAccess(self, data, check, mutator):
+    """See AccessChecker.checkAccess for specification."""
+    key_name = data.kwargs.get('user')
+    if not key_name:
+      raise exception.BadRequest('The request does not contain user data.')
+
+    if not data.user or data.user.key().name() != key_name:
+      raise exception.Forbidden(message=_MESSAGE_NOT_USER_IN_URL)

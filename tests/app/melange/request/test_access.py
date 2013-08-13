@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests for melange.request.access."""
 
+import httplib
 import unittest
 
 from nose.plugins import skip
@@ -22,6 +23,7 @@ from melange.request import exception
 
 from soc.models import profile as profile_model
 from soc.models import program as program_model
+from soc.models import user as user_model
 from soc.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
@@ -208,3 +210,42 @@ class ProgramActiveAccessCheckerTest(unittest.TestCase):
     data._program.timeline.program_start = timeline_utils.past()
     data._program.timeline.program_end = timeline_utils.future()
     access_checker.checkAccess(data, None, None)
+
+
+class IsUrlUserAccessCheckerTest(unittest.TestCase):
+  """Tests for IsUrlUserAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.setUp for specification."""
+    self.data = request_data.RequestData(None, None, {})
+    self.data._user = seeder_logic.seed(user_model.User)
+
+  def testForMissingUserData(self):
+    """Tests for URL data that does not contain any user data."""
+    access_checker = access.IsUrlUserAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
+
+  def testNonUserAccessDenied(self):
+    """Tests that access is denied for a user with no User entity."""
+    self.data.kwargs['user'] = self.data._user.link_id
+    self.data._user = None
+    access_checker = access.IsUrlUserAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testOtherUserAccessDenied(self):
+    """Tests that access is denied for a user who is not defined in URL."""
+    self.data.kwargs['user'] = 'other'
+    access_checker = access.IsUrlUserAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testSameUserAccessGranted(self):
+    """Tests that access is granted for a user who is defined in URL."""
+    self.data.kwargs['user'] = self.data._user.link_id
+    access_checker = access.IsUrlUserAccessChecker()
+    access_checker.checkAccess(self.data, None, None)
