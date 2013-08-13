@@ -29,6 +29,8 @@ from melange.logic import cached_list
 
 import datetime
 
+import hashlib
+
 import pickle
 
 
@@ -232,8 +234,11 @@ def getDataId(query):
   Returns:
     A string containing an id that is unique for the given query. 
   """
-  # TODO: ---IMPORTANT--- Implement an actual function to get data id
-  return 'data_id_for_now'
+  if isinstance(query, ndb.Query):
+    return hashlib.sha256(query.__repr__()).hexdigest()
+  elif isinstance(query, db.Query):
+    return hashlib.sha256("kind=%s filters=%r" % (
+        query._model_class.__name__, query._get_query())).hexdigest()
 
 
 class Column(object):

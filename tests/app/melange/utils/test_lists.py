@@ -299,3 +299,38 @@ class TestCacheReader(unittest.TestCase):
   """Unit tests for CacheReader class"""
   # TODO:(Aruna)complete this class
   pass
+
+
+class TestGetDataId(unittest.TestCase):
+  """Unit tests for the getDataId function."""
+
+  def testWithNDBQuery(self):
+    """Tests getDataId function with ndb query objects."""
+    query = TestNDBModel.query().filter(TestNDBModel.name == 'foo')
+    same_query = TestNDBModel.query().filter(TestNDBModel.name == 'foo')
+    # queries that represent same data should have same data id.
+    self.assertEqual(lists.getDataId(query), lists.getDataId(same_query))
+
+    # queries that represent different data should have different data ids.
+    different_query = TestNDBModel.query().filter(TestNDBModel.name == 'bar')
+    self.assertNotEqual(lists.getDataId(query),
+                        lists.getDataId(different_query))
+
+    different_query = TestNDBModel.query().filter(TestNDBModel.value == 9)
+    self.assertNotEqual(lists.getDataId(query),
+                        lists.getDataId(different_query))
+
+  def testWithDBQuery(self):
+    """Tests getDataId function with db query objects."""
+    query = TestDBModel.all().filter('name', 'foo')
+    same_query = TestDBModel.all().filter('name', 'foo')
+    # queries that represent same data should have the same data id.
+    self.assertEqual(lists.getDataId(query), lists.getDataId(same_query))
+
+    # queries that represent different data should have different data ids.
+    different_query = TestDBModel.all().filter('name', 'bar')
+    self.assertNotEqual(lists.getDataId(query),
+                        lists.getDataId(different_query))
+    different_query = TestDBModel.all().filter('value', 'bar')
+    self.assertNotEqual(lists.getDataId(query),
+                        lists.getDataId(different_query))
