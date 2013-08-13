@@ -24,11 +24,10 @@ limitations under the License.
 <h1 id="show-review-page-title">Connection with {{ header_name }}</h1>
 
 <div class="request-summary">
-  <p class="connection-organization"><strong>Requester:</strong> {{ connection.parent.name }}</p>
   <p class="connection-organization"><strong>Organization:</strong> {{ connection.organization.name }}</p>
-  <p class="connection-role"><strong>Role:</strong> {{ connection.getUserFriendlyRole }}</p>
-  <p class="connection-status"><strong>Status:</strong> {{ connection.status }}</p>
-  <p class="connection-sent-on"><strong>Created on:</strong> {{ connection.created_on }}</p>
+  <p class="connection-organization"><strong>User:</strong> {{ connection.parent.name }}</p>
+  <p class="connection-sent-on"><strong>Created On:</strong> {{ connection.created_on }}</p>
+  <p class='connection-last-modified'><strong>Last Modified:</strong> {{ connection.last_modified }}</p>
 </div>
 
 {% if response_form %}
