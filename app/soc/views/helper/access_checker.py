@@ -23,6 +23,7 @@ from django.utils.translation import ugettext
 from google.appengine.api import users
 from google.appengine.ext import db
 
+from melange.models import connection as connection_model
 from melange.request import exception
 from soc.logic import links
 from soc.models import document
@@ -89,8 +90,8 @@ DEF_INVITE_CANNOT_BE_WITHDRAWN = ugettext(
 DEF_CONNECTION_CANNOT_BE_RESUBMITTED = ugettext(
     'Only withdrawn connections may be resubmitted.')
 
-DEF_CONNECTION_CANNOT_BE_ACCESSED = ugettext(
-    'This connection cannot be accessed from this profile.')
+DEF_CONNECTION_UNACCESSIBLE = ugettext(
+    'This connection is not accessible from this profile.')
 
 DEF_IS_NOT_STUDENT = ugettext(
     'This page is inaccessible because you do not have a student role '
@@ -371,6 +372,15 @@ class Mutator(object):
       if not self.data.org_app_record:
         raise exception.NotFound(
             message=DEF_NO_ORG_APP % self.data.program.name)
+    
+  def connectionFromKwargs(self):
+    """Set the connection entity in the RequestData object."""
+    self.profileFromKwargs()
+
+    self.data.connection = connection_model.Connection.get_by_id(
+        long(self.data.kwargs['id']), parent=self.data.url_profile)
+    if not self.data.connection:
+      raise exception.Forbidden(message='This connection does not exist.')
 
 
 class DeveloperMutator(Mutator):
@@ -1036,29 +1046,27 @@ class AccessChecker(BaseAccessChecker):
       # check if the current user is an org admin for the organization
       self.isOrgAdmin()
 
-  def canViewConnection(self):
-    """Checks if the current user can view the connection."""
-    assert isSet(self.data.user)
-    assert isSet(self.data.organization)
-    assert isSet(self.data.connection)
-
-    self._canAccessConnectionEntity(self.data.connection)
-
-  def _canAccessConnectionEntity(self, connection):
-    """ Checks if the current iser is allowed to access the Connection entity.
-    To do so, the current User must either be the one involved in the
-    connection or an org admin for the Organization.
-
-    Args:
-      connection: a Connection entity
-      org: the Organization entity to which the Connection refers
+  def canOrgMemberAccessConnection(self):
+    """Checks if the current user is an org admin allowed to access a
+    Connection entity.
     """
-    if self.data.user.key() != connection.parent().key():
-      self.isOrgAdmin()
-    else:
-      # Prevent a User from viewing their own connection as an org admin.
-      if connection.organization.key() in self.data.url_profile.org_admin_for:
-        raise exception.Forbidden(message=DEF_CONNECTION_CANNOT_BE_ACCESSED)
+    assert isSet(self.data.profile)
+    assert isSet(self.data.connection)
+    # Org admins may only view a connection if they are admins for the org
+    # involved in the connection.
+    org_key = self.data.connection.organization.key()
+    if org_key not in self.data.profile.org_admin_for:
+      raise exception.Forbidden(message=DEF_CONNECTION_UNACCESSIBLE)
+  
+  def canUserAccessConnection(self):
+    """Checks if the current user is allowed to access a Connection entity.
+    """
+    assert isSet(self.data.profile)
+    assert isSet(self.data.connection)
+    # Only org admins and the user involved in the connection may view it.
+    if self.data.connection.parent_key() != self.data.profile.key():
+      raise exception.Forbidden(message=DEF_CONNECTION_UNACCESSIBLE)
+    
 
   def canAccessProposalEntity(self):
     """Checks if the current user is allowed to access a Proposal entity.
