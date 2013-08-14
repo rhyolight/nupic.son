@@ -91,6 +91,8 @@ melange.templates.inherit(
 
     if ($recipients_type.children().length <= 1) {
       jQuery('#recipients_type-container').hide();
+    } else {
+      jQuery("#organization-container label").hide();
     }
   }
 );
