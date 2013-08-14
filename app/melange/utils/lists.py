@@ -14,11 +14,8 @@
 
 """Module containing list utilities."""
 
-# These imports are needed for the toListItemDict function, to avoid 
-# 'KindError' by func(entity) if func access a db.ReferenceProperty of the 
-# entity.
-from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gsoc.models.timeline import GSoCTimeline
+import datetime
+import pickle
 
 from google.appengine.ext import ndb
 from google.appengine.ext import db
@@ -27,11 +24,11 @@ from soc.mapreduce import cache_list_items
 
 from melange.logic import cached_list
 
-import datetime
-
-import hashlib
-
-import pickle
+# These imports are needed for the toListItemDict function, to avoid
+# 'KindError' by func(entity) if func access a db.ReferenceProperty of the
+# entity.
+from soc.modules.gsoc.models.program import GSoCProgram
+from soc.modules.gsoc.models.timeline import GSoCTimeline
 
 
 FINAL_BATCH = 'done'
@@ -235,10 +232,10 @@ def getDataId(query):
     A string containing an id that is unique for the given query. 
   """
   if isinstance(query, ndb.Query):
-    return hashlib.sha256(query.__repr__()).hexdigest()
+    return repr(query)
   elif isinstance(query, db.Query):
-    return hashlib.sha256("kind=%s filters=%r" % (
-        query._model_class.__name__, query._get_query())).hexdigest()
+    return 'kind=%s filters=%r' % (
+        query._model_class.__name__, query._get_query())
 
 
 class Column(object):
