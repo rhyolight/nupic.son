@@ -1,4 +1,4 @@
-{% extends "modules/gci/base.html" %}
+{% extends "modules/gci/_user_action.html" %}
 {% comment %}
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,21 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
-{% block stylesheets %}
-  {{ block.super }}
-  <link rel="stylesheet" type="text/css" media="screen" href="/{{ css_path }}/messaging.css" />
-{% endblock stylesheets %}
-
-{% block usermenu %}
-  {{ user_actions.render }}
-{% endblock usermenu %}
-
-{% block page_content %}
-{{ conversations_list.render }}
-{% endblock page_content %}
-
-{% block dependencies %}
-  [
-    dep.melange.list
-  ]
-{% endblock dependencies %}
+{% block extras %}
+  <a class="btn" href="{{ url_create }}">{{ text_create }}</a>
+{% endblock extras %}
