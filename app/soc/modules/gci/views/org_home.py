@@ -183,6 +183,10 @@ class GCIHostActions(HostActions):
   def _getHelpText(self):
     return self.DEF_BAN_ORGANIZATION_HELP
 
+  def templatePath(self):
+    """See soc.views.org_home.HostActions.templatePath for specification."""
+    return "modules/gci/_user_action.html"
+
 
 class OrgHomepage(GCIRequestHandler):
   """Encapsulates all the methods required to render the org homepage."""
