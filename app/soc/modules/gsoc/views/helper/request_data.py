@@ -637,20 +637,28 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = url_names.GSOC_USER_CONNECTION
     return self
 
-  def show_connection(self, user, connection):
-    """ Sets up kwargs for a gsoc_show_connection redirect.
-    Args:
-      user: the user involved in the connection
-      connection: the org involved in the connection
-    """
-    if not user:
-      assert 'user' in self._data.kwargs
-      user = self._data.kwargs['user']
+  def show_org_connection(self, connection):
+    """ Sets up kwargs for a gsoc_show_org_connection redirect.
 
-    self.program()
-    self.kwargs['user'] = user.key().name()
+    Args:
+      connection: The Connection instance to view.
+    """
+    self.connect_org(connection.organization)
+    
     self.kwargs['id'] = connection.key().id()
-    self._url_name = url_names.GSOC_SHOW_CONNECTION
+    # Need to make sure that when the view loads it can query for the
+    # connection, and in order to do that it needs its parent entity.
+    self.kwargs['user'] = connection.parent().parent().key().name()
+    self._url_name = url_names.GSOC_SHOW_ORG_CONNECTION
+    return self
+  
+  def show_user_connection(self, connection):
+    """ Sets up kwargs for a gsoc_show_org_connection redirect.
+    Args:
+      connection: The Connection instance to view.
+    """
+    self.show_org_connection(connection)
+    self._url_name = url_names.GSOC_SHOW_USER_CONNECTION
     return self
 
   def profile_anonymous_connection(self, role, connection_hash):

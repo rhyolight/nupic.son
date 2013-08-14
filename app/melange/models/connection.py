@@ -20,28 +20,27 @@ from google.appengine.ext import db
 from soc.models.organization import Organization
 from soc.models.profile import Profile
 
-# Constants to represent the role being offered to the recipient of the
-# connection. These are used internally with the Connection model's
-# getUserFriendlyRole() for user-facing representations.
+
+# Constants to represent the different states that users and org admins
+# may select for a connection. Users may select either ROLE or NO_ROLE, 
+# meaning that they will accept whatever role the org admin assigns them.
+# Org Admins may choose the first three, either declining to accept a
+# role or selecting one. It is up to the org admins to leave messages
+# on the connection to differentiate between a declined connection and
+# one that has just not been answered.
 ORG_ADMIN_ROLE = 'org_admin'
 MENTOR_ROLE = 'mentor'
+NO_ROLE = 'no_role'
+ROLE = 'role'
 
-# Strings used in the dashboard (via the status() method below) to display
-# short, simple status messages for connections based on its state.
-STATE_ACCEPTED = 'Accepted'
-STATE_REJECTED = 'Rejected'
-STATE_WITHDRAWN = 'Withdrawn'
-STATE_UNREPLIED = 'Unreplied'
-STATE_USER_ACTION_REQ = 'User Action Required'
-STATE_ORG_ACTION_REQ = 'Org Action Required'
-
-# List of possible states for user and org responses to a new connection,
-# used in Connection.user_state and Connection.org_state below.
-STATE_CHOICES = [STATE_ACCEPTED,
-    STATE_REJECTED,
-    STATE_WITHDRAWN,
-    STATE_UNREPLIED,
-    ]
+# Response tuples that encapsulate the available roles that users and org
+# admins may respond with in their respective ShowConnection views.
+USER_RESPONSES = ((NO_ROLE, 'No Role'), (ROLE, 'Role'))
+ORG_RESPONSES = (
+  (NO_ROLE, 'No Role'), 
+  (MENTOR_ROLE, 'Mentor'), 
+  (ORG_ADMIN_ROLE, 'Org Admin')
+  )
 
 
 class Connection(db.Model):
@@ -54,117 +53,77 @@ class Connection(db.Model):
   are simply convenience to clean up a lot of the logic in the connection
   module for determining valid actions.
 
-  Parent: soc.models.user.User (also parent of self.profile here)
+  Parent: soc.models.profile.Profile
   """
 
   #: The User's state with respect to a given role.
-  user_state = db.StringProperty(default=STATE_UNREPLIED,
-      choices=STATE_CHOICES)
+  user_role = db.StringProperty(default=NO_ROLE,
+      choices=(NO_ROLE, ROLE))
 
   #: The Org's state with respect to a given role.
-  org_state = db.StringProperty(default=STATE_UNREPLIED,
-      choices=STATE_CHOICES)
-
-  #: The role that the user is requesting or being invited to accept.
-  role = db.StringProperty(default=MENTOR_ROLE,
-      choices=[MENTOR_ROLE, ORG_ADMIN_ROLE])
+  org_role = db.StringProperty(default=NO_ROLE,
+      choices=(NO_ROLE, MENTOR_ROLE, ORG_ADMIN_ROLE))
 
   #: The organization entity involved in the connection for which a user
   #: may gain heightened privileges.
   organization = db.ReferenceProperty(Organization,
       collection_name='user_connections')
 
-  #: Property for the ShowConnection page to keep track of the time that the
+  #: Property for the ShowConnection pages to keep track of the time that the
   #: connection was initiated.
   created_on = db.DateTimeProperty(auto_now_add=True)
+
+  #: Property for the ShowConnection pages to keep a record of the last time
+  #: that either the org or user modified the connection.
+  last_modified = db.DateTimeProperty(auto_now_add=True)
+
+  def userRequestedRole(self):
+    """Indicate whether or not a user has requested to be promoted to a 
+    role for an organization.
+
+    Returns:
+      True if the user has opted for a role.
+    """
+    return self.user_role == ROLE
+
+  def orgOfferedMentorRole(self):
+    """Indicate whether or not an org admin has offered a mentor role.
+
+    Returns:
+      True if an org has opted for a mentor role.
+    """
+    return self.org_role == MENTOR_ROLE
+
+  def orgOfferedOrgAdminRole(self):
+    """Indicate whether or not an org admin has offered an org admin role.
+
+    Returns:
+      True if an org has adopted for an org admin role.
+    """
+    return self.org_role == ORG_ADMIN_ROLE
 
   @staticmethod
   def allFields():
     """Returns a list of all names of fields in this model.
     """
-    return ['user_state', 'org_state', 'role','organization',
-        'profile', 'created_on']
-
-  def isUserUnreplied(self):
-    return self.user_state == STATE_UNREPLIED
-
-  def isOrgUnreplied(self):
-    return self.org_state == STATE_UNREPLIED
-
-  def isUserAccepted(self):
-    return self.user_state == STATE_ACCEPTED
-
-  def isOrgAccepted(self):
-    return self.org_state == STATE_ACCEPTED
-
-  def isUserRejected(self):
-    return self.user_state == STATE_REJECTED
-
-  def isOrgRejected(self):
-    return self.org_state == STATE_REJECTED
-
-  def isUserWithdrawn(self):
-    return self.user_state == STATE_WITHDRAWN
-
-  def isOrgWithdrawn(self):
-    return self.org_state == STATE_WITHDRAWN
-
-  def isWithdrawn(self):
-    return self.user_state == STATE_WITHDRAWN \
-        or self.org_state == STATE_WITHDRAWN
-
-  def isStalemate(self):
-    """Indicate whether or not the user and org admin have conflicting
-    responses to the initiated connection, preventing the user from
-    being promoted to the specified role.
-
-    Returns:
-      True if the user and org states conflict, else False.
-    """
-    return (self.user_state == STATE_ACCEPTED \
-        and self.org_state == STATE_REJECTED) \
-        or (self.user_state == STATE_REJECTED \
-        and self.org_state == STATE_ACCEPTED)
-
-  def isAccepted(self):
-    return self.user_state == STATE_ACCEPTED and \
-        self.org_state == STATE_ACCEPTED
+    return ['user_role', 'org_role', 'organization', 'created_on']
 
   def keyName(self):
     """Returns a string which uniquely represents the entity.
     """
     return '/'.join([self.parent_key().name(), str(self.key().id())])
 
-  def getUserFriendlyRole(self):
-    """Converts an internal role representation to a user-friendly version
-    to be used in templates and dashboard.
+  def getRole(self):
+    """Returns the assigned role from the org admin's perspective because it
+    offers more information than the user's role.
     """
-    return 'Org Admin' if self.role == ORG_ADMIN_ROLE else 'Mentor'
-
-  def status(self):
-    """Determine the state of the connection and select a string to
-    indicate a user-facing status message.
-
-    Returns:
-       STATE_ACCEPTED if both parties have confirmed the connection.
-       STATE_REJECTED if one or both have rejected it.
-       STATE_WITHDRAWN if the initiating party has withdrawn the connection.
-       STATE_ORG_ACTION_REQ or STATE_USER_ACTION_REQ if one party has accepted
-          the connection and is waiting on a response from the other.
-    """
-    if self.isUserAccepted() and self.isOrgAccepted():
-      return STATE_ACCEPTED
-    elif self.isUserWithdrawn() or self.isOrgWithdrawn():
-      return STATE_WITHDRAWN
-    elif self.isUserRejected() or self.isOrgRejected():
-      return STATE_REJECTED
-    elif self.isUserAccepted():
-      return STATE_ORG_ACTION_REQ
-    elif self.isOrgAccepted():
-      return STATE_USER_ACTION_REQ
+    if self.org_role == MENTOR_ROLE:
+      return 'Mentor'
+    elif self.org_role == ORG_ADMIN_ROLE:
+      return 'Org Admin'
     else:
-      # This should never happen, so we're going to blow up execution.
-      raise ValueError()
+      return 'No Role' 
+
 
 class AnonymousConnection(db.Model):
   """This model is intended for use as a placeholder Connection for the
@@ -187,9 +146,3 @@ class AnonymousConnection(db.Model):
   #: The email to which the anonymous connection was sent; this should be
   #: queried against to prevent duplicate anonymous connections.
   email = db.StringProperty()
-  
-  def getUserFriendlyRole(self):
-    """Converts an internal role representation to a user-friendly version
-    to be used in templates and dashboard.
-    """
-    return 'Org Admin' if self.role == ORG_ADMIN_ROLE else 'Mentor'

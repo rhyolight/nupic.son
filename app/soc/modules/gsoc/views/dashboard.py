@@ -23,6 +23,7 @@ from django import http
 from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
+from melange.logic import connection as connection_logic
 from melange.models import connection
 from melange.models.connection import Connection
 from melange.request import exception
@@ -66,36 +67,11 @@ DATETIME_FORMAT = 'Y-m-d H:i:s'
 BIRTHDATE_FORMAT = 'd-m-Y'
 BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
 
-# Tuple to include all states for use in CONN_STATUS_OPTS to prevent it from
-# becoming ugly. Note that STATE_UNREPLIED is absent from this list due to the
-# fact that it is never user-facing; all possible options for the user are
-# computer in Connection.getUserFriendlyStatus().
-STATUS_TUPLE = '%s|%s|%s|%s|%s' % (
-    connection.STATE_ACCEPTED,
-    connection.STATE_REJECTED,
-    connection.STATE_WITHDRAWN,
-    connection.STATE_ORG_ACTION_REQ,
-    connection.STATE_USER_ACTION_REQ
-    )
-# Include all of the dropdown options for viewing connections by status.
-# These are constructed with the internal representation of the field on
-# the left and the user-facing choice in the dropdown on the right.
-CONN_STATUS_OPTS = [
-    (STATUS_TUPLE, 'All'),
-    (connection.STATE_ACCEPTED, 'Accepted'),
-    (connection.STATE_REJECTED, 'Rejected'),
-    (connection.STATE_USER_ACTION_REQ, 'User Action Required'),
-    (connection.STATE_ORG_ACTION_REQ, 'Org Action Required'),
-    (connection.STATE_WITHDRAWN, 'Withdrawn')
-    ]
-# Include all dropdown options for viewing connections by roles offered
-# to the users. Same rules apply as above. Not using constants from
-# connection module because the internal roles != the user-facing ones.
-CONN_ROLE_OPTS = [
-    ('Mentor|Org Admin', 'All'),
-    ('Org Admin', 'Org Admin'),
-    ('Mentor', 'Mentor')
-    ]
+CONNECTION_ROLES = (
+  ('No Role|Mentor|Org Admin', 'All'),
+  ('No Role', 'No Role'),
+  ('Mentor', 'Mentor'),
+  ('Org Admin', 'Org Admin'))
 
 def colorize(choice, yes, no):
   """Differentiate between yes and no status with green and red colors."""
@@ -1272,22 +1248,14 @@ class OrgConnectionComponent(Component):
     list_config.addPlainTextColumn('key', 'Key',
         lambda e, *args: '%s' % e.keyName(), hidden=True)
     list_config.addPlainTextColumn('organization', 'Organization',
-        lambda e, *args: '%s' % e.organization.name)
-    list_config.addPlainTextColumn('link_id', 'Link Id',
-        lambda e, *args: e.parent().link_id)
+        lambda e, *args: e.organization.name)
     list_config.addPlainTextColumn('name', 'Name',
-        lambda e, *args: '%s' % e.parent().name, hidden=True)
+        lambda e, *args: e.parent().name())
     list_config.addPlainTextColumn('role', 'Role',
-        lambda e, *args: e.getUserFriendlyRole(),
-        options=CONN_ROLE_OPTS)
-    list_config.addPlainTextColumn('status', 'Status',
-        lambda e, *args: e.status(),
-        options=CONN_STATUS_OPTS)
+        lambda e, *args: e.getRole(), options=CONNECTION_ROLES)
 
     list_config.setRowAction(
-        lambda e, *args: data.redirect.show_connection(
-            user=e.parent(), connection=e).url()
-        )
+        lambda e, *args: data.redirect.show_org_connection(connection=e).url())
     self._list_config = list_config
 
     super(OrgConnectionComponent, self).__init__(data)
@@ -1348,17 +1316,16 @@ class UserConnectionComponent(Component):
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key',
         lambda e, *args: '%s' % e.keyName(), hidden=True)
-    list_config.addPlainTextColumn('org', 'Organization',
-        lambda e, *args: e.organization.name)
+    list_config.addPlainTextColumn('organization', 'Organization',
+        lambda e, *args: '%s' % e.organization.name)
+    list_config.addPlainTextColumn('name', 'Name',
+        lambda e, *args: e.parent().name())
     list_config.addPlainTextColumn('role', 'Role',
-       lambda e, *args: e.getUserFriendlyRole(),
-       options=CONN_ROLE_OPTS)
-    list_config.addPlainTextColumn('status', 'Status',
-        lambda e, *args: e.status(), options=CONN_STATUS_OPTS)
+        lambda e, *args: e.getRole(), options=CONNECTION_ROLES)
 
     list_config.setRowAction(
-        lambda e, *args: data.redirect.show_connection(
-            user=e.parent(), connection=e).url())
+        lambda e, *args: data.redirect.show_user_connection(
+        connection=e).url())
     self._list_config = list_config
 
     super(UserConnectionComponent, self).__init__(data)
@@ -1378,7 +1345,7 @@ class UserConnectionComponent(Component):
     if lists.getListIndex(self.data.request) != self.IDX:
       return None
 
-    q = Connection.all().ancestor(self.data.user)
+    q = connection_logic.queryForAncestor(self.data.profile)
 
     starter = lists.keyStarter
     prefetcher = lists.ModelPrefetcher(Connection, ['organization'])

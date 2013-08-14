@@ -20,20 +20,22 @@ from melange.models import connection_message as connection_message_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
-def seed_new_connection(user, organization, **kwargs):
+def seed_new_connection(profile, organization, **kwargs):
   """Seeds and returns a new GSoCConnection entity with the specified
   properties.
 
   Args:
-    user: User entity for the connection
+    profile: Profile entity for the connection
     organization: Organization entity for the connection
 
   Returns:
     the newly seeded GSoCConnection entity
   """
   properties = {
-      'parent': user,
+      'parent': profile,
       'organization': organization,
+      'org_role' : connection_model.NO_ROLE,
+      'user_role' : connection_model.NO_ROLE
       }
   properties.update(kwargs)
   

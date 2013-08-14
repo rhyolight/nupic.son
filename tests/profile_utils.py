@@ -23,6 +23,7 @@ from datetime import timedelta
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests.utils.connection_utils import seed_new_connection
 
 def generate_eligible_student_birth_date(program):
   eligible_age = program.student_min_age + program.student_max_age // 2
@@ -63,6 +64,7 @@ class ProfileHelper(object):
     self.program = program
     self.user = None
     self.profile = None
+    self.connection = None
     self.dev_test = dev_test
 
   def seed(self, model, properties,
@@ -74,6 +76,24 @@ class ProfileHelper(object):
             auto_seed_optional_properties=True):
     return seeder_logic.seedn(model, n, properties, recurse=False,
         auto_seed_optional_properties=auto_seed_optional_properties)
+
+  def login(self, user_email, user_id):
+    """Logs in the specified user.
+
+    Args:
+      user_email: the user email as a string, e.g.: 'test@example.com'
+      user_id: the user id as a string, e.g.: '42'
+    """
+    import os
+    os.environ['USER_EMAIL'] = user_email
+    os.environ['USER_ID'] = user_id
+
+  def logout(self):
+    """Logs out the current user.
+    """
+    import os
+    del os.environ['USER_EMAIL']
+    del os.environ['USER_ID']
 
   def createUser(self):
     """Creates a user entity for the current user.
@@ -351,6 +371,10 @@ class GSoCProfileHelper(ProfileHelper):
                   'proposal': proposal}
     self.seed(GSoCProject, properties)
     return self.profile
+  
+  def createConnection(self, org):
+    self.connection = seed_new_connection(self.profile, org)
+    return self.connection
 
 
 class GCIProfileHelper(ProfileHelper):

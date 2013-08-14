@@ -15,7 +15,6 @@
 """Query and functions for Connection.
 """
 
-from melange.request import exception
 from melange.logic import connection_message as connection_message_logic
 from melange.models.connection import Connection
 from melange.models.connection_message import ConnectionMessage
@@ -36,46 +35,43 @@ def queryForAncestorAndOrganization(ancestor, organization, keys_only=False):
   query.filter('organization', organization)
   return query
 
-def connectionExists(user, organization):
+def connectionExists(profile, organization):
   """Check to see whether or not a Connection exists between a user and
   an organization.
 
   Args:
-    user: User instance for the connection
+    profile: Profile instance (parent) for the connection.
     organization: Organization for the connection.
 
   Returns:
     True if a Connection object exists for the given User and
     Organization, else False.
   """
-  query = queryForAncestorAndOrganization(user, organization, True)
+  query = queryForAncestorAndOrganization(profile, organization, True)
   return query.count(limit=1) > 0
 
-def createConnection(profile, org, user_state, org_state, role):
+def createConnection(profile, org, user_role, org_role):
   """Create a new Connection instance based on the contents of the form
   and the roles provided.
 
   Args:
     profile: Profile with which to establish the connection.
     org: Organization with which to establish the connection.
-    user_state: The user's response state for the connection.
-    org_state: The org's response state for the connection.
-    role: Role to offer the user (see soc.models.Connection for opts).
+    user_role: The user's role for the connection.
+    org_role: The org's role for the connection.
 
   Returns:
       Newly created Connection instance.
 
   Raises:
-      AccessViolation if a connection exists between the user and organization.
+      ValueError if a connection exists between the user and organization.
   """
   if connectionExists(profile.parent_key(), org):
-    raise exception.Forbidden(
-        CONNECTION_EXISTS_ERROR % (profile.name, org.name))
+    raise ValueError(CONNECTION_EXISTS_ERROR % (profile.name(), org.name))
 
-  connection = Connection(parent=profile.parent(), organization=org)
-  connection.user_state = user_state
-  connection.org_state = org_state
-  connection.role = role
+  connection = Connection(parent=profile, organization=org)
+  connection.user_role = user_role
+  connection.org_role = org_role
   connection.put()
 
   return connection
