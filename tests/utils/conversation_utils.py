@@ -34,6 +34,7 @@ from tests import profile_utils
 ADMIN   = 'Admin'
 MENTOR  = 'Mentor'
 STUDENT = 'Student'
+WINNER  = 'Winner'
 
 
 class ConversationHelper(object):
@@ -171,7 +172,7 @@ class ConversationHelper(object):
 
   def createUser(
       self, roles=None, mentor_organizations=None, admin_organizations=None,
-      return_key=False):
+      winning_organization=None, return_key=False):
     """Creates a dummy user with a profile.
 
     Concrete subclasses must implement this method.
@@ -183,6 +184,7 @@ class ConversationHelper(object):
                            for. If None, none will be set.
       admin_organizations: A list of GCIOrganizations the profile is admin for.
                            If None, none will be set.
+      winning_organization: A GCIConversation the user is a winner for.
       return_key: Whether just an ndb key for the entity will be returned.
 
     Returns:
@@ -211,7 +213,7 @@ class GCIConversationHelper(ConversationHelper):
 
   def createUser(
       self, roles=None, mentor_organizations=None, admin_organizations=None,
-      return_key=False, developer=False):
+      winning_organization=None, return_key=False, developer=False):
     """Creates a dummy user with a GCIProfile.
 
     See ConversationHelper.createUser for full specification.
@@ -222,6 +224,7 @@ class GCIConversationHelper(ConversationHelper):
 
     roles = set(roles) if roles else set()
     profile = profile_helper.createProfile()
+    winner_for = None
 
     if profile is None:
       raise Exception('profile is none')
@@ -237,11 +240,19 @@ class GCIConversationHelper(ConversationHelper):
       roles.update([ADMIN])
       profile.org_admin_for = map(ndb.Key.to_old_key, admin_organizations)
 
+    if winning_organization:
+      roles.update([WINNER])
+      winner_for = ndb.Key.to_old_key(winning_organization)
+
     profile.is_mentor = MENTOR in roles
     profile.is_org_admin = ADMIN in roles
     profile.is_student = STUDENT in roles
 
     profile.put()
+
+    if winner_for or WINNER in roles:
+      profile_helper.createStudent(
+          is_winner=WINNER in roles, winner_for=winner_for)
 
     if return_key:
       return ndb.Key.from_old_key(profile_helper.user.key())

@@ -332,12 +332,19 @@ def doesUserBelongInConversation(
 
   profile = profile_results[0]
 
+  student_info_query = gciprofile_logic.queryStudentInfoForParent(profile)
+  student_info_results = student_info_query.fetch(1)
+  student_info = student_info_results[0] if student_info_results else None
+
   if conversation_ent.recipients_type == conversation_model.PROGRAM:
     if conversation_ent.include_admins and profile.is_org_admin:
       return True
     elif conversation_ent.include_mentors and profile.is_mentor:
       return True
     elif conversation_ent.include_students and profile.is_student:
+      return True
+    elif (student_info and conversation_ent.include_winners
+        and student_info.is_winner):
       return True
     else:
       return False
@@ -349,6 +356,11 @@ def doesUserBelongInConversation(
     elif (conversation_ent.include_mentors and profile.is_mentor and
         ndb.Key.to_old_key(conversation_ent.organization) in
             profile.mentor_for):
+      return True
+    elif (student_info and conversation_ent.include_winners
+        and student_info.is_winner and
+        ndb.Key.to_old_key(conversation_ent.organization) ==
+            student_info.winner_for.key()):
       return True
     else:
       return False
@@ -406,6 +418,12 @@ def refreshConversationParticipants(conversation):
       query.filter('is_student =', True)
       map(addProfile, query.run(batch_size=1000))
 
+    if conv.include_winners:
+      query = gciprofile_model.GCIStudentInfo.all()
+      query.filter('program =', ndb.Key.to_old_key(conv.program))
+      query.filter('is_winner =', True)
+      map(lambda e: addProfile(e.parent()), query.run(batch_size=1000))
+
   elif conv.recipients_type == conversation_model.ORGANIZATION:
     org_db_key = ndb.Key.to_old_key(conv.organization)
 
@@ -422,6 +440,13 @@ def refreshConversationParticipants(conversation):
       query.filter('is_mentor =', True)
       query.filter('mentor_for =', org_db_key)
       map(addProfile, query.run(batch_size=1000))
+
+    if conv.include_winners:
+      query = gciprofile_model.GCIStudentInfo.all()
+      query.filter('program =', ndb.Key.to_old_key(conv.program))
+      query.filter('is_winner =', True)
+      query.filter('winner_for =', org_db_key)
+      map(lambda e: addProfile(e.parent()), query.run(batch_size=1000))
 
   # Make sure conversation's creator is included
   if conv.creator is not None:
@@ -459,6 +484,10 @@ def refreshConversationsForUserAndProgram(user, program):
     raise Exception('Could not find GCIProfile for user and program.')
 
   profile = profile_results[0]
+
+  student_info_query = gciprofile_logic.queryStudentInfoForParent(profile)
+  student_info_results = student_info_query.fetch(1)
+  student_info = student_info_results[0] if student_info_results else None
 
   def deleteConvUserIfDoesntBelong(conv_user):
     if not doesConversationUserBelong(
@@ -507,6 +536,16 @@ def refreshConversationsForUserAndProgram(user, program):
         .filter(gciconversation_model.GCIConversation.include_admins == True))
     map(addToConversation, query)
 
+  # Make sure user is added to program conversations they belong in as a
+  # winner
+  if student_info and student_info.is_winner:
+    query = (queryConversationsForProgram(program)
+        .filter(gciconversation_model.GCIConversation.recipients_type ==
+            conversation_model.PROGRAM)
+        .filter(gciconversation_model.GCIConversation.auto_update_users == True)
+        .filter(gciconversation_model.GCIConversation.include_winners == True))
+    map(addToConversation, query)
+
   # Make sure user is added to org conversations they belong in as an org
   # mentor
   if profile.is_mentor and mentor_org_keys:
@@ -529,4 +568,16 @@ def refreshConversationsForUserAndProgram(user, program):
         .filter(gciconversation_model.GCIConversation.include_admins == True)
         .filter(gciconversation_model.GCIConversation.organization.IN(
             admin_org_keys)))
+    map(addToConversation, query)
+
+  # Make sure user is added to org conversations they belong in as an org
+  # winner
+  if student_info and student_info.is_winner and student_info.winner_for:
+    query = (queryConversationsForProgram(program)
+        .filter(gciconversation_model.GCIConversation.recipients_type ==
+            conversation_model.ORGANIZATION)
+        .filter(gciconversation_model.GCIConversation.auto_update_users == True)
+        .filter(gciconversation_model.GCIConversation.include_winners == True)
+        .filter(gciconversation_model.GCIConversation.organization ==
+            ndb.Key.from_old_key(student_info.winner_for.key())))
     map(addToConversation, query)

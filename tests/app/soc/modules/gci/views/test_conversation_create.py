@@ -79,7 +79,7 @@ class GCICreateConversationFormTest(unittest.TestCase):
   def assertConversation(
       self, conversation, subject=None, creator=None, recipients_type=None,
       include_admins=None, include_mentors=None, include_students=None,
-      organization=None, message_content=None, users=None,
+      include_winners=None, organization=None, message_content=None, users=None,
       auto_update_users=None):
     """Asserts that a conversation has been created with certain properties.
 
@@ -99,6 +99,8 @@ class GCICreateConversationFormTest(unittest.TestCase):
                        mentors or not.
       include_students: If not None, test that the conversations will include
                         students or not.
+      include_winners: If not None, test that the conversations will include
+                       winners or not.
       organization: If not None, test that the conversation organization is this
                     organization key (ndb).
       message_content: If not None, test that the first message in the
@@ -149,6 +151,11 @@ class GCICreateConversationFormTest(unittest.TestCase):
       self.assertEqual(
           include_students, conversation_ent.include_students,
           msg='Conversation include_students is incorrect.')
+
+    if include_winners is not None:
+      self.assertEqual(
+          include_winners, conversation_ent.include_winners,
+          msg='Conversation include_winners is incorrect.')
 
     if organization is not None:
       self.assertEqual(
@@ -211,6 +218,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
       (
         gciconversation_create_view.ROLE_PROGRAM_STUDENTS,
         gciconversation_create_view.DEF_ROLE_PROGRAM_STUDENTS),
+      (
+        gciconversation_create_view.ROLE_PROGRAM_WINNERS,
+        gciconversation_create_view.DEF_ROLE_PROGRAM_WINNERS),
     ])
     actual = set(gciconversation_create_view.createProgramRoleChoices(
         self.mock_data))
@@ -230,6 +240,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
       (
         gciconversation_create_view.ROLE_PROGRAM_STUDENTS,
         gciconversation_create_view.DEF_ROLE_PROGRAM_STUDENTS),
+      (
+        gciconversation_create_view.ROLE_PROGRAM_WINNERS,
+        gciconversation_create_view.DEF_ROLE_PROGRAM_WINNERS),
     ])
     actual = set(gciconversation_create_view.createProgramRoleChoices(
         self.mock_data))
@@ -253,7 +266,8 @@ class GCICreateConversationFormTest(unittest.TestCase):
     """Tests that createOrganizationRoleChoices() returns the appropriate
     organization role choices (if any) for a user."""
 
-    # The choices are fixed at the moment
+    # For an average user, only organization mentors and administrators should
+    # be choices.
     expected = set([
       (
           gciconversation_create_view.ROLE_ORGANIZATION_ADMINISTRATORS,
@@ -261,6 +275,78 @@ class GCICreateConversationFormTest(unittest.TestCase):
       (
           gciconversation_create_view.ROLE_ORGANIZATION_MENTORS,
           gciconversation_create_view.DEF_ROLE_ORGANIZATION_MENTORS),
+    ])
+    actual = set(gciconversation_create_view.createOrganizationRoleChoices(
+        self.mock_data))
+    self.assertEqual(expected, actual)
+
+    # Test that all choices are available for org admins
+    self.createProfileAndRequest()
+    self.profile_helper.createOrgAdmin(self.org_a)
+    expected = set([
+      (
+          gciconversation_create_view.ROLE_ORGANIZATION_ADMINISTRATORS,
+          gciconversation_create_view.DEF_ROLE_ORGANIZATION_ADMINISTRATORS),
+      (
+          gciconversation_create_view.ROLE_ORGANIZATION_MENTORS,
+          gciconversation_create_view.DEF_ROLE_ORGANIZATION_MENTORS),
+      (
+          gciconversation_create_view.ROLE_ORGANIZATION_WINNERS,
+          gciconversation_create_view.DEF_ROLE_ORGANIZATION_WINNERS),
+    ])
+    actual = set(gciconversation_create_view.createOrganizationRoleChoices(
+        self.mock_data))
+    self.assertEqual(expected, actual)
+
+    # Test that all choices are available for org mentors
+    self.createProfileAndRequest()
+    self.profile_helper.createMentor(self.org_b)
+    expected = set([
+      (
+          gciconversation_create_view.ROLE_ORGANIZATION_ADMINISTRATORS,
+          gciconversation_create_view.DEF_ROLE_ORGANIZATION_ADMINISTRATORS),
+      (
+          gciconversation_create_view.ROLE_ORGANIZATION_MENTORS,
+          gciconversation_create_view.DEF_ROLE_ORGANIZATION_MENTORS),
+      (
+          gciconversation_create_view.ROLE_ORGANIZATION_WINNERS,
+          gciconversation_create_view.DEF_ROLE_ORGANIZATION_WINNERS),
+    ])
+    actual = set(gciconversation_create_view.createOrganizationRoleChoices(
+        self.mock_data))
+    self.assertEqual(expected, actual)
+
+    # Test that all choices are available for program hosts
+    self.createProfileAndRequest()
+    self.profile_helper.createHost()
+    expected = set([
+      (
+          gciconversation_create_view.ROLE_ORGANIZATION_ADMINISTRATORS,
+          gciconversation_create_view.DEF_ROLE_ORGANIZATION_ADMINISTRATORS),
+      (
+          gciconversation_create_view.ROLE_ORGANIZATION_MENTORS,
+          gciconversation_create_view.DEF_ROLE_ORGANIZATION_MENTORS),
+      (
+          gciconversation_create_view.ROLE_ORGANIZATION_WINNERS,
+          gciconversation_create_view.DEF_ROLE_ORGANIZATION_WINNERS),
+    ])
+    actual = set(gciconversation_create_view.createOrganizationRoleChoices(
+        self.mock_data))
+    self.assertEqual(expected, actual)
+
+    # Test that all choices are available for developers
+    self.createProfileAndRequest()
+    self.profile_helper.createDeveloper()
+    expected = set([
+      (
+          gciconversation_create_view.ROLE_ORGANIZATION_ADMINISTRATORS,
+          gciconversation_create_view.DEF_ROLE_ORGANIZATION_ADMINISTRATORS),
+      (
+          gciconversation_create_view.ROLE_ORGANIZATION_MENTORS,
+          gciconversation_create_view.DEF_ROLE_ORGANIZATION_MENTORS),
+      (
+          gciconversation_create_view.ROLE_ORGANIZATION_WINNERS,
+          gciconversation_create_view.DEF_ROLE_ORGANIZATION_WINNERS),
     ])
     actual = set(gciconversation_create_view.createOrganizationRoleChoices(
         self.mock_data))
@@ -330,6 +416,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertIn(
         gciconversation_create_view.DEF_ROLE_ORGANIZATION_MENTORS,
         organization_roles_html)
+    self.assertNotIn(
+        gciconversation_create_view.DEF_ROLE_ORGANIZATION_WINNERS,
+        organization_roles_html)
     organization_html = form.bound_fields['organization'].render()
     self.assertIn('org_a', organization_html)
     self.assertIn('org_b', organization_html)
@@ -362,12 +451,18 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertIn(
         gciconversation_create_view.DEF_ROLE_PROGRAM_STUDENTS,
         program_roles_html)
+    self.assertIn(
+        gciconversation_create_view.DEF_ROLE_PROGRAM_WINNERS,
+        program_roles_html)
     organization_roles_html = form.bound_fields['organization_roles'].render()
     self.assertIn(
         gciconversation_create_view.DEF_ROLE_ORGANIZATION_ADMINISTRATORS,
         organization_roles_html)
     self.assertIn(
         gciconversation_create_view.DEF_ROLE_ORGANIZATION_MENTORS,
+        organization_roles_html)
+    self.assertIn(
+        gciconversation_create_view.DEF_ROLE_ORGANIZATION_WINNERS,
         organization_roles_html)
     organization_html = form.bound_fields['organization'].render()
     self.assertIn('org_a', organization_html)
@@ -401,12 +496,18 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertIn(
         gciconversation_create_view.DEF_ROLE_PROGRAM_STUDENTS,
         program_roles_html)
+    self.assertIn(
+        gciconversation_create_view.DEF_ROLE_PROGRAM_WINNERS,
+        program_roles_html)
     organization_roles_html = form.bound_fields['organization_roles'].render()
     self.assertIn(
         gciconversation_create_view.DEF_ROLE_ORGANIZATION_ADMINISTRATORS,
         organization_roles_html)
     self.assertIn(
         gciconversation_create_view.DEF_ROLE_ORGANIZATION_MENTORS,
+        organization_roles_html)
+    self.assertIn(
+        gciconversation_create_view.DEF_ROLE_ORGANIZATION_WINNERS,
         organization_roles_html)
     organization_html = form.bound_fields['organization'].render()
     self.assertIn('org_a', organization_html)
@@ -446,12 +547,18 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertNotIn(
         gciconversation_create_view.DEF_ROLE_PROGRAM_STUDENTS,
         program_roles_html)
+    self.assertNotIn(
+        gciconversation_create_view.DEF_ROLE_PROGRAM_WINNERS,
+        program_roles_html)
     organization_roles_html = form.bound_fields['organization_roles'].render()
     self.assertIn(
         gciconversation_create_view.DEF_ROLE_ORGANIZATION_ADMINISTRATORS,
         organization_roles_html)
     self.assertIn(
         gciconversation_create_view.DEF_ROLE_ORGANIZATION_MENTORS,
+        organization_roles_html)
+    self.assertIn(
+        gciconversation_create_view.DEF_ROLE_ORGANIZATION_WINNERS,
         organization_roles_html)
     organization_html = form.bound_fields['organization'].render()
     self.assertIn('org_a', organization_html)
@@ -498,6 +605,14 @@ class GCICreateConversationFormTest(unittest.TestCase):
         return_key=True, roles=[conversation_utils.STUDENT])
     dummy_student_b = self.conv_utils.createUser(
         return_key=True, roles=[conversation_utils.STUDENT])
+
+    # Create two dummy winner users, each as a winner of each org
+    dummy_winner_a = self.conv_utils.createUser(
+        return_key=True, winning_organization=org_a_key,
+        roles=[conversation_utils.STUDENT, conversation_utils.WINNER])
+    dummy_winner_b = self.conv_utils.createUser(
+        return_key=True, winning_organization=org_b_key,
+        roles=[conversation_utils.STUDENT, conversation_utils.WINNER])
 
     # Create a student who's also a mentor of the third org
     dummy_student_org_mentor_c = self.conv_utils.createUser(
@@ -650,10 +765,10 @@ class GCICreateConversationFormTest(unittest.TestCase):
         conversation.key, recipients_type=conversation_model.PROGRAM,
         creator=self.user_key, subject=subject, message_content=content,
         include_students=True, include_mentors=True, include_admins=False,
-        auto_update_users=False, users=[
+        include_winners=False, auto_update_users=False, users=[
             self.user_key, dummy_org_mentor_a, dummy_org_mentor_b,
             dummy_org_mentor_ab, dummy_student_a, dummy_student_b,
-            dummy_student_org_mentor_c])
+            dummy_student_org_mentor_c, dummy_winner_a, dummy_winner_b])
 
     # Test that a conversation is correctly created for users with specific
     # roles within an organization. Also tests that it saves auto_update_users.
@@ -663,6 +778,7 @@ class GCICreateConversationFormTest(unittest.TestCase):
         'organization': str(self.org_b.key()),
         'organization_roles': [
               gciconversation_create_view.ROLE_ORGANIZATION_MENTORS,
+              gciconversation_create_view.ROLE_ORGANIZATION_WINNERS,
             ],
         'subject': subject,
         'message_content': content,
@@ -677,5 +793,7 @@ class GCICreateConversationFormTest(unittest.TestCase):
         creator=self.user_key, subject=subject, message_content=content,
         include_students=False, include_mentors=True, include_admins=False,
         organization=ndb.Key.from_old_key(self.org_b.key()),
-        auto_update_users=True,
-        users=[self.user_key, dummy_org_mentor_b, dummy_org_mentor_ab])
+        include_winners=True, auto_update_users=True,
+        users=[
+            self.user_key, dummy_org_mentor_b, dummy_org_mentor_ab,
+            dummy_winner_b])

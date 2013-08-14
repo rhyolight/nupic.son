@@ -435,6 +435,14 @@ class GCIConversationTest(unittest.TestCase):
         return_key=True, roles=[conversation_utils.MENTOR],
         mentor_organizations=[org_keys[0], org_keys[1]])
 
+    # Create two dummy winner users, each as a winner of each org
+    dummy_winner_a = self.conv_utils.createUser(
+        return_key=True, winning_organization=org_keys[0],
+        roles=[conversation_utils.STUDENT, conversation_utils.WINNER])
+    dummy_winner_b = self.conv_utils.createUser(
+        return_key=True, winning_organization=org_keys[1],
+        roles=[conversation_utils.STUDENT, conversation_utils.WINNER])
+
     # Fresh conversation with no messages
     conversation = self.conv_utils.createConversation(subject='A Subject')
 
@@ -460,6 +468,10 @@ class GCIConversationTest(unittest.TestCase):
         conversation=conversation.key, user=dummy_org_mentor_b))
     self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
         conversation=conversation.key, user=dummy_org_mentor_ab))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_winner_a))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_winner_b))
 
     # Conversation should include mentors from the second organization
     conversation.recipients_type = conversation_model.ORGANIZATION
@@ -484,6 +496,10 @@ class GCIConversationTest(unittest.TestCase):
         conversation=conversation.key, user=dummy_org_mentor_b))
     self.assertTrue(gciconversation_logic.doesUserBelongInConversation(
         conversation=conversation.key, user=dummy_org_mentor_ab))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_winner_a))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_winner_b))
 
     # Conversation is now set to have users specified manually
     conversation.recipients_type = conversation_model.USER
@@ -505,6 +521,89 @@ class GCIConversationTest(unittest.TestCase):
         conversation=conversation.key, user=dummy_org_mentor_b))
     self.assertTrue(gciconversation_logic.doesUserBelongInConversation(
         conversation=conversation.key, user=dummy_org_mentor_ab))
+    self.assertTrue(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_winner_a))
+    self.assertTrue(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_winner_b))
+
+    # Conversation should include winners from the first organization
+    conversation.recipients_type = conversation_model.ORGANIZATION
+    conversation.organization = org_keys[0]
+    conversation.include_mentors = False
+    conversation.include_winners = True
+    conversation.put()
+
+    # Test that doesUserBelongInConversation returns True only for the winner
+    # of the first organization and the creator.
+    self.assertTrue(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=creator))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_admin_a))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_admin_b))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_admin_ab))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_mentor_a))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_mentor_b))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_mentor_ab))
+    self.assertTrue(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_winner_a))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_winner_b))
+
+    # Conversation should include winners in the whole program
+    conversation.recipients_type = conversation_model.PROGRAM
+    conversation.put()
+
+    # Test that doesUserBelongInConversation returns True only for the winners
+    # and the creator.
+    self.assertTrue(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=creator))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_admin_a))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_admin_b))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_admin_ab))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_mentor_a))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_mentor_b))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_mentor_ab))
+    self.assertTrue(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_winner_a))
+    self.assertTrue(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_winner_b))
+
+    # Conversation should include students in the program
+    conversation.recipients_type = conversation_model.PROGRAM
+    conversation.include_winners = False
+    conversation.include_students = True
+    conversation.put()
+
+    # Test that doesUserBelongInConversation returns True only for students
+    self.assertTrue(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=creator))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_admin_a))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_admin_b))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_admin_ab))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_mentor_a))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_mentor_b))
+    self.assertFalse(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_org_mentor_ab))
+    self.assertTrue(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_winner_a))
+    self.assertTrue(gciconversation_logic.doesUserBelongInConversation(
+        conversation=conversation.key, user=dummy_winner_b))
 
   def testRefreshConversationParticipants(self):
     """Test that refreshConversationParticipants adds users to the conversation
@@ -531,6 +630,11 @@ class GCIConversationTest(unittest.TestCase):
         self.conv_utils.createUser(
             return_key=True,
             roles=[conversation_utils.STUDENT, conversation_utils.MENTOR])
+                for _ in range(2))
+    dummy_winner_keys = list(
+        self.conv_utils.createUser(
+            return_key=True,
+            roles=[conversation_utils.STUDENT, conversation_utils.WINNER])
                 for _ in range(2))
 
     # Fresh conversation with no messages
@@ -565,7 +669,26 @@ class GCIConversationTest(unittest.TestCase):
     # are involved.
     gciconversation_logic.refreshConversationParticipants(conversation.key)
     expected_keys = set(
-        dummy_student_keys + dummy_mentor_student_keys + [creator])
+        dummy_student_keys + dummy_mentor_student_keys + dummy_winner_keys +
+        [creator])
+    actual_keys = set(map(
+        lambda conv_user: conv_user.user,
+        gciconversation_logic.queryConversationUserForConversation(
+            conversation=conversation.key)))
+    self.assertEqual(expected_keys, actual_keys)
+
+    # Now conversation should only winners in the program, after clearing out
+    # existing users.
+    conversation.include_students = False
+    conversation.put()
+    gciconversation_logic.refreshConversationParticipants(conversation.key)
+    conversation.include_winners = True
+    conversation.put()
+
+    # After refreshing conversation participants, verify that the correct users
+    # are involved.
+    gciconversation_logic.refreshConversationParticipants(conversation.key)
+    expected_keys = set(dummy_winner_keys + [creator])
     actual_keys = set(map(
         lambda conv_user: conv_user.user,
         gciconversation_logic.queryConversationUserForConversation(
@@ -573,7 +696,7 @@ class GCIConversationTest(unittest.TestCase):
     self.assertEqual(expected_keys, actual_keys)
 
     # Now conversation should only the creator
-    conversation.include_students = False
+    conversation.include_winners = False
     conversation.put()
 
     # After refreshing conversation participants, verify that only the
@@ -615,6 +738,14 @@ class GCIConversationTest(unittest.TestCase):
         return_key=True, roles=[conversation_utils.MENTOR],
         mentor_organizations=[org_keys[0], org_keys[1]])
 
+    # Create two dummy winner users, each as a winner of each org
+    dummy_winner_a = self.conv_utils.createUser(
+        return_key=True, winning_organization=org_keys[0],
+        roles=[conversation_utils.STUDENT, conversation_utils.WINNER])
+    dummy_winner_b = self.conv_utils.createUser(
+        return_key=True, winning_organization=org_keys[1],
+        roles=[conversation_utils.STUDENT, conversation_utils.WINNER])
+
     # Conversation should now include mentors for the first organization only
     conversation.recipients_type = conversation_model.ORGANIZATION
     conversation.organization = org_keys[0]
@@ -647,6 +778,22 @@ class GCIConversationTest(unittest.TestCase):
             conversation=conversation.key)))
     self.assertEqual(expected_keys, actual_keys)
 
+    # Conversation should now include the winner for the first organization only
+    conversation.organization = org_keys[0]
+    conversation.include_admins = False
+    conversation.include_winners = True
+    conversation.put()
+
+    # After refreshing conversation participants, verify that the correct users
+    # are involved.
+    gciconversation_logic.refreshConversationParticipants(conversation.key)
+    expected_keys = set([creator, dummy_winner_a])
+    actual_keys = set(map(
+        lambda conv_user: conv_user.user,
+        gciconversation_logic.queryConversationUserForConversation(
+            conversation=conversation.key)))
+    self.assertEqual(expected_keys, actual_keys)
+
   def testRefreshConversationsForUser(self):
     """Tests that refreshConversationsForUser correctly adds a user to all
     conversations they should be in but aren't, and removes them from
@@ -671,6 +818,9 @@ class GCIConversationTest(unittest.TestCase):
     user_mentor_student_key = self.conv_utils.createUser(
         return_key=True,
         roles=[conversation_utils.MENTOR, conversation_utils.STUDENT])
+    user_winner_key = self.conv_utils.createUser(
+        return_key=True, winning_organization=org_keys[1],
+        roles=[conversation_utils.WINNER, conversation_utils.STUDENT])
     
     # Conversation for program admins and mentors
     conv_a = self.conv_utils.createConversation(subject='')
@@ -720,6 +870,7 @@ class GCIConversationTest(unittest.TestCase):
     self.conv_utils.addUser(conversation=conv_f.key, user=user_mentor_key)
     self.conv_utils.addUser(
         conversation=conv_f.key, user=user_mentor_student_key)
+    self.conv_utils.addUser(conversation=conv_f.key, user=user_winner_key)
 
     # Conversation for that all users fit the criteria to participate in, but
     # should not be added after the converation's creation.
@@ -731,6 +882,26 @@ class GCIConversationTest(unittest.TestCase):
     conv_g.auto_update_users = False
     conv_g.put()
 
+    # Conversation for program winners, created by a non-winner
+    conv_h = self.conv_utils.createConversation(subject='')
+    conv_h.recipients_type = conversation_model.PROGRAM
+    conv_h.include_winners = True
+    conv_h.put()
+
+    # Conversation for winners of first organization
+    conv_i = self.conv_utils.createConversation(subject='')
+    conv_i.recipients_type = conversation_model.ORGANIZATION
+    conv_i.organization = org_keys[0]
+    conv_i.include_winners = True
+    conv_i.put()
+
+    # Conversation for winners of second organization
+    conv_j = self.conv_utils.createConversation(subject='')
+    conv_j.recipients_type = conversation_model.ORGANIZATION
+    conv_j.organization = org_keys[1]
+    conv_j.include_winners = True
+    conv_j.put()
+
     # Refresh each user's conversations
     gciconversation_logic.refreshConversationsForUserAndProgram(
         user=user_admin_key, program=self.program_key)
@@ -738,6 +909,8 @@ class GCIConversationTest(unittest.TestCase):
         user=user_mentor_key, program=self.program_key)
     gciconversation_logic.refreshConversationsForUserAndProgram(
         user=user_mentor_student_key, program=self.program_key)
+    gciconversation_logic.refreshConversationsForUserAndProgram(
+        user=user_winner_key, program=self.program_key)
 
     # Test that admin user is in the correct conversations
     expected_keys = set([conv_a.key, conv_b.key, conv_e.key, conv_f.key])
@@ -745,7 +918,6 @@ class GCIConversationTest(unittest.TestCase):
         lambda conv_user: conv_user.conversation,
         gciconversation_logic.queryForProgramAndUser(
             program=self.program_key, user=user_admin_key)))
-
     self.assertEqual(expected_keys, actual_keys)
 
     # Test that mentor user is in the correct conversations
@@ -762,6 +934,15 @@ class GCIConversationTest(unittest.TestCase):
         lambda conv_user: conv_user.conversation,
         gciconversation_logic.queryForProgramAndUser(
             program=self.program_key, user=user_mentor_student_key)))
+    self.assertEqual(expected_keys, actual_keys)
+
+    # Test that winner user is in the correct conversations
+    expected_keys = set(
+        [conv_d.key, conv_e.key, conv_f.key, conv_h.key, conv_j.key])
+    actual_keys = set(map(
+        lambda conv_user: conv_user.conversation,
+        gciconversation_logic.queryForProgramAndUser(
+            program=self.program_key, user=user_winner_key)))
     self.assertEqual(expected_keys, actual_keys)
 
     # Add all three users to all conversations
@@ -773,10 +954,27 @@ class GCIConversationTest(unittest.TestCase):
         conversation=conv_c.key, user=user_mentor_student_key)
     self.conv_utils.addUser(conversation=conv_d.key, user=user_admin_key)
     self.conv_utils.addUser(conversation=conv_e.key, user=user_mentor_key)
+    self.conv_utils.addUser(
+        conversation=conv_h.key, user=user_mentor_student_key)
+    self.conv_utils.addUser(conversation=conv_h.key, user=user_mentor_key)
+    self.conv_utils.addUser(conversation=conv_h.key, user=user_admin_key)
+    self.conv_utils.addUser(
+        conversation=conv_i.key, user=user_mentor_student_key)
+    self.conv_utils.addUser(conversation=conv_i.key, user=user_mentor_key)
+    self.conv_utils.addUser(conversation=conv_i.key, user=user_admin_key)
+    self.conv_utils.addUser(
+        conversation=conv_j.key, user=user_mentor_student_key)
+    self.conv_utils.addUser(conversation=conv_j.key, user=user_mentor_key)
+    self.conv_utils.addUser(conversation=conv_j.key, user=user_admin_key)
+    self.conv_utils.addUser(conversation=conv_a.key, user=user_winner_key)
+    self.conv_utils.addUser(conversation=conv_b.key, user=user_winner_key)
+    self.conv_utils.addUser(conversation=conv_c.key, user=user_winner_key)
+    self.conv_utils.addUser(conversation=conv_i.key, user=user_winner_key)
 
-    # Test that admin user is in all conversations
+    # Test that admin user is in all conversations except for G
     expected_keys = set([
-        conv_a.key, conv_b.key, conv_c.key, conv_d.key, conv_e.key, conv_f.key])
+        conv_a.key, conv_b.key, conv_c.key, conv_d.key, conv_e.key, conv_f.key,
+        conv_h.key, conv_i.key, conv_j.key])
     actual_keys = set(map(
         lambda conv_user: conv_user.conversation,
         gciconversation_logic.queryForProgramAndUser(
@@ -784,22 +982,34 @@ class GCIConversationTest(unittest.TestCase):
 
     self.assertEqual(expected_keys, actual_keys)
 
-    # Test that mentor user is in all conversations
+    # Test that mentor user is in all conversations except for G
     expected_keys = set([
-        conv_a.key, conv_b.key, conv_c.key, conv_d.key, conv_e.key, conv_f.key])
+        conv_a.key, conv_b.key, conv_c.key, conv_d.key, conv_e.key, conv_f.key,
+        conv_h.key, conv_i.key, conv_j.key])
     actual_keys = set(map(
         lambda conv_user: conv_user.conversation,
         gciconversation_logic.queryForProgramAndUser(
             program=self.program_key, user=user_mentor_key)))
     self.assertEqual(expected_keys, actual_keys)
 
-    # Test that mentor/student user is in all conversations
+    # Test that mentor/student user is in all conversations except for G
     expected_keys = set([
-        conv_a.key, conv_b.key, conv_c.key, conv_d.key, conv_e.key, conv_f.key])
+        conv_a.key, conv_b.key, conv_c.key, conv_d.key, conv_e.key, conv_f.key,
+        conv_h.key, conv_i.key, conv_j.key])
     actual_keys = set(map(
         lambda conv_user: conv_user.conversation,
         gciconversation_logic.queryForProgramAndUser(
             program=self.program_key, user=user_mentor_student_key)))
+    self.assertEqual(expected_keys, actual_keys)
+
+    # Test that winner user is in all conversations except for G
+    expected_keys = set([
+        conv_a.key, conv_b.key, conv_c.key, conv_d.key, conv_e.key, conv_f.key,
+        conv_h.key, conv_i.key, conv_j.key])
+    actual_keys = set(map(
+        lambda conv_user: conv_user.conversation,
+        gciconversation_logic.queryForProgramAndUser(
+            program=self.program_key, user=user_winner_key)))
     self.assertEqual(expected_keys, actual_keys)
 
     # Refresh each user's conversations. Because we just added all users to
@@ -811,6 +1021,8 @@ class GCIConversationTest(unittest.TestCase):
         user=user_mentor_key, program=self.program_key)
     gciconversation_logic.refreshConversationsForUserAndProgram(
         user=user_mentor_student_key, program=self.program_key)
+    gciconversation_logic.refreshConversationsForUserAndProgram(
+        user=user_winner_key, program=self.program_key)
 
     # Test that admin user is in the correct conversations
     expected_keys = set([conv_a.key, conv_b.key, conv_e.key, conv_f.key])
@@ -835,4 +1047,13 @@ class GCIConversationTest(unittest.TestCase):
         lambda conv_user: conv_user.conversation,
         gciconversation_logic.queryForProgramAndUser(
             program=self.program_key, user=user_mentor_student_key)))
+    self.assertEqual(expected_keys, actual_keys)
+
+    # Test that winner user is in the correct conversations
+    expected_keys = set(
+        [conv_d.key, conv_e.key, conv_f.key, conv_h.key, conv_j.key])
+    actual_keys = set(map(
+        lambda conv_user: conv_user.conversation,
+        gciconversation_logic.queryForProgramAndUser(
+            program=self.program_key, user=user_winner_key)))
     self.assertEqual(expected_keys, actual_keys)

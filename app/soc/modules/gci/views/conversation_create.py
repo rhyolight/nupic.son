@@ -49,16 +49,21 @@ from soc.modules.gci.models import conversation as gciconversation_model
 DEF_ROLE_PROGRAM_ADMINISTRATORS = translation.ugettext('Administrators')
 DEF_ROLE_PROGRAM_MENTORS = translation.ugettext('Mentors')
 DEF_ROLE_PROGRAM_STUDENTS = translation.ugettext('Students')
+DEF_ROLE_PROGRAM_WINNERS = translation.ugettext('Winners')
 DEF_ROLE_ORGANIZATION_ADMINISTRATORS = translation.ugettext(
     'Administrators of this organization')
 DEF_ROLE_ORGANIZATION_MENTORS = translation.ugettext(
     'Mentors of this organization')
+DEF_ROLE_ORGANIZATION_WINNERS = translation.ugettext(
+    'Winners of this organization')
 
 ROLE_PROGRAM_ADMINISTRATORS = 'ProgramAdministrators'
 ROLE_PROGRAM_MENTORS = 'ProgramMentors'
 ROLE_PROGRAM_STUDENTS = 'ProgramStudents'
+ROLE_PROGRAM_WINNERS = 'ProgramWinners'
 ROLE_ORGANIZATION_ADMINISTRATORS = 'OrganizationAdministrators'
 ROLE_ORGANIZATION_MENTORS = 'OrganizationMentors'
+ROLE_ORGANIZATION_WINNERS = 'OrganizationWinners'
 
 DEF_BLANK_MESSAGE = translation.ugettext('Your message cannot be blank.')
 DEF_BLANK_SUBJECT = translation.ugettext('Your subject cannot be blank.')
@@ -90,13 +95,14 @@ def createProgramRoleChoices(data):
         ])
 
   # If user is a host for the current program sponsor or a dev, let them send
-  # a message to all org admins, mentors, and students in the program.
+  # a message to all org admins, mentors, students, and winners in the program.
   if (data.program.sponsor.key() in data.user.host_for
       or data.user.is_developer):
     choices.update([
           (ROLE_PROGRAM_ADMINISTRATORS, DEF_ROLE_PROGRAM_ADMINISTRATORS),
           (ROLE_PROGRAM_MENTORS, DEF_ROLE_PROGRAM_MENTORS),
           (ROLE_PROGRAM_STUDENTS, DEF_ROLE_PROGRAM_STUDENTS),
+          (ROLE_PROGRAM_WINNERS, DEF_ROLE_PROGRAM_WINNERS),
         ])
 
   return list(choices)
@@ -105,19 +111,25 @@ def createProgramRoleChoices(data):
 def createOrganizationRoleChoices(data):
   """Creates a list of valid organization role choices for user.
 
-  Although it currently returns a fixed set of choices, this may change in the
-  future as more special role choices are added.
-
   Args:
     data: RequestData for the request.
 
   Returns:
     A list of tuples of choices, formatted as (value, name).
   """
-  return [
+  choices = set([
     (ROLE_ORGANIZATION_ADMINISTRATORS, DEF_ROLE_ORGANIZATION_ADMINISTRATORS),
     (ROLE_ORGANIZATION_MENTORS, DEF_ROLE_ORGANIZATION_MENTORS),
-  ]
+  ])
+
+  if (data.profile.is_org_admin or data.profile.is_mentor
+      or data.program.sponsor.key() in data.user.host_for
+      or data.user.is_developer):
+    choices.update([
+          (ROLE_ORGANIZATION_WINNERS, DEF_ROLE_ORGANIZATION_WINNERS),
+        ])
+
+  return list(choices)
 
 
 def createOrganizationChoices(data):
@@ -240,6 +252,7 @@ class ConversationCreateForm(gci_forms.GCIModelForm):
         include_admins=cleaned_data.get('include_admins', False),
         include_mentors=cleaned_data.get('include_mentors', False),
         include_students=cleaned_data.get('include_students', False),
+        include_winners=cleaned_data.get('include_winners', False),
         auto_update_users=cleaned_data['auto_update_users'])
 
     if not commit:
@@ -333,6 +346,8 @@ class ConversationCreateForm(gci_forms.GCIModelForm):
           self.cleaned_data['include_mentors'] = True
         if ROLE_PROGRAM_STUDENTS in roles:
           self.cleaned_data['include_students'] = True
+        if ROLE_PROGRAM_WINNERS in roles:
+          self.cleaned_data['include_winners'] = True
       else:
         errors = self._errors.setdefault('program_roles',
             forms_util.ErrorList())
@@ -347,6 +362,8 @@ class ConversationCreateForm(gci_forms.GCIModelForm):
           self.cleaned_data['include_admins'] = True
         if ROLE_ORGANIZATION_MENTORS in roles:
           self.cleaned_data['include_mentors'] = True
+        if ROLE_ORGANIZATION_WINNERS in roles:
+          self.cleaned_data['include_winners'] = True
       else:
         errors = self._errors.setdefault('organization_roles',
             forms_util.ErrorList())
