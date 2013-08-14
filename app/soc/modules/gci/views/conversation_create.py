@@ -121,10 +121,7 @@ def createOrganizationRoleChoices(data):
 
 
 def createOrganizationChoices(data):
-  """Creates a list of valid organizations for user.
-
-  This is a list of organizations the user is either mentoring for or
-  administrates. If the user is a developer, all organizations are choices.
+  """Creates a list of organizations for user.
 
   Only organizations within the program are returned.
 
@@ -136,12 +133,6 @@ def createOrganizationChoices(data):
   """
   organization_query = gciorganization_logic.queryForProgramAndStatus(
       program=data.program.key(), status='active')
-
-  if (data.program.sponsor.key() not in data.user.host_for and
-      not data.user.is_developer):
-    organization_query.filter(
-        '__key__ IN', 
-        list(set(data.profile.org_admin_for + data.profile.mentor_for)))
 
   return organization_query.fetch(limit=None)
 
@@ -156,9 +147,15 @@ class ConversationCreateForm(gci_forms.GCIModelForm):
     # POST data must be first arg for django form handler
     super(ConversationCreateForm, self).__init__(self.POST, *args, **kwargs)
 
-    self.recipients_type_choices = [
-      (conversation_model.USER, translation.ugettext('Specified users')),
-    ]
+    self.recipients_type_choices = []
+
+    if (data.profile.is_org_admin or data.profile.is_mentor
+        or data.program.sponsor.key() in data.user.host_for
+        or data.user.is_developer):
+      self.recipients_type_choices.append(
+          (conversation_model.USER, translation.ugettext('Specified users')))
+      self.fields['users'] = django_forms.CharField(
+          label=translation.ugettext('Users'))
 
     self.organizations = createOrganizationChoices(self.request_data)
     self.organization_role_choices = createOrganizationRoleChoices(
@@ -188,9 +185,6 @@ class ConversationCreateForm(gci_forms.GCIModelForm):
 
     self.fields['recipients_type'] = django_forms.ChoiceField(
         choices=self.recipients_type_choices)
-
-    self.fields['users'] = django_forms.CharField(
-        label=translation.ugettext('Users'))
 
     self.fields['auto_update_users'] = django_forms.BooleanField(
         label=translation.ugettext('Automatically Update Users'), initial=True,

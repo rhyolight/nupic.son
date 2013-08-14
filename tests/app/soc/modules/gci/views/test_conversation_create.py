@@ -270,17 +270,11 @@ class GCICreateConversationFormTest(unittest.TestCase):
     """Tests that testCreateOrganizationChoices() returns the appropriate
     organization choices (if any) for a user."""
 
-    # Test that for someone who is a mentor of orgs a,b and admin of orgs b,c,
-    # that the correct organization choices are available
+    # Test that for an average user, all organizations are available
     self.createProfileAndRequest()
-    profile = self.profile_helper.profile
-    profile.mentor_for = [self.org_a.key(), self.org_b.key()]
-    profile.org_admin_for = [self.org_b.key(), self.org_c.key()]
-    profile.is_mentor = True
-    profile.is_org_admin = True
-    profile.put()
 
-    expected = set([self.org_a.key(), self.org_b.key(), self.org_c.key()])
+    expected = set([
+        self.org_a.key(), self.org_b.key(), self.org_c.key(), self.org_d.key()])
     actual = set(map(
         lambda org: org.key(),
         gciconversation_create_view.createOrganizationChoices(
@@ -314,21 +308,33 @@ class GCICreateConversationFormTest(unittest.TestCase):
   def testFields(self):
     """Tests that the right fields are created by ConversationCreateForm."""
 
-    # Test that only recipients type choice is 'Users', and that the standard
-    # fields exist
+    # Test that only recipients type choice is 'Organization', and that the
+    # standards fields exist along with all organizations
     form = gciconversation_create_view.ConversationCreateForm(self.mock_data)
     self.assertIn('recipients_type', form.bound_fields)
-    self.assertIn('users', form.bound_fields)
+    self.assertNotIn('users', form.bound_fields)
     self.assertNotIn('program_roles', form.bound_fields)
-    self.assertNotIn('organization_roles', form.bound_fields)
-    self.assertNotIn('organization', form.bound_fields)
+    self.assertIn('organization_roles', form.bound_fields)
+    self.assertIn('organization', form.bound_fields)
     self.assertIn('auto_update_users', form.bound_fields)
     self.assertIn('subject', form.bound_fields)
     self.assertIn('message_content', form.bound_fields)
     recipients_type_html = form.bound_fields['recipients_type'].render().lower()
-    self.assertIn('specified users', recipients_type_html)
+    self.assertNotIn('specified users', recipients_type_html)
     self.assertNotIn('roles', recipients_type_html)
-    self.assertNotIn('organization', recipients_type_html)
+    self.assertIn('organization', recipients_type_html)
+    organization_roles_html = form.bound_fields['organization_roles'].render()
+    self.assertIn(
+        gciconversation_create_view.DEF_ROLE_ORGANIZATION_ADMINISTRATORS,
+        organization_roles_html)
+    self.assertIn(
+        gciconversation_create_view.DEF_ROLE_ORGANIZATION_MENTORS,
+        organization_roles_html)
+    organization_html = form.bound_fields['organization'].render()
+    self.assertIn('org_a', organization_html)
+    self.assertIn('org_b', organization_html)
+    self.assertIn('org_c', organization_html)
+    self.assertIn('org_d', organization_html)
 
     # Test that all fields are present for a developer
     self.createProfileAndRequest()
@@ -451,7 +457,7 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertIn('org_a', organization_html)
     self.assertIn('org_b', organization_html)
     self.assertIn('org_c', organization_html)
-    self.assertNotIn('org_d', organization_html)
+    self.assertIn('org_d', organization_html)
 
   def testSubmission(self):
     """Tests that the submitting the form correctly creates a conversation or
