@@ -2,7 +2,7 @@
 
 .block-main-nav {
   /*Main navigation*/
-  background: #e0e0e0;
+  background: @color_light_blue;
   border-radius: 3px;
   -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
@@ -18,7 +18,7 @@
       font-weight: bold;
 
       a {
-        background: #e0e0e0;
+        background: @color_light_blue;
         color: #0075b4;
         display: block;
         padding: 8px 13px 6px 13px;
@@ -233,4 +233,12 @@
     border-bottom: none;
     padding-top: 10px;
   }
+}
+
+.block-logged-in-as > .block-content {
+  color: #FFFFFF;
+  font-family: "Trebuchet MS","Lucida Sans Unicode","Lucida Grande","Lucida Sans",Arial,sans-serif;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 8px 13px 6px;
 }
