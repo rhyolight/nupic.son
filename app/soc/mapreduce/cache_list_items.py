@@ -20,6 +20,8 @@ from mapreduce import context
 from mapreduce import base_handler
 from mapreduce import mapreduce_pipeline
 
+import datetime
+
 import json
 
 import pickle
@@ -48,12 +50,18 @@ def mapProcess(entity):
     yield (data_id, item)
 
 
-def reduceProcess(list_id, entities):
-  # TODO: (Aruna) Fix this import
+def reduceProcess(data_id, entities):
+  # TODO: (Aruna) Fix these import
   from melange.logic import cached_list
+  from melange.utils import lists
 
-  ndb.transaction(
-      lambda: cached_list.cacheItems(list_id, map(json.loads, entities)))
+  ctx = context.get()
+  params = ctx.mapreduce_spec.mapper.params
+
+  list_id = params['list_id']
+
+  ndb.transaction(lambda: cached_list.cacheItems(
+      data_id, map(json.loads, entities), lists.getList(list_id).valid_period))
 
 
 class CacheListsPipeline(base_handler.PipelineBase):
@@ -77,5 +85,8 @@ class CacheListsPipeline(base_handler.PipelineBase):
           'list_id': list_id,
           'entity_kind': entity_kind,
           'query_pickle': query_pickle
+      },
+      reducer_params={
+          'list_id': list_id
       },
       shards=NO_OF_SHARDS)
