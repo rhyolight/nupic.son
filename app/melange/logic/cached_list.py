@@ -21,7 +21,7 @@ from melange.models import cached_list as cached_list_model
 import datetime
 
 
-def cacheItems(data_id, items, valid_period=datetime.timedelta(1)):
+def setCacheItems(data_id, items, valid_period=datetime.timedelta(1)):
   """Save a given list of dictionaries in a cached list.
 
   If a list does not exists with the given data_id, creates a new CachedList. 
@@ -37,7 +37,7 @@ def cacheItems(data_id, items, valid_period=datetime.timedelta(1)):
   cached_list = list_key.get()
   if not cached_list:
     cached_list = cached_list_model.CachedList(id=data_id)
-  cached_list.list_data.extend(items)
+  cached_list.list_data = items
   cached_list.valid_through = datetime.datetime.now() + valid_period
   cached_list.is_processing = False
   cached_list.put()

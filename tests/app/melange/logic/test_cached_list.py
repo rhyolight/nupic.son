@@ -28,7 +28,8 @@ class TestCacheItems(unittest.TestCase):
   """Test cacheItems function."""
 
   def testAddingNewCachedList(self):
-    cached_list_logic.cacheItems('foo_list', [{'foo': 'bar'}, {'baz': 'qux'}])
+    cached_list_logic.setCacheItems(
+        'foo_list', [{'foo': 'bar'}, {'baz': 'qux'}])
     cached_list = cached_list_model.CachedList.query().get()
     self.assertIsNotNone(cached_list)
 
@@ -36,7 +37,8 @@ class TestCacheItems(unittest.TestCase):
     new_item1 = {'name': 'foo'}
     new_item2 = {'name': 'bar'}
     new_item3 = {'name': 'baz'}
-    cached_list_logic.cacheItems('foo_list', [new_item1, new_item2, new_item3])
+    cached_list_logic.setCacheItems(
+        'foo_list', [new_item1, new_item2, new_item3])
     cached_list = cached_list_model.CachedList.query().get()
     self.assertIn(new_item1, cached_list.list_data)
     self.assertIn(new_item2, cached_list.list_data)
@@ -44,7 +46,7 @@ class TestCacheItems(unittest.TestCase):
   def testUpdatingAfterCaching(self):
     """Tests whether cached list state is updated."""
     valid_period = datetime.timedelta(2, 4, 6)
-    cached_list_logic.cacheItems('test_list', ['foo', 'bar'], valid_period)
+    cached_list_logic.setCacheItems('test_list', ['foo', 'bar'], valid_period)
     cached_list = cached_list_model.CachedList.get_by_id('test_list')
 
     self.assertAlmostEqual(cached_list.valid_through,

@@ -60,7 +60,7 @@ def reduceProcess(data_id, entities):
 
   list_id = params['list_id']
 
-  ndb.transaction(lambda: cached_list.cacheItems(
+  ndb.transaction(lambda: cached_list.setCacheItems(
       data_id, map(json.loads, entities), lists.getList(list_id).valid_period))
 
 
