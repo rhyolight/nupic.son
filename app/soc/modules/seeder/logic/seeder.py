@@ -357,6 +357,7 @@ class Logic(object):
                    'Program': Sponsor,
                    'Organization': Program,
                    'Timeline': Sponsor,
+                   'Profile': Program,
                    'GSoCProgram': Sponsor,
                    'GSoCTimeline': Sponsor,
                    'GSoCOrganization': GSoCProgram,
