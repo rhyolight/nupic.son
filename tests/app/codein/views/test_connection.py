@@ -14,14 +14,56 @@
 
 """Unit tests for connection related views."""
 
+import unittest
+
+from codein.views import connection as connection_view
+
+from melange.models import connection as connection_model
+from melange.request import exception
+
+from soc.models import organization as org_model
+from soc.models import profile as profile_model
+from soc.models import user as user_model
+from soc.views.helper import request_data
+
+from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
 from tests import test_utils
 
+
+class NoConnectionExistsAccessCheckerTest(unittest.TestCase):
+  """Unit tests for NoConnectionExistsAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.data = request_data.RequestData(None, None, None)
+
+    user = seeder_logic.seed(user_model.User)
+    self.data._url_profile = seeder_logic.seed(profile_model.Profile,
+        {'parent': user})
+    self.data._url_org = seeder_logic.seed(org_model.Organization)
+
+  def testNoConnectionExists(self):
+    """Tests that access is granted if no connection exists."""
+    access_checker = connection_view.NoConnectionExistsAccessChecker()
+    access_checker.checkAccess(self.data, None, None)
+
+  def testConnectionExists(self):
+    """Tests that access is denied if connection already exists."""
+    connection_properties = {
+        'parent': self.data._url_profile,
+        'organization': self.data._url_org
+        }
+    seeder_logic.seed(connection_model.Connection, connection_properties)
+    access_checker = connection_view.NoConnectionExistsAccessChecker()
+    with self.assertRaises(exception.Redirect):
+      access_checker.checkAccess(self.data, None, None)
 
 class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):
   """Unit tests for ShowConnectionAsUser class."""
 
   def setUp(self):
-    """See testcase.setUp for specification."""
+    """See unittest.TestCase.setUp for specification."""
     self.init()
 
   def _getUrl(self, profile, org):

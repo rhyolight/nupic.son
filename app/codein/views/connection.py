@@ -18,8 +18,10 @@ from django import forms as django_forms
 from django import http
 from django.utils import translation
 
+from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
 from melange.request import access
+from melange.request import exception
 from melange.views import connection as connection_view
 
 from codein.views.helper import urls
@@ -51,6 +53,24 @@ ROLE_CHOICES = [
     (connection_model.MENTOR_ROLE, 'Mentor'),
     (connection_model.ORG_ADMIN_ROLE, 'Organization Admin'),
     ]
+
+
+class NoConnectionExistsAccessChecker(access.AccessChecker):
+  """AccessChecker that ensures that no connection exists between the user
+  and organization which are specified in the URL.
+  """
+
+  def checkAccess(self, data, check, mutator):
+    """See access.AccessChecker.checkAccess for specification."""
+    connection = connection_logic.queryForAncestorAndOrganization(
+        data.url_profile, data.url_org).get()
+    if connection:
+      url = links.Linker().userId(
+          data.url_profile, connection.key().id(),
+          urls.UrlNames.CONNECTION_MANAGE_AS_USER)
+      raise exception.Redirect(url)
+
+NO_CONNECTION_EXISTS_ACCESS_CHECKER = NoConnectionExistsAccessChecker()
 
 
 class ConnectionForm(gci_forms.GCIModelForm):
