@@ -136,6 +136,25 @@ class DeveloperAccessChecker(AccessChecker):
 DEVELOPER_ACCESS_CHECKER = DeveloperAccessChecker()
 
 
+class ConjuctionAccessChecker(AccessChecker):
+  """Aggregated access checker that holds a collection of other access
+  checkers and ensures that access is granted only if each of those checkers
+  grants access individually."""
+
+  def __init__(self, checkers):
+    """Initializes a new instance of the access checker.
+
+    Args:
+      checkers: list of AccessChecker objects to be examined by this checker.
+    """
+    self._checkers = checkers
+
+  def checkAccess(self, data, check, mutator):
+    """See AccessChecker.checkAccess for specification."""
+    for checker in self._checkers:
+      checker.checkAccess(data, check, mutator)
+
+
 class NonStudentAccessChecker(AccessChecker):
   """AccessChecker that ensures that the user has a non-student profile."""
 

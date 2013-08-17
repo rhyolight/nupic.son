@@ -37,6 +37,26 @@ class Explosive(object):
     raise ValueError()
 
 
+class NoneAllowedAccessChecker(access.AccessChecker):
+  """Tests only implementation of access checker that grants access to nobody
+  and always raises exception.Forbidden error. The exception will contain
+  identifier of particular instance of this class so that callers can recognize
+  objects that raised the exception after all.
+  """
+
+  def __init__(self, identifier):
+    """Initializes a new instance of the access checker.
+
+    Args:
+      identifier: a string that identifies this checker.
+    """
+    self._identifier = identifier
+
+  def checkAccess(self, data, check, mutator):
+    """See access.AccessChecker.checkAccess for specification."""
+    raise exception.Forbidden(message=self._identifier)
+
+
 class AllAllowedAccessCheckerTest(unittest.TestCase):
   """Tests the AllAllowedAccessChecker class."""
 
@@ -95,6 +115,34 @@ class DeveloperAccessCheckerTest(unittest.TestCase):
     access_checker = access.DeveloperAccessChecker()
     with self.assertRaises(exception.UserError):
       access_checker.checkAccess(data, None, None)
+
+
+class ConjuctionAccessCheckerTest(unittest.TestCase):
+  """Tests for ConjuctionAccessChecker class."""
+
+  def testForAllPassingCheckers(self):
+    """Tests that checker passes if all sub-checkers pass."""
+    checkers = [access.AllAllowedAccessChecker() for _ in xrange(5)]
+    access_checker = access.ConjuctionAccessChecker(checkers)
+    access_checker.checkAccess(None, None, None)
+
+  def testFirstCheckerFails(self):
+    """Tests that checker fails if the first sub-checker fails."""
+    checkers = [NoneAllowedAccessChecker('first')]
+    checkers.extend([access.AllAllowedAccessChecker() for _ in xrange(4)])
+    access_checker = access.ConjuctionAccessChecker(checkers)
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(None, None, None)
+    self.assertEqual(context.exception.message, 'first')
+
+  def testLastCheckerFails(self):
+    """Tests that checker fails if the last sub-checker fails."""
+    checkers = [access.AllAllowedAccessChecker() for _ in xrange(4)]
+    checkers.append(NoneAllowedAccessChecker('last'))
+    access_checker = access.ConjuctionAccessChecker(checkers)
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(None, None, None)
+    self.assertEqual(context.exception.message, 'last')
 
 
 class NonStudentAccessCheckerTest(unittest.TestCase):
