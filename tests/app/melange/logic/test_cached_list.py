@@ -16,12 +16,16 @@
 
 import unittest
 
-from melange.models import cached_list as cached_list_model
 from melange.logic import cached_list as cached_list_logic
+from melange.models import cached_list as cached_list_model
+from melange.utils import lists as cached_list_utils
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 import datetime
+
+
+KEY = cached_list_utils.KEY_COLUMN_ID
 
 
 class TestCacheItems(unittest.TestCase):
@@ -29,14 +33,14 @@ class TestCacheItems(unittest.TestCase):
 
   def testAddingNewCachedList(self):
     cached_list_logic.setCacheItems(
-        'foo_list', [{'foo': 'bar'}, {'baz': 'qux'}])
+        'foo_list', [{KEY: 'one', 'foo': 'bar'}, {KEY: 'two', 'baz': 'qux'}])
     cached_list = cached_list_model.CachedList.query().get()
     self.assertIsNotNone(cached_list)
 
   def testAddingNewItems(self):
-    new_item1 = {'name': 'foo'}
-    new_item2 = {'name': 'bar'}
-    new_item3 = {'name': 'baz'}
+    new_item1 = {KEY: 'one', 'name': 'foo'}
+    new_item2 = {KEY: 'two', 'name': 'bar'}
+    new_item3 = {KEY: 'three', 'name': 'baz'}
     cached_list_logic.setCacheItems(
         'foo_list', [new_item1, new_item2, new_item3])
     cached_list = cached_list_model.CachedList.query().get()
@@ -46,7 +50,8 @@ class TestCacheItems(unittest.TestCase):
   def testUpdatingAfterCaching(self):
     """Tests whether cached list state is updated."""
     valid_period = datetime.timedelta(2, 4, 6)
-    cached_list_logic.setCacheItems('test_list', ['foo', 'bar'], valid_period)
+    cached_list_logic.setCacheItems(
+        'test_list', [{KEY: 'foo'}, {KEY: 'bar'}], valid_period)
     cached_list = cached_list_model.CachedList.get_by_id('test_list')
 
     self.assertAlmostEqual(cached_list.valid_through,
@@ -54,6 +59,23 @@ class TestCacheItems(unittest.TestCase):
                            delta=datetime.timedelta(seconds=5))
 
     self.assertFalse(cached_list.is_processing)
+
+  def testRemovingDuplicates(self):
+    """Tests whether the duplicate list items are removed upon saving."""
+
+    item1 = {KEY: 'one', 'name': 'foo'}
+    item2 = {KEY: 'two', 'name': 'bar'}
+    item3 = {KEY: 'three', 'name': 'baz'}
+    dup_item1 = {KEY: 'one', 'name': 'foo'}
+    dup_item2 = {KEY: 'two', 'name': 'qux'}
+
+    list_with_duplicates = [item1, item2, item3, dup_item1, dup_item2]
+    # duplicate items should not be present in the cached list
+    expected_list = [item1, item2, item3]
+
+    cached_list_logic.setCacheItems('test_list', list_with_duplicates)
+    cached_list = cached_list_model.CachedList.get_by_id('test_list')
+    self.assertListEqual(cached_list.list_data, expected_list)
 
 
 class TestGetCachedItems(unittest.TestCase):

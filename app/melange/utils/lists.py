@@ -31,7 +31,11 @@ from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.timeline import GSoCTimeline
 
 
+# string that is used as the next_key parameter in the final batch.
 FINAL_BATCH = 'done'
+
+# name of the column that has a unique value among all the rows.
+KEY_COLUMN_ID = 'key'
 
 
 class List(object):
@@ -345,7 +349,7 @@ class OraganizationColumn(Column):
     return entity.org.name
 
 
-key = KeyColumn('key', 'Key', hidden=True)
+key = KeyColumn(KEY_COLUMN_ID, 'Key', hidden=True)
 student = StudentColumn('student', 'Student')
 title = SimpleColumn('title', 'Title')
 org = OraganizationColumn('org', 'Organization')

@@ -33,14 +33,44 @@ def setCacheItems(data_id, items, valid_period=datetime.timedelta(1)):
     valid_through: A datetime.timedelta value indicating the time period the
       cached data should be considered valid. Defaults to one day.
   """
+  # TODO: (Aruna) Fix this import
+  from melange.utils import lists as cached_list_utils
+
   list_key = ndb.Key(cached_list_model.CachedList, data_id)
   cached_list = list_key.get()
   if not cached_list:
     cached_list = cached_list_model.CachedList(id=data_id)
+  items = _remove_duplicates(items, cached_list_utils.KEY_COLUMN_ID)
   cached_list.list_data = items
   cached_list.valid_through = datetime.datetime.now() + valid_period
   cached_list.is_processing = False
   cached_list.put()
+
+
+def _remove_duplicates(items, key='key'):
+  """Removes duplicated items from a given list of cached list items.
+
+  If two list items' key fields are duplicated they considered as duplicates.
+  This function preserves the order in the original list and keeps the first
+  item in the list with a particular key. Other items with the same key are
+  removed.
+
+  Args:
+    items: A list of list items which possibly contains duplicates.
+    key: Name of the field that should contain a unique value for the list item.
+ 
+  Returns:
+    A list of list items with duplicated items removed.   
+  """
+  seen = set()
+  result = []
+  for item in items:
+    item_key = item[key]
+    if item_key in seen:
+      continue
+    seen.add(item_key)
+    result.append(item)
+  return result
 
 
 def getCachedItems(data_id, start=0, limit=None):
