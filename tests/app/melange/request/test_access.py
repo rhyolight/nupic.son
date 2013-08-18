@@ -227,7 +227,7 @@ class ProgramActiveAccessCheckerTest(unittest.TestCase):
     access_checker = access.ProgramActiveAccessChecker()
 
     # the program is not visible
-    data._program.status = 'invisible'
+    data._program.status = program_model.STATUS_INVISBLE
     data._program.timeline.program_start = timeline_utils.past()
     data._program.timeline.program_end = timeline_utils.future()
     with self.assertRaises(exception.UserError) as context:
@@ -236,7 +236,7 @@ class ProgramActiveAccessCheckerTest(unittest.TestCase):
         access._MESSAGE_PROGRAM_NOT_ACTIVE)
 
     # the program is has already ended
-    data._program.status = 'visible'
+    data._program.status = program_model.STATUS_VISIBLE
     data._program.timeline.program_start = timeline_utils.past(delta=100)
     data._program.timeline.program_end = timeline_utils.past(delta=50)
     with self.assertRaises(exception.UserError) as context:
@@ -254,7 +254,7 @@ class ProgramActiveAccessCheckerTest(unittest.TestCase):
     access_checker = access.ProgramActiveAccessChecker()
 
     # program is active and visible
-    data._program.status = 'visible'
+    data._program.status = program_model.STATUS_VISIBLE
     data._program.timeline.program_start = timeline_utils.past()
     data._program.timeline.program_end = timeline_utils.future()
     access_checker.checkAccess(data, None, None)

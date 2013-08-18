@@ -19,6 +19,7 @@ from django.utils import translation
 from melange.request import exception
 
 from soc.logic import links
+from soc.models import program as program_model
 
 
 _MESSAGE_NOT_PROGRAM_ADMINISTRATOR = translation.ugettext(
@@ -185,7 +186,8 @@ class ProgramActiveAccessChecker(AccessChecker):
     if not data.program:
       raise exception.NotFound(message=_MESSAGE_PROGRAM_NOT_EXISTING)
 
-    if data.program.status != 'visible' or not data.timeline.programActive():
+    if (data.program.status != program_model.STATUS_VISIBLE 
+        or not data.timeline.programActive()):
       raise exception.Forbidden(message=_MESSAGE_PROGRAM_NOT_ACTIVE)
 
 PROGRAM_ACTIVE_ACCESS_CHECKER = ProgramActiveAccessChecker()
