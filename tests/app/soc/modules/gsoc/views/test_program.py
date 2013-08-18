@@ -16,6 +16,8 @@
 
 import datetime
 
+from soc.models import program as soc_program_model
+
 from soc.modules.gsoc.models import program as program_model
 
 from tests import test_utils
@@ -45,7 +47,7 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
         'name': 'Melange Program',
         'short_name': 'MP',
         'description': 'This is a Melange Program',
-        'status': 'visible',
+        'status': soc_program_model.STATUS_VISIBLE,
         'apps_tasks_limit': 20,
         'slots': 500,
         }

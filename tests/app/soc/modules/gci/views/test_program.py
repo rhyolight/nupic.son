@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 """Tests for program related views."""
 
 import datetime
+
+from soc.models import program as soc_program_model
 
 from soc.modules.gci.models import program as program_model
 
@@ -45,7 +46,7 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
         'name': 'Melange Program',
         'short_name': 'MP',
         'description': 'This is a Melange Program',
-        'status': 'visible',
+        'status': soc_program_model.STATUS_VISIBLE,
         'nr_simultaneous_tasks': 1,
         'winner_selection_type':
             program_model.WinnerSelectionType.ORG_NOMINATED,

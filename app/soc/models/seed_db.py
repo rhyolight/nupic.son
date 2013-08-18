@@ -28,6 +28,7 @@ from django import http
 from soc.logic import accounts
 from soc.models.document import Document
 
+from soc.models import program as program_model
 from soc.models.site import Site
 from soc.models.sponsor import Sponsor
 
@@ -160,7 +161,7 @@ def seed(request, *args, **kwargs):
       'apps_tasks_limit': 42,
       'slots': 42,
       'timeline': gsoc2009_timeline,
-      'status': 'visible',
+      'status': program_model.STATUS_VISIBLE,
       }
 
   gsoc2009 = GSoCProgram(**program_properties)

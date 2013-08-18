@@ -15,14 +15,14 @@
 """This module contains the view for the site menus."""
 
 from soc.logic import links
+from soc.models import program as program_model
 from soc.models.site import Site
 
 from soc.views.template import Template
 
 
 class ProgramSelect(Template):
-  """Program select template.
-  """
+  """Program select template."""
 
   def __init__(self, data, url_name):
     self.data = data
@@ -45,7 +45,7 @@ class ProgramSelect(Template):
 
     programs = []
     for program in self.data.programs:
-      if program.status == 'invisible':
+      if program.status == program_model.STATUS_INVISIBLE:
         continue
 
       name = program.short_name

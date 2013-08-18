@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""Utils for manipulating program data.
-"""
-
+"""Utils for manipulating program data."""
 
 from datetime import date
 
 from soc.models.document import Document
 from soc.models.org_app_survey import OrgAppSurvey
+from soc.models import program as program_model
 from soc.models.site import Site
 from soc.models.sponsor import Sponsor
 from soc.models.user import User
@@ -180,7 +178,8 @@ class GSoCProgramHelper(ProgramHelper):
 
     properties = {'timeline': self.program_timeline,
                   'key_name': self.program_timeline.key().name(),
-                  'status': 'visible', 'apps_tasks_limit': 20,
+                  'status': program_model.STATUS_VISIBLE,
+                  'apps_tasks_limit': 20,
                   'scope': self.sponsor, 'sponsor': self.sponsor,
                   'student_agreement': None, 'events_page': None,
                   'help_page': None, 'connect_with_us_page': None,
@@ -270,7 +269,7 @@ class GCIProgramHelper(ProgramHelper):
 
     properties = {
         'timeline': self.program_timeline,
-        'status': 'visible',
+        'status': program_model.STATUS_VISIBLE,
         'scope': self.sponsor, 'sponsor': self.sponsor,
         'student_agreement': None, 'events_page': None,
         'help_page': None, 'connect_with_us_page': None,

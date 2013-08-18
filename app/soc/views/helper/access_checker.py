@@ -28,6 +28,7 @@ from melange.request import exception
 from soc.logic import links
 from soc.models import document
 from soc.models import org_app_record
+from soc.models import program as program_model
 from soc.models import user as user_model
 from soc.models.request import INVITATION_TYPE
 from soc.models.request import REQUEST_TYPE
@@ -372,7 +373,7 @@ class Mutator(object):
       if not self.data.org_app_record:
         raise exception.NotFound(
             message=DEF_NO_ORG_APP % self.data.program.name)
-    
+
   def connectionFromKwargs(self):
     """Set the connection entity in the RequestData object."""
     self.profileFromKwargs()
@@ -574,7 +575,7 @@ class AccessChecker(BaseAccessChecker):
     if not self.data.program:
       raise exception.NotFound(message=DEF_NO_SUCH_PROGRAM)
 
-    if self.data.program.status == 'visible':
+    if self.data.program.status == program_model.STATUS_VISIBLE:
       return
 
     # TODO(nathaniel): Sure this is weird, but it's a consequence

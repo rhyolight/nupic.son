@@ -23,6 +23,11 @@ from soc.models import linkable as linkable_model
 from soc.models import sponsor as sponsor_model
 from soc.models import timeline as timeline_model
 
+# Allowed values for program status.
+STATUS_VISIBLE = 'visible'  # The program is visible to everyone.
+STATUS_INVISIBLE = 'invisible'  # The program is visible to hosts and devs.
+STATUS_INVALID = 'invalid'  # The program is not visible to anyone.
+# TODO(nathaniel): Is STATUS_INVALID used or useful any more?
 
 GENERAL_INFO_GROUP = translation.ugettext(
     '1. General Info')
@@ -152,18 +157,17 @@ class Program(linkable_model.Linkable):
       'Student.')
 
   #: Status of the program
-  #: Invisible: Program Stealth-Mode Visible to Hosts and Devs only
-  #: Visible: Visible to everyone.
-  #: Invalid: Not visible or editable by anyone
-  status = db.StringProperty(required=True, default='invisible',
+  status = db.StringProperty(required=True, default=STATUS_INVISIBLE,
       verbose_name=translation.ugettext('Program Status'),
-      choices=['invisible', 'visible', 'invalid'])
+      choices=[STATUS_INVISIBLE, STATUS_VISIBLE, STATUS_INVALID])
   status.group = GENERAL_INFO_GROUP
   status.help_text = translation.ugettext(
-      '<tt>Invisible: Program Stealth-Mode Visible to Hosts and Devs only.<br/>'
-      'Visible: Visible to everyone.<br/>'
+      # TODO(nathaniel): Someone got their HTML in this Python.
+      '<tt>%s: Program Stealth-Mode Visible to Hosts and Devs only.<br/>'
+      '%s: Visible to everyone.<br/>'
       'Inactive: Not visible in sidebar, not editable.<br/>'
-      'Invalid: Not visible or editable by anyone.</tt>')
+      '%s: Not visible or editable by anyone.</tt>' % (
+          STATUS_INVISIBLE, STATUS_VISIBLE, STATUS_INVALID))
 
   #: The document entity which contains the "About" page for the program
   about_page = db.ReferenceProperty(
