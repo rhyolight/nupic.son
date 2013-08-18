@@ -227,7 +227,7 @@ class ProgramActiveAccessCheckerTest(unittest.TestCase):
     access_checker = access.ProgramActiveAccessChecker()
 
     # the program is not visible
-    data._program.status = program_model.STATUS_INVISBLE
+    data._program.status = program_model.STATUS_INVISIBLE
     data._program.timeline.program_start = timeline_utils.past()
     data._program.timeline.program_end = timeline_utils.future()
     with self.assertRaises(exception.UserError) as context:
