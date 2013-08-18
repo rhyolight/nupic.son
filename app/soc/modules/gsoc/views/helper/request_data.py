@@ -177,10 +177,8 @@ class RequestData(request_data.RequestData):
     site: The Site entity
     user: The user entity (if logged in)
     css_path: a part of the css to fetch the GSoC specific CSS resources
-    program: The GSoC program entity that the request is pointing to
     programs: All GSoC programs.
     program_timeline: The GSoCTimeline entity
-    timeline: A TimelineHelper entity
     is_host: is the current user a host of the program
     is_mentor: is the current user a mentor in the program
     is_student: is the current user a student in the program
@@ -193,6 +191,9 @@ class RequestData(request_data.RequestData):
   Raises:
     out_of_band: 404 when the program does not exist
   """
+
+  __org_model = org_model.GSoCOrganization
+  __profile_model = profile_model.GSoCProfile
 
   def __init__(self, request, args, kwargs):
     """Constructs a new RequestData object.
@@ -209,10 +210,8 @@ class RequestData(request_data.RequestData):
     self._program_timeline = self._unset
     self._programs = self._unset
     self._org_app = self._unset
-    self._timeline = self._unset
 
     # user profile specific fields
-    self._profile = self._unset
     self._is_host = self._unset
     self._is_mentor = self._unset
     self._is_student = self._unset
@@ -334,13 +333,6 @@ class RequestData(request_data.RequestData):
     return self._org_app
 
   @property
-  def program(self):
-    """Returns the program field."""
-    if not self._isSet(self._program):
-      self._getProgramWideFields()
-    return self._program
-
-  @property
   def program_timeline(self):
     """Returns the program_timeline field."""
     if not self._isSet(self._program_timeline):
@@ -374,19 +366,6 @@ class RequestData(request_data.RequestData):
     return self._student_info
 
   @property
-  def profile(self):
-    """Returns the profile property."""
-    if not self._isSet(self._profile):
-      if not self.user or not self.program:
-        self._profile = None
-      else:
-        key_name = '%s/%s' % (self.program.key().name(), self.user.link_id)
-        self._profile = profile_model.GSoCProfile.get_by_key_name(
-            key_name, parent=self.user)
-      pass
-    return self._profile
-
-  @property
   def timeline(self):
     """Returns the timeline field."""
     if not self._isSet(self._timeline):
@@ -406,7 +385,7 @@ class RequestData(request_data.RequestData):
         self._org_map = {}
 
   def _getProgramWideFields(self):
-    """Fetches program wide fields in a single database round-trip."""
+    """See request_data.RequestData._getProgramWideFields for specification."""
     keys = []
 
     # add program's key

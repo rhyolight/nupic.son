@@ -29,6 +29,7 @@ from melange.models import connection
 from melange.models.connection_message import ConnectionMessage
 from melange.request import exception
 from melange.utils import rich_bool
+from melange.views import connection as connection_view
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic.helper import notifications
@@ -57,48 +58,6 @@ USER_ASSIGNED_MENTOR = '%s promoted to Mentor.'
 USER_ASSIGNED_ORG_ADMIN = '%s promoted to Org Admin.'
 USER_ASSIGNED_NO_ROLE = '%s no longer has a role for this organizaton.'
 
-@db.transactional
-def create_connection_txn(
-    data, profile, organization, message, context, recipients,
-    org_role=connection.NO_ROLE, user_role=connection.NO_ROLE):
-  """ Create a new Connection entity, attach any messages provided by the
-  initiator and send a notification email to the recipient(s).
-
-  Args:
-    data: RequestData object for the current request.
-    profile: Profile with which to connect.
-    organization: Organization with which to connect.
-    message: User-provided message for the connection.
-    context: The notification context method.
-    recipients: List of one or more recipients for the notification email.
-    org_state: Org state for the connection.
-    user_state: User state for the connection.
-
-  Returns:
-    The newly created Connection entity.
-  """
-  if connection_logic.connectionExists(profile.parent(), organization):
-    raise exception.Forbidden(
-      message=connection_logic.CONNECTION_EXISTS_ERROR %
-      (profile.name, organization.name))
-  # Do not create a connection if a user already has a role within the org.
-  if organization.key() in profile.mentor_for:
-    raise exception.Forbidden(message=USER_HAS_ROLE % profile.name())
-  # Generate the new connection.
-  new_connection = connection_logic.createConnection(
-      profile=profile, org=organization,
-      org_role=org_role, user_role=user_role)
-  # Attach any user-provided messages to the connection.
-  if message:
-    connection_logic.createConnectionMessage(
-      connection=new_connection, author=profile, content=message)
-  # Dispatch an email to the user.
-  notification = context(data=data, connection=new_connection,
-      recipients=recipients, message=message)
-  sub_txn = mailer.getSpawnMailTaskTxn(notification, parent=new_connection)
-  sub_txn()
-
-  return new_connection
 
 def send_mentor_welcome_mail(data, connection_entity, profile, messages):
   """Send out a welcome email to new mentors.
@@ -364,7 +323,7 @@ class OrgConnectionPage(base.GSoCRequestHandler):
     for user in data.valid_users:
       connection_form.instance = None
       profile = GSoCProfile.all().ancestor(user).get()
-      create_connection_txn(
+      connection_view.createConnectionTxn(
           data=data, profile=profile, organization=data.organization,
           org_role=connection_form.cleaned_data['org_role'],
           message=connection_form.cleaned_data['message'],
@@ -479,7 +438,7 @@ class UserConnectionPage(base.GSoCRequestHandler):
     admins = q.fetch(50)
     recipients = [i.email for i in admins]
 
-    create_connection_txn(
+    connection_view.createConnectionTxn(
         data=data, profile=data.profile, organization=data.organization,
         user_role=connection.ROLE, recipients=recipients,
         message=connection_form.cleaned_data['message'],
@@ -776,7 +735,6 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
   def checkAccess(self, data, check, mutator):
     check.isProgramVisible()
     check.isProfileActive()
-    mutator.userFromKwargs()
     mutator.connectionFromKwargs()
     data.organization = data.connection.organization
     mutator.commentVisible(data.organization)

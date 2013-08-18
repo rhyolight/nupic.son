@@ -21,9 +21,12 @@ import os
 from datetime import datetime
 from datetime import timedelta
 
+from melange.models import connection as connection_model
+
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
-from tests.utils.connection_utils import seed_new_connection
+from tests.utils import connection_utils
+
 
 def generate_eligible_student_birth_date(program):
   eligible_age = program.student_min_age + program.student_max_age // 2
@@ -176,7 +179,13 @@ class ProfileHelper(object):
     return self.user
 
   def createOrgAdmin(self, org):
-    """Creates an org admin profile for the current user.
+    """Creates an Organization Administrator profile for the current user.
+
+    Args:
+      org: organization entity.
+
+    Returns:
+      the current profile entity.
     """
     self.createProfile()
     self.profile.mentor_for = [org.key()]
@@ -184,6 +193,14 @@ class ProfileHelper(object):
     self.profile.is_mentor = True
     self.profile.is_org_admin = True
     self.profile.put()
+
+    connection_properties = {
+        'user_role': connection_model.ROLE,
+        'org_role': connection_model.ORG_ADMIN_ROLE
+        }
+    connection_utils.seed_new_connection(self.profile, org,
+        **connection_properties)
+
     return self.profile
 
   def removeOrgAdmin(self):
@@ -199,12 +216,26 @@ class ProfileHelper(object):
     return self.profile
 
   def createMentor(self, org):
-    """Creates an mentor profile for the current user.
+    """Creates a Mentor profile for the current user.
+
+    Args:
+      org: organization entity.
+
+    Returns:
+      the current profile entity.
     """
     self.createProfile()
     self.profile.mentor_for = [org.key()]
     self.profile.is_mentor = True
     self.profile.put()
+
+    connection_properties = {
+        'user_role': connection_model.ROLE,
+        'org_role': connection_model.MENTOR_ROLE
+        }
+    connection_utils.seed_new_connection(self.profile, org,
+        **connection_properties)    
+
     return self.profile
 
   def removeMentor(self):
@@ -373,7 +404,7 @@ class GSoCProfileHelper(ProfileHelper):
     return self.profile
   
   def createConnection(self, org):
-    self.connection = seed_new_connection(self.profile, org)
+    self.connection = connection_utils.seed_new_connection(self.profile, org)
     return self.connection
 
 

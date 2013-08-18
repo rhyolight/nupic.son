@@ -154,7 +154,6 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     mutator.projectFromKwargs()
-    mutator.profileFromKwargs()
     mutator.studentEvaluationFromKwargs()
     mutator.studentEvaluationRecordFromKwargs()
 

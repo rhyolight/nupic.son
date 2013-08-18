@@ -58,7 +58,6 @@ class SubscribedTasksPage(base.GCIRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     check.isProfileActive()
-    mutator.profileFromKwargs()
     if data.profile.key() != data.url_profile.key():
       raise exception.Forbidden(message='You do not have access to this data')
 

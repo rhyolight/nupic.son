@@ -25,12 +25,16 @@ from django.core import urlresolvers
 from django.utils import encoding
 
 from melange.appengine import system
+from melange.request import exception
 from melange.utils import time
 
 from soc.logic import program as program_logic
 from soc.logic import site as site_logic
 from soc.logic import user
+from soc.models import organization as org_model
+from soc.models import profile as profile_model
 from soc.models import sponsor as sponsor_model
+from soc.models import user as user_model
 from soc.views.helper import access_checker
 
 
@@ -163,6 +167,8 @@ class RequestData(object):
   Fields:
     site: the singleton site.Site entity
     user: the user entity (if logged in)
+    profile: the profile entity
+    program: the program entity
     request: the request object (as provided by django)
     args: the request args (as provided by djang)
     kwargs: the request kwargs (as provided by django)
@@ -172,7 +178,16 @@ class RequestData(object):
     POST: the POST dictionary (from the request object)
     is_developer: is the current user a developer
     gae_user: the Google Appengine user object
+    timeline: the timeline helper
+
+  Optional fields (may not be specified for all requests):
+    url_org: organization entity for the data in kwargs.
+    url_profile: profile entity for the data in kwargs.
+    url_user: user entity for the data in kwargs.
   """
+
+  __org_model = org_model.Organization
+  __profile_model = profile_model.Profile
 
   # class attribute which is assigned to all fields which have not been set
   _unset = object()
@@ -195,6 +210,9 @@ class RequestData(object):
     self._site = self._unset
     self._sponsor = self._unset
     self._user = self._unset
+    self._profile = self._unset
+    self._program = self._unset
+
     self._GET = self._unset
     self._POST = self._unset
     # TODO(daniel): check if this field is really used
@@ -203,6 +221,11 @@ class RequestData(object):
     self._gae_user = self._unset
     self._css_path = self._unset
     self._ds_write_disabled = self._unset
+    self._timeline = self._unset
+
+    self._url_org = self._unset
+    self._url_profile = self._unset
+    self._url_user = self._unset
 
     # explicitly copy POST and GET dictionaries so they can be modified
     # the default QueryDict objects used by Django are immutable, but their
@@ -307,6 +330,25 @@ class RequestData(object):
     return self._user
 
   @property
+  def profile(self):
+    """Returns the profile property."""
+    if not self._isSet(self._profile):
+      if not self.user or not self.program:
+        self._profile = None
+      else:
+        key_name = '%s/%s' % (self.program.key().name(), self.user.link_id)
+        self._profile = self.__profile_model.get_by_key_name(
+            key_name, parent=self.user)
+    return self._profile
+
+  @property
+  def program(self):
+    """Returns the program field."""
+    if not self._isSet(self._program):
+      self._getProgramWideFields()
+    return self._program
+
+  @property
   def GET(self):
     """Returns the GET dictionary associated with the processed request."""
     if not self._isSet(self._GET):
@@ -333,6 +375,99 @@ class RequestData(object):
       if not self._isSet(self._ds_write_disabled):
         self._ds_write_disabled = not db.WRITE_CAPABILITY.is_enabled()
     return self._ds_write_disabled
+
+  @property
+  def timeline(self):
+    """Returns the timeline field."""
+    if not self._isSet(self._timeline):
+      self._timeline = TimelineHelper(self.program_timeline, None)
+    return self._timeline
+
+  @property
+  def url_profile(self):
+    """Returns url_profile property.
+
+    This property represents profile entity for a person whose identifier
+    is a part of the URL of the processed request for the program whose
+    identifier is also a part of the URL.
+
+    Returns:
+      Retrieved profile entity.
+
+    Raises:
+      exception.UserError: if no profile entity is found.
+    """
+    if not self._isSet(self._url_profile):
+      try:
+        fields = ['sponsor', 'program', 'user']
+        key_name = '/'.join(self.kwargs[i] for i in fields)
+      except KeyError:
+        raise ValueError('The request does not contain full profile data.')
+
+      self._url_profile = self.__profile_model.get_by_key_name(
+          key_name, parent=db.Key.from_path('User', self.kwargs['user']))
+
+      if not self._url_profile:
+        raise exception.NotFound(message='Requested profile does not exist.')
+    return self._url_profile
+
+  @property
+  def url_org(self):
+    """Returns url_org property.
+
+    This property represents organization entity whose identifier is a part
+    of the URL of the processed request.
+
+    Returns:
+      Retrieved organization entity.
+
+    Raises:
+      ValueError: if the current request does not contain any
+        organization data.
+      exception.NotFound: if the organization is not found.
+    """
+    if not self._isSet(self._url_org):
+      try:
+        fields = ['sponsor', 'program', 'organization']
+        key_name = '/'.join(self.kwargs[i] for i in fields)
+      except KeyError:
+        raise ValueError(
+            'The request does not contain full organization data.')
+
+      self._url_org = self.__org_model.get_by_key_name(key_name)
+
+      if not self._url_org:
+        raise exception.NotFound('Requested organization does not exist.')
+    return self._url_org
+
+  @property
+  def url_user(self):
+    """Returns url_user property.
+
+    This property represents user entity for a person whose identifier
+    is a part of the URL of the processed request.
+
+    Returns:
+      Retrieved user entity.
+
+    Raises:
+      ValueError: if the current request does not contain any user data.
+      exception.NotFound: if the user is not found.
+    """
+    if not self._isSet(self._url_user):
+      key_name = self.kwargs.get('user')
+      if not key_name:
+        raise ValueError('The request does not contain user data.')
+
+      self._url_user = user_model.User.get_by_key_name(key_name)
+
+      if not self._url_user:
+        raise exception.NotFound(message='Requested user does not exist.')
+    return self._url_user
+
+  def _getProgramWideFields(self):
+    """Fetches program wide fields in a single database round-trip."""
+    raise NotImplementedError
 
 
 # TODO(nathaniel): This should be immutable.

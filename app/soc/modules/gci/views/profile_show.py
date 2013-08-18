@@ -19,6 +19,7 @@ import logging
 from django import http
 from django.utils import translation
 
+from melange.request import access
 from melange.request import exception
 from soc.views import profile_show
 from soc.views.helper import access_checker
@@ -126,16 +127,13 @@ class GCIProfileShowPage(profile_show.ProfileShowPage, base.GCIRequestHandler):
 class GCIProfileShowAdminPage(GCIProfileShowPage):
   """View to display the read-only profile page for admin."""
 
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     return [
         url(r'profile/show/%s$' % url_patterns.PROFILE,
          self, name=url_names.GCI_PROFILE_SHOW_ADMIN),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isHost()
-    mutator.userFromKwargs()
-    mutator.profileFromKwargs()
 
   def context(self, data, check, mutator):
     context = super(GCIProfileShowAdminPage, self).context(data, check, mutator)

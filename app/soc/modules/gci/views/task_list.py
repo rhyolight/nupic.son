@@ -119,8 +119,10 @@ class StudentTasksForOrganizationList(TaskList):
 
 
 class StudentTasksForOrganizationPage(GCIRequestHandler):
-  """View for the list of student tasks for organization.
-  """
+  """View for the list of student tasks for organization."""
+
+  # TODO(daniel): who should be able to access it?
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
 
   def templatePath(self):
     return 'modules/gci/task/task_list.html'
@@ -130,10 +132,6 @@ class StudentTasksForOrganizationPage(GCIRequestHandler):
         url(r'student_tasks_for_org/%s$' % url_patterns.USER_ORG, self,
             name=url_names.GCI_STUDENT_TASKS_FOR_ORG),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    # TODO(daniel): who should be able to access it?
-    mutator.profileFromKwargs()
 
   def jsonContext(self, data, check, mutator):
     list_content = StudentTasksForOrganizationList(data).getListData()

@@ -17,7 +17,10 @@
 import unittest
 import urllib
 
+from codein.views.helper import urls as ci_urls
+
 from soc.logic import links
+from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model
 from soc.models import user as user_model
@@ -136,3 +139,54 @@ class TestLinker(unittest.TestCase):
     self.assertEqual(
         '/gci/program/create/%s' % TEST_SPONSOR_KEY_NAME,
         self.linker.sponsor(MockSponsor(), 'gci_program_create'))
+
+  def testUserOrg(self):
+    """Tests userOrg function."""
+    # seed a program
+    program = seeder_logic.seed(program_model.Program)
+    program.program_id = program.link_id
+    program.sponsor = program.scope
+
+    # seed a user
+    user = seeder_logic.seed(user_model.User)
+
+    # seed a profile
+    profile_properties = {
+        'program': program,
+        'scope': program,
+        'parent': user
+        }
+    profile = seeder_logic.seed(profile_model.Profile, profile_properties)
+
+    # seed an organization
+    org = seeder_logic.seed(org_model.Organization)
+
+    self.assertEqual(
+        '/gci/connection/start/user/%s/%s/%s' % (profile.program.key().name(),
+            profile.parent_key().name(), org.link_id),
+        self.linker.userOrg(
+            profile, org, ci_urls.UrlNames.CONNECTION_START_AS_USER))
+
+  def testUserId(self):
+    """Tests userId function."""
+    # seed a program
+    program = seeder_logic.seed(program_model.Program)
+    program.program_id = program.link_id
+    program.sponsor = program.scope
+
+    # seed a user
+    user = seeder_logic.seed(user_model.User)
+
+    # seed a profile
+    profile_properties = {
+        'program': program,
+        'scope': program,
+        'parent': user
+        }
+    profile = seeder_logic.seed(profile_model.Profile, profile_properties)
+
+    self.assertEqual(
+        '/gci/connection/manage/user/%s/%s/%s' % (profile.program.key().name(),
+            profile.parent_key().name(), 42),
+        self.linker.userId(
+            profile, 42, ci_urls.UrlNames.CONNECTION_MANAGE_AS_USER))

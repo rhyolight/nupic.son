@@ -173,7 +173,11 @@ class GSoCProgramHelper(ProgramHelper):
     if self.program:
       return self.program
     super(GSoCProgramHelper, self).createProgram()
-    properties = {'scope': self.sponsor}
+    properties = {
+        'scope': self.sponsor,
+        'program_start': timeline_utils.past(),
+        'program_end': timeline_utils.future()
+        }
     self.program_timeline = self.seed(GSoCTimeline, properties)
 
     properties = {'timeline': self.program_timeline,
@@ -264,7 +268,11 @@ class GCIProgramHelper(ProgramHelper):
       return self.program
     super(GCIProgramHelper, self).createProgram()
 
-    properties = {'scope': self.sponsor}
+    properties = {
+        'scope': self.sponsor,
+        'program_start': timeline_utils.past(),
+        'program_end': timeline_utils.future()
+        }
     self.program_timeline = self.seed(GCITimeline, properties)
 
     properties = {

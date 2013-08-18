@@ -17,13 +17,31 @@
 from django.utils import translation
 
 from melange.request import exception
+
 from soc.logic import links
+from soc.models import program as program_model
+
 
 _MESSAGE_NOT_PROGRAM_ADMINISTRATOR = translation.ugettext(
     'You need to be a program administrator to access this page.')
 
 _MESSAGE_NOT_DEVELOPER = translation.ugettext(
     'This page is only accessible to developers.')
+
+_MESSAGE_NO_PROFILE = translation.ugettext(
+    'You need to have an active profile to access this page.')
+
+_MESSAGE_PROGRAM_NOT_EXISTING = translation.ugettext(
+    'Requested program does not exist.')
+
+_MESSAGE_PROGRAM_NOT_ACTIVE = translation.ugettext(
+    'Requested program is not active at this moment.')
+
+_MESSAGE_STUDENTS_DENIED = translation.ugettext(
+    'This page is not accessible to users with student profiles.')
+
+_MESSAGE_NOT_USER_IN_URL = translation.ugettext(
+    'You are not logged in as the user in the URL.')
 
 
 def ensureLoggedIn(self):
@@ -117,3 +135,74 @@ class DeveloperAccessChecker(AccessChecker):
       raise exception.Forbidden(message=_MESSAGE_NOT_DEVELOPER)
 
 DEVELOPER_ACCESS_CHECKER = DeveloperAccessChecker()
+
+
+class ConjuctionAccessChecker(AccessChecker):
+  """Aggregated access checker that holds a collection of other access
+  checkers and ensures that access is granted only if each of those checkers
+  grants access individually."""
+
+  def __init__(self, checkers):
+    """Initializes a new instance of the access checker.
+
+    Args:
+      checkers: list of AccessChecker objects to be examined by this checker.
+    """
+    self._checkers = checkers
+
+  def checkAccess(self, data, check, mutator):
+    """See AccessChecker.checkAccess for specification."""
+    for checker in self._checkers:
+      checker.checkAccess(data, check, mutator)
+
+
+class NonStudentAccessChecker(AccessChecker):
+  """AccessChecker that ensures that the user has a non-student profile."""
+
+  def checkAccess(self, data, check, mutator):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.gae_user:
+      raise exception.LoginRequired()
+
+    if not data.profile or data.profile.status != 'active':
+      raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
+
+    if data.profile.is_student:
+      raise exception.Forbidden(message=_MESSAGE_STUDENTS_DENIED)
+
+NON_STUDENT_ACCESS_CHECKER = NonStudentAccessChecker()
+
+
+class ProgramActiveAccessChecker(AccessChecker):
+  """AccessChecker that ensures that the program is currently active.
+
+  A program is considered active when the current point of time comes after
+  its start date and before its end date. Additionally, its status has to
+  be set to visible.
+  """
+
+  def checkAccess(self, data, check, mutator):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.program:
+      raise exception.NotFound(message=_MESSAGE_PROGRAM_NOT_EXISTING)
+
+    if (data.program.status != program_model.STATUS_VISIBLE 
+        or not data.timeline.programActive()):
+      raise exception.Forbidden(message=_MESSAGE_PROGRAM_NOT_ACTIVE)
+
+PROGRAM_ACTIVE_ACCESS_CHECKER = ProgramActiveAccessChecker()
+
+
+class IsUrlUserAccessChecker(AccessChecker):
+  """AccessChecker that ensures that the logged in user is the user whose
+  identifier is set in URL data.
+  """
+
+  def checkAccess(self, data, check, mutator):
+    """See AccessChecker.checkAccess for specification."""
+    key_name = data.kwargs.get('user')
+    if not key_name:
+      raise exception.BadRequest('The request does not contain user data.')
+
+    if not data.user or data.user.key().name() != key_name:
+      raise exception.Forbidden(message=_MESSAGE_NOT_USER_IN_URL)

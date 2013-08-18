@@ -248,9 +248,7 @@ class Mutator(object):
     self.data.request_entity = unset
     self.data.requester = unset
     self.data.scope_key_name = unset
-    self.data.url_profile = unset
     self.data.url_student_info = unset
-    self.data.url_user = unset
 
   def documentKeyNameFromKwargs(self):
     """Returns the document key fields from kwargs.
@@ -282,34 +280,7 @@ class Mutator(object):
     self.data.key_name = '/'.join(fields)
     self.data.document = document.Document.get_by_key_name(self.data.key_name)
 
-  def userFromKwargs(self):
-    """Retrieves a user_model.User from kwargs."""
-    key_name = self.data.kwargs['user']
-    self.data.url_user = user_model.User.get_by_key_name(key_name)
-
-    if not self.data.url_user:
-      raise exception.NotFound(message='Requested user does not exist')
-
-  def profileFromKwargs(self, profile_model):
-    """Retrieves a profile from kwargs.
-
-    Args:
-      profile_model: The datastore model class
-    """
-    self.userFromKwargs()
-
-    fields = ['sponsor', 'program', 'user']
-    key_name = '/'.join(self.data.kwargs[i] for i in fields)
-
-    self.data.url_profile = profile_model.get_by_key_name(
-        key_name, parent=self.data.url_user)
-
-    if not self.data.url_profile:
-      raise exception.NotFound(
-          message='Requested user does not have a profile')
-
   def studentFromKwargs(self):
-    self.profileFromKwargs()
     self.data.url_student_info = self.data.url_profile.student_info
 
     if not self.data.url_student_info:
@@ -376,8 +347,6 @@ class Mutator(object):
 
   def connectionFromKwargs(self):
     """Set the connection entity in the RequestData object."""
-    self.profileFromKwargs()
-
     self.data.connection = connection_model.Connection.get_by_id(
         long(self.data.kwargs['id']), parent=self.data.url_profile)
     if not self.data.connection:

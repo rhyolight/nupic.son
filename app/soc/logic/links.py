@@ -18,7 +18,7 @@ from google.appengine.api import users
 
 from django.core import urlresolvers
 
-from soc.models import program as program_model
+from soc.logic import program as program_logic
 
 
 class Linker(object):
@@ -108,4 +108,48 @@ class Linker(object):
     kwargs = {
         'sponsor': sponsor.key().name(),
     }
+    return urlresolvers.reverse(url_name, kwargs=kwargs)
+
+  def userOrg(self, profile, org, url_name):
+    """Returns the URL of a page whose address contains parts associated
+    with the specified profile and organization.
+
+    Args:
+      profile: profile entity.
+      org: organization entity.
+      url_name: the name with which a URL was registered with Django.
+
+    Returns:
+      The URL of the page matching the given names for the given profile
+      and organization.
+    """
+    program = profile.program
+    kwargs = {
+        'sponsor': program_logic.getSponsorKey(program).name(),
+        'program': program.program_id,
+        'user': profile.parent_key().name(),
+        'organization': org.link_id,
+        }
+    return urlresolvers.reverse(url_name, kwargs=kwargs)
+
+  def userId(self, profile, entity_id, url_name):
+    """Returns the URL of a page whose address contains parts associated
+    with the specified profile and numeric identifier of some other entity.
+
+    Args:
+      profile: profile entity.
+      entity_id: numeric ID of entity.
+      url_name: the name with which a URL was registered with Django.
+
+    Returns:
+      The URL of the page matching the given names for the given profile
+      and organization.
+    """
+    program = profile.program
+    kwargs = {
+        'sponsor': program_logic.getSponsorKey(program).name(),
+        'program': program.program_id,
+        'user': profile.parent_key().name(),
+        'id': entity_id,
+        }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
