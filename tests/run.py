@@ -18,6 +18,7 @@ import sys
 import os
 import subprocess
 
+
 HERE = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                      '..'))
 appengine_location = os.path.join(HERE, 'thirdparty', 'google_appengine')
@@ -26,6 +27,7 @@ extra_paths = [HERE,
                os.path.join(appengine_location, 'lib', 'antlr3'),
                appengine_location,
                os.path.join(HERE, 'app'),
+               os.path.join(HERE, 'tests'),
                os.path.join(HERE, 'thirdparty', 'coverage'),
               ]
 
@@ -33,6 +35,7 @@ import nose
 from nose import plugins
 
 import logging
+
 # Disable the messy logging information
 logging.disable(logging.INFO)
 log =  logging.getLogger('nose.plugins.cover')
@@ -265,6 +268,12 @@ def run_pyunit_tests():
   os.environ['HTTP_HOST'] = 'some.testing.host.tld'
   os.environ['APPENGINE_RUNTIME'] = 'python27'
   setup_gae_services()
+
+  # settings cannot be imported at module level, as it requires all
+  # environmental variables to be already set
+  import settings
+  settings.MIDDLEWARE_CLASSES = list(settings.MIDDLEWARE_CLASSES) + [
+      'test_utils.FakeBlobstoreMiddleware']
 
   import main as app_main
   import django.test.utils

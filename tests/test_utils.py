@@ -14,6 +14,7 @@
 
 """Common testing utilities."""
 
+import cgi
 import collections
 import hashlib
 import os
@@ -26,6 +27,7 @@ import gaetestbed
 from mox import stubout
 
 from google.appengine.datastore import datastore_stub_util
+from google.appengine.ext import blobstore
 from google.appengine.ext import db
 from google.appengine.ext import testbed
 
@@ -194,6 +196,8 @@ class SoCTestCase(unittest.TestCase):
     self.policy = datastore_stub_util.PseudoRandomHRConsistencyPolicy(
         probability=1)
     self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
+
+    self.testbed.init_blobstore_stub()
 
   @staticmethod
   def use_hr_schema(func):
@@ -819,3 +823,53 @@ class TaskQueueTestCase(gaetestbed.taskqueue.TaskQueueTestCase,
     """
 
     super(TaskQueueTestCase, self).setUp()
+
+
+class FakeBlobstoreMiddleware(object):
+  """Middleware class to pre-process file uploads so that they are accessible
+  by test functions.
+
+  Actual files cannot be handled properly by the regular, as Django does not
+  recognize them as Blob uploads, as in production or on devappserver they
+  are first processed by AppEngine.
+
+  This class manually finds file uploads by checking if there is 'filename'
+  element in their Content-Disposition header. Mock BlobInfo instances
+  are added to the processed request so that actual views see them.
+  """
+
+  def process_request(self, request):
+    """Processes request by handling all possible file uploads.
+
+    It implements a hook for Django middleware as described in its
+    documentation.
+
+    Args:
+      request: A django.http.HttpRequest.
+    """
+    request.file_uploads = {}
+
+    # we only care about POST and which has form data with file.
+    if request.method == 'POST' and (
+        'multipart/form-data' in request.META.get('CONTENT_TYPE', '')):
+
+      wsgi_input = request.META['wsgi.input']
+      wsgi_input.seek(0)
+
+      fields = cgi.FieldStorage(wsgi_input, environ=request.META)
+
+      for key in fields:
+        field = fields[key]
+        if isinstance(field, cgi.FieldStorage):
+          if ('content-disposition' in field.headers and 
+              'filename' in field.disposition_options):
+
+            # create a mock blob info and assign it to request data
+            _values = {'size': 1024}
+            blob_info = blobstore.BlobInfo(blobstore.BlobKey('fake blob-key'),
+                _values=_values)
+            request.file_uploads[key] = blob_info
+            request.POST[key] = field.disposition_options['filename']
+
+            # format blob info for Django by adding the name property.
+            blob_info.name = field.disposition_options['filename']

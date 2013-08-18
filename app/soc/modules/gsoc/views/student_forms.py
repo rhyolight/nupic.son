@@ -224,7 +224,7 @@ class FormPage(base.GSoCRequestHandler):
           self._urlName(data), extra=['error=%s' % error.as_text()])
 
     # delete the old blob, if it exists
-    oldBlob = getattr(data.student_info, form.fileFieldName())
+    oldBlob = getattr(self._studentInfo(data), form.fileFieldName())
     if oldBlob:
       oldBlob.delete()
 

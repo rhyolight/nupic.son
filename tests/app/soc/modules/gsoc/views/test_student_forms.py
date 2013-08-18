@@ -14,6 +14,10 @@
 
 """Unit tests for student forms view."""
 
+import tempfile
+
+from soc.modules.gsoc.models import profile as profile_model
+
 from tests import profile_utils
 from tests import test_utils
 
@@ -75,13 +79,125 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseOK(response)
     self._assertStudentFormsTemplatesUsed(response)
 
-  def _getEnrollmentFormUrl(self):
-    """Returns URL for the student enrollment form upload."""
-    return '/gsoc/student_forms/enrollment/' + self.gsoc.key().name()
+  def testEnrollmentFormSubmissionByStudent(self):
+    """Tests that enrollment form is submitted properly by a student."""
+    self.timeline_helper.formSubmission()
 
-  def _getTaxFormUrl(self):
+    mentor = self._createNewMentor()
+    self.profile_helper.createStudentWithProject(self.org, mentor)
+
+    # check that there is no enrollment form at this stage
+    self.assertIsNone(self.profile_helper.profile.student_info.enrollment_form)
+
+    with tempfile.NamedTemporaryFile() as test_file:
+      # check for the enrollment form
+      url = self._getEnrollmentFormUrl()
+      postdata = {'enrollment_form': test_file}
+      response = self.post(url, postdata)
+      self.assertResponseRedirect(
+          response, self._getEnrollmentFormUrl(validated=True))
+
+      # check if the form has been submitted
+      student_info = profile_model.GSoCStudentInfo.get(
+          self.profile_helper.profile.student_info.key())
+      self.assertIsNotNone(student_info.enrollment_form)
+
+  def testTaxFormSubmissionByStudent(self):
+    """Tests that enrollment form is submitted properly by a student."""
+    self.timeline_helper.formSubmission()
+
+    mentor = self._createNewMentor()
+    self.profile_helper.createStudentWithProject(self.org, mentor)
+
+    # check that there is no tax form at this stage
+    self.assertIsNone(self.profile_helper.profile.student_info.tax_form)
+
+    with tempfile.NamedTemporaryFile() as test_file:
+      # check for the enrollment form
+      url = self._getTaxFormUrl()
+      postdata = {'tax_form': test_file}
+      response = self.post(url, postdata)
+      self.assertResponseRedirect(
+          response, self._getTaxFormUrl(validated=True))
+
+      # check if the form has been submitted
+      student_info = profile_model.GSoCStudentInfo.get(
+          self.profile_helper.profile.student_info.key())
+      self.assertIsNotNone(student_info.tax_form)
+
+  def testEnrollmentFormSubmissionByAdmin(self):
+    """Tests that enrollment form is submitted properly by an admin."""
+    self.timeline_helper.formSubmission()
+
+    self.profile_helper.createHost()
+
+    mentor = self._createNewMentor()
+
+    profile_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
+    profile_helper.createOtherUser('student@example.com')
+    profile = profile_helper.createStudentWithProject(self.org, mentor)    
+
+    # check that there is no enrollment form at this stage
+    self.assertIsNone(profile.student_info.enrollment_form)
+
+    with tempfile.NamedTemporaryFile() as test_file:
+      url = self._getAdminEnrollmentForm(profile)
+      postdata = {'enrollment_form': test_file}
+      response = self.post(url, postdata)
+      self.assertResponseRedirect(
+          response, self._getAdminEnrollmentForm(profile, validated=True))
+
+      # check if the form has been submitted
+      student_info = profile_model.GSoCStudentInfo.get(
+          profile.student_info.key())
+      self.assertIsNotNone(student_info.enrollment_form)
+
+  def testTaxFormSubmissionByAdmin(self):
+    """Tests that tax form is submitted properly by an admin."""
+    self.timeline_helper.formSubmission()
+
+    self.profile_helper.createHost()
+
+    mentor = self._createNewMentor()
+
+    profile_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
+    profile_helper.createOtherUser('student@example.com')
+    profile = profile_helper.createStudentWithProject(self.org, mentor)    
+
+    # check that there is no tax form at this stage
+    self.assertIsNone(profile.student_info.tax_form)
+
+    with tempfile.NamedTemporaryFile() as test_file:
+      url = self._getAdminTaxForm(profile)
+      postdata = {'tax_form': test_file}
+      response = self.post(url, postdata)
+      self.assertResponseRedirect(
+          response, self._getAdminTaxForm(profile, validated=True))
+
+      # check if the form has been submitted
+      student_info = profile_model.GSoCStudentInfo.get(
+          profile.student_info.key())
+      self.assertIsNotNone(student_info.tax_form)
+
+  def _getEnrollmentFormUrl(self, validated=False):
+    """Returns URL for the student enrollment form upload."""
+    url = '/gsoc/student_forms/enrollment/' + self.gsoc.key().name()
+    return url if not validated else url + '?validated'
+
+  def _getTaxFormUrl(self, validated=False):
     """Returns URL for the student tax form upload."""
-    return '/gsoc/student_forms/tax/' + self.gsoc.key().name()
+    url = '/gsoc/student_forms/tax/' + self.gsoc.key().name()
+    return url if not validated else url + '?validated'
+
+  def _getAdminEnrollmentForm(self, profile, validated=False):
+    """Returns URL for the student enrollment form upload by admin."""
+    url = '/gsoc/student_forms/admin/enrollment/%s' % profile.key().name()
+    return url if not validated else url + '?validated'
+
+  def _getAdminTaxForm(self, profile, validated=False):
+    """Returns URL for the student tax form upload by admin."""
+    url = '/gsoc/student_forms/admin/tax/%s' % profile.key().name()
+    return url if not validated else url + '?validated'
 
   def _assertAccessForbiddenForUrl(self, url):
     """Asserts that GET request will return forbidden response
