@@ -723,25 +723,7 @@ class GCIDjangoTestCase(DjangoTestCase, GCITestCase):
     return self.createDocumentForPrefix('gci_program', override)
 
 
-def runTasks(url = None, name=None, queue_names = None):
-  """Run tasks with specified url and name in specified task queues.
-  """
-
-  task_queue_test_case = gaetestbed.taskqueue.TaskQueueTestCase()
-  # Get all tasks with specified url and name in specified task queues
-  tasks = task_queue_test_case.get_tasks(url=url, name=name,
-                                         queue_names=queue_names)
-  for task in tasks:
-    postdata = task['params']
-    xsrf_token = GSoCDjangoTestCase.getXsrfToken(url, data=postdata)
-    postdata.update(xsrf_token=xsrf_token)
-    client.FakePayload = NonFailingFakePayload
-    c = client.Client()
-    # Run the task with Django test client
-    c.post(url, postdata)
-
-
-class MailTestCase(gaetestbed.mail.MailTestCase, unittest.TestCase):
+class MailTestCase(gaetestbed.mail.MailTestCase, SoCTestCase):
   """Class extending gaetestbed.mail.MailTestCase to extend its functions.
 
   Difference:
@@ -753,7 +735,7 @@ class MailTestCase(gaetestbed.mail.MailTestCase, unittest.TestCase):
   def setUp(self):
     """Sets up gaetestbed.mail.MailTestCase.
     """
-
+    super(MailTestCase, self).setUp()
     super(MailTestCase, self).setUp()
 
   def get_sent_messages(self, to=None, cc=None, bcc=None, sender=None,
@@ -784,7 +766,7 @@ class MailTestCase(gaetestbed.mail.MailTestCase, unittest.TestCase):
     """
 
     # Run all mail tasks first so that all mails will be sent out
-    runTasks(url = '/tasks/mail/send_mail', queue_names = ['mail'])
+    self.runTasks(url = '/tasks/mail/send_mail', queue_names = ['mail'])
     messages = self.get_sent_messages(
         to = to,
         cc = cc,
@@ -829,6 +811,25 @@ class MailTestCase(gaetestbed.mail.MailTestCase, unittest.TestCase):
       else:
         failure_message += 'None'
       self.fail(failure_message)
+
+  def runTasks(self, url=None, name=None, queue_names=None):
+    """Run tasks with specified URL and name in specified task queues.
+
+    Args:
+      url: URL associated with the task to run.
+      name: name of the task.
+      queue_names: names of task queues in which the tasks should be executed.
+    """
+    task_queue_test_case = gaetestbed.taskqueue.TaskQueueTestCase()
+    # Get all tasks with specified url and name in specified task queues
+    tasks = task_queue_test_case.get_tasks(
+        url=url, name=name, queue_names=queue_names)
+    for task in tasks:
+      postdata = task['params']
+      xsrf_token = GSoCDjangoTestCase.getXsrfToken(url, data=postdata)
+      postdata.update(xsrf_token=xsrf_token)
+      # Run the task with Django test client
+      self.post(url, postdata)
 
 
 class TaskQueueTestCase(gaetestbed.taskqueue.TaskQueueTestCase,
