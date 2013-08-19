@@ -15,7 +15,6 @@
 """Common testing utilities."""
 
 import cgi
-import collections
 import hashlib
 import os
 import datetime
@@ -44,6 +43,9 @@ from tests import profile_utils
 from tests import program_utils
 from tests import timeline_utils
 
+
+# key of request argument associated with testbed object
+TESTBED_ARG_KEY = 'TESTBED'
 
 class MockRequest(object):
   """Shared dummy request object to mock common aspects of a request.
@@ -236,12 +238,12 @@ class SoCTestCase(unittest.TestCase):
       msg: the optional message
     """
     if not isinstance(expected_entity, db.Model):
-       raise TypeError('expected_entity has wrong type: %s' %
-           type(expected_entity))
+      raise TypeError('expected_entity has wrong type: %s' %
+          type(expected_entity))
 
     if not isinstance(actual_entity, db.Model):
-       raise TypeError('actual_entity has wrong type: %s' %
-           type(actual_entity))
+      raise TypeError('actual_entity has wrong type: %s' %
+          type(actual_entity))
 
     self.assertEqual(expected_entity.key(), actual_entity.key(), msg)
 
@@ -398,7 +400,7 @@ class DjangoTestCase(TestCase):
     self.gen_request_id()
     postdata['xsrf_token'] = self.getXsrfToken(url, site=self.site)
 
-    extra = {'TESTBED': self.testbed}
+    extra = {TESTBED_ARG_KEY: self.testbed}
     response = self.client.post(url, postdata, **extra)
     postdata.pop('xsrf_token')
     return response
@@ -646,7 +648,7 @@ class DjangoTestCase(TestCase):
 
       try:
         self.assertEqual(value, prop, msg=msg)
-      except AssertionError as e:
+      except AssertionError:
         errors.append(msg)
 
     if errors:
@@ -875,7 +877,7 @@ class FakeBlobstoreMiddleware(object):
     if request.method == 'POST' and (
         'multipart/form-data' in request.META.get('CONTENT_TYPE', '')):
 
-      testbed = request.META['TESTBED']
+      testbed = request.META[TESTBED_ARG_KEY]
       wsgi_input = request.META['wsgi.input']
       wsgi_input.seek(0)
 
