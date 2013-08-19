@@ -260,8 +260,7 @@ class SoCTestCase(unittest.TestCase):
     # for some reason CreateBlob function returns datastore_types.Key instead
     # of datastore_types.BlobKey, whereas the latter type is required for
     # BlobReferenceProperty to work.
-    self.testbed.get_stub(
-        'blobstore').CreateBlob('initial_tax_form', 'Tax Form Content')
+    self.testbed.get_stub('blobstore').CreateBlob(filename, content)
     return blobstore.BlobKey(filename)
 
 
