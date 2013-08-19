@@ -26,6 +26,7 @@ import unittest
 import gaetestbed
 from mox import stubout
 
+from google.appengine.api import datastore
 from google.appengine.datastore import datastore_stub_util
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
@@ -378,7 +379,9 @@ class DjangoTestCase(TestCase):
     """
     self.gen_request_id()
     postdata['xsrf_token'] = self.getXsrfToken(url, site=self.site)
-    response = self.client.post(url, postdata)
+
+    extra = {'TESTBED': self.testbed}
+    response = self.client.post(url, postdata, **extra)
     postdata.pop('xsrf_token')
     return response
 
@@ -853,6 +856,7 @@ class FakeBlobstoreMiddleware(object):
     if request.method == 'POST' and (
         'multipart/form-data' in request.META.get('CONTENT_TYPE', '')):
 
+      testbed = request.META['TESTBED']
       wsgi_input = request.META['wsgi.input']
       wsgi_input.seek(0)
 
@@ -865,11 +869,19 @@ class FakeBlobstoreMiddleware(object):
               'filename' in field.disposition_options):
 
             # create a mock blob info and assign it to request data
-            _values = {'size': 1024}
-            blob_info = blobstore.BlobInfo(blobstore.BlobKey('fake blob-key'),
-                _values=_values)
+            filename = field.disposition_options['filename']
+            blob_info = testbed.get_stub('blobstore').CreateBlob(
+                filename, 'fake content')
+
+            # set other properties of blob info
+            blob_info['filename'] = filename
+            blob_info['content_type'] = field.headers['content-type']
+            datastore.Put(blob_info)
+
+            # set request data
             request.file_uploads[key] = blob_info
-            request.POST[key] = field.disposition_options['filename']
+            request.POST[key] = filename
 
             # format blob info for Django by adding the name property.
             blob_info.name = field.disposition_options['filename']
+            blob_info.size = blob_info['size']
