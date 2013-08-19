@@ -245,6 +245,25 @@ class SoCTestCase(unittest.TestCase):
 
     self.assertEqual(expected_entity.key(), actual_entity.key(), msg)
 
+  def createBlob(self, path, content=None):
+    """Puts new Blob upload for the specified path and optional content.
+
+    Args:
+      path: path of the file to upload.
+      content: content of the file.
+
+    Returns:
+      blobstore.BlobKey of the created blob.
+    """
+    filename = os.path.basename(path)
+    content = content or 'fake content'
+    # for some reason CreateBlob function returns datastore_types.Key instead
+    # of datastore_types.BlobKey, whereas the latter type is required for
+    # BlobReferenceProperty to work.
+    self.testbed.get_stub(
+        'blobstore').CreateBlob('initial_tax_form', 'Tax Form Content')
+    return blobstore.BlobKey(filename)
+
 
 # TODO(nathaniel): Drop "gsoc" attribute in favor of "program".
 class GSoCTestCase(SoCTestCase):
