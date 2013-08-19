@@ -40,14 +40,8 @@ START_CONNECTION_AS_USER_PAGE_NAME = translation.ugettext(
 START_CONNECTION_MESSAGE_LABEL = translation.ugettext(
     'Message')
 
-START_CONNECTION_AS_USER_FORM_ROLE_LABEL = translation.ugettext(
-    'Requested Role')
-
-START_CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT = translation.ugettext(
+CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT = translation.ugettext(
     'Optional message to the organization')
-
-START_CONNECTION_AS_USER_FORM_ROLE_HELP_TEXT = translation.ugettext(
-    'Role requested from the organization')
 
 ROLE_CHOICES = [
     (connection_model.MENTOR_ROLE, 'Mentor'),
@@ -116,6 +110,14 @@ class ConnectionForm(gci_forms.GCIModelForm):
     """
     self.fields['user_role'].help_text = help_text
 
+  def removeField(self, key):
+    """Removes field with the specified key.
+
+    Args:
+      key: a string with a key of a field to remove.
+    """
+    del self.fields[key]
+
   class Meta:
     model = connection_model.Connection
     fields = ['user_role']
@@ -128,10 +130,8 @@ def _formToStartConnectionAsUser(**kwargs):
     ConnectionForm adjusted to start connection as a user.
   """
   form = ConnectionForm(**kwargs)
-  form.setLabelForRole(START_CONNECTION_AS_USER_FORM_ROLE_LABEL)
-  form.setHelpTextForRole(START_CONNECTION_AS_USER_FORM_ROLE_HELP_TEXT)
-  form.setHelpTextForMessage(START_CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT)
-
+  form.removeField('user_role')
+  form.setHelpTextForMessage(CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT)
   return form
 
 
