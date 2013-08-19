@@ -124,8 +124,8 @@ class ConnectionForm(gci_forms.GCIModelForm):
 def _formToStartConnectionAsUser(**kwargs):
   """Returns a Django form to start connection as a user.
 
-  Args:
-    data: request_data.RequestData object describing the current request.
+  Returns:
+    ConnectionForm adjusted to start connection as a user.
   """
   form = ConnectionForm(**kwargs)
   form.setLabelForRole(START_CONNECTION_AS_USER_FORM_ROLE_LABEL)
