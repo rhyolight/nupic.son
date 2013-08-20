@@ -58,7 +58,7 @@ options(
                  'gae_django.py', 'profiler.py', 'appengine_config.py'],
     app_dirs =  ["melange", "soc", "feedparser", "djangoforms", "ranklist",
                  "shell", "html5lib", "gviz", "webmaster", "gdata", "atom",
-                 "mapreduce", "summerofcode"],
+                 "mapreduce", "summerofcode", "codein"],
     css_dirs = ["soc/content/css/gsoc/", "soc/content/css/gci"],
     css_files = {
         "jquery-ui/jquery.ui.merged.css": [
