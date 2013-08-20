@@ -24,6 +24,7 @@ from melange.request import access
 from melange.request import exception
 from melange.views import connection as connection_view
 
+from codein.templates import readonly
 from codein.views.helper import urls
 
 from soc.logic import links
@@ -34,6 +35,9 @@ from soc.modules.gci.views.helper import url_patterns as ci_url_patterns
 from soc.views.helper import url_patterns
 
 
+MANAGE_CONNECTION_AS_USER_PAGE_NAME = translation.ugettext(
+    'Manage connection')
+
 START_CONNECTION_AS_USER_PAGE_NAME = translation.ugettext(
     'Start connection with organization')
 
@@ -42,6 +46,22 @@ START_CONNECTION_MESSAGE_LABEL = translation.ugettext(
 
 CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT = translation.ugettext(
     'Optional message to the organization')
+
+CONNECTION_FORM_USER_ROLE_HELP_TEXT = translation.ugettext(
+    'Whether you request role from organization or not')
+
+CONNECTION_FORM_USER_ROLE_LABEL = translation.ugettext(
+    'Role For Organization')
+
+ORGANIZATION_ITEM_LABEL = translation.ugettext('Organization')
+USER_ITEM_LABEL = translation.ugettext('User')
+USER_ROLE_ITEM_LABEL = translation.ugettext('User Requests Role')
+ORG_ROLE_ITEM_LABEL = translation.ugettext('Role Granted by Organization')
+INITIALIZED_ON_LABEL = translation.ugettext('Initialized On')
+
+USER_ROLE_CHOICES = (
+    (connection_model.NO_ROLE, 'No'),
+    (connection_model.ROLE, 'Yes'))
 
 ROLE_CHOICES = [
     (connection_model.MENTOR_ROLE, 'Mentor'),
@@ -82,9 +102,11 @@ class ConnectionForm(gci_forms.GCIModelForm):
 
     self.fields['message'].label = START_CONNECTION_MESSAGE_LABEL
 
-    # set widget for role field
+    # set widget for user role field
     self.fields['user_role'].widget = django_forms.fields.Select(
-        choices=ROLE_CHOICES)
+        choices=USER_ROLE_CHOICES)
+    self.fields['user_role'].label = CONNECTION_FORM_USER_ROLE_LABEL
+    self.fields['user_role'].help_text = CONNECTION_FORM_USER_ROLE_HELP_TEXT
 
   def setHelpTextForMessage(self, help_text):
     """Sets help text for 'message' field.
@@ -133,6 +155,32 @@ def _formToStartConnectionAsUser(**kwargs):
   form.removeField('user_role')
   form.setHelpTextForMessage(CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT)
   return form
+
+
+def _formToManageConnectionAsUser(**kwargs):
+  """Returns a Django form to manage connection as a user.
+
+  Returns:
+    ConnectionForm adjusted to manage connection as a user.
+  """
+  form = ConnectionForm(**kwargs)
+  form.setHelpTextForMessage(CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT)
+  return form
+
+
+def _getValueForUserRoleItem(data):
+  """Returns value to be displayed for User Role item of connection summary.
+
+  Args:
+    data: request_data.RequestData for the current request.
+
+  Returns:
+    a string containing a value for User Role item.
+  """
+  if data.url_connection.user_role == connection_model.ROLE:
+    return 'Yes'
+  else:
+    return 'No'
 
 
 START_CONNECTION_AS_USER_ACCESS_CHECKER = access.ConjuctionAccessChecker([
@@ -187,7 +235,10 @@ class StartConnectionAsUser(base.GCIRequestHandler):
 
 
 class ManageConnectionAsUser(base.GCIRequestHandler):
-  """View manage an existing connection by the user."""
+  """View to manage an existing connection by the user."""
+
+  # TODO(daniel): add actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.GCIRequestHandler.djangoURLPatterns for specification."""
@@ -203,4 +254,19 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.GCIRequestHandler.context for specification."""
-    return {}
+
+    form = _formToManageConnectionAsUser(
+        data=data.POST or None, instance=data.url_connection)
+
+    summary = readonly.ReadOnlyTemplate(data)
+    summary.addItem(
+        ORGANIZATION_ITEM_LABEL, data.url_connection.organization.name)
+    summary.addItem(USER_ITEM_LABEL, data.url_profile.name())
+    summary.addItem(USER_ROLE_ITEM_LABEL, _getValueForUserRoleItem(data))
+    summary.addItem(INITIALIZED_ON_LABEL, data.url_connection.created_on)
+
+    return {
+        'page_name': MANAGE_CONNECTION_AS_USER_PAGE_NAME,
+        'form': form,
+        'summary': summary
+        }
