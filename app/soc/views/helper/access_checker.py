@@ -345,13 +345,6 @@ class Mutator(object):
         raise exception.NotFound(
             message=DEF_NO_ORG_APP % self.data.program.name)
 
-  def connectionFromKwargs(self):
-    """Set the connection entity in the RequestData object."""
-    self.data.connection = connection_model.Connection.get_by_id(
-        long(self.data.kwargs['id']), parent=self.data.url_profile)
-    if not self.data.connection:
-      raise exception.Forbidden(message='This connection does not exist.')
-
 
 class DeveloperMutator(Mutator):
   def canRespondForUser(self):
@@ -1021,10 +1014,9 @@ class AccessChecker(BaseAccessChecker):
     Connection entity.
     """
     assert isSet(self.data.profile)
-    assert isSet(self.data.connection)
     # Org admins may only view a connection if they are admins for the org
     # involved in the connection.
-    org_key = self.data.connection.organization.key()
+    org_key = self.data.url_connection.organization.key()
     if org_key not in self.data.profile.org_admin_for:
       raise exception.Forbidden(message=DEF_CONNECTION_UNACCESSIBLE)
   
@@ -1032,9 +1024,8 @@ class AccessChecker(BaseAccessChecker):
     """Checks if the current user is allowed to access a Connection entity.
     """
     assert isSet(self.data.profile)
-    assert isSet(self.data.connection)
     # Only org admins and the user involved in the connection may view it.
-    if self.data.connection.parent_key() != self.data.profile.key():
+    if self.data.url_connection.parent_key() != self.data.profile.key():
       raise exception.Forbidden(message=DEF_CONNECTION_UNACCESSIBLE)
     
 

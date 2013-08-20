@@ -491,8 +491,6 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
     check.isProgramVisible()
     check.hasProfile()
     check.notStudent()
-
-    mutator.connectionFromKwargs()
     check.canOrgMemberAccessConnection()
 
   def context(self, data, check, mutator):
@@ -510,7 +508,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
     return {
         'page_name' : 'Viewing Connection',
         'header_name' : data.url_profile.name(),
-        'connection' : data.connection,
+        'connection' : data.url_connection,
         'response_form' : response_form,
         'message_box' : message_box
         }
@@ -521,12 +519,12 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
 
     @db.transactional(xg=True)
     def org_selected_mentor_txn():
-      connection_entity = db.get(data.connection.key())
+      connection_entity = db.get(data.url_connection.key())
       connection_entity.org_role = connection.MENTOR_ROLE
       connection_entity.put()
 
-      profile = db.get(data.connection.parent_key())
-      organization = db.get(data.connection.organization.key())
+      profile = db.get(data.url_connection.parent_key())
+      organization = db.get(data.url_connection.organization.key())
       if connection_entity.userRequestedRole():
         if not profile.is_mentor:
           send_mentor_welcome_mail(data, connection_entity, profile, messages)
@@ -553,13 +551,13 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
 
     @db.transactional(xg=True)
     def org_selected_orgadmin_txn():
-      connection_entity = db.get(data.connection.key())
+      connection_entity = db.get(data.url_connection.key())
       connection_entity.org_role = connection.ORG_ADMIN_ROLE
       connection_entity.put()
 
       if connection_entity.userRequestedRole():
-        profile = db.get(data.connection.parent_key())
-        organization = db.get(data.connection.organization.key())
+        profile = db.get(data.url_connection.parent_key())
+        organization = db.get(data.url_connection.organization.key())
 
         if not profile.is_mentor:
           send_mentor_welcome_mail(data, connection_entity, profile, messages)
@@ -575,12 +573,12 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
   def _handleNoRoleSelection(self, data):
     @db.transactional(xg=True)
     def org_selected_norole_txn():
-      connection_entity = db.get(data.connection.key())
+      connection_entity = db.get(data.url_connection.key())
       connection_entity.org_role = connection.NO_ROLE
       connection_entity.put()
 
-      profile = db.get(data.connection.parent_key())
-      org_key = data.connection.organization.key()
+      profile = db.get(data.url_connection.parent_key())
+      org_key = data.url_connection.organization.key()
       if org_key in profile.mentor_for:
         organization = db.get(org_key)
         role_logic.assignUserNoRoleForOrg(profile, organization)
@@ -591,7 +589,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
             auto_generated=True)
 
     can_resign = canUserResignRoleForOrg(
-      data.connection.parent_key(), data.connection.organization.key())
+      data.url_connection.parent_key(), data.url_connection.organization.key())
     if can_resign:
       org_selected_norole_txn()
     else:
@@ -626,7 +624,6 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
     check.isProgramVisible()
     check.hasProfile()
 
-    mutator.connectionFromKwargs()
     check.notOrgAdmin()
     check.canUserAccessConnection()
 
@@ -644,8 +641,8 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
 
     return {
       'page_name' : 'Viewing Connection',
-      'header_name' : data.connection.organization.name,
-      'connection' : data.connection,
+      'header_name' : data.url_connection.organization.name,
+      'connection' : data.url_connection,
       'response_form' : response_form,
       'message_box' : message_box
       }
@@ -656,12 +653,12 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
 
     @db.transactional(xg=True)
     def user_selected_role_txn():
-      connection_entity = db.get(data.connection.key())
+      connection_entity = db.get(data.url_connection.key())
       connection_entity.user_role = connection.ROLE
       connection_entity.put()
 
       profile = db.get(data.profile.key())
-      organization = db.get(data.connection.organization.key())
+      organization = db.get(data.url_connection.organization.key())
 
       promoted = False
       if connection_entity.orgOfferedMentorRole():
@@ -689,12 +686,12 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
   def _handleNoRoleSelection(self, data):
     @db.transactional(xg=True)
     def user_selected_norole_txn():
-      connection_entity = db.get(data.connection.key())
+      connection_entity = db.get(data.url_connection.key())
       connection_entity.user_role = connection.NO_ROLE
       connection_entity.put()
 
       profile = db.get(data.profile.key())
-      organization = db.get(data.connection.organization.key())
+      organization = db.get(data.url_connection.organization.key())
 
       role_logic.assignUserNoRoleForOrg(profile, organization)
       # Generate a message on the connection to indicate the removed role.
@@ -704,7 +701,7 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
           auto_generated=True)
 
     can_resign = canUserResignRoleForOrg(
-      data.profile.key(), data.connection.organization.key())
+      data.profile.key(), data.url_connection.organization.key())
     if can_resign:
       user_selected_norole_txn()
     else:
@@ -735,8 +732,7 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
   def checkAccess(self, data, check, mutator):
     check.isProgramVisible()
     check.isProfileActive()
-    mutator.connectionFromKwargs()
-    data.organization = data.connection.organization
+    data.organization = data.url_connection.organization
     mutator.commentVisible(data.organization)
 
   def createMessageFromForm(self, data):
@@ -748,9 +744,6 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
     Returns:
       A newly created message entity or None.
     """
-
-    assert isSet(data.connection)
-
     message_form = MessageForm(data.request.POST)
 
     if not message_form.is_valid():
@@ -758,13 +751,13 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
 
     message_form.cleaned_data['author'] = data.profile
 
-    q = GSoCProfile.all().filter('mentor_for', data.connection.organization)
+    q = GSoCProfile.all().filter('mentor_for', data.organization)
     q.filter('status', 'active')
     q.filter('notify_public_comments', True)
     to_emails = [i.email for i in q if i.key() != data.profile.key()]
 
     def create_message_txn():
-      message = message_form.create(commit=True, parent=data.connection)
+      message = message_form.create(commit=True, parent=data.url_connection)
 
       # TODO(drew): add notifications
 
@@ -775,10 +768,10 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
   def post(self, data, check, mutator):
     message = self.createMessageFromForm(data)
     if message:
-      data.redirect.show_connection(data.url_user, data.connection)
+      data.redirect.show_connection(data.url_user, data.url_connection)
       return data.redirect.to(validated=True)
     else:
-      data.redirect.show_connection(data.url_user, data.connection)
+      data.redirect.show_connection(data.url_user, data.url_connection)
 
       # TODO(nathaniel): calling GET logic from a POST handling path.
       # a bit hacky :-( may be changed when possible
