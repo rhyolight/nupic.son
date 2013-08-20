@@ -21,15 +21,7 @@ limitations under the License.
 
 {% block page_content %}
 
-{% if posted %}
-  <div class="block block-user-message">
-  {% if error %}
-    <p>Sorry, we could not save your data. Please fix the errors mentioned below.</p>
-  {% else %}
-    <p>Data saved successfully.</p>
-  {% endif %}
-  </div>
-{% endif %}
+{% include "codein/_data_saved_message.html" %}
 
 <div class="block block-form">
   <!-- begin form -->

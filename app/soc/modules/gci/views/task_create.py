@@ -233,6 +233,7 @@ class TaskCreateForm(TaskEditPostClaimForm):
     fields = ['title', 'description', 'mentors']
 
 
+# TODO(daniel): why do we have this template? isn't regular message sufficient?
 class TaskFormErrorTemplate(Template):
   """Task forms error message template.
   """
