@@ -23,15 +23,31 @@ limitations under the License.
 
 
 <div class="block block-page">
-  <div class="block-form-title">
-    <span class="title">Connection Summary</span>
+  <div class="block block-page-section">
+    <div class="block-form-title">
+      <span class="title">Connection Summary</span>
+    </div>
+    {{ summary.render }}
   </div>
-  {{ summary.render }}
 
-  <div class="block-form-title">
-    <span class="title">Actions</span>
-  <div>
-  {{ form.render }}
+  <div class="block block-page-section">
+    <div class="block-form-title">
+      <span class="title">Actions</span>
+    </div>
+    <form action="#" method="post" class="form-create-task clearfix">
+      {{ actions_form.render }}
+      <div class="form-row form-row-buttons">
+        <input value="Submit" class="button" type="submit">
+      </div>
+    </form>
+  </div>
+
+  <div class="block block-page-section">
+    <div class="block-form-title">
+      <span class="title">Messages</span>
+     </div>
+     {{ message_form.render }}
+  </div>
 </div>
 
 

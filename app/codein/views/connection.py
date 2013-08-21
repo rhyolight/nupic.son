@@ -20,6 +20,7 @@ from django.utils import translation
 
 from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
+from melange.models import connection_message as connection_message_model
 from melange.request import access
 from melange.request import exception
 from melange.views import connection as connection_view
@@ -27,6 +28,7 @@ from melange.views import connection as connection_view
 from codein.templates import readonly
 from codein.views.helper import urls
 
+from soc.logic import cleaning
 from soc.logic import links
 from soc.logic.helper import notifications
 from soc.modules.gci.views import base
@@ -52,6 +54,9 @@ CONNECTION_FORM_USER_ROLE_HELP_TEXT = translation.ugettext(
 
 CONNECTION_FORM_USER_ROLE_LABEL = translation.ugettext(
     'Role For Organization')
+
+MESSAGE_FORM_CONTENT_LABEL = translation.ugettext(
+    'Send New Message')
 
 ORGANIZATION_ITEM_LABEL = translation.ugettext('Organization')
 USER_ITEM_LABEL = translation.ugettext('User')
@@ -145,6 +150,30 @@ class ConnectionForm(gci_forms.GCIModelForm):
     fields = ['user_role']
 
 
+class MessageForm(gci_forms.GCIModelForm):
+  """Django form to submit connection messages."""
+
+  def __init__(self, *args, **kwargs):
+    """Initializes a new instance of connection message form."""
+    super(MessageForm, self).__init__(*args, **kwargs)
+    self.fields['content'].label = MESSAGE_FORM_CONTENT_LABEL
+
+  class Meta:
+    model = connection_message_model.ConnectionMessage
+    fields = ['content']
+
+  def clean_content(self):
+    field_name = 'content'
+    wrapped_clean_html_content = cleaning.clean_html_content(field_name)
+    content = wrapped_clean_html_content(self)
+
+    if content:
+      return content
+    else:
+      raise django_forms.ValidationError(
+          translation.ugettext('Message content cannot be empty.'), code='invalid')
+
+
 def _formToStartConnectionAsUser(**kwargs):
   """Returns a Django form to start connection as a user.
 
@@ -164,7 +193,7 @@ def _formToManageConnectionAsUser(**kwargs):
     ConnectionForm adjusted to manage connection as a user.
   """
   form = ConnectionForm(**kwargs)
-  form.setHelpTextForMessage(CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT)
+  form.removeField('message')
   return form
 
 
@@ -255,8 +284,9 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
   def context(self, data, check, mutator):
     """See base.GCIRequestHandler.context for specification."""
 
-    form = _formToManageConnectionAsUser(
+    actions_form = _formToManageConnectionAsUser(
         data=data.POST or None, instance=data.url_connection)
+    message_form = MessageForm()
 
     summary = readonly.ReadOnlyTemplate(data)
     summary.addItem(
@@ -267,6 +297,7 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
 
     return {
         'page_name': MANAGE_CONNECTION_AS_USER_PAGE_NAME,
-        'form': form,
+        'actions_form': actions_form,
+        'message_form': message_form,
         'summary': summary
         }
