@@ -180,7 +180,7 @@ limitations under the License.
     "/soc/content/{{ app_version }}/js/templates/modules/gsoc/proposal/review.js",
     {
       {% if user_actions.toggle_buttons %}
-      host_toggle_buttons: [
+      user_toggle_buttons: [
         {% for button in user_actions.toggle_buttons %}
         {
           id: "{{ button.id }}",
