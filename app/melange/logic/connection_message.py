@@ -16,11 +16,11 @@
 
 from google.appengine.ext import db
 
-from melange.models import connection_message as connection_message_model
+from melange.models import connection as connection_model
 
 
 class QueryBuilder(object):
-  """Query builder class for connection_message_model.ConnectionMessage
+  """Query builder class for connection_model.ConnectionMessage
   model.
   """
 
@@ -86,7 +86,7 @@ class QueryBuilder(object):
     Returns:
       a built db.Query obejct
     """
-    query = db.Query(connection_message_model.ConnectionMessage,
+    query = db.Query(connection_model.ConnectionMessage,
         keys_only=self._keys_only)
     if self._author is not None:
       query.filter('author', self._author)

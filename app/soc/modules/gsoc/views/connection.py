@@ -26,7 +26,6 @@ from django.utils.translation import ugettext
 from melange.logic import connection as connection_logic
 from melange.logic import role_transitions as role_logic
 from melange.models import connection
-from melange.models.connection_message import ConnectionMessage
 from melange.request import exception
 from melange.utils import rich_bool
 from melange.views import connection as connection_view
@@ -244,7 +243,7 @@ class MessageForm(GSoCModelForm):
     self.fields['content'].label = ugettext(' ')
 
   class Meta:
-    model = ConnectionMessage
+    model = connection.ConnectionMessage
     fields = ['content']
 
   def clean_content(self):

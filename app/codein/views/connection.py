@@ -20,7 +20,6 @@ from django.utils import translation
 
 from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
-from melange.models import connection_message as connection_message_model
 from melange.request import access
 from melange.request import exception
 from melange.views import connection as connection_view
@@ -159,7 +158,7 @@ class MessageForm(gci_forms.GCIModelForm):
     self.fields['content'].label = MESSAGE_FORM_CONTENT_LABEL
 
   class Meta:
-    model = connection_message_model.ConnectionMessage
+    model = connection_model.ConnectionMessage
     fields = ['content']
 
   def clean_content(self):
