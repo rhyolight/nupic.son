@@ -56,10 +56,10 @@ class UploadForm(gci_forms.GCIModelForm):
   consent_form = gci_forms.FileField(required=False)
   student_id_form = gci_forms.FileField(required=False)
 
-  def __init__(self, request_data, *args, **kwargs):
+  def __init__(self, request_data=None, **kwargs):
     """Initializes the FileFields.
     """
-    super(UploadForm, self).__init__(*args, **kwargs)
+    super(UploadForm, self).__init__(**kwargs)
 
     # TODO(nathaniel): make this .program() call unnecessary.
     request_data.redirect.program()
@@ -183,7 +183,7 @@ class StudentFormUpload(base.GCIRequestHandler):
   def post(self, data, check, mutator):
     """Handles POST requests for the bulk create page."""
     form = UploadForm(
-        data, data=data.POST, instance=data.student_info,
+        request_data=data, data=data.POST, instance=data.student_info,
         files=data.request.file_uploads)
 
     if not form.is_valid():

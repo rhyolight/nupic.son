@@ -63,7 +63,7 @@ class SendRequestPage(GCIRequestHandler):
 
   def context(self, data, check, mutator):
     """Handler to for GCI Send Request page HTTP get request."""
-    request_form = RequestForm(data.POST or None)
+    request_form = RequestForm(data=data.POST or None)
 
     return {
         'logout_link': self.linker.logout(data.request),
@@ -85,7 +85,7 @@ class SendRequestPage(GCIRequestHandler):
     """
     assert isSet(data.organization)
 
-    request_form = RequestForm(data.POST)
+    request_form = RequestForm(data=data.POST)
 
     if not request_form.is_valid():
       return None
@@ -152,7 +152,7 @@ class ManageRequestPage(GCIRequestHandler):
   def context(self, data, check, mutator):
     page_name = self._constructPageName(data)
 
-    form = RequestForm(data.POST or None, instance=data.request_entity)
+    form = RequestForm(data=data.POST or None, instance=data.request_entity)
 
     button_name = self._constructButtonName(data)
     button_value = self._constructButtonValue(data)

@@ -61,8 +61,8 @@ class TaxForm(GSoCModelForm):
 
     return 'gsoc_tax_form_download'
 
-  def __init__(self, request_data, *args, **kwargs):
-    super(TaxForm, self).__init__(*args, **kwargs)
+  def __init__(self, request_data=None, **kwargs):
+    super(TaxForm, self).__init__(**kwargs)
     self.request_data = request_data
     field = self.fields['tax_form']
 
@@ -108,8 +108,8 @@ class EnrollmentForm(GSoCModelForm):
 
     return 'gsoc_enrollment_form_download'
 
-  def __init__(self, request_data, *args, **kwargs):
-    super(EnrollmentForm, self).__init__(*args, **kwargs)
+  def __init__(self, request_data=None, **kwargs):
+    super(EnrollmentForm, self).__init__(**kwargs)
     self.request_data = request_data
     field = self.fields['enrollment_form']
 
@@ -152,7 +152,8 @@ class FormPage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     Form = self._form(data)
-    form = Form(data, data.POST or None, instance=self._studentInfo(data))
+    form = Form(request_data=data, data=data.POST or None,
+        instance=self._studentInfo(data))
 
     if 'error' in data.GET:
       error = data.GET['error']
@@ -209,9 +210,8 @@ class FormPage(base.GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     Form = self._form(data)
-    form = Form(data, data=data.POST,
-                files=data.request.file_uploads,
-                instance=self._studentInfo(data))
+    form = Form(request_data=data, data=data.POST,
+        files=data.request.file_uploads, instance=self._studentInfo(data))
 
     if not form.is_valid():
       # we are not storing this form, remove the uploaded blob from the cloud

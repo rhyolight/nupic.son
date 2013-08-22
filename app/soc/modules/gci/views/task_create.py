@@ -61,14 +61,14 @@ class TaskEditPostClaimForm(gci_forms.GCIModelForm):
       help_text=ugettext('Describe this task with tags (comma separated). '
                          'Ex: Linux, Apache, C++, GUI'))
 
-  def __init__(self, data, *args, **kwargs):
-    super(TaskEditPostClaimForm, self).__init__(*args, **kwargs)
+  def __init__(self, request_data=None, **kwargs):
+    super(TaskEditPostClaimForm, self).__init__(**kwargs)
 
-    self.request_data = data
+    self.request_data = request_data
     self.organization = self.request_data.organization if not self.instance \
         else self.instance.org
 
-    self.POST = args[0] if len(args) > 0 and args[0] else None
+    self.POST = kwargs.get('data')
 
     mentor_choices = list(mentorChoicesForOrg(self.instance, self.organization))
 
@@ -150,11 +150,11 @@ class TaskCreateForm(TaskEditPostClaimForm):
       label=ugettext('Time to complete'), min_value=0,
       error_messages={'min_value': ugettext('Hours cannot be negative.')})
 
-  def __init__(self, data, *args, **kwargs):
-    super(TaskCreateForm, self).__init__(data, *args, **kwargs)
+  def __init__(self, request_data=None, **kwargs):
+    super(TaskCreateForm, self).__init__(request_data=request_data, **kwargs)
 
     types = []
-    for t in data.program.task_types:
+    for t in request_data.program.task_types:
       types.append((t, t))
 
     self.fields['types'] = django_forms.MultipleChoiceField(
@@ -265,11 +265,12 @@ class TaskEditFormTemplate(Template):
       else:
         form_class = TaskEditPostClaimForm
 
-      form = form_class(self.data, self.data.POST or None,
-                        instance=self.data.task)
+      form = form_class(request_data=self.data, data=self.data.POST or None,
+          instance=self.data.task)
       title = "Edit task - %s" % (self.data.task.title)
     else:
-      form = TaskCreateForm(self.data, self.data.POST or None)
+      form = TaskCreateForm(
+          request_data=self.data, data=self.data.POST or None)
       title = "Create a new task"
 
     return {
@@ -342,9 +343,9 @@ class TaskCreatePage(GCIRequestHandler):
       else:
         form_class = TaskEditPostClaimForm
 
-      form = form_class(data, data.POST, instance=data.task)
+      form = form_class(request_data=data, data=data.POST, instance=data.task)
     else:
-      form = TaskCreateForm(data, data.POST)
+      form = TaskCreateForm(request_data=data, data=data.POST)
 
     if not form.is_valid():
       return None

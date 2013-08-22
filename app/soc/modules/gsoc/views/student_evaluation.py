@@ -79,9 +79,9 @@ class GSoCStudentEvaluationEditPage(base.GSoCRequestHandler):
   def context(self, data, check, mutator):
     if data.student_evaluation:
       form = GSoCStudentEvaluationEditForm(
-          data.POST or None, instance=data.student_evaluation)
+          data=data.POST or None, instance=data.student_evaluation)
     else:
-      form = GSoCStudentEvaluationEditForm(data.POST or None)
+      form = GSoCStudentEvaluationEditForm(data=data.POST or None)
 
     page_name = ugettext('Edit - %s' % (data.student_evaluation.title)) \
         if data.student_evaluation else 'Create new student evaluation'
@@ -106,9 +106,9 @@ class GSoCStudentEvaluationEditPage(base.GSoCRequestHandler):
     """
     if data.student_evaluation:
       form = GSoCStudentEvaluationEditForm(
-          data.POST, instance=data.student_evaluation)
+          data=data.POST, instance=data.student_evaluation)
     else:
-      form = GSoCStudentEvaluationEditForm(data.POST)
+      form = GSoCStudentEvaluationEditForm(data=data.POST)
 
     if not form.is_valid():
       return None
@@ -181,11 +181,11 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
   def context(self, data, check, mutator):
     if data.student_evaluation_record:
       form = GSoCStudentEvaluationTakeForm(
-          data.student_evaluation,
-          data.POST or None, instance=data.student_evaluation_record)
+          survey=data.student_evaluation, data=data.POST or None,
+          instance=data.student_evaluation_record)
     else:
       form = GSoCStudentEvaluationTakeForm(
-          data.student_evaluation, data.POST or None)
+          survey=data.student_evaluation, data=data.POST or None)
 
     context = {
         'page_name': '%s' % data.student_evaluation.title,
@@ -208,10 +208,11 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
     """
     if data.student_evaluation_record:
       form = GSoCStudentEvaluationTakeForm(
-          data.student_evaluation, data.POST,
+          survey=data.student_evaluation, data=data.POST,
           instance=data.student_evaluation_record)
     else:
-      form = GSoCStudentEvaluationTakeForm(data.student_evaluation, data.POST)
+      form = GSoCStudentEvaluationTakeForm(
+          survey=data.student_evaluation, data=data.POST)
 
     if not form.is_valid():
       return None
@@ -255,7 +256,7 @@ class GSoCStudentEvaluationPreviewPage(base.GSoCRequestHandler):
   def context(self, data, check, mutator):
     mutator.studentEvaluationFromKwargs()
 
-    form = GSoCStudentEvaluationTakeForm(data.student_evaluation)
+    form = GSoCStudentEvaluationTakeForm(survey=data.student_evaluation)
 
     context = {
         'page_name': '%s' % data.student_evaluation.title,

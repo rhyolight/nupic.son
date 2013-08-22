@@ -65,8 +65,8 @@ class InviteForm(gci_forms.GCIModelForm):
     css_prefix = 'gci_intivation'
     fields = ['message']
 
-  def __init__(self, request_data, *args, **kwargs):
-    super(InviteForm, self).__init__(*args, **kwargs)
+  def __init__(self, request_data=None, **kwargs):
+    super(InviteForm, self).__init__(**kwargs)
 
     # store request object to cache results of queries
     self.request_data = request_data
@@ -198,7 +198,7 @@ class InvitePage(GCIRequestHandler):
 
     role = 'Org Admin' if data.kwargs['role'] == 'org_admin' else 'Mentor'
 
-    invite_form = InviteForm(data, data.POST or None)
+    invite_form = InviteForm(request_data=data, data=data.POST or None)
 
     return {
         'logout_link': self.linker.logout(data.request),
@@ -219,7 +219,7 @@ class InvitePage(GCIRequestHandler):
 
     assert isSet(data.organization)
 
-    invite_form = InviteForm(data, data.POST)
+    invite_form = InviteForm(request_data=data, data=data.POST)
 
     if not invite_form.is_valid():
       return False
@@ -301,7 +301,7 @@ class ManageInvite(GCIRequestHandler):
   def context(self, data, check, mutator):
     page_name = self._constructPageName(data)
 
-    form = ManageInviteForm(data.POST or None, instance=data.invite)
+    form = ManageInviteForm(data=data.POST or None, instance=data.invite)
 
     button_name = self._constructButtonName(data)
     button_value = self._constructButtonValue(data)

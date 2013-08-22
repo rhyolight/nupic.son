@@ -73,7 +73,7 @@ class BulkCreate(GCIRequestHandler):
     context['types'] = ', '.join([str(x) for x in tts])
 
     if data.POST:
-      form = BulkCreateForm(data.POST)
+      form = BulkCreateForm(data=data.POST)
       context['form'] = form
     else:
       context['form'] = BulkCreateForm()
@@ -82,7 +82,7 @@ class BulkCreate(GCIRequestHandler):
 
   def post(self, data, check, mutator):
     """Handles POST requests for the bulk create page."""
-    form = BulkCreateForm(data.POST)
+    form = BulkCreateForm(data=data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.

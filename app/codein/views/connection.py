@@ -152,9 +152,9 @@ class ConnectionForm(gci_forms.GCIModelForm):
 class MessageForm(gci_forms.GCIModelForm):
   """Django form to submit connection messages."""
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, **kwargs):
     """Initializes a new instance of connection message form."""
-    super(MessageForm, self).__init__(*args, **kwargs)
+    super(MessageForm, self).__init__(**kwargs)
     self.fields['content'].label = MESSAGE_FORM_CONTENT_LABEL
 
   class Meta:

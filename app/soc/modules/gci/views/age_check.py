@@ -75,7 +75,7 @@ class AgeCheck(gci_base.GCIRequestHandler):
       raise exception.Redirect(response['Location'])
 
     if data.POST:
-      context['form'] = AgeCheckForm(data.POST)
+      context['form'] = AgeCheckForm(data=data.POST)
     else:
       context['form'] = AgeCheckForm()
 
@@ -83,7 +83,7 @@ class AgeCheck(gci_base.GCIRequestHandler):
 
   def post(self, data, check, mutator):
     """Handles POST requests."""
-    form = AgeCheckForm(data.POST)
+    form = AgeCheckForm(data=data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.

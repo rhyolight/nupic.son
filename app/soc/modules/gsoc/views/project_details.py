@@ -190,8 +190,8 @@ class ProjectDetailsUpdate(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """Handler to for GSoC project details page HTTP get request."""
-    project_details_form = ProjectDetailsForm(data.POST or None,
-                                              instance=data.project)
+    project_details_form = ProjectDetailsForm(
+        data=data.POST or None, instance=data.project)
 
     context = {
         'page_name': 'Update project details',
@@ -210,7 +210,7 @@ class ProjectDetailsUpdate(base.GSoCRequestHandler):
   def validate(self, data):
     """Validate the form data and save if valid."""
     project_details_form = ProjectDetailsForm(
-        data.POST or None, instance=data.project)
+        data=data.POST or None, instance=data.project)
 
     if project_details_form.is_valid():
       project_details_form.save()

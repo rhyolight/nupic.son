@@ -85,8 +85,8 @@ class CommentForm(gci_forms.GCIModelForm):
 
     return "-%d" % self.reply
 
-  def __init__(self, reply, *args, **kwargs):
-    super(CommentForm, self).__init__(*args, **kwargs)
+  def __init__(self, reply=None, **kwargs):
+    super(CommentForm, self).__init__(**kwargs)
     self.reply = reply
 
     # For UI purposes we need to set this required, validation does not pick
@@ -294,7 +294,7 @@ class TaskViewPage(GCIRequestHandler):
     """Handles the POST call for the form that creates comments."""
     reply = data.GET.get('reply', '')
     reply = int(reply) if reply.isdigit() else None
-    comment_form = CommentForm(reply, data.POST)
+    comment_form = CommentForm(reply=reply, data=data.POST)
 
     if not comment_form.is_valid():
       # TODO(nathaniel): problematic self-call.
@@ -649,9 +649,9 @@ class CommentsTemplate(Template):
       if self._commentingAllowed():
         comment_id = comment.key().id()
         if self.data.POST and reply == str(comment_id):
-          form = CommentForm(comment_id, self.data.POST)
+          form = CommentForm(reply=comment_id, data=self.data.POST)
         else:
-          form = CommentForm(comment_id)
+          form = CommentForm(reply=comment_id)
 
       # generate author link, if comment sent by a student
       author_link = None
@@ -673,9 +673,9 @@ class CommentsTemplate(Template):
 
     if self._commentingAllowed():
       if self.data.POST and reply == 'self':
-        context['comment_form'] = CommentForm(None, self.data.POST)
+        context['comment_form'] = CommentForm(data=self.data.POST)
       else:
-        context['comment_form'] = CommentForm(None)
+        context['comment_form'] = CommentForm()
 
     return context
 

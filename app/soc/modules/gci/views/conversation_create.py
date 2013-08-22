@@ -125,12 +125,11 @@ def createOrganizationChoices(data):
 class ConversationCreateForm(gci_forms.GCIModelForm):
   """Django form for creating a conversation."""
 
-  def __init__(self, data, *args, **kwargs):
-    self.request_data = data
-    self.POST = data.POST or None
+  def __init__(self, request_data=None, **kwargs):
+    self.request_data = request_data
+    self.POST = request_data.POST or None
 
-    # POST data must be first arg for django form handler
-    super(ConversationCreateForm, self).__init__(self.POST, *args, **kwargs)
+    super(ConversationCreateForm, self).__init__(data=self.POST, **kwargs)
 
     self.recipients_type_choices = [
       (conversation_model.USER, translation.ugettext('Specified users')),
@@ -212,7 +211,7 @@ class ConversationFormTemplate(template.Template):
 
   def context(self):
     """See soc.views.template.Template.context for full specification."""
-    form = ConversationCreateForm(self.data)
+    form = ConversationCreateForm(request_data=self.data)
 
     return {
       'title': translation.ugettext('New message'),

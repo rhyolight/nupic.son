@@ -72,9 +72,9 @@ class TimelineForm(forms.GSoCModelForm):
 class CreateProgramForm(forms.GSoCModelForm):
   """Django form to create the settings for a new program."""
 
-  def __init__(self, request_data, *args, **kwargs):
+  def __init__(self, request_data=None, **kwargs):
     self.request_data = request_data
-    super(CreateProgramForm, self).__init__(*args, **kwargs)
+    super(CreateProgramForm, self).__init__(**kwargs)
 
   class Meta:
     css_prefix = 'create_program_form'
@@ -90,9 +90,9 @@ class CreateProgramForm(forms.GSoCModelForm):
 class EditProgramForm(forms.GSoCModelForm):
   """Django form to edit the settings of an existing program."""
 
-  def __init__(self, request_data, *args, **kwargs):
+  def __init__(self, request_data=None, **kwargs):
     self.request_data = request_data
-    super(EditProgramForm, self).__init__(*args, **kwargs)
+    super(EditProgramForm, self).__init__(**kwargs)
 
   class Meta:
     css_prefix = 'edit_program_form'
@@ -110,9 +110,9 @@ class GSoCProgramMessagesForm(forms.GSoCModelForm):
       max_length=254, label='Test email address',
       help_text=TEST_EMAIL_HELP_TEXT, required=False)
 
-  def __init__(self, request_data, *args, **kwargs):
+  def __init__(self, request_data=None, **kwargs):
     self.request_data = request_data
-    super(GSoCProgramMessagesForm, self).__init__(*args, **kwargs)
+    super(GSoCProgramMessagesForm, self).__init__(**kwargs)
 
   class Meta:
     css_prefix = 'program_messages_form'
@@ -239,7 +239,7 @@ class GSoCEditProgramPage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     program_form = EditProgramForm(
-        data, data.POST or None, instance=data.program)
+        request_data=data, data=data.POST or None, instance=data.program)
     return {
         'page_name': 'Edit program settings',
         'forms': [program_form],
@@ -247,7 +247,8 @@ class GSoCEditProgramPage(base.GSoCRequestHandler):
     }
 
   def validate(self, data):
-    program_form = EditProgramForm(data, data.POST, instance=data.program)
+    program_form = EditProgramForm(
+        request_data=data, data=data.POST, instance=data.program)
 
     if program_form.is_valid():
       program_form.save()
@@ -285,7 +286,7 @@ class GSoCCreateProgramPage(soc_program_view.CreateProgramPage,
 
   def _getForm(self, data):
     """See soc.views.program.CreateProgram._getForm for specification."""
-    return CreateProgramForm(data, data.POST or None)
+    return CreateProgramForm(request_data=data, data=data.POST or None)
 
   def _getTimelineModel(self):
     """See soc.views.program.CreateProgram._getTimelineModel
@@ -316,8 +317,8 @@ class TimelinePage(base.GSoCRequestHandler):
     return 'modules/gsoc/timeline/base.html'
 
   def context(self, data, check, mutator):
-    timeline_form = TimelineForm(data.POST or None,
-                                 instance=data.program_timeline)
+    timeline_form = TimelineForm(
+        data=data.POST or None, instance=data.program_timeline)
     return {
         'page_name': 'Edit program timeline',
         'forms': [timeline_form],
@@ -326,7 +327,8 @@ class TimelinePage(base.GSoCRequestHandler):
     }
 
   def validate(self, data):
-    timeline_form = TimelineForm(data.POST, instance=data.program_timeline)
+    timeline_form = TimelineForm(
+        data=data.POST, instance=data.program_timeline)
     if timeline_form.is_valid():
       timeline_form.save()
       return True
@@ -358,7 +360,8 @@ class GSoCProgramMessagesPage(
     return 'modules/gsoc/program/messages.html'
 
   def _getForm(self, data, entity):
-    return GSoCProgramMessagesForm(data, data.POST or None, instance=entity)
+    return GSoCProgramMessagesForm(
+        request_data=data, data=data.POST or None, instance=entity)
 
   def _getModel(self):
     return program.GSoCProgramMessages

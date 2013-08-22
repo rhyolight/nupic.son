@@ -28,8 +28,14 @@ from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_patterns as gci_url_patterns
 
 
-class GCIDocumentForm(forms.GCIModelForm, document.DocumentForm):
+class GCIDocumentForm(document.DocumentForm):
   """Django form for creating documents."""
+
+  def __init__(self, **kwargs):
+    super(GCIDocumentForm, self).__init__(forms.GCIBoundField, **kwargs)
+
+  def templatePath(self):
+    return 'modules/gci/_form.html'
 
   dashboard_visibility = forms.MultipleChoiceField(
       required=False,
@@ -63,7 +69,7 @@ class EditDocumentPage(GCIRequestHandler):
     check.canEditDocument()
 
   def context(self, data, check, mutator):
-    form = GCIDocumentForm(data.POST or None, instance=data.document)
+    form = GCIDocumentForm(data=data.POST or None, instance=data.document)
 
     if data.document:
       page_name = 'Edit %s' % data.document.title
@@ -77,7 +83,7 @@ class EditDocumentPage(GCIRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    form = GCIDocumentForm(data.POST or None, instance=data.document)
+    form = GCIDocumentForm(data=data.POST or None, instance=data.document)
     entity = document.validateForm(data, form)
     if entity:
       data.redirect.document(entity)

@@ -31,8 +31,8 @@ class DocumentForm(forms.ModelForm):
           for c in document_model.Document.DASHBOARD_VISIBILITIES],
       widget=forms.CheckboxSelectMultiple)
 
-  def __init__(self, *args, **kwargs):
-    super(DocumentForm, self).__init__(*args, **kwargs)
+  def __init__(self, bound_field_class, **kwargs):
+    super(DocumentForm, self).__init__(bound_field_class, **kwargs)
     if self.instance:
       self.initial['dashboard_visibility'] = self.instance.dashboard_visibility
 

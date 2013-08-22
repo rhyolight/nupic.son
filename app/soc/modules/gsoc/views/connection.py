@@ -151,7 +151,7 @@ class ConnectionForm(GSoCModelForm):
 
   message = gsoc_forms.CharField(widget=gsoc_forms.Textarea())
 
-  def __init__(self, request_data=None, message=None, *args, **kwargs):
+  def __init__(self, request_data=None, message=None, **kwargs):
     """Initialize ConnectionForm.
 
     Note that while it appears that message and request_data are not used,
@@ -162,7 +162,7 @@ class ConnectionForm(GSoCModelForm):
         request_data: The RequestData instance for the current request.
         message: A string containing a message to be sent to the other party.
     """
-    super(ConnectionForm, self).__init__(*args, **kwargs)
+    super(ConnectionForm, self).__init__(**kwargs)
 
     self.request_data = request_data
 
@@ -183,8 +183,8 @@ class OrgConnectionForm(ConnectionForm):
 
   users = gsoc_forms.CharField(label='Link_Id/Email')
 
-  def __init__(self, request_data=None, message=None, *args, **kwargs):
-    super(OrgConnectionForm, self).__init__(*args, **kwargs)
+  def __init__(self, request_data=None, message=None, **kwargs):
+    super(OrgConnectionForm, self).__init__(**kwargs)
 
     self.request_data = request_data
 
@@ -238,8 +238,8 @@ class OrgConnectionForm(ConnectionForm):
 class MessageForm(GSoCModelForm):
   """Django form for the message."""
 
-  def __init__(self, *args, **kwargs):
-    super(MessageForm, self).__init__(*args, **kwargs)
+  def __init__(self, **kwargs):
+    super(MessageForm, self).__init__(**kwargs)
     self.fields['content'].label = ugettext(' ')
 
   class Meta:
@@ -264,8 +264,8 @@ class ConnectionResponseForm(GSoCModelForm):
   """
   role_response = django_forms.fields.ChoiceField(widget=django_forms.Select())
 
-  def __init__(self, request_data=None, choices=None, *args, **kwargs):
-    super(ConnectionResponseForm, self).__init__(*args, **kwargs)
+  def __init__(self, request_data=None, choices=None, **kwargs):
+    super(ConnectionResponseForm, self).__init__(**kwargs)
 
     self.request_data = request_data
 
@@ -499,7 +499,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
     del message_kwargs['organization']
 
     message_box = {
-        'form' : MessageForm(data.POST or None),
+        'form' : MessageForm(data=data.POST or None),
         'action' : reverse(url_names.GSOC_CONNECTION_MESSAGE,
             kwargs=message_kwargs)
         }
@@ -633,7 +633,7 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
     del message_kwargs['organization']
 
     message_box = {
-      'form' : MessageForm(data.POST or None),
+      'form' : MessageForm(data=data.POST or None),
       'action' : reverse(url_names.GSOC_CONNECTION_MESSAGE,
         kwargs=message_kwargs)
       }
@@ -743,7 +743,7 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
     Returns:
       A newly created message entity or None.
     """
-    message_form = MessageForm(data.request.POST)
+    message_form = MessageForm(data=data.request.POST)
 
     if not message_form.is_valid():
       return None

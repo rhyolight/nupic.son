@@ -70,7 +70,7 @@ class ProposalPage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     if data.POST:
-      proposal_form = ProposalForm(data.POST)
+      proposal_form = ProposalForm(data=data.POST)
     else:
       initial = {'content': data.organization.contrib_template}
       proposal_form = ProposalForm(initial=initial)
@@ -92,7 +92,7 @@ class ProposalPage(base.GSoCRequestHandler):
     Returns:
       a newly created proposal entity or None
     """
-    proposal_form = ProposalForm(data.POST)
+    proposal_form = ProposalForm(data=data.POST)
 
     if not proposal_form.is_valid():
       return None
@@ -188,7 +188,7 @@ class UpdateProposal(base.GSoCRequestHandler):
   def context(self, data, check, mutator):
     proposal = data.proposal
 
-    proposal_form = ProposalForm(data.POST or None, instance=proposal)
+    proposal_form = ProposalForm(data=data.POST or None, instance=proposal)
 
     return {
         'page_name': 'Update proposal',
@@ -207,7 +207,7 @@ class UpdateProposal(base.GSoCRequestHandler):
     Returns:
       an updated proposal entity or None
     """
-    proposal_form = ProposalForm(data.POST, instance=data.proposal)
+    proposal_form = ProposalForm(data=data.POST, instance=data.proposal)
 
     if not proposal_form.is_valid():
       return None

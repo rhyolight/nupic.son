@@ -484,17 +484,17 @@ class ModelForm(djangoforms.ModelForm):
 
   __metaclass__ = ModelFormMetaclass
 
-  def __init__(self, bound_field_class, *args, **kwargs):
+  def __init__(self, bound_field_class, **kwargs):
     """Fixes label and help_text issues after parent initialization.
 
     Args:
-      *args, **kwargs:  passed through to parent __init__() constructor
+      **kwargs:  passed through to parent __init__() constructor
     """
     assert bound_field_class
     assert issubclass(bound_field_class, BoundField)
     self.__bound_field_class = bound_field_class
 
-    super(djangoforms.ModelForm, self).__init__(*args, **kwargs)
+    super(djangoforms.ModelForm, self).__init__(**kwargs)
 
     renames = {
         'verbose_name': 'label',
@@ -624,8 +624,8 @@ class SurveyTakeForm(ModelForm):
 
   RADIO_FIELD_RENDERER = RadioFieldRenderer
 
-  def __init__(self, survey, bound_field_class, *args, **kwargs):
-    super(SurveyTakeForm, self).__init__(bound_field_class, *args, **kwargs)
+  def __init__(self, bound_field_class, survey=None, **kwargs):
+    super(SurveyTakeForm, self).__init__(bound_field_class, **kwargs)
     self.survey = survey
     self.constructForm()
 

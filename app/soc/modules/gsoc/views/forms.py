@@ -55,9 +55,8 @@ class GSoCModelForm(forms.ModelForm):
   """Django ModelForm class which uses our implementation of BoundField.
   """
 
-  def __init__(self, *args, **kwargs):
-    super(GSoCModelForm, self).__init__(
-        GSoCBoundField, *args, **kwargs)
+  def __init__(self, **kwargs):
+    super(GSoCModelForm, self).__init__(GSoCBoundField, **kwargs)
 
   def templatePath(self):
     return TEMPLATE_PATH
@@ -67,9 +66,8 @@ class SurveyEditForm(forms.SurveyEditForm):
   """Django form for creating and/or editing survey.
   """
 
-  def __init__(self, *args, **kwargs):
-    super(SurveyEditForm, self).__init__(
-        GSoCBoundField, *args, **kwargs)
+  def __init__(self, **kwargs):
+    super(SurveyEditForm, self).__init__(GSoCBoundField, **kwargs)
 
   def templatePath(self):
     return TEMPLATE_PATH
@@ -81,9 +79,9 @@ class SurveyTakeForm(forms.SurveyTakeForm):
   """Django form for taking a survey.
   """
 
-  def __init__(self, survey, *args, **kwargs):
+  def __init__(self, survey=None, **kwargs):
     super(SurveyTakeForm, self).__init__(
-        survey, GSoCBoundField, *args, **kwargs)
+        GSoCBoundField, survey=survey, **kwargs)
 
   def templatePath(self):
     return TEMPLATE_PATH

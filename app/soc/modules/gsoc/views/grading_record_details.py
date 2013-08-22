@@ -343,10 +343,11 @@ class GradingRecordDetails(base.GSoCRequestHandler):
     record = data.record
 
     if data.POST:
-      record_form = GradingRecordForm(data.POST)
+      record_form = GradingRecordForm(data=data.POST)
     else:
       # locked is initially set to true because the user is editing it manually
-      record_form = GradingRecordForm(instance=record, initial={'locked': True})
+      record_form = GradingRecordForm(
+          instance=record, initial={'locked': True})
 
     return {
         'page_name': 'Grading Record Details',
@@ -358,7 +359,7 @@ class GradingRecordDetails(base.GSoCRequestHandler):
     """Handles the POST request when editing a GradingRecord."""
     assert isSet(data.record)
 
-    record_form = GradingRecordForm(data.POST)
+    record_form = GradingRecordForm(data=data.POST)
 
     if not record_form.is_valid():
       return self.get(data, check, mutator)
