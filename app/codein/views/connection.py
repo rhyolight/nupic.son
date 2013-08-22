@@ -170,7 +170,8 @@ class MessageForm(gci_forms.GCIModelForm):
       return content
     else:
       raise django_forms.ValidationError(
-          translation.ugettext('Message content cannot be empty.'), code='invalid')
+          translation.ugettext('Message content cannot be empty.'),
+          code='invalid')
 
 
 def _formToStartConnectionAsUser(**kwargs):
@@ -252,7 +253,7 @@ class StartConnectionAsUser(base.GCIRequestHandler):
           notifications.userConnectionContext, [],
           user_role=connection_model.ROLE)
 
-      url = links.Linker().userOrg(
+      url = links.Linker().userId(
           data.url_profile, connection.key().id(),
           urls.UrlNames.CONNECTION_MANAGE_AS_USER)
       return http.HttpResponseRedirect(url)
@@ -294,9 +295,12 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
     summary.addItem(USER_ROLE_ITEM_LABEL, _getValueForUserRoleItem(data))
     summary.addItem(INITIALIZED_ON_LABEL, data.url_connection.created_on)
 
+    messages = connection_logic.getConnectionMessages(data.url_connection)
+
     return {
         'page_name': MANAGE_CONNECTION_AS_USER_PAGE_NAME,
         'actions_form': actions_form,
         'message_form': message_form,
-        'summary': summary
+        'summary': summary,
+        'messages': messages,
         }

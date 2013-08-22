@@ -45,8 +45,26 @@ limitations under the License.
   <div class="block block-page-section">
     <div class="block-form-title">
       <span class="title">Messages</span>
-     </div>
-     {{ message_form.render }}
+    </div>
+     
+    {% for message in messages %}
+      <div class="block block-connection-message">
+        <div class="block-connection-message-header clearfix">
+          <span class="author">{{ message.getAuthor }}</span>
+          <span class="datetime"> {{ message.created }}</span>
+        </div>
+        <div class="block-connection-message-content">
+          {{ message.content }}
+        </div>
+      </div>
+    {% endfor %}
+     
+    <form action="#" method="post" class="form-create-task clearfix">
+      {{ message_form.render }}
+      <div class="form-row form-row-buttons">
+        <input value="Send" class="button" type="submit">
+      </div>
+    </form>
   </div>
 </div>
 
