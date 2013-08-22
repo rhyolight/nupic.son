@@ -36,6 +36,9 @@ from soc.modules.gci.views.helper import url_patterns as ci_url_patterns
 from soc.views.helper import url_patterns
 
 
+ACTIONS_FORM_NAME = 'actions_form'
+MESSAGE_FORM_NAME = 'message_form'
+
 MANAGE_CONNECTION_AS_USER_PAGE_NAME = translation.ugettext(
     'Manage connection')
 
@@ -285,8 +288,9 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
     """See base.GCIRequestHandler.context for specification."""
 
     actions_form = _formToManageConnectionAsUser(
-        data=data.POST or None, instance=data.url_connection)
-    message_form = MessageForm()
+        data=data.POST or None, instance=data.url_connection,
+        name=ACTIONS_FORM_NAME)
+    message_form = MessageForm(name=MESSAGE_FORM_NAME)
 
     summary = readonly.ReadOnlyTemplate(data)
     summary.addItem(
