@@ -287,10 +287,13 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
   def context(self, data, check, mutator):
     """See base.GCIRequestHandler.context for specification."""
 
+    import logging
+    logging.error("AAABBBCCC")
+
     actions_form = _formToManageConnectionAsUser(
         data=data.POST or None, instance=data.url_connection,
         name=ACTIONS_FORM_NAME)
-    message_form = MessageForm(name=MESSAGE_FORM_NAME)
+    message_form = MessageForm(data=data.POST or None, name=MESSAGE_FORM_NAME)
 
     summary = readonly.ReadOnlyTemplate(data)
     summary.addItem(
@@ -308,3 +311,96 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
         'summary': summary,
         'messages': messages,
         }
+
+  def post(self, data, check, mutator):
+    """See base.GCIRequestHandler.post for specification."""
+
+    handler = self._dispatchPostData(data)
+
+    return handler.handle(data, check, mutator)
+
+  def _dispatchPostData(self, data):
+    """Picks form handler that is capable of handling the data that was sent
+    in the the current request.
+
+    Args:
+      data: request_data.RequestData for the current request.
+
+    Returns:
+      FormHandler implementation to handler the received data.
+    """
+    if ACTIONS_FORM_NAME in data.POST:
+      return ActionsFormHandler(self)
+    elif MESSAGE_FORM_NAME in data.POST:
+      return MessageFormHandler(self)
+    else:
+      raise exception.BadRequest('No valid form data is found in POST.')
+
+
+class FormHandler(object):
+  """Simplified version of request handler that is able to take care of
+  the received data.
+  """
+
+  def __init__(self, view):
+    """Initializes new instance of form handler.
+
+    Args:
+      view: callback to implementation of base.RequestHandler
+        that creates this object.
+    """
+    self._view = view
+
+  def handle(self, data, check, mutator):
+    """Handles the data that was received in the current request and returns
+    an appropriate HTTP response.
+
+    Args:
+      data: A soc.views.helper.request_data.RequestData.
+      check: A soc.views.helper.access_checker.AccessChecker.
+      mutator: A soc.views.helper.access_checker.Mutator.
+
+    Returns:
+      An http.HttpResponse appropriate for the given request parameters.
+    """
+    raise NotImplementedError
+
+
+class MessageFormHandler(FormHandler):
+  """Form handler implementation to handle incoming data that is supposed to
+  create a new connection message.
+  """
+
+  def handle(self, data, check, mutator):
+    """Creates and persists a new connection message based on the data
+    that was sent in the current request.
+
+    See FormHandler.handle for specification.
+    """
+    message_form = MessageForm(data=data.request.POST)
+    if message_form.is_valid():
+      content = message_form.cleaned_data['content']
+      connection_view.createConnectionMessageTxn(
+          data.url_connection.key(), data.url_profile.key(), content)
+
+      url = links.Linker().userId(
+          data.url_profile, data.url_connection.key().id(),
+          urls.UrlNames.CONNECTION_MANAGE_AS_USER)
+      return http.HttpResponseRedirect(url)
+    else:
+      # TODO(nathaniel): problematic self-use.
+      return self._view.get(data, check, mutator)
+
+
+class ActionsFormHandler(FormHandler):
+  """Form handler implementation to handle incoming data that is supposed to
+  take an action on the existing connection.
+  """
+
+  def handle(self, data, check, mutator):
+    """Takes an action on the connection based on the data that was sent
+    in the current request.
+
+    See FormHandler.handle for specification.
+    """
+    return http.HttpResponseNotAllowed('TODO (daniel): implement this method')
