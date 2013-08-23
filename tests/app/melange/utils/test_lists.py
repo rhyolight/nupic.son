@@ -167,7 +167,7 @@ class TestDatastoreReaderForDB(unittest.TestCase):
     item_list, next_key = self.list_reader.getListData(
         DB_TEST_LIST_ID, query, start, 5)
 
-    expected_list = [{'Name': 'name %s' % i, 'Value': i} for i in range(3, 8)]
+    expected_list = [{'name': 'name %s' % i, 'value': i} for i in range(3, 8)]
     expected_next_key = str(TestDBModel.get_by_key_name('id 8').key())
 
     self.assertListEqual(item_list, expected_list)
@@ -183,7 +183,7 @@ class TestDatastoreReaderForDB(unittest.TestCase):
 
     # All the items after specified id should be returned. Returned next key
     # should indicate final batch.
-    expected_list = [{'Name': 'name %s' % i, 'Value': i} for i in range(3, 10)]
+    expected_list = [{'name': 'name %s' % i, 'value': i} for i in range(3, 10)]
     expected_next_key = lists.FINAL_BATCH
 
     self.assertListEqual(item_list, expected_list)
@@ -197,7 +197,7 @@ class TestDatastoreReaderForDB(unittest.TestCase):
         DB_TEST_LIST_ID, query, limit=5)
 
     # First five entities should be returned.
-    expected_list = [{'Name': 'name %s' % i, 'Value': i} for i in range(0, 5)]
+    expected_list = [{'name': 'name %s' % i, 'value': i} for i in range(0, 5)]
     expected_next_key = str(TestDBModel.get_by_key_name('id 5').key())
 
     self.assertListEqual(item_list, expected_list)
@@ -212,7 +212,7 @@ class TestDatastoreReaderForDB(unittest.TestCase):
 
     # All the items in the list should be returned. Returned next key should
     # indicate final batch.
-    expected_list = [{'Name': 'name %s' % i, 'Value': i} for i in range(0, 10)]
+    expected_list = [{'name': 'name %s' % i, 'value': i} for i in range(0, 10)]
     expected_next_key = lists.FINAL_BATCH
 
     self.assertListEqual(item_list, expected_list)
@@ -243,7 +243,7 @@ class TestDatastoreReaderForNDB(unittest.TestCase):
     item_list, next_key = self.list_reader.getListData(
         NDB_TEST_LIST_ID, query, start, 5)
 
-    expected_list = [{'Name': 'name %s' % i, 'Value': i} for i in range(3, 8)]
+    expected_list = [{'name': 'name %s' % i, 'value': i} for i in range(3, 8)]
     expected_next_key = str(ndb.Key(TestNDBModel, 'id 8').to_old_key())
 
     self.assertListEqual(item_list, expected_list)
@@ -259,7 +259,7 @@ class TestDatastoreReaderForNDB(unittest.TestCase):
 
     # All the items after specified id should be returned. Returned next key
     # should indicate final batch.
-    expected_list = [{'Name': 'name %s' % i, 'Value': i} for i in range(3, 10)]
+    expected_list = [{'name': 'name %s' % i, 'value': i} for i in range(3, 10)]
     expected_next_key = lists.FINAL_BATCH
 
     self.assertListEqual(item_list, expected_list)
@@ -273,7 +273,7 @@ class TestDatastoreReaderForNDB(unittest.TestCase):
         NDB_TEST_LIST_ID, query, limit=5)
 
     # First five entities should be returned.
-    expected_list = [{'Name': 'name %s' % i, 'Value': i} for i in range(0, 5)]
+    expected_list = [{'name': 'name %s' % i, 'value': i} for i in range(0, 5)]
     expected_next_key = str(ndb.Key(TestNDBModel, 'id 5').to_old_key())
 
     self.assertListEqual(item_list, expected_list)
@@ -288,7 +288,7 @@ class TestDatastoreReaderForNDB(unittest.TestCase):
 
     # All the items in the list should be returned. Returned next key should
     # indicate final batch.
-    expected_list = [{'Name': 'name %s' % i, 'Value': i} for i in range(0, 10)]
+    expected_list = [{'name': 'name %s' % i, 'value': i} for i in range(0, 10)]
     expected_next_key = lists.FINAL_BATCH
 
     self.assertListEqual(item_list, expected_list)

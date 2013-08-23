@@ -192,7 +192,7 @@ class DatastoreReaderForDB(ListDataReader):
     else:
       next_key = FINAL_BATCH
 
-    col_funcs = [(c.name, c.getValue) for c in getList(list_id).columns]
+    col_funcs = [(c.col_id, c.getValue) for c in getList(list_id).columns]
     items = [toListItemDict(entity, col_funcs) for entity in entities]
     return (items[:limit], next_key)
 
@@ -213,7 +213,7 @@ class DatastoreReaderForNDB(ListDataReader):
     else:
       next_key = FINAL_BATCH
 
-    col_funcs = [(c.name, c.getValue) for c in getList(list_id).columns]
+    col_funcs = [(c.col_id, c.getValue) for c in getList(list_id).columns]
     items = [toListItemDict(entity, col_funcs) for entity in entities]
     return (items[:limit], next_key)
 
