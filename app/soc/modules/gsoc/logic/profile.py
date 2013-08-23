@@ -16,10 +16,14 @@
 
 from google.appengine.ext import db
 
+from melange.logic import profile as profile_logic
+
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
 
 from soc.modules.gsoc.models import profile as profile_model
+
+from summerofcode.appengine import db as soc_db
 
 
 def queryAllMentorsKeysForOrg(org, limit=1000):
@@ -274,31 +278,10 @@ def resignAsOrgAdminForOrg(profile, org_key):
 
 
 def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
-  """Returns organization administrators for the specified organization.
-
-  Additional constraints on administrators may be specified by passing a custom
-  extra_attrs dictionary. Each element of the dictionary maps a property
-  with a requested value. The value may be a single object or a list/tuple.
-
-  Please note that this function executes a non-ancestor query, so it cannot
-  be safely used within transactions.
-
-  Args:
-    org_key: organization key
-    keys_only: If true, return only keys instead of complete entities
-    extra_args: a dictionary containing additional constraints on
-        organization administrators to retrieve
-
-  Returns:
-    list of profiles entities or keys of organization administrators
-  """
-  query = profile_model.GSoCProfile.all(keys_only=keys_only)
-  query.filter('org_admin_for', org_key)
-  query.filter('status', 'active')
-
-  _handleExtraAttrs(query, extra_attrs)
-
-  return query.fetch(limit=1000)
+  """See melange.logic.profile.getOrgAdmins for specification."""
+  return profile_logic.getOrgAdmins(
+      org_key, keys_only=keys_only, extra_attrs=extra_attrs,
+      models=soc_db.SOC_MODELS)
 
 
 def countOrgAdmins(organization):

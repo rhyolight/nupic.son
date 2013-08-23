@@ -15,8 +15,11 @@
 """GCI logic for profiles.
 """
 
-
 import datetime
+
+from codein.appengine import db as codein_db
+
+from melange.logic import profile as profile_logic
 
 from soc.logic import user as user_logic
 from soc.tasks import mailer
@@ -27,7 +30,6 @@ from soc.modules.gci.logic.helper import notifications
 from soc.modules.gci.models import comment as comment_model
 from soc.modules.gci.models import profile as profile_model
 from soc.modules.gci.models import task as task_model
-
 
 MELANGE_DELETED_USER_PNAME = 'Melange Deleted User'
 
@@ -327,3 +329,10 @@ def insertDummyData(student_info):
   student_info.is_winner = False
 
   return [profile, student_info], blobs_to_delete
+
+
+def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
+  """See melange.logic.profile.getOrgAdmins for specificaion."""
+  return profile_logic.getOrgAdmins(
+      org_key, keys_only=keys_only, extra_attrs=extra_attrs,
+      models=codein_db.CI_MODELS)

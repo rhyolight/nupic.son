@@ -403,4 +403,25 @@ class ActionsFormHandler(FormHandler):
 
     See FormHandler.handle for specification.
     """
-    return http.HttpResponseNotAllowed('TODO (daniel): implement this method')
+    actions_form = _formToManageConnectionAsUser(data=data.POST)
+    if actions_form.is_valid():
+      user_role = actions_form.cleaned_data['user_role']
+      if user_role == connection_model.NO_ROLE:
+        pass
+
+      url = links.Linker().userId(
+          data.url_profile, data.url_connection.key().id(),
+          urls.UrlNames.CONNECTION_MANAGE_AS_USER)
+      return http.HttpResponseRedirect(url)
+    else:
+      # TODO(nathaniel): problematic self-use.
+      return self._view.get(data, check, mutator)
+
+  def _handleNoRoleSelection(self):
+    """Makes all necessary changes if user selects connection_model.NO_ROLE."""
+    # TODO(daniel): implement this function
+    pass
+
+  def _handleRoleSelection(self):
+    """Makes all necessary changes if user selects connection_model.ROLE."""
+    # TODO(daniel): implement this function
