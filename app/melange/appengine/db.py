@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""App Engine datastore related functions."""
+"""App Engine datastore related functions and classes."""
 
 from django.core import validators
 
 from google.appengine.ext import db
 from google.appengine.ext import ndb
+
+from soc.models import profile as profile_model
 
 
 def email_validator(property, value):
@@ -81,3 +83,25 @@ def toDict(entity):
   else:
     raise TypeError("%s object is not a valid datastore entity" % type(enitity))
 
+
+class Models(object):
+  """Class that encapsulates methods that return appropriate model classes."""
+
+  def __init__(self, profile_model=None):
+    """Initializes new instance of Models class.
+
+    Args:
+      profile_model: class that represents profile model.
+    """
+    self._profile_model = profile_model
+
+  @property
+  def profileModel(self):
+    """Returns class that represents profile model.
+
+    Returns:
+      Profile model class.
+    """
+    return self._profile_model
+
+MELANGE_MODELS = Models(profile_model=profile_model.Profile)
