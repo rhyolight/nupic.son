@@ -24,6 +24,61 @@ from soc.models import program as program_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
+class CanResignAsOrgAdminForOrgTest(unittest.TestCase):
+  """Unit tests for canResignAsOrgAdmin function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    # seed a new program
+    self.program = seeder_logic.seed(program_model.Program)
+
+    # seed a couple of organizations
+    self.organization_one = seeder_logic.seed(org_model.Organization,
+        {'program': self.program})
+    self.organization_two = seeder_logic.seed(org_model.Organization,
+        {'program': self.program})
+
+    # seed a new org admin for organization one
+    org_admin_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_one.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.organization_one.key()],
+        'status': 'active',
+    }
+    self.org_admin = seeder_logic.seed(
+        profile_model.Profile, org_admin_properties)
+
+  def testOnlyOrgAdmin(self):
+    """Tests that the only org admin cannot resign."""
+    can_resign = profile_logic.canResignAsOrgAdminForOrg(
+        self.org_admin, self.organization_one.key())
+    self.assertFalse(can_resign)
+
+  def testMoreOrgAdmins(self):
+    """Tests that org admin can resign if there is another one."""
+    org_admin_properties = {
+        'is_mentor': True,
+        'mentor_for': [self.organization_one.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.organization_one.key()],
+        'status': 'active',
+    }
+    self.org_admin = seeder_logic.seed(
+        profile_model.Profile, org_admin_properties)
+
+    # now the org admin can resign, as there is another admin
+    can_resign = profile_logic.canResignAsOrgAdminForOrg(
+        self.org_admin, self.organization_one.key())
+    self.assertTrue(can_resign)
+
+  def testNotOrgAdminForOrg(self):
+    """Tests that error is raised if the profile is not an org admin."""
+    with self.assertRaises(ValueError):
+      profile_logic.canResignAsOrgAdminForOrg(
+          self.org_admin, self.organization_two.key())
+
+
 class GetOrgAdminsTest(unittest.TestCase):
   """Unit tests for getOrgAdmins function."""
 

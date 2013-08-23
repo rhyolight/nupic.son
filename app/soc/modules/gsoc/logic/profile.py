@@ -219,40 +219,10 @@ def resignAsMentorForOrg(profile, org_key):
     profile.put()
 
 
-# TODO(daniel): it would be nice if this function returned something more
-# verbose than "False", i.e. explanation why
 def canResignAsOrgAdminForOrg(profile, org_key):
-  """Tells whether the specified profile can resign from their organization
-  administrator role for the specified organization.
-
-  An organization administrator may be removed from the list of administrators
-  of an organization, if there is at least one other user with this role.
-
-  Args:
-    profile: the specified GSoCProfile entity
-    org_key: the specified GSoCOrganization entity
-
-  Returns:
-    True, if the mentor is allowed to resign; False otherwise
-  """
-  if org_key not in profile.org_admin_for:
-    raise ValueError(
-        'The specified profile is not an organization administrator for %s' %
-        org_key.name())
-
-  # retrieve keys of other org admins
-  org_admin_keys = getOrgAdmins(org_key, keys_only=True)
-  org_admin_keys.remove(profile.key())
-
-  if org_admin_keys:
-    # try to retrieve the first org admin from the list
-    # therefore, it can be safely used within a XG transaction
-    if profile_model.GSoCProfile.get(org_admin_keys[0]):
-      return True
-    else:
-      return False
-  else:
-    return False
+  """See melange.logic.profile.canResignAsOrgAdminForOrg for specification."""
+  return profile_logic.canResignAsOrgAdminForOrg(
+      profile, org_key, models=soc_db.SOC_MODELS)
 
 
 def resignAsOrgAdminForOrg(profile, org_key):

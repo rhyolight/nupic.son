@@ -331,6 +331,12 @@ def insertDummyData(student_info):
   return [profile, student_info], blobs_to_delete
 
 
+def canResignAsOrgAdminForOrg(profile, org_key):
+  """See melange.logic.profile.canResignAsOrgAdminForOrg for specification."""
+  return profile_logic.canResignAsOrgAdminForOrg(
+      profile, org_key, models=codein_db.CI_MODELS)
+
+
 def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
   """See melange.logic.profile.getOrgAdmins for specificaion."""
   return profile_logic.getOrgAdmins(
