@@ -99,7 +99,7 @@ class List(object):
           self._list_id, query, start, limit)
 
     data = [{'columns':item, 'operations': self._getOperations(item)}
-               for item in items[0:limit]]
+               for item in items]
 
     if not start:
       start = ''
