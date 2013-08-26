@@ -43,8 +43,8 @@ UNPUBLISHED = ['Unpublished', UNAPPROVED]
 CLAIMABLE = [OPEN, 'Reopened']
 # States in which we consider the task to count towards the task quota of
 # the student.
-ACTIVE_CLAIMED_TASK = ['ClaimRequested', CLAIMED, 'ActionNeeded',
-                       'AwaitingRegistration', 'NeedsWork', 'NeedsReview']
+ACTIVE_CLAIMED_TASK = [
+    'ClaimRequested', CLAIMED, 'ActionNeeded', 'NeedsWork', 'NeedsReview']
 # States in which we consider that the student can work on a task as long
 # as the deadline has not passed.
 TASK_IN_PROGRESS = [CLAIMED, 'ActionNeeded', 'NeedsWork', 'NeedsReview']
@@ -139,7 +139,6 @@ class GCITask(db.Model):
   #: ActionNeeded: Work on this Task must be submitted for review within
   #:   24 hours.
   #: Closed: Work on this Task has been completed to the org's content.
-  #: AwaitingRegistration: Student has completed work on this task, but
   #:   needs to complete Student registration before this task is closed.
   #:   This status is now deprecated since we register before any interaction.
   #: NeedsWork: This work on this Tasks needs a bit more brushing up. This
@@ -151,8 +150,7 @@ class GCITask(db.Model):
       required=True, verbose_name=ugettext('Status'),
       choices=[UNAPPROVED, 'Unpublished', OPEN, 'Reopened',
                'ClaimRequested', CLAIMED, 'ActionNeeded',
-               'Closed', 'AwaitingRegistration', 'NeedsWork',
-               'NeedsReview', 'Invalid'],
+               'Closed', 'NeedsWork', 'NeedsReview', 'Invalid'],
       default=UNAPPROVED)
 
   #: Indicates when the Task was closed. Its value is None before it is

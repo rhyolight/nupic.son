@@ -38,8 +38,7 @@ def getRemainingTaskQuota(org):
   # count all the tasks the organization has published till now.
   # This excludes tasks in Unapproved, Unpublished and Invalid states.
   valid_status = ['Open', 'Reopened', 'ClaimRequested', 'Claimed',
-                  'ActionNeeded', 'Closed', 'AwaitingRegistration',
-                  'NeedsWork', 'NeedsReview']
+                  'ActionNeeded', 'Closed', 'NeedsWork', 'NeedsReview']
 
   q = GCITask.all()
   q.filter('org', org)
