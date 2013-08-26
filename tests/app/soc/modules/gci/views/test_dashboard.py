@@ -76,7 +76,7 @@ class DashboardTest(test_utils.GCIDjangoTestCase):
     self._testPostPublish('Unpublished', 'Open', 'publish')
 
     # check if Unapproved task may be published
-    self._testPostPublish('Unapproved', 'Open', 'publish')
+    self._testPostPublish(task_model.UNAPPROVED, 'Open', 'publish')
 
     # check if Open task may be unpublished
     self._testPostPublish('Open', 'Unpublished', 'unpublish')

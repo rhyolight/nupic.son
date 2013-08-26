@@ -229,7 +229,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """
     self.profile_helper.createOrgAdmin(self.org)
 
-    self.task.status = 'Unapproved'
+    self.task.status = task_model.UNAPPROVED
     self.task.put()
 
     url = self._taskPageUrl(self.task)
