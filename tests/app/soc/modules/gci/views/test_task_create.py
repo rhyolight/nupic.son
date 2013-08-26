@@ -543,7 +543,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOrgAdmin(self.org)
 
-    task = self.createTask('Reopened')
+    task = self.createTask(status=task_model.REOPENED)
 
     url = '/gci/task/edit/%s/%s' % (self.gci.key().name(), task.key().id())
     response = self.get(url)

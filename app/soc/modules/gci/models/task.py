@@ -31,7 +31,8 @@ import soc.modules.gci.models.program
 OPEN = 'Open'
 # state that the task is in when it is claimed
 CLAIMED = 'Claimed'
-
+# state that task has been claimed but never finished and has been reopened
+REOPENED = 'Reopened'
 # state that the task has not been approved by org admin
 UNAPPROVED = 'Unapproved'
 
@@ -40,7 +41,7 @@ UNAPPROVED = 'Unapproved'
 # states in which a task does not show up publicly
 UNPUBLISHED = ['Unpublished', UNAPPROVED]
 # states in which a student can claim a task
-CLAIMABLE = [OPEN, 'Reopened']
+CLAIMABLE = [OPEN, REOPENED]
 # States in which we consider the task to count towards the task quota of
 # the student.
 ACTIVE_CLAIMED_TASK = [
@@ -148,7 +149,7 @@ class GCITask(db.Model):
   #: Invalid: The Task is deleted either by an Org Admin/Mentor
   status = db.StringProperty(
       required=True, verbose_name=ugettext('Status'),
-      choices=[UNAPPROVED, 'Unpublished', OPEN, 'Reopened',
+      choices=[UNAPPROVED, 'Unpublished', OPEN, REOPENED,
                'ClaimRequested', CLAIMED, 'ActionNeeded',
                'Closed', 'NeedsWork', 'NeedsReview', 'Invalid'],
       default=UNAPPROVED)

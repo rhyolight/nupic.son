@@ -12,14 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GCIOrganization logic methods.
-"""
-
+"""GCIOrganization logic methods."""
 
 from soc.logic import organization as org_logic
 
+from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.organization import GCIOrganization
-from soc.modules.gci.models.task import GCITask
 
 
 def getRemainingTaskQuota(org):
@@ -37,10 +35,10 @@ def getRemainingTaskQuota(org):
   # TODO(Madhu): Refactor to create Open Tasks and Closed tasks variables
   # count all the tasks the organization has published till now.
   # This excludes tasks in Unapproved, Unpublished and Invalid states.
-  valid_status = ['Open', 'Reopened', 'ClaimRequested', 'Claimed',
+  valid_status = ['Open', task_model.REOPENED, 'ClaimRequested', 'Claimed',
                   'ActionNeeded', 'Closed', 'NeedsWork', 'NeedsReview']
 
-  q = GCITask.all()
+  q = task_model.GCITask.all()
   q.filter('org', org)
   q.filter('status IN', valid_status)
 

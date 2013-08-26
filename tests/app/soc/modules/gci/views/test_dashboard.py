@@ -82,8 +82,9 @@ class DashboardTest(test_utils.GCIDjangoTestCase):
     self._testPostPublish('Open', 'Unpublished', 'unpublish')
 
     # check if Reopened task may not be changed
-    self._testPostPublish('Reopened', 'Reopened', 'publish')
-    self._testPostPublish('Reopened', 'Reopened', 'unpublish')
+    self._testPostPublish(task_model.REOPENED, task_model.REOPENED, 'publish')
+    self._testPostPublish(
+        task_model.REOPENED, task_model.REOPENED, 'unpublish')
 
     # check if Claimed task may not be changed
     self._testPostPublish('Claimed', 'Claimed', 'publish')
@@ -137,7 +138,8 @@ class DashboardTest(test_utils.GCIDjangoTestCase):
 
     # create a couple of tasks
     task_helper.createTask('Open', self.org, self.profile_helper.profile)
-    task_helper.createTask('Reopened', self.org, self.profile_helper.profile)
+    task_helper.createTask(
+        task_model.REOPENED, self.org, self.profile_helper.profile)
 
     response = self.get(self._getDashboardUrl())
     self.assertResponseOK(response)

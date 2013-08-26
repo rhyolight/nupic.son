@@ -196,7 +196,7 @@ def unassignTask(task, user):
     user: GCIProfile of the user that unassigns the task.
   """
   task.student = None
-  task.status = 'Reopened'
+  task.status = task_model.REOPENED
   task.deadline = None
 
   comment_props = {
@@ -362,7 +362,7 @@ def unclaimTask(task):
   student = task.student
 
   task.student = None
-  task.status = 'Reopened'
+  task.status = task_model.REOPENED
   task.deadline = None
 
   comment_props = {
@@ -516,7 +516,7 @@ def transitFromActionNeeded(task):
   """
   # reopen the task
   task.student = None
-  task.status = 'Reopened'
+  task.status = task_model.REOPENED
   task.deadline = None
 
   comment_props = {
@@ -540,7 +540,7 @@ def transitFromNeedsWork(task):
     task: The task_model.GCITask entity
   """
   task.student = None
-  task.status = 'Reopened'
+  task.status = task_model.REOPENED
   task.deadline = None
 
   comment_props = {
