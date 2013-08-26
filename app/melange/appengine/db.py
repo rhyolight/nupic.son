@@ -19,8 +19,6 @@ from django.core import validators
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
-from soc.models import profile as profile_model
-
 
 def email_validator(property, value):
   """Validates whether the input value for the specified property
@@ -71,37 +69,15 @@ def toDict(entity):
   This function can be dropped when entire transition to ndb API is complete.
 
   Args:
-    entity: datastore entity to be put in a dictionary
+    entity: datastore entity to be put in a dictionary.
 
   Raises:
-    TypeError: if the specified entity is not a app engine datastore entity
+    TypeError: if the specified entity is not App Engine datastore entity.
   """
   if isinstance(entity, db.Model):
     return db.to_dict(entity)
   elif isinstance(entity, ndb.Model):
     return entity.to_dict()
   else:
-    raise TypeError("%s object is not a valid datastore entity" % type(enitity))
-
-
-class Models(object):
-  """Class that encapsulates methods that return appropriate model classes."""
-
-  def __init__(self, profile_model=None):
-    """Initializes new instance of Models class.
-
-    Args:
-      profile_model: class that represents profile model.
-    """
-    self._profile_model = profile_model
-
-  @property
-  def profileModel(self):
-    """Returns class that represents profile model.
-
-    Returns:
-      Profile model class.
-    """
-    return self._profile_model
-
-MELANGE_MODELS = Models(profile_model=profile_model.Profile)
+    raise TypeError(
+        '%s object is not a valid datastore entity' % type(entity))

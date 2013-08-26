@@ -12,4 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Modules particular to Code In's interaction with App Engine."""
+"""Tests for Melange types module."""
+
+import unittest
+
+from melange import types
+
+from soc.models import profile as profile_model
+
+class ModelsTest(unittest.TestCase):
+  """Unit tests for Models class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.models = types.MELANGE_MODELS
+
+  def testProfileModel(self):
+    """Tests profile_model attribute."""
+    self.assertEqual(self.models.profile_model, profile_model.Profile)

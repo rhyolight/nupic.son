@@ -23,7 +23,7 @@ from soc.modules.gsoc.logic import proposal as proposal_logic
 
 from soc.modules.gsoc.models import profile as profile_model
 
-from summerofcode.appengine import db as soc_db
+from summerofcode import types
 
 
 def queryAllMentorsKeysForOrg(org, limit=1000):
@@ -222,7 +222,7 @@ def resignAsMentorForOrg(profile, org_key):
 def canResignAsOrgAdminForOrg(profile, org_key):
   """See melange.logic.profile.canResignAsOrgAdminForOrg for specification."""
   return profile_logic.canResignAsOrgAdminForOrg(
-      profile, org_key, models=soc_db.SOC_MODELS)
+      profile, org_key, models=types.SOC_MODELS)
 
 
 def resignAsOrgAdminForOrg(profile, org_key):
@@ -251,7 +251,7 @@ def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
   """See melange.logic.profile.getOrgAdmins for specification."""
   return profile_logic.getOrgAdmins(
       org_key, keys_only=keys_only, extra_attrs=extra_attrs,
-      models=soc_db.SOC_MODELS)
+      models=types.SOC_MODELS)
 
 
 def countOrgAdmins(organization):

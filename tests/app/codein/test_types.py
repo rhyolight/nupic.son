@@ -12,4 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Modules particular to Summer Of Code's interaction with App Engine."""
+"""Tests for Code In types module."""
+
+import unittest
+
+from codein import types
+
+from soc.modules.gci.models import profile as profile_model
+
+
+class TestCodeInModels(unittest.TestCase):
+  """Unit tests for CI_MODELS object."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.models = types.CI_MODELS
+
+  def testProfileModel(self):
+    """Tests profile_model attribute."""
+    self.assertEqual(self.models.profile_model, profile_model.GCIProfile)

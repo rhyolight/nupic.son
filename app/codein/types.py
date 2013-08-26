@@ -12,22 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for summerofcode.appengine.db."""
+"""Definitions of Code In-specific types."""
 
-import unittest
+from melange import types
 
-from summerofcode.appengine import db as soc_db
-
-from soc.modules.gsoc.models import profile as profile_model
+from soc.modules.gci.models import profile as profile_model
 
 
-class TestSummerOfCodeModels(unittest.TestCase):
-  """Unit tests for SOC_MODELS object."""
-
-  def setUp(self):
-    """See unittest.TestCase.setUp for specification."""
-    self.models = soc_db.SOC_MODELS
-
-  def testProfileModel(self):
-    """Tests that appropriate profile model is returned."""
-    self.assertEqual(self.models.profileModel, profile_model.GSoCProfile)
+CI_MODELS = types.Models(profile_model=profile_model.GCIProfile)

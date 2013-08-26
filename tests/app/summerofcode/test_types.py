@@ -12,11 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""App Engine datastore related functions and classes."""
+"""Tests for Summer Of Code types module."""
 
-from melange.appengine import db as melange_db
+import unittest
 
-from soc.modules.gci.models import profile as profile_model
+from summerofcode import types
+
+from soc.modules.gsoc.models import profile as profile_model
 
 
-CI_MODELS = melange_db.Models(profile_model=profile_model.GCIProfile)
+class TestSummerOfCodeModels(unittest.TestCase):
+  """Unit tests for SOC_MODELS object."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.models = types.SOC_MODELS
+
+  def testProfileModel(self):
+    """Tests profile_model attribute."""
+    self.assertEqual(self.models.profile_model, profile_model.GSoCProfile)

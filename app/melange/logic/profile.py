@@ -14,13 +14,13 @@
 
 """Logic for profiles."""
 
-from melange.appengine import db as melange_db
+from melange import types
 
 
 # TODO(daniel): it would be nice if this function returned something more
 # verbose than "False", i.e. explanation why
 def canResignAsOrgAdminForOrg(profile, org_key,
-    models=melange_db.MELANGE_MODELS):
+    models=types.MELANGE_MODELS):
   """Tells whether the specified profile can resign from their organization
   administrator role for the specified organization.
 
@@ -40,13 +40,13 @@ def canResignAsOrgAdminForOrg(profile, org_key,
         org_key.name())
 
   # retrieve keys of other org admins
-  org_admin_keys = getOrgAdmins(org_key, keys_only=True)
+  org_admin_keys = getOrgAdmins(org_key, keys_only=True, models=models)
   org_admin_keys.remove(profile.key())
 
   if org_admin_keys:
     # try to retrieve the first org admin from the list
     # therefore, it can be safely used within a XG transaction
-    if models.profileModel.get(org_admin_keys[0]):
+    if models.profile_model.get(org_admin_keys[0]):
       return True
     else:
       return False
@@ -55,7 +55,7 @@ def canResignAsOrgAdminForOrg(profile, org_key,
 
 
 def getOrgAdmins(org_key, keys_only=False, extra_attrs=None,
-    models=melange_db.MELANGE_MODELS):
+    models=types.MELANGE_MODELS):
   """Returns organization administrators for the specified organization.
 
   Additional constraints on administrators may be specified by passing a custom
@@ -74,7 +74,7 @@ def getOrgAdmins(org_key, keys_only=False, extra_attrs=None,
   Returns:
     list of profiles entities or keys of organization administrators
   """
-  query = models.profileModel.all(keys_only=keys_only)
+  query = models.profile_model.all(keys_only=keys_only)
   query.filter('org_admin_for', org_key)
   query.filter('status', 'active')
 

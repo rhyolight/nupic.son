@@ -21,8 +21,6 @@ from google.appengine.ext import ndb
 
 from melange.appengine import db as melange_db
 
-from soc.models import profile as profile_model
-
 
 class EmailValidatorTest(unittest.TestCase):
   """Unit tests for email_validator function.
@@ -106,15 +104,3 @@ class TestToDict(unittest.TestCase):
     expected_dict = {'freq': 4, 'item_freq': '5', 'details': 'Test Entity',
                      'released': True}
     self.assertEqual(melange_db.toDict(entity), expected_dict)
-
-
-class ModelsTest(unittest.TestCase):
-  """Unit tests for Models class."""
-
-  def setUp(self):
-    """See unittest.TestCase.setUp for specification."""
-    self.models = melange_db.MELANGE_MODELS
-
-  def testProfileModel(self):
-    """Tests that appropriate profile model is returned."""
-    self.assertEqual(self.models.profileModel, profile_model.Profile)

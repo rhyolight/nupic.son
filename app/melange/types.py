@@ -12,11 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""App Engine datastore related functions and classes."""
+"""Definitions of Melange types."""
 
-from melange.appengine import db as melange_db
-
-from soc.modules.gsoc.models import profile as profile_model
+from soc.models import profile as profile_model
 
 
-SOC_MODELS = melange_db.Models(profile_model=profile_model.GSoCProfile)
+class Models(object):
+  """Class that encapsulates methods that return appropriate model classes.
+
+  Attributes:
+    profile_model: class that represents profile model.
+  """
+
+  def __init__(self, profile_model=None):
+    """Initializes new instance of Models class.
+
+    Args:
+      profile_model: class that represents profile model.
+    """
+    self.profile_model = profile_model
+
+MELANGE_MODELS = Models(profile_model=profile_model.Profile)

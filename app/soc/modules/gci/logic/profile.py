@@ -17,7 +17,7 @@
 
 import datetime
 
-from codein.appengine import db as codein_db
+from codein import types
 
 from melange.logic import profile as profile_logic
 
@@ -334,11 +334,11 @@ def insertDummyData(student_info):
 def canResignAsOrgAdminForOrg(profile, org_key):
   """See melange.logic.profile.canResignAsOrgAdminForOrg for specification."""
   return profile_logic.canResignAsOrgAdminForOrg(
-      profile, org_key, models=codein_db.CI_MODELS)
+      profile, org_key, models=types.CI_MODELS)
 
 
 def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
   """See melange.logic.profile.getOrgAdmins for specificaion."""
   return profile_logic.getOrgAdmins(
       org_key, keys_only=keys_only, extra_attrs=extra_attrs,
-      models=codein_db.CI_MODELS)
+      models=types.CI_MODELS)
