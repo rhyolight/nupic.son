@@ -28,7 +28,7 @@ from soc.views.helper import url_patterns
 from soc.views.template import Template
 
 from soc.modules.gci.logic import profile as profile_logic
-from soc.modules.gci.models import task
+from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.task import DifficultyLevel
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import GCIRequestHandler
@@ -133,7 +133,7 @@ class TaskEditPostClaimForm(gci_forms.GCIModelForm):
     return mentor_keys
 
   class Meta:
-    model = task.GCITask
+    model = task_model.GCITask
     css_prefix = 'gci-task'
     fields = ['mentors']
 
@@ -228,7 +228,7 @@ class TaskCreateForm(TaskEditPostClaimForm):
     return cleaned_data
 
   class Meta:
-    model = task.GCITask
+    model = task_model.GCITask
     css_prefix = 'gci-task'
     fields = ['title', 'description', 'mentors']
 
