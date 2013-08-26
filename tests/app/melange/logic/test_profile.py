@@ -25,7 +25,7 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
 class CanResignAsOrgAdminForOrgTest(unittest.TestCase):
-  """Unit tests for canResignAsOrgAdmin function."""
+  """Unit tests for canResignAsOrgAdminForOrg function."""
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""

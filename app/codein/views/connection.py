@@ -286,10 +286,6 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.GCIRequestHandler.context for specification."""
-
-    import logging
-    logging.error("AAABBBCCC")
-
     actions_form = _formToManageConnectionAsUser(
         data=data.POST or None, instance=data.url_connection,
         name=ACTIONS_FORM_NAME)
@@ -330,8 +326,10 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
       FormHandler implementation to handler the received data.
     """
     if ACTIONS_FORM_NAME in data.POST:
+      # TODO(daniel): eliminate passing self object.
       return ActionsFormHandler(self)
     elif MESSAGE_FORM_NAME in data.POST:
+      # TODO(daniel): eliminate passing self object.
       return MessageFormHandler(self)
     else:
       raise exception.BadRequest('No valid form data is found in POST.')
