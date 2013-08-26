@@ -19,8 +19,7 @@ from melange import types
 
 # TODO(daniel): it would be nice if this function returned something more
 # verbose than "False", i.e. explanation why
-def canResignAsOrgAdminForOrg(profile, org_key,
-    models=types.MELANGE_MODELS):
+def canResignAsOrgAdminForOrg(profile, org_key, models=types.MELANGE_MODELS):
   """Tells whether the specified profile can resign from their organization
   administrator role for the specified organization.
 
@@ -28,8 +27,9 @@ def canResignAsOrgAdminForOrg(profile, org_key,
   of an organization, if there is at least one other user with this role.
 
   Args:
-    profile: the specified GSoCProfile entity
-    org_key: the specified GSoCOrganization entity
+    profile: the specified profile entity.
+    org_key: the specified organization entity.
+    models: instance of types.Models that represent appropriate models.
 
   Returns:
     True, if the mentor is allowed to resign; False otherwise
@@ -70,6 +70,7 @@ def getOrgAdmins(org_key, keys_only=False, extra_attrs=None,
     keys_only: If true, return only keys instead of complete entities
     extra_args: a dictionary containing additional constraints on
         organization administrators to retrieve
+    models: instance of types.Models that represent appropriate models.
 
   Returns:
     list of profiles entities or keys of organization administrators

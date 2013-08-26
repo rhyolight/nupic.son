@@ -405,7 +405,9 @@ class ActionsFormHandler(FormHandler):
     if actions_form.is_valid():
       user_role = actions_form.cleaned_data['user_role']
       if user_role == connection_model.NO_ROLE:
-        pass
+        self._handleNoRoleSelection()
+      else:
+        self._handleRoleSelection()
 
       url = links.Linker().userId(
           data.url_profile, data.url_connection.key().id(),
@@ -423,3 +425,4 @@ class ActionsFormHandler(FormHandler):
   def _handleRoleSelection(self):
     """Makes all necessary changes if user selects connection_model.ROLE."""
     # TODO(daniel): implement this function
+    pass
