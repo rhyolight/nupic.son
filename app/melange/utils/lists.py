@@ -278,6 +278,240 @@ class Column(object):
     raise NotImplementedError
 
 
+class Row(object):
+  """Base class for a row in a list."""
+
+  def __init__(self, row_type):
+    """Initializes a Row object.
+
+    Args:
+      row_type: A string indicating the type of the row. Currently 
+        'redirect_custom' is the only supported type.
+    """
+    self.row_type = row_type
+
+  def getOperations(self):
+    """Returns the operations regarding this row.
+
+    This method can be used to create the 'operations/row' sub object of the
+    json object expected by jqgrid. Specification of the json object can be found at
+    http://code.google.com/p/soc/wiki/Lists.
+
+    Returns:
+      A dict containing data for operations/row/parameters sub object.    
+    """
+    return {
+        'type': self.row_type,
+        'parameters': self._getParameters()
+    }
+
+  def _getParameters(self):
+    """Get 'parameters' sub section of the json object expected by jqgrid.
+
+    Specification of the json object can be found at
+    http://code.google.com/p/soc/wiki/Lists. This method creates data for
+    operations/row/parameters sub object.
+
+    This must be overridden by implementing subclasses.
+
+    Returns: 
+      A dict containing parameters that can be used in operations/row sub
+      object.
+    """
+    raise NotImplementedError
+
+
+class Button(object):
+  """Base class for a button inside a list."""
+
+  def __init__(self, button_id, caption, bounds, button_type):
+    """Initializes a Button object.
+
+    See 'Operations' section of http://code.google.com/p/soc/wiki/Lists
+    for more information about args.
+
+    Args:
+      button_id: A string indicating a unique id for this button.
+      caption: A string defining what caption the button should show.
+      bounds: A sequence of size two with two integers or an integer and the 
+        string 'all'. This indicates how many rows need to be selected for the
+        button to be enabled.
+      button_type: A string indicating the type of the button. Supported types
+        are 'redirect_simple', 'redirect_custom' and 'post'.
+    """
+    self.button_id = button_id
+    self.caption = caption
+    self.bounds = bounds
+    self.button_type = button_type
+
+  def _getParameters(self):
+    """Get 'parameters' for 'operations' of the json object expected by jqgrid.
+
+    This must be overridden by implementing subclasses.
+
+    Specification of the json object can be found at
+    http://code.google.com/p/soc/wiki/Lists. This method creates data for
+    parameters sub object of a button in operations/buttons json array.
+
+    Returns: A dict with data for parameters sub object of a button object in
+      operations/buttons json array.
+    """
+    raise NotImplementedError
+
+  def getOperations(self):
+    """Returns the operations regarding this row.
+
+    This method can be used to create the 'operations/row' sub object of the
+    json object expected by jqgrid. Specification of the json object can be 
+    found at http://code.google.com/p/soc/wiki/Lists. 
+
+    Returns: A dict with data for operations/row sub object expected by jqgrid.
+    """
+    return {
+        'bounds': self.bounds,
+        'id': self.button_id,
+        'caption': self.caption,
+        'type': self.button_type,
+        'parameters': self._getParameters()
+    }
+
+
+class RedirectCustomRow(Row):
+  """Represents a row which redirects user to a custom page when clicked.
+
+  The link that will be used to redirection is custom to each row.
+  """
+
+  def __init__(self, new_window):
+    """Initializes a RedirectCustomRow object.
+
+    Args:
+      new_window: A bool indicating whether the redirected page should be
+        loaded in a new window, when a row is clicked.
+    """
+    super(RedirectCustomRow, self).__init__('redirect_custom')
+    self.new_window = new_window
+
+  def _getParameters(self):
+    """See Row._getParameters for specification"""
+    return {'new_window': self.new_window}
+
+  def getLink(self, entity):
+    """Returns the link to which user will be redirected when row is clicked.
+
+    This must be overridden by implementing subclasses.
+
+    Args:
+      entity: The entity from which data for this row is taken from.
+    Returns:
+      A string indicating the link to which user will be redirected when row is
+      clicked.
+    """
+    raise NotImplementedError
+
+
+class RedirectSimpleButton(Button):
+  """Represents a button which redirects user when clicked.
+
+  The link that will be used to redirection is custom to each row.
+  """
+
+  def __init__(self, button_id, caption, bounds, link, new_window):
+    """Initializes a RedirectSimpleButton object.
+
+    Args:
+      link: The link to which the user will be redirected.
+      new_window: A bool indicating whether the redirected page should be
+        loaded in a new window, when the button is clicked.
+    """
+    super(RedirectSimpleButton, self).__init__(
+        button_id, caption, bounds, 'redirect_simple')
+    self.new_window = new_window
+    self.link = link
+
+  def _getParameters(self):
+    """See Button._getParameters for specification"""
+    return {
+        'link': self.link,
+        'new_window': self.new_window
+    }
+
+
+class RedirectCustomButton(Button):
+  """Represents a button which redirects user to a custom page when clicked.
+
+  The link that will be used to redirection is custom to each row.
+  """
+
+  def __init__(self, button_id, caption, bounds, new_window):
+    """Initializes a RedirectCustomButton object.
+
+    Args:
+      new_window: A bool indicating whether the redirected page should be
+        loaded in a new window, when the button is clicked.
+    """
+    super(RedirectSimpleButton, self).__init__(
+        button_id, caption, bounds, 'redirect_custom')
+    self._new_window = new_window
+
+  def _getParameters(self):
+    """See Button._getParameters for specification"""
+    return {'new_window': self.new_window}
+
+  def getLink(self, entity):
+    """Returns the link to which user will be redirected when row is clicked.
+
+    This must be overridden by implementing subclasses.
+
+    Args:
+      entity: The entity from which data for this row is taken from.
+
+    Returns:
+      A string indicating the link to which user will be redirected when this
+      button is clicked.
+    """
+    raise NotImplementedError
+
+
+class PostButton(Button):
+  """A button which sends data to the back end when clicked.
+
+  The link that will be used to redirection is custom to each row.
+  """
+
+  def __init__(self, button_id, caption, bounds, url, keys, refresh="current",
+               redirect=False):
+    """Initializes a PostButton object.
+
+    Args:
+      url: A string indicating the url to which the button should post data.
+      keys: A list of col_ids of the Columns in the list this button belongs to.
+        Those columns' content will be send to the server when the button is
+        clicked.
+      refresh: Indicates which list to refresh, is the current list by default.
+        The keyword 'all' can be used to refresh all lists on the page or an
+        integer index referring to the index of the list to refresh can be
+        given.
+      redirect: A bool indicating whether the user will be redirected to a URL
+        returned by the server.
+    """
+    super(RedirectSimpleButton, self).__init__(
+        button_id, caption, bounds, 'post')
+    self.url = url
+    self.keys = keys
+    self.refresh = refresh
+    self.redirect = redirect
+
+  def _getParameters(self):
+    """See Button._getParameters for specification"""
+    return {
+      'url': self.url, 
+      'keys': self.keys,
+      'refresh': self.refresh,
+      'redirect': self.redirect
+    }
+
+
 def toListItemDict(entity, column_def):
   """Create a list item from a datastore entity.
 
