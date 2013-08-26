@@ -14,8 +14,7 @@
 
 """GSoC logic for profiles."""
 
-from google.appengine.ext import db
-
+from melange.appengine import db as melange_db
 from melange.logic import profile as profile_logic
 
 from soc.modules.gsoc.logic import project as project_logic
@@ -72,16 +71,12 @@ def _handleExtraAttrs(query, extra_attrs):
   be a single object or a list/tuple.
 
   Args:
-    query: query to extend
-    extra_attrs: a dictionary containing additional constraints on the query
+    query: query to extend.
+    extra_attrs: a dictionary containing additional constraints on the query.
   """
   if extra_attrs:
-    for attribute, value in extra_attrs.iteritems():
-      # list and tuples are supported by IN queries
-      if isinstance(value, list) or isinstance(value, tuple):
-        query.filter('%s IN' % attribute.name, value)
-      else:
-        query.filter(attribute.name, value)
+    for prop, value in extra_attrs.iteritems():
+      melange_db.addFilterToQuery(query, prop, value)
 
 
 def canBecomeMentor(profile):

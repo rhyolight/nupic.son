@@ -81,3 +81,19 @@ def toDict(entity):
   else:
     raise TypeError(
         '%s object is not a valid datastore entity' % type(entity))
+
+
+def addFilterToQuery(query, prop, value):
+  """Extends the specified query by adding a filter on the specified property
+  with the specified value.
+
+  Args:
+    query: query object to extend.
+    prop: property of the query model on which to add a filter.
+    value: value to compare with the property value. May be a single object
+      or a list/tuple.
+  """
+  if isinstance(value, list) or isinstance(value, tuple):
+    query.filter('%s IN' % prop.name, value)
+  else:
+    query.filter(prop.name, value)

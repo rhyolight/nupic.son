@@ -104,3 +104,46 @@ class TestToDict(unittest.TestCase):
     expected_dict = {'freq': 4, 'item_freq': '5', 'details': 'Test Entity',
                      'released': True}
     self.assertEqual(melange_db.toDict(entity), expected_dict)
+
+
+class AddFilterToQueryTest(unittest.TestCase):
+  """Unit tests for addFilterToQuery function."""
+
+  class TestModel(db.Model):
+    """Test model class."""
+    foo = db.IntegerProperty()
+    bar = db.StringProperty()
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    # seed a few of TestModel entities
+    self.key1 = AddFilterToQueryTest.TestModel(foo=1, bar='a').put()
+    self.key2 = AddFilterToQueryTest.TestModel(foo=2, bar='a').put()
+    self.key3 = AddFilterToQueryTest.TestModel(foo=2, bar='b').put()
+    self.key4 = AddFilterToQueryTest.TestModel(foo=3, bar='c').put()
+
+  def testForSingleObjectFilter(self):
+    """Tests addFilterToQuery for a single object value."""
+    query = AddFilterToQueryTest.TestModel.all(keys_only=True)
+    melange_db.addFilterToQuery(query, AddFilterToQueryTest.TestModel.foo, 1)
+    self.assertSetEqual(set(query.fetch(10)), set([self.key1]))
+
+    query = AddFilterToQueryTest.TestModel.all(keys_only=True)
+    melange_db.addFilterToQuery(query, AddFilterToQueryTest.TestModel.bar, 'a')
+    self.assertSetEqual(set(query.fetch(10)), set([self.key1, self.key2]))
+
+  def testForListObjectFilter(self):
+    """Tests addFilterToQuery for a list value."""
+    query = AddFilterToQueryTest.TestModel.all()
+    melange_db.addFilterToQuery(
+        query, AddFilterToQueryTest.TestModel.foo, [1, 2])
+    self.assertSetEqual(
+        set(entity.key() for entity in query.fetch(10)),
+        set([self.key1, self.key2, self.key3]))
+
+    query = AddFilterToQueryTest.TestModel.all()
+    melange_db.addFilterToQuery(
+        query, AddFilterToQueryTest.TestModel.bar, ['a', 'c'])
+    self.assertSetEqual(
+        set(entity.key() for entity in query.fetch(10)),
+        set([self.key1, self.key2, self.key4]))

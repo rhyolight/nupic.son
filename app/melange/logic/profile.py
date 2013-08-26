@@ -15,6 +15,7 @@
 """Logic for profiles."""
 
 from melange import types
+from melange.appengine import db as melange_db
 
 
 # TODO(daniel): it would be nice if this function returned something more
@@ -92,13 +93,9 @@ def _handleExtraAttrs(query, extra_attrs):
   be a single object or a list/tuple.
 
   Args:
-    query: query to extend
-    extra_attrs: a dictionary containing additional constraints on the query
+    query: query to extend.
+    extra_attrs: a dictionary containing additional constraints on the query.
   """
   if extra_attrs:
-    for attribute, value in extra_attrs.iteritems():
-      # list and tuples are supported by IN queries
-      if isinstance(value, list) or isinstance(value, tuple):
-        query.filter('%s IN' % attribute.name, value)
-      else:
-        query.filter(attribute.name, value)
+    for prop, value in extra_attrs.iteritems():
+      melange_db.addFilterToQuery(query, prop, value)
