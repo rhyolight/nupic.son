@@ -188,7 +188,7 @@ class GetOrgAdminsTest(unittest.TestCase):
         profile_model.Profile, org_admin_properties)
 
     # retrieve only org admins with extra attrs
-    extra_attrs = {profile_model.Profile.gender: 'male'}
+    extra_attrs = {profile_model.Profile.gender: ['male']}
     org_admins = profile_logic.getOrgAdmins(self.organization_one.key(),
         extra_attrs=extra_attrs)
 

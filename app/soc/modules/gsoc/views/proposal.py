@@ -105,7 +105,7 @@ class ProposalPage(base.GSoCRequestHandler):
     student_info_key = data.student_info.key()
 
     extra_attrs = {
-        GSoCProfile.notify_new_proposals: True
+        GSoCProfile.notify_new_proposals: [True]
         }
     mentors = profile_logic.getMentors(
         data.organization.key(), extra_attrs=extra_attrs)
@@ -214,7 +214,7 @@ class UpdateProposal(base.GSoCRequestHandler):
 
     org_key = GSoCProposal.org.get_value_for_datastore(data.proposal)
     extra_attrs = {
-        GSoCProfile.notify_proposal_updates: True
+        GSoCProfile.notify_proposal_updates: [True]
         }
     mentors = profile_logic.getMentors(org_key, extra_attrs=extra_attrs)
 

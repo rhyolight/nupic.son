@@ -462,7 +462,7 @@ class GetMentorsTest(unittest.TestCase):
 
     # retrieve only mentors with extra attrs
     extra_attrs = {
-        profile_model.GSoCProfile.gender: 'female',
+        profile_model.GSoCProfile.gender: ['female'],
         }
     mentors = profile_logic.getMentors(self.organization_one.key(),
         extra_attrs=extra_attrs)

@@ -74,7 +74,7 @@ class QueryTasksForMentorTest(unittest.TestCase):
         task_model.GCITask, properties=task_properties)
 
     # check querying tasks for organization filter
-    extra_filters = {task_model.GCITask.org: self.org}
+    extra_filters = {task_model.GCITask.org: [self.org]}
     query = task_logic.queryTasksForMentor(
         self.profile.key(), extra_filters=extra_filters)
     self.assertSetEqual(

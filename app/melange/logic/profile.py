@@ -61,7 +61,7 @@ def getOrgAdmins(org_key, keys_only=False, extra_attrs=None,
 
   Additional constraints on administrators may be specified by passing a custom
   extra_attrs dictionary. Each element of the dictionary maps a property
-  with a requested value. The value may be a single object or a list/tuple.
+  with a requested value. The value must be a sequence.
 
   Please note that this function executes a non-ancestor query, so it cannot
   be safely used within transactions.
@@ -89,8 +89,8 @@ def _handleExtraAttrs(query, extra_attrs):
   """Extends the specified query by handling extra attributes.
 
   The attributes are specified in the passed dictionary. Each element of
-  the dictionary maps a property with a requested value. The value may
-  be a single object or a list/tuple.
+  the dictionary maps a property with a requested value. The value must
+  be a sequence (list or tuple).
 
   Args:
     query: query to extend.

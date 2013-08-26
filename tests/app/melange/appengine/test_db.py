@@ -112,28 +112,18 @@ class AddFilterToQueryTest(unittest.TestCase):
   class TestModel(db.Model):
     """Test model class."""
     foo = db.IntegerProperty()
-    bar = db.StringProperty()
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     # seed a few of TestModel entities
-    self.key1 = AddFilterToQueryTest.TestModel(foo=1, bar='a').put()
-    self.key2 = AddFilterToQueryTest.TestModel(foo=2, bar='a').put()
-    self.key3 = AddFilterToQueryTest.TestModel(foo=2, bar='b').put()
-    self.key4 = AddFilterToQueryTest.TestModel(foo=3, bar='c').put()
+    self.key1 = AddFilterToQueryTest.TestModel(foo=1).put()
+    self.key2 = AddFilterToQueryTest.TestModel(foo=2).put()
+    self.key3 = AddFilterToQueryTest.TestModel(foo=2).put()
+    self.key4 = AddFilterToQueryTest.TestModel(foo=3).put()
 
-  def testForSingleObjectFilter(self):
-    """Tests addFilterToQuery for a single object value."""
-    query = AddFilterToQueryTest.TestModel.all(keys_only=True)
-    melange_db.addFilterToQuery(query, AddFilterToQueryTest.TestModel.foo, 1)
-    self.assertSetEqual(set(query.fetch(10)), set([self.key1]))
-
-    query = AddFilterToQueryTest.TestModel.all(keys_only=True)
-    melange_db.addFilterToQuery(query, AddFilterToQueryTest.TestModel.bar, 'a')
-    self.assertSetEqual(set(query.fetch(10)), set([self.key1, self.key2]))
-
-  def testForListObjectFilter(self):
-    """Tests addFilterToQuery for a list value."""
+  def testForSequentialValues(self):
+    """Tests that filter is applied correctly for sequential values."""
+    # test for a list
     query = AddFilterToQueryTest.TestModel.all()
     melange_db.addFilterToQuery(
         query, AddFilterToQueryTest.TestModel.foo, [1, 2])
@@ -141,9 +131,19 @@ class AddFilterToQueryTest(unittest.TestCase):
         set(entity.key() for entity in query.fetch(10)),
         set([self.key1, self.key2, self.key3]))
 
+    # test for a tuple
     query = AddFilterToQueryTest.TestModel.all()
     melange_db.addFilterToQuery(
-        query, AddFilterToQueryTest.TestModel.bar, ['a', 'c'])
+        query, AddFilterToQueryTest.TestModel.foo, (1, 2))
     self.assertSetEqual(
         set(entity.key() for entity in query.fetch(10)),
-        set([self.key1, self.key2, self.key4]))
+        set([self.key1, self.key2, self.key3]))
+
+  def testForSequenceWithOneElement(self):
+    """Tests that filter is applied correctly for a one element sequence."""
+    query = AddFilterToQueryTest.TestModel.all()
+    melange_db.addFilterToQuery(
+        query, AddFilterToQueryTest.TestModel.foo, [2])
+    self.assertSetEqual(
+        set(entity.key() for entity in query.fetch(10)),
+        set([self.key2, self.key3]))

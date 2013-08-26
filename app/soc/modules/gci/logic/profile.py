@@ -332,13 +332,42 @@ def insertDummyData(student_info):
 
 
 def canResignAsOrgAdminForOrg(profile, org_key):
-  """See melange.logic.profile.canResignAsOrgAdminForOrg for specification."""
+  """Tells whether the specified profile can resign from their organization
+  administrator role for the specified organization.
+
+  An organization administrator may be removed from the list of administrators
+  of an organization, if there is at least one other user with this role.
+
+  Args:
+    profile: the specified profile entity.
+    org_key: the specified organization entity.
+
+  Returns:
+    True, if the mentor is allowed to resign; False otherwise
+  """
   return profile_logic.canResignAsOrgAdminForOrg(
       profile, org_key, models=types.CI_MODELS)
 
 
 def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
-  """See melange.logic.profile.getOrgAdmins for specificaion."""
+  """Returns organization administrators for the specified organization.
+
+  Additional constraints on administrators may be specified by passing a custom
+  extra_attrs dictionary. Each element of the dictionary maps a property
+  with a requested value. The value must be a sequence.
+
+  Please note that this function executes a non-ancestor query, so it cannot
+  be safely used within transactions.
+
+  Args:
+    org_key: organization key
+    keys_only: If true, return only keys instead of complete entities
+    extra_args: a dictionary containing additional constraints on
+        organization administrators to retrieve
+
+  Returns:
+    list of profiles entities or keys of organization administrators
+  """
   return profile_logic.getOrgAdmins(
       org_key, keys_only=keys_only, extra_attrs=extra_attrs,
       models=types.CI_MODELS)
