@@ -42,8 +42,8 @@ class List(object):
   """Represents a list."""
 
   def __init__(self, list_id, index, model_class, columns, datastore_reader,
-               cache_reader=None, valid_period=datetime.timedelta(1),
-               operations_func=None):
+               cache_reader=None, buttons=None, row=None,
+               valid_period=datetime.timedelta(1), operations_func=None):
     """Initialize a list object.
 
     Args:
@@ -63,6 +63,8 @@ class List(object):
     self._index = index
     self.model_class = model_class
     self.columns = columns
+    self.buttons = buttons
+    self.row = row
     self._cache_reader = cache_reader
     self._datastore_reader = datastore_reader
     self.valid_period = valid_period
@@ -71,6 +73,22 @@ class List(object):
       self._getOperations = operations_func
     else:
       self._getOperations = _getDefaultOperations
+
+  def getListOperations(self):
+    """Get 'operations' section of the json object expected by jqgrid.
+
+    Specification of the json object can be found at
+    http://code.google.com/p/soc/wiki/Lists.
+
+    Returns: A dict containing the list operations.
+    """
+    operations = {}
+    if self.buttons:
+      operations['buttons'] = [
+          button.getOperations() for button in self.buttons]
+    if self.row:
+      operations['row'] = self.row.getOperations()
+    return operations
 
   def getListData(self, query, start=None, limit=50):
     """Get 'data' section of the json object expected by jqgrid.
@@ -450,9 +468,9 @@ class RedirectCustomButton(Button):
       new_window: A bool indicating whether the redirected page should be
         loaded in a new window, when the button is clicked.
     """
-    super(RedirectSimpleButton, self).__init__(
+    super(RedirectCustomButton, self).__init__(
         button_id, caption, bounds, 'redirect_custom')
-    self._new_window = new_window
+    self.new_window = new_window
 
   def _getParameters(self):
     """See Button._getParameters for specification"""
@@ -495,7 +513,7 @@ class PostButton(Button):
       redirect: A bool indicating whether the user will be redirected to a URL
         returned by the server.
     """
-    super(RedirectSimpleButton, self).__init__(
+    super(PostButton, self).__init__(
         button_id, caption, bounds, 'post')
     self.url = url
     self.keys = keys
