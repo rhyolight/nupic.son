@@ -14,6 +14,7 @@
 
 """Unit tests for student forms view."""
 
+import os
 import tempfile
 
 from soc.modules.gsoc.models import profile as profile_model
@@ -178,6 +179,34 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
       student_info = profile_model.GSoCStudentInfo.get(
           profile.student_info.key())
       self.assertIsNotNone(student_info.tax_form)
+
+  def testSubmitAnotherForm(self):
+    """Tests that another form may be resubmitted by a student."""
+    self.timeline_helper.formSubmission()
+
+    mentor = self._createNewMentor()
+    self.profile_helper.createStudentWithProject(self.org, mentor)
+
+    # set initial tax form
+    blob_key = self.createBlob('initial_tax_form.pdf')
+    self.profile_helper.profile.student_info.tax_form = blob_key
+    self.profile_helper.profile.student_info.put()
+
+    # submit a new tax form
+    with tempfile.NamedTemporaryFile() as test_file:
+      # check for the enrollment form
+      url = self._getTaxFormUrl()
+      postdata = {'tax_form': test_file}
+      response = self.post(url, postdata)
+      self.assertResponseRedirect(
+          response, self._getTaxFormUrl(validated=True))
+
+      # check if the form has been submitted
+      student_info = profile_model.GSoCStudentInfo.get(
+          self.profile_helper.profile.student_info.key())
+      self.assertIsNotNone(student_info.tax_form)
+      self.assertEqual(os.path.basename(test_file.name),
+          student_info.tax_form.key())
 
   def _getEnrollmentFormUrl(self, validated=False):
     """Returns URL for the student enrollment form upload."""

@@ -15,7 +15,6 @@
 """Common testing utilities."""
 
 import cgi
-import collections
 import hashlib
 import os
 import datetime
@@ -23,9 +22,11 @@ import httplib
 import StringIO
 import unittest
 
+# TODO(daniel): gaetestbed is deprecated; it should not be used.
 import gaetestbed
 from mox import stubout
 
+from google.appengine.api import datastore
 from google.appengine.datastore import datastore_stub_util
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
@@ -43,6 +44,9 @@ from tests import profile_utils
 from tests import program_utils
 from tests import timeline_utils
 
+
+# key of request argument associated with testbed object
+TESTBED_ARG_KEY = 'TESTBED'
 
 class MockRequest(object):
   """Shared dummy request object to mock common aspects of a request.
@@ -235,14 +239,32 @@ class SoCTestCase(unittest.TestCase):
       msg: the optional message
     """
     if not isinstance(expected_entity, db.Model):
-       raise TypeError('expected_entity has wrong type: %s' %
-           type(expected_entity))
+      raise TypeError('expected_entity has wrong type: %s' %
+          type(expected_entity))
 
     if not isinstance(actual_entity, db.Model):
-       raise TypeError('actual_entity has wrong type: %s' %
-           type(actual_entity))
+      raise TypeError('actual_entity has wrong type: %s' %
+          type(actual_entity))
 
     self.assertEqual(expected_entity.key(), actual_entity.key(), msg)
+
+  def createBlob(self, path, content=None):
+    """Puts new Blob upload for the specified path and optional content.
+
+    Args:
+      path: path of the file to upload.
+      content: content of the file.
+
+    Returns:
+      blobstore.BlobKey of the created blob.
+    """
+    filename = os.path.basename(path)
+    content = content or 'fake content'
+    # for some reason CreateBlob function returns datastore_types.Key instead
+    # of datastore_types.BlobKey, whereas the latter type is required for
+    # BlobReferenceProperty to work.
+    self.testbed.get_stub('blobstore').CreateBlob(filename, content)
+    return blobstore.BlobKey(filename)
 
 
 # TODO(nathaniel): Drop "gsoc" attribute in favor of "program".
@@ -378,7 +400,9 @@ class DjangoTestCase(TestCase):
     """
     self.gen_request_id()
     postdata['xsrf_token'] = self.getXsrfToken(url, site=self.site)
-    response = self.client.post(url, postdata)
+
+    extra = {TESTBED_ARG_KEY: self.testbed}
+    response = self.client.post(url, postdata, **extra)
     postdata.pop('xsrf_token')
     return response
 
@@ -625,7 +649,7 @@ class DjangoTestCase(TestCase):
 
       try:
         self.assertEqual(value, prop, msg=msg)
-      except AssertionError as e:
+      except AssertionError:
         errors.append(msg)
 
     if errors:
@@ -701,25 +725,7 @@ class GCIDjangoTestCase(DjangoTestCase, GCITestCase):
     return self.createDocumentForPrefix('gci_program', override)
 
 
-def runTasks(url = None, name=None, queue_names = None):
-  """Run tasks with specified url and name in specified task queues.
-  """
-
-  task_queue_test_case = gaetestbed.taskqueue.TaskQueueTestCase()
-  # Get all tasks with specified url and name in specified task queues
-  tasks = task_queue_test_case.get_tasks(url=url, name=name,
-                                         queue_names=queue_names)
-  for task in tasks:
-    postdata = task['params']
-    xsrf_token = GSoCDjangoTestCase.getXsrfToken(url, data=postdata)
-    postdata.update(xsrf_token=xsrf_token)
-    client.FakePayload = NonFailingFakePayload
-    c = client.Client()
-    # Run the task with Django test client
-    c.post(url, postdata)
-
-
-class MailTestCase(gaetestbed.mail.MailTestCase, unittest.TestCase):
+class MailTestCase(gaetestbed.mail.MailTestCase, SoCTestCase):
   """Class extending gaetestbed.mail.MailTestCase to extend its functions.
 
   Difference:
@@ -727,12 +733,6 @@ class MailTestCase(gaetestbed.mail.MailTestCase, unittest.TestCase):
   unittest.TestCase in their code.
   * Override assertEmailSent method.
   """
-
-  def setUp(self):
-    """Sets up gaetestbed.mail.MailTestCase.
-    """
-
-    super(MailTestCase, self).setUp()
 
   def get_sent_messages(self, to=None, cc=None, bcc=None, sender=None,
                         subject=None, body=None, html=None):
@@ -762,7 +762,7 @@ class MailTestCase(gaetestbed.mail.MailTestCase, unittest.TestCase):
     """
 
     # Run all mail tasks first so that all mails will be sent out
-    runTasks(url = '/tasks/mail/send_mail', queue_names = ['mail'])
+    self.runTasks(url = '/tasks/mail/send_mail', queue_names = ['mail'])
     messages = self.get_sent_messages(
         to = to,
         cc = cc,
@@ -807,6 +807,25 @@ class MailTestCase(gaetestbed.mail.MailTestCase, unittest.TestCase):
       else:
         failure_message += 'None'
       self.fail(failure_message)
+
+  def runTasks(self, url=None, name=None, queue_names=None):
+    """Run tasks with specified URL and name in specified task queues.
+
+    Args:
+      url: URL associated with the task to run.
+      name: name of the task.
+      queue_names: names of task queues in which the tasks should be executed.
+    """
+    task_queue_test_case = gaetestbed.taskqueue.TaskQueueTestCase()
+    # Get all tasks with specified url and name in specified task queues
+    tasks = task_queue_test_case.get_tasks(
+        url=url, name=name, queue_names=queue_names)
+    for task in tasks:
+      postdata = task['params']
+      xsrf_token = GSoCDjangoTestCase.getXsrfToken(url, data=postdata)
+      postdata.update(xsrf_token=xsrf_token)
+      # Run the task with Django test client
+      self.post(url, postdata)
 
 
 class TaskQueueTestCase(gaetestbed.taskqueue.TaskQueueTestCase,
@@ -853,6 +872,7 @@ class FakeBlobstoreMiddleware(object):
     if request.method == 'POST' and (
         'multipart/form-data' in request.META.get('CONTENT_TYPE', '')):
 
+      testbed = request.META[TESTBED_ARG_KEY]
       wsgi_input = request.META['wsgi.input']
       wsgi_input.seek(0)
 
@@ -865,11 +885,19 @@ class FakeBlobstoreMiddleware(object):
               'filename' in field.disposition_options):
 
             # create a mock blob info and assign it to request data
-            _values = {'size': 1024}
-            blob_info = blobstore.BlobInfo(blobstore.BlobKey('fake blob-key'),
-                _values=_values)
+            filename = field.disposition_options['filename']
+            blob_info = testbed.get_stub('blobstore').CreateBlob(
+                filename, 'fake content')
+
+            # set other properties of blob info
+            blob_info['filename'] = filename
+            blob_info['content_type'] = field.headers['content-type']
+            datastore.Put(blob_info)
+
+            # set request data
             request.file_uploads[key] = blob_info
-            request.POST[key] = field.disposition_options['filename']
+            request.POST[key] = filename
 
             # format blob info for Django by adding the name property.
             blob_info.name = field.disposition_options['filename']
+            blob_info.size = blob_info['size']
