@@ -22,6 +22,7 @@ import httplib
 import StringIO
 import unittest
 
+# TODO(daniel): gaetestbed is deprecated; it should not be used.
 import gaetestbed
 from mox import stubout
 
@@ -732,12 +733,6 @@ class MailTestCase(gaetestbed.mail.MailTestCase, SoCTestCase):
   unittest.TestCase in their code.
   * Override assertEmailSent method.
   """
-
-  def setUp(self):
-    """Sets up gaetestbed.mail.MailTestCase.
-    """
-    super(MailTestCase, self).setUp()
-    super(MailTestCase, self).setUp()
 
   def get_sent_messages(self, to=None, cc=None, bcc=None, sender=None,
                         subject=None, body=None, html=None):
