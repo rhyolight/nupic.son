@@ -86,7 +86,7 @@ class AcceptedOrgsAdminList(org_list.OrgList):
       """See lists.Prefetcher.prefetch for specification."""
       org_admins = {}
       for entity in entities:
-        org_admins_for_org = profile_logic.getOrgAdmins(entity)
+        org_admins_for_org = profile_logic.getOrgAdmins(entity.key())
         org_admins[entity.key()] = ', '.join(
             ['"%s" &lt;%s&gt;' % (
                 html_utils.conditional_escape(org_admin_for_org.name()),

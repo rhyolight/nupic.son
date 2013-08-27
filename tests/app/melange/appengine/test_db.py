@@ -104,3 +104,46 @@ class TestToDict(unittest.TestCase):
     expected_dict = {'freq': 4, 'item_freq': '5', 'details': 'Test Entity',
                      'released': True}
     self.assertEqual(melange_db.toDict(entity), expected_dict)
+
+
+class AddFilterToQueryTest(unittest.TestCase):
+  """Unit tests for addFilterToQuery function."""
+
+  class TestModel(db.Model):
+    """Test model class."""
+    foo = db.IntegerProperty()
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    # seed a few of TestModel entities
+    self.key1 = AddFilterToQueryTest.TestModel(foo=1).put()
+    self.key2 = AddFilterToQueryTest.TestModel(foo=2).put()
+    self.key3 = AddFilterToQueryTest.TestModel(foo=2).put()
+    self.key4 = AddFilterToQueryTest.TestModel(foo=3).put()
+
+  def testForSequentialValues(self):
+    """Tests that filter is applied correctly for sequential values."""
+    # test for a list
+    query = AddFilterToQueryTest.TestModel.all()
+    melange_db.addFilterToQuery(
+        query, AddFilterToQueryTest.TestModel.foo, [1, 2])
+    self.assertSetEqual(
+        set(entity.key() for entity in query.fetch(10)),
+        set([self.key1, self.key2, self.key3]))
+
+    # test for a tuple
+    query = AddFilterToQueryTest.TestModel.all()
+    melange_db.addFilterToQuery(
+        query, AddFilterToQueryTest.TestModel.foo, (1, 2))
+    self.assertSetEqual(
+        set(entity.key() for entity in query.fetch(10)),
+        set([self.key1, self.key2, self.key3]))
+
+  def testForSequenceWithOneElement(self):
+    """Tests that filter is applied correctly for a one element sequence."""
+    query = AddFilterToQueryTest.TestModel.all()
+    melange_db.addFilterToQuery(
+        query, AddFilterToQueryTest.TestModel.foo, [2])
+    self.assertSetEqual(
+        set(entity.key() for entity in query.fetch(10)),
+        set([self.key2, self.key3]))

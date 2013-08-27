@@ -484,17 +484,19 @@ class ModelForm(djangoforms.ModelForm):
 
   __metaclass__ = ModelFormMetaclass
 
-  def __init__(self, bound_field_class, *args, **kwargs):
+  def __init__(self, bound_field_class, name=None, **kwargs):
     """Fixes label and help_text issues after parent initialization.
 
     Args:
-      *args, **kwargs:  passed through to parent __init__() constructor
+      name: a string containing name of the form.
+      **kwargs:  passed through to parent __init__() constructor
     """
     assert bound_field_class
     assert issubclass(bound_field_class, BoundField)
     self.__bound_field_class = bound_field_class
+    self._name = name
 
-    super(djangoforms.ModelForm, self).__init__(*args, **kwargs)
+    super(djangoforms.ModelForm, self).__init__(**kwargs)
 
     renames = {
         'verbose_name': 'label',
@@ -608,6 +610,13 @@ class ModelForm(djangoforms.ModelForm):
   def idSuffix(self, field):
     return ""
 
+  def name(self):
+    """Returns name of the form.
+
+    Returns:
+      name of the form.
+    """
+    return self._name
 
 class SurveyEditForm(ModelForm):
   """Django form for creating and/or editing survey.
@@ -624,8 +633,8 @@ class SurveyTakeForm(ModelForm):
 
   RADIO_FIELD_RENDERER = RadioFieldRenderer
 
-  def __init__(self, survey, bound_field_class, *args, **kwargs):
-    super(SurveyTakeForm, self).__init__(bound_field_class, *args, **kwargs)
+  def __init__(self, bound_field_class, survey=None, **kwargs):
+    super(SurveyTakeForm, self).__init__(bound_field_class, **kwargs)
     self.survey = survey
     self.constructForm()
 

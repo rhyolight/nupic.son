@@ -1,0 +1,80 @@
+{% extends "modules/gci/base.html" %}
+{% comment %}
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+{% endcomment %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/gci/uniform.default.css" />
+{% endblock stylesheets %}
+
+{% block page_content %}
+{% include "codein/_data_saved_message.html" %}
+
+
+<div class="block block-page">
+  <div class="block block-page-section">
+    <div class="block-form-title">
+      <span class="title">Connection Summary</span>
+    </div>
+    {{ summary.render }}
+  </div>
+
+  <div class="block block-page-section">
+    <div class="block-form-title">
+      <span class="title">Actions</span>
+    </div>
+    <form action="#" method="post" class="form-create-task clearfix">
+      {{ actions_form.render }}
+      <div class="form-row form-row-buttons">
+        <input value="Submit" class="button" type="submit" name="{{ actions_form.name }}">
+      </div>
+    </form>
+  </div>
+
+  <div class="block block-page-section">
+    <div class="block-form-title">
+      <span class="title">Messages</span>
+    </div>
+     
+    {% for message in messages %}
+      <div class="block block-connection-message">
+        <div class="block-connection-message-header clearfix">
+          <span class="author">{{ message.getAuthor }}</span>
+          <span class="datetime"> {{ message.created }}</span>
+        </div>
+        <div class="block-connection-message-content">
+          {{ message.content }}
+        </div>
+      </div>
+    {% endfor %}
+     
+    <form action="#" method="post" class="form-create-task clearfix">
+      {{ message_form.render }}
+      <div class="form-row form-row-buttons">
+        <input value="Send" class="button" type="submit" name="{{ message_form.name }}" />
+      </div>
+    </form>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block dependencies %}
+  [
+    dep.uniform,
+    null,
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gci/connection/manage_connection_as_user.js"),
+  ]
+{% endblock %}

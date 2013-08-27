@@ -15,7 +15,6 @@
 """ Utilities to manipulate Connection data."""
 
 from melange.models import connection as connection_model
-from melange.models import connection_message as connection_message_model
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
@@ -59,5 +58,5 @@ def seed_new_connection_message(connection, **kwargs):
       }
   properties.update(kwargs)
 
-  return seeder_logic.seed(connection_message_model.ConnectionMessage,
+  return seeder_logic.seed(connection_model.ConnectionMessage,
       properties, recurse=False, auto_seed_optional_properties=True)

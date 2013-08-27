@@ -92,6 +92,7 @@ TEMPLATE_DIRS = (
     os.path.join(ROOT_PATH, 'soc', 'templates'),
     os.path.join(ROOT_PATH, 'shell', 'templates'),
     os.path.join(ROOT_PATH, 'summerofcode', 'content', 'html'),
+    os.path.join(ROOT_PATH, 'codein', 'content', 'html'),
 )
 
 INSTALLED_APPS = (

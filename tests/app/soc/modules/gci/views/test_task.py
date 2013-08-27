@@ -171,7 +171,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     # try to unpublish a reopened task
     task = task_model.GCITask.get(self.task.key())
-    task.status = 'Reopened'
+    task.status = task_model.REOPENED
     task.put()
 
     response = self.buttonPost(url, 'button_unpublish')
@@ -179,7 +179,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     task = task_model.GCITask.get(self.task.key())
 
     self.assertResponseForbidden(response)
-    self.assertEqual(task.status, 'Reopened')
+    self.assertEqual(task.status, task_model.REOPENED)
 
   def testPostButtonUnpublishByUserWithNoRole(self):
     """Tests the unpublish button by a user with no role.
@@ -229,7 +229,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """
     self.profile_helper.createOrgAdmin(self.org)
 
-    self.task.status = 'Unapproved'
+    self.task.status = task_model.UNAPPROVED
     self.task.put()
 
     url = self._taskPageUrl(self.task)
@@ -340,7 +340,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     # check if the task is properly unassigned
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
-    self.assertEqual(task.status, 'Reopened')
+    self.assertEqual(task.status, task_model.REOPENED)
     self.assertIsNone(task.student)
     self.assertIsNone(task.deadline)
 
@@ -485,7 +485,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     # check if the task is properly opened
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
-    self.assertEqual(task.status, 'Reopened')
+    self.assertEqual(task.status, task_model.REOPENED)
     self.assertIsNone(task.student)
     self.assertIsNone(task.deadline)
 

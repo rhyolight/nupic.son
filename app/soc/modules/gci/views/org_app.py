@@ -51,9 +51,10 @@ class GCIOrgAppEditPage(GCIRequestHandler):
 
   def context(self, data, check, mutator):
     if data.org_app:
-      form = gci_forms.OrgAppEditForm(data.POST or None, instance=data.org_app)
+      form = gci_forms.OrgAppEditForm(
+          data=data.POST or None, instance=data.org_app)
     else:
-      form = gci_forms.OrgAppEditForm(data.POST or None)
+      form = gci_forms.OrgAppEditForm(data=data.POST or None)
 
     if data.org_app:
       page_name = ugettext('Edit - %s' % data.org_app.title)
@@ -79,9 +80,9 @@ class GCIOrgAppEditPage(GCIRequestHandler):
       a newly created or updated organization application entity or None.
     """
     if data.org_app:
-      form = gci_forms.OrgAppEditForm(data.POST, instance=data.org_app)
+      form = gci_forms.OrgAppEditForm(data=data.POST, instance=data.org_app)
     else:
-      form = gci_forms.OrgAppEditForm(data.POST)
+      form = gci_forms.OrgAppEditForm(data=data.POST)
 
     if not form.is_valid():
       return None
@@ -129,7 +130,7 @@ class GCIOrgAppPreviewPage(GCIRequestHandler):
     return 'modules/gci/org_app/take.html'
 
   def context(self, data, check, mutator):
-    form = gci_forms.OrgAppTakeForm(data)
+    form = gci_forms.OrgAppTakeForm(request_data=data)
 
     context = {
         'page_name': '%s' % data.org_app.title,
@@ -182,9 +183,11 @@ class GCIOrgAppTakePage(GCIRequestHandler):
   def context(self, data, check, mutator):
     if data.org_app_record:
       form = gci_forms.OrgAppTakeForm(
-          data, data.POST or None, instance=data.org_app_record)
+          request_data=data, data=data.POST or None,
+          instance=data.org_app_record)
     else:
-      form = gci_forms.OrgAppTakeForm(data, data.POST or None)
+      form = gci_forms.OrgAppTakeForm(
+          request_data=data, data=data.POST or None)
 
     context = {
         'page_name': '%s' % data.org_app.title,
@@ -206,9 +209,9 @@ class GCIOrgAppTakePage(GCIRequestHandler):
     """
     if data.org_app_record:
       form = gci_forms.OrgAppTakeForm(
-          data, data.POST, instance=data.org_app_record)
+          request_data=data, data=data.POST, instance=data.org_app_record)
     else:
-      form = gci_forms.OrgAppTakeForm(data, data.POST)
+      form = gci_forms.OrgAppTakeForm(request_data=data, data=data.POST)
 
     if not form.is_valid():
       return None

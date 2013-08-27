@@ -94,7 +94,6 @@ module.exports = function(grunt) {
           '<%= meta.src.css_gci_dir %>/forms.css': '<%= meta.src.less_gci_dir %>/forms.less',
           '<%= meta.src.css_gci_dir %>/ie.css': '<%= meta.src.less_gci_dir %>/ie.less',
           '<%= meta.src.css_gci_dir %>/others.css': '<%= meta.src.less_gci_dir %>/others.less',
-          '<%= meta.src.css_gci_dir %>/readonly.css': '<%= meta.src.less_gci_dir %>/readonly.less',
           '<%= meta.src.css_gci_dir %>/style.css': '<%= meta.src.less_gci_dir %>/style.less',
           '<%= meta.src.css_gci_dir %>/messaging.css': '<%= meta.src.less_gci_dir %>/messaging.less'
         }
@@ -129,7 +128,6 @@ module.exports = function(grunt) {
           '<%= meta.build.css_gci_dir %>/forms.css': '<%= meta.src.less_gci_dir %>/forms.less',
           '<%= meta.build.css_gci_dir %>/ie.css': '<%= meta.src.less_gci_dir %>/ie.less',
           '<%= meta.build.css_gci_dir %>/others.css': '<%= meta.src.less_gci_dir %>/others.less',
-          '<%= meta.build.css_gci_dir %>/readonly.css': '<%= meta.src.less_gci_dir %>/readonly.less',
           '<%= meta.build.css_gci_dir %>/style.css': '<%= meta.src.less_gci_dir %>/style.less',
           '<%= meta.build.css_gci_dir %>/messaging.css': '<%= meta.src.less_gci_dir %>/messaging.less'
         }

@@ -37,8 +37,8 @@ class SlotTransferForm(forms.GSoCModelForm):
   """Django form for the slot transfer page.
   """
 
-  def __init__(self, max_slots, *args, **kwargs):
-    super(SlotTransferForm, self).__init__(*args, **kwargs)
+  def __init__(self, max_slots=None, **kwargs):
+    super(SlotTransferForm, self).__init__(**kwargs)
     choices = [('None', self.fields['nr_slots'].label)] + [
         (i, i) for i in range(1, max_slots + 1)]
     self.fields['nr_slots'].widget = django_forms.widgets.Select(
@@ -150,16 +150,18 @@ class UpdateSlotTransferPage(base.GSoCRequestHandler):
     slots = data.organization.slots
 
     if data.POST:
-      slot_transfer_form = SlotTransferForm(slots, data.POST)
+      slot_transfer_form = SlotTransferForm(max_slots=slots, data=data.POST)
     else:
-      slot_transfer_form = SlotTransferForm(slots)
+      slot_transfer_form = SlotTransferForm(max_slots=slots)
 
     for ent in data.slot_transfer_entities:
       if ent.status == 'pending':
         if data.POST:
-          slot_transfer_form = SlotTransferForm(slots, data.POST, instance=ent)
+          slot_transfer_form = SlotTransferForm(
+              max_slots=slots, data=data.POST, instance=ent)
         else:
-          slot_transfer_form = SlotTransferForm(slots, instance=ent)
+          slot_transfer_form = SlotTransferForm(
+              max_slots=slots, instance=ent)
 
     context = {
         'page_name': 'Transfer slots to pool',
@@ -190,7 +192,7 @@ class UpdateSlotTransferPage(base.GSoCRequestHandler):
     slot_transfer_entity = None
 
     slot_transfer_form = SlotTransferForm(
-         data.organization.slots, data.POST)
+         max_slots=data.organization.slots, data=data.POST)
 
     if not slot_transfer_form.is_valid():
       return None

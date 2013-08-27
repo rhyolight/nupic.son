@@ -73,7 +73,7 @@ class CreateUserPage(base.RequestHandler):
   def context(self, data, check, mutator):
     # TODO: program specific in core module, needs to be avoided
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    form = UserCreateForm(GSoCBoundField, data.POST or None)
+    form = UserCreateForm(GSoCBoundField, data=data.POST or None)
 
     return {
         'base_layout': 'modules/gsoc/base.html',
@@ -85,7 +85,7 @@ class CreateUserPage(base.RequestHandler):
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    form = UserCreateForm(GSoCBoundField, data.POST)
+    form = UserCreateForm(GSoCBoundField, data=data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.
@@ -119,7 +119,8 @@ class EditUserPage(base.RequestHandler):
   def context(self, data, check, mutator):
     # TODO: program specific in core module
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    form = UserEditForm(GSoCBoundField, data.POST or None, instance=data.user)
+    form = UserEditForm(
+        GSoCBoundField, data=data.POST or None, instance=data.user)
 
     return {
         'base_layout': 'modules/gsoc/base.html',
@@ -131,8 +132,8 @@ class EditUserPage(base.RequestHandler):
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    form = UserEditForm(GSoCBoundField, data.POST,
-                         instance=data.user)
+    form = UserEditForm(
+        GSoCBoundField, data=data.POST, instance=data.user)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.

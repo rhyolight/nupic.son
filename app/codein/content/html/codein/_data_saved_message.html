@@ -1,0 +1,9 @@
+{% if posted %}
+  <div class="block block-user-message">
+  {% if error %}
+      <p>Sorry, we could not save your data. Please fix the errors mentioned below.</p>
+  {% else %}
+      <p>Data saved successfully.</p>
+  {% endif %}
+  </div>
+{% endif %}

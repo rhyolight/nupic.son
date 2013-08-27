@@ -44,9 +44,9 @@ class GSoCOrgAppEditForm(org_app.OrgAppEditForm):
   class Meta(org_app.OrgAppEditForm.Meta):
     pass
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, **kwargs):
     super(GSoCOrgAppEditForm, self).__init__(
-        gsoc_forms.GSoCBoundField, *args, **kwargs)
+        gsoc_forms.GSoCBoundField, **kwargs)
 
   def templatePath(self):
     return 'modules/gsoc/_form.html'
@@ -63,9 +63,9 @@ class GSoCOrgAppTakeForm(org_app.OrgAppTakeForm):
   class Meta(org_app.OrgAppTakeForm.Meta):
     pass
 
-  def __init__(self, request_data, *args, **kwargs):
+  def __init__(self, request_data=None, **kwargs):
     super(GSoCOrgAppTakeForm, self).__init__(
-        request_data, gsoc_forms.GSoCBoundField, *args, **kwargs)
+        gsoc_forms.GSoCBoundField, request_data=request_data, **kwargs)
 
   def clean_backup_admin_id(self):
     """Extends the backup admin cleaner to check if the backup admin has a
@@ -94,9 +94,9 @@ class GSoCOrgAppEditPage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     if data.org_app:
-      form = GSoCOrgAppEditForm(data.POST or None, instance=data.org_app)
+      form = GSoCOrgAppEditForm(data=data.POST or None, instance=data.org_app)
     else:
-      form = GSoCOrgAppEditForm(data.POST or None)
+      form = GSoCOrgAppEditForm(data=data.POST or None)
 
     if data.org_app:
       page_name = ugettext('Edit - %s' % (data.org_app.title))
@@ -122,9 +122,9 @@ class GSoCOrgAppEditPage(base.GSoCRequestHandler):
       a newly created or updated organization application entity or None.
     """
     if data.org_app:
-      form = GSoCOrgAppEditForm(data.POST, instance=data.org_app)
+      form = GSoCOrgAppEditForm(data=data.POST, instance=data.org_app)
     else:
-      form = GSoCOrgAppEditForm(data.POST)
+      form = GSoCOrgAppEditForm(data=data.POST)
 
     if not form.is_valid():
       return None
@@ -176,7 +176,7 @@ class GSoCOrgAppPreviewPage(base.GSoCRequestHandler):
     return 'modules/gsoc/org_app/take.html'
 
   def context(self, data, check, mutator):
-    form = GSoCOrgAppTakeForm(data)
+    form = GSoCOrgAppTakeForm(request_data=data)
 
     context = {
         'page_name': '%s' % (data.org_app.title),
@@ -223,9 +223,10 @@ class GSoCOrgAppTakePage(base.GSoCRequestHandler):
   def context(self, data, check, mutator):
     if data.org_app_record:
       form = GSoCOrgAppTakeForm(
-          data, data.POST or None, instance=data.org_app_record)
+          request_data=data, data=data.POST or None,
+          instance=data.org_app_record)
     else:
-      form = GSoCOrgAppTakeForm(data, data.POST or None)
+      form = GSoCOrgAppTakeForm(request_data=data, data=data.POST or None)
 
     context = {
         'page_name': '%s' % (data.org_app.title),
@@ -247,9 +248,9 @@ class GSoCOrgAppTakePage(base.GSoCRequestHandler):
     """
     if data.org_app_record:
       form = GSoCOrgAppTakeForm(
-          data, data.POST, instance=data.org_app_record)
+          request_data=data, data=data.POST, instance=data.org_app_record)
     else:
-      form = GSoCOrgAppTakeForm(data, data.POST)
+      form = GSoCOrgAppTakeForm(request_data=data, data=data.POST)
 
     if not form.is_valid():
       return None

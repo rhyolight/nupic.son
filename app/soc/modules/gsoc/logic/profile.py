@@ -14,12 +14,15 @@
 
 """GSoC logic for profiles."""
 
-from google.appengine.ext import db
+from melange.appengine import db as melange_db
+from melange.logic import profile as profile_logic
 
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
 
 from soc.modules.gsoc.models import profile as profile_model
+
+from summerofcode import types
 
 
 def queryAllMentorsKeysForOrg(org, limit=1000):
@@ -64,20 +67,16 @@ def _handleExtraAttrs(query, extra_attrs):
   """Extends the specified query by handling extra attributes.
 
   The attributes are specified in the passed dictionary. Each element of
-  the dictionary maps a property with a requested value. The value may
-  be a single object or a list/tuple.
+  the dictionary maps a property with a requested value. The value must
+  be a sequence (list or tuple).
 
   Args:
-    query: query to extend
-    extra_attrs: a dictionary containing additional constraints on the query
+    query: query to extend.
+    extra_attrs: a dictionary containing additional constraints on the query.
   """
   if extra_attrs:
-    for attribute, value in extra_attrs.iteritems():
-      # list and tuples are supported by IN queries
-      if isinstance(value, list) or isinstance(value, tuple):
-        query.filter('%s IN' % attribute.name, value)
-      else:
-        query.filter(attribute.name, value)
+    for prop, value in extra_attrs.iteritems():
+      melange_db.addFilterToQuery(query, prop, value)
 
 
 def canBecomeMentor(profile):
@@ -215,8 +214,6 @@ def resignAsMentorForOrg(profile, org_key):
     profile.put()
 
 
-# TODO(daniel): it would be nice if this function returned something more
-# verbose than "False", i.e. explanation why
 def canResignAsOrgAdminForOrg(profile, org_key):
   """Tells whether the specified profile can resign from their organization
   administrator role for the specified organization.
@@ -225,30 +222,14 @@ def canResignAsOrgAdminForOrg(profile, org_key):
   of an organization, if there is at least one other user with this role.
 
   Args:
-    profile: the specified GSoCProfile entity
-    org_key: the specified GSoCOrganization entity
+    profile: the specified profile entity.
+    org_key: the specified organization entity.
 
   Returns:
     True, if the mentor is allowed to resign; False otherwise
   """
-  if org_key not in profile.org_admin_for:
-    raise ValueError(
-        'The specified profile is not an organization administrator for %s' %
-        org_key.name())
-
-  # retrieve keys of other org admins
-  org_admin_keys = getOrgAdmins(org_key, keys_only=True)
-  org_admin_keys.remove(profile.key())
-
-  if org_admin_keys:
-    # try to retrieve the first org admin from the list
-    # therefore, it can be safely used within a XG transaction
-    if profile_model.GSoCProfile.get(org_admin_keys[0]):
-      return True
-    else:
-      return False
-  else:
-    return False
+  return profile_logic.canResignAsOrgAdminForOrg(
+      profile, org_key, models=types.SOC_MODELS)
 
 
 def resignAsOrgAdminForOrg(profile, org_key):
@@ -278,7 +259,7 @@ def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
 
   Additional constraints on administrators may be specified by passing a custom
   extra_attrs dictionary. Each element of the dictionary maps a property
-  with a requested value. The value may be a single object or a list/tuple.
+  with a requested value. The value must be a sequence (list or tuple).
 
   Please note that this function executes a non-ancestor query, so it cannot
   be safely used within transactions.
@@ -292,13 +273,9 @@ def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
   Returns:
     list of profiles entities or keys of organization administrators
   """
-  query = profile_model.GSoCProfile.all(keys_only=keys_only)
-  query.filter('org_admin_for', org_key)
-  query.filter('status', 'active')
-
-  _handleExtraAttrs(query, extra_attrs)
-
-  return query.fetch(limit=1000)
+  return profile_logic.getOrgAdmins(
+      org_key, keys_only=keys_only, extra_attrs=extra_attrs,
+      models=types.SOC_MODELS)
 
 
 def countOrgAdmins(organization):
@@ -325,7 +302,7 @@ def getMentors(org_key, keys_only=False, extra_attrs=None):
 
   Additional constraints on mentors may be specified by passing a custom
   extra_attrs dictionary. Each element of the dictionary maps a property
-  with a requested value. The value may be a single object or a list/tuple.
+  with a requested value. The value must be a sequence (list or tuple).
 
   Please note that this function executes a non-ancestor query, so it cannot
   be safely used within transactions.

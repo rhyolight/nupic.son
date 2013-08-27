@@ -28,7 +28,7 @@ from soc.views.helper import url_patterns
 from soc.views.template import Template
 
 from soc.modules.gci.logic import profile as profile_logic
-from soc.modules.gci.models import task
+from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.task import DifficultyLevel
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import GCIRequestHandler
@@ -61,14 +61,14 @@ class TaskEditPostClaimForm(gci_forms.GCIModelForm):
       help_text=ugettext('Describe this task with tags (comma separated). '
                          'Ex: Linux, Apache, C++, GUI'))
 
-  def __init__(self, data, *args, **kwargs):
-    super(TaskEditPostClaimForm, self).__init__(*args, **kwargs)
+  def __init__(self, request_data=None, **kwargs):
+    super(TaskEditPostClaimForm, self).__init__(**kwargs)
 
-    self.request_data = data
+    self.request_data = request_data
     self.organization = self.request_data.organization if not self.instance \
         else self.instance.org
 
-    self.POST = args[0] if len(args) > 0 and args[0] else None
+    self.POST = kwargs.get('data')
 
     mentor_choices = list(mentorChoicesForOrg(self.instance, self.organization))
 
@@ -133,7 +133,7 @@ class TaskEditPostClaimForm(gci_forms.GCIModelForm):
     return mentor_keys
 
   class Meta:
-    model = task.GCITask
+    model = task_model.GCITask
     css_prefix = 'gci-task'
     fields = ['mentors']
 
@@ -150,11 +150,11 @@ class TaskCreateForm(TaskEditPostClaimForm):
       label=ugettext('Time to complete'), min_value=0,
       error_messages={'min_value': ugettext('Hours cannot be negative.')})
 
-  def __init__(self, data, *args, **kwargs):
-    super(TaskCreateForm, self).__init__(data, *args, **kwargs)
+  def __init__(self, request_data=None, **kwargs):
+    super(TaskCreateForm, self).__init__(request_data=request_data, **kwargs)
 
     types = []
-    for t in data.program.task_types:
+    for t in request_data.program.task_types:
       types.append((t, t))
 
     self.fields['types'] = django_forms.MultipleChoiceField(
@@ -196,7 +196,7 @@ class TaskCreateForm(TaskEditPostClaimForm):
     if organization.key() in self.request_data.org_admin_for:
       entity.status = 'Unpublished'
     elif organization.key() in self.request_data.mentor_for:
-      entity.status = 'Unapproved'
+      entity.status = task_model.UNAPPROVED
 
     return entity
 
@@ -228,11 +228,12 @@ class TaskCreateForm(TaskEditPostClaimForm):
     return cleaned_data
 
   class Meta:
-    model = task.GCITask
+    model = task_model.GCITask
     css_prefix = 'gci-task'
     fields = ['title', 'description', 'mentors']
 
 
+# TODO(daniel): why do we have this template? isn't regular message sufficient?
 class TaskFormErrorTemplate(Template):
   """Task forms error message template.
   """
@@ -264,11 +265,12 @@ class TaskEditFormTemplate(Template):
       else:
         form_class = TaskEditPostClaimForm
 
-      form = form_class(self.data, self.data.POST or None,
-                        instance=self.data.task)
+      form = form_class(request_data=self.data, data=self.data.POST or None,
+          instance=self.data.task)
       title = "Edit task - %s" % (self.data.task.title)
     else:
-      form = TaskCreateForm(self.data, self.data.POST or None)
+      form = TaskCreateForm(
+          request_data=self.data, data=self.data.POST or None)
       title = "Create a new task"
 
     return {
@@ -341,9 +343,9 @@ class TaskCreatePage(GCIRequestHandler):
       else:
         form_class = TaskEditPostClaimForm
 
-      form = form_class(data, data.POST, instance=data.task)
+      form = form_class(request_data=data, data=data.POST, instance=data.task)
     else:
-      form = TaskCreateForm(data, data.POST)
+      form = TaskCreateForm(request_data=data, data=data.POST)
 
     if not form.is_valid():
       return None

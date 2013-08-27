@@ -24,8 +24,10 @@ from melange.request import access
 from melange.request import exception
 from melange.views import connection as connection_view
 
+from codein.templates import readonly
 from codein.views.helper import urls
 
+from soc.logic import cleaning
 from soc.logic import links
 from soc.logic.helper import notifications
 from soc.modules.gci.views import base
@@ -34,20 +36,39 @@ from soc.modules.gci.views.helper import url_patterns as ci_url_patterns
 from soc.views.helper import url_patterns
 
 
+ACTIONS_FORM_NAME = 'actions_form'
+MESSAGE_FORM_NAME = 'message_form'
+
+MANAGE_CONNECTION_AS_USER_PAGE_NAME = translation.ugettext(
+    'Manage connection')
+
 START_CONNECTION_AS_USER_PAGE_NAME = translation.ugettext(
     'Start connection with organization')
 
 START_CONNECTION_MESSAGE_LABEL = translation.ugettext(
     'Message')
 
-START_CONNECTION_AS_USER_FORM_ROLE_LABEL = translation.ugettext(
-    'Requested Role')
-
-START_CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT = translation.ugettext(
+CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT = translation.ugettext(
     'Optional message to the organization')
 
-START_CONNECTION_AS_USER_FORM_ROLE_HELP_TEXT = translation.ugettext(
-    'Role requested from the organization')
+CONNECTION_FORM_USER_ROLE_HELP_TEXT = translation.ugettext(
+    'Whether you request role from organization or not')
+
+CONNECTION_FORM_USER_ROLE_LABEL = translation.ugettext(
+    'Role For Organization')
+
+MESSAGE_FORM_CONTENT_LABEL = translation.ugettext(
+    'Send New Message')
+
+ORGANIZATION_ITEM_LABEL = translation.ugettext('Organization')
+USER_ITEM_LABEL = translation.ugettext('User')
+USER_ROLE_ITEM_LABEL = translation.ugettext('User Requests Role')
+ORG_ROLE_ITEM_LABEL = translation.ugettext('Role Granted by Organization')
+INITIALIZED_ON_LABEL = translation.ugettext('Initialized On')
+
+USER_ROLE_CHOICES = (
+    (connection_model.NO_ROLE, 'No'),
+    (connection_model.ROLE, 'Yes'))
 
 ROLE_CHOICES = [
     (connection_model.MENTOR_ROLE, 'Mentor'),
@@ -88,9 +109,11 @@ class ConnectionForm(gci_forms.GCIModelForm):
 
     self.fields['message'].label = START_CONNECTION_MESSAGE_LABEL
 
-    # set widget for role field
+    # set widget for user role field
     self.fields['user_role'].widget = django_forms.fields.Select(
-        choices=ROLE_CHOICES)
+        choices=USER_ROLE_CHOICES)
+    self.fields['user_role'].label = CONNECTION_FORM_USER_ROLE_LABEL
+    self.fields['user_role'].help_text = CONNECTION_FORM_USER_ROLE_HELP_TEXT
 
   def setHelpTextForMessage(self, help_text):
     """Sets help text for 'message' field.
@@ -116,23 +139,80 @@ class ConnectionForm(gci_forms.GCIModelForm):
     """
     self.fields['user_role'].help_text = help_text
 
+  def removeField(self, key):
+    """Removes field with the specified key.
+
+    Args:
+      key: a string with a key of a field to remove.
+    """
+    del self.fields[key]
+
   class Meta:
     model = connection_model.Connection
     fields = ['user_role']
 
 
+class MessageForm(gci_forms.GCIModelForm):
+  """Django form to submit connection messages."""
+
+  def __init__(self, **kwargs):
+    """Initializes a new instance of connection message form."""
+    super(MessageForm, self).__init__(**kwargs)
+    self.fields['content'].label = MESSAGE_FORM_CONTENT_LABEL
+
+  class Meta:
+    model = connection_model.ConnectionMessage
+    fields = ['content']
+
+  def clean_content(self):
+    field_name = 'content'
+    wrapped_clean_html_content = cleaning.clean_html_content(field_name)
+    content = wrapped_clean_html_content(self)
+
+    if content:
+      return content
+    else:
+      raise django_forms.ValidationError(
+          translation.ugettext('Message content cannot be empty.'),
+          code='invalid')
+
+
 def _formToStartConnectionAsUser(**kwargs):
   """Returns a Django form to start connection as a user.
 
-  Args:
-    data: request_data.RequestData object describing the current request.
+  Returns:
+    ConnectionForm adjusted to start connection as a user.
   """
   form = ConnectionForm(**kwargs)
-  form.setLabelForRole(START_CONNECTION_AS_USER_FORM_ROLE_LABEL)
-  form.setHelpTextForRole(START_CONNECTION_AS_USER_FORM_ROLE_HELP_TEXT)
-  form.setHelpTextForMessage(START_CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT)
-
+  form.removeField('user_role')
+  form.setHelpTextForMessage(CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT)
   return form
+
+
+def _formToManageConnectionAsUser(**kwargs):
+  """Returns a Django form to manage connection as a user.
+
+  Returns:
+    ConnectionForm adjusted to manage connection as a user.
+  """
+  form = ConnectionForm(**kwargs)
+  form.removeField('message')
+  return form
+
+
+def _getValueForUserRoleItem(data):
+  """Returns value to be displayed for User Role item of connection summary.
+
+  Args:
+    data: request_data.RequestData for the current request.
+
+  Returns:
+    a string containing a value for User Role item.
+  """
+  if data.url_connection.user_role == connection_model.ROLE:
+    return 'Yes'
+  else:
+    return 'No'
 
 
 START_CONNECTION_AS_USER_ACCESS_CHECKER = access.ConjuctionAccessChecker([
@@ -176,7 +256,7 @@ class StartConnectionAsUser(base.GCIRequestHandler):
           notifications.userConnectionContext, [],
           user_role=connection_model.ROLE)
 
-      url = links.Linker().userOrg(
+      url = links.Linker().userId(
           data.url_profile, connection.key().id(),
           urls.UrlNames.CONNECTION_MANAGE_AS_USER)
       return http.HttpResponseRedirect(url)
@@ -187,7 +267,10 @@ class StartConnectionAsUser(base.GCIRequestHandler):
 
 
 class ManageConnectionAsUser(base.GCIRequestHandler):
-  """View manage an existing connection by the user."""
+  """View to manage an existing connection by the user."""
+
+  # TODO(daniel): add actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.GCIRequestHandler.djangoURLPatterns for specification."""
@@ -203,4 +286,143 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.GCIRequestHandler.context for specification."""
-    return {}
+    actions_form = _formToManageConnectionAsUser(
+        data=data.POST or None, instance=data.url_connection,
+        name=ACTIONS_FORM_NAME)
+    message_form = MessageForm(data=data.POST or None, name=MESSAGE_FORM_NAME)
+
+    summary = readonly.ReadOnlyTemplate(data)
+    summary.addItem(
+        ORGANIZATION_ITEM_LABEL, data.url_connection.organization.name)
+    summary.addItem(USER_ITEM_LABEL, data.url_profile.name())
+    summary.addItem(USER_ROLE_ITEM_LABEL, _getValueForUserRoleItem(data))
+    summary.addItem(INITIALIZED_ON_LABEL, data.url_connection.created_on)
+
+    messages = connection_logic.getConnectionMessages(data.url_connection)
+
+    return {
+        'page_name': MANAGE_CONNECTION_AS_USER_PAGE_NAME,
+        'actions_form': actions_form,
+        'message_form': message_form,
+        'summary': summary,
+        'messages': messages,
+        }
+
+  def post(self, data, check, mutator):
+    """See base.GCIRequestHandler.post for specification."""
+
+    handler = self._dispatchPostData(data)
+
+    return handler.handle(data, check, mutator)
+
+  def _dispatchPostData(self, data):
+    """Picks form handler that is capable of handling the data that was sent
+    in the the current request.
+
+    Args:
+      data: request_data.RequestData for the current request.
+
+    Returns:
+      FormHandler implementation to handler the received data.
+    """
+    if ACTIONS_FORM_NAME in data.POST:
+      # TODO(daniel): eliminate passing self object.
+      return ActionsFormHandler(self)
+    elif MESSAGE_FORM_NAME in data.POST:
+      # TODO(daniel): eliminate passing self object.
+      return MessageFormHandler(self)
+    else:
+      raise exception.BadRequest('No valid form data is found in POST.')
+
+
+class FormHandler(object):
+  """Simplified version of request handler that is able to take care of
+  the received data.
+  """
+
+  def __init__(self, view):
+    """Initializes new instance of form handler.
+
+    Args:
+      view: callback to implementation of base.RequestHandler
+        that creates this object.
+    """
+    self._view = view
+
+  def handle(self, data, check, mutator):
+    """Handles the data that was received in the current request and returns
+    an appropriate HTTP response.
+
+    Args:
+      data: A soc.views.helper.request_data.RequestData.
+      check: A soc.views.helper.access_checker.AccessChecker.
+      mutator: A soc.views.helper.access_checker.Mutator.
+
+    Returns:
+      An http.HttpResponse appropriate for the given request parameters.
+    """
+    raise NotImplementedError
+
+
+class MessageFormHandler(FormHandler):
+  """Form handler implementation to handle incoming data that is supposed to
+  create a new connection message.
+  """
+
+  def handle(self, data, check, mutator):
+    """Creates and persists a new connection message based on the data
+    that was sent in the current request.
+
+    See FormHandler.handle for specification.
+    """
+    message_form = MessageForm(data=data.request.POST)
+    if message_form.is_valid():
+      content = message_form.cleaned_data['content']
+      connection_view.createConnectionMessageTxn(
+          data.url_connection.key(), data.url_profile.key(), content)
+
+      url = links.Linker().userId(
+          data.url_profile, data.url_connection.key().id(),
+          urls.UrlNames.CONNECTION_MANAGE_AS_USER)
+      return http.HttpResponseRedirect(url)
+    else:
+      # TODO(nathaniel): problematic self-use.
+      return self._view.get(data, check, mutator)
+
+
+class ActionsFormHandler(FormHandler):
+  """Form handler implementation to handle incoming data that is supposed to
+  take an action on the existing connection.
+  """
+
+  def handle(self, data, check, mutator):
+    """Takes an action on the connection based on the data that was sent
+    in the current request.
+
+    See FormHandler.handle for specification.
+    """
+    actions_form = _formToManageConnectionAsUser(data=data.POST)
+    if actions_form.is_valid():
+      user_role = actions_form.cleaned_data['user_role']
+      if user_role == connection_model.NO_ROLE:
+        self._handleNoRoleSelection()
+      else:
+        self._handleRoleSelection()
+
+      url = links.Linker().userId(
+          data.url_profile, data.url_connection.key().id(),
+          urls.UrlNames.CONNECTION_MANAGE_AS_USER)
+      return http.HttpResponseRedirect(url)
+    else:
+      # TODO(nathaniel): problematic self-use.
+      return self._view.get(data, check, mutator)
+
+  def _handleNoRoleSelection(self):
+    """Makes all necessary changes if user selects connection_model.NO_ROLE."""
+    # TODO(daniel): implement this function
+    pass
+
+  def _handleRoleSelection(self):
+    """Makes all necessary changes if user selects connection_model.ROLE."""
+    # TODO(daniel): implement this function
+    pass

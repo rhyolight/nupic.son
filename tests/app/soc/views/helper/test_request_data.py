@@ -17,6 +17,7 @@
 import httplib
 import unittest
 
+from melange.models import connection as connection_model
 from melange.request import exception
 
 from soc.models import organization as org_model
@@ -165,3 +166,79 @@ class UrlOrgPropertyTest(unittest.TestCase):
     data = request_data.RequestData(None, None, kwargs)
     url_org = data.url_org
     self.assertEqual(org.key(), url_org.key())
+
+
+class UrlConnectionPropertyTest(unittest.TestCase):
+  """Unit tests for url_connection property of RequestData class."""
+
+  def testNoConnectionData(self):
+    """Tests that error is raised if there is no enough data in the URL."""
+    # no data at all
+    data = request_data.RequestData(None, None, {})
+    with self.assertRaises(ValueError):
+      data.url_connection
+
+    # program and connection data but no user identifier
+    kwargs = {
+        'sponsor': 'sponsor_id',
+        'program': 'program_id',
+        'id': '1',
+        }
+    data = request_data.RequestData(None, None, kwargs)
+    with self.assertRaises(ValueError):
+      data.url_connection
+
+    # profile data but no connection identifier
+    kwargs = {
+        'sponsor': 'sponsor_id',
+        'program': 'program_id',
+        'user': 'user_id',
+        }
+    data = request_data.RequestData(None, None, kwargs)
+    with self.assertRaises(ValueError):
+      data.url_connection
+
+    # only connection id
+    kwargs = {'id': '1'}
+    data = request_data.RequestData(None, None, kwargs)
+    with self.assertRaises(ValueError):
+      data.url_connection
+
+  def testConnectionDoesNotExist(self):
+    """Tests that error is raised if requested connection does not exist."""
+    kwargs = {
+        'sponsor': 'sponsor_id',
+        'program': 'program_id',
+        'user': 'user_id',
+        'id': '1'
+        }
+    data = request_data.RequestData(None, None, kwargs)
+    with self.assertRaises(exception.UserError) as context:
+      data.url_connection
+    self.assertEqual(context.exception.status, httplib.NOT_FOUND)
+
+  def testConnectionExists(self):
+    """Tests that connection is returned correctly if exists."""
+    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+    program = seeder_logic.seed(program_model.Program)
+    user = seeder_logic.seed(user_model.User)
+    profile_properties = {
+        'key_name': '%s/%s/%s' % 
+            (sponsor.link_id, program.program_id, user.link_id),
+        'parent': user,
+        'link_id': user.link_id
+        }
+    profile = seeder_logic.seed(profile_model.Profile, profile_properties)
+    connection_properties = {'parent': profile}
+    connection = seeder_logic.seed(connection_model.Connection,
+        connection_properties)
+
+    kwargs = {
+        'sponsor': sponsor.link_id,
+        'program': program.program_id,
+        'user': profile.link_id,
+        'id': str(connection.key().id())
+        }
+    data = request_data.RequestData(None, None, kwargs)
+    url_connection = data.url_connection
+    self.assertEqual(connection.key(), url_connection.key())

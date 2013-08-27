@@ -31,9 +31,9 @@ PROFILE_EXCLUDE = org_profile.PROFILE_EXCLUDE + [
 class OrgProfileForm(org_profile.OrgProfileForm):
   """Django form for the organization profile."""
 
-  def __init__(self, *args, **kwargs):
+  def __init__(self, **kwargs):
     super(OrgProfileForm, self).__init__(
-        gci_forms.GCIBoundField, *args, **kwargs)
+        gci_forms.GCIBoundField, **kwargs)
 
   class Meta:
     model = GCIOrganization
@@ -85,10 +85,10 @@ class OrgProfilePage(GCIRequestHandler):
 
   def context(self, data, check, mutator):
     if not data.organization:
-      form = OrgCreateProfileForm(data.POST or None)
+      form = OrgCreateProfileForm(data=data.POST or None)
     else:
-      form = OrgProfileForm(data.POST or None,
-                            instance=data.organization)
+      form = OrgProfileForm(
+          data=data.POST or None, instance=data.organization)
 
     context = {
         'page_name': "Organization profile",
@@ -124,9 +124,9 @@ class OrgProfilePage(GCIRequestHandler):
       a newly created organization entity or None
     """
     if data.organization:
-      form = OrgProfileForm(data.POST, instance=data.organization)
+      form = OrgProfileForm(data=data.POST, instance=data.organization)
     else:
-      form = OrgCreateProfileForm(data.POST)
+      form = OrgCreateProfileForm(data=data.POST)
 
     if not form.is_valid():
       return None

@@ -103,9 +103,9 @@ class GCIProfileForm(profile.ProfileForm):
       'This contest is not open to residents of Quebec.')
 
 
-  def __init__(self, request_data=None, *args, **kwargs):
+  def __init__(self, request_data=None, **kwargs):
     super(GCIProfileForm, self).__init__(
-        gci_forms.GCIBoundField, request_data, *args, **kwargs)
+        gci_forms.GCIBoundField, request_data=request_data, **kwargs)
     self.fields['avatar'].widget = gci_forms.AvatarWidget(
         avatars=AVATARS_BY_COLOR, colors=COLORS)
     self.program = request_data.program
@@ -174,8 +174,9 @@ class GCICreateProfileForm(GCIProfileForm):
     exclude = PROFILE_EXCLUDE
     widgets = GCIProfileForm.Meta.widgets
 
-  def __init__(self, tos_content, request_data=None, *args, **kwargs):
-    super(GCICreateProfileForm, self).__init__(request_data, *args, **kwargs)
+  def __init__(self, tos_content=None, request_data=None, **kwargs):
+    super(GCICreateProfileForm, self).__init__(
+        request_data=request_data, **kwargs)
     self.tos_content = tos_content
 
     # do not display the field with ToS, if there is nothing to show
@@ -358,7 +359,7 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
     return url_patterns.CREATE_PROFILE
 
   def _getCreateUserForm(self, data):
-    return GCIUserForm(data.POST or None)
+    return GCIUserForm(data=data.POST or None)
 
   def _getEditProfileForm(self, data, is_student):
     if is_student:
@@ -382,10 +383,12 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
       form = GCICreateProfileForm
 
     tos_content = self._getTOSContent(data)
-    return form(tos_content, data=data.POST or None, request_data=data)
+    return form(
+        tos_content=tos_content, request_data=data, data=data.POST or None)
 
   def _getNotificationForm(self, data):
     return NotificationForm
 
   def _getStudentInfoForm(self, data):
-    return GCIStudentInfoForm(data.POST or None, instance=data.student_info)
+    return GCIStudentInfoForm(
+        data=data.POST or None, instance=data.student_info)

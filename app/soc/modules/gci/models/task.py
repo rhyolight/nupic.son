@@ -31,17 +31,21 @@ import soc.modules.gci.models.program
 OPEN = 'Open'
 # state that the task is in when it is claimed
 CLAIMED = 'Claimed'
+# state that task has been claimed but never finished and has been reopened
+REOPENED = 'Reopened'
+# state that the task has not been approved by org admin
+UNAPPROVED = 'Unapproved'
 
 # TODO(piyush.devel): Define constants for the rest of the statuses.
 
 # states in which a task does not show up publicly
-UNPUBLISHED = ['Unpublished', 'Unapproved']
+UNPUBLISHED = ['Unpublished', UNAPPROVED]
 # states in which a student can claim a task
-CLAIMABLE = [OPEN, 'Reopened']
+CLAIMABLE = [OPEN, REOPENED]
 # States in which we consider the task to count towards the task quota of
 # the student.
-ACTIVE_CLAIMED_TASK = ['ClaimRequested', CLAIMED, 'ActionNeeded',
-                       'AwaitingRegistration', 'NeedsWork', 'NeedsReview']
+ACTIVE_CLAIMED_TASK = [
+    'ClaimRequested', CLAIMED, 'ActionNeeded', 'NeedsWork', 'NeedsReview']
 # States in which we consider that the student can work on a task as long
 # as the deadline has not passed.
 TASK_IN_PROGRESS = [CLAIMED, 'ActionNeeded', 'NeedsWork', 'NeedsReview']
@@ -136,7 +140,6 @@ class GCITask(db.Model):
   #: ActionNeeded: Work on this Task must be submitted for review within
   #:   24 hours.
   #: Closed: Work on this Task has been completed to the org's content.
-  #: AwaitingRegistration: Student has completed work on this task, but
   #:   needs to complete Student registration before this task is closed.
   #:   This status is now deprecated since we register before any interaction.
   #: NeedsWork: This work on this Tasks needs a bit more brushing up. This
@@ -146,11 +149,10 @@ class GCITask(db.Model):
   #: Invalid: The Task is deleted either by an Org Admin/Mentor
   status = db.StringProperty(
       required=True, verbose_name=ugettext('Status'),
-      choices=['Unapproved', 'Unpublished', OPEN, 'Reopened',
+      choices=[UNAPPROVED, 'Unpublished', OPEN, REOPENED,
                'ClaimRequested', CLAIMED, 'ActionNeeded',
-               'Closed', 'AwaitingRegistration', 'NeedsWork',
-               'NeedsReview', 'Invalid'],
-      default='Unapproved')
+               'Closed', 'NeedsWork', 'NeedsReview', 'Invalid'],
+      default=UNAPPROVED)
 
   #: Indicates when the Task was closed. Its value is None before it is
   #: completed.

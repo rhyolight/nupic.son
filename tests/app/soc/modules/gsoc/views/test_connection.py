@@ -17,7 +17,6 @@ from nose.plugins import skip
 from google.appengine.ext import db
 
 from melange.models import connection
-from melange.models import connection_message
 from soc.modules.gsoc.views import connection as connection_view
 
 from tests import profile_utils
@@ -270,7 +269,7 @@ class ShowConnectionForOrgMemberPageTest(test_utils.GSoCDjangoTestCase):
     self.assertTrue(profile.is_mentor)
     self.assertIn(self.org.key(), profile.mentor_for)
 
-    query = connection_message.ConnectionMessage.all().ancestor(connection_entity)
+    query = connection.ConnectionMessage.all().ancestor(connection_entity)
     expected = connection_view.USER_ASSIGNED_MENTOR % profile.name()
     self.assertIn(expected, query.get().content)
 
@@ -287,7 +286,7 @@ class ShowConnectionForOrgMemberPageTest(test_utils.GSoCDjangoTestCase):
     self.assertIn(self.org.key(), profile.mentor_for)
     self.assertIn(self.org.key(), profile.org_admin_for)
 
-    query = connection_message.ConnectionMessage.all().ancestor(connection_entity)
+    query = connection.ConnectionMessage.all().ancestor(connection_entity)
     expected = connection_view.USER_ASSIGNED_ORG_ADMIN % profile.name()
     self.assertIn(expected, query.get().content)
 
@@ -307,7 +306,7 @@ class ShowConnectionForOrgMemberPageTest(test_utils.GSoCDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.mentor_for)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
 
-    query = connection_message.ConnectionMessage.all().ancestor(connection_entity)
+    query = connection.ConnectionMessage.all().ancestor(connection_entity)
     expected = connection_view.USER_ASSIGNED_NO_ROLE % profile.name()
     self.assertIn(expected, query.get().content)
 
@@ -361,7 +360,7 @@ class ShowConnectionForUserPageTest(test_utils.GSoCDjangoTestCase):
     self.assertTrue(profile.is_mentor)
     self.assertIn(self.org.key(), profile.mentor_for)
 
-    query = connection_message.ConnectionMessage.all().ancestor(connection_entity)
+    query = connection.ConnectionMessage.all().ancestor(connection_entity)
     expected = connection_view.USER_ASSIGNED_MENTOR % profile.name()
     self.assertIn(expected, query.get().content)
 
@@ -382,7 +381,7 @@ class ShowConnectionForUserPageTest(test_utils.GSoCDjangoTestCase):
     self.assertIn(self.org.key(), profile.mentor_for)
     self.assertIn(self.org.key(), profile.org_admin_for)
 
-    query = connection_message.ConnectionMessage.all().ancestor(connection_entity)
+    query = connection.ConnectionMessage.all().ancestor(connection_entity)
     expected = connection_view.USER_ASSIGNED_ORG_ADMIN % profile.name()
     self.assertIn(expected, query.get().content)
 
@@ -405,6 +404,6 @@ class ShowConnectionForUserPageTest(test_utils.GSoCDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.mentor_for)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
 
-    query = connection_message.ConnectionMessage.all().ancestor(connection_entity)
+    query = connection.ConnectionMessage.all().ancestor(connection_entity)
     expected = connection_view.USER_ASSIGNED_NO_ROLE % profile.name()
     self.assertIn(expected, query.get().content)

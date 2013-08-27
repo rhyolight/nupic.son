@@ -38,8 +38,8 @@ HOMEPAGE_FIELDS = [
 class OrgProfileForm(forms.ModelForm):
   """Django form for the organization profile."""
 
-  def __init__(self, bound_field_class=None, *args, **kwargs):
-    super(OrgProfileForm, self).__init__(bound_field_class, *args, **kwargs)
+  def __init__(self, bound_field_class, **kwargs):
+    super(OrgProfileForm, self).__init__(bound_field_class, **kwargs)
 
     for field in HOMEPAGE_FIELDS:
       if field in self.fields:

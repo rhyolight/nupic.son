@@ -68,7 +68,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
   # field cleaner.
   new_org = forms.ChoiceField(choices=NEW_ORG_CHOICES)
 
-  def __init__(self, request_data, bound_class_field, *args, **kwargs):
+  def __init__(self, bound_class_field, request_data=None, **kwargs):
     self.request_data = request_data
 
     # Workaround for Django's limitation of not being able to set initial value
@@ -79,7 +79,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
           }
 
     super(OrgAppTakeForm, self).__init__(
-        self.request_data.org_app, bound_class_field, *args, **kwargs)
+        bound_class_field, survey=self.request_data.org_app, **kwargs)
     if self.instance:
       self.fields['backup_admin_id'].initial = \
           self.instance.backup_admin.link_id

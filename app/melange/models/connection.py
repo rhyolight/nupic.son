@@ -146,3 +146,39 @@ class AnonymousConnection(db.Model):
   #: The email to which the anonymous connection was sent; this should be
   #: queried against to prevent duplicate anonymous connections.
   email = db.StringProperty()
+
+
+class ConnectionMessage(db.Model):
+  """Model of a message that may be sent along with or in response to
+  connections.
+
+  Parent:
+    soc.models.connection.Connection
+  """
+
+  #: A required many:1 relationship with a comment entity indicating
+  #: the user who provided that comment.
+  author = db.ReferenceProperty(
+      reference_class=Profile, required=False,
+      collection_name="connection_commented")
+
+  #: The rich textual content of this comment
+  content = db.TextProperty(verbose_name=ugettext('Content'))
+
+  #: Date when the comment was added
+  created = db.DateTimeProperty(auto_now_add=True)
+
+  #: Whether or not the message was generated programatically
+  is_auto_generated = db.BooleanProperty(default=False)
+
+  def getAuthor(self):
+    if self.is_auto_generated:
+      return "Automatically Generated"
+    else:
+      return self.author.name()
+
+  def getAuthorId(self):
+    if self.is_auto_generated:
+      return ""
+    else:
+      return self.author.link_id

@@ -238,7 +238,7 @@ class SurveyReminderTask(object):
       # find all org admins for the project's organization
       org = project.org
 
-      org_admins = profile_logic.getOrgAdmins(org)
+      org_admins = profile_logic.getOrgAdmins(org.key())
 
       # collect email addresses for all found org admins
       org_admin_addresses = []

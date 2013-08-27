@@ -63,8 +63,8 @@ class LookupForm(gsoc_forms.GSoCModelForm):
   class Meta:
     model = None
 
-  def __init__(self, request_data, *args):
-    super(LookupForm, self).__init__(*args)
+  def __init__(self, request_data=None, **kwargs):
+    super(LookupForm, self).__init__(**kwargs)
     self.request_data = request_data
 
   email = djangoforms.CharField(label='Email')
@@ -766,7 +766,7 @@ class LookupLinkIdPage(base.GSoCRequestHandler):
     return self.get(data, check, mutator)
 
   def context(self, data, check, mutator):
-    form = LookupForm(data, data.POST or None)
+    form = LookupForm(request_data=data, data=data.POST or None)
     error = bool(form.errors)
 
     forms = [form]

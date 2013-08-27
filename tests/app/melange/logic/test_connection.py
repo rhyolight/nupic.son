@@ -20,7 +20,6 @@ from nose.plugins import skip
 from melange.request import exception
 from melange.logic import connection as connection_logic
 from melange.models import connection
-from melange.models.connection_message import ConnectionMessage
 from soc.models.organization import Organization
 from soc.models.profile import Profile
 from soc.models.program import Program
@@ -110,8 +109,9 @@ class CreateConnectionMessageTest(ConnectionTest):
         author=self.profile,
         content='Test message!'
         )
-    message = ConnectionMessage.all().ancestor(self.connection).get()
-    self.assertTrue(isinstance(message, ConnectionMessage))
+    message = connection.ConnectionMessage.all().ancestor(
+        self.connection).get()
+    self.assertTrue(isinstance(message, connection.ConnectionMessage))
     self.assertEqual(self.profile.key(), message.author.key())
     self.assertEqual('Test message!', message.content)
 

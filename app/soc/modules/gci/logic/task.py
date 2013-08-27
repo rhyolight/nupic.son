@@ -27,10 +27,7 @@ from soc.modules.gci.logic import comment as comment_logic
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.logic import org_score as org_score_logic
 from soc.modules.gci.models.comment import GCIComment
-from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
-from soc.modules.gci.models.task import CLAIMABLE
-from soc.modules.gci.models.task import TASK_IN_PROGRESS
-from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
 
 
@@ -104,7 +101,7 @@ def isOwnerOfTask(task, profile):
   """Returns true if the given profile is owner/student of the task.
 
   Args:
-    task: The GCITask entity
+    task: The task_model.GCITask entity
     profile: The GCIProfile which might be the owner of the task
   """
   return profile and task.student and task.student.key() == profile.key()
@@ -114,18 +111,18 @@ def canClaimRequestTask(task, profile):
   """Returns true if the given profile is allowed to claim the task.
 
   Args:
-    task: The GCITask entity
+    task: The task_model.GCITask entity
     profile: The GCIProfile which we check whether it can claim the task.
   """
   # check if the task can be claimed at all
-  if task.status not in CLAIMABLE:
+  if task.status not in task_model.CLAIMABLE:
     return False
 
   # check if the user is allowed to claim this task
-  q = GCITask.all()
+  q = task_model.GCITask.all()
   q.filter('student', profile)
   q.filter('program', task.program)
-  q.filter('status IN', ACTIVE_CLAIMED_TASK)
+  q.filter('status IN', task_model.ACTIVE_CLAIMED_TASK)
 
   max_tasks = task.program.nr_simultaneous_tasks
   count = q.count(max_tasks)
@@ -139,7 +136,7 @@ def canSubmitWork(task, profile):
   """Returns true if the given profile can submit work to this task.
 
   Args:
-    task: The GCITask entity
+    task: The task_model.GCITask entity
     profile: The GCIProfile to check
 
   """
@@ -147,7 +144,8 @@ def canSubmitWork(task, profile):
     # deadline has passed
     return False
 
-  return isOwnerOfTask(task, profile) and task.status in TASK_IN_PROGRESS
+  return (isOwnerOfTask(task, profile) and 
+      task.status in task_model.TASK_IN_PROGRESS)
 
 
 def assignTask(task, student, assigner):
@@ -157,7 +155,7 @@ def assignTask(task, student, assigner):
   property. A comment will also be generated to record this event.
 
   Args:
-    task: GCITask entity.
+    task: task_model.GCITask entity.
     student: GCIProfile entity of a student.
     assigner: GCIProfile of the user that assigns the student.
   """
@@ -194,11 +192,11 @@ def unassignTask(task, user):
   deadline property. A comment will also be generated to record this event.
 
   Args:
-    task: GCITask entity.
+    task: task_model.GCITask entity.
     user: GCIProfile of the user that unassigns the task.
   """
   task.student = None
-  task.status = 'Reopened'
+  task.status = task_model.REOPENED
   task.deadline = None
 
   comment_props = {
@@ -222,7 +220,7 @@ def closeTask(task, profile):
   """Closes the task.
 
   Args:
-    task: GCITask entity.
+    task: task_model.GCITask entity.
     profile: GCIProfile of the user that closes the task.
   """
   from soc.modules.gci.tasks.ranking_update import startUpdatingTask
@@ -268,7 +266,7 @@ def needsWorkTask(task, user):
   """Closes the task.
 
   Args:
-    task: GCITask entity.
+    task: task_model.GCITask entity.
     user: GCIProfile of the user that marks this task as needs more work.
   """
   task.status = 'NeedsWork'
@@ -364,7 +362,7 @@ def unclaimTask(task):
   student = task.student
 
   task.student = None
-  task.status = 'Reopened'
+  task.status = task_model.REOPENED
   task.deadline = None
 
   comment_props = {
@@ -419,7 +417,7 @@ def updateTaskStatus(task):
   framework is running late.
 
   Args:
-    task: The GCITask entity
+    task: The task_model.GCITask entity
 
   Returns:
     Boolean indicating whether the task has been updated.
@@ -468,7 +466,7 @@ def transitFromClaimed(task):
   to ActionNeeded.
 
   Args:
-    task: The GCITask entity
+    task: The task_model.GCITask entity
   """
   # deadline is extended by 24 hours.
   task.status = 'ActionNeeded'
@@ -493,7 +491,7 @@ def transitFromNeedsReview(task):
   deadline runs out.
 
   Args:
-    task: The GCITask entity
+    task: The task_model.GCITask entity
   """
   # Clear the deadline since mentors are not forced to review work within a
   # certain period.
@@ -514,11 +512,11 @@ def transitFromActionNeeded(task):
   to Reopened state.
 
   Args:
-    task: The GCITask entity
+    task: The task_model.GCITask entity
   """
   # reopen the task
   task.student = None
-  task.status = 'Reopened'
+  task.status = task_model.REOPENED
   task.deadline = None
 
   comment_props = {
@@ -539,10 +537,10 @@ def transitFromNeedsWork(task):
   extension and will be reopened immediately.
 
   Args:
-    task: The GCITask entity
+    task: The task_model.GCITask entity
   """
   task.student = None
-  task.status = 'Reopened'
+  task.status = task_model.REOPENED
   task.deadline = None
 
   comment_props = {
@@ -584,7 +582,7 @@ def getFeaturedTask(program):
   expiry_time = datetime.timedelta(seconds=7200)
 
   def queryForTask():
-    query = GCITask.all()
+    query = task_model.GCITask.all()
     query.filter('is_featured', True)
     query.filter('program', program)
 
@@ -607,7 +605,7 @@ def getFeaturedTask(program):
         q = queryForTask()
 
   for task in q:
-    if task.status in CLAIMABLE + ACTIVE_CLAIMED_TASK:
+    if task.status in task_model.CLAIMABLE + task_model.ACTIVE_CLAIMED_TASK:
       new_task = task
       break
   else:
@@ -626,7 +624,7 @@ def setTaskStatus(task_key, status):
   """
 
   def setTaskStatusTxn():
-    task = GCITask.get(task_key)
+    task = task_model.GCITask.get(task_key)
     task.status = status
     task.put()
 
@@ -643,9 +641,9 @@ STATE_TRANSITIONS = {
 
 # useful queries for tasks
 def queryClaimableTasksForProgram(program):
-  q = GCITask.all()
+  q = task_model.GCITask.all()
   q.filter('program', program)
-  q.filter('status IN', CLAIMABLE)
+  q.filter('status IN', task_model.CLAIMABLE)
   return q
 
 
@@ -656,7 +654,7 @@ def queryAllTasksClosedByStudent(profile, keys_only=False):
   if not profile.student_info:
     raise ValueError('Only students can be queried for closed tasks.')
 
-  return GCITask.all(keys_only=keys_only).filter(
+  return task_model.GCITask.all(keys_only=keys_only).filter(
       'student', profile).filter('status', 'Closed')
 
 
@@ -667,13 +665,14 @@ def queryCurrentTaskForStudent(profile, keys_only=False):
   if not profile.student_info:
     raise ValueError('Only students can be queried for their current task.')
 
-  return GCITask.all(keys_only=keys_only).filter(
+  return task_model.GCITask.all(keys_only=keys_only).filter(
       'student', profile).filter('status != ', 'Closed')
 
 
 def querySubscribedTasksForProfile(profile, keys_only=False):
   """Returns a query for tasks that the specified profile is subscribed to."""
-  return GCITask.all(keys_only=keys_only).filter('subscribers', profile)
+  return task_model.GCITask.all(keys_only=keys_only).filter(
+      'subscribers', profile)
 
 
 def queryForStudentAndOrganizationAndStatus(student, org, status,
@@ -681,7 +680,7 @@ def queryForStudentAndOrganizationAndStatus(student, org, status,
   """Returns a query for all tasks for the specified student,
   organization and status.
   """
-  query = GCITask.all()
+  query = task_model.GCITask.all()
   query.filter('student', student)
   query.filter('org', org)
 
@@ -696,4 +695,4 @@ def queryForStudentAndOrganizationAndStatus(student, org, status,
 def queryForOrganization(org, keys_only=False):
   """Returns a query for all tasks for the specified organization.
   """
-  return GCITask.all().filter('org', org)
+  return task_model.GCITask.all().filter('org', org)

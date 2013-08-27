@@ -251,9 +251,8 @@ class GCIModelForm(forms.ModelForm):
   """Django ModelForm class which uses our implementation of BoundField.
   """
 
-  def __init__(self, *args, **kwargs):
-    super(GCIModelForm, self).__init__(
-        GCIBoundField, *args, **kwargs)
+  def __init__(self, **kwargs):
+    super(GCIModelForm, self).__init__(GCIBoundField, **kwargs)
 
   def templatePath(self):
     return TEMPLATE_PATH
@@ -266,9 +265,8 @@ class OrgAppEditForm(org_app.OrgAppEditForm):
   class Meta(org_app.OrgAppEditForm.Meta):
     pass
 
-  def __init__(self, *args, **kwargs):
-    super(OrgAppEditForm, self).__init__(
-        GCIBoundField, *args, **kwargs)
+  def __init__(self, **kwargs):
+    super(OrgAppEditForm, self).__init__(GCIBoundField, **kwargs)
 
   def templatePath(self):
     return TEMPLATE_PATH
@@ -285,9 +283,9 @@ class OrgAppTakeForm(org_app.OrgAppTakeForm):
   class Meta(org_app.OrgAppTakeForm.Meta):
     pass
 
-  def __init__(self, request_data, *args, **kwargs):
+  def __init__(self, request_data=None, **kwargs):
     super(OrgAppTakeForm, self).__init__(
-        request_data, GCIBoundField, *args, **kwargs)
+        GCIBoundField, request_data=request_data, **kwargs)
 
   def clean_backup_admin_id(self):
     """Extends the backup admin cleaner to check if the backup admin has a

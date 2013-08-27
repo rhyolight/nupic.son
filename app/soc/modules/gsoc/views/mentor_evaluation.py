@@ -52,11 +52,10 @@ class GSoCMentorEvaluationEditForm(gsoc_forms.SurveyEditForm):
 class GSoCMentorEvaluationTakeForm(gsoc_forms.SurveyTakeForm):
   """Form for the organization to evaluate a student project."""
 
-  def __init__(self, survey, *args, **kwargs):
+  def __init__(self, survey=survey, **kwargs):
     """Initialize the form field by adding a new grading field.
     """
-    super(GSoCMentorEvaluationTakeForm, self).__init__(
-        survey, *args, **kwargs)
+    super(GSoCMentorEvaluationTakeForm, self).__init__(survey, **kwargs)
 
     # hack to re-order grade to push to the end of the survey form
     self.fields.keyOrder.remove('grade')
@@ -102,9 +101,9 @@ class GSoCMentorEvaluationEditPage(base.GSoCRequestHandler):
   def context(self, data, check, mutator):
     if data.mentor_evaluation:
       form = GSoCMentorEvaluationEditForm(
-          data.POST or None, instance=data.mentor_evaluation)
+          data=data.POST or None, instance=data.mentor_evaluation)
     else:
-      form = GSoCMentorEvaluationEditForm(data.POST or None)
+      form = GSoCMentorEvaluationEditForm(data=data.POST or None)
 
     page_name = ugettext('Edit - %s' % (data.mentor_evaluation.title)) \
         if data.mentor_evaluation else 'Create new mentor evaluation'
@@ -129,9 +128,9 @@ class GSoCMentorEvaluationEditPage(base.GSoCRequestHandler):
     """
     if data.mentor_evaluation:
       form = GSoCMentorEvaluationEditForm(
-          data.POST, instance=data.mentor_evaluation)
+          data=data.POST, instance=data.mentor_evaluation)
     else:
-      form = GSoCMentorEvaluationEditForm(data.POST)
+      form = GSoCMentorEvaluationEditForm(data=data.POST)
 
     if not form.is_valid():
       return None
@@ -194,11 +193,11 @@ class GSoCMentorEvaluationTakePage(base.GSoCRequestHandler):
   def context(self, data, check, mutator):
     if data.mentor_evaluation_record:
       form = GSoCMentorEvaluationTakeForm(
-          data.mentor_evaluation,
-          data.POST or None, instance=data.mentor_evaluation_record)
+          survey=data.mentor_evaluation,
+          data=data.POST or None, instance=data.mentor_evaluation_record)
     else:
       form = GSoCMentorEvaluationTakeForm(
-          data.mentor_evaluation, data.POST or None)
+          survey=data.mentor_evaluation, data=data.POST or None)
 
     context = {
         'page_name': '%s' % (data.mentor_evaluation.title),
@@ -222,10 +221,11 @@ class GSoCMentorEvaluationTakePage(base.GSoCRequestHandler):
     """
     if data.mentor_evaluation_record:
       form = GSoCMentorEvaluationTakeForm(
-          data.mentor_evaluation, data.POST,
+          survey=data.mentor_evaluation, data=data.POST,
           instance=data.mentor_evaluation_record)
     else:
-      form = GSoCMentorEvaluationTakeForm(data.mentor_evaluation, data.POST)
+      form = GSoCMentorEvaluationTakeForm(
+          survey=data.mentor_evaluation, data=data.POST)
 
     if not form.is_valid():
       return None
@@ -272,7 +272,7 @@ class GSoCMentorEvaluationPreviewPage(base.GSoCRequestHandler):
   def context(self, data, check, mutator):
     mutator.mentorEvaluationFromKwargs()
 
-    form = GSoCMentorEvaluationTakeForm(data.mentor_evaluation)
+    form = GSoCMentorEvaluationTakeForm(survey=data.mentor_evaluation)
 
     context = {
         'page_name': '%s' % (data.mentor_evaluation.title),

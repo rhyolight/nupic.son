@@ -25,6 +25,7 @@ from django.core import urlresolvers
 from django.utils import encoding
 
 from melange.appengine import system
+from melange.models import connection as connection_model
 from melange.request import exception
 from melange.utils import time
 
@@ -181,6 +182,7 @@ class RequestData(object):
     timeline: the timeline helper
 
   Optional fields (may not be specified for all requests):
+    url_connection: connection entity for the data in kwargs.
     url_org: organization entity for the data in kwargs.
     url_profile: profile entity for the data in kwargs.
     url_user: user entity for the data in kwargs.
@@ -223,6 +225,7 @@ class RequestData(object):
     self._ds_write_disabled = self._unset
     self._timeline = self._unset
 
+    self._url_connection = self._unset
     self._url_org = self._unset
     self._url_profile = self._unset
     self._url_user = self._unset
@@ -384,6 +387,33 @@ class RequestData(object):
     return self._timeline
 
   @property
+  def url_connection(self):
+    """Returns url_connection property.
+
+    This property represents connection entity corresponding to profile whose
+    identifier is a part of the URL of the processed request. Numerical
+    identifier of the connection is also a part of the URL.
+
+    Returns:
+      Retrieved connection entity.
+
+    Raises:
+      ValueError: if some data is missing in the current request.
+      exception.UserError: if no entity is found.
+    """
+    if not self._isSet(self._url_connection):
+      try:
+        connection_key = db.Key.from_path('Connection', int(self.kwargs['id']),
+            parent=self._getUrlProfileKey())
+      except KeyError:
+        raise ValueError('The request does not contain connection id.')
+
+      self._url_connection = connection_model.Connection.get(connection_key)
+      if not self._url_connection:
+        raise exception.NotFound('Requested connection does not exist.')
+    return self._url_connection
+
+  @property
   def url_profile(self):
     """Returns url_profile property.
 
@@ -398,15 +428,7 @@ class RequestData(object):
       exception.UserError: if no profile entity is found.
     """
     if not self._isSet(self._url_profile):
-      try:
-        fields = ['sponsor', 'program', 'user']
-        key_name = '/'.join(self.kwargs[i] for i in fields)
-      except KeyError:
-        raise ValueError('The request does not contain full profile data.')
-
-      self._url_profile = self.__profile_model.get_by_key_name(
-          key_name, parent=db.Key.from_path('User', self.kwargs['user']))
-
+      self._url_profile = self.__profile_model.get(self._getUrlProfileKey())
       if not self._url_profile:
         raise exception.NotFound(message='Requested profile does not exist.')
     return self._url_profile
@@ -464,6 +486,26 @@ class RequestData(object):
       if not self._url_user:
         raise exception.NotFound(message='Requested user does not exist.')
     return self._url_user
+
+  def _getUrlProfileKey(self):
+    """Returns db.Key that represents profile for the data specified in
+    the URL of the current request.
+
+    Returns:
+      db.Key of the profile for data specified in the URL of the
+      current request.
+
+    Raises:
+      ValueError: if some data is missing in the current request.
+    """
+    try:
+      fields = ['sponsor', 'program', 'user']
+      profile_key_name = '/'.join(self.kwargs[i] for i in fields)
+      return db.Key.from_path(
+          'User', self.kwargs['user'], self.__profile_model.kind(),
+          profile_key_name)
+    except KeyError:
+      raise ValueError('The request does not contain full profile data.')
 
   def _getProgramWideFields(self):
     """Fetches program wide fields in a single database round-trip."""

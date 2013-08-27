@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""App Engine datastore related functions."""
+"""App Engine datastore related functions and classes."""
 
 from django.core import validators
 
@@ -69,15 +69,30 @@ def toDict(entity):
   This function can be dropped when entire transition to ndb API is complete.
 
   Args:
-    entity: datastore entity to be put in a dictionary
+    entity: datastore entity to be put in a dictionary.
 
   Raises:
-    TypeError: if the specified entity is not a app engine datastore entity
+    TypeError: if the specified entity is not App Engine datastore entity.
   """
   if isinstance(entity, db.Model):
     return db.to_dict(entity)
   elif isinstance(entity, ndb.Model):
     return entity.to_dict()
   else:
-    raise TypeError("%s object is not a valid datastore entity" % type(enitity))
+    raise TypeError(
+        '%s object is not a valid datastore entity' % type(entity))
 
+
+def addFilterToQuery(query, prop, values):
+  """Extends the specified query by adding a filter on the specified property
+  with the specified value.
+
+  Args:
+    query: query object to extend.
+    prop: property of the query model on which to add a filter.
+    values: sequence of values to compare with the property value.
+  """
+  if len(values) == 1:
+    query.filter(prop.name, values[0])
+  else:
+    query.filter('%s IN' % prop.name, values)

@@ -98,7 +98,8 @@ class EditSitePage(base.RequestHandler):
   def context(self, data, check, mutator):
     # TODO: suboptimal
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    site_form = SiteForm(GSoCBoundField, data.POST or None, instance=data.site)
+    site_form = SiteForm(
+        GSoCBoundField, data=data.POST or None, instance=data.site)
 
     # NOTE(nathaniel): This is an unfortunate workaround for the fact
     # that in its current form the SiteForm class will only ever present
@@ -114,7 +115,8 @@ class EditSitePage(base.RequestHandler):
 
   def validate(self, data):
     from soc.modules.gsoc.views.forms import GSoCBoundField
-    site_form = SiteForm(GSoCBoundField, data.POST, instance=data.site)
+    site_form = SiteForm(
+        GSoCBoundField, data=data.POST, instance=data.site)
 
     if site_form.is_valid():
       site_form.save()

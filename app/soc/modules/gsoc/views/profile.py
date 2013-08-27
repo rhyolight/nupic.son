@@ -137,10 +137,10 @@ class GSoCProfileForm(profile.ProfileForm):
   """Django form for profile page.
   """
 
-  def __init__(self, request_data=None, *args, **kwargs):
+  def __init__(self, request_data=None, **kwargs):
     self.program = request_data.program
     super(GSoCProfileForm, self).__init__(
-        gsoc_forms.GSoCBoundField, request_data, *args, **kwargs)
+        gsoc_forms.GSoCBoundField, request_data=request_data, **kwargs)
 
   class Meta:
     model = GSoCProfile
@@ -177,8 +177,9 @@ class CreateGSoCProfileForm(GSoCProfileForm):
     exclude = PROFILE_EXCLUDE
     widgets = GSoCProfileForm.Meta.widgets
 
-  def __init__(self, tos_content, request_data=None, *args, **kwargs):
-    super(CreateGSoCProfileForm, self).__init__(request_data, *args, **kwargs)
+  def __init__(self, tos_content=None, request_data=None, **kwargs):
+    super(CreateGSoCProfileForm, self).__init__(
+        request_data=request_data, **kwargs)
     self.tos_content = tos_content
 
     # do not display the field with ToS, if there is nothing to show
@@ -315,7 +316,7 @@ class GSoCProfilePage(profile.ProfilePage, base.GSoCRequestHandler):
     return url_patterns.ANONYMOUS_CONNECTION
 
   def _getCreateUserForm(self, data):
-    return GSoCUserForm(data.POST or None)
+    return GSoCUserForm(data=data.POST or None)
 
   def _getEditProfileForm(self, data, check_age):
     if check_age:
@@ -336,10 +337,12 @@ class GSoCProfilePage(profile.ProfilePage, base.GSoCRequestHandler):
 
     if check_age:
       form = CreateGSoCStudentProfileForm(
-          tos_content, request_data=data, data=data.POST or prefilled_data)
+          tos_content=tos_content, request_data=data,
+          data=data.POST or prefilled_data)
     else:
       form = CreateGSoCProfileForm(
-          tos_content, request_data=data, data=data.POST or prefilled_data)
+          tos_content=tos_content, request_data=data,
+          data=data.POST or prefilled_data)
 
     return form
 
@@ -352,7 +355,8 @@ class GSoCProfilePage(profile.ProfilePage, base.GSoCRequestHandler):
       return MentorNotificationForm
 
   def _getStudentInfoForm(self, data):
-    return GSoCStudentInfoForm(data.POST or None, instance=data.student_info)
+    return GSoCStudentInfoForm(
+        data=data.POST or None, instance=data.student_info)
 
   def _getProfileForCurrentUser(self, data):
     query = profile_logic.queryProfilesForUser(data.user)

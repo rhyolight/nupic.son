@@ -22,6 +22,7 @@ from mapreduce import operation
 
 from soc.models.site import Site
 
+from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.views.helper.request_data import RequestData
 
@@ -34,7 +35,7 @@ def process(task):
   program = GCIProgram.get_by_key_name(program_key)
 
   if (task.program.key() == program.key() and
-      (task.status == 'Unapproved'or task.status == 'Unpublished')):
+      (task.status == task_model.UNAPPROVED or task.status == 'Unpublished')):
     task.status = 'Open'
     yield operation.db.Put(task)
 

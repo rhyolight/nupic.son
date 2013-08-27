@@ -49,8 +49,8 @@ class ProposeWinnersForm(gci_forms.GCIModelForm):
   class Meta:
     model = None
 
-  def __init__(self, request_data, *args):
-    super(ProposeWinnersForm, self).__init__(*args)
+  def __init__(self, request_data=None, **kwargs):
+    super(ProposeWinnersForm, self).__init__(**kwargs)
     self.request_data = request_data
 
     choices = [(ProposeWinnersForm.EMPTY_CHOICE, '---')]
@@ -134,7 +134,7 @@ class ProposeWinnersPage(GCIRequestHandler):
           message='This page may be accessed when the review period is over')
 
   def context(self, data, check, mutator):
-    form = ProposeWinnersForm(data, data.POST or None)
+    form = ProposeWinnersForm(request_data=data, data=data.POST or None)
     context = {
         'page_name': 'Propose winners for %s' % data.organization.name,
         'forms': [form]
@@ -144,7 +144,7 @@ class ProposeWinnersPage(GCIRequestHandler):
 
   def post(self, data, check, mutator):
     """Handles POST requests."""
-    form = ProposeWinnersForm(data, data.POST)
+    form = ProposeWinnersForm(request_data=data, data=data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-call.

@@ -63,3 +63,22 @@ def createConnectionTxn(
   sub_txn()
 
   return new_connection
+
+@db.transactional
+def createConnectionMessageTxn(connection_key, profile_key, content):
+  """Creates a new connection message with the specified content
+  for the specified connection.
+
+  Args:
+    connection_key: connection key.
+    profile_key: profile key of a user who is an author of the comment.
+    content: a string containing content of the message.
+
+  Returns:
+    a newly created ConnectionMessage entity.
+  """
+  message = connection_logic.createConnectionMessage(
+      connection_key, profile_key, content)
+
+  # TODO(daniel): emails should be enqueued
+  return message

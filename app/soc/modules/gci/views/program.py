@@ -48,9 +48,9 @@ class TimelineForm(gci_forms.GCIModelForm):
 class CreateProgramForm(gci_forms.GCIModelForm):
   """Django form to create the settings for a new program."""
 
-  def __init__(self, request_data, *args, **kwargs):
+  def __init__(self, request_data=None, **kwargs):
     self.request_data = request_data
-    super(CreateProgramForm, self).__init__(*args, **kwargs)
+    super(CreateProgramForm, self).__init__(**kwargs)
 
   class Meta:
     css_prefix = 'create_program_form'
@@ -79,10 +79,10 @@ class CreateProgramForm(gci_forms.GCIModelForm):
 class EditProgramForm(gci_forms.GCIModelForm):
   """Django form for the program settings."""
 
-  def __init__(self, data, *args, **kwargs):
-    self.request_data = data
+  def __init__(self, request_data=None, **kwargs):
+    self.request_data = request_data
 
-    super(EditProgramForm, self).__init__(*args, **kwargs)
+    super(EditProgramForm, self).__init__(**kwargs)
 
     if self.instance:
       self.task_types_json = json.dumps(
@@ -109,9 +109,9 @@ class GCIProgramMessagesForm(gci_forms.GCIModelForm):
   """Django form for the program messages settings.
   """
 
-  def __init__(self, request_data, *args, **kwargs):
+  def __init__(self, request_data=None, **kwargs):
     self.request_data = request_data
-    super(GCIProgramMessagesForm, self).__init__(*args, **kwargs)
+    super(GCIProgramMessagesForm, self).__init__(**kwargs)
 
   class Meta:
     css_prefix = 'program_messages_form'
@@ -146,8 +146,8 @@ class GCIEditProgramPage(base.GCIRequestHandler):
     return 'modules/gci/program/base.html'
 
   def context(self, data, check, mutator):
-    program_form = EditProgramForm(data, data.POST or None,
-                               instance=data.program)
+    program_form = EditProgramForm(
+        request_data=data, data=data.POST or None, instance=data.program)
     return {
         'page_name': 'Edit program settings',
         'forms': [program_form],
@@ -155,7 +155,8 @@ class GCIEditProgramPage(base.GCIRequestHandler):
     }
 
   def validate(self, data):
-    program_form = EditProgramForm(data, data.POST, instance=data.program)
+    program_form = EditProgramForm(
+        request_data=data, data=data.POST, instance=data.program)
 
     if program_form.is_valid():
       program_form.save()
@@ -193,7 +194,7 @@ class GCICreateProgramPage(soc_program_view.CreateProgramPage,
 
   def _getForm(self, data):
     """See soc.views.program.CreateProgram._getForm for specification."""
-    return CreateProgramForm(data, data.POST or None)
+    return CreateProgramForm(request_data=data, data=data.POST or None)
 
   def _getTimelineModel(self):
     """See soc.views.program.CreateProgram._getTimelineModel
@@ -226,8 +227,8 @@ class TimelinePage(base.GCIRequestHandler):
     return 'modules/gci/timeline/base.html'
 
   def context(self, data, check, mutator):
-    timeline_form = TimelineForm(data.POST or None,
-                                 instance=data.program_timeline)
+    timeline_form = TimelineForm(
+        data=data.POST or None, instance=data.program_timeline)
     return {
         'page_name': 'Edit program timeline',
         'forms': [timeline_form],
@@ -235,7 +236,8 @@ class TimelinePage(base.GCIRequestHandler):
     }
 
   def validate(self, data):
-    timeline_form = TimelineForm(data.POST, instance=data.program_timeline)
+    timeline_form = TimelineForm(
+        data=data.POST, instance=data.program_timeline)
 
     if timeline_form.is_valid():
       timeline_form.save()
@@ -268,7 +270,8 @@ class GCIProgramMessagesPage(
     return 'modules/gci/program/messages.html'
 
   def _getForm(self, data, entity):
-    return GCIProgramMessagesForm(data, data.POST or None, instance=entity)
+    return GCIProgramMessagesForm(
+        request_data=data, data=data.POST or None, instance=entity)
 
   def _getModel(self):
     return program_model.GCIProgramMessages

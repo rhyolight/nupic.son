@@ -97,7 +97,7 @@ class Duplicate(Template):
     """The context for this template used in render()."""
     orgs = []
     for org in db.get(self.duplicate.orgs):
-      admins = profile_logic.getOrgAdmins(org)
+      admins = profile_logic.getOrgAdmins(org.key())
 
       # TODO(nathaniel): make this .organization call unnecessary.
       self.data.redirect.organization(organization=org)
@@ -413,14 +413,14 @@ class ReviewProposal(base.GSoCRequestHandler):
       # TODO(daniel): replace status literals with constants
       context['proposal_ignored'] = data.proposal.status == 'ignored'
 
-      form = PrivateCommentForm(data.POST or None)
+      form = PrivateCommentForm(data=data.POST or None)
       if data.orgAdminFor(data.proposal.org):
         user_role = 'org_admin'
       else:
         user_role = 'mentor'
 
     else:
-      form = CommentForm(data.POST or None)
+      form = CommentForm(data=data.POST or None)
 
     comment_box = {
         'action': comment_action,
@@ -528,10 +528,10 @@ class PostComment(base.GSoCRequestHandler):
     assert isSet(data.proposal)
 
     if data.public_only:
-      comment_form = CommentForm(data.request.POST)
+      comment_form = CommentForm(data=data.request.POST)
     else:
       # this form contains checkbox for indicating private/public comments
-      comment_form = PrivateCommentForm(data.request.POST)
+      comment_form = PrivateCommentForm(data=data.request.POST)
 
     if not comment_form.is_valid():
       return None

@@ -29,8 +29,14 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 
 
-class GSoCDocumentForm(forms.GSoCModelForm, document.DocumentForm):
+class GSoCDocumentForm(document.DocumentForm):
   """Django form for creating documents."""
+
+  def __init__(self, **kwargs):
+    super(GSoCDocumentForm, self).__init__(forms.GSoCBoundField, **kwargs)
+
+  def templatePath(self):
+    return 'modules/gsoc/_form.html'
 
   Meta = document.DocumentForm.Meta
 
@@ -58,7 +64,7 @@ class EditDocumentPage(base.GSoCRequestHandler):
     check.canEditDocument()
 
   def context(self, data, check, mutator):
-    form = GSoCDocumentForm(data.POST or None, instance=data.document)
+    form = GSoCDocumentForm(data=data.POST or None, instance=data.document)
 
     if data.document:
       page_name = 'Edit %s' % data.document.title
@@ -72,7 +78,7 @@ class EditDocumentPage(base.GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    form = GSoCDocumentForm(data.POST or None, instance=data.document)
+    form = GSoCDocumentForm(data=data.POST or None, instance=data.document)
     validated_document = document.validateForm(data, form)
     if validated_document:
       data.redirect.document(validated_document)

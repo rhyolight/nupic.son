@@ -2,7 +2,7 @@
 @formLabelColor: #0f649d;
 
 .block-form {
-  background: #e0e0e0 url(@image_block_form_bg) 0 0 repeat-x;
+  background: @color_grey url(@image_block_form_bg) 0 0 repeat-x;
   border: 1px solid #b4b4b4;
   padding: 13px 20px;
 }
@@ -113,9 +113,9 @@ form {
   .text-input {
     background: #f6f6f6;
     border: 1px solid #d2d2d2;
-    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, .09);
     -webkit-box-shadow: inset 2px 2px 5px rgba(0, 0, 0, .09);
     -moz-box-shadow: inset 2px 2px 5px rgba(0, 0, 0, .09);
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, .09);
     font-size: 13px;
   }
 
@@ -130,9 +130,12 @@ form {
 
   textarea {
     .text-input;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
     line-height: 20px;
     padding: 8px;
-    width: 640px;
+    width: 100%;
   }
 
   &.grid_1 {

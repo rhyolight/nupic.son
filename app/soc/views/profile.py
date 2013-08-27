@@ -29,8 +29,8 @@ class EmptyForm(forms.ModelForm):
   """Empty form that is always valid.
   """
 
-  def __init__(self, *args, **kwargs):
-    super(EmptyForm, self).__init__(forms.BoundField, *args, **kwargs)
+  def __init__(self, **kwargs):
+    super(EmptyForm, self).__init__(forms.BoundField, **kwargs)
 
   def render(self):
     return ''
@@ -60,9 +60,8 @@ class ProfileForm(forms.ModelForm):
 
   TWO_LETTER_STATE_REQ = ['United States', 'Canada']
 
-  def __init__(self, bound_field_class=None, request_data=None,
-      *args, **kwargs):
-    super(ProfileForm, self).__init__(bound_field_class, *args, **kwargs)
+  def __init__(self, bound_field_class, request_data=None, **kwargs):
+    super(ProfileForm, self).__init__(bound_field_class, **kwargs)
     self.fields['given_name'].group = "2. Contact Info (Private)"
     self.fields['surname'].group = "2. Contact Info (Private)"
     self.request_data = request_data
@@ -195,7 +194,7 @@ class ProfilePage(object):
       page_name = 'Register as an Org Admin'
 
     if data.user:
-      user_form = EmptyForm(data.POST or None, instance=data.user)
+      user_form = EmptyForm(data=data.POST or None, instance=data.user)
     else:
       user_form = self._getCreateUserForm(data)
 
@@ -209,8 +208,8 @@ class ProfilePage(object):
     error = user_form.errors or profile_form.errors or student_info_form.errors
 
     form = self._getNotificationForm(data)
-    notification_form = form(data.POST or None,
-                             instance=data.profile)
+    notification_form = form(
+        data=data.POST or None, instance=data.profile)
 
     forms = [user_form, profile_form, notification_form, student_info_form]
 
@@ -276,11 +275,11 @@ class ProfilePage(object):
 
   def validateNotifications(self, data, dirty, profile):
     if not profile:
-      return EmptyForm(data.POST)
+      return EmptyForm(data=data.POST)
 
     form = self._getNotificationForm(data)
 
-    notification_form = form(data.POST, instance=profile)
+    notification_form = form(data=data.POST, instance=profile)
 
     if not notification_form.is_valid():
       return notification_form
@@ -293,7 +292,7 @@ class ProfilePage(object):
 
   def validateStudent(self, data, dirty, profile):
     if not (data.student_info or data.kwargs.get('role') == 'student'):
-      return EmptyForm(data.POST)
+      return EmptyForm(data=data.POST)
 
     student_form = self._getStudentInfoForm(data)
 

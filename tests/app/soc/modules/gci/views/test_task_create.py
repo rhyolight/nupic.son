@@ -21,8 +21,7 @@ import datetime
 
 from soc.modules.gci.logic.helper.notifications import (
     DEF_NEW_TASK_COMMENT_SUBJECT)
-from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models import task as task_model
 
 from tests.gci_task_utils import GCITaskHelper
 from tests.profile_utils import GCIProfileHelper
@@ -544,7 +543,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOrgAdmin(self.org)
 
-    task = self.createTask('Reopened')
+    task = self.createTask(status=task_model.REOPENED)
 
     url = '/gci/task/edit/%s/%s' % (self.gci.key().name(), task.key().id())
     response = self.get(url)
@@ -576,7 +575,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     profile_helper = GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createStudent()
 
-    task = self.createTask('Unapproved')
+    task = self.createTask(task_model.UNAPPROVED)
 
     url = '/gci/task/edit/%s/%s' % (self.gci.key().name(), task.key().id())
     response = self.get(url)

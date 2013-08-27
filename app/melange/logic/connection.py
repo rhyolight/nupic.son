@@ -17,7 +17,7 @@
 
 from melange.logic import connection_message as connection_message_logic
 from melange.models.connection import Connection
-from melange.models.connection_message import ConnectionMessage
+from melange.models.connection import ConnectionMessage
 
 CONNECTION_EXISTS_ERROR = \
     "Connection between %s and %s already exists."
