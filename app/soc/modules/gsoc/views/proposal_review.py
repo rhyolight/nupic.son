@@ -97,7 +97,7 @@ class Duplicate(Template):
     """The context for this template used in render()."""
     orgs = []
     for org in db.get(self.duplicate.orgs):
-      admins = profile_logic.getOrgAdmins(org)
+      admins = profile_logic.getOrgAdmins(org.key())
 
       # TODO(nathaniel): make this .organization call unnecessary.
       self.data.redirect.organization(organization=org)

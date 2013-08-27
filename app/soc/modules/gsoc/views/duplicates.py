@@ -118,7 +118,7 @@ class Duplicate(Template):
           'name': org.name,
           'link': self.data.redirect.urlOf(url_names.GSOC_ORG_HOME)
           }
-      org_admins = profile_logic.getOrgAdmins(org)
+      org_admins = profile_logic.getOrgAdmins(org.key())
 
       orgs_details[org.key().id_or_name()]['admins'] = []
       for org_admin in org_admins:
