@@ -122,3 +122,7 @@ class RichBool(object):
       boolean part evaluates to False.
     """
     return self.value.__nonzero__()
+
+
+TRUE = RichBool(True)
+FALSE = RichBool(False)
