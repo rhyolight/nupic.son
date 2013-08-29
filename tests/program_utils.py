@@ -211,6 +211,7 @@ class GSoCProgramHelper(ProgramHelper):
     self.program.help_page = document
     self.program.connect_with_us_page = document
     self.program.privacy_policy = document
+    self.program.program_id = self.program.link_id
     self.program.put()
 
     properties = {
@@ -305,6 +306,7 @@ class GCIProgramHelper(ProgramHelper):
     self.program.help_page = document
     self.program.connect_with_us_page = document
     self.program.privacy_policy = document
+    self.program.program_id = self.program.link_id
     self.program.put()
 
     properties = {
