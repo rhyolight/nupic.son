@@ -25,7 +25,6 @@ from django.utils.translation import ugettext
 
 from melange.logic import connection as connection_logic
 from melange.logic import profile as profile_logic
-from melange.logic import role_transitions as role_logic
 from melange.models import connection
 from melange.request import exception
 from melange.utils import rich_bool
@@ -561,7 +560,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
 
         if not profile.is_mentor:
           send_mentor_welcome_mail(data, connection_entity, profile, messages)
-        role_logic.assignUserOrgAdminRoleForOrg(profile, organization)
+        profile_logic.assignOrgAdminRoleForOrg(profile, organization)
 
         connection_logic.createConnectionMessage(
             connection=connection_entity, author=None,
@@ -670,7 +669,7 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
             auto_generated=True)
       elif connection_entity.orgOfferedOrgAdminRole():
         promoted = not profile.is_mentor
-        role_logic.assignUserOrgAdminRoleForOrg(profile, organization)
+        profile_logic.assignOrgAdminRoleForOrg(profile, organization)
         # Generate a message on the connection to indicate the new role.
         connection_logic.createConnectionMessage(
             connection=connection_entity, author=None,
