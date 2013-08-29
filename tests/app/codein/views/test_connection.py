@@ -34,6 +34,7 @@ from soc.modules.gci.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import test_utils
+from tests.utils import connection_utils
 
 
 class NoConnectionExistsAccessCheckerTest(unittest.TestCase):
@@ -139,4 +140,34 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     profile = db.get(profile.key())
     self.assertEqual(connection.user_role, connection_model.NO_ROLE)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+
+  def testHandleRoleSelection(self):
+    """Tests that ROLE choice is handled properly."""
+    profile = self.profile_helper.createProfile()
+    connection = connection_utils.seed_new_connection(
+        profile, self.org, org_role=connection_model.MENTOR_ROLE)
+
+    request = http.HttpRequest()
+    request.POST = {'user_role': connection_model.ROLE}
+
+    kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+
+    data = request_data.RequestData(request, None, kwargs)
+
+    view = connection_view.ManageConnectionAsUser()
+
+    handler = connection_view.UserActionsFormHandler(view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertIn(self.org.key(), profile.mentor_for)
     self.assertNotIn(self.org.key(), profile.org_admin_for)

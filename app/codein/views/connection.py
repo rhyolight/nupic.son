@@ -408,7 +408,7 @@ class UserActionsFormHandler(FormHandler):
       if user_role == connection_model.NO_ROLE:
         self._handleNoRoleSelection(data)
       else:
-        self._handleRoleSelection()
+        self._handleRoleSelection(data)
 
       url = links.Linker().userId(
           data.url_profile, data.url_connection.key().id(),
@@ -434,7 +434,26 @@ class UserActionsFormHandler(FormHandler):
     # TODO(daniel): if the user is not eligible, some information should be
     # displayed to them
 
-  def _handleRoleSelection(self):
-    """Makes all necessary changes if user selects connection_model.ROLE."""
-    # TODO(daniel): implement this function
-    pass
+  def _handleRoleSelection(self, data):
+    """Makes all necessary changes if user selects connection_model.ROLE.
+
+    Args:
+      data: A soc.views.helper.request_data.RequestData.
+    """
+    org_key = connection_model.Connection.organization.get_value_for_datastore(
+        data.url_connection)
+    if data.url_connection.orgOfferedMentorRole():
+      is_eligible = profile_logic.isMentorRoleEligibleForOrg(
+          data.url_profile, org_key)
+    else:
+      is_eligible = True
+
+    if is_eligible:
+      # TODO(daniel): eliminate these calls by removing data from 
+      # the call below. without these now XG transactions may be needed
+      data.program
+      data.site
+      connection_view.handleUserRoleSelectionTxn(data, data.url_connection)
+
+    # TODO(daniel): if the user is not eligible, some information should be
+    # displayed to them

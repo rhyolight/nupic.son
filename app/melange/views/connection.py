@@ -120,3 +120,40 @@ def handleUserNoRoleSelectionTxn(connection):
   profile_logic.assignNoRoleForOrg(profile, org_key)
 
   # TODO(daniel): generate connection message
+
+
+@db.transactional
+def handleUserRoleSelectionTxn(data, connection):
+  """Updates user role of the specified connection and all corresponding
+  entities with connection_model.NO_ROLE selection.
+
+  Please note that it should be checked if the user is actually allowed to
+  have a role for the organization prior to calling this function.
+
+  Args:
+    data: RequestData object for the current request.
+    connection: connection entity.
+  """
+  connection = db.get(connection.key())
+  connection.user_role = connection_model.ROLE
+  connection.put()
+
+  profile = db.get(connection.parent_key())
+  org_key = connection_model.Connection.organization.get_value_for_datastore(
+      connection)
+
+  if connection.orgOfferedMentorRole():
+    send_email = not profile.is_mentor
+    profile_logic.assignMentorRoleForOrg(profile, org_key)
+    # TODO(daniel): generate connection message
+  elif connection.orgOfferedOrgAdminRole():
+    send_email = not profile.is_mentor
+    profile_logic.assignOrgAdminRoleForOrg(profile, org_key)
+    # TODO(daniel): generate connection message
+  else:
+    # no role has been offered by organization
+    send_email = False
+
+  if send_email:
+    message = 'TODO(daniel): supply actual message.'
+    sendMentorWelcomeMail(data, profile, message)
