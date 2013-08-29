@@ -18,14 +18,19 @@ import unittest
 
 from codein.views import connection as connection_view
 
+from django import http
+
+from google.appengine.ext import db
+
+from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
 from melange.request import exception
 
 from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import user as user_model
-from soc.views.helper import request_data
 
+from soc.modules.gci.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import test_utils
@@ -58,6 +63,7 @@ class NoConnectionExistsAccessCheckerTest(unittest.TestCase):
     access_checker = connection_view.NoConnectionExistsAccessChecker()
     with self.assertRaises(exception.Redirect):
       access_checker.checkAccess(self.data, None, None)
+
 
 class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):
   """Unit tests for ShowConnectionAsUser class."""
@@ -96,3 +102,41 @@ class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):
     self.assertResponseOK(response)
     self.assertTemplateUsed(
         response, 'modules/gci/form_base.html')
+
+
+class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
+  """Unit tests for UserActionsFormHandler class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def testHandleNoRoleSelection(self):
+    """Tests that NO ROLE choice is handled properly."""
+    profile = self.profile_helper.createMentor(self.org)
+    connection = connection_logic.queryForAncestorAndOrganization(
+        profile.key(), self.org.key()).get()
+
+    request = http.HttpRequest()
+    request.POST = {'user_role': connection_model.NO_ROLE}
+
+    kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+
+    data = request_data.RequestData(request, None, kwargs)
+
+    view = connection_view.ManageConnectionAsUser()
+
+    handler = connection_view.UserActionsFormHandler(view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
