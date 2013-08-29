@@ -523,19 +523,19 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
       connection_entity.put()
 
       profile = db.get(data.url_connection.parent_key())
-      organization = db.get(data.url_connection.organization.key())
       if connection_entity.userRequestedRole():
         if not profile.is_mentor:
           send_mentor_welcome_mail(data, connection_entity, profile, messages)
 
         # Make sure that if a user is going from org admin to mentor that
         # they can legally resign as org admins.
-        if organization.key() in profile.org_admin_for:
+        if data.url_connection.organization.key() in profile.org_admin_for:
           if not soc_profile_logic.canResignAsOrgAdminForOrg(
-              profile, organization):
+              profile, data.url_connection.organization.key()):
             raise forms.ValidationError(can_resign.extra())
 
-        profile_logic.assignMentorRoleForOrg(profile, organization)
+        profile_logic.assignMentorRoleForOrg(
+            profile, data.url_connection.organization.key())
 
         connection_logic.createConnectionMessage(
             connection=connection_entity, author=None,
@@ -556,11 +556,11 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
 
       if connection_entity.userRequestedRole():
         profile = db.get(data.url_connection.parent_key())
-        organization = db.get(data.url_connection.organization.key())
 
         if not profile.is_mentor:
           send_mentor_welcome_mail(data, connection_entity, profile, messages)
-        profile_logic.assignOrgAdminRoleForOrg(profile, organization)
+        profile_logic.assignOrgAdminRoleForOrg(
+            profile, data.url_connection.organization.key())
 
         connection_logic.createConnectionMessage(
             connection=connection_entity, author=None,
@@ -656,12 +656,12 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
       connection_entity.put()
 
       profile = db.get(data.profile.key())
-      organization = db.get(data.url_connection.organization.key())
 
       promoted = False
       if connection_entity.orgOfferedMentorRole():
         promoted = not profile.is_mentor
-        profile_logic.assignMentorRoleForOrg(profile, organization)
+        profile_logic.assignMentorRoleForOrg(profile,
+             data.url_connection.organization.key())
         # Generate a message on the connection to indicate the new role.
         connection_logic.createConnectionMessage(
             connection=connection_entity, author=None,
@@ -669,7 +669,8 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
             auto_generated=True)
       elif connection_entity.orgOfferedOrgAdminRole():
         promoted = not profile.is_mentor
-        profile_logic.assignOrgAdminRoleForOrg(profile, organization)
+        profile_logic.assignOrgAdminRoleForOrg(
+            profile, data.url_connection.organization.key())
         # Generate a message on the connection to indicate the new role.
         connection_logic.createConnectionMessage(
             connection=connection_entity, author=None,
