@@ -14,8 +14,6 @@
 
 """Logic for handling role transitions for Profiles."""
 
-from melange.logic import profile as profile_logic
-
 
 def assignUserOrgAdminRoleForOrg(profile, organization):
   """Elevate a user profile to an org admin role for the given organization.
@@ -25,9 +23,11 @@ def assignUserOrgAdminRoleForOrg(profile, organization):
     organization: The Organization for which the profile will be a mentor.
   """
   org_key = organization.key()
-  
+
   if org_key not in profile.org_admin_for:
-    profile_logic.assignMentorRoleForOrg(profile, organization)
+    if org_key not in profile.mentor_for:
+      profile.is_mentor = True
+      profile.mentor_for.append(org_key)
     
     profile.is_org_admin = True
     profile.org_admin_for.append(org_key)
