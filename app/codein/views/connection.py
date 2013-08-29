@@ -328,7 +328,7 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
     """
     if ACTIONS_FORM_NAME in data.POST:
       # TODO(daniel): eliminate passing self object.
-      return ActionsFormHandler(self)
+      return UserActionsFormHandler(self)
     elif MESSAGE_FORM_NAME in data.POST:
       # TODO(daniel): eliminate passing self object.
       return MessageFormHandler(self)
@@ -391,7 +391,7 @@ class MessageFormHandler(FormHandler):
       return self._view.get(data, check, mutator)
 
 
-class ActionsFormHandler(FormHandler):
+class UserActionsFormHandler(FormHandler):
   """Form handler implementation to handle incoming data that is supposed to
   take an action on the existing connection.
   """
