@@ -18,6 +18,8 @@ import unittest
 
 from codein.logic import profile as profile_logic
 
+from melange.utils import rich_bool
+
 from soc.modules.gci.models import organization as org_model
 from soc.modules.gci.models import profile as profile_model
 from soc.modules.gci.models import task as task_model
@@ -39,9 +41,8 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
     self.profile = seeder_logic.seed(
         profile_model.GCIProfile, properties=profile_properties)
 
-    task_properties = {
-        'org': self.org
-        }
+    # seed a task
+    task_properties = {'org': self.org}
     self.task = seeder_logic.seed(
         task_model.GCITask, properties=task_properties)
 
@@ -72,3 +73,92 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
       result = profile_logic.canResignAsMentorForOrg(
           self.profile, self.org.key())
       self.assertFalse(result)
+
+
+class IsNoRoleEligibleForOrgTest(unittest.TestCase):
+  """Unit tests for isNoRoleEligibleForOrg function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    # seed an organization
+    self.org = seeder_logic.seed(org_model.GCIOrganization)
+
+    # seed a user
+    self.profile = seeder_logic.seed(profile_model.GCIProfile)
+
+    # seed a task
+    task_properties = {'org': self.org}
+    self.task = seeder_logic.seed(
+        task_model.GCITask, properties=task_properties)
+
+  def testForNoRole(self):
+    """Tests for a user who does not have a role with organization."""
+    result = profile_logic.isNoRoleEligibleForOrg(self.profile, self.org.key())
+    self.assertTrue(result)
+
+  def testForMentorThatCannotResign(self):
+    """Tests for a user who is a mentor that cannot currently resign."""
+    # make profile a mentor for organization
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.org.key()]
+
+    # profile cannot resign as mentor
+    profile_logic.canResignAsMentorForOrg = (
+        lambda profile, org_key: rich_bool.FALSE)
+
+    result = profile_logic.isNoRoleEligibleForOrg(self.profile, self.org.key())
+    self.assertFalse(result)
+
+  def testForMentorThatCanResign(self):
+    """Tests for a user who is a mentor that can currently resign."""
+    # make profile a mentor for organization
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.org.key()]
+
+    # profile can resign as mentor
+    profile_logic.canResignAsMentorForOrg = (
+        lambda profile, org_key: rich_bool.TRUE)
+
+    result = profile_logic.isNoRoleEligibleForOrg(self.profile, self.org.key())
+    self.assertTrue(result)
+
+  def testForOrgAdminThatCannotResign(self):
+    """Tests for u user who is an org admin that cannot currently resign."""
+    # make profile an administrator for organization
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.org.key()]
+    self.profile.is_org_admin = True
+    self.profile.org_admin_for = [self.org.key()]
+
+    # profile cannot resign as org admin
+    profile_logic.canResignAsOrgAdminForOrg = (
+        lambda profile, org_key: rich_bool.FALSE)
+
+    result = profile_logic.isNoRoleEligibleForOrg(self.profile, self.org.key())
+    self.assertFalse(result)
+
+  def testForOrgAdminThatCanResign(self):
+    """Tests for u user who is an org admin that can currently resign."""
+    # make profile an administrator for organization
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.org.key()]
+    self.profile.is_org_admin = True
+    self.profile.org_admin_for = [self.org.key()]
+
+    # profile can resign as org admin
+    profile_logic.canResignAsOrgAdminForOrg = (
+        lambda profile, org_key: rich_bool.TRUE)
+
+    # profile cannot resign as mentor, though
+    profile_logic.canResignAsMentorForOrg = (
+        lambda profile, org_key: rich_bool.FALSE)
+
+    result = profile_logic.isNoRoleEligibleForOrg(self.profile, self.org.key())
+    self.assertFalse(result)
+
+    # now, profile can resign as mentor
+    profile_logic.canResignAsMentorForOrg = (
+        lambda profile, org_key: rich_bool.TRUE)
+
+    result = profile_logic.isNoRoleEligibleForOrg(self.profile, self.org.key())
+    self.assertTrue(result)
