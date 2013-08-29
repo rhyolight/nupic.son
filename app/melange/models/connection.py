@@ -87,18 +87,20 @@ class Connection(db.Model):
     return self.user_role == ROLE
 
   def orgOfferedMentorRole(self):
-    """Indicate whether or not an org admin has offered a mentor role.
+    """Indicate whether or not the organization has offered a mentor role.
 
     Returns:
-      True if an org has opted for a mentor role.
+      True if the organization has opted for a mentor role.
     """
     return self.org_role == MENTOR_ROLE
 
   def orgOfferedOrgAdminRole(self):
-    """Indicate whether or not an org admin has offered an org admin role.
+    """Indicate whether or not the organization has offered an organization
+    administrator role.
 
     Returns:
-      True if an org has adopted for an org admin role.
+      True if the organization has opted for an organization
+      administrator role.
     """
     return self.org_role == ORG_ADMIN_ROLE
 
