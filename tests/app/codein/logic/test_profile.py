@@ -162,3 +162,56 @@ class IsNoRoleEligibleForOrgTest(unittest.TestCase):
 
     result = profile_logic.isNoRoleEligibleForOrg(self.profile, self.org.key())
     self.assertTrue(result)
+
+
+class IsMentorRoleEligibleForOrgTest(unittest.TestCase):
+  """Unit tests for isMentorRoleEligibleForOrg function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    # seed an organization
+    self.org = seeder_logic.seed(org_model.GCIOrganization)
+
+    # seed a user
+    self.profile = seeder_logic.seed(profile_model.GCIProfile)
+
+  def testForUserWithNoRole(self):
+    """Tests that user with no role is eligible."""
+    self.profile.is_mentor = False
+    self.profile.mentor_for = []
+    self.profile.is_org_admin = False
+    self.profile.org_admin_for = []
+
+    result = profile_logic.isMentorRoleEligibleForOrg(
+        self.profile, self.org.key())
+    self.assertTrue(result)
+
+  def testForOrgAdminThatCannotResign(self):
+    """Tests that org admin that cannot resign is not eligible."""
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.org.key()]
+    self.profile.is_org_admin = True
+    self.profile.org_admin_for = [self.org.key()]
+
+    # profile cannot resign as org admin
+    profile_logic.canResignAsOrgAdminForOrg = (
+        lambda profile, org_key: rich_bool.FALSE)
+
+    result = profile_logic.isMentorRoleEligibleForOrg(
+        self.profile, self.org.key())
+    self.assertFalse(result)
+
+  def testForOrgAdminThatCanResign(self):
+    """Tests that org admin that can resign is eligible."""
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.org.key()]
+    self.profile.is_org_admin = True
+    self.profile.org_admin_for = [self.org.key()]
+
+    # profile can resign as org admin
+    profile_logic.canResignAsOrgAdminForOrg = (
+        lambda profile, org_key: rich_bool.TRUE)
+
+    result = profile_logic.isMentorRoleEligibleForOrg(
+        self.profile, self.org.key())
+    self.assertTrue(result)
