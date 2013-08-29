@@ -536,7 +536,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
               profile, organization):
             raise forms.ValidationError(can_resign.extra())
 
-        role_logic.assignUserMentorRoleForOrg(profile, organization)
+        profile_logic.assignMentorRoleForOrg(profile, organization)
 
         connection_logic.createConnectionMessage(
             connection=connection_entity, author=None,
@@ -662,7 +662,7 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
       promoted = False
       if connection_entity.orgOfferedMentorRole():
         promoted = not profile.is_mentor
-        role_logic.assignUserMentorRoleForOrg(profile, organization)
+        profile_logic.assignMentorRoleForOrg(profile, organization)
         # Generate a message on the connection to indicate the new role.
         connection_logic.createConnectionMessage(
             connection=connection_entity, author=None,

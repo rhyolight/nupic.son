@@ -104,6 +104,24 @@ def assignNoRoleForOrg(profile, org_key):
   profile.put()
 
 
+def assignMentorRoleForOrg(profile, org_key):
+  """Assigns the specified profile to a mentor role for the specified
+  organization. If a user is currently an organization administrator,
+  they will be lowered to a mentor role.
+  
+  Args:
+    profile: profile entity.
+    organization: organization key.
+  """ 
+  if org_key in profile.org_admin_for:
+    profile.org_admin_for.remove(org_key)
+    profile.is_org_admin = bool(profile.org_admin_for)
+  
+  profile.is_mentor = True
+  profile.mentor_for = list(set(profile.mentor_for + [org_key]))
+  profile.put()
+
+
 def _handleExtraAttrs(query, extra_attrs):
   """Extends the specified query by handling extra attributes.
 

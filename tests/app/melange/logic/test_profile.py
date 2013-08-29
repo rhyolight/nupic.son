@@ -240,3 +240,63 @@ class AssignNoRoleForOrgTest(unittest.TestCase):
     self.assertListEqual(self.profile.mentor_for, [other_org.key()])
     self.assertFalse(self.profile.is_org_admin)
     self.assertListEqual(self.profile.org_admin_for, [])
+
+
+class AssignMentorRoleForOrgTest(unittest.TestCase):
+  """Unit tests for assignMentorRoleForOrg function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    # seed an organization
+    self.org = seeder_logic.seed(org_model.Organization)
+
+    # seed a profile
+    self.profile = seeder_logic.seed(profile_model.Profile)
+
+  def testForUserWithNoRole(self):
+    """Tests that a user with no role is promoted to a mentor role."""
+    self.profile.is_mentor = False
+    self.profile.mentor_for = []
+    self.profile.is_org_admin = False
+    self.profile.org_admin_for = []
+
+    profile_logic.assignMentorRoleForOrg(self.profile, self.org.key())
+
+    self.assertTrue(self.profile.is_mentor)
+    self.assertListEqual(self.profile.mentor_for, [self.org.key()])
+    self.assertFalse(self.profile.is_org_admin)
+    self.assertListEqual(self.profile.org_admin_for, [])
+
+  def testForUserWithOrgAdminRole(self):
+    """Tests that a user with org admin role is lowered to a mentor role."""
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.org.key()]
+    self.profile.is_org_admin = True
+    self.profile.org_admin_for = [self.org.key()]
+    self.profile.put()
+
+    profile_logic.assignMentorRoleForOrg(self.profile, self.org.key())
+
+    self.assertTrue(self.profile.is_mentor)
+    self.assertListEqual(self.profile.mentor_for, [self.org.key()])
+    self.assertFalse(self.profile.is_org_admin)
+    self.assertListEqual(self.profile.org_admin_for, [])
+
+  def testForOrgAdminForAnotherOrg(self):
+    """Tests that a user is still org admin for another organization."""
+    # seed another organization
+    other_org = seeder_logic.seed(org_model.Organization)
+
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [other_org.key()]
+    self.profile.is_org_admin = True
+    self.profile.org_admin_for = [other_org.key()]
+    self.profile.put()
+
+    profile_logic.assignMentorRoleForOrg(self.profile, self.org.key())
+
+    self.assertTrue(self.profile.is_mentor)
+    self.assertIn(self.org.key(), self.profile.mentor_for)
+    self.assertIn(other_org.key(), self.profile.mentor_for)
+    self.assertTrue(self.profile.is_org_admin)
+    self.assertListEqual(self.profile.org_admin_for, [other_org.key()])

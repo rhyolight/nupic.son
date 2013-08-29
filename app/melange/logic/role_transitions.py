@@ -14,26 +14,8 @@
 
 """Logic for handling role transitions for Profiles."""
 
-from google.appengine.ext import db
+from melange.logic import profile as profile_logic
 
-def assignUserMentorRoleForOrg(profile, organization):
-  """Assign a user to a mentor role for a given organization. If a user is
-  currently an Org Admin, they will be lowered to a mentor role.
-  
-  Args:
-    profile: The Profile to assign as a mentor.
-    organization: The Organization for which the profile will be a mentor.
-  """
-  org_key = organization.key()
-  
-  if org_key in profile.org_admin_for:
-    profile.org_admin_for.remove(org_key)
-    profile.is_org_admin = True if len(profile.org_admin_for) > 0 else False
-  
-  profile.is_mentor = True
-  profile.mentor_for.append(org_key)
-  profile.mentor_for = list(set(profile.mentor_for))
-  profile.put()
 
 def assignUserOrgAdminRoleForOrg(profile, organization):
   """Elevate a user profile to an org admin role for the given organization.
@@ -45,7 +27,7 @@ def assignUserOrgAdminRoleForOrg(profile, organization):
   org_key = organization.key()
   
   if org_key not in profile.org_admin_for:
-    assignUserMentorRoleForOrg(profile, organization)
+    profile_logic.assignMentorRoleForOrg(profile, organization)
     
     profile.is_org_admin = True
     profile.org_admin_for.append(org_key)
