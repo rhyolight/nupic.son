@@ -45,7 +45,6 @@ from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
-from soc.tasks import mailer
 
 
 DEF_INVALID_LINK_ID = '%s is not a valid link id.'
@@ -57,19 +56,6 @@ USER_ASSIGNED_MENTOR = '%s promoted to Mentor.'
 USER_ASSIGNED_ORG_ADMIN = '%s promoted to Org Admin.'
 USER_ASSIGNED_NO_ROLE = '%s no longer has a role for this organizaton.'
 
-
-def send_mentor_welcome_mail(data, connection_entity, profile, messages):
-  """Send out a welcome email to new mentors.
-
-  Args:
-    data: RequestData object.
-    profile: GSoCProfile to which to send emails.
-    messages: Program messages.
-  """
-  mentor_mail = notifications.getMentorWelcomeMailContext(
-      profile, data, messages)
-  if mentor_mail:
-    mailer.getSpawnMailTaskTxn(mentor_mail, parent=connection_entity)()
 
 def clean_link_id(link_id):
   """Apply validation filters to a single link id from the user field.
@@ -514,7 +500,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
 
   def _handleMentorSelection(self, data):
 
-    messages = data.program.getProgramMessages()
+    message = data.program.getProgramMessages().mentor_welcome_msg
 
     @db.transactional(xg=True)
     def org_selected_mentor_txn():
@@ -525,7 +511,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
       profile = db.get(data.url_connection.parent_key())
       if connection_entity.userRequestedRole():
         if not profile.is_mentor:
-          send_mentor_welcome_mail(data, connection_entity, profile, messages)
+          connection_view.sendMentorWelcomeMail(data, profile, message)
 
         # Make sure that if a user is going from org admin to mentor that
         # they can legally resign as org admins.
@@ -546,7 +532,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
 
   def _handleOrgAdminSelection(self, data):
 
-    messages = data.program.getProgramMessages()
+    message = data.program.getProgramMessages().mentor_welcome_msg
 
     @db.transactional(xg=True)
     def org_selected_orgadmin_txn():
@@ -558,7 +544,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
         profile = db.get(data.url_connection.parent_key())
 
         if not profile.is_mentor:
-          send_mentor_welcome_mail(data, connection_entity, profile, messages)
+          connection_view.sendMentorWelcomeMail(data, profile, message)
         profile_logic.assignOrgAdminRoleForOrg(
             profile, data.url_connection.organization.key())
 
@@ -647,7 +633,7 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
 
   def _handleRoleSelection(self, data):
 
-    messages = data.program.getProgramMessages()
+    message = data.program.getProgramMessages().mentor_welcome_msg
 
     @db.transactional(xg=True)
     def user_selected_role_txn():
@@ -678,7 +664,7 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
             auto_generated=True)
 
       if promoted:
-        send_mentor_welcome_mail(data, connection_entity, profile, messages)
+        connection_view.sendMentorWelcomeMail(data, profile, message)
 
     user_selected_role_txn()
 

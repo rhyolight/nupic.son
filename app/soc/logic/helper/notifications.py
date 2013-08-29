@@ -365,13 +365,13 @@ def handledInviteContext(data):
   return getContext(data, [to_email], message_properties, subject, template)
 
 
-def getMentorWelcomeMailContext(profile, data, messages):
+def getMentorWelcomeMailContext(profile, data, message):
   """Sends a welcome email to mentors/org admins.
 
   Args:
     profile: Profile of the user to who will receive the welcome email.
     data: RequestData object.
-    messages: ProgramMessages instance containing the message to be sent.
+    messages: message to be sent.
 
   Returns:
     Context that can be given to the mailer. If the context is empty no message
@@ -379,7 +379,6 @@ def getMentorWelcomeMailContext(profile, data, messages):
   """
   to = profile.email
   subject = DEF_MENTOR_WELCOME_MAIL_SUBJECT % (data.program.name)
-  message = messages.mentor_welcome_msg
 
   if not message:
     return {}

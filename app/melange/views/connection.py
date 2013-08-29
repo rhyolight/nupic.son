@@ -21,7 +21,22 @@ from melange.logic import profile as profile_logic
 from melange.models import connection as connection_model
 from melange.request import exception
 
+from soc.logic.helper import notifications
 from soc.tasks import mailer
+
+
+def sendMentorWelcomeMail(data, profile, message):
+  """Send out a welcome email to new mentors.
+
+  Args:
+    data: RequestData object for the current request.
+    profile: profile entity to which to send emails.
+    messages: message to be sent.
+  """
+  mentor_mail = notifications.getMentorWelcomeMailContext(
+      profile, data, message)
+  if mentor_mail:
+    mailer.getSpawnMailTaskTxn(mentor_mail, parent=profile)()
 
 
 @db.transactional
@@ -86,8 +101,8 @@ def createConnectionMessageTxn(connection_key, profile_key, content):
 
 @db.transactional
 def handleUserNoRoleSelectionTxn(connection):
-  """Updates user role of the specified connection with
-  connection_model.NO_ROLE selection.
+  """Updates user role of the specified connection and all corresponding
+  entities with connection_model.NO_ROLE selection.
 
   Please note that it should be checked if the user is actually allowed to
   have no role for the organization prior to calling this function.
