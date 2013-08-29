@@ -195,3 +195,48 @@ class GetOrgAdminsTest(unittest.TestCase):
     # only the male org admin should be returned
     self.assertEqual(1, len(org_admins))
     self.assertEqual(org_admins[0].key(), org_admin.key())
+
+
+class AssignNoRoleForOrgTest(unittest.TestCase):
+  """Unit tests for assignNoRoleForOrg function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    # seed an organization
+    self.org = seeder_logic.seed(org_model.Organization)
+
+    # seed a profile
+    self.profile = seeder_logic.seed(profile_model.Profile)
+
+  def testForRoleForOneOrg(self):
+    """Tests that the user does not have roles for organization anymore."""
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.org.key()]
+    self.profile.is_org_admin = True
+    self.profile.org_admin_for = [self.org.key()]
+    self.profile.put()
+
+    profile_logic.assignNoRoleForOrg(self.profile, self.org.key())
+
+    self.assertFalse(self.profile.is_mentor)
+    self.assertListEqual(self.profile.mentor_for, [])
+    self.assertFalse(self.profile.is_org_admin)
+    self.assertListEqual(self.profile.org_admin_for, [])
+
+  def testForRoleForManyOrgs(self):
+    """Tests that the user still have roles for other organizations."""
+    # seed another organization
+    other_org = seeder_logic.seed(org_model.Organization)
+
+    self.profile.is_mentor = True
+    self.profile.mentor_for = [self.org.key(), other_org.key()]
+    self.profile.is_org_admin = True
+    self.profile.org_admin_for = [self.org.key()]
+    self.profile.put()
+
+    profile_logic.assignNoRoleForOrg(self.profile, self.org.key())
+
+    self.assertTrue(self.profile.is_mentor)
+    self.assertListEqual(self.profile.mentor_for, [other_org.key()])
+    self.assertFalse(self.profile.is_org_admin)
+    self.assertListEqual(self.profile.org_admin_for, [])

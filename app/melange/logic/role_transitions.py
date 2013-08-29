@@ -50,23 +50,3 @@ def assignUserOrgAdminRoleForOrg(profile, organization):
     profile.is_org_admin = True
     profile.org_admin_for.append(org_key)
     profile.put()
-
-def assignUserNoRoleForOrg(profile, organization):
-  """Remove any elevated role for a profile for the given organization.
-  
-  Args:
-    profile: The Profile to assign no role.
-    organization: The Organization for which the profile will have no role.
-  """
-  org_key = organization.key()
-  
-  if org_key in profile.mentor_for:
-    profile.mentor_for.remove(org_key)
-    profile.is_mentor = True if len(profile.mentor_for) > 0 else False
-  
-  if org_key in profile.org_admin_for:
-    profile.org_admin_for.remove(org_key)
-    profile.is_org_admin = True if len(profile.org_admin_for) > 0 else False
-  
-  profile.put()
-  

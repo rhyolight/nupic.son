@@ -24,6 +24,7 @@ from django.forms.fields import ChoiceField
 from django.utils.translation import ugettext
 
 from melange.logic import connection as connection_logic
+from melange.logic import profile as profile_logic
 from melange.logic import role_transitions as role_logic
 from melange.models import connection
 from melange.request import exception
@@ -33,7 +34,7 @@ from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic.helper import notifications
 from soc.models.user import User
-from soc.modules.gsoc.logic import profile as profile_logic
+from soc.modules.gsoc.logic import profile as soc_profile_logic
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.logic.helper import notifications as gsoc_notifications
@@ -131,7 +132,7 @@ def canUserResignRoleForOrg(profile_key, org_key):
   profile = db.get(profile_key)
 
   if org_key in profile.org_admin_for:
-    if not profile_logic.canResignAsOrgAdminForOrg(profile, org_key):
+    if not soc_profile_logic.canResignAsOrgAdminForOrg(profile, org_key):
       return rich_bool.RichBool(
           value=False, extra=NO_OTHER_ADMIN % profile.name())
 
@@ -531,7 +532,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
         # Make sure that if a user is going from org admin to mentor that
         # they can legally resign as org admins.
         if organization.key() in profile.org_admin_for:
-          if not profile_logic.canResignAsOrgAdminForOrg(
+          if not soc_profile_logic.canResignAsOrgAdminForOrg(
               profile, organization):
             raise forms.ValidationError(can_resign.extra())
 
@@ -579,8 +580,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
       profile = db.get(data.url_connection.parent_key())
       org_key = data.url_connection.organization.key()
       if org_key in profile.mentor_for:
-        organization = db.get(org_key)
-        role_logic.assignUserNoRoleForOrg(profile, organization)
+        profile_logic.assignNoRoleForOrg(profile, org_key)
 
         connection_logic.createConnectionMessage(
             connection=connection_entity, author=None,
@@ -690,9 +690,9 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
       connection_entity.put()
 
       profile = db.get(data.profile.key())
-      organization = db.get(data.url_connection.organization.key())
 
-      role_logic.assignUserNoRoleForOrg(profile, organization)
+      profile_logic.assignNoRoleForOrg(
+          profile, data.url_connection.organization.key())
       # Generate a message on the connection to indicate the removed role.
       connection_logic.createConnectionMessage(
           connection=connection_entity, author=None,
