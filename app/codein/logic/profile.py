@@ -14,6 +14,9 @@
 
 """Logic for profiles."""
 
+from codein import types
+
+from melange.logic import profile as profile_logic
 from melange.utils import rich_bool
 
 from soc.modules.gci.models import task as task_model
@@ -55,3 +58,21 @@ def canResignAsMentorForOrg(profile, org_key):
     return rich_bool.RichBool(False, extra=MENTOR_HAS_TASK_ASSIGNED)
   else:
     return rich_bool.TRUE
+
+
+def canResignAsOrgAdminForOrg(profile, org_key):
+  """Tells whether the specified profile can resign from their organization
+  administrator role for the specified organization.
+
+  An organization administrator may be removed from the list of administrators
+  of an organization, if there is at least one other user with this role.
+
+  Args:
+    profile: profile entity.
+    org_key: organization key.
+
+  Returns:
+    True, if the mentor is allowed to resign; False otherwise
+  """
+  return profile_logic.canResignAsOrgAdminForOrg(
+      profile, org_key, models=types.CI_MODELS)
