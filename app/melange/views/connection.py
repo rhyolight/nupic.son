@@ -17,6 +17,7 @@
 from google.appengine.ext import db
 
 from melange.logic import connection as connection_logic
+from melange.logic import profile as profile_logic
 from melange.models import connection as connection_model
 from melange.request import exception
 
@@ -82,3 +83,25 @@ def createConnectionMessageTxn(connection_key, profile_key, content):
 
   # TODO(daniel): emails should be enqueued
   return message
+
+@db.transactional
+def handleUserNoRoleSelectionTxn(connection):
+  """Updates user role of the specified connection with
+  connection_model.NO_ROLE selection.
+
+  Please note that it should be checked if the user is actually allowed to
+  have no role for the organization prior to calling this function.
+
+  Args:
+    connection: connection entity.
+  """
+  connection = db.get(connection.key())
+  connection.user_role = connection_model.NO_ROLE
+  connection.put()
+
+  profile = db.get(connection.parent_key())
+  org_key = connection_model.Connection.organization.get_value_for_datastore(
+      connection)
+  profile_logic.assignNoRoleForOrg(profile, org_key)
+
+  # TODO(daniel): generate connection message

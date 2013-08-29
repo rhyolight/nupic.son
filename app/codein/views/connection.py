@@ -18,14 +18,15 @@ from django import forms as django_forms
 from django import http
 from django.utils import translation
 
+from codein.logic import profile as profile_logic
+from codein.templates import readonly
+from codein.views.helper import urls
+
 from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
 from melange.request import access
 from melange.request import exception
 from melange.views import connection as connection_view
-
-from codein.templates import readonly
-from codein.views.helper import urls
 
 from soc.logic import cleaning
 from soc.logic import links
@@ -405,7 +406,7 @@ class ActionsFormHandler(FormHandler):
     if actions_form.is_valid():
       user_role = actions_form.cleaned_data['user_role']
       if user_role == connection_model.NO_ROLE:
-        self._handleNoRoleSelection()
+        self._handleNoRoleSelection(data)
       else:
         self._handleRoleSelection()
 
@@ -417,10 +418,21 @@ class ActionsFormHandler(FormHandler):
       # TODO(nathaniel): problematic self-use.
       return self._view.get(data, check, mutator)
 
-  def _handleNoRoleSelection(self):
-    """Makes all necessary changes if user selects connection_model.NO_ROLE."""
-    # TODO(daniel): implement this function
-    pass
+  def _handleNoRoleSelection(self, data):
+    """Makes all necessary changes if user selects connection_model.NO_ROLE.
+
+    Args:
+      data: A soc.views.helper.request_data.RequestData.
+    """
+    org_key = connection_model.Connection.organization.get_value_for_datastore(
+        data.url_connection)
+    is_eligible = profile_logic.isNoRoleEligibleForOrg(
+        data.url_profile, org_key)
+    if is_eligible:
+      connection_view.handleUserNoRoleSelectionTxn(data.url_connection)
+
+    # TODO(daniel): if the user is not eligible, some information should be
+    # displayed to them
 
   def _handleRoleSelection(self):
     """Makes all necessary changes if user selects connection_model.ROLE."""
