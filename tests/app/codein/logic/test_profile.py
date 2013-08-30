@@ -181,31 +181,27 @@ class IsMentorRoleEligibleForOrgTest(unittest.TestCase):
         self.profile, self.org.key())
     self.assertTrue(result)
 
-  def testForOrgAdminThatCannotResign(self):
+  @mock.patch.object(
+      profile_logic, 'canResignAsOrgAdminForOrg', return_value=rich_bool.FALSE)
+  def testForOrgAdminThatCannotResign(self, mock_func):
     """Tests that org admin that cannot resign is not eligible."""
     self.profile.is_mentor = True
     self.profile.mentor_for = [self.org.key()]
     self.profile.is_org_admin = True
     self.profile.org_admin_for = [self.org.key()]
 
-    # profile cannot resign as org admin
-    profile_logic.canResignAsOrgAdminForOrg = (
-        lambda profile, org_key: rich_bool.FALSE)
-
     result = profile_logic.isMentorRoleEligibleForOrg(
         self.profile, self.org.key())
     self.assertFalse(result)
 
-  def testForOrgAdminThatCanResign(self):
+  @mock.patch.object(
+      profile_logic, 'canResignAsOrgAdminForOrg', return_value=rich_bool.TRUE)
+  def testForOrgAdminThatCanResign(self, mock_func):
     """Tests that org admin that can resign is eligible."""
     self.profile.is_mentor = True
     self.profile.mentor_for = [self.org.key()]
     self.profile.is_org_admin = True
     self.profile.org_admin_for = [self.org.key()]
-
-    # profile can resign as org admin
-    profile_logic.canResignAsOrgAdminForOrg = (
-        lambda profile, org_key: rich_bool.TRUE)
 
     result = profile_logic.isMentorRoleEligibleForOrg(
         self.profile, self.org.key())
