@@ -73,7 +73,7 @@ def setup_gae_services():
 
 def clean_datastore():
   from google.appengine.api import apiproxy_stub_map
-  datastore = apiproxy_stub_map.apiproxy.GetStub('datastore')
+  datastore = apiproxy_stub_map.apiproxy.GetStub('datastore_v3')
   # clear datastore iff one is available
   if datastore is not None:
     datastore.Clear()
