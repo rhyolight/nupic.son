@@ -31,6 +31,7 @@ setup(
         'webtest',
         'mox',
         'nose',
+        'mock',
         ],
     entry_points = {'console_scripts': ['run-tests = tests.run:main',
                                         'gen-app-yaml = scripts.gen_app_yaml:main',
