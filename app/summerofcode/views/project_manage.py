@@ -89,8 +89,7 @@ def _getSurveyType(post_data):
   elif FINAL_EXTENSION_FORM_NAME in post_data:
     return project_survey_model.FINAL_EVAL
   else:
-    raise exception.BadRequest(message='Form name %s not supported.' %
-        form_name)
+    raise exception.BadRequest(message='Form type not supported.')
 
 
 def _getInitialValues(extension):
