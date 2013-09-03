@@ -1335,39 +1335,6 @@ class ProjectsListPage(base.GSoCRequestHandler):
     }
 
 
-class ProjectsListPage(base.GSoCRequestHandler):
-  """View that lists all the projects associated with the program."""
-
-  LIST_IDX = 1
-
-  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
-
-  def djangoURLPatterns(self):
-    return [
-        url(r'admin/all_projects/%s$' % url_patterns.PROGRAM, self,
-            name='gsoc_projects_list_admin'),
-    ]
-
-  def templatePath(self):
-    return 'modules/gsoc/admin/list.html'
-
-  def jsonContext(self, data, check, mutator):
-    list_query = project_logic.getProjectsQuery(program=data.program)
-    list_content = projects_list.ProjectList(
-        data, list_query, idx=self.LIST_IDX).getListData()
-    if list_content:
-      return list_content.content()
-    else:
-      raise exception.Forbidden(message='You do not have access to this data')
-
-  def context(self, data, check, mutator):
-    list_query = project_logic.getProjectsQuery(program=data.program)
-    return {
-      'page_name': 'Projects list page',
-      'list': projects_list.ProjectList(data, list_query, idx=self.LIST_IDX),
-    }
-
-
 class ManageProjectsListPage(base.GSoCRequestHandler):
   """View that lists all the projects associated with the program and
   redirects admin to manage page."""
