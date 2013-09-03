@@ -16,7 +16,7 @@
 
 import re
 
-from soc.views.base_templates import ProgramSelect
+from soc.views import base_templates
 from soc.views.template import Template
 
 from soc.modules.gci.logic import program as program_logic

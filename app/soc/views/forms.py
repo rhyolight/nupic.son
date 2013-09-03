@@ -475,6 +475,9 @@ class ModelFormMetaclass(djangoforms.ModelFormMetaclass):
     else:
       attrs['base_fields'] = declared_fields
 
+    # We're intentionally not calling our super's __new__ method, but we _do_
+    # want call the __new__ method on its super class (which is type).
+    # pylint: disable=bad-super-call
     return super(djangoforms.ModelFormMetaclass, cls).__new__(cls,
                                                   class_name, bases, attrs)
 
@@ -496,6 +499,9 @@ class ModelForm(djangoforms.ModelForm):
     self.__bound_field_class = bound_field_class
     self._name = name
 
+    # We're intentionally not calling our super's __init__ method, but we _do_
+    # want call the __init__ method on its super class (which is BaseModelForm).
+    # pylint: disable=bad-super-call
     super(djangoforms.ModelForm, self).__init__(**kwargs)
 
     renames = {
@@ -511,7 +517,6 @@ class ModelForm(djangoforms.ModelForm):
 
       # Since fields can be added only to the ModelForm subclass, check to
       # see if the Model has a corresponding field first.
-      # pylint: disable=E1101
       if not hasattr(opts.model, field_name):
         continue
 

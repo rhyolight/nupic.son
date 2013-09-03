@@ -79,11 +79,23 @@ DEF_ID_BASED_ENTITY_INVALID = ugettext(
 DEF_ID_BASED_ENTITY_NOT_EXISTS = ugettext(
     '%(model)s entity, whose id is %(id)s, is does not exist.')
 
+DEF_INVITE_ACCEPTED = ugettext(
+    'This invite has been accepted.')
+
+DEF_INVITE_REJECTED = ugettext(
+    'This invite has been rejected.')
+
+DEF_INVITE_WITHDRAWN = ugettext(
+    'This invite has been withdrawn.')
+
 DEF_INVITE_DOES_NOT_EXIST = ugettext(
     'There is no invite with id %s.')
 
 DEF_INVITE_CANNOT_BE_RESUBMITTED = ugettext(
     'Only withdrawn invitations may be resubmitted.')
+
+DEF_INVITE_CANNOT_BE_ACCESSED = ugettext(
+    'This invite cannot be accessed from this account.')
 
 DEF_INVITE_CANNOT_BE_WITHDRAWN = ugettext(
     'Only pending invitations may be withdrawn.')
@@ -93,6 +105,21 @@ DEF_CONNECTION_CANNOT_BE_RESUBMITTED = ugettext(
 
 DEF_CONNECTION_UNACCESSIBLE = ugettext(
     'This connection is not accessible from this profile.')
+
+DEF_REQUEST_DOES_NOT_EXIST = ugettext(
+    'There is no request with id %(id)s.')
+
+DEF_REQUEST_CANNOT_BE_ACCESSED = ugettext(
+    'This request cannot be accessed from this account.')
+
+DEF_ACCEPTED_REQUEST_CANNOT_BE_MANAGED = ugettext(
+    'This request cannot be managed because it is already been accepted.')
+
+DEF_REQUEST_CANNOT_BE_WITHDRAWN = ugettext(
+    'This %(status)s request cannot be withdrawn.')
+
+DEF_REQUEST_CANNOT_BE_RESUBMITTED = ugettext(
+    'This %(status)s request cannot be resubmitted.')
 
 DEF_IS_NOT_STUDENT = ugettext(
     'This page is inaccessible because you do not have a student role '
@@ -161,6 +188,9 @@ DEF_NOT_PUBLIC_DOCUMENT = ugettext(
 DEF_NOT_VALID_INVITATION = ugettext(
     'This is not a valid connection.')
 
+DEF_NOT_VALID_REQUEST = ugettext(
+    'This is not a valid request.')
+
 DEF_NOT_VALID_CONNECTION = ugettext(
     'This is not a valid connection.')
 
@@ -185,6 +215,11 @@ DEF_PROGRAM_NOT_VISIBLE = ugettext(
 
 DEF_PROGRAM_NOT_RUNNING = ugettext(
     'This page is inaccessible because %s is not running at this time.')
+
+DEF_PROPOSAL_IGNORED_MESSAGE = ugettext(
+    'An organization administrator has flagged this proposal to be '
+    'ignored. If you think this is incorrect, contact an organization '
+    'administrator to resolve the situation.')
 
 DEF_PROPOSAL_MODIFICATION_REQUEST = ugettext(
     'If you would like to update this proposal, request your organization '
