@@ -46,7 +46,6 @@ TEMPLATE_PATH = 'modules/gci/_form.html'
 AsyncFileInput = forms.AsyncFileInput
 CharField = forms.CharField
 CheckboxInput = forms.CheckboxInput
-CheckboxSelectMultiple = forms.CheckboxSelectMultiple
 DateInput = forms.DateInput
 DateTimeInput = forms.DateTimeInput
 FileField = forms.FileField
@@ -215,7 +214,7 @@ class RadioFieldRenderer(forms.RadioFieldRenderer):
         % (w.attrs.get('id', ''), force_unicode(w)) for w in self]))
 
 
-class CheckboxSelectMultiple(CheckboxSelectMultiple):
+class CheckboxSelectMultiple(forms.CheckboxSelectMultiple):
   def render(self, name, value, attrs=None, choices=()):
     if value is None:
       value = []
