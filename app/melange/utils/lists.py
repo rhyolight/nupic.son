@@ -103,26 +103,35 @@ class List(object):
       start: The key of the object that should be the first in the list.
       limit: Number of the elements that should be returned.
 
-    Returns: A dict containing the list data.
+    Returns: A ListData entity with data regarding the query.
     """
     if self._cache_reader:
-      items, next_item = self._cache_reader.getListData(
+      list_data = self._cache_reader.getListData(
           self._list_id, query, start, limit)
-      if not items:
+      if not list_data:
         # A cache miss. Fetch data using the datastore reader.
-        items, next_item = self._datastore_reader.getListData(
+        list_data = self._datastore_reader.getListData(
             self._list_id, query, start, limit)
     else:
-      items, next_item = self._datastore_reader.getListData(
+      list_data = self._datastore_reader.getListData(
           self._list_id, query, start, limit)
 
-    data = [{'columns':item, 'operations': self._getOperations(item)}
-               for item in items]
+    return list_data
 
-    if not start:
-      start = ''
 
-    return {'data': {start: data}, 'next': next_item}
+class ListData(object):
+  """A response from list data readers."""
+
+  def __init__(self, data, next_key):
+    """Initializes a ListData object
+
+    Args:
+      data: A list of dicts each representing a list item.
+      next_key: A key to the entity that should be fetched firstly in the next
+        batch.
+    """
+    self.data = data
+    self.next_key = next_key
 
 
 class ListDataReader(object):
@@ -156,19 +165,19 @@ class CacheReader(ListDataReader):
     data_id = getDataId(query)
     if cached_list.isCachedListExists(data_id):
       if cached_list.isValid(data_id):
-        return (cached_list.getCachedItems(data_id), FINAL_BATCH)
+        return ListData(cached_list.getCachedItems(data_id), FINAL_BATCH)
       else:
         if not cached_list.isProcessing(data_id):
           self._start_caching(list_id, data_id, query)
 
         # return None because cache is not hit
-        return None, None
+        return None
 
     else:
       self._start_caching(list_id, data_id, query)
 
       # return None because cache is not hit
-      return None, None
+      return None
 
   def _start_caching(self, list_id, data_id, query):
     def prepareCachingTransaction():
@@ -212,7 +221,7 @@ class DatastoreReaderForDB(ListDataReader):
 
     col_funcs = [(c.col_id, c.getValue) for c in getList(list_id).columns]
     items = [toListItemDict(entity, col_funcs) for entity in entities]
-    return (items[:limit], next_key)
+    return ListData(items[:limit], next_key)
 
 
 class DatastoreReaderForNDB(ListDataReader):
@@ -233,7 +242,7 @@ class DatastoreReaderForNDB(ListDataReader):
 
     col_funcs = [(c.col_id, c.getValue) for c in getList(list_id).columns]
     items = [toListItemDict(entity, col_funcs) for entity in entities]
-    return (items[:limit], next_key)
+    return ListData(items[:limit], next_key)
 
 
 def _getDefaultOperations(item):
