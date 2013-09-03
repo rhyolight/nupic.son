@@ -15,5 +15,9 @@
     "grunt-contrib-less": "~0.6.1",
     "grunt-contrib-jshint": "~0.6.0",
     "grunt-lesslint": "~0.8.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://code.google.com/p/soc/"
   }
 }
