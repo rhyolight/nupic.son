@@ -90,25 +90,17 @@ options(
 
   pylint = Bunch(
     check_modules = [
-        'soc/models',
-        'soc/modules/gsoc/models',
-        'soc/modules/gci/models',
-        #'soc/logic',
-        #'soc/modules/gsoc/logic',
-        #'soc/modules/gci/logic',
-        #'soc/views/helper',
-        #'soc/modules/gsoc/views/helper',
-        #'soc/modules/gci/views/helper',
-        'reflistprop',
+        'soc',
         'settings.py',
         'urls.py',
         'main.py',
     ],
-    quiet = False,
+    verbose = False,
     quiet_args = [
       '--reports=no',
       '--errors-only',
-      '--disable=E1103',
+      # disable these as they are too unreliable to be useful
+      '--disable=no-member,maybe-no-member',
     ],
     pylint_args = [],
     with_module = None,
@@ -170,7 +162,7 @@ def symlink(target, link_name):
     ('app-folder=', 'a', 'App folder directory (default /app)'),
     ('pylint-command=', 'c', 'Specify a custom pylint executable'),
     ('with-module=', 'w', 'Include a specific module'),
-    ('quiet', 'q', 'Disables a lot of the pylint output'),
+    ('verbose', 'v', 'Enables a lot of the noisy pylint output'),
     ('ignore', 'i', 'Ignore PyLint errors')
 ])
 def pylint(options):
@@ -180,7 +172,7 @@ def pylint(options):
   # Initial command.
   arguments = []
 
-  if options.quiet:
+  if not options.verbose:
     arguments.extend(options.quiet_args)
   if 'pylint_args' in options:
     arguments.extend(list(options.pylint_args))
@@ -215,7 +207,7 @@ def pylint(options):
       return_code = exc.args[0]
       if return_code != 0 and (not options.pylint.ignore):
         raise paver.tasks.BuildFailure(
-            'PyLint finished with a non-zero exit code')
+            'PyLint finished with a non-zero exit code: %d' % return_code)
 
   return dry('pylint ' + ' '.join(arguments), run_pylint)
 
@@ -226,18 +218,18 @@ def pylint(options):
     ('app-folder=', 'a', 'App folder directory (default /app)'),
     ('skip-pylint', 's', 'Skip PyLint checker'),
     ('ignore-pylint', 'i', 'Ignore results of PyLint (but run it anyway)'),
-    ('quiet-pylint', 'q', 'Make PyLint run quietly'),
+    ('verbose-pylint', 'v', 'Make PyLint run verbosely'),
 ])
 def build(options):
   """Build the project."""
   # If `--skip-pylint` is not provided, run PyLint.
   if not options.skip_pylint:
     # If `--ignore-pylint` is provided, act as if `paver pylint --ignore`
-    # was run. Likewise for `--quiet-pylint`.
+    # was run. Likewise for `--verbose-pylint`.
     if options.get('ignore_pylint', False):
       options.pylint.ignore = True
-    if options.get('quiet_pylint', False):
-      options.pylint.quiet = True
+    if options.get('verbose_pylint', False):
+      options.pylint.verbose = True
     pylint(options)
 
   # Compile the css files into one
