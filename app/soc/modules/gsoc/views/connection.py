@@ -453,7 +453,7 @@ class UserConnectionPage(base.GSoCRequestHandler):
       return data.redirect.to(url_names.GSOC_USER_CONNECTION, validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
 class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
   """A page to show a connection for eligible members
