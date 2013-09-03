@@ -121,6 +121,8 @@ easy.options(
       # These modules are just too chatty, we can however turn a few of the
       # more useful ones on explicitly.
       '--disable=R,C',
+      # TODO(nathaniel): fix all occurences and move this to shared_pylint_args
+      '--enable=line-too-long',
     ] + shared_pylint_args ,
     quiet_args = [
       '--errors-only',
