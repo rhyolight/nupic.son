@@ -475,6 +475,9 @@ class ModelFormMetaclass(djangoforms.ModelFormMetaclass):
     else:
       attrs['base_fields'] = declared_fields
 
+    # We're intentionally not calling our super's __new__ method, but we _do_
+    # want call the __new__ method on its super class (which is type).
+    # pylint: disable=bad-super-call
     return super(djangoforms.ModelFormMetaclass, cls).__new__(cls,
                                                   class_name, bases, attrs)
 
