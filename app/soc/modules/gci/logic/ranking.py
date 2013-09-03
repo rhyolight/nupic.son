@@ -83,30 +83,6 @@ def updateScore(task):
   db.run_in_transaction(update_ranking_txn)
 
 
-def calculateRankingForStudent(student, tasks):
-  """Calculates ranking for the specified student with the specified
-  list of tasks.
-
-  It is assumed that all the tasks from the list belong to the student. Any
-  existing ranking for this student will be overwritten.
-
-  Args:
-    student: GCIProfile entity representing the student
-    tasks: List of GCITasks that have been completed by the student
-  """
-  ranking = getOrCreateForStudent(student)
-
-  points = 0
-  for task in tasks:
-    points += POINTS[task.difficulty_level]
-
-  ranking.points = points
-  ranking.tasks = [task.key() for task in tasks]
-  ranking.put()
-
-  return ranking
-
-
 def calculateScore(student, tasks, program):
   """Calculates score for the specified student with the specified
   list of tasks.
