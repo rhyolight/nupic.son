@@ -82,6 +82,14 @@ options(
   )
 )
 
+# NOTE: these arguments should be passed after any --errors-only flags, since
+# that clobbers which messages are enabled/disabled.
+shared_pylint_args = [
+  # disable these as they are too unreliable to be useful
+  '--disable=no-member,maybe-no-member',
+  '--enable=cyclic-import,no-space-before-operator',
+]
+
 # The second call to options allows us to re-use some of the constants defined
 # in the first call.
 options(
@@ -96,12 +104,23 @@ options(
         'main.py',
     ],
     verbose = False,
+    verbose_args = [
+      '--reports=yes',
+      # We may want to enable these in the future
+      '--disable=protected-access,attribute-defined-outside-init',
+      # TODO(nathaniel): fix all occurences and enable this
+      '--disable=abstract-method',
+      # These are just plain useless, we don't ever want to these
+      '--disable=fixme,unused-argument,star-args,bad-builtin,locally-disabled',
+      # These are somewhat debatable, but not realistic for Melange
+      '--disable=no-init,super-init-not-called',
+      # These modules are just too chatty, we can however turn a few of the
+      # more useful ones on explicitly.
+      '--disable=R,C',
+    ] + shared_pylint_args ,
     quiet_args = [
-      '--reports=no',
       '--errors-only',
-      # disable these as they are too unreliable to be useful
-      '--disable=no-member,maybe-no-member',
-    ],
+    ] + shared_pylint_args ,
     pylint_args = [],
     with_module = None,
     ignore = False,
@@ -172,7 +191,9 @@ def pylint(options):
   # Initial command.
   arguments = []
 
-  if not options.verbose:
+  if options.verbose:
+    arguments.extend(options.verbose_args)
+  else:
     arguments.extend(options.quiet_args)
   if 'pylint_args' in options:
     arguments.extend(list(options.pylint_args))
