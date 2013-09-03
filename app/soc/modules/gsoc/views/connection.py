@@ -515,7 +515,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
         if data.url_connection.organization.key() in profile.org_admin_for:
           if not soc_profile_logic.canResignAsOrgAdminForOrg(
               profile, data.url_connection.organization.key()):
-            raise forms.ValidationError(can_resign.extra())
+            raise gsoc_forms.ValidationError(can_resign.extra())
 
         profile_logic.assignMentorRoleForOrg(
             profile, data.url_connection.organization.key())
@@ -574,7 +574,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
     if can_resign:
       org_selected_norole_txn()
     else:
-      raise forms.ValidationError(can_resign.extra())
+      raise gsoc_forms.ValidationError(can_resign.extra())
 
   def post(self, data, check, mutator):
     """Handle org selection."""
@@ -687,7 +687,7 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
     if can_resign:
       user_selected_norole_txn()
     else:
-      raise forms.ValidationError(can_resign.extra())
+      raise gsoc_forms.ValidationError(can_resign.extra())
 
 
   def post(self, data, check, mutator):
