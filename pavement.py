@@ -99,7 +99,10 @@ easy.options(
 
   pylint = easy.Bunch(
     check_modules = [
+        'codein',
+        'melange',
         'soc',
+        'summerofcode',
         'settings.py',
         'urls.py',
         'main.py',
