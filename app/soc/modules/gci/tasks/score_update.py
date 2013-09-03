@@ -96,9 +96,9 @@ def studentIterator(student_profile_function, request, **kwargs):
   for student_profile in student_profiles:
     student_profile_function(student_profile)
 
-  if profiles:
+  if student_profiles:
     # Schedule task to do the rest of the students.
-    params = {'cursor': q.cursor()}
+    params = {'cursor': query.cursor()}
     taskqueue.add(queue_name='gci-update', url=request.path, params=params)
 
   return responses.terminateTask()
