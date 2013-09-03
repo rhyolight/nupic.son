@@ -469,9 +469,6 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
             name=url_names.GSOC_SHOW_ORG_CONNECTION)
         ]
 
-  def templatePath(self):
-    return 'modules/gsoc/connection/show_connection.html'
-
   def checkAccess(self, data, check, mutator):
     check.isProgramVisible()
     check.hasProfile()
