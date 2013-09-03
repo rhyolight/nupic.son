@@ -75,6 +75,9 @@ easy.options(
         ],
     },
     zip_files = ['tiny_mce.zip'],
+    docs_config = PROJECT_DIR / 'docs.config',
+    docs_output = PROJECT_DIR / 'docs',
+    skip_docs = False,
     skip_pylint = False,
     skip_closure = False,
   )
@@ -222,6 +225,7 @@ def pylint(options):
     ('app-build=', 'b', 'App build directory (default /build)'),
     ('app-folder=', 'a', 'App folder directory (default /app)'),
     ('skip-pylint', 's', 'Skip PyLint checker'),
+    ('skip-docs', '', 'Skip documentation creation'),
     ('ignore-pylint', 'i', 'Ignore results of PyLint (but run it anyway)'),
     ('quiet-pylint', 'q', 'Make PyLint run quietly'),
 ])
@@ -262,15 +266,19 @@ def build(options):
   options.closure.build = True
   closure(options)
 
-  #Run grunt for production
+  # Run grunt for production
   run_grunt(options)
+
+  # Builds documentation for the project
+  if not options.skip_docs:
+    build_docs(options)
 
 
 @easy.task
 def run_grunt(options):
   """Run Grunt for build"""
 
-  easy.sh("bin/grunt build")
+  easy.sh('bin/grunt build')
 
 
 @easy.task
@@ -422,6 +430,18 @@ def closure(options):
   tasks.environment.info(
       '%-4sCLOSURE: Source file sizes: %s, Dest file sizes: %s, Rate: %s',
       '', old_size, new_size, rate)
+
+
+@easy.task
+@easy.cmdopts([
+    ('docs-output=', '', 'Output directory for documentation'),
+    ('docs-config=', '', 'Configuration file for documentation'),
+])
+def build_docs(options):
+  """Builds documentation for the project."""
+  easy.sh(
+      'bin/epydoc -o %s --config %s app/soc/' % (
+          options.docs_output, options.docs_config))
 
 
 @easy.task
