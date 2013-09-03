@@ -28,23 +28,21 @@ import shutil
 import sys
 import zipfile
 
-import paver
-import paver.easy
-import paver.tasks
-from paver.easy import *
-from paver.path import path
+from paver import easy
+from paver import path
+from paver import tasks
 
 
 # Paver comes with Jason Orendorff's 'path' module; this makes path
 # manipulation easy and far more readable.
-PROJECT_DIR = path(__file__).dirname().abspath()
+PROJECT_DIR = path.path(__file__).dirname().abspath()
 JS_DIRS = ['soc/content/js']
 
 
 # Set some default options. Having the options at the top of the file cleans
 # the whole thing up and makes the behaviour a lot more configurable.
-options(
-  build = Bunch(
+easy.options(
+  build = easy.Bunch(
     project_dir = PROJECT_DIR,
     app_build = PROJECT_DIR / 'build',
     app_folder = PROJECT_DIR / 'app',
@@ -84,11 +82,11 @@ options(
 
 # The second call to options allows us to re-use some of the constants defined
 # in the first call.
-options(
-  clean_build = options.build,
-  tinymce_zip = options.build,
+easy.options(
+  clean_build = easy.options.build,
+  tinymce_zip = easy.options.build,
 
-  pylint = Bunch(
+  pylint = easy.Bunch(
     check_modules = [
         'soc/models',
         'soc/modules/gsoc/models',
@@ -113,17 +111,17 @@ options(
     pylint_args = [],
     with_module = None,
     ignore = False,
-    **options.build
+    **easy.options.build
   ),
 
-  closure = Bunch(
+  closure = easy.Bunch(
     js_filter = None,
     js_dir = None,
     output_to_build = False,
     js_dirs = JS_DIRS,
     closure_bin = PROJECT_DIR / "thirdparty/closure/compiler.jar",
     no_optimize = ["jquery-jqgrid.base.js", "jLinq-2.2.1.js"],
-    **options.build
+    **easy.options.build
   )
 )
 
@@ -136,14 +134,13 @@ def tinymce_zip_files(tiny_mce_dir):
     if '.svn' in filename.splitall():
       continue
 
-    paver.tasks.environment.info(
-        '%-4stiny_mce.zip <- %s', '', filename)
+    tasks.environment.info('%-4stiny_mce.zip <- %s', '', filename)
     arcname = tiny_mce_dir.relpathto(filename)
     yield filename, arcname
 
 
 def write_zip_file(zip_file_handle, files):
-  if paver.tasks.environment.dry_run:
+  if tasks.environment.dry_run:
     for args in files:
       pass
     return
@@ -165,8 +162,8 @@ def symlink(target, link_name):
 # Tasks
 
 
-@task
-@cmdopts([
+@easy.task
+@easy.cmdopts([
     ('app-folder=', 'a', 'App folder directory (default /app)'),
     ('pylint-command=', 'c', 'Specify a custom pylint executable'),
     ('with-module=', 'w', 'Include a specific module'),
@@ -214,14 +211,14 @@ def pylint(options):
     except SystemExit, exc:
       return_code = exc.args[0]
       if return_code != 0 and (not options.pylint.ignore):
-        raise paver.tasks.BuildFailure(
+        raise tasks.BuildFailure(
             'PyLint finished with a non-zero exit code')
 
-  return dry('pylint ' + ' '.join(arguments), run_pylint)
+  return easy.dry('pylint ' + ' '.join(arguments), run_pylint)
 
 
-@task
-@cmdopts([
+@easy.task
+@easy.cmdopts([
     ('app-build=', 'b', 'App build directory (default /build)'),
     ('app-folder=', 'a', 'App folder directory (default /app)'),
     ('skip-pylint', 's', 'Skip PyLint checker'),
@@ -269,15 +266,15 @@ def build(options):
   run_grunt(options)
 
 
-@task
+@easy.task
 def run_grunt(options):
   """Run Grunt for build"""
 
-  sh("bin/grunt build")
+  easy.sh("bin/grunt build")
 
 
-@task
-@cmdopts([
+@easy.task
+@easy.cmdopts([
     ('app-build=', 'b', 'App build directory (default /build)'),
     ('app-folder=', 'a', 'App folder directory (default /app)'),
 ])
@@ -286,13 +283,13 @@ def build_symlinks(options):
   # Create the symbolic links from the app folder to the build folder.
   for filename in options.app_files + options.app_dirs + options.zip_files:
     # The `symlink()` function handles discrepancies between platforms.
-    target = path(options.app_folder) / filename
-    link = path(options.app_build) / filename
-    dry('%-4s%-20s <- %s' % ('', target, link),
+    target = path.path(options.app_folder) / filename
+    link = path.path(options.app_build) / filename
+    easy.dry('%-4s%-20s <- %s' % ('', target, link),
         lambda: symlink(target, link.abspath()))
 
 
-@task
+@easy.task
 def build_css(options):
   """Compiles the css files into one."""
 
@@ -303,45 +300,46 @@ def build_css(options):
 
       for component in components:
         source = options.app_folder / css_dir / component
-        dry("cat %s >> %s" % (source, target),
+        easy.dry("cat %s >> %s" % (source, target),
             lambda: shutil.copyfileobj(source.open('r'), f))
       f.close()
 
 
-@task
-@cmdopts([
+@easy.task
+@easy.cmdopts([
     ('app-build=', 'b', 'App build directory (default /build)'),
 ])
 def clean_build(options):
   """Clean the build folder."""
   # Not checking this could cause an error when trying to remove a
   # non-existent file.
-  if path(options.app_build).exists():
-    path(options.app_build).rmtree()
-  path(options.app_build).makedirs_p()
+  if path.path(options.app_build).exists():
+    path.path(options.app_build).rmtree()
+  path.path(options.app_build).makedirs_p()
 
 
-@task
-@cmdopts([
+@easy.task
+@easy.cmdopts([
     ('app-folder=', 'a', 'App folder directory (default /app)'),
 ])
 def clean_zip(options):
   """Remove all the generated zip files from the app folder."""
   for zip_file in options.zip_files:
-    zip_path = path(options.app_folder) / zip_file
+    zip_path = path.path(options.app_folder) / zip_file
     if zip_path.exists():
       zip_path.remove()
 
 
-@task
-@cmdopts([
+@easy.task
+@easy.cmdopts([
     ('app-folder=', 'a', 'App folder directory (default /app)'),
 ])
 def tinymce_zip(options):
   """Create the zip file containing TinyMCE."""
-  tinymce_dir = path(options.app_folder) / 'soc/content/js/thirdparty/tiny_mce'
-  tinymce_zip_filename = path(options.app_folder) / 'tiny_mce.zip'
-  if paver.tasks.environment.dry_run:
+  tinymce_dir = path.path(
+      options.app_folder) / 'soc/content/js/thirdparty/tiny_mce'
+  tinymce_zip_filename = path.path(options.app_folder) / 'tiny_mce.zip'
+  if tasks.environment.dry_run:
     tinymce_zip_fp = StringIO()
   else:
     # Ensure the parent directories exist.
@@ -353,7 +351,7 @@ def tinymce_zip(options):
   except Exception, exc:
     tinymce_zip_fp.close()
     tinymce_zip_filename.remove()
-    raise paver.tasks.BuildFailure(
+    raise tasks.BuildFailure(
         'Error occurred creating tinymce.zip: %r' % (exc,))
   finally:
     if not tinymce_zip_fp.closed:
@@ -366,16 +364,17 @@ def run_closure(f):
   f.move(tmp)
 
   try:
-    sh("java -jar '%s' --js='%s' > '%s'" % (options.closure_bin, tmp, f))
-  except BuildFailure, e:
-    paver.tasks.environment.error(
-        "%s minimization failed, copying plain file", f)
+    easy.sh("java -jar '%s' --js='%s' > '%s'" % (
+        easy.options.closure_bin, tmp, f))
+  except easy.BuildFailure:
+    tasks.environment.error(
+        '%s minimization failed, copying plain file', f)
     tmp.copy(f)
 
   tmp.remove()
 
-@task
-@cmdopts([
+@easy.task
+@easy.cmdopts([
     ('app-folder=', 'a', 'App folder directory (default /app)'),
     ('js-dir=', 'j', 'JS directory to minimize, relative to /app'),
     ('js-filter=', 'f', 'Minimize files matching this regex, default "*.js"'),
@@ -406,11 +405,11 @@ def closure(options):
 
     for f in min_dir.walkfiles(js_filter):
       if f.name in options.no_optimize:
-        paver.tasks.environment.info(
+        tasks.environment.info(
             '%-4sCLOSURE: Skipping %s', '', f)
         continue
 
-      paver.tasks.environment.info(
+      tasks.environment.info(
           '%-4sCLOSURE: Processing %s', '', f)
 
       old_size += f.size
@@ -420,12 +419,12 @@ def closure(options):
       new_size += f.size
 
   rate = new_size*100 / old_size
-  paver.tasks.environment.info(
-      "%-4sCLOSURE: Source file sizes: %s, Dest file sizes: %s, Rate: %s",
+  tasks.environment.info(
+      '%-4sCLOSURE: Source file sizes: %s, Dest file sizes: %s, Rate: %s',
       '', old_size, new_size, rate)
 
 
-@task
+@easy.task
 def deep_overrides(options):
   """Copies files from the copy structure to the build directory.
   """
@@ -434,7 +433,6 @@ def deep_overrides(options):
 
   for source_dir in dirs:
     dest_dir = options.app_build / options.app_folder.relpathto(source_dir)
-    deref = dest_dir.readlinkabs()
     dest_dir.remove()
     source_dir.copytree(dest_dir)
 
@@ -443,7 +441,7 @@ def deep_overrides(options):
     dest_dir.rmtree()
 
 
-@task
+@easy.task
 def overrides(options):
   """Copies files from the overrides structure to the build directory.
   """
@@ -455,8 +453,7 @@ def overrides(options):
     if not target.exists():
       continue
     if not target.isfile():
-      paver.tasks.environment.info(
-          "target '%s' is not a file", target)
+      tasks.environment.info('target "%s" is not a file', target)
       continue
     to = options.app_build / path
     to.remove()
@@ -474,16 +471,13 @@ def unroll_symlink(target):
   Otherwise does nothing.
   """
   if not target.exists():
-    paver.tasks.environment.info(
-        "target '%s' does not exist", target)
+    tasks.environment.info('target "%s" does not exist', target)
     return
   if not target.isdir():
-    paver.tasks.environment.info(
-        "target '%s' is not a directory", target)
+    tasks.environment.info('target "%s" is not a directory', target)
     return
   if not target.islink():
-    paver.tasks.environment.info(
-        "target '%s' is not a symlink", target)
+    tasks.environment.info('target "%s" is not a symlink', target)
     return
 
   deref = target.readlinkabs()
