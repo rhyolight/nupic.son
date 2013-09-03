@@ -758,7 +758,7 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
       # TODO(nathaniel): calling GET logic from a POST handling path.
       # a bit hacky :-( may be changed when possible
       data.request.method = 'GET'
-      request_handler = ShowConnection()
+      request_handler = ShowConnectionForUserPage()
       return request_handler(data.request, *data.args, **data.kwargs)
 
   def get(self, data, check, mutator):
