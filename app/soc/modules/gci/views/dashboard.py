@@ -781,16 +781,16 @@ class MyOrgsList(Component):
     self._setIdx()
 
   def _setIdx(self):
-    raise NotImplemented
+    raise NotImplementedError
 
   # TODO(nathaniel): Drop the "request" parameter of this method.
   def _setRowAction(self, request, data):
     """Since setRowAction can be vary, it must be implemented individually.
     """
-    raise NotImplemented
+    raise NotImplementedError
 
   def _getContext(self):
-    raise NotImplemented
+    raise NotImplementedError
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
