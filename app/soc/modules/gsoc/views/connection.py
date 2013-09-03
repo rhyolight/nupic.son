@@ -453,7 +453,7 @@ class UserConnectionPage(base.GSoCRequestHandler):
       return data.redirect.to(url_names.GSOC_USER_CONNECTION, validated=True)
     else:
       # TODO(nathaniel): problematic self-call.
-      return self.get()
+      return self.get(data, check, mutator)
 
 class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
   """A page to show a connection for eligible members
@@ -468,9 +468,6 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
         url(r'connection/%s$' % url_patterns.SHOW_CONNECTION, self,
             name=url_names.GSOC_SHOW_ORG_CONNECTION)
         ]
-
-  def templatePath(self):
-    return 'modules/gsoc/connection/show_connection.html'
 
   def checkAccess(self, data, check, mutator):
     check.isProgramVisible()
@@ -516,9 +513,10 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
         # Make sure that if a user is going from org admin to mentor that
         # they can legally resign as org admins.
         if data.url_connection.organization.key() in profile.org_admin_for:
-          if not soc_profile_logic.canResignAsOrgAdminForOrg(
-              profile, data.url_connection.organization.key()):
-            raise forms.ValidationError(can_resign.extra())
+          can_resign = soc_profile_logic.canResignAsOrgAdminForOrg(
+              profile, data.url_connection.organization.key())
+          if not can_resign:
+            raise gsoc_forms.ValidationError(can_resign.extra())
 
         profile_logic.assignMentorRoleForOrg(
             profile, data.url_connection.organization.key())
@@ -577,7 +575,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
     if can_resign:
       org_selected_norole_txn()
     else:
-      raise forms.ValidationError(can_resign.extra())
+      raise gsoc_forms.ValidationError(can_resign.extra())
 
   def post(self, data, check, mutator):
     """Handle org selection."""
@@ -690,7 +688,7 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
     if can_resign:
       user_selected_norole_txn()
     else:
-      raise forms.ValidationError(can_resign.extra())
+      raise gsoc_forms.ValidationError(can_resign.extra())
 
 
   def post(self, data, check, mutator):
@@ -761,7 +759,7 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
       # TODO(nathaniel): calling GET logic from a POST handling path.
       # a bit hacky :-( may be changed when possible
       data.request.method = 'GET'
-      request_handler = ShowConnection()
+      request_handler = ShowConnectionForUserPage()
       return request_handler(data.request, *data.args, **data.kwargs)
 
   def get(self, data, check, mutator):

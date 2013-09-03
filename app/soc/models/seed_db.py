@@ -535,7 +535,6 @@ def seed(request, *args, **kwargs):
   site.home = home_document
   site.put()
 
-  # pylint: disable=E1101
   memcache.flush_all()
 
   return http.HttpResponse('Done')
@@ -575,7 +574,6 @@ def clear(*args, **kwargs):
       entity.delete()
   except db.Timeout:
     return http.HttpResponseRedirect('#')
-  # pylint: disable=E1101
   memcache.flush_all()
 
   return http.HttpResponse('Done')
