@@ -513,8 +513,9 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
         # Make sure that if a user is going from org admin to mentor that
         # they can legally resign as org admins.
         if data.url_connection.organization.key() in profile.org_admin_for:
-          if not soc_profile_logic.canResignAsOrgAdminForOrg(
-              profile, data.url_connection.organization.key()):
+          can_resign = soc_profile_logic.canResignAsOrgAdminForOrg(
+              profile, data.url_connection.organization.key())
+          if not can_resign:
             raise gsoc_forms.ValidationError(can_resign.extra())
 
         profile_logic.assignMentorRoleForOrg(
