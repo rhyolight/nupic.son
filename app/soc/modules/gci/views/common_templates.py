@@ -87,7 +87,7 @@ class YourScore(Template):
     return 'modules/gci/common_templates/_your_score.html'
 
 
-class ProgramSelect(ProgramSelect):
+class ProgramSelect(base_templates.ProgramSelect):
   """Program select template.
   """
 
