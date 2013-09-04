@@ -34,7 +34,6 @@ from soc.modules.gsoc.logic import accept_proposals as conversion_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.proposal import GSoCProposal
 
 
@@ -62,13 +61,13 @@ class ProposalAcceptanceTask(object):
     params = dicts.merge(request.POST, request.GET)
 
     if 'program_key' not in params:
-      logging.error("missing program_key in params: '%s'" %params)
+      logging.error("missing program_key in params: '%s'", params)
       return responses.terminateTask()
 
     program = GSoCProgram.get_by_key_name(params['program_key'])
 
     if not program:
-      logging.error("invalid program_key in params: '%s'" %params)
+      logging.error("invalid program_key in params: '%s'", params)
       return responses.terminateTask()
 
     q = GSoCOrganization.all()
@@ -83,7 +82,7 @@ class ProposalAcceptanceTask(object):
     org = q.get()
 
     if org:
-      logging.info('Enqueing task to accept proposals for %s.' %org.name)
+      logging.info('Enqueing task to accept proposals for %s.', org.name)
       # Compounded accept/reject taskflow
       taskqueue.add(
         url = '/tasks/gsoc/accept_proposals/accept',

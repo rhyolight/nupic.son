@@ -31,7 +31,6 @@ from soc.views.template import Template
 
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.models.organization import GSoCOrganization
-from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_names

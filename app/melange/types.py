@@ -14,7 +14,7 @@
 
 """Definitions of Melange types."""
 
-from soc.models import profile as profile_model
+from soc.models import profile
 
 
 class Models(object):
@@ -32,4 +32,4 @@ class Models(object):
     """
     self.profile_model = profile_model
 
-MELANGE_MODELS = Models(profile_model=profile_model.Profile)
+MELANGE_MODELS = Models(profile_model=profile.Profile)

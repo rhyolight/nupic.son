@@ -24,7 +24,6 @@ from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from melange.logic import connection as connection_logic
-from melange.models import connection
 from melange.models.connection import Connection
 from melange.request import exception
 from soc.logic import cleaning

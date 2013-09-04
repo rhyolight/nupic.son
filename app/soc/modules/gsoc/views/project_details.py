@@ -14,8 +14,6 @@
 
 """Module containing the view for GSoC project details page."""
 
-import httplib
-
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
@@ -25,7 +23,6 @@ from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
 from melange.request import exception
-from soc.views.helper import access_checker
 from soc.views.helper import blobstore as bs_helper
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template

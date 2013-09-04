@@ -19,7 +19,6 @@ from django.utils.translation import ugettext
 
 from melange.request import exception
 from soc.logic import validate
-from soc.models import user
 from soc.views import forms
 from soc.views import survey
 from soc.views.helper import access_checker

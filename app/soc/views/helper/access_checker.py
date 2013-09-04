@@ -20,16 +20,13 @@ import urllib
 
 from django.utils.translation import ugettext
 
-from google.appengine.api import users
 from google.appengine.ext import db
 
-from melange.models import connection as connection_model
 from melange.request import exception
 from soc.logic import links
 from soc.models import document
 from soc.models import org_app_record
 from soc.models import program as program_model
-from soc.models import user as user_model
 from soc.models.request import INVITATION_TYPE
 from soc.models.request import REQUEST_TYPE
 from soc.views.helper.gdata_apis import oauth as oauth_helper
@@ -246,7 +243,8 @@ DEF_ID_BASED_ENTITY_NOT_EXISTS = ugettext(
     'The requested %(model)s entity whose id is %(id)s does not exist.')
 
 DEF_KEYNAME_BASED_ENTITY_NOT_EXISTS = ugettext(
-    'The requested %(model)s entity whose keyname is %(key_name)s does not exist.')
+    'The requested %(model)s entity whose keyname is %(key_name)s does not '
+    'exist.')
 
 DEF_KEYNAME_BASED_ENTITY_INVALID = ugettext(
     '%(model)s entity, whose keyname is %(key_name)s, is invalid at this time.')

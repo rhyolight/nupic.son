@@ -17,7 +17,6 @@ module is largely based on appengine's webapp framework's code.
 """
 
 import json
-import httplib
 import urllib
 
 from google.appengine.ext import db

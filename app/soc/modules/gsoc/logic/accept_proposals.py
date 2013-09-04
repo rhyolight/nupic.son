@@ -12,14 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Functions that help with accept proposals status.
-"""
+"""Functions that help with accept proposals status."""
 
-
-from google.appengine.ext import db
-
-from soc.modules.gsoc.models.accept_proposals_status import \
-    GSoCAcceptProposalsStatus
+from soc.modules.gsoc.models import accept_proposals_status
 
 
 def getOrCreateStatusForProgram(program_entity):
@@ -30,8 +25,9 @@ def getOrCreateStatusForProgram(program_entity):
     program_entity: Program entity to get or create the
         AcceptProposalsStatus for.
   """
-  q = GSoCAcceptProposalsStatus.all().filter('program', program_entity)
-  aps_entity = q.get()
+  query = accept_proposals_status.GSoCAcceptProposalsStatus.all().filter(
+      'program', program_entity)
+  aps_entity = query.get()
 
   if not aps_entity:
     aps_entity = GSoCAcceptProposalsStatus(program=program_entity)

@@ -15,15 +15,12 @@
 """The Melange Core module."""
 
 import importlib
-import logging
 
 from django.conf.urls import defaults
 
 
 class Error(Exception):
-  """Error class for the callback module.
-  """
-
+  """Error class for the callback module."""
   pass
 
 

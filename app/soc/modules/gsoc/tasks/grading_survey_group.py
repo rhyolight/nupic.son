@@ -12,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tasks related to Grading Survey Groups and Records.
-"""
-
+"""Tasks related to Grading Survey Groups and Records."""
 
 import datetime
-import logging
 
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
@@ -33,7 +30,6 @@ from soc.modules.gsoc.logic import grading_record
 from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
 from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
-from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
 
 

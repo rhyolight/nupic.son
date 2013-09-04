@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" Module containing the view for the Connection page """
 
-import hashlib
+"""Module containing the view for the Connection page."""
 
 from google.appengine.ext import db
 from google.appengine.api import users
@@ -36,7 +35,6 @@ from soc.models.user import User
 from soc.modules.gsoc.logic import profile as soc_profile_logic
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
-from soc.modules.gsoc.logic.helper import notifications as gsoc_notifications
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
@@ -248,7 +246,7 @@ class MessageForm(GSoCModelForm):
 class ConnectionResponseForm(GSoCModelForm):
   """Django form to provide Connection responses in ShowConnection.
   """
-  role_response = django_forms.fields.ChoiceField(widget=django_forms.Select())
+  role_response = ChoiceField(widget=django_forms.Select())
 
   def __init__(self, request_data=None, choices=None, **kwargs):
     super(ConnectionResponseForm, self).__init__(**kwargs)

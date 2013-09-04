@@ -26,7 +26,6 @@ from soc.views.template import Template
 from soc.modules.gsoc.logic import duplicates as duplicates_logic
 from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
-from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url

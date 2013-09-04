@@ -27,9 +27,10 @@ from melange.logic import cached_list
 # These imports are needed for the toListItemDict function, to avoid
 # 'KindError' by func(entity) if func access a db.ReferenceProperty of the
 # entity.
+# pylint: disable=unused-import
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.timeline import GSoCTimeline
-
+# pylint: enable=unused-import
 
 FINAL_BATCH = 'done'
 

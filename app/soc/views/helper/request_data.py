@@ -14,15 +14,11 @@
 request.
 """
 
-import datetime
-import httplib
-
 from google.appengine.api import users
 from google.appengine.ext import db
 
 from django import http
 from django.core import urlresolvers
-from django.utils import encoding
 
 from melange.appengine import system
 from melange.models import connection as connection_model

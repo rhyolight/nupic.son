@@ -12,27 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tasks related to OrgAppSurveys for the GSoC module.
-"""
-
-
-from soc.tasks.org_app_survey import BulkProcessing
-
-#from soc.modules.gsoc.logic.models.org_app_survey import logic as org_app_logic
-#from soc.modules.gsoc.logic.models.program import logic as program_logic
+"""Tasks related to OrgAppSurveys for the GSoC module."""
 
 
 def getDjangoURLPatterns():
-  """Returns the Django URL patterns for the Tasks.
-  """
-
-  patterns = [(r'tasks/gsoc/org_app_surveys/bulk_process$',
-               'soc.modules.gsoc.tasks.org_app_survey.run_bulk_process')]
-
-  return patterns
-
-
-# TODO(nathaniel): Commented-out code?
-#bulk_process = BulkProcessing(program_logic, org_app_logic,
-#                             '/tasks/gsoc/org_app_surveys/bulk_process')
-#run_bulk_process = bulk_process.run
+  """Returns the Django URL patterns for the Tasks."""
+  return [(r'tasks/gsoc/org_app_surveys/bulk_process$',
+           'soc.modules.gsoc.tasks.org_app_survey.run_bulk_process')]

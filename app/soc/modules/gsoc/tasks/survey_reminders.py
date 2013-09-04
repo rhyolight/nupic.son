@@ -12,11 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tasks related to sending out survey reminders.
-"""
-
-
-import logging
+"""Tasks related to sending out survey reminders."""
 
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
@@ -34,7 +30,6 @@ from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
-from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
@@ -213,8 +208,8 @@ class SurveyReminderTask(object):
           'user': student_profile.link_id,
           'id': str(project.key().id()),
           }
-      url = reverse(url_name, kwargs=url_kwargs)
-      survey_url = '%s://%s%s' % ('http', hostname, url)
+      url_path_and_query = reverse(url_name, kwargs=url_kwargs)
+      survey_url = '%s://%s%s' % ('http', hostname, url_path_and_query)
 
       # set the context for the mail template
       mail_context = {
@@ -228,7 +223,7 @@ class SurveyReminderTask(object):
       }
 
       # set the sender
-      (_, sender_address) = mail_dispatcher.getDefaultMailSender()
+      _, sender_address = mail_dispatcher.getDefaultMailSender()
       mail_context['sender'] = sender_address
       # set the receiver and subject
       mail_context['to'] = to_address

@@ -19,10 +19,6 @@ from django.utils import translation
 from soc.views import template
 from soc.views.helper import lists
 
-from soc.modules.gsoc.models import organization as org_model
-from soc.modules.gsoc.models import profile as profile_model
-
-
 ACCEPTED_ORG_LIST_DESCRIPTION = translation.ugettext(
     'List of organizations accepted into %s')
 

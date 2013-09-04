@@ -18,12 +18,10 @@ The classes in this module are intended to serve as base classes for
 iconic dashboard (Dashboard) and component list (Component).
 """
 
-from django.utils.translation import ugettext
-
-from soc.views.template import Template
+from soc.views import template
 
 
-class Component(Template):
+class Component(template.Template):
   """Base component for the list component."""
 
   def __init__(self, data):
@@ -53,7 +51,7 @@ class Component(Template):
     return False
 
 
-class Dashboard(Template):
+class Dashboard(template.Template):
   """Base template to render iconic dashboard.
 
   This class cannot be instantiated directly. Iconic dashboard must be

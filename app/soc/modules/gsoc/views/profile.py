@@ -30,7 +30,6 @@ from soc.views.helper import url_patterns
 from soc.models.universities import UNIVERSITIES
 
 from soc.modules.gsoc.logic import profile as profile_logic
-from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.views import base

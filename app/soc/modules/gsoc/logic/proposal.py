@@ -23,7 +23,6 @@ from soc.views.helper import request_data
 from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
-from soc.modules.gsoc.models import timeline as timeline_model
 
 
 def getProposalsToBeAcceptedForOrg(org_entity, step_size=25):

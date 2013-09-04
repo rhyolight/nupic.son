@@ -21,13 +21,11 @@ from melange.request import access
 from melange.request import exception
 from soc.views.base_templates import ProgramSelect
 from soc.views.helper import lists
-from soc.views.template import Template
 from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.models import organization as org_model
-from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.templates import org_list
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_names

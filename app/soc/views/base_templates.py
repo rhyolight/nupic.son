@@ -14,7 +14,6 @@
 
 """This module contains the view for the site menus."""
 
-from soc.logic import links
 from soc.models import program as program_model
 from soc.models.site import Site
 
