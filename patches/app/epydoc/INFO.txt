@@ -1,0 +1,3 @@
+This is Melange's patch to Epydoc that builds documentation for the project's codebase.
+
+Application of the patch fixes an issue that class variables were not documented properly on Python 2.6+.
