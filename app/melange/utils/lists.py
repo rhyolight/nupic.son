@@ -42,8 +42,7 @@ class List(object):
   """Represents a list."""
 
   def __init__(self, list_id, index, model_class, columns, datastore_reader,
-               cache_reader=None, buttons=None, row=None,
-               valid_period=datetime.timedelta(1), operations_func=None):
+               cache_reader=None, valid_period=datetime.timedelta(1)):
     """Initialize a list object.
 
     Args:
@@ -55,46 +54,17 @@ class List(object):
       cache_reader: A ListReader to read list data from the cache.
       valid_period: datetime.timedelta value indicating the time period a list's
        cache data should be valid, after a caching process completes.
-      operations_func: A function that will return operations supported by the
-        jqgrid list row. This function should take one argument, representing
-        the relevant list item.
     """
     self._list_id = list_id
     self._index = index
     self.model_class = model_class
     self.columns = columns
-    self.buttons = buttons
-    self.row = row
     self._cache_reader = cache_reader
     self._datastore_reader = datastore_reader
     self.valid_period = valid_period
 
-    if operations_func:
-      self._getOperations = operations_func
-    else:
-      self._getOperations = _getDefaultOperations
-
-  def getListOperations(self):
-    """Get 'operations' section of the json object expected by jqgrid.
-
-    Specification of the json object can be found at
-    http://code.google.com/p/soc/wiki/Lists.
-
-    Returns: A dict containing the list operations.
-    """
-    operations = {}
-    if self.buttons:
-      operations['buttons'] = [
-          button.getOperations() for button in self.buttons]
-    if self.row:
-      operations['row'] = self.row.getOperations()
-    return operations
-
   def getListData(self, query, start=None, limit=50):
-    """Get 'data' section of the json object expected by jqgrid.
-
-    Spectification of the json object can be found at
-    http://code.google.com/p/soc/wiki/Lists.
+    """Get a set of list items of this list.
 
     Args:
       query: Query that can be used to fetch items for this list. Entities
@@ -150,9 +120,8 @@ class ListDataReader(object):
       limit: Number of the elements that should be returned.
 
     Returns:
-      A Tuple whose first element is a list of list items and whose second
-      element is the index of the first list item of the next batch. None if
-      the list items cannot be read.
+      A ListData entity with data regarding the query. None if the list items
+      cannot be read.
     """
     raise NotImplementedError
 
@@ -245,10 +214,113 @@ class DatastoreReaderForNDB(ListDataReader):
     return ListData(items[:limit], next_key)
 
 
-def _getDefaultOperations(item):
-  # TODO:(Aruna) Complete this method
-  return {}
+class JqgridResponse(object):
+  """Provide methods to prepare list data to be sent to a jqgrid list."""
 
+  def __init__(self, list_id, buttons=None, row=None):
+    """Initializes a JQGridResponse object.
+
+    Args:
+      list_id: A list_id to a List instance which defines the model of the list
+        and is used to get list data.
+      buttons: A list of Button objects defining the buttons in the list.
+      row: A Row object defining the row behavior of the list.
+    """
+    self._list = getList(list_id)
+    self._buttons = buttons
+    self._custom_buttons = None
+
+    if buttons:
+      self._custom_buttons = filter(
+          lambda(e): isinstance(e, RedirectCustomButton), buttons)
+
+    self._row = row
+
+  def getOperations(self):
+    """Get 'operations' section of the json object expected by jqgrid.
+
+    Specification of the json object can be found at
+    http://code.google.com/p/soc/wiki/Lists.
+
+    Returns: A dict containing the list operations.
+    """
+    operations = {}
+    if self.buttons:
+      operations['buttons'] = [
+          button.getOperations() for button in self.buttons]
+    if self.row:
+      operations['row'] = self.row.getOperations()
+    return operations
+
+  def getData(self, query, start=None, limit=50):
+    """Get 'data' section of the json object expected by jqgrid.
+
+    Specification of the json object can be found at
+    http://code.google.com/p/soc/wiki/Lists.
+
+    Returns: A dict containing the list data.
+    """
+    list_data = self._list.getListData(query)
+
+    items = []
+
+    for data in list_data.data:
+      item = {}
+      item['columns'] = data
+      item['operations'] = {}
+
+      custom_button_operations = self._getCustomButtonOperations(item)
+      if custom_button_operations:
+        item['operations']['buttons'] = self._getCustomButtonOperations(item)
+
+      custom_row_operations = self._getCustomRowOperations(item)
+      if custom_row_operations:
+        item['operations']['row'] = self._getCustomRowOperations(item)
+
+      items.append(item)
+
+    if not start:
+      start = ''
+
+    return {'data': {start: items}, 'next': list_data.next_key}
+
+  def _getCustomButtonOperations(self, item):
+    """Get custom parameters regarding operation of buttons in this list.
+
+    Some buttons on a list could behave differently for different rows. This
+    method identifies parameters which define those behaviors.
+
+    Args:
+      item: A dict representing a particular list item.
+
+    Returns:
+      A dict containing button ids as keys and another dict containing each 
+      button's custom parameters as the value of each key. None if the list does
+      not contain custom buttons.
+    """
+    if self._custom_buttons:
+      operations = {}
+
+      for button in self._custom_buttons:
+        operations[button.button_id] = button.getCustomParameters(item)
+
+      return operations
+
+  def _getCustomRowOperations(self, item):
+    """Get custom parameters regarding row operations in this list.
+
+    If each row in the list behaves differently, this method identifies
+    parameters regarding those behaviors.
+
+    Args:
+      item: A dict representing a particular list item.
+
+    Returns:
+      A dict containing custom parameters of a row. None if the list does not
+      define custom row operations.
+    """
+    if self._row:
+      return self.row.getCustomParameters(item)
 
 def getDataId(query):
   """Get a unique 'data id' for a cached list related to a query.
@@ -423,13 +495,31 @@ class RedirectCustomRow(Row):
     """See Row._getParameters for specification"""
     return {'new_window': self.new_window}
 
-  def getLink(self, entity):
+  def getCustomParameters(self, item):
+    """Returns parameters custom to this row.
+
+    This method can be used to create the 'operations' sub object regarding this
+    row in the 'data/row' sub object of the json object expected by jqgrid.
+    Specification of the json object can be found at
+    http://code.google.com/p/soc/wiki/Lists.
+
+    Args:
+      item: A dict representing a particular list item.
+
+    Returns:
+     A dict with data for 'operations' sub object regarding this row in the
+     'data/row' sub object expected by jqgrid.
+    """
+    return {'link': self.getLink(item)}
+
+  def getLink(self, item):
     """Returns the link to which user will be redirected when row is clicked.
 
     This must be overridden by implementing subclasses.
 
     Args:
-      entity: The entity from which data for this row is taken from.
+      item: A dict representing a particular list item.
+
     Returns:
       A string indicating the link to which user will be redirected when row is
       clicked.
@@ -485,17 +575,50 @@ class RedirectCustomButton(Button):
     """See Button._getParameters for specification"""
     return {'new_window': self.new_window}
 
-  def getLink(self, entity):
+  def getCustomParameters(self, item):
+    """Returns parameters custom to this button.
+
+    This method can be used to create the 'operations' sub object regarding this
+    row in the 'data/buttons' sub object of the json object expected by jqgrid.
+    Specification of the json object can be found at
+    http://code.google.com/p/soc/wiki/Lists.
+
+    Args:
+      item: A dict representing a particular list item.
+
+    Returns:
+      A dict with data for 'operations' sub object regarding this button in the
+      'data/buttons' sub object expected by jqgrid.
+    """
+    return {
+        'link': self.getLink(item),
+        'caption': self.getCaption(item)
+    }
+
+  def getLink(self, item):
     """Returns the link to which user will be redirected when row is clicked.
 
     This must be overridden by implementing subclasses.
 
     Args:
-      entity: The entity from which data for this row is taken from.
+      item: A dict representing a particular list item.
 
     Returns:
       A string indicating the link to which user will be redirected when this
       button is clicked.
+    """
+    raise NotImplementedError
+
+  def getCaption(self, item):
+    """Returns what caption the button should show.
+
+    This must be overridden by implementing subclasses.
+
+    Args:
+      item: A dict representing a particular list item.
+
+    Returns:
+      A string indicating the caption the button should show.
     """
     raise NotImplementedError
 
@@ -622,7 +745,7 @@ datastore_reader = DatastoreReaderForDB()
 valid_period = datetime.timedelta(0, 60)
 
 GSOC_PROJECTS_LIST = List(GSOC_PROJECTS_LIST_ID, 0, project.GSoCProject,
-                          [title, org, status], datastore_reader,
+                          [key, student, title, org, status], datastore_reader,
                           cache_reader=cache_reader, valid_period=valid_period)
 
 
