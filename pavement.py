@@ -23,6 +23,7 @@ it were. For example, you could run ``paver --dry-run tinymce_zip`` to see what
 files would be added to the ``tinymce.zip`` file, etc.
 """
 
+import os
 from cStringIO import StringIO
 import shutil
 import sys
@@ -457,9 +458,22 @@ def closure(options):
 ])
 def build_docs(options):
   """Builds documentation for the project."""
-  easy.sh(
-      'bin/epydoc -o %s --config %s app/soc/' % (
-          options.docs_output, options.docs_config))
+
+  # TODO(daniel): definitely move this part somewhere
+  # it is required by code instrospection
+  os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+  os.environ['SERVER_SOFTWARE'] = 'build'
+
+  # some App Engine models cannot be introspected
+  # specifically, the models which inherit from another models and
+  # redefine properties. Epydoc is not capable to handle these situations
+  exclude_intorspect_modules = [
+      'soc.modules.gci.models',
+      ]
+
+  easy.sh('bin/epydoc -o %s --config=%s --exclude-introspect=%s' %
+      (options.docs_output, options.docs_config,
+          ','.join(exclude_intorspect_modules)))
 
 
 @easy.task
