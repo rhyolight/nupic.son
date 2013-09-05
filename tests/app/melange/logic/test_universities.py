@@ -82,3 +82,42 @@ class UploadUniversitiesTest(unittest.TestCase):
     for university_cluster in university_clusters:
       universities.extend(university_cluster.universities)
     self.assertEqual(len(universities), 10)
+
+
+class GetUniversitiesForProgramTest(unittest.TestCase):
+  """Unit tests for getUniversitiesForProgram function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.program = seeder_logic.seed(program_model.Program)
+
+    # seed a new universities
+    universities = []
+    for input_data in TEST_INPUT_DATA:
+      universities.append(universities_model.University(
+          uid=input_data[0], name=input_data[1], country=input_data[2]))
+    universities_model.UniversityCluster(
+        parent=ndb.Key.from_old_key(self.program.key()),
+        universities=universities).put()
+
+  def testForProgram(self):
+    """Tests that all universities are returned for the program."""
+    universities = universities_logic.getUniversitiesForProgram(
+        self.program.key())
+
+    # check that all universities are returned
+    self.assertEqual(len(universities), len(TEST_INPUT_DATA))
+
+    for i in range(len(TEST_INPUT_DATA)):
+      self.assertEqual(universities[i].uid, TEST_INPUT_DATA[i][0])
+      self.assertEqual(universities[i].name, TEST_INPUT_DATA[i][1])
+      self.assertEqual(universities[i].country, TEST_INPUT_DATA[i][2])
+
+  def testForOtherProgram(self):
+    """Tests that no universities are returned for another program."""
+    other_program = seeder_logic.seed(program_model.Program)
+    universities = universities_logic.getUniversitiesForProgram(
+        other_program.key())
+
+    # check that no universities are returned
+    self.assertListEqual(universities, [])

@@ -53,3 +53,23 @@ def uploadUniversities(input_data, program_key):
 
   to_put.append(university_cluster)
   ndb.put_multi(to_put)
+
+
+def getUniversitiesForProgram(program_key):
+  """Returns universities that were defined for the specified program.
+
+  Args:
+    program_key: program key.
+
+  Returns:
+    list of university_model.Unversity entities.
+  """
+  university_clusters = ndb.Query(
+      kind=universities_model.UniversityCluster._get_kind(),
+      ancestor=ndb.Key.from_old_key(program_key)).fetch(1000)
+
+  universities = []
+  for university_cluster in university_clusters:
+    universities.extend(university_cluster.universities)
+
+  return universities
