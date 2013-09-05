@@ -105,6 +105,7 @@ def setupRemote(app_id, host=None):
     host = '%s.appspot.com' % app_id.split("~")[-1]
 
   remote_api_stub.ConfigureRemoteDatastore(app_id, '/_ah/remote_api', auth_func, host)
+  remote_api_stub.MaybeInvokeAuthentication()
 
 
 def remote(args, context=None):
