@@ -1,0 +1,12 @@
+--- ../../../soc2/node_modules/testem/package.json	2013-09-05 15:06:37.731266576 +0200
++++ ../../node_modules/testem/package.json	2013-09-05 10:33:32.154697754 +0200
+@@ -41,7 +41,8 @@
+     "fileset": "~0.1.4",
+     "growl": "~1.7.0",
+     "consolidate": "~0.8.0",
+-    "did_it_work": "~0.0.5"
++    "did_it_work": "~0.0.5",
++    "temp": "~0.5.1"
+   },
+   "files": [
+     "lib",
