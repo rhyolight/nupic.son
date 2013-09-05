@@ -12,23 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 """This module contains the helpers to start a mapper job given the name in
 mapreduce.yaml for the job.
 """
-
 
 from mapreduce import control
 from mapreduce import status
 
 
-def start_map(name, params={}, eta=None, countdown=None):
+def start_map(name, params=None, eta=None, countdown=None):
   for config in status.MapReduceYaml.to_dict(status.get_mapreduce_yaml()):
     if config.get('name') == name:
       break
 
   # Add the mapreduce specific parameters to the params dictionary
-  config['mapper_params'].update(params)
+  config['mapper_params'].update(params if params else {})
 
   control.start_map(config['name'], config['mapper_handler'],
                     config['mapper_input_reader'], config['mapper_params'],

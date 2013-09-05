@@ -95,6 +95,7 @@ DISABLED_INSPECTIONS = (
 # must appear wherever these are suppressed.
 FORBIDDEN_IN_MELANGE = (
     'cyclic-import',
+    'dangerous-default-value',
     'logging-not-lazy',
     'no-space-before-operator',
     'unused-import',

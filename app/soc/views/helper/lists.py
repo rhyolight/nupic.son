@@ -36,7 +36,7 @@ Methods for adding buttons:
 addSimpleRedirectButton(button_id, caption, url, new_window=True)
 addCustomRedirectButton(button_id, caption, func, new_window=True)
 addPostButton(button_id, caption, url, bounds, keys,
-addPostEditButton(button_id, caption, url='', keys=[], refresh='current')
+addPostEditButton(button_id, caption, url='', keys=None, refresh='current')
 """
 
 import datetime
@@ -847,7 +847,8 @@ class ListConfiguration(object):
     }
     self.__addButton(button_id, caption, bounds, 'post', parameters)
 
-  def addPostEditButton(self, button_id, caption, url='', keys=[], refresh='current'):
+  def addPostEditButton(
+      self, button_id, caption, url='', keys=None, refresh='current'):
     """This button is used when all changed values should be posted.
 
     Args:
@@ -1356,7 +1357,7 @@ def keyStarter(start, q):
     return False
   try:
     start_entity = db.get(start)
-  except db.BadKeyError as e:
+  except db.BadKeyError:
     return False
   if not start_entity:
     return False

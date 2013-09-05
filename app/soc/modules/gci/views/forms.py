@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the boiler plate required to construct templates
-"""
-
+"""Module containing the boiler plate required to construct templates."""
 
 import itertools
 import re
@@ -64,15 +62,17 @@ ValidationError = forms.ValidationError
 
 
 class AvatarWidget(HiddenInput):
-  """The rendering customization to be used for avatar.
-  """
+  """The rendering customization to be used for avatar."""
 
   def __init__(self, attrs=None, avatars=(), colors=()):
     super(AvatarWidget, self).__init__(attrs=attrs)
     self.avatars = avatars
     self.colors = colors
 
-  def render(self, name, value, attrs={}):
+  def render(self, name, value, attrs=None):
+    if attrs is None:
+      attrs = {}
+
     # make sure value is basestring instance
     if not isinstance(value, basestring):
       value = ''
@@ -182,6 +182,7 @@ class MultipleSelectWidget(Select):
         choices, selected_choices))
 
     return u'\n'.join(output)
+
 
 class RadioInput(forms.RadioInput):
   """The rendering customization to be used for individual radio elements.
