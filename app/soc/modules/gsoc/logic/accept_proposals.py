@@ -30,7 +30,8 @@ def getOrCreateStatusForProgram(program_entity):
   aps_entity = query.get()
 
   if not aps_entity:
-    aps_entity = GSoCAcceptProposalsStatus(program=program_entity)
+    aps_entity = accept_proposals_status.GSoCAcceptProposalsStatus(
+        program=program_entity)
     aps_entity.put()
 
   return aps_entity
