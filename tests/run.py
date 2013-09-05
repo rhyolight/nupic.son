@@ -17,6 +17,7 @@
 import easyprocess
 import os
 import pyvirtualdisplay
+import socket
 import subprocess
 import sys
 
@@ -336,6 +337,24 @@ def get_js_tests_environment():
 
   return js_tests_environment
 
+def get_random_available_port():
+  """Get an available port from the operating system.
+
+    The port is retrieved from the operating system and the connection is closed
+    right after the retrieval. Client functions should use the port as soon as
+    possible, because there's no guarantee that another process would not get
+    the same port in the meantime.
+
+  Returns:
+    A random available port from the operating system.
+  """
+  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  sock.bind(('', 0))
+  sock.listen(1)
+  port = str(sock.getsockname()[1])
+  sock.close()
+  return port
+
 def run_js_tests(run_browsers_gui):
   """Run JS tests suite.
 
@@ -351,9 +370,16 @@ def run_js_tests(run_browsers_gui):
     run_browsers_gui: Boolean to specify whether or not to run all JS tests in
       all browsers available in the system showing their UI.
   """
+  # TODO(mario): this is necessary since testem doesn't have any facility to run
+  # its server from a random port for CI. If multiple users are running tests in
+  # the same machine at the same time it crashes.
+  # This can be removed once https://github.com/airportyh/testem/issues/283 is
+  # fixed.
+  port = get_random_available_port()
+
   if run_browsers_gui:
     subprocess.call(
-        'node ./node_modules/testem/testem.js ci',
+        'node ./node_modules/testem/testem.js -p %s ci' % port,
         env=get_js_tests_environment(), shell=True)
     return
 
@@ -366,7 +392,7 @@ def run_js_tests(run_browsers_gui):
 
   if virtual_display:
     subprocess.call(
-        'node ./node_modules/testem/testem.js ci',
+        'node ./node_modules/testem/testem.js -p %s ci' % port,
         env=get_js_tests_environment(), shell=True)
     virtual_display.stop()
   else:
@@ -375,7 +401,7 @@ def run_js_tests(run_browsers_gui):
     print ('You can either install xvfb ("sudo apt-get install xvfb" in Ubuntu)'
            ' or run tests with --browsers-gui switch')
     subprocess.call(
-        'node ./node_modules/testem/testem.js -l phantomjs ci',
+        'node ./node_modules/testem/testem.js -l phantomjs -p %s ci' % port,
         env=get_js_tests_environment(), shell=True)
 
 def run_js_dev():
