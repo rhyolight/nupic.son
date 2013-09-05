@@ -12,19 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""MapReduce to add the program reference to the org app records.
-"""
-
+"""MapReduce to add the program reference to the org app records."""
 
 from mapreduce import operation
 
 # Following three imports required for the model visibility for
 # runnning mapreduce.
+# pylint: disable=unused-import
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.org_app_survey import OrgAppSurvey
-
 from soc.modules.gsoc.models.program import GSoCProgram
+# pylint: enable=unused-import
 
 
 def process(org_app_record):

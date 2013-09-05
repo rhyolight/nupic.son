@@ -89,7 +89,7 @@ easy.options(
 shared_pylint_args = [
   # disable these as they are too unreliable to be useful
   '--disable=no-member,maybe-no-member',
-  '--enable=cyclic-import,no-space-before-operator',
+  '--enable=cyclic-import,no-space-before-operator,unused-import',
 ]
 
 # The second call to options allows us to re-use some of the constants defined

@@ -12,24 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GSoCStudentInfo updating MapReduce.
-"""
-
+"""GSoCStudentInfo updating MapReduce."""
 
 import logging
 
-from google.appengine.ext import db
-
 from mapreduce import operation
 
+# MapReduce requires these models to have been imported.
+# pylint: disable=unused-import
 from soc.models.user import User
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.project import GSoCProject
+# pylint: enable=unused-import
 
 
 def process(student_info):
-  logging.debug("Converting student_info '%r'" % student_info.key())
+  logging.debug("Converting student_info '%r'", student_info.key())
   proposals = GSoCProposal.all().ancestor(student_info.parent_key()).fetch(1000)
   projects = GSoCProject.all().ancestor(student_info.parent_key()).fetch(1000)
 

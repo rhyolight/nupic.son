@@ -14,8 +14,6 @@
 
 """Views to manage Summer Of Code projects."""
 
-import datetime
-
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
@@ -25,15 +23,12 @@ from django.utils import translation
 from melange.request import access
 from melange.request import exception
 
-from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import project_survey as project_survey_model
 from soc.modules.gsoc.views import base
-from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_patterns
 
 from summerofcode.logic import project_survey as project_survey_logic
 from summerofcode.logic import survey as survey_logic
-from summerofcode.models import survey as survey_model
 from summerofcode.views.helper import urls
 
 
@@ -76,7 +71,7 @@ def _getSurveyType(post_data):
   submitted in POST data.
 
   Args:
-    post_data: dict containing POST data 
+    post_data: dict containing POST data.
 
   Returns:
     type of the survey. May be one of MIDTERM_EVAL or FINAL_EVAL.
@@ -130,7 +125,7 @@ def _setPersonalExtension(profile_key, survey_key, form):
     end_date = form.cleaned_data['end_date']
     survey_logic.createOrUpdatePersonalExtension(
         profile_key, survey_key, start_date=start_date, end_date=end_date)
-  
+
   if form.is_valid():
     setPersonalExtensionTxn()
     return True
@@ -191,7 +186,7 @@ class ManageProjectProgramAdminView(base.GSoCRequestHandler):
 
       name = _getPersonalExtensionFormName(evaluation.survey_type)
       extension_forms.append(PersonalExtensionForm(data=data.POST or None,
-          name=name, title=evaluation.title, initial=initial))     
+          name=name, title=evaluation.title, initial=initial))
 
     context = {
         'page_name': MANAGE_PROJECT_ADMIN_PAGE_NAME,
@@ -213,7 +208,7 @@ class ManageProjectProgramAdminView(base.GSoCRequestHandler):
 
     # check if the survey exists
     if not db.get(survey_key):
-      raise exception.BadRequest(message='Survey of type %s not found.' % 
+      raise exception.BadRequest(message='Survey of type %s not found.' %
           survey_type)
 
     # try setting a personal extension
@@ -228,4 +223,3 @@ class ManageProjectProgramAdminView(base.GSoCRequestHandler):
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
-

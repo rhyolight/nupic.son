@@ -20,7 +20,6 @@ import logging
 from google.appengine.ext import db
 
 from django import http
-from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from melange.logic import connection as connection_logic
