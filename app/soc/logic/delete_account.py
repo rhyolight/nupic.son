@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Logic related to handling deletion of user accounts.
-"""
-
+"""Logic related to handling deletion of user accounts."""
 
 from google.appengine.api import mail
 from google.appengine.ext import db
@@ -22,13 +20,10 @@ from google.appengine.ext import db
 from melange.appengine import system
 from soc.logic import accounts
 from soc.logic import user as user_logic
-from soc.models import user
 
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models import comment as comment_model
 from soc.modules.gci.models import task as task_model
-
-
 
 ADMIN_REQUEST_EMAIL_SUBJEST = """
 User %(url_id)s has requested account deletion.

@@ -28,7 +28,6 @@ from soc.modules.gci.views.helper import url_patterns as gciurl_patterns
 from soc.modules.gci.views.helper import url_names as gciurl_names
 
 from soc.modules.gci.logic import organization as gciorganization_logic
-from soc.modules.gci.logic import profile as gciprofile_logic
 
 from soc.modules.gci.models import conversation as gciconversation_model
 
@@ -141,8 +140,7 @@ class ConversationCreateForm(gci_forms.GCIModelForm):
 
     if self.organizations and self.organization_role_choices:
       self.fields['organization'] = django_forms.ChoiceField(
-          choices=map(
-              lambda org: (org.key(), org.name), self.organizations))
+          choices=[(org.key(), org.name) for org in self.organizations])
       self.fields['organization_roles'] = django_forms.MultipleChoiceField(
           label=translation.ugettext('Roles'), required=False,
           choices=self.organization_role_choices,

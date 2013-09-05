@@ -31,7 +31,6 @@ from soc.modules.gci.logic import organization as org_logic
 from soc.modules.gci.logic import org_score as org_score_logic
 from soc.modules.gci.models import organization as organization_model
 from soc.modules.gci.models import profile as profile_model
-from soc.modules.gci.models import profile
 from soc.modules.gci.templates import org_list
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_patterns as gci_url_patterns
@@ -67,13 +66,13 @@ class ProposeWinnersForm(gci_forms.GCIModelForm):
 
     # check if at least one grand prize winner is already set
     if len(self.request_data.organization.proposed_winners) > 0:
-      self.fields.get('first_proposed_winner').initial = \
-          str(self.request_data.organization.proposed_winners[0])
+      self.fields.get('first_proposed_winner').initial = str(
+          self.request_data.organization.proposed_winners[0])
 
       # check if both grand prize winners are already set
       if len(self.request_data.organization.proposed_winners) > 1:
-         self.fields.get('second_proposed_winner').initial = \
-             str(self.request_data.organization.proposed_winners[1])
+        self.fields.get('second_proposed_winner').initial = str(
+            self.request_data.organization.proposed_winners[1])
 
     # check if backup winner is already set
     if self.request_data.organization.backup_winner:

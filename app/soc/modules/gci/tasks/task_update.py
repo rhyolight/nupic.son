@@ -12,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Appengine Tasks related to GCI Task handling.
-"""
-
+"""Appengine Tasks related to GCI Task handling."""
 
 from google.appengine.api import taskqueue
-from google.appengine.ext import db
 
 from django import http
 from django.conf.urls.defaults import url

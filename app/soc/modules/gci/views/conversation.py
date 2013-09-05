@@ -14,7 +14,6 @@
 
 """Module containing the conversation view with messages."""
 
-from django import forms as django_forms
 from django.core import urlresolvers
 from django.utils import translation
 from django.utils import html
@@ -22,6 +21,7 @@ from django.utils import html
 from google.appengine.ext import ndb
 from google.appengine.ext import db
 
+from melange.request import exception
 from soc.views.helper import url_patterns
 from soc.views.helper import access_checker
 
@@ -36,9 +36,6 @@ from soc.modules.gci.models import message as gcimessage_model
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
-from soc.modules.gci.views import forms as gciforms_view
-
-from melange.request import exception
 
 DEF_BLANK_MESSAGE = translation.ugettext('Your message cannot be blank.')
 
@@ -75,7 +72,7 @@ class PostReply(GCIRequestHandler):
         data.request.POST['content'].strip())
 
     if len(html.strip_tags(content).strip()) == 0:
-        raise exception.Forbidden(message=DEF_BLANK_MESSAGE)
+      raise exception.Forbidden(message=DEF_BLANK_MESSAGE)
 
     author = ndb.Key.from_old_key(data.user.key())
 

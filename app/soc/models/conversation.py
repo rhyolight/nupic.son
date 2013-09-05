@@ -14,14 +14,11 @@
 
 """Module containing the Conversation model."""
 
-from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from datetime import datetime
 
 from django.utils import translation
-
-from soc.models import user as user_model
 
 #: Constants for specifiying the type of recipients
 PROGRAM       = 'Program'       #: Types of users within the program

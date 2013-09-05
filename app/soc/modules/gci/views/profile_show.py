@@ -47,7 +47,7 @@ class StudentFormsTemplate(Template):
   def context(self):
     base_url = self.data.redirect.profile(self.profile.link_id).urlOf(
         url_names.GCI_STUDENT_FORM_DOWNLOAD)
-    consent_form_url= '%s?%s' % (base_url, url_names.CONSENT_FORM_GET_PARAM)
+    consent_form_url = '%s?%s' % (base_url, url_names.CONSENT_FORM_GET_PARAM)
     student_id_form_url = '%s?%s' % (
         base_url, url_names.STUDENT_ID_FORM_GET_PARAM)
 

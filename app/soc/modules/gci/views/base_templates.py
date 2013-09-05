@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from django.utils import translation
 
 """This module contains the view for the site menus."""
 
@@ -19,9 +18,8 @@ import datetime
 
 from google.appengine.ext import ndb
 
-from google.appengine.api import users
-
 from django.core.urlresolvers import reverse
+from django.utils import translation
 
 from soc.logic import accounts
 from soc.logic import links
@@ -89,7 +87,7 @@ class Header(Template):
 
   def context(self):
     # Need this import to make sponsor visible for sponsor link_id
-    from soc.models.sponsor import Sponsor
+    from soc.models.sponsor import Sponsor  # pylint: disable=unused-import
 
     gsoc_link = ''
     key_name = getMostRecentProgram(self.data)
