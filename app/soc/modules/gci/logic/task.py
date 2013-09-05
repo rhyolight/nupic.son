@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""GCITask logic methods.
-"""
 
+"""GCITask logic methods."""
 
 import datetime
 import logging
@@ -29,7 +28,6 @@ from soc.modules.gci.logic import org_score as org_score_logic
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
-
 
 DEF_ACTION_NEEDED_TITLE = ugettext('Initial Deadline passed')
 DEF_ACTION_NEEDED = ugettext(
@@ -436,7 +434,7 @@ def updateTaskStatus(task):
   transit_func = STATE_TRANSITIONS.get(task.status, None)
 
   if not transit_func:
-    logging.warning('Invalid state to transfer from %s' %task.status)
+    logging.warning('Invalid state to transfer from %s', task.status)
     return False
 
   # update the task and create a comment

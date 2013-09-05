@@ -142,19 +142,19 @@ class SlotsList(org_list.OrgList):
 
       if ('note' not in properties and 'slots' not in properties and
           'new_org' not in properties):
-        logging.warning("Neither note or slots present in '%s'" % properties)
+        logging.warning("Neither note or slots present in '%s'", properties)
         continue
 
       if 'slots' in properties:
         if not slots.isdigit():
-          logging.warning("Non-int value for slots: '%s'" % slots)
+          logging.warning("Non-int value for slots: '%s'", slots)
           properties.pop('slots')
         else:
           slots = int(slots)
 
       if new_org:
         if not new_org in ['New', 'Veteran']:
-          logging.warning("Invalid value for new_org: '%s'" % new_org)
+          logging.warning("Invalid value for new_org: '%s'", new_org)
           properties.pop('new_org')
         else:
           new_org = True if new_org == 'New' else False
@@ -162,7 +162,7 @@ class SlotsList(org_list.OrgList):
       def update_org_txn():
         org = org_model.GSoCOrganization.get_by_key_name(key_name)
         if not org:
-          logging.warning("Invalid org_key '%s'" % key_name)
+          logging.warning("Invalid org_key '%s'", key_name)
           return
         if 'note' in properties:
           org.note = note

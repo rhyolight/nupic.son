@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GSoCProposal updating mapreduce.
-"""
-
+"""GSoCProposal updating mapreduce."""
 
 import logging
 
@@ -30,7 +28,7 @@ def process(proposal_key):
   def update_proposal_txn():
     proposal = db.get(proposal_key)
     if not proposal:
-      logging.error("Missing profile for key '%s'." % proposal_key)
+      logging.error("Missing profile for key '%s'.", proposal_key)
       return False
 
     number = db.Query(GSoCScore).ancestor(proposal).count()

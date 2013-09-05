@@ -19,7 +19,6 @@ token to any <form> sent to the browser, and any (non-AppEngine) POST requests
 will be rejected if the provided token is invalid.
 """
 
-
 import itertools
 import logging
 import os
@@ -30,7 +29,6 @@ from django.utils.safestring import mark_safe
 
 from soc.logic.helper import xsrfutil
 from soc.logic import site
-
 
 _HTML_TYPES = ('text/html', 'application/xhtml+xml')
 _POST_FORM_RE = re.compile(
@@ -74,7 +72,7 @@ class XsrfMiddleware(object):
     post_token = request.POST.get('xsrf_token')
 
     if not post_token:
-      logging.warn('Missing XSRF token for post data %s' % request.POST)
+      logging.warn('Missing XSRF token for post data %s', request.POST)
       return http.HttpResponse('Missing XSRF token.', status=403)
 
     token_validity = xsrfutil.isTokenValid(_GetSecretKey(request), post_token)
@@ -82,7 +80,7 @@ class XsrfMiddleware(object):
     if token_validity:
       return None
     else:
-      logging.warn('Invalid XSRF token for post data %s' % request.POST)
+      logging.warn('Invalid XSRF token for post data %s', request.POST)
       # TODO(nathaniel): xsrfutil.isTokenValid always returns a boolean value,
       # not the-token-itself-if-the-token-is-not-valid.
       return http.HttpResponse(

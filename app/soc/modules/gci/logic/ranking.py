@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GCIStudentRanking logic methods.
-"""
-
+"""GCIStudentRanking logic methods."""
 
 import logging
 import re
@@ -47,7 +45,7 @@ def updateScore(task):
     task: GCITask that has been completed and should be taken into account in
           the score.
   """
-  logging.info("updateScore starts for task %s" % task.key().id())
+  logging.info("updateScore starts for task %s", task.key().id())
   if task.status != 'Closed':
     logging.warning('Trying to update score for a task that is not closed.')
 
@@ -56,7 +54,7 @@ def updateScore(task):
   task_key = task.key()
 
   def update_ranking_txn():
-    logging.info("updateScore txn starts for task %s" % task_key.id())
+    logging.info("updateScore txn starts for task %s", task_key.id())
     query = GCIScore.all().ancestor(student)
     score = query.get()
 
