@@ -404,6 +404,12 @@ def run_js_tests(run_browsers_gui):
         'node ./node_modules/testem/testem.js -l phantomjs -p %s ci' % port,
         env=get_js_tests_environment(), shell=True)
 
+
+def run_pylint():
+  """Runs PyLint."""
+  subprocess.call('bin/paver pylint', shell=True)
+
+
 def run_js_dev():
   subprocess.call(
     'node ./node_modules/testem/testem.js -l phantomjs -g',
@@ -419,7 +425,7 @@ def main():
       tests.update(sys.argv[i+1].split(','))
       del sys.argv[i:i+2]
     else:
-      tests = set(['js', 'pyunit'])
+      tests = set(['js', 'pyunit', 'pylint'])
 
     if 'js' in tests:
       run_browsers_gui = False
@@ -428,6 +434,8 @@ def main():
         del sys.argv[i]
         run_browsers_gui = True
       run_js_tests(run_browsers_gui)
+    if 'pylint' in tests:
+      run_pylint()
     if 'pyunit' in tests:
       # run_pyunit_tests has to be the last one to run, since nose seems to
       # terminate everything and prevent any other code in the file to run.
