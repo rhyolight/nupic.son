@@ -208,14 +208,7 @@ class GradingRecordsList(Template):
     """
     self.data = data
 
-    list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn(
-        'key', 'Key',
-        (lambda ent, *args: "%s/%d/%d" % (
-            ent.parent_key().parent().name(),
-            ent.parent_key().id(),
-            ent.key().id())),
-        hidden=True)
+    list_config = lists.ListConfiguration()
 
     title_func = lambda rec, *args: rec.parent().title
     list_config.addPlainTextColumn(

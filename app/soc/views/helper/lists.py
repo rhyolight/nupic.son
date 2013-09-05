@@ -337,16 +337,32 @@ class ListConfiguration(object):
     self._features = None
 
     if add_key_column:
+      # TODO(nathaniel): instance method called from within object constructor.
       self._addKeyColumn()
 
   def _addKeyColumn(self):
     """Adds a column for the key.
+
+    The content of the column will be the entity id, if the entity key has a
+    parent, it will be included in the key name.
+
+    For example, the content of the column for the 'melange' entity in the
+    'gsoc2008' program would be 'gsoc2008/melange'.
     """
     def getKeyName(e, *args):
+      keys = []
       if isinstance(e, ndb.Model):
-        return e.key.id()
+        key = e.key
       else:
-        return e.key().id_or_name()
+        key = e.key()
+      while key:
+        if isinstance(e, ndb.Model):
+          key_id = key.id()
+        else:
+          key_id = key.id_or_name()
+        keys.append(str(key_id))
+        key = key.parent()
+      return '/'.join(keys)
 
     self._addColumn('key', 'Key', getKeyName, hidden=True)
 
