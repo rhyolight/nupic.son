@@ -12,27 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing template with a list of GCIOrganization entities.
-"""
-
+"""Module containing template with a list of GCIOrganization entities."""
 
 from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-from soc.views.helper import addresses
 from soc.views.helper import lists
 from soc.views.helper.url import urlize
 from soc.views.template import Template
 
 from soc.modules.gci.models.profile import GCIStudentInfo
-from soc.modules.gci.models.score import GCIOrgScore
 from soc.modules.gci.views.helper import url_names
 
 
 class StudentList(Template):
-  """Component for listing all the students in GCI.
-  """
+  """Component for listing all the students in GCI."""
 
   class ListPrefetcher(lists.Prefetcher):
     """Prefetcher for StudentList.

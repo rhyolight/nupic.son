@@ -16,9 +16,6 @@
 request in the GCI module.
 """
 
-
-import datetime
-
 from google.appengine.ext import db
 
 # TODO(nathaniel): Still reticent about having the RequestData object

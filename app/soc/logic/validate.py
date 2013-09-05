@@ -20,7 +20,6 @@ from google.appengine.api import urlfetch
 from google.appengine.api import urlfetch_errors
 
 from soc.models import linkable
-from soc.models import user
 
 
 def isFeedURLValid(feed_url=None):

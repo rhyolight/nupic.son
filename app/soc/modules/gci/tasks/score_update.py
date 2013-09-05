@@ -25,7 +25,6 @@ from soc.tasks import responses
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import org_score as org_score_logic
-from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models import profile as profile_model
 from soc.modules.gci.models import program as program_model
 from soc.modules.gci.models import task as task_model
@@ -80,7 +79,7 @@ def studentIterator(student_profile_function, request, **kwargs):
 
   program = program_model.GCIProgram.get_by_key_name(key_name)
   if not program:
-    logging.warning('Enqueued task for nonexistant program %s' % key_name)
+    logging.warning('Enqueued task for nonexistant program %s', key_name)
     return responses.terminateTask()
 
   # Retrieve the students for the program.

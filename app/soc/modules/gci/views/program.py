@@ -16,15 +16,10 @@
 
 import json
 
-from google.appengine.ext import db
-
-from django import forms as django_forms
 from django import http
-from django.utils.translation import ugettext
 
 from melange.request import access
 from soc.models.document import Document
-from soc.views import forms
 from soc.views import program as soc_program_view
 from soc.views.helper import url_patterns as soc_url_patterns
 

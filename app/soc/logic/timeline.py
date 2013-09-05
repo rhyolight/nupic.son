@@ -14,8 +14,6 @@
 
 """Logic for timeline model."""
 
-from soc.models import timeline as timeline_model
-
 
 def isTimelineForProgram(timeline_key, program_key):
   """Checks whether the specified timeline is related to the specified

@@ -18,7 +18,6 @@ import csv
 import json
 import logging
 import StringIO
-import time
 
 from HTMLParser import HTMLParseError
 
@@ -114,14 +113,14 @@ class BulkCreateTask(object):
           # strings when we try to save the new task.
           task[key.encode('UTF-8')] = value
 
-        logging.info('Uncleaned task: %s' %task)
+        logging.info('Uncleaned task: %s', task)
         # clean the data
         errors = self._cleanTask(task, org)
 
         if errors:
           logging.warning(
-              'Invalid task data uploaded, the following errors occurred: %s'
-              %errors)
+              'Invalid task data uploaded, the following errors occurred: %s',
+              errors)
           bulk_data.errors.append(db.Text(
               'The task in row %i contains the following errors.\n %s' \
               %(bulk_data.tasksRemoved(), '\n'.join(errors))))
@@ -150,7 +149,7 @@ class BulkCreateTask(object):
             subscribers_entities if ent.automatic_task_subscription]))
 
         # create the new task
-        logging.info('Creating new task with fields: %s' %task)
+        logging.info('Creating new task with fields: %s', task)
         task_entity = GCITask(**task)
         task_entity.put()
         task_quota = task_quota - 1
@@ -199,7 +198,7 @@ class BulkCreateTask(object):
       cleaned_string = ''.join([tag.toxml() for tag in parsed.childNodes])
       task['description'] = cleaned_string.strip().replace('\r\n', '\n')
     except (HTMLParseError, ParseError, TypeError) as e:
-      logging.warning('Cleaning of description failed with: %s' %e)
+      logging.warning('Cleaning of description failed with: %s', e)
       errors.append(
           'Failed to clean the description, do not use naughty HTML such as '
           '<script>.')
@@ -275,7 +274,7 @@ def spawnBulkCreateTasks(data, org, org_admin):
   task_list = []
   for task in tasks:
     # pop any extra columns
-    task.pop(None,None)
+    task.pop(None, None)
     task_list.append(db.Text(json.dumps(task)))
 
   bulk_data = GCIBulkCreateData(
@@ -287,7 +286,6 @@ def spawnBulkCreateTasks(data, org, org_admin):
       'bulk_create_key': bulk_data.key()
       }
 
-  logging.info('Enqueued bulk_create with: %s' % task_params)
-  new_task = taskqueue.Task(params=task_params,
-                            url=BULK_CREATE_URL)
+  logging.info('Enqueued bulk_create with: %s', task_params)
+  new_task = taskqueue.Task(params=task_params, url=BULK_CREATE_URL)
   new_task.add()

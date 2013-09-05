@@ -14,8 +14,6 @@
 
 """Module containing the views for GCI accepted orgs."""
 
-from django.conf.urls.defaults import url as django_url
-
 from melange.request import access
 from melange.request import exception
 from soc.views.helper import lists

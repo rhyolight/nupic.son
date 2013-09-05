@@ -14,8 +14,6 @@
 
 """Module for the GSoC proposal page."""
 
-import httplib
-
 from google.appengine.ext import db
 
 from django import http
@@ -256,9 +254,9 @@ class UserActions(Template):
 
     if self.data.proposal.status in ['pending', 'withdrawn']:
       if self.data.proposal.status == 'withdrawn':
-        checked=True
+        checked = True
       elif self.data.proposal.status == 'pending':
-        checked=False
+        checked = False
       withdraw_proposal = ToggleButtonTemplate(
           self.data, 'on_off', 'Withdraw Proposal', 'withdraw-proposal',
           self.data.redirect.urlOf('gsoc_proposal_withdraw'), checked=checked,
@@ -811,7 +809,7 @@ class AssignMentor(base.GSoCRequestHandler):
   def post(self, data, check, mutator):
     assert isSet(data.proposal)
 
-    mentor_entity= self.validate(data)
+    mentor_entity = self.validate(data)
     if mentor_entity:
       self.assignMentor(data, mentor_entity)
     else:

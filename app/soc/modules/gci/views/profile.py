@@ -21,7 +21,6 @@ from django.utils.translation import ugettext
 from melange.request import exception
 from soc.logic import cleaning
 from soc.logic import dicts
-from soc.models.sponsor import Sponsor
 from soc.models.user import User
 from soc.views import forms
 from soc.views import profile

@@ -20,7 +20,6 @@ from google.appengine.ext import db
 
 from django import forms as djangoforms
 from django import http
-from django.utils import dateformat
 from django.utils.translation import ugettext
 
 from melange.request import access
@@ -815,19 +814,21 @@ class ProposalsList(Template):
         'average', 'Average', lambda ent, *a: getAverage(ent))
 
     def getStatusOnDashboard(proposal, accepted, duplicates):
-      """Method for determining which status to show on the dashboard.
-      """
+      """Method for determining which status to show on the dashboard."""
+      # TODO(nathaniel): HTML in Python.
       if proposal.status == 'pending':
-          if proposal.accept_as_project and (
-              not GSoCProposal.mentor.get_value_for_datastore(proposal)):
-            return """<strong><font color="red">No mentor assigned</font></strong>"""
-          elif proposal.key() in duplicates:
-            return """<strong><font color="red">Duplicate</font></strong>"""
-          elif proposal.key() in accepted:
-            return """<strong><font color="green">Pending acceptance</font><strong>"""
+        if proposal.accept_as_project and (
+            not GSoCProposal.mentor.get_value_for_datastore(proposal)):
+          return """<strong><font color="red">No mentor assigned</font></strong>"""
+        elif proposal.key() in duplicates:
+          return """<strong><font color="red">Duplicate</font></strong>"""
+        elif proposal.key() in accepted:
+          return """<strong><font color="green">Pending acceptance</font><strong>"""
       # not showing duplicates or proposal doesn't have an interesting state
       return proposal.status
     options = [
+        # TODO(nathaniel): This looks like structured data that should be
+        # properly modeled in first-class structured Python objects.
         ('(pending|accepted|rejected|duplicate|mentor)', 'Valid'),
         ('(duplicate|mentor)', 'Needs attention'),
         ('(duplicate)', 'Duplicate'),

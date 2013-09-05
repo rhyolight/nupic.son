@@ -20,13 +20,11 @@ import logging
 from google.appengine.ext import db
 
 from django import http
-from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from melange.request import exception
 from soc.logic import document as document_logic
 from soc.logic import org_app as org_app_logic
-from soc.models import document as soc_document_model
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
@@ -38,7 +36,6 @@ from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.request import GCIRequest
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
-from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.task import UNPUBLISHED
 from soc.modules.gci.views.base import GCIRequestHandler
@@ -670,18 +667,17 @@ class MyOrgsTaskList(Component):
     for properties in data:
       task_key = properties.get('key')
       if not task_key:
-        logging.warning("Missing key in '%s'" % properties)
+        logging.warning("Missing key in '%s'", properties)
         continue
       if not task_key.isdigit():
-        logging.warning("Invalid task id in '%s'" % properties)
+        logging.warning("Invalid task id in '%s'", properties)
         continue
 
       def publish_task_txn():
         task = GCITask.get_by_id(int(task_key))
 
         if not task:
-          logging.warning("Task with task_id '%s' does not exist" % (
-              task_key,))
+          logging.warning("Task with task_id '%s' does not exist", task_key)
           return
 
         org_key = GCITask.org.get_value_for_datastore(task)
@@ -694,22 +690,21 @@ class MyOrgsTaskList(Component):
             task.status = 'Open'
             task.put()
           else:
-            logging.warning('Trying to publish task with %s status.' %
-                task.status)
+            logging.warning(
+                'Trying to publish task with %s status.', task.status)
         else:
           if task.status == 'Open':
             task.status = 'Unpublished'
             task.put()
           else:
-            logging.warning('Trying to unpublish task with %s status.' %
-                task.status)
+            logging.warning(
+                'Trying to unpublish task with %s status.', task.status)
 
       db.run_in_transaction(publish_task_txn)
     return True
 
   def context(self):
-    """Returns the context of this component.
-    """
+    """Returns the context of this component."""
     task_list = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=self.IDX, preload_list=False)
 
