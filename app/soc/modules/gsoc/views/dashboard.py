@@ -1411,9 +1411,8 @@ class ParticipantsComponent(Component):
             [get(i, orgs) for i in ent.org_admin_for if data.orgAdminFor(i)]))
 
     if self.data.is_host:
-      list_config.addPlainTextColumn(
-          'created_on', 'Created On',
-          lambda ent, *args: format(ent.created_on, DATETIME_FORMAT)),
+      list_config.addSimpleColumn(
+          'created_on', 'Created On', column_type=lists.DATE)
       addresses.addAddressColumns(list_config)
 
     self._list_config = list_config
