@@ -16,8 +16,11 @@
 
 import datetime
 
-from soc.models import program as soc_program_model
+from google.appengine.ext import ndb
 
+from melange.models import universities as universities_model
+
+from soc.models import program as soc_program_model
 from soc.modules.gsoc.models import program as program_model
 
 from tests import test_utils
@@ -297,3 +300,74 @@ class GSoCProgramMessagesPageTest(test_utils.GSoCDjangoTestCase):
     entity = entities[0]
     for p in entity.properties():
       self.assertEqual(properties[p], getattr(entity, p))
+
+
+TEST_UNIVERSITIES_GOOD_INPUT = """
+uid1, name 1, country 1
+uid2, name 2, country 2
+uid3, name 3, country 3
+"""
+
+TEST_UNIVERSITIES_BAD_INPUT = """
+uid1, name 1, country 1, extra field1
+uid2, name 2, country 2
+"""
+
+class UploadUniversitiesPageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for UploadUniversitiesPage view."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def _assertPageTemplatesUsed(self, response):
+    """Asserts that all templates for the tested page are used."""
+    self.assertGSoCTemplatesUsed(response)
+    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
+
+  def _getUrl(self):
+    """Returns URL to the tested page."""
+    return '/gsoc/program/universities/upload/%s' % self.program.key().name()
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    self.profile_helper.createHost()
+    response = self.get(self._getUrl())
+    self.assertResponseOK(response)
+    self._assertPageTemplatesUsed(response)
+
+  def testUniversitiesUploaded(self):
+    """Tests that universities are uploaded correctly."""
+    self.profile_helper.createHost()
+
+    post_data = {'universities': TEST_UNIVERSITIES_GOOD_INPUT}
+    response = self.post(self._getUrl(), post_data)
+
+    self.assertResponseRedirect(response, self._getUrl())
+
+    # check that universities are uploaded now
+    university_clusters = ndb.Query(
+        kind=universities_model.UniversityCluster._get_kind(),
+        ancestor=ndb.Key.from_old_key(self.program.key())).fetch(1000)
+
+    universities = []
+    for university_cluster in university_clusters:
+      universities.extend(university_cluster.universities)
+
+    self.assertEquals(len(universities), 3)
+
+  def testUniversitiesNotUploadedOnBadInput(self):
+    """Tests that universities are not uploaded if input is not valid."""
+    self.profile_helper.createHost()
+
+    post_data = {'universities': TEST_UNIVERSITIES_BAD_INPUT}
+    response = self.post(self._getUrl(), post_data)
+
+    # TODO(daniel): update the test when bad requests do not return 200
+    self.assertResponseOK(response)
+
+    # check that no universities are uploaded
+    university_cluster = ndb.Query(
+        kind=universities_model.UniversityCluster._get_kind(),
+        ancestor=ndb.Key.from_old_key(self.program.key())).get()
+    self.assertIsNone(university_cluster)
