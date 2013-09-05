@@ -46,8 +46,8 @@ import logging
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
+from django.utils import dateformat
 from django.utils import html
-from django.utils.dateformat import format
 
 from soc.views.template import Template
 
@@ -64,7 +64,8 @@ BIRTHDATE = 'birthdate'
 HTML = 'html'
 
 
-# TODO(nathaniel): look into making these module-private
+# TODO(nathaniel): look into making the ColumnType family of classes
+# module-private
 class ColumnType(object):
   # TODO(daniel): add doc string
   """
@@ -116,17 +117,14 @@ class NumericalColumnType(ColumnType):
     """
     # 0 is a valid value, so 'if not value' is not appropriate here
     if value is None or value == '':
-      safe_value = ''
-    elif isinstance(value, int) or isinstance(value, long) or \
-        isinstance(value, float):
-      safe_value = value
+      return ''
+    elif isinstance(value, (int, long, float)):
+      return value
     else:
       try:
-        safe_value = int(value)
+        return int(value)
       except ValueError:
-        safe_value = float(value)
-
-    return safe_value
+        return float(value)
 
 
 class DateColumnType(ColumnType):
@@ -155,14 +153,12 @@ class DateColumnType(ColumnType):
     """
     if not value:
       return 'N/A'
-
-    if self.birthdate:
-      return format(value, BIRTHDATE_FORMAT)
-
-    if isinstance(value, datetime.date):
-      return format(value, DATE_FORMAT)
-
-    return format(value, DATETIME_FORMAT)
+    elif self.birthdate:
+      return dateformat.format(value, BIRTHDATE_FORMAT)
+    elif isinstance(value, datetime.date):
+      return dateformat.format(value, DATE_FORMAT)
+    else:
+      return dateformat.format(value, DATETIME_FORMAT)
 
 
 class HtmlColumnType(ColumnType):
@@ -205,8 +201,7 @@ class ColumnTypeFactory(object):
       raise ValueError("Invalid column_type: %s" % column_type)
 
 def getListIndex(request):
-  """Returns the index of the requested list.
-  """
+  """Returns the index of the requested list."""
   if 'idx' in request.GET:
     idx = request.GET['idx']
   elif 'idx' in request.POST:
@@ -214,9 +209,7 @@ def getListIndex(request):
   else:
     return -1
 
-  idx = int(idx) if idx.isdigit() else -1
-
-  return idx
+  return int(idx) if idx.isdigit() else -1
 
 
 class Prefetcher(object):
@@ -482,7 +475,7 @@ class ListConfiguration(object):
       column_type: One of the types specified in ColumnType class.
     """
     if self._col_functions.get(col_id):
-      logging.warning('Column with id %s is already defined' % col_id)
+      logging.warning('Column with id %s is already defined', col_id)
 
     if not callable(func):
       raise TypeError('Given function is not callable')
@@ -650,8 +643,8 @@ class ListConfiguration(object):
 
     column_row_buttons = self._row_buttons.get(col_id, {})
     if column_row_buttons and column_row_buttons.get(button_id):
-      logging.warning('Button with name %s is already defined for column %s'
-          % (button_id, col_id))
+      logging.warning('Button with name %s is already defined for column %s',
+                      button_id, col_id)
 
     button_config = {
         'caption': caption,
@@ -693,7 +686,7 @@ class ListConfiguration(object):
     be checked.
     """
     if self._buttons.get(col_id):
-      logging.warning('Button with id %s is already defined' % col_id)
+      logging.warning('Button with id %s is already defined', col_id)
 
     button_config = {
         'id': col_id,
@@ -766,19 +759,17 @@ class ListConfiguration(object):
                        % (col_id, self._col_map.keys()))
 
     if model.get('extra'):
-      logging.warning('Column with id %s already has extra defined' % col_id)
+      logging.warning('Column with id %s already has extra defined', col_id)
 
     model['extra'] = kwargs
 
   def addTemplateColumn(self, col_id, name, template, **kwargs):
-    """Adds a new template column.
-    """
-
+    """Adds a new template column."""
     self._addColumn(col_id, name, lambda *args, **kwargs: '' , **kwargs)
 
     if self._templates.get(col_id):
       logging.warning(
-          'Template column with id %s already has template defined.' % col_id)
+          'Template column with id %s already has template defined.', col_id)
 
     self._templates[col_id] = template
 
@@ -1173,7 +1164,7 @@ class ListContentResponse(object):
       columns[col_id] = column_type.safe(value)
 
     row = {}
-    buttons= {}
+    buttons = {}
     row_buttons = {}
 
     if self._config._row_operation_func:
@@ -1219,25 +1210,21 @@ class ListContentResponse(object):
 
 
 def collectKeys(prop, data):
-  """Collects all keys for the specified property.
-  """
-  keys = [prop.get_value_for_datastore(i) for i in data]
+  """Collects all keys for the specified property."""
+  keys = (prop.get_value_for_datastore(i) for i in data)
   return [i for i in keys if i]
 
 
 def collectParentKeys(data):
-  """Collects all parent keys for the specified data.
-  """
-  keys = [i.parent_key() for i in data]
+  """Collects all parent keys for the specified data."""
+  keys = (i.parent_key() for i in data)
   return [i for i in keys if i]
 
 
 def distributeKeys(prop, data, prefetched_dict):
-  """Distributes the keys for the specified property.
-  """
+  """Distributes the keys for the specified property."""
   for i in data:
     key = prop.get_value_for_datastore(i)
-    #key = str(key)
 
     if key not in prefetched_dict:
       continue
@@ -1278,14 +1265,14 @@ def _prefetchFieldsAsync(model, fields, data, parent):
     prop = getattr(model, field, None)
 
     if not prop:
-      logging.exception('Model %s does not have attribute %s' %
-                        (model.kind(), field))
+      logging.exception(
+          'Model %s does not have attribute %s', model.kind(), field)
       return
 
     if not isinstance(prop, db.ReferenceProperty):
       logging.exception(
-          'Property %s of %s is not a ReferenceProperty but a %s' %
-          (field, model.kind(), prop.__class__.__name__))
+          'Property %s of %s is not a ReferenceProperty but a %s',
+          field, model.kind(), prop.__class__.__name__)
       return
 
   for field in fields:
@@ -1330,14 +1317,14 @@ def _prefetchListFieldsAsync(model, fields, data):
     prop = getattr(model, field, None)
 
     if not prop:
-      logging.exception('Model %s does not have attribute %s' %
-                        (model.kind(), field))
+      logging.exception(
+          'Model %s does not have attribute %s', model.kind(), field)
       return
 
     if not isinstance(prop, db.ListProperty):
       logging.exception(
-          'Property %s of %s is not a ReferenceProperty but a %s' %
-          (field, model.kind(), prop.__class__.__name__))
+          'Property %s of %s is not a ReferenceProperty but a %s',
+          field, model.kind(), prop.__class__.__name__)
       return
 
   keys = []
@@ -1439,7 +1426,7 @@ class RawQueryContentResponseBuilder(object):
       return content_response
 
     if not self._starter(start, self._query):
-      logging.warning('Received data query for non-existing start entity %s' % start)
+      logging.warning('Received data query for non-existing start entity %s', start)
       # return empty response
       return content_response
 
