@@ -14,9 +14,12 @@
 
 
 
-import sys
+import easyprocess
 import os
+import pyvirtualdisplay
+import socket
 import subprocess
+import sys
 
 
 HERE = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -321,15 +324,90 @@ def run_pyunit_tests():
   sys.argv += args
   nose.main(addplugins=plugins)
 
-def run_js_tests():
-  _environ = os.environ.copy()
-  _environ["PATH"] += ':./node_modules/phantomjs/bin:./bin'
-  subprocess.call("node ./node_modules/testem/testem.js ci", env=_environ, shell=True)
+def get_js_tests_environment():
+  """Create appropriate environment variables for JS tests.
+
+  Returns:
+    A mapping derived from os.environ containing additional appropriate paths to
+    run the JS tests successfully. Specifically, it adds paths for node and
+    phantomjs.
+  """
+  js_tests_environment = os.environ.copy()
+  js_tests_environment['PATH'] += ':./node_modules/phantomjs/bin:./bin'
+
+  return js_tests_environment
+
+def get_random_available_port():
+  """Get an available port from the operating system.
+
+    The port is retrieved from the operating system and the connection is closed
+    right after the retrieval. Client functions should use the port as soon as
+    possible, because there's no guarantee that another process would not get
+    the same port in the meantime.
+
+  Returns:
+    A random available port from the operating system.
+  """
+  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  sock.bind(('', 0))
+  sock.listen(1)
+  port = str(sock.getsockname()[1])
+  sock.close()
+  return port
+
+def run_js_tests(run_browsers_gui):
+  """Run JS tests suite.
+
+    If run_browsers_gui is True, then run all JS tests in all browsers found in
+    the system, showing their UI during the tests.
+    If run_browsers_gui is False, then:
+    a) if Xvfb is present in the system, JS tests for all browsers in the system
+       are run in the virtual buffer, so no browser GUI is shown.
+    b) If Xvfb is not available, then JS tests are run headlessly only in
+       PhantomJS.
+
+  Args:
+    run_browsers_gui: Boolean to specify whether or not to run all JS tests in
+      all browsers available in the system showing their UI.
+  """
+  # TODO(mario): this is necessary since testem doesn't have any facility to run
+  # its server from a random port for CI. If multiple users are running tests in
+  # the same machine at the same time it crashes.
+  # This can be removed once https://github.com/airportyh/testem/issues/283 is
+  # fixed.
+  port = get_random_available_port()
+
+  if run_browsers_gui:
+    subprocess.call(
+        'node ./node_modules/testem/testem.js -p %s ci' % port,
+        env=get_js_tests_environment(), shell=True)
+    return
+
+  virtual_display = None
+  try:
+    # start() assigns the DISPLAY environment variable to the virtual display.
+    virtual_display = pyvirtualdisplay.Display().start()
+  except easyprocess.EasyProcessCheckInstalledError:
+    pass
+
+  if virtual_display:
+    subprocess.call(
+        'node ./node_modules/testem/testem.js -p %s ci' % port,
+        env=get_js_tests_environment(), shell=True)
+    virtual_display.stop()
+  else:
+    print ('WARNING: You don\'t have Xvfb installed. This is required in order'
+           ' to run tests in browsers headlessly')
+    print ('You can either install xvfb ("sudo apt-get install xvfb" in Ubuntu)'
+           ' or run tests with --browsers-gui switch')
+    subprocess.call(
+        'node ./node_modules/testem/testem.js -l phantomjs -p %s ci' % port,
+        env=get_js_tests_environment(), shell=True)
 
 def run_js_dev():
-  _environ = os.environ.copy()
-  _environ["PATH"] += ':./node_modules/phantomjs/bin:./bin'
-  subprocess.call("node ./node_modules/testem/testem.js -l phantomjs -g", env=_environ, shell=True)
+  subprocess.call(
+    'node ./node_modules/testem/testem.js -l phantomjs -g',
+    env=get_js_tests_environment(), shell=True)
 
 def main():
   tests = set()
@@ -344,7 +422,12 @@ def main():
       tests = set(['js', 'pyunit'])
 
     if 'js' in tests:
-      run_js_tests()
+      run_browsers_gui = False
+      if '--browsers-gui' in sys.argv:
+        i = sys.argv.index('--browsers-gui')
+        del sys.argv[i]
+        run_browsers_gui = True
+      run_js_tests(run_browsers_gui)
     if 'pyunit' in tests:
       # run_pyunit_tests has to be the last one to run, since nose seems to
       # terminate everything and prevent any other code in the file to run.
