@@ -257,6 +257,30 @@ def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
       break
   log.debug("Worker %s ending", ix)
 
+
+def checkCanSplit(context, fixt):
+  """Override the default multiprocess test runner behaviour.
+
+  Not checking and running each test case independently by default if
+  _multiprocess_can_split_ is True or _multiprocess_shared_ is False or unset.
+  This is used by the multiprocess plugin of nose. Its default behaviour is to
+  run a class/suite of test cases together and run its fixtures
+  (setUp/tearDown) only once.
+
+  Args:
+    - context: test context
+    - fixt: data fixture
+
+  Returns: bool, if should check tests splittable
+  """
+  if hasattr(context, '_multiprocess_can_split_') and \
+      not getattr(context, '_multiprocess_can_split_'):
+    return True
+  if getattr(context, '_multiprocess_shared_', False):
+    return True
+  return False
+
+
 def run_pyunit_tests():
   sys.path = extra_paths + sys.path
   os.environ['SERVER_SOFTWARE'] = 'Development via nose'
@@ -312,6 +336,8 @@ def run_pyunit_tests():
     from nose.plugins import multiprocess
     stubout_obj = stubout.StubOutForTesting()
     stubout_obj.SmartSet(multiprocess, '__runner', multiprocess_runner)
+    stubout_obj.SmartSet(multiprocess.MultiProcessTestRunner,
+        'checkCanSplit', staticmethod(checkCanSplit))
     # The default --process-timeout (10s) is too short
     sys.argv += ['--process-timeout=300']
 
