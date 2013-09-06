@@ -18,7 +18,6 @@ import csv
 import StringIO
 
 from google.appengine.ext import db
-from google.appengine.ext import ndb
 
 from django import forms as django_forms
 from django import http
