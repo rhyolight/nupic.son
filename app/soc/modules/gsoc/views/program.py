@@ -71,8 +71,8 @@ TEST_PROPOSAL_TITLE = translation.ugettext(
 _UNIVERSITIES_LIST_LABEL = translation.ugettext('List of Universities')
 
 _UNIVERSITIES_LIST_HELP_TEXT = translation.ugettext(
-    'Each line should contain comma separated university unique identifier, '
-    'name, and country.')
+    'Each line should contain tab separated university unique identifier, '
+    'name, and country, respectively.')
 
 class TimelineForm(forms.GSoCModelForm):
   """Django form to edit timeline settings."""
@@ -401,7 +401,8 @@ class UniversitiesForm(forms.GSoCModelForm):
       identifier of the university, the second one is its name and the third
       one is the country in which the institution is located.
     """
-    reader = csv.reader(StringIO.StringIO(self.cleaned_data['universities']))
+    reader = csv.reader(
+        StringIO.StringIO(self.cleaned_data['universities']), delimiter='\t')
 
     universities = []
     for i, row in enumerate(reader):
