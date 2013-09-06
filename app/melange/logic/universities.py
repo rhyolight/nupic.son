@@ -14,6 +14,8 @@
 
 """Logic for universities."""
 
+import threading
+
 from google.appengine.ext import ndb
 
 from melange.models import universities as universities_model
@@ -22,7 +24,6 @@ from melange.models import universities as universities_model
 #: Maximal number of universities that can be stored in one cluster.
 MAX_UNIVERSITIES_PER_CLUSTER = 5000
 
-# TODO(daniel): this class should be thread-safe
 class _CachedUniversities(object):
   """Helper class that manages already cached lists of universities for
   particular programs.
@@ -30,6 +31,10 @@ class _CachedUniversities(object):
 
   def __init__(self):
     """Initializes a new instance of the class."""
+    # makes sure that ndb.Future is created once per program
+    self._init_lock = threading.Lock()
+
+    # maps program keys to ndb.Future objects with universities
     self._cached_map = {}
 
   def get(self, program_key):
@@ -43,31 +48,36 @@ class _CachedUniversities(object):
       list of university_model.Unversity entities.
     """
     if program_key not in self._cached_map:
-      self._cached_map[program_key] = _fetchUniversitiesFromDB(program_key)
-    return self._cached_map[program_key]
+      with self._init_lock:
+        if program_key not in self._cached_map:
+          self._cached_map[program_key] = _universitiesFromDBFuture(
+              program_key)
+
+    return self._cached_map[program_key].get_result()
 
 _CACHED_UNIVERSITIES = _CachedUniversities()
 
-
-def _fetchUniversitiesFromDB(program_key):
-  """Fetches universities, which have been predefined for the specified
-  program, directly from datastore.
+@ndb.tasklet
+def _universitiesFromDBFuture(program_key):
+  """Tasklet that fetches asynchronously all universities, which have been
+  predefined for the specified program, directly from datastore.
 
   Args:
     program_key: program key.
 
   Returns:
-    list of university_model.Unversity entities.
+    ndb.Future object whose result is a list of 
+    university_model.Unversity entities.
   """
-  university_clusters = ndb.Query(
+  university_clusters = yield ndb.Query(
       kind=universities_model.UniversityCluster._get_kind(),
-      ancestor=ndb.Key.from_old_key(program_key)).fetch(1000)
+      ancestor=ndb.Key.from_old_key(program_key)).fetch_async(1000)
 
   universities = []
   for university_cluster in university_clusters:
     universities.extend(university_cluster.universities)
 
-  return universities
+  raise ndb.Return(universities)
 
 
 def getUniversitiesForProgram(program_key):
