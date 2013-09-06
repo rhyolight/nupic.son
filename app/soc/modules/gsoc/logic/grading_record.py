@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GradingRecord related functions.
-"""
-
+"""GradingRecord related functions."""
 
 from google.appengine.ext import db
 
@@ -168,14 +166,9 @@ def updateProjectsForGradingRecords(records):
     if project.status != 'completed':
       # Only when the project has not been completed should the status be
       # updated to reflect the new setting of the evaluations.
-
-      if len(failed_evals) == 0:
-        # no failed evaluations present
-        new_status = 'accepted'
-      else:
-        new_status = 'failed'
+      new_status = 'accepted' if len(failed_evals) == 0 else 'failed'
     else:
-        new_status = project.status
+      new_status = project.status
 
     # update the necessary fields and store it before updating
     project.passed_evaluations = passed_evals

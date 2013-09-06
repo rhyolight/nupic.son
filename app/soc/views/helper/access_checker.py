@@ -33,7 +33,6 @@ from soc.views.helper.gdata_apis import oauth as oauth_helper
 
 from summerofcode.logic import survey as survey_logic
 
-
 DEF_AGREE_TO_TOS = ugettext(
     'You must agree to the <a href="%(tos_link)s">site-wide Terms of'
     ' Service</a> in your <a href="/user/edit_profile">User Profile</a>'
@@ -845,17 +844,16 @@ class AccessChecker(BaseAccessChecker):
 
   # (dcrodman) This method will be obsolete with the connection module.
   def isInvitePresent(self, invite_id):
-      """Checks if the invite entity is not None.
-      """
-      assert isSet(self.data.invite)
+    """Checks if the invite entity is not None."""
+    assert isSet(self.data.invite)
 
-      if self.data.invite is None:
-        raise exception.Forbidden(
-            message=DEF_INVITE_DOES_NOT_EXIST % invite_id)
+    if self.data.invite is None:
+      raise exception.Forbidden(
+          message=DEF_INVITE_DOES_NOT_EXIST % invite_id)
 
-      if self.data.invite.type != INVITATION_TYPE:
-        raise exception.Forbidden(
-            message=DEF_INVITE_DOES_NOT_EXIST % invite_id)
+    if self.data.invite.type != INVITATION_TYPE:
+      raise exception.Forbidden(
+          message=DEF_INVITE_DOES_NOT_EXIST % invite_id)
 
   # (dcrodman) This method will be obsolete with the connection module.
   def isInviteRespondable(self):

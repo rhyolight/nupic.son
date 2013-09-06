@@ -70,8 +70,9 @@ class CacheListsPipeline(base_handler.PipelineBase):
       should be cached.
   """
 
+  # Overridden method defines only *args.
+  # pylint: disable=arguments-differ
   def run(self, list_id, entity_kind, query_pickle):
-
     yield mapreduce_pipeline.MapreducePipeline(
       'cache_list_items',
       'soc.mapreduce.cache_list_items.mapProcess',
@@ -86,3 +87,4 @@ class CacheListsPipeline(base_handler.PipelineBase):
           'list_id': list_id
       },
       shards=NO_OF_SHARDS)
+  # pylint: enable=arguments-differ

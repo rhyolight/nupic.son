@@ -249,7 +249,7 @@ class Column(object):
     resizable: Whether the width of the column should be resizable by the
       end user.
     hidden: Whether the column should be hidden by default.
-    searchhidden: Whether this column should be searchable when hidden. 
+    searchhidden: Whether this column should be searchable when hidden.
   """
   def __init__(self, col_id, name, width=None, resizable=True, hidden=False,
                searchhidden=True, options=None):
@@ -261,7 +261,7 @@ class Column(object):
     self.searchhidden = hidden
     self.options = options
 
-  def getValue(self):
+  def getValue(self, entity):
     """This method is called when rendering the column for a single entity.
 
     This must be overridden by implementing subclasses.
@@ -316,7 +316,7 @@ from soc.modules.gsoc.models import project
 
 class SimpleColumn(Column):
   """Column object to display a simple attribute.
-  
+
   When simply a value of an attribute of the entity is needed to be displayed
   in a column this class is used. The column id must be the same as the
   relevant attribute name.

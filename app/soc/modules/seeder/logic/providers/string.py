@@ -1,5 +1,3 @@
-#!/usr/bin/python2.5
-#
 # Copyright 2010 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,15 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing data providers for StringProperty.
-"""
+
+"""Module containing data providers for StringProperty."""
 
 import random
+
 from soc.modules.seeder.logic.providers.provider import BaseDataProvider
 from soc.modules.seeder.logic.providers.provider import DataProviderParameter
 from soc.modules.seeder.logic.providers.provider import FixedValueProvider
 from soc.modules.seeder.logic.providers.provider import ParameterValueError
-
 
 
 # pylint: disable=W0223
@@ -97,9 +95,11 @@ class NextLinkIDProvider(FixedLengthAscendingNumericStringProvider):
 
 
 class KeyNameProvider(StringProvider):
-  """Data proider that returns a key_name.
-  """
-  def getValue(self, values):
+  """Data proider that returns a key_name."""
+
+  # TODO(nathaniel): This is not legitimate polymorphism. Find a way
+  # to eliminate this lint suppression.
+  def getValue(self, values):  # pylint: disable=arguments-differ
     key_name = values['link_id']
 
     scope = values.get('scope', None)
@@ -109,13 +109,14 @@ class KeyNameProvider(StringProvider):
 
 
 class DocumentKeyNameProvider(KeyNameProvider):
-  """Data proider that returns a key_name.
-  """
+  """Data proider that returns a key_name."""
+
   def getValue(self, values):
     key_name = super(DocumentKeyNameProvider, self).getValue(values)
     prefix = values['prefix']
     key_name = "%s/%s" % (prefix, key_name)
     return key_name
+
 
 class SurveyKeyNameProvider(KeyNameProvider):
   """Data proider that returns a key_name for Survey models.
