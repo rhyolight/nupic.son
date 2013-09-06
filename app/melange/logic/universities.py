@@ -22,7 +22,7 @@ from melange.models import universities as universities_model
 #: Maximal number of universities that can be stored in one cluster.
 MAX_UNIVERSITIES_PER_CLUSTER = 5000
 
-def uploadUniversities(input_data, program_key):
+def uploadUniversities(input_data, program):
   """Uploads a list of predefined universities for the specified program.
 
   Args:
@@ -30,7 +30,7 @@ def uploadUniversities(input_data, program_key):
       university and has exactly three elements. The first one is unique
       identifier of the university, the second one is its name and the third
       one is the country in which the institution is located.
-    program: program key.
+    program: program entity.
 
   Returns:
     list of newly created university_model.Universities entities that contain
@@ -42,13 +42,16 @@ def uploadUniversities(input_data, program_key):
             len(input_data), MAX_UNIVERSITIES_PER_CLUSTER))
 
   university_cluster = universities_model.UniversityCluster(
-      parent=ndb.Key.from_old_key(program_key))
+      parent=ndb.Key.from_old_key(program.key()))
 
   for uid, name, country in input_data:
     university_cluster.universities.append(
         universities_model.University(uid=uid, name=name, country=country))
 
   university_cluster.put()
+
+  program.predefined_schools_counter += len(university_cluster.universities)
+  program.put()
 
 
 def getUniversitiesForProgram(program_key):

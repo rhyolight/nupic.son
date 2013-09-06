@@ -36,11 +36,12 @@ class UploadUniversitiesTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
-    self.program = seeder_logic.seed(program_model.Program)
+    program_properties = {'predefined_schools_counter': 0}
+    self.program = seeder_logic.seed(program_model.Program, program_properties)
 
   def testUniversitiesAreUploaded(self):
     """Tests that universities are uploaded to entity."""
-    universities_logic.uploadUniversities(TEST_INPUT_DATA, self.program.key())
+    universities_logic.uploadUniversities(TEST_INPUT_DATA, self.program)
 
     university_clusters = ndb.Query(
         kind=universities_model.UniversityCluster._get_kind(),
@@ -67,9 +68,26 @@ class UploadUniversitiesTest(unittest.TestCase):
   def testMoreThanMaxItems(self):
     """Tests that error is raised when more items than allowed is passed."""
     with self.assertRaises(ValueError):
-      universities_logic.uploadUniversities(
-          TEST_INPUT_DATA, self.program.key())
+      universities_logic.uploadUniversities(TEST_INPUT_DATA, self.program)
     
+  def testCounterIsUpdated(self):
+    """Tests that counter in program model is updated correctly."""
+    # update a few universities
+    universities_logic.uploadUniversities(TEST_INPUT_DATA, self.program)
+
+    # check that counter is updated
+    program = program_model.Program.get(self.program.key())
+    self.assertEqual(program.predefined_schools_counter, len(TEST_INPUT_DATA))
+
+    # update a few more universities
+    next_data = [('uid%s' % i, 'name', 'country') for i in range(5)]
+    universities_logic.uploadUniversities(next_data, self.program)
+
+    # check that counter is updated
+    program = program_model.Program.get(self.program.key())
+    self.assertEqual(
+        program.predefined_schools_counter, len(TEST_INPUT_DATA) + 5)
+
 
 class GetUniversitiesForProgramTest(unittest.TestCase):
   """Unit tests for getUniversitiesForProgram function."""
