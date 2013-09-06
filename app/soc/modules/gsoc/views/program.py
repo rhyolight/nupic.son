@@ -36,7 +36,7 @@ from soc.views import program as soc_program_view
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns as soc_url_patterns
 
-from soc.modules.gsoc.models import program
+from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models import timeline as timeline_model
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms
@@ -71,8 +71,8 @@ TEST_PROPOSAL_TITLE = translation.ugettext(
 _UNIVERSITIES_LIST_LABEL = translation.ugettext('List of Universities')
 
 _UNIVERSITIES_LIST_HELP_TEXT = translation.ugettext(
-    'Each line should contain comma separated university unique identifier, '
-    'name, and country.')
+    'Each line should contain tab separated university unique identifier, '
+    'name, and country, respectively.')
 
 class TimelineForm(forms.GSoCModelForm):
   """Django form to edit timeline settings."""
@@ -92,7 +92,7 @@ class CreateProgramForm(forms.GSoCModelForm):
 
   class Meta:
     css_prefix = 'create_program_form'
-    model = program.GSoCProgram
+    model = program_model.GSoCProgram
     exclude = [
         'scope', 'timeline', 'slots_allocation', 'events_page',
         'student_max_age', 'min_slots', 'org_admin_agreement',
@@ -110,7 +110,7 @@ class EditProgramForm(forms.GSoCModelForm):
 
   class Meta:
     css_prefix = 'edit_program_form'
-    model = program.GSoCProgram
+    model = program_model.GSoCProgram
     exclude = [
         'link_id', 'scope', 'timeline', 'min_slots',
         'slots_allocation', 'student_max_age', 'program_id',
@@ -130,7 +130,7 @@ class GSoCProgramMessagesForm(forms.GSoCModelForm):
 
   class Meta:
     css_prefix = 'program_messages_form'
-    model = program.GSoCProgramMessages
+    model = program_model.GSoCProgramMessages
 
   def getSendMailFromTemplateStringTxn(
         self, to, subject, template_string, context):
@@ -379,7 +379,7 @@ class GSoCProgramMessagesPage(
         request_data=data, data=data.POST or None, instance=entity)
 
   def _getModel(self):
-    return program.GSoCProgramMessages
+    return program_model.GSoCProgramMessages
 
   def _getUrlName(self):
     return url_names.GSOC_EDIT_PROGRAM_MESSAGES
@@ -401,7 +401,8 @@ class UniversitiesForm(forms.GSoCModelForm):
       identifier of the university, the second one is its name and the third
       one is the country in which the institution is located.
     """
-    reader = csv.reader(StringIO.StringIO(self.cleaned_data['universities']))
+    reader = csv.reader(
+        StringIO.StringIO(self.cleaned_data['universities']), delimiter='\t')
 
     universities = []
     for i, row in enumerate(reader):
@@ -422,8 +423,9 @@ class UniversitiesForm(forms.GSoCModelForm):
     return universities
 
 
-@ndb.transactional
-def _uploadUniversitiesTxn(input_data, program_key):
+# TODO(daniel): this function should be transactional once Program is NDB
+#@ndb.transactional
+def _uploadUniversitiesTxn(input_data, program):
   """Uploads a list of predefined universities from the specified input data
   for the specified program in a transaction.
 
@@ -432,7 +434,7 @@ def _uploadUniversitiesTxn(input_data, program_key):
       from UniversitiesForm.
     program_key: program key.
   """
-  universities_logic.uploadUniversities(input_data, program_key)
+  universities_logic.uploadUniversities(input_data, program)
 
 
 class UploadUniversitiesPage(base.GSoCRequestHandler):
@@ -464,7 +466,7 @@ class UploadUniversitiesPage(base.GSoCRequestHandler):
     form = UniversitiesForm(data=data.POST)
     if form.is_valid():
       _uploadUniversitiesTxn(
-          form.cleaned_data['universities'], data.program.key())
+          form.cleaned_data['universities'], data.program)
 
       url = links.Linker().program(
           data.program, url_names.GSOC_PROGRAM_UPLOAD_UNIVERSITIES)

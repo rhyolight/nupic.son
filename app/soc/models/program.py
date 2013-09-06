@@ -260,6 +260,9 @@ class Program(linkable_model.Linkable):
   messaging_enabled.help_text = translation.ugettext(
       'Indicates if the messaging system should be enabled.')
 
+  #: Number of school institutions that have been predefined for the program.
+  predefined_schools_counter = db.IntegerProperty(default=0)
+
   def getProgramMessages(self):
     def get_or_create_txn():
       entity = type(self)._messages_model.all().ancestor(self).get()

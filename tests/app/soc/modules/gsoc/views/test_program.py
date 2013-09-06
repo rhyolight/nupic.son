@@ -303,14 +303,14 @@ class GSoCProgramMessagesPageTest(test_utils.GSoCDjangoTestCase):
 
 
 TEST_UNIVERSITIES_GOOD_INPUT = """
-uid1, name 1, country 1
-uid2, name 2, country 2
-uid3, name 3, country 3
+uid1\tname 1\tcountry 1
+uid2\tname 2\tcountry 2
+uid3\tname 3\tcountry 3
 """
 
 TEST_UNIVERSITIES_BAD_INPUT = """
-uid1, name 1, country 1, extra field1
-uid2, name 2, country 2
+uid1\tname 1\tcountry 1\textra field1
+uid2\tname 2, country 2
 """
 
 class UploadUniversitiesPageTest(test_utils.GSoCDjangoTestCase):

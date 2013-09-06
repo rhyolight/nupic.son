@@ -36,11 +36,12 @@ class UploadUniversitiesTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
-    self.program = seeder_logic.seed(program_model.Program)
+    program_properties = {'predefined_schools_counter': 0}
+    self.program = seeder_logic.seed(program_model.Program, program_properties)
 
   def testUniversitiesAreUploaded(self):
     """Tests that universities are uploaded to entity."""
-    universities_logic.uploadUniversities(TEST_INPUT_DATA, self.program.key())
+    universities_logic.uploadUniversities(TEST_INPUT_DATA, self.program)
 
     university_clusters = ndb.Query(
         kind=universities_model.UniversityCluster._get_kind(),
@@ -63,25 +64,29 @@ class UploadUniversitiesTest(unittest.TestCase):
       self.assertEqual(
           university_cluster.universities[i].country, TEST_INPUT_DATA[i][2])
 
-  @mock.patch('melange.logic.universities._MAX_SAFE_SIZE', new=200)
-  def testMoreThanOneEntity(self):
-    """Tests that more than one entity may be created."""
+  @mock.patch('melange.logic.universities.MAX_UNIVERSITIES_PER_CLUSTER', new=2)
+  def testMoreThanMaxItems(self):
+    """Tests that error is raised when more items than allowed is passed."""
+    with self.assertRaises(ValueError):
+      universities_logic.uploadUniversities(TEST_INPUT_DATA, self.program)
+    
+  def testCounterIsUpdated(self):
+    """Tests that counter in program model is updated correctly."""
+    # update a few universities
+    universities_logic.uploadUniversities(TEST_INPUT_DATA, self.program)
 
-    test_data = [('uid%s' % i, 'name', 'country') for i in range(10)]
-    universities_logic.uploadUniversities(test_data, self.program.key())
+    # check that counter is updated
+    program = program_model.Program.get(self.program.key())
+    self.assertEqual(program.predefined_schools_counter, len(TEST_INPUT_DATA))
 
-    university_clusters = ndb.Query(
-        kind=universities_model.UniversityCluster._get_kind(),
-        ancestor=ndb.Key.from_old_key(self.program.key())).fetch(1000)
+    # update a few more universities
+    next_data = [('uid%s' % i, 'name', 'country') for i in range(5)]
+    universities_logic.uploadUniversities(next_data, self.program)
 
-    # check that more than one entity is created
-    self.assertGreater(len(university_clusters), 1)
-
-    # check that overall all universities are stored
-    universities = []
-    for university_cluster in university_clusters:
-      universities.extend(university_cluster.universities)
-    self.assertEqual(len(universities), 10)
+    # check that counter is updated
+    program = program_model.Program.get(self.program.key())
+    self.assertEqual(
+        program.predefined_schools_counter, len(TEST_INPUT_DATA) + 5)
 
 
 class GetUniversitiesForProgramTest(unittest.TestCase):
