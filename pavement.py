@@ -94,6 +94,7 @@ DISABLED_INSPECTIONS = (
 # be violated in Melange. At least not nakedly, anyway - an explanatory comment
 # must appear wherever these are suppressed.
 FORBIDDEN_IN_MELANGE = (
+    'bad-indentation',
     'cyclic-import',
     'dangerous-default-value',
     'logging-not-lazy',

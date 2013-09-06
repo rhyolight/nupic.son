@@ -12,17 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tasks related to OrgAppSurveys.
-"""
-
+"""Tasks related to OrgAppSurveys."""
 
 from soc.tasks import responses
 from soc.tasks.helper import error_handler
 
 
 class BulkProcessing(object):
-  """Class which controls the Task to bulk process OrgAppSurveysRecords.
-  """
+  """Class which controls the Task to bulk process OrgAppSurveysRecords."""
 
   def __init__(self, program_logic, org_app_logic, path):
     """Construct the BulkProcessing object.
@@ -32,14 +29,12 @@ class BulkProcessing(object):
       org_app_logic: OrgAppSurveyLogic instance
       path: the URL to use for this
     """
-
     self.program_logic = program_logic
     self.org_app_logic = org_app_logic
     self.path = path
 
   def start(self, program_entity):
-    """Starts the Task to bulk process OrgAppSurveyRecords.
-    """
+    """Starts the Task to bulk process OrgAppSurveyRecords."""
     context = {'program_key': program_entity.key().id_or_name()}
     return responses.startTask(self.path, context=context)
 
@@ -83,9 +78,9 @@ class BulkProcessing(object):
       record_logic.processRecord(org_app_record)
 
     if len(org_app_records) == batch_size:
-        # start a new task because we might not have exhausted all OrgAppRecords
-        context = post_dict.copy()
-        responses.startTask(self.path, context=context)
+      # start a new task because we might not have exhausted all OrgAppRecords
+      context = post_dict.copy()
+      responses.startTask(self.path, context=context)
 
     # return a 200 response that everything has been completed
     return responses.terminateTask()

@@ -53,8 +53,8 @@ def evaluationRowAdder(evals):
 
       content_response.addRow(entity, eval_link_id, *args)
 
-      if failed_eval and \
-            failed_eval.key().id_or_name() == evaluation.key().id_or_name():
-          break
+      if (failed_eval and
+          failed_eval.key().id_or_name() == evaluation.key().id_or_name()):
+        break
 
   return adder
