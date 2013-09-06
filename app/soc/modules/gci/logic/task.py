@@ -18,6 +18,7 @@ import datetime
 import logging
 
 from google.appengine.api import memcache
+from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
 from django.utils.translation import ugettext
@@ -95,6 +96,12 @@ DELETE_EXPIRATION = datetime.timedelta(minutes=10)
 
 # TODO(ljvderijk): Add basic subscribers when task is created
 
+def _spawnUpdateTask(entity, transactional=False):
+  """Spawns a task to update the state of the task."""
+  update_url = '/tasks/gci/task/update/%s' % entity.key().id()
+  new_task = taskqueue.Task(eta=entity.deadline, url=update_url)
+  new_task.add('gci-update', transactional=transactional)
+
 def isOwnerOfTask(task, profile):
   """Returns true if the given profile is owner/student of the task.
 
@@ -157,8 +164,6 @@ def assignTask(task, student, assigner):
     student: GCIProfile entity of a student.
     assigner: GCIProfile of the user that assigns the student.
   """
-  from soc.modules.gci.tasks import task_update
-
   task.student = student
   task.status = 'Claimed'
   task.deadline = datetime.datetime.now() + \
@@ -178,7 +183,7 @@ def assignTask(task, student, assigner):
   def assignTaskTxn():
     task.put()
     comment_txn()
-    task_update.spawnUpdateTask(task, transactional=True)
+    _spawnUpdateTask(task, transactional=True)
 
   return db.run_in_transaction(assignTaskTxn)
 
@@ -420,8 +425,6 @@ def updateTaskStatus(task):
   Returns:
     Boolean indicating whether the task has been updated.
   """
-  from soc.modules.gci.tasks import task_update
-
   if not task.deadline or datetime.datetime.now() < task.deadline:
     # do nothing if there is no deadline or it hasn't passed yet
     return False
@@ -444,7 +447,7 @@ def updateTaskStatus(task):
 
   if task.deadline:
     # only if there is a deadline set we should schedule another task
-    task_update.spawnUpdateTask(task)
+    _spawnUpdateTask(task)
 
   return True
 

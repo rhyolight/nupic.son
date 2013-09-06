@@ -14,8 +14,6 @@
 
 """Appengine Tasks related to GCI Task handling."""
 
-from google.appengine.api import taskqueue
-
 from django import http
 from django.conf.urls.defaults import url
 from django.utils.translation import ugettext
@@ -61,12 +59,3 @@ class TaskUpdate(object):
     task_logic.updateTaskStatus(task)
 
     return http.HttpResponse()
-
-
-def spawnUpdateTask(entity, transactional=False):
-  """Spawns a task to update the state of the task.
-  """
-  update_url = '/tasks/gci/task/update/%s' %entity.key().id()
-  new_task = taskqueue.Task(eta=entity.deadline,
-                            url=update_url)
-  new_task.add('gci-update', transactional=transactional)
