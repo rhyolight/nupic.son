@@ -1,5 +1,5 @@
---- ../../../soc2/node_modules/testem/lib/browser_launcher.js	2013-06-26 10:14:09.000000000 +0200
-+++ ../../node_modules/testem/lib/browser_launcher.js	2013-09-05 14:42:04.762012550 +0200
+--- ../../../soc2/node_modules/testem/lib/browser_launcher.js	2013-08-29 04:49:55.000000000 +0200
++++ ../../node_modules/testem/lib/browser_launcher.js	2013-09-06 12:47:07.868928895 +0200
 @@ -11,6 +11,7 @@
  var rimraf = require('rimraf')
  var async = require('async')
@@ -8,7 +8,7 @@
  var fileutils = require('./fileutils')
  var browserExeExists = fileutils.browserExeExists
  var findableByWhich = fileutils.findableByWhich
-@@ -18,11 +19,14 @@
+@@ -18,15 +19,34 @@
  
  // Find the temporary directory for the system
  var tempDir = function(){
@@ -28,7 +28,27 @@
  }()
  
  var userHomeDir = process.env.HOME || process.env.USERPROFILE
-@@ -67,9 +71,9 @@
+
++function removeTestemFilesFromTemporaryDirectory(){
++  var filesInTmp = fs.readdirSync(temp.dir)
++  var testemDirectories = filesInTmp.filter(function(file) {
++    if (file.indexOf('testem') === 0 && fs.lstatSync(temp.dir, file).isDirectory()) {
++      return true
++    }
++    return false
++  })
++  testemDirectories = testemDirectories.map(function(directory){
++    return path.join(temp.dir, directory)
++  })
++  testemDirectories.forEach(function(directory){
++    rimraf.sync(directory)
++  })
++}
++
+ function setupFirefoxProfile(profileDir, done){
+   rimraf(profileDir, function(){
+     // using prefs.js to suppress the check default browser popup
+@@ -67,9 +87,12 @@
            "C:\\Program Files\\Mozilla Firefox\\firefox.exe",
            "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe"
          ],
@@ -37,10 +57,13 @@
          setup: function(config, done){
 -          setupFirefoxProfile(tempDir + '/testem.firefox', done)
 +          setupFirefoxProfile(tempDir.firefox, done)
++        },
++        tearDown: function(){
++          removeTestemFilesFromTemporaryDirectory()
          },
          supported: browserExeExists
        },
-@@ -81,9 +85,9 @@
+@@ -81,9 +104,9 @@
            "C:\\Program Files\\Google\\Chrome\\Application\\Chrome.exe",
            "C:\\Program Files (x86)\\Google\\Chrome\\Application\\Chrome.exe"
          ],
@@ -49,11 +72,11 @@
 -          rimraf(tempDir + '\\testem.chrome', done)
 +        args: ["--user-data-dir=" + tempDir.chrome, "--no-default-browser-check", "--no-first-run"],
 +        tearDown: function(){
-+          rimraf(tempDir.chrome, function() {})
++          removeTestemFilesFromTemporaryDirectory()
          },
          supported: browserExeExists
        },
-@@ -101,9 +105,9 @@
+@@ -101,9 +124,9 @@
            "C:\\Program Files\\Opera\\opera.exe",
            "C:\\Program Files (x86)\\Opera\\opera.exe"
          ],
@@ -62,11 +85,11 @@
 -          rimraf(tempDir + '\\testem.opera', done)
 +        args: ["-pd", tempDir.opera],
 +        tearDown: function(){
-+          rimraf(tempDir.opera, function() {})
++          removeTestemFilesFromTemporaryDirectory()
          },
          supported: browserExeExists
        },
-@@ -121,27 +125,27 @@
+@@ -121,27 +144,27 @@
        {
          name: "Chrome", 
          exe: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", 
@@ -75,7 +98,7 @@
 -          rimraf(tempDir + '/testem.chrome', done)
 +        args: ["--user-data-dir=" + tempDir.chrome, "--no-default-browser-check", "--no-first-run"],
 +        tearDown: function(){
-+          rimraf(tempDir.chrome, function() {})
++          removeTestemFilesFromTemporaryDirectory()
          },
          supported: browserExeExists
        },
@@ -87,7 +110,7 @@
 -          rimraf(tempDir + '/testem.chrome-canary', done)
 +        args: ["--user-data-dir=" + tempDir.chrome_canary, "--no-default-browser-check", "--no-first-run"],
 +        tearDown: function(){
-+          rimraf(tempDir.chrome_canary, function() {})
++          removeTestemFilesFromTemporaryDirectory()
          },
          supported: browserExeExists
        },
@@ -99,17 +122,20 @@
 -          setupFirefoxProfile(tempDir + '/testem.firefox', done)
 +        args: ["-profile", tempDir.firefox],
 +        tearDown: function(){
-+          rimraf(tempDir.firefox, function() {})
++          removeTestemFilesFromTemporaryDirectory()
          },
          supported: browserExeExists
        },
-@@ -150,19 +154,20 @@
+@@ -150,19 +173,23 @@
          exe: "/Applications/Safari.app/Contents/MacOS/Safari",
          setup: function(config, done){
            var url = this.getUrl()
 -          fs.writeFile(tempDir + '/testem.safari.html', "<script>window.location = '" + url + "'</script>", done)
 +          fs.mkdir(tempDir.safari, function() {})
 +          fs.writeFile(tempDir.safari + '/testem.safari.html', "<script>window.location = '" + url + "'</script>", done)
++        },
++        tearDown: function(){
++          removeTestemFilesFromTemporaryDirectory()
          },
          args: function(){
 -          return [tempDir + '/testem.safari.html']
@@ -125,11 +151,11 @@
 -          rimraf(tempDir + '/testem.opera', done)
 +        args: ["-pd", tempDir.opera],
 +        tearDown: function(){
-+          rimraf(tempDir.opera, function() {})
++          removeTestemFilesFromTemporaryDirectory()
          },
          supported: browserExeExists
        },
-@@ -180,35 +185,32 @@
+@@ -180,35 +207,32 @@
        {
          name: 'Firefox',
          exe: 'firefox',
@@ -146,7 +172,7 @@
 +          fs.mkdir(tempDir.firefox, done)
 +        },
 +        tearDown: function(){
-+          rimraf(tempDir.firefox, function() {});
++          removeTestemFilesFromTemporaryDirectory()
          },
          supported: findableByWhich
        },
@@ -159,7 +185,7 @@
 -        setup: function(config, done){
 -          rimraf(tempDir + '/testem.chrome', done)
 +        tearDown: function(){
-+          rimraf(tempDir.chrome, function() {});
++          removeTestemFilesFromTemporaryDirectory()
          },
          supported: findableByWhich
        },
@@ -172,7 +198,7 @@
 -        setup: function(config, done){
 -          rimraf(tempDir + '/testem.chromium', done)
 +        tearDown: function(){
-+          rimraf(tempDir.chromium, function() {});
++          removeTestemFilesFromTemporaryDirectory()
          },
          supported: findableByWhich
        },
