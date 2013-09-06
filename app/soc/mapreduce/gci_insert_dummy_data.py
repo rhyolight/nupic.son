@@ -14,7 +14,6 @@
 
 """Mapreduce to insert dummy data for GCI student data for safe-harboring."""
 
-
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
@@ -37,7 +36,7 @@ def process(student_info):
     return
 
   entities, blobs = profile_logic.insertDummyData(student_info)
-  blobstore.delete(filter(lambda blob: blob, blobs))
+  blobstore.delete(filter(bool, blobs))
 
   for entity in entities:
     yield operation.db.Put(entity)
