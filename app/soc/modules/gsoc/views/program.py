@@ -14,12 +14,21 @@
 
 """Module for the program settings pages."""
 
+import csv
+import StringIO
+
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import forms as django_forms
+from django import http
+from django.utils import html as html_utils
 from django.utils import translation
 
+from melange.logic import universities as universities_logic
 from melange.request import access
+
+from soc.logic import links
 from soc.logic import mail_dispatcher
 from soc.logic.helper import notifications
 from soc.models import document
@@ -59,6 +68,11 @@ TEST_ORG_ENTITY = {
 TEST_PROPOSAL_TITLE = translation.ugettext(
     'Proposal title for test')
 
+_UNIVERSITIES_LIST_LABEL = translation.ugettext('List of Universities')
+
+_UNIVERSITIES_LIST_HELP_TEXT = translation.ugettext(
+    'Each line should contain comma separated university unique identifier, '
+    'name, and country.')
 
 class TimelineForm(forms.GSoCModelForm):
   """Django form to edit timeline settings."""
@@ -118,7 +132,8 @@ class GSoCProgramMessagesForm(forms.GSoCModelForm):
     css_prefix = 'program_messages_form'
     model = program.GSoCProgramMessages
 
-  def getSendMailFromTemplateStringTxn(self, to, subject, template_string, context):
+  def getSendMailFromTemplateStringTxn(
+        self, to, subject, template_string, context):
     """Returns the transaction for sending the email
 
     Args:
@@ -368,3 +383,93 @@ class GSoCProgramMessagesPage(
 
   def _getUrlName(self):
     return url_names.GSOC_EDIT_PROGRAM_MESSAGES
+
+
+class UniversitiesForm(forms.GSoCModelForm):
+  """Form to submit list of universities."""
+
+  universities = forms.CharField(
+      widget=forms.Textarea(), label=_UNIVERSITIES_LIST_LABEL, 
+      help_text=_UNIVERSITIES_LIST_HELP_TEXT)
+
+  def clean_universities(self):
+    """Cleans data passed to universities field.
+
+    Returns:
+      list of tuples. Each element of that tuple represents a single
+      university and has exactly three elements. The first one is unique
+      identifier of the university, the second one is its name and the third
+      one is the country in which the institution is located.
+    """
+    reader = csv.reader(StringIO.StringIO(self.cleaned_data['universities']))
+
+    universities = []
+    for i, row in enumerate(reader):
+      # skip empty lines
+      if not row:
+        continue
+
+      # check if each university description has correct number of positions
+      if len(row) != 3:
+        raise forms.ValidationError(
+            'University in line %s has wrong number of fields' % i)
+      else:
+        universities.append((
+            html_utils.escape(row[0]),
+            html_utils.escape(row[1]),
+            html_utils.escape(row[2])))
+
+    return universities
+
+
+@ndb.transactional
+def _uploadUniversitiesTxn(input_data, program_key):
+  """Uploads a list of predefined universities from the specified input data
+  for the specified program in a transaction.
+
+  Args:
+    input_data: data containing universities, as received 
+      from UniversitiesForm.
+    program_key: program key.
+  """
+  universities_logic.uploadUniversities(input_data, program_key)
+
+
+class UploadUniversitiesPage(base.GSoCRequestHandler):
+  """View for program administrators to upload list of predefined universities
+  for the program."""
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    """See base.GSoCRequestHandler.djangoURLPatterns for specification."""
+    return [
+        url_patterns.url(
+            r'program/universities/upload/%s$' % soc_url_patterns.PROGRAM,
+            self, name=url_names.GSOC_PROGRAM_UPLOAD_UNIVERSITIES),
+    ]
+
+  def templatePath(self):
+    """See base.GSoCRequestHandler.templatePath for specification."""
+    return 'modules/gsoc/form_base.html'
+
+  def context(self, data, check, mutator):
+    """See base.GSoCRequestHandler.context for specification."""
+    return {
+        'forms': [UniversitiesForm(data=data.POST or None)]
+        }
+
+  def post(self, data, check, mutator):
+    """See base.GSoCRequestHandler.post for specification."""
+    form = UniversitiesForm(data=data.POST)
+    if form.is_valid():
+      _uploadUniversitiesTxn(
+          form.cleaned_data['universities'], data.program.key())
+
+      url = links.Linker().program(
+          data.program, url_names.GSOC_PROGRAM_UPLOAD_UNIVERSITIES)
+      return http.HttpResponseRedirect(url)
+    else:
+      # TODO(nathaniel): problematic self-call.
+      return self.get(data, check, mutator)
+    
