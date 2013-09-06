@@ -56,11 +56,10 @@ def getMailContext(to, subject, html, sender=None, bcc=None):
 
 
 def getSpawnMailTaskTxn(context, parent=None, transactional=True):
-  """Spawns a new Task that sends out an email with the given dictionary.
-  """
+  """Spawns a new Task that sends out an email with the given dictionary."""
   if not (context.get('to') or context.get('bcc')):
     context['body'] = context.get('body', '')[:10]
-    logging.debug("Not sending email: '%s'" % context)
+    logging.debug("Not sending email: '%s'", context)
     # no-one cares :(
     return lambda: None
 
@@ -121,7 +120,7 @@ class MailerTask(object):
       # strings.
       context[str(key)] = value
 
-    logging.info('Sending %s' %context)
+    logging.info('Sending %s', context)
     message = mail.EmailMessage(**context)
 
     try:
@@ -129,7 +128,7 @@ class MailerTask(object):
     except Exception as e:
       logging.exception(e)
       context['body'] = context.get('body', '')[:10]
-      logging.error('This message was not properly initialized: "%s"' % context)
+      logging.error('This message was not properly initialized: "%s"', context)
       mail_entity.delete()
       return responses.terminateTask()
 

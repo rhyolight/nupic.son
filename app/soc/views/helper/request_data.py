@@ -634,7 +634,7 @@ class RedirectHelper(object):
     self.kwargs['id'] = id
     return self
 
-  def urlOf(self, name, full=False, secure=False, extra=[]):
+  def urlOf(self, name, full=False, secure=False, extra=None):
     """Returns the resolved url for name.
 
     Uses internal state for args and kwargs.
@@ -651,7 +651,7 @@ class RedirectHelper(object):
     else:
       url = urlresolvers.reverse(name)
 
-    url = self._appendGetArgs(url, extra_get_args=extra)
+    url = self._appendGetArgs(url, extra_get_args=extra if extra else [])
 
     return self._fullUrl(url, full, secure)
 
@@ -705,7 +705,7 @@ class RedirectHelper(object):
     return url
 
   def to(self, name=None, validated=False, full=False, secure=False,
-      extra=[], anchor=None):
+         extra=None, anchor=None):
     """Redirects to the resolved url for name.
 
     Uses internal state for args and kwargs.
@@ -729,8 +729,8 @@ class RedirectHelper(object):
     if anchor:
       url = '%s#%s' % (url, anchor)
 
-    url = self._appendGetArgs(url, validated=validated,
-        extra_get_args=extra)
+    url = self._appendGetArgs(
+        url, validated=validated, extra_get_args=extra if extra else [])
 
     return self.toUrl(url, full=full, secure=secure)
 

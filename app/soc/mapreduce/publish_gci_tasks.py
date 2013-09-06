@@ -12,19 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""Surveys model updating MapReduce.
-"""
-
+"""Surveys model updating MapReduce."""
 
 from mapreduce import context
 from mapreduce import operation
 
-from soc.models.site import Site
-
 from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.program import GCIProgram
-from soc.modules.gci.views.helper.request_data import RequestData
 
 
 def process(task):

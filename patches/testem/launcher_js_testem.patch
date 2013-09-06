@@ -1,0 +1,12 @@
+--- ../../../soc2/node_modules/testem/lib/launcher.js	2013-06-19 19:02:39.000000000 +0200
++++ ../../node_modules/testem/lib/launcher.js	2013-09-05 10:57:38.174510017 +0200
+@@ -147,6 +147,9 @@
+     this.exitCode = code
+     this.emit('processExit', code, this.stdout, this.stderr)
+     this.process = null
++    if (this.settings.tearDown){
++      this.settings.tearDown();
++    }
+   }
+   , kill: function(sig, cb){
+     if (!this.process){

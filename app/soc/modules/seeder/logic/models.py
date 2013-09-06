@@ -26,8 +26,6 @@ from inspect import getmodule
 from inspect import getmro
 from inspect import isclass
 
-from django.conf import settings
-
 
 class Logic():
   """Contains logic for data seeding operations regarding models.

@@ -12,18 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Blobstore migrating MapReduce.
-"""
-
-
-import logging
+"""Blobstore migrating MapReduce."""
 
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
 from mapreduce import operation
 
+# MapReduce requires import of the processed models.
+# pylint: disable=unused-import
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
+# pylint: enable=unused-import
 
 
 class BlobMigration(db.Model):

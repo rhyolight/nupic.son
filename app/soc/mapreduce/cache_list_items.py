@@ -14,18 +14,14 @@
 
 """Mapreduce to cache datastore entities for lists."""
 
+import json
+import pickle
+
 from google.appengine.ext import ndb
 
 from mapreduce import context
 from mapreduce import base_handler
 from mapreduce import mapreduce_pipeline
-
-import datetime
-
-import json
-
-import pickle
-
 
 NO_OF_SHARDS = 4
 

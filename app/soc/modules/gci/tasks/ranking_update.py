@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Appengine Tasks related to GCI Ranking.
-"""
-
+"""Appengine Tasks related to GCI Ranking."""
 
 import logging
 
@@ -65,7 +63,7 @@ class RankingUpdater(object):
     task = GCITask.get_by_id(id)
 
     if not task:
-      logging.warning('Ranking update queued for non-existing task: %s' %id)
+      logging.warning('Ranking update queued for non-existing task: %s', id)
       responses.terminateTask()
 
     score_logic.updateScore(task)
@@ -86,8 +84,8 @@ class RankingUpdater(object):
     program = GCIProgram.get_by_key_name(key_name)
     if not program:
       logging.warning(
-          'Enqueued recalculate ranking task for non-existing '
-          'program: %s' %key_name)
+          'Enqueued recalculate ranking task for non-existing program: %s',
+          key_name)
       return responses.terminateTask()
 
     # Retrieve the students for the program
@@ -131,8 +129,8 @@ class RankingUpdater(object):
     program = GCIProgram.get_by_key_name(key_name)
     if not program:
       logging.warning(
-          'Enqueued recalculate ranking task for non-existing '
-          'program: %s' %key_name)
+          'Enqueued recalculate ranking task for non-existing program: %s',
+          key_name)
       return responses.terminateTask()
 
     q = GCIScore.all()
@@ -158,7 +156,7 @@ class RankingUpdater(object):
 
     if not student:
       logging.warning('Enqueued task to recalculate ranking for '
-                      'non-existent student %s' %(key))
+                      'non-existent student %s', key)
       return responses.terminateTask()
 
     # get all the tasks that the student has completed
