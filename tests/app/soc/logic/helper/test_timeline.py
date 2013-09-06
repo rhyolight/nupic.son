@@ -166,7 +166,7 @@ class TimelineTest(unittest.TestCase):
     end = datetime(2021, 7, 5)
     self.timeline.student_signup_start = start
     self.timeline.student_signup_end = end
-    actual = timeline.activePeriod(self.timeline, 'student_sign_up')
+    actual = timeline.activePeriod(self.timeline, 'student_signup')
     expected = (start, end)
     self.assertEqual(actual, expected)
 
@@ -281,7 +281,7 @@ class TimelineTest(unittest.TestCase):
     self.assertEqual(actual, expected)
 
     self.timeline.accepted_organization_announced_deadline = datetime(2011, 5, 4)
-    name = 'accepted_organizations_announced_deadline'
+    name = 'accepted_organization_announced_deadline'
     entity = self.timeline
     expected = self.timeline.accepted_organization_announced_deadline
     actual = timeline.getDateTimeByName(entity, name)

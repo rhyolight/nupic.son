@@ -50,7 +50,7 @@ class TestPrefixes(unittest.TestCase):
 
     self.gci_program = seeder_logic.seed(GCIProgram, program_properties)
 
-    self.site = seeder_logic.seed(Site,)
+    self.site = seeder_logic.seed(Site, {'key_name': 'site'})
 
     self.organization = seeder_logic.seed(Organization)
 
