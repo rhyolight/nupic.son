@@ -145,12 +145,10 @@ def canSubmitWork(task, profile):
     profile: The GCIProfile to check
 
   """
-  if not task.deadline or datetime.datetime.utcnow() > task.deadline:
-    # deadline has passed
-    return False
-
-  return (isOwnerOfTask(task, profile) and 
-      task.status in task_model.TASK_IN_PROGRESS)
+  return (task.deadline and
+          datetime.datetime.utcnow() <= task.deadline and
+          isOwnerOfTask(task, profile) and
+          task.status in task_model.TASK_IN_PROGRESS)
 
 
 def assignTask(task, student, assigner):
