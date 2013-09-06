@@ -14,10 +14,9 @@
 
 """General Views/Templates for surveys are in this module."""
 
-
+from soc.views import template
 from soc.views.helper import lists
 from soc.views.helper import surveys
-from soc.views.template import Template
 
 
 def field_or_empty(field_id):
@@ -27,7 +26,7 @@ def field_or_empty(field_id):
   return lambda ent, *args: getattr(ent, field_id, '')
 
 
-class SurveyRecordList(Template):
+class SurveyRecordList(template.Template):
   """Template for listing all records of a survey."""
 
   def __init__(self, data, survey, record_model, idx=0, description=''):
@@ -68,7 +67,7 @@ class SurveyRecordList(Template):
         self.data, self.list_config, idx=self.idx, description=self.description)
     return {'lists': [configuration_response_list]}
 
-  def listContentResponse(self, request, prefetch=[]):
+  def listContentResponse(self, request, prefetch=None):
     """Returns the ListContentResponse object that is constructed from the data.
 
     Args:

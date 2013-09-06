@@ -112,7 +112,7 @@ class SlotsTransferAdminList(template.Template):
   def postAccept(self, data, accept):
     for properties in data:
       if 'full_transfer_key' not in properties:
-        logging.warning("Missing key in '%s'" % properties)
+        logging.warning("Missing key in '%s'", properties)
         continue
 
       slot_transfer_key = properties['full_transfer_key']
@@ -120,13 +120,12 @@ class SlotsTransferAdminList(template.Template):
         slot_transfer = db.get(slot_transfer_key)
 
         if not slot_transfer:
-          logging.warning("Invalid slot_transfer_key '%s'" %
-                          slot_transfer_key)
+          logging.warning("Invalid slot_transfer_key '%s'", slot_transfer_key)
           return
 
         org = slot_transfer.parent()
         if not org:
-          logging.warning("No organization present for the slot transfer %s" %
+          logging.warning("No organization present for the slot transfer %s",
                           slot_transfer_key)
           return
 
@@ -137,9 +136,9 @@ class SlotsTransferAdminList(template.Template):
           slot_transfer.status = 'accepted'
 
           if slot_transfer.nr_slots < 0:
-            logging.warning("Organization %s is trying to trick us to "
-                "gain more slots by using a negative number %s" %
-                (org.name, slot_transfer.nr_slots))
+            logging.warning(
+                "Organization %s is trying to trick us to gain more slots by "
+                "using a negative number %s", org.name, slot_transfer.nr_slots)
             return
 
           org.slots -= slot_transfer.nr_slots
@@ -166,19 +165,19 @@ class SlotsTransferAdminList(template.Template):
 
       if not full_transfer_key:
         logging.warning(
-            "key for the slot transfer request is not present '%s'" %
+            "key for the slot transfer request is not present '%s'",
             properties)
         continue
 
       if 'admin_remarks' not in properties and 'nr_slots' not in properties:
         logging.warning(
-            "Neither admin remarks or number of slots present in '%s'" %
+            "Neither admin remarks or number of slots present in '%s'",
             properties)
         continue
 
       if 'nr_slots' in properties:
         if not nr_slots.isdigit():
-          logging.warning("Non-int value for slots: '%s'" %nr_slots)
+          logging.warning("Non-int value for slots: '%s'", nr_slots)
           properties.pop('nr_slots')
         else:
           nr_slots = int(nr_slots)
@@ -186,7 +185,7 @@ class SlotsTransferAdminList(template.Template):
       def update_org_txn():
         slot_transfer =  db.get(full_transfer_key)
         if not slot_transfer:
-          logging.warning("Invalid slot_transfer_key '%s'" % key_name)
+          logging.warning("Invalid slot_transfer_key '%s'", key_name)
           return
         if 'admin_remarks' in properties:
           slot_transfer.admin_remarks = admin_remarks

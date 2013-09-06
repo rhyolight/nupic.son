@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Generic tools for GDocs. Contains helper functions to handle documents.
-"""
-
+"""Generic tools for GDocs. Contains helper functions to handle documents."""
 
 import StringIO
 import re
@@ -22,20 +20,17 @@ import re
 import gdata.docs
 
 
-def find_documents(service, title='', categories=[]):
-  """Finds and returns documents for given gdocs service.
-  """
-
-  q = gdata.docs.service.DocumentQuery(categories=categories)
+def find_documents(service, title='', categories=None):
+  """Finds and returns documents for given gdocs service."""
+  q = gdata.docs.service.DocumentQuery(
+      categories=categories if categories else [])
   q['title'] = title
   feed = service.Query(q.ToUri())
   return feed
 
 
 def get_content(service, resource_id, return_as, **kwargs):
-  """Returns content of given entry.
-  """
-
+  """Returns content of given entry."""
   stream_content = StringIO.StringIO()
   service.Export(resource_id, 'sample_file.'+return_as,
                  file_handler=stream_content, **kwargs)
@@ -43,9 +38,7 @@ def get_content(service, resource_id, return_as, **kwargs):
 
 
 def get_resource_key_from_document_link(link):
-  """Returns resource key by parsing link.
-  """
-
+  """Returns resource key by parsing link."""
   pattern = "key=(\w+)[&#]?"
   match = re.search(pattern, link)
   if match:

@@ -19,8 +19,6 @@ import logging
 
 from google.appengine.ext import db
 
-from mapreduce import operation as op
-
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from soc.modules.seeder.models.configuration_sheet import DataSeederConfigurationSheet
 
@@ -72,9 +70,9 @@ def processBackReferences(model, model_data):
 
   if configuration_sheet:
     json_dump = json.dumps(configuration_sheet)
-    logging.error('Starting new map: %r' % configuration_sheet)
+    logging.error('Starting new map: %r', configuration_sheet)
 
     try:
       seeder_logic.startMapReduce(json_dump)
     except Exception, e:
-      logging.error('Cannot start mapreduce: %r' % e)
+      logging.error('Cannot start mapreduce: %r', e)

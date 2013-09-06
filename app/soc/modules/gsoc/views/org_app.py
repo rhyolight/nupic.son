@@ -321,12 +321,12 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList,
       record = OrgAppRecord.get_by_id(long(oaid))
 
       if not record:
-        logging.warning('%s is an invalid OrgAppRecord ID' % oaid)
+        logging.warning('%s is an invalid OrgAppRecord ID', oaid)
         continue
 
       if record.survey.key() != data.org_app.key():
         logging.warning(
-            '%s is not a record for the Org App in the URL' % record.key())
+            '%s is not a record for the Org App in the URL', record.key())
         continue
 
       new_status = properties['status']

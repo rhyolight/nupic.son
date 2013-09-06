@@ -12,21 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GCI org proposal processing mapreduce.
-"""
-
+"""GCI org proposal processing mapreduce."""
 
 from mapreduce import context
 from mapreduce import operation
 
 from soc.logic import org_app as org_app_logic
+
+# MapReduce requires import of processed model classes.
+# pylint: disable=unused-import
 from soc.models.site import Site
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.org_app_survey import OrgAppSurvey
-
 from soc.modules.gsoc.models.program import GSoCProgram
-
 from soc.modules.gci.models.program import GCIProgram
+# pylint: enable=unused-import
+
 from soc.modules.gci.views.helper.request_data import RedirectHelper
 
 

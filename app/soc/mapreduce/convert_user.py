@@ -26,9 +26,12 @@ from google.appengine.ext import db
 
 from mapreduce import operation
 
+# MapReduce requires import of processed model classes.
+# pylint: disable=unused-import
 from soc.models.user import User
-from soc.logic import accounts
+# pylint: enable=unused-import
 
+from soc.logic import accounts
 
 MISSING_USER = 'missing_user'
 MISSING_USER_SECOND = 'missing_user_second'
@@ -41,14 +44,14 @@ def convert_user_txn(user_key):
   user = db.get(user_key)
 
   if not user:
-    logging.error("Missing user for key '%r'." % user_key)
+    logging.error("Missing user for key '%r'.", user_key)
     return MISSING_USER
 
   normalized = accounts.denormalizeAccount(user.account)
 
   if (user.account.email() == normalized.email() and
       user.user_id == user.account.user_id()):
-     return IGNORED_USER
+    return IGNORED_USER
 
   user.account = normalized
   user.put()
@@ -56,11 +59,11 @@ def convert_user_txn(user_key):
   user = db.get(user_key)
 
   if not user:
-    logging.error("Missing user second time around for key '%s'." % user_key)
+    logging.error("Missing user second time around for key '%s'.", user_key)
     return MISSING_USER_SECOND
 
   if not user.account.user_id():
-    logging.error("Missing user_id around for key '%s'." % user_key)
+    logging.error("Missing user_id around for key '%s'.", user_key)
     return MISSING_USER_ID
 
   user.user_id = user.account.user_id()

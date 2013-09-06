@@ -20,7 +20,6 @@ import logging
 from google.appengine.ext import db
 
 from django import http
-from django.utils.dateformat import format
 from django.utils.translation import ugettext
 
 from melange.logic import connection as connection_logic
@@ -732,19 +731,21 @@ class SubmittedProposalsComponent(Component):
         'my_score', 'My score', getMyScore)
 
     def getStatusOnDashboard(proposal, accepted, duplicates):
-      """Method for determining which status to show on the dashboard.
-      """
+      """Method for determining which status to show on the dashboard."""
+      # TODO(nathaniel): HTML in Python.
       if proposal.status == 'pending' and self.data.program.duplicates_visible:
-          if proposal.accept_as_project and (
-              not GSoCProposal.mentor.get_value_for_datastore(proposal)):
-            return """<strong><font color="red">No mentor assigned</font></strong>"""
-          elif proposal.key() in duplicates:
-            return """<strong><font color="red">Duplicate</font></strong>"""
-          elif proposal.key() in accepted:
-            return """<strong><font color="green">Pending acceptance</font><strong>"""
+        if proposal.accept_as_project and (
+            not GSoCProposal.mentor.get_value_for_datastore(proposal)):
+          return """<strong><font color="red">No mentor assigned</font></strong>"""
+        elif proposal.key() in duplicates:
+          return """<strong><font color="red">Duplicate</font></strong>"""
+        elif proposal.key() in accepted:
+          return """<strong><font color="green">Pending acceptance</font><strong>"""
       # not showing duplicates or proposal doesn't have an interesting state
       return proposal.status
     options = [
+        # TODO(nathaniel): This structured data deserves first-class representation
+        # in Python rather than this stringly typed... stuff.
         ('(pending|accepted|rejected|duplicate|mentor)', 'Valid'),
         ('(duplicate|mentor)', 'Needs attention'),
         ('(duplicate)', 'Duplicate'),
@@ -909,7 +910,7 @@ class SubmittedProposalsComponent(Component):
 
     for _, properties in parsed.iteritems():
       if 'org_key' not in properties or 'full_proposal_key' not in properties:
-        logging.warning("Missing key in '%s'" % properties)
+        logging.warning("Missing key in '%s'", properties)
         continue
 
       org_key_name = properties.pop('org_key')
@@ -920,7 +921,7 @@ class SubmittedProposalsComponent(Component):
 
       for key, value in properties.iteritems():
         if key not in valid_columns:
-          logging.warning("Invalid property '%s'" % key)
+          logging.warning("Invalid property '%s'", key)
           remove_properties.append(key)
         try:
           cleaning.sanitize_html_string(value)
@@ -934,7 +935,7 @@ class SubmittedProposalsComponent(Component):
         proposal = db.get(db.Key(proposal_key))
 
         if not proposal:
-          logging.warning("Invalid proposal_key '%s'" % proposal_key)
+          logging.warning("Invalid proposal_key '%s'", proposal_key)
           return
 
         data = {}
@@ -955,14 +956,14 @@ class SubmittedProposalsComponent(Component):
   def postAccept(self, data, accept):
     for properties in data:
       if 'full_proposal_key' not in properties:
-        logging.warning("Missing key in '%s'" % properties)
+        logging.warning("Missing key in '%s'", properties)
         continue
       proposal_key = properties['full_proposal_key']
       def accept_proposal_txn():
         proposal = db.get(db.Key(proposal_key))
 
         if not proposal:
-          logging.warning("Invalid proposal_key '%s'" % proposal_key)
+          logging.warning("Invalid proposal_key '%s'", proposal_key)
           return
 
         org_key = GSoCProposal.org.get_value_for_datastore(proposal)

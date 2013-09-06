@@ -84,12 +84,28 @@ easy.options(
   )
 )
 
+# These inspections have too high a false positive rate to be useful for us.
+DISABLED_INSPECTIONS = (
+    'no-member',
+    'maybe-no-member',
+)
+
+# Warnings, style issues, and other inspections as a matter of policy must not
+# be violated in Melange. At least not nakedly, anyway - an explanatory comment
+# must appear wherever these are suppressed.
+FORBIDDEN_IN_MELANGE = (
+    'cyclic-import',
+    'dangerous-default-value',
+    'logging-not-lazy',
+    'no-space-before-operator',
+    'unused-import',
+)
+
 # NOTE: these arguments should be passed after any --errors-only flags, since
 # that clobbers which messages are enabled/disabled.
 shared_pylint_args = [
-  # disable these as they are too unreliable to be useful
-  '--disable=no-member,maybe-no-member',
-  '--enable=cyclic-import,no-space-before-operator',
+  '--disable=%s' % ','.join(DISABLED_INSPECTIONS),
+  '--enable=%s' % ','.join(FORBIDDEN_IN_MELANGE),
 ]
 
 # The second call to options allows us to re-use some of the constants defined

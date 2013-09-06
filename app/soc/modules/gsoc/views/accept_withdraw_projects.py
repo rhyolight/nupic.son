@@ -38,7 +38,6 @@ from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper.url_patterns import url
 
-
 # key to map proposal with and its full key in list data
 _PROPOSAL_KEY = 'full_proposal_key'
 
@@ -116,7 +115,7 @@ class ProposalList(Template):
   def postHandler(self, data):
     for properties in data:
       if _PROPOSAL_KEY not in properties:
-        logging.warning("Missing key in '%s'" % properties)
+        logging.warning("Missing key in '%s'", properties)
         continue
 
       proposal_key = properties[_PROPOSAL_KEY]
@@ -126,9 +125,9 @@ class ProposalList(Template):
         proposal = db.get(proposal_key)
 
         if not proposal:
-          logging.warning("Proposal '%s' doesn't exist" % proposal_key)
+          logging.warning("Proposal '%s' doesn't exist", proposal_key)
         elif proposal.status == proposal_model.STATUS_ACCEPTED:
-          logging.warning("Proposal '%s' already accepted" % proposal_key)
+          logging.warning("Proposal '%s' already accepted", proposal_key)
         else:
           # check if the proposal has been assigned a mentor
           mentor_key = (proposal_model.GSoCProposal.mentor
@@ -136,7 +135,7 @@ class ProposalList(Template):
           if not mentor_key:
             logging.warning(
                 'Proposal with key %s cannot be accepted because no mentor has'
-                ' been assigned to it.' % proposal_key)
+                ' been assigned to it.', proposal_key)
           else:
             proposal_logic.acceptProposal(proposal)
 
@@ -292,22 +291,22 @@ class ProjectList(Template):
   def postHandler(self, data, withdraw=True):
     for properties in data:
       if 'full_project_key' not in properties:
-        logging.warning("Missing key in '%s'" % properties)
+        logging.warning("Missing key in '%s'", properties)
         continue
 
       project_key = properties['full_project_key']
       project = db.get(db.Key(project_key))
 
       if not project:
-        logging.warning("Project '%s' doesn't exist" % project_key)
+        logging.warning("Project '%s' doesn't exist", project_key)
         continue
 
       if withdraw and project.status == 'withdrawn':
-        logging.warning("Project '%s' already withdrawn" % project_key)
+        logging.warning("Project '%s' already withdrawn", project_key)
         continue
 
       if not withdraw and project.status == project_model.STATUS_ACCEPTED:
-        logging.warning("Project '%s' already accepted" % project_key)
+        logging.warning("Project '%s' already accepted", project_key)
         continue
 
       # key of the organization for the project

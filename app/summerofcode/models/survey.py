@@ -16,8 +16,6 @@
 
 from google.appengine.ext import ndb
 
-from soc.models import profile
-
 
 class PersonalExtension(ndb.Model):
   """PersonalExtension model.

@@ -23,8 +23,11 @@ from google.appengine.ext import db
 
 from mapreduce import operation
 
+# MapReduce requires import of processed models.
+# pylint: disable=unused-import
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gsoc.models.program import GSoCProgram
+# pylint: enable=unused-import
 
 
 def process(entity_key):
@@ -37,7 +40,7 @@ def process(entity_key):
   def convert_entity_txn():
     entity = db.get(entity_key)
     if not entity:
-      logging.error('Missing entity for key %s.' % entity_key)
+      logging.error('Missing entity for key %s.', entity_key)
       return False
 
     # assign program property by its key
