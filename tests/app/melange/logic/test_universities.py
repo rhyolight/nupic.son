@@ -63,26 +63,13 @@ class UploadUniversitiesTest(unittest.TestCase):
       self.assertEqual(
           university_cluster.universities[i].country, TEST_INPUT_DATA[i][2])
 
-  @mock.patch('melange.logic.universities._MAX_SAFE_SIZE', new=200)
-  def testMoreThanOneEntity(self):
-    """Tests that more than one entity may be created."""
-
-    test_data = [('uid%s' % i, 'name', 'country') for i in range(10)]
-    universities_logic.uploadUniversities(test_data, self.program.key())
-
-    university_clusters = ndb.Query(
-        kind=universities_model.UniversityCluster._get_kind(),
-        ancestor=ndb.Key.from_old_key(self.program.key())).fetch(1000)
-
-    # check that more than one entity is created
-    self.assertGreater(len(university_clusters), 1)
-
-    # check that overall all universities are stored
-    universities = []
-    for university_cluster in university_clusters:
-      universities.extend(university_cluster.universities)
-    self.assertEqual(len(universities), 10)
-
+  @mock.patch('melange.logic.universities.MAX_UNIVERSITIES_PER_CLUSTER', new=2)
+  def testMoreThanMaxItems(self):
+    """Tests that error is raised when more items than allowed is passed."""
+    with self.assertRaises(ValueError):
+      universities_logic.uploadUniversities(
+          TEST_INPUT_DATA, self.program.key())
+    
 
 class GetUniversitiesForProgramTest(unittest.TestCase):
   """Unit tests for getUniversitiesForProgram function."""

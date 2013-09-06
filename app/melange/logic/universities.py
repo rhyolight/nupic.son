@@ -19,8 +19,8 @@ from google.appengine.ext import ndb
 from melange.models import universities as universities_model
 
 
-# Maximal safe number of bytes after which no new universities should be added
-_MAX_SAFE_SIZE = 1000000
+#: Maximal number of universities that can be stored in one cluster.
+MAX_UNIVERSITIES_PER_CLUSTER = 5000
 
 def uploadUniversities(input_data, program_key):
   """Uploads a list of predefined universities for the specified program.
@@ -36,7 +36,11 @@ def uploadUniversities(input_data, program_key):
     list of newly created university_model.Universities entities that contain
     all universities coming from the input data.
   """
-  to_put = []
+  if len(input_data) > MAX_UNIVERSITIES_PER_CLUSTER:
+    raise ValueError(
+        '%s items in input. Maximal supported value is %s' % (
+            len(input_data), MAX_UNIVERSITIES_PER_CLUSTER))
+
   university_cluster = universities_model.UniversityCluster(
       parent=ndb.Key.from_old_key(program_key))
 
@@ -44,15 +48,7 @@ def uploadUniversities(input_data, program_key):
     university_cluster.universities.append(
         universities_model.University(uid=uid, name=name, country=country))
 
-    # check if the current size of proto buffer is still safe
-    if university_cluster._to_pb().ByteSize() > _MAX_SAFE_SIZE:
-      # safe current list in the data store and create a new entity
-      to_put.append(university_cluster)
-      university_cluster = universities_model.UniversityCluster(
-          parent=ndb.Key.from_old_key(program_key))
-
-  to_put.append(university_cluster)
-  ndb.put_multi(to_put)
+  university_cluster.put()
 
 
 def getUniversitiesForProgram(program_key):
