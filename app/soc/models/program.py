@@ -14,6 +14,7 @@
 
 """This module contains the Program Model."""
 
+from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
 from django.utils import translation
@@ -262,6 +263,9 @@ class Program(linkable_model.Linkable):
 
   #: Number of school institutions that have been predefined for the program.
   predefined_schools_counter = db.IntegerProperty(default=0)
+
+  #: Property pointing to the file with predefined schools.
+  schools = blobstore.BlobReferenceProperty()
 
   def getProgramMessages(self):
     def get_or_create_txn():
