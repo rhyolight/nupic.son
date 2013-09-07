@@ -18,7 +18,7 @@ import datetime
 
 from google.appengine.ext import ndb
 
-from melange.models import universities as universities_model
+from melange.models import school as school_model
 
 from soc.models import program as soc_program_model
 from soc.modules.gsoc.models import program as program_model
@@ -302,19 +302,19 @@ class GSoCProgramMessagesPageTest(test_utils.GSoCDjangoTestCase):
       self.assertEqual(properties[p], getattr(entity, p))
 
 
-TEST_UNIVERSITIES_GOOD_INPUT = """
+TEST_SCHOOLS_GOOD_INPUT = """
 uid1\tname 1\tcountry 1
 uid2\tname 2\tcountry 2
 uid3\tname 3\tcountry 3
 """
 
-TEST_UNIVERSITIES_BAD_INPUT = """
+TEST_SCHOOLS_BAD_INPUT = """
 uid1\tname 1\tcountry 1\textra field1
 uid2\tname 2, country 2
 """
 
-class UploadUniversitiesPageTest(test_utils.GSoCDjangoTestCase):
-  """Unit tests for UploadUniversitiesPage view."""
+class UploadSchoolsPageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for UploadSchoolsPage view."""
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
@@ -327,7 +327,7 @@ class UploadUniversitiesPageTest(test_utils.GSoCDjangoTestCase):
 
   def _getUrl(self):
     """Returns URL to the tested page."""
-    return '/gsoc/program/universities/upload/%s' % self.program.key().name()
+    return '/gsoc/program/schools/upload/%s' % self.program.key().name()
 
   def testPageLoads(self):
     """Tests that page loads properly."""
@@ -336,38 +336,38 @@ class UploadUniversitiesPageTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseOK(response)
     self._assertPageTemplatesUsed(response)
 
-  def testUniversitiesUploaded(self):
-    """Tests that universities are uploaded correctly."""
+  def testSchoolsUploaded(self):
+    """Tests that schools are uploaded correctly."""
     self.profile_helper.createHost()
 
-    post_data = {'universities': TEST_UNIVERSITIES_GOOD_INPUT}
+    post_data = {'schools': TEST_SCHOOLS_GOOD_INPUT}
     response = self.post(self._getUrl(), post_data)
 
     self.assertResponseRedirect(response, self._getUrl())
 
-    # check that universities are uploaded now
-    university_clusters = ndb.Query(
-        kind=universities_model.UniversityCluster._get_kind(),
+    # check that schools are uploaded now
+    school_clusters = ndb.Query(
+        kind=school_model.SchoolCluster._get_kind(),
         ancestor=ndb.Key.from_old_key(self.program.key())).fetch(1000)
 
-    universities = []
-    for university_cluster in university_clusters:
-      universities.extend(university_cluster.universities)
+    schools = []
+    for school_cluster in school_clusters:
+      schools.extend(school_cluster.schools)
 
-    self.assertEquals(len(universities), 3)
+    self.assertEquals(len(schools), 3)
 
-  def testUniversitiesNotUploadedOnBadInput(self):
-    """Tests that universities are not uploaded if input is not valid."""
+  def testSchoolsNotUploadedOnBadInput(self):
+    """Tests that schools are not uploaded if input is not valid."""
     self.profile_helper.createHost()
 
-    post_data = {'universities': TEST_UNIVERSITIES_BAD_INPUT}
+    post_data = {'schools': TEST_SCHOOLS_BAD_INPUT}
     response = self.post(self._getUrl(), post_data)
 
     # TODO(daniel): update the test when bad requests do not return 200
     self.assertResponseOK(response)
 
-    # check that no universities are uploaded
-    university_cluster = ndb.Query(
-        kind=universities_model.UniversityCluster._get_kind(),
+    # check that no schools are uploaded
+    school_cluster = ndb.Query(
+        kind=school_model.SchoolCluster._get_kind(),
         ancestor=ndb.Key.from_old_key(self.program.key())).get()
-    self.assertIsNone(university_cluster)
+    self.assertIsNone(school_cluster)

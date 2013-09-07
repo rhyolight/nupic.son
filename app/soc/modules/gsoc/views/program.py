@@ -24,7 +24,7 @@ from django import http
 from django.utils import html as html_utils
 from django.utils import translation
 
-from melange.logic import universities as universities_logic
+from melange.logic import school as school_logic
 from melange.request import access
 
 from soc.logic import links
@@ -67,10 +67,10 @@ TEST_ORG_ENTITY = {
 TEST_PROPOSAL_TITLE = translation.ugettext(
     'Proposal title for test')
 
-_UNIVERSITIES_LIST_LABEL = translation.ugettext('List of Universities')
+_SCHOOLS_LIST_LABEL = translation.ugettext('List of Schools')
 
-_UNIVERSITIES_LIST_HELP_TEXT = translation.ugettext(
-    'Each line should contain tab separated university unique identifier, '
+_SCHOOLS_LIST_HELP_TEXT = translation.ugettext(
+    'Each line should contain tab separated school unique identifier, '
     'name, and country, respectively.')
 
 class TimelineForm(forms.GSoCModelForm):
@@ -384,60 +384,59 @@ class GSoCProgramMessagesPage(
     return url_names.GSOC_EDIT_PROGRAM_MESSAGES
 
 
-class UniversitiesForm(forms.GSoCModelForm):
-  """Form to submit list of universities."""
+class SchoolsForm(forms.GSoCModelForm):
+  """Form to submit list of schools."""
 
-  universities = forms.CharField(
-      widget=forms.Textarea(), label=_UNIVERSITIES_LIST_LABEL, 
-      help_text=_UNIVERSITIES_LIST_HELP_TEXT)
+  schools = forms.CharField(
+      widget=forms.Textarea(), label=_SCHOOLS_LIST_LABEL, 
+      help_text=_SCHOOLS_LIST_HELP_TEXT)
 
-  def clean_universities(self):
-    """Cleans data passed to universities field.
+  def clean_schools(self):
+    """Cleans data passed to schools field.
 
     Returns:
       list of tuples. Each element of that tuple represents a single
-      university and has exactly three elements. The first one is unique
-      identifier of the university, the second one is its name and the third
+      school and has exactly three elements. The first one is unique
+      identifier of the school, the second one is its name and the third
       one is the country in which the institution is located.
     """
     reader = csv.reader(
-        StringIO.StringIO(self.cleaned_data['universities']), delimiter='\t')
+        StringIO.StringIO(self.cleaned_data['schools']), delimiter='\t')
 
-    universities = []
+    schools = []
     for i, row in enumerate(reader):
       # skip empty lines
       if not row:
         continue
 
-      # check if each university description has correct number of positions
+      # check if each school description has correct number of positions
       if len(row) != 3:
         raise forms.ValidationError(
-            'University in line %s has wrong number of fields' % i)
+            'School in line %s has wrong number of fields' % i)
       else:
-        universities.append((
+        schools.append((
             html_utils.escape(row[0]),
             html_utils.escape(row[1]),
             html_utils.escape(row[2])))
 
-    return universities
+    return schools
 
 
 # TODO(daniel): this function should be transactional once Program is NDB
 #@ndb.transactional
-def _uploadUniversitiesTxn(input_data, program):
-  """Uploads a list of predefined universities from the specified input data
+def _uploadSchoolsTxn(input_data, program):
+  """Uploads a list of predefined schools from the specified input data
   for the specified program in a transaction.
 
   Args:
-    input_data: data containing universities, as received 
-      from UniversitiesForm.
+    input_data: data containing schools, as received from SchoolsForm.
     program_key: program key.
   """
-  universities_logic.uploadUniversities(input_data, program)
+  school_logic.uploadSchools(input_data, program)
 
 
-class UploadUniversitiesPage(base.GSoCRequestHandler):
-  """View for program administrators to upload list of predefined universities
+class UploadSchoolsPage(base.GSoCRequestHandler):
+  """View for program administrators to upload list of predefined schools
   for the program."""
 
   access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
@@ -446,8 +445,8 @@ class UploadUniversitiesPage(base.GSoCRequestHandler):
     """See base.GSoCRequestHandler.djangoURLPatterns for specification."""
     return [
         url_patterns.url(
-            r'program/universities/upload/%s$' % soc_url_patterns.PROGRAM,
-            self, name=url_names.GSOC_PROGRAM_UPLOAD_UNIVERSITIES),
+            r'program/schools/upload/%s$' % soc_url_patterns.PROGRAM,
+            self, name=url_names.GSOC_PROGRAM_UPLOAD_SCHOOLS),
     ]
 
   def templatePath(self):
@@ -457,18 +456,17 @@ class UploadUniversitiesPage(base.GSoCRequestHandler):
   def context(self, data, check, mutator):
     """See base.GSoCRequestHandler.context for specification."""
     return {
-        'forms': [UniversitiesForm(data=data.POST or None)]
+        'forms': [SchoolsForm(data=data.POST or None)]
         }
 
   def post(self, data, check, mutator):
     """See base.GSoCRequestHandler.post for specification."""
-    form = UniversitiesForm(data=data.POST)
+    form = SchoolsForm(data=data.POST)
     if form.is_valid():
-      _uploadUniversitiesTxn(
-          form.cleaned_data['universities'], data.program)
+      _uploadSchoolsTxn(form.cleaned_data['schools'], data.program)
 
       url = links.Linker().program(
-          data.program, url_names.GSOC_PROGRAM_UPLOAD_UNIVERSITIES)
+          data.program, url_names.GSOC_PROGRAM_UPLOAD_SCHOOLS)
       return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-call.

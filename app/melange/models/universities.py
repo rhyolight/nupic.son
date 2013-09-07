@@ -12,29 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Models that represents predefined universities."""
+"""Models that represents predefined schools."""
 
 from google.appengine.ext import ndb
 
 
-class University(ndb.Model):
-  """Model that represent a single university."""
+class School(ndb.Model):
+  """Model that represent a single school."""
 
-  #: identifier of the university
+  #: identifier of the school
   uid = ndb.StringProperty()
 
-  #: Full name of the university.
+  #: Full name of the school.
   name = ndb.StringProperty()
 
-  #: Country in which the university is located.
+  #: Country in which the school is located.
   country = ndb.StringProperty()
 
 
-class UniversityCluster(ndb.Model):
-  """Model that represent predefined universities for the program that is
+class SchoolCluster(ndb.Model):
+  """Model that represent predefined schools for the program that is
   defined by its parent key.
 
   Parent:
     soc.models.program.Program
   """
-  universities = ndb.StructuredProperty(University, repeated=True)
+  schools = ndb.StructuredProperty(School, repeated=True)
