@@ -446,9 +446,14 @@ class UploadSchoolsPage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.GSoCRequestHandler.context for specification."""
-    form = UploadSchoolsForm(
-        data=data.POST or None, blob_info=data.program.schools,
-        download_link='TODO (daniel): generate download link')
+    if data.program.schools is not None:
+      form = UploadSchoolsForm(
+          data=data.POST or None, blob_info=data.program.schools,
+          download_link=links.Linker().program(
+              data.program, url_names.GSOC_PROGRAM_DOWNLOAD_SCHOOLS))
+    else:
+      form = UploadSchoolsForm(data=data.POST or None)
+
     return {
         'page_name': _UPLOAD_SCHOOLS_PAGE_NAME,
         'forms': [form],
