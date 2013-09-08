@@ -15,6 +15,7 @@
 """Unit tests for program related views."""
 
 import datetime
+import tempfile
 
 from google.appengine.ext import ndb
 
@@ -323,7 +324,7 @@ class UploadSchoolsPageTest(test_utils.GSoCDjangoTestCase):
   def _assertPageTemplatesUsed(self, response):
     """Asserts that all templates for the tested page are used."""
     self.assertGSoCTemplatesUsed(response)
-    self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/program/schools.html')
 
   def _getUrl(self):
     """Returns URL to the tested page."""
@@ -340,21 +341,19 @@ class UploadSchoolsPageTest(test_utils.GSoCDjangoTestCase):
     """Tests that schools are uploaded correctly."""
     self.profile_helper.createHost()
 
-    post_data = {'schools': TEST_SCHOOLS_GOOD_INPUT}
-    response = self.post(self._getUrl(), post_data)
+    # check that there is no file with schools at this stage
+    self.assertIsNone(self.program.schools)
 
-    self.assertResponseRedirect(response, self._getUrl())
+    with tempfile.NamedTemporaryFile() as test_file:
+      # check for the enrollment form
+      url = self._getUrl()
+      postdata = {'schools': test_file}
+      response = self.post(url, postdata)
+      self.assertResponseRedirect(response, url)
 
-    # check that schools are uploaded now
-    school_clusters = ndb.Query(
-        kind=school_model.SchoolCluster._get_kind(),
-        ancestor=ndb.Key.from_old_key(self.program.key())).fetch(1000)
-
-    schools = []
-    for school_cluster in school_clusters:
-      schools.extend(school_cluster.schools)
-
-    self.assertEquals(len(schools), 3)
+      # check if the file has been uploaded
+      program = program_model.GSoCProgram.get(self.program.key())
+      self.assertIsNotNone(program.schools)
 
   def testSchoolsNotUploadedOnBadInput(self):
     """Tests that schools are not uploaded if input is not valid."""

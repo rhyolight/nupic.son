@@ -14,9 +14,7 @@
 
 """Module for the program settings pages."""
 
-import csv
-import StringIO
-
+from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
 from django import forms as django_forms
@@ -72,6 +70,8 @@ _SCHOOLS_LIST_LABEL = translation.ugettext('List of Schools')
 _SCHOOLS_LIST_HELP_TEXT = translation.ugettext(
     'Each line should contain tab separated school unique identifier, '
     'name, and country, respectively.')
+
+_UPLOAD_SCHOOLS_PAGE_NAME = translation.ugettext('Upload list of schools')
 
 class TimelineForm(forms.GSoCModelForm):
   """Django form to edit timeline settings."""
@@ -384,44 +384,6 @@ class GSoCProgramMessagesPage(
     return url_names.GSOC_EDIT_PROGRAM_MESSAGES
 
 
-class SchoolsForm(forms.GSoCModelForm):
-  """Form to submit list of schools."""
-
-  schools = forms.CharField(
-      widget=forms.Textarea(), label=_SCHOOLS_LIST_LABEL, 
-      help_text=_SCHOOLS_LIST_HELP_TEXT)
-
-  def clean_schools(self):
-    """Cleans data passed to schools field.
-
-    Returns:
-      list of tuples. Each element of that tuple represents a single
-      school and has exactly three elements. The first one is unique
-      identifier of the school, the second one is its name and the third
-      one is the country in which the institution is located.
-    """
-    reader = csv.reader(
-        StringIO.StringIO(self.cleaned_data['schools']), delimiter='\t')
-
-    schools = []
-    for i, row in enumerate(reader):
-      # skip empty lines
-      if not row:
-        continue
-
-      # check if each school description has correct number of positions
-      if len(row) != 3:
-        raise forms.ValidationError(
-            'School in line %s has wrong number of fields' % i)
-      else:
-        schools.append((
-            html_utils.escape(row[0]),
-            html_utils.escape(row[1]),
-            html_utils.escape(row[2])))
-
-    return schools
-
-
 # TODO(daniel): this function should be transactional once Program is NDB
 #@ndb.transactional
 def _uploadSchoolsTxn(input_data, program):
@@ -433,6 +395,12 @@ def _uploadSchoolsTxn(input_data, program):
     program_key: program key.
   """
   school_logic.uploadSchools(input_data, program)
+
+
+class UploadSchoolsForm(forms.GSoCModelForm):
+  """Form to upload list of predefined schools for the program."""
+
+  schools = forms.FileField()
 
 
 class UploadSchoolsPage(base.GSoCRequestHandler):
@@ -451,24 +419,36 @@ class UploadSchoolsPage(base.GSoCRequestHandler):
 
   def templatePath(self):
     """See base.GSoCRequestHandler.templatePath for specification."""
-    return 'modules/gsoc/form_base.html'
+    return 'modules/gsoc/program/schools.html'
+
+  def jsonContext(self, data, check, mutator):
+    """See base.GSoCRequestHandler.jsonContext for specification."""
+    url = links.Linker().program(
+        data.program, url_names.GSOC_PROGRAM_UPLOAD_SCHOOLS)
+    return {
+        'upload_link': blobstore.create_upload_url(url),
+        }
 
   def context(self, data, check, mutator):
     """See base.GSoCRequestHandler.context for specification."""
     return {
-        'forms': [SchoolsForm(data=data.POST or None)]
+        'page_name': _UPLOAD_SCHOOLS_PAGE_NAME,
+        'forms': [UploadSchoolsForm(data=data.POST or None)]
         }
 
   def post(self, data, check, mutator):
     """See base.GSoCRequestHandler.post for specification."""
-    form = SchoolsForm(data=data.POST)
-    if form.is_valid():
-      _uploadSchoolsTxn(form.cleaned_data['schools'], data.program)
+    form = UploadSchoolsForm(data=data.POST, files=data.request.file_uploads)
+    if not form.is_valid():
+      # we are not storing this form, remove the uploaded blob from the cloud
+      for blob_info in data.request.file_uploads.itervalues():
+        blob_info.delete()
 
-      url = links.Linker().program(
-          data.program, url_names.GSOC_PROGRAM_UPLOAD_SCHOOLS)
-      return http.HttpResponseRedirect(url)
     else:
-      # TODO(nathaniel): problematic self-call.
-      return self.get(data, check, mutator)
-    
+      data.program.schools = blobstore.BlobInfo(form.cleaned_data['schools'])
+      data.program.put()
+
+    # TODO(daniel): inform user about possible errors somehow
+    url = links.Linker().program(
+        data.program, url_names.GSOC_PROGRAM_UPLOAD_SCHOOLS)
+    return http.HttpResponseRedirect(url)
