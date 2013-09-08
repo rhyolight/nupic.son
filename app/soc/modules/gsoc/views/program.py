@@ -31,6 +31,7 @@ from soc.logic.helper import notifications
 from soc.models import document
 from soc.views import program as soc_program_view
 from soc.views.helper import access_checker
+from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns as soc_url_patterns
 
 from soc.modules.gsoc.models import program as program_model
@@ -472,3 +473,23 @@ class UploadSchoolsPage(base.GSoCRequestHandler):
     url = links.Linker().program(
         data.program, url_names.GSOC_PROGRAM_UPLOAD_SCHOOLS)
     return http.HttpResponseRedirect(url)
+
+
+class DownloadSchoolsHandler(base.GSoCRequestHandler):
+  """Handler to download a previously uploaded file with schools that are
+  defined for the specified program.
+  """
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    """See base.GSoCRequestHandler.djangoURLPatterns for specification."""
+    return [
+        url_patterns.url(
+            r'program/schools/download/%s$' % soc_url_patterns.PROGRAM,
+            self, name=url_names.GSOC_PROGRAM_DOWNLOAD_SCHOOLS),
+    ]
+
+  def get(self, data, check, mutator):
+    """See base.GSoCRequestHandler.get for specification."""
+    return bs_helper.sendBlob(data.program.schools)
