@@ -348,7 +348,11 @@ class GSoCBoundField(forms.BoundField):
         note if note else self.help_text)
 
   def div_class(self):
-    prefix = getattr(self.form.Meta, 'css_prefix', None)
+    if hasattr(self.form, 'Meta'):
+      prefix = getattr(self.form.Meta, 'css_prefix', None)
+    else:
+      prefix = None
+
     name = prefix + '_' + self.name if prefix else self.name
 
     widget_div_class = self.field.widget.attrs.get('div_class', None)
