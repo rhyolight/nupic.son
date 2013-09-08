@@ -65,13 +65,14 @@ TEST_ORG_ENTITY = {
 TEST_PROPOSAL_TITLE = translation.ugettext(
     'Proposal title for test')
 
-_SCHOOLS_LIST_LABEL = translation.ugettext('List of Schools')
+_SCHOOLS_LIST_LABEL = translation.ugettext('File to upload')
 
 _SCHOOLS_LIST_HELP_TEXT = translation.ugettext(
-    'Each line should contain tab separated school unique identifier, '
+    'File with a list of predefined schools to be uploaded for the program. '
+    'Each line should contain tab separated unique school identifier, '
     'name, and country, respectively.')
 
-_UPLOAD_SCHOOLS_PAGE_NAME = translation.ugettext('Upload list of schools')
+_UPLOAD_SCHOOLS_PAGE_NAME = translation.ugettext('Upload schools for program')
 
 class TimelineForm(forms.GSoCModelForm):
   """Django form to edit timeline settings."""
@@ -400,7 +401,8 @@ def _uploadSchoolsTxn(input_data, program):
 class UploadSchoolsForm(forms.GSoCModelForm):
   """Form to upload list of predefined schools for the program."""
 
-  schools = forms.FileField()
+  schools = forms.FileField(
+      label=_SCHOOLS_LIST_LABEL, help_text=_SCHOOLS_LIST_HELP_TEXT)
 
 
 class UploadSchoolsPage(base.GSoCRequestHandler):
@@ -431,9 +433,11 @@ class UploadSchoolsPage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.GSoCRequestHandler.context for specification."""
+    form = UploadSchoolsForm(data=data.POST or None)
     return {
         'page_name': _UPLOAD_SCHOOLS_PAGE_NAME,
-        'forms': [UploadSchoolsForm(data=data.POST or None)]
+        'forms': [form],
+        'error': bool(form.errors),
         }
 
   def post(self, data, check, mutator):
@@ -444,6 +448,8 @@ class UploadSchoolsPage(base.GSoCRequestHandler):
       for blob_info in data.request.file_uploads.itervalues():
         blob_info.delete()
 
+      # TODO(nathaniel): problematic self-use.
+      return self.get(data, check, mutator)
     else:
       data.program.schools = blobstore.BlobInfo(form.cleaned_data['schools'])
       data.program.put()
