@@ -404,6 +404,18 @@ class UploadSchoolsForm(forms.GSoCModelForm):
   schools = forms.FileField(
       label=_SCHOOLS_LIST_LABEL, help_text=_SCHOOLS_LIST_HELP_TEXT)
 
+  def __init__(self, blob_info=None, download_link=None, **kwargs):
+    """Initializes a new instance of the form.
+
+    Args:
+      blob_info: blobstore.BlobInfo with the previously uploaded file.
+      download_link: URL to download the previously uploaded file.
+    """
+    super(UploadSchoolsForm, self).__init__(**kwargs)
+    field = self.fields['schools']
+    field._file = blob_info
+    field._link = download_link
+
 
 class UploadSchoolsPage(base.GSoCRequestHandler):
   """View for program administrators to upload list of predefined schools
@@ -433,7 +445,9 @@ class UploadSchoolsPage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.GSoCRequestHandler.context for specification."""
-    form = UploadSchoolsForm(data=data.POST or None)
+    form = UploadSchoolsForm(
+        data=data.POST or None, blob_info=data.program.schools,
+        download_link='TODO (daniel): generate download link')
     return {
         'page_name': _UPLOAD_SCHOOLS_PAGE_NAME,
         'forms': [form],

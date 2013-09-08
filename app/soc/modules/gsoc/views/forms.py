@@ -269,7 +269,7 @@ class GSoCBoundField(forms.BoundField):
         }
     return self.as_widget(attrs=attrs)
 
-  def renderFileInput(self):
+  def renderFileInput(self):    
     attrs = {
         'id': self.name + self.idSuffix(self),
         }
@@ -283,6 +283,8 @@ class GSoCBoundField(forms.BoundField):
         <p>
     """
 
+    import logging
+    logging.error(self.field._file)
     current_file = current_file_fmt % {
         'name': self.field._file.filename,
         'link': self.field._link,
