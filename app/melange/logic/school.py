@@ -14,11 +14,17 @@
 
 """Logic for schools."""
 
+import collections
 import csv
+import json
 
+from google.appengine.api import memcache
 from google.appengine.ext import blobstore
+
 from django.utils import html as html_utils
 
+
+_SCHOOL_LIST_MEMCACHE_KEY_PATTERN = 'schools/%(program_key)s'
 
 class School(object):
   """Class that represents a single school."""
@@ -72,13 +78,20 @@ def getMappedByCountries(program):
     a dict that maps countries to list of names of schools that are located
     in the given country.
   """
-  school_map = {}
-
   if program.schools:
-    schools = getSchoolsFromReader(blobstore.BlobReader(program.schools))
-    for school in schools:
-      if school.country not in school_map.keys():
-        school_map[school.country] = []
-      school_map[school.country].append(school.name)
+    memcache_key = _SCHOOL_LIST_MEMCACHE_KEY_PATTERN % {
+        'program_key': program.key().name()
+        }
+    cached_map = memcache.get(memcache_key)
+    if cached_map is not None:
+      return json.loads(cached_map)
+    else:
+      school_map = collections.defaultdict(list)
+      schools = getSchoolsFromReader(blobstore.BlobReader(program.schools))
+      for school in schools:
+        school_map[school.country].append(school.name)
 
-  return school_map
+      memcache.set(memcache_key, json.dumps(school_map))
+      return school_map
+  else:
+    return {}

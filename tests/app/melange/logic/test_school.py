@@ -18,6 +18,7 @@ import mock
 import StringIO
 import unittest
 
+from google.appengine.api import memcache
 from google.appengine.ext import blobstore
 
 from melange.logic import school as school_logic
@@ -83,3 +84,23 @@ class GetMappedByCountriesTest(unittest.TestCase):
     self.program.schools = 'mock key'
     school_map = school_logic.getMappedByCountries(self.program)
     self.assertDictEqual(school_map, EXPECTED_SCHOOL_MAP)
+
+  @mock.patch.object(school_logic, 'getSchoolsFromReader',
+      return_value=TEST_LIST_OF_SCHOOLS)
+  def testMemcacheUsage(self, mock_func):
+    """Tests that memcache is used to help to get predefined schools."""
+    self.program.schools = 'mock key'
+
+    # check that schools are not found in cache by the first call
+    school_logic.getMappedByCountries(self.program)
+
+    stats = memcache.get_stats()
+    self.assertEqual(stats['misses'], 1)
+    self.assertEqual(stats['hits'], 0)
+
+    # check that schools are found in cache by the second call
+    school_logic.getMappedByCountries(self.program)
+
+    stats = memcache.get_stats()
+    self.assertEqual(stats['misses'], 1)
+    self.assertEqual(stats['hits'], 1)
