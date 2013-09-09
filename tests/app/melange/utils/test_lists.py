@@ -129,6 +129,124 @@ class TestGSoCProjectsColumns(unittest.TestCase):
     self.assertEqual(expected_value, org_column.getValue(self.project))
 
 
+class TestCustomRow(lists.RedirectCustomRow):
+  """An implementation of RedirectCustomRow class to be used in tests."""
+
+  def getLink(self, item):
+    """See lists.RedirectCustomRow for specification."""
+    return 'test/link/to/%s' % item['name']
+
+
+class TestCustomButton(lists.RedirectCustomButton):
+  """An implementation of RedirectCustomButton class to be used in tests."""
+
+  def getLink(self, item):
+    """See lists.RedirectCustomButton for specification."""
+    return 'test/link/to/%s' % item['name']
+
+  def getCaption(self, item):
+    """See lists.RedirectCustomButton for specification."""
+    return 'Click on %s' % item['name']
+
+
+class TestRedirectCustomRow(unittest.TestCase):
+  """Tests RedirectCustomRow class."""
+
+  def setUp(self):
+    self.test_custom_row = TestCustomRow(True)
+    self.test_list_item = {'key': '1', 'name': 'foo'}
+
+  def testGetOperations(self):
+    """Tests getOperations method."""
+    expected_operations = {
+        'type': 'redirect_custom',
+        'parameters': {'new_window': True}
+    }
+    self.assertDictEqual(
+        expected_operations, self.test_custom_row.getOperations())
+
+  def testGetCustomParameters(self):
+    """Tests getCustomParameters method."""
+    expected_parameters = {'link': 'test/link/to/foo'}
+    self.assertDictEqual(expected_parameters,
+        self.test_custom_row.getCustomParameters(self.test_list_item))
+
+
+class TestRedirectCustomButton(unittest.TestCase):
+  """Tests RedirectCustomButton class."""
+
+  def setUp(self):
+    self.test_custom_button = TestCustomButton('btn_redirect_custom',
+        'Redirect Custom Button', [1, 1], True)
+    self.test_list_item = {'key': '1', 'name': 'bar'}
+
+  def testGetOperations(self):
+    """Tests getOperations method."""
+    expected_operations = {
+        'id': 'btn_redirect_custom',
+        'caption': 'Redirect Custom Button',
+        'bounds': [1, 1],
+        'type': 'redirect_custom',
+        'parameters': {'new_window': True}
+    }
+    self.assertDictEqual(
+        expected_operations, self.test_custom_button.getOperations())
+
+  def testGetCustomParameters(self):
+    """Tests getCustomParameters method."""
+    expected_parameters = {
+        'link': 'test/link/to/bar',
+        'caption': 'Click on bar'
+    }
+    self.assertDictEqual(expected_parameters,
+        self.test_custom_button.getCustomParameters(self.test_list_item))
+
+
+class TestRedirectSimpleButton(unittest.TestCase):
+  """Tests RedirectSimpleButton class."""
+
+  def setUp(self):
+    self.test_simple_button = lists.RedirectSimpleButton('btn_redirect_simple',
+        'Redirect Simple Button', [1, 1], 'test_link', True)
+
+  def testGetOperations(self):
+    """Tests getOperations method."""
+    expected_operations = {
+        'id': 'btn_redirect_simple',
+        'caption': 'Redirect Simple Button',
+        'bounds': [1, 1],
+        'type': 'redirect_simple',
+        'parameters': {'new_window': True, 'link': 'test_link'}
+    }
+    self.assertDictEqual(
+        expected_operations, self.test_simple_button.getOperations())
+
+
+class TestPostButton(unittest.TestCase):
+  """Tests PostButton class."""
+
+  def setUp(self):
+    self.test_post_button = lists.PostButton('btn_post', 'Post Button', [1, 1],
+                                             'test_url', ['key', 'name'])
+
+  def testGetOperations(self):
+    """Tests getOperations method."""
+    expected_operations = {
+        'id': 'btn_post',
+        'caption': 'Post Button',
+        'bounds': [1, 1],
+        'type': 'post',
+        'parameters': {
+            'url': 'test_url',
+            'keys': ['key', 'name'],
+            'refresh': 'current',
+            'redirect': False
+        }
+    }
+    self.assertDictEqual(
+        expected_operations, self.test_post_button.getOperations())
+
+
 class TestDBModel(db.Model):
   """Used to create db entities for tests."""
   name = db.StringProperty()
