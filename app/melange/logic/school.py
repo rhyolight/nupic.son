@@ -16,6 +16,7 @@
 
 import csv
 
+from google.appengine.ext import blobstore
 from django.utils import html as html_utils
 
 
@@ -58,3 +59,26 @@ def getSchoolsFromReader(reader):
             html_utils.escape(row[1]),
             html_utils.escape(row[2])))
     return schools
+
+
+def getMappedByCountries(program):
+  """Returns a dictionary that maps countries to schools that are located in
+  these countries.
+
+  Args:
+    program: program entity.
+
+  Returns:
+    a dict that maps countries to list of names of schools that are located
+    in the given country.
+  """
+  school_map = {}
+
+  if program.schools:
+    schools = getSchoolsFromReader(blobstore.BlobReader(program.schools))
+    for school in schools:
+      if school.country not in school_map.keys():
+        school_map[school.country] = []
+      school_map[school.country].append(school.name)
+
+  return school_map
