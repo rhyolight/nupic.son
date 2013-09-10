@@ -76,6 +76,8 @@ DEF_ROLE_TARGET_COUNTRY = 'United States'
 DEF_ROLE_COUNTRY_PAIRS = [('res_country', 'res_state'),
                           ('ship_country', 'ship_state')]
 
+USER_DOES_NOT_EXIST_ERROR_MSG = 'User %s does not exist.'
+
 # The Django documentation is unclear on why ValidationErrors carry a
 # "code" and what that code is supposed to signify, but for some reason
 # this seems to be necessary.
@@ -205,7 +207,8 @@ def clean_existing_user(field_name):
 
     if not user_entity:
       # user does not exist
-      raise forms.ValidationError('This user does not exist.')
+      raise forms.ValidationError(
+          USER_DOES_NOT_EXIST_ERROR_MSG % link_id)
 
     return user_entity
   return wrapped
