@@ -14,6 +14,8 @@
 
 """Module with Code In specific connection views."""
 
+from google.appengine.api import users as gae_users
+
 from django import forms as django_forms
 from django import http
 from django.utils import translation
@@ -30,7 +32,9 @@ from melange.views import connection as connection_view
 
 from soc.logic import cleaning
 from soc.logic import links
+from soc.logic import user as user_logic
 from soc.logic.helper import notifications
+from soc.models import user as user_model
 from soc.modules.gci.views import base
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_patterns as ci_url_patterns
@@ -130,11 +134,13 @@ class ConnectionForm(gci_forms.GCIModelForm):
       required=True, label=CONNECTION_FORM_USERS_LABEL,
       help_text=CONNECTION_FORM_USERS_HELP_TEXT)
   message = gci_forms.CharField(widget=gci_forms.Textarea(), required=False)
-  role = gci_forms.CharField()
+  role = gci_forms.ChoiceField()
 
-  def __init__(self, **kwargs):
+  def __init__(self, request_data=None, **kwargs):
     """Initializes a new instance of connection form."""
     super(ConnectionForm, self).__init__(**kwargs)
+
+    self.request_data = request_data
 
     self.fields['message'].label = START_CONNECTION_MESSAGE_LABEL
 
@@ -143,6 +149,62 @@ class ConnectionForm(gci_forms.GCIModelForm):
         choices=USER_ROLE_CHOICES)
     self.fields['user_role'].label = CONNECTION_FORM_USER_ROLE_LABEL
     self.fields['user_role'].help_text = CONNECTION_FORM_USER_ROLE_HELP_TEXT
+
+  def clean_users(self):
+    """Generate lists with the provided link_ids/emails sorted into categories.
+
+    Overrides the default cleaning of the link_ids field to add custom
+    validation to the users field.
+    """
+    identifiers = set([
+        token.strip() for token in self.cleaned_data['users'].split(',')])
+
+    emails = []
+    users = []
+    profiles = []
+    error_list = []
+
+    for identifier in identifiers:
+      try:
+        if '@' in identifier:
+          cleaning.cleanEmail(identifier)
+          account = gae_users.User(identifier)
+          user = user_logic.forAccount(account)
+          if not user:
+            emails.append(identifier)
+          else:
+            profile = profile_logic.getProfileForUsername(
+                user.url_id, self.request_data.program.key())
+            if profile:
+              profiles.append(profile)
+            else:
+              users.append(user)
+        else:
+          cleaning.cleanLinkID(identifier)
+          profile = profile_logic.getProfileForUsername(
+              identifier, self.request_data.program.key())
+          if profile:
+            profiles.append(profile)
+          else:
+            user = user_model.User.get_by_key_name(identifier)
+            if user:
+              users.append(user)
+            else:
+              raise gci_forms.ValidationError(
+                  cleaning.USER_DOES_NOT_EXIST_ERROR_MSG % identifier)
+      except gci_forms.ValidationError as e:
+        error_list.append(e.messages)
+
+    # form is not valid if at least one error occurred
+    if error_list:
+      raise gci_forms.ValidationError(error_list)
+
+    # TODO(daniel): anonymous connections should be supported
+    if users or emails:
+      raise gci_forms.ValidationError(
+          'Anonymous connections are not supported.')
+
+    return profiles, users, emails
 
   def setHelpTextForMessage(self, help_text):
     """Sets help text for 'message' field.
@@ -217,8 +279,7 @@ def _formToStartConnectionAsOrg(**kwargs):
   form.removeField('user_role')
   form.fields['role'].label = CONNECTION_FORM_ORG_ROLE_LABEL
   form.fields['role'].help_text = CONNECTION_FORM_ORG_ROLE_HELP_TEXT
-  form.fields['role'].widget = django_forms.fields.Select(
-        choices=ACTUAL_ORG_ROLE_CHOICES)
+  form.fields['role'].choices = ACTUAL_ORG_ROLE_CHOICES
 
   form.setHelpTextForMessage(CONNECTION_AS_ORG_FORM_MESSAGE_HELP_TEXT)
   return form
@@ -337,10 +398,23 @@ class StartConnectionAsOrg(base.GCIRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.GCIRequestHandler.context for specification."""
+    form = _formToStartConnectionAsOrg(
+        data=data.POST or None, request_data=data)
+
     return {
         'page_name': START_CONNECTION_AS_ORG_PAGE_NAME,
-        'forms': [_formToStartConnectionAsOrg()]
+        'forms': [form],
+        'error': bool(form.errors)
         }
+
+  def post(self, data, check, mutator):
+    """See base.GCIRequestHandler.post for specification."""
+    form = _formToStartConnectionAsOrg(data=data.POST, request_data=data)
+    if form.is_valid():
+      raise exception.Forbidden('TODO(daniel): implement the function.')
+    else:
+      # TODO(nathaniel): problematic self-call.
+      return self.get(data, check, mutator)
 
 
 class ManageConnectionAsUser(base.GCIRequestHandler):
