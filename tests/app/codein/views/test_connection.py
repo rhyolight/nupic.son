@@ -66,6 +66,39 @@ class NoConnectionExistsAccessCheckerTest(unittest.TestCase):
       access_checker.checkAccess(self.data, None, None)
 
 
+class StartConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
+  """Unit tests for StartConnectionAsOrg class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def _getUrl(self, org):
+    """Returns URL to 'start connection as organization' view for
+    the specified organization.
+
+    Args:
+      org: organization entity.
+
+    Returns:
+      URL to 'start connection as organization' view.
+    """
+    return '/gci/connection/start/org/%s' % org.key().name()
+
+  def _assertPageTemplatesUsed(self, response):
+    """Asserts that all templates for the tested page are used."""
+    self.assertGCITemplatesUsed(response)
+    self.assertTemplateUsed(
+        response, 'codein/connection/start_connection_as_org.html')
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    self.profile_helper.createOrgAdmin(self.org)
+    response = self.get(self._getUrl(self.org))
+    self.assertResponseOK(response)
+    self._assertPageTemplatesUsed(response)
+
+
 class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):
   """Unit tests for ShowConnectionAsUser class."""
 

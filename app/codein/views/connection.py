@@ -43,17 +43,35 @@ MESSAGE_FORM_NAME = 'message_form'
 MANAGE_CONNECTION_AS_USER_PAGE_NAME = translation.ugettext(
     'Manage connection')
 
+START_CONNECTION_AS_ORG_PAGE_NAME = translation.ugettext(
+    'Start connections with users')
+
 START_CONNECTION_AS_USER_PAGE_NAME = translation.ugettext(
     'Start connection with organization')
 
 START_CONNECTION_MESSAGE_LABEL = translation.ugettext(
     'Message')
 
+CONNECTION_FORM_USERS_HELP_TEXT = translation.ugettext(
+    'Comma separated list of usernames')
+
+CONNECTION_FORM_USERS_LABEL = translation.ugettext(
+    'Users')
+
 CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT = translation.ugettext(
     'Optional message to the organization')
 
+CONNECTION_AS_ORG_FORM_MESSAGE_HELP_TEXT = translation.ugettext(
+    'Optional message to users')
+
+CONNECTION_FORM_ORG_ROLE_HELP_TEXT = translation.ugettext(
+    'What type of role you designate to the users')
+
 CONNECTION_FORM_USER_ROLE_HELP_TEXT = translation.ugettext(
     'Whether you request role from organization or not')
+
+CONNECTION_FORM_ORG_ROLE_LABEL = translation.ugettext(
+    'Role To Assign')
 
 CONNECTION_FORM_USER_ROLE_LABEL = translation.ugettext(
     'Role For Organization')
@@ -71,7 +89,13 @@ USER_ROLE_CHOICES = (
     (connection_model.NO_ROLE, 'No'),
     (connection_model.ROLE, 'Yes'))
 
-ROLE_CHOICES = [
+ACTUAL_ORG_ROLE_CHOICES = [
+    (connection_model.MENTOR_ROLE, 'Mentor'),
+    (connection_model.ORG_ADMIN_ROLE, 'Organization Admin'),
+    ]
+
+ALL_ORG_ROLE_CHOICES = [
+    (connection_model.NO_ROLE, 'No Role'),
     (connection_model.MENTOR_ROLE, 'Mentor'),
     (connection_model.ORG_ADMIN_ROLE, 'Organization Admin'),
     ]
@@ -94,7 +118,7 @@ class NoConnectionExistsAccessChecker(access.AccessChecker):
 
 NO_CONNECTION_EXISTS_ACCESS_CHECKER = NoConnectionExistsAccessChecker()
 
-
+  
 class ConnectionForm(gci_forms.GCIModelForm):
   """Django form to show specific fields for an organization.
 
@@ -102,7 +126,11 @@ class ConnectionForm(gci_forms.GCIModelForm):
   to accommodate actual use cases.
   """
 
+  users = gci_forms.CharField(
+      required=True, label=CONNECTION_FORM_USERS_LABEL,
+      help_text=CONNECTION_FORM_USERS_HELP_TEXT)
   message = gci_forms.CharField(widget=gci_forms.Textarea(), required=False)
+  role = gci_forms.CharField()
 
   def __init__(self, **kwargs):
     """Initializes a new instance of connection form."""
@@ -178,6 +206,24 @@ class MessageForm(gci_forms.GCIModelForm):
           code='invalid')
 
 
+def _formToStartConnectionAsOrg(**kwargs):
+  """Returns a Django form to start connection as an organization
+  administrator.
+
+  Returns:
+    ConnectionForm adjusted to start connection as organization administrator.
+  """
+  form = ConnectionForm(**kwargs)
+  form.removeField('user_role')
+  form.fields['role'].label = CONNECTION_FORM_ORG_ROLE_LABEL
+  form.fields['role'].help_text = CONNECTION_FORM_ORG_ROLE_HELP_TEXT
+  form.fields['role'].widget = django_forms.fields.Select(
+        choices=ACTUAL_ORG_ROLE_CHOICES)
+
+  form.setHelpTextForMessage(CONNECTION_AS_ORG_FORM_MESSAGE_HELP_TEXT)
+  return form
+
+
 def _formToStartConnectionAsUser(**kwargs):
   """Returns a Django form to start connection as a user.
 
@@ -186,6 +232,8 @@ def _formToStartConnectionAsUser(**kwargs):
   """
   form = ConnectionForm(**kwargs)
   form.removeField('user_role')
+  form.removeField('role')
+  form.removeField('users')
   form.setHelpTextForMessage(CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT)
   return form
 
@@ -198,6 +246,8 @@ def _formToManageConnectionAsUser(**kwargs):
   """
   form = ConnectionForm(**kwargs)
   form.removeField('message')
+  form.removeField('role')
+  form.removeField('users')
   return form
 
 
@@ -265,6 +315,32 @@ class StartConnectionAsUser(base.GCIRequestHandler):
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
+
+
+class StartConnectionAsOrg(base.GCIRequestHandler):
+  """View to start connections with users as organization administrators."""
+
+  # TODO(daniel): add actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    """See base.GCIRequestHandler.djangoURLPatterns for specification."""
+    return [
+        ci_url_patterns.url(
+            r'connection/start/org/%s$' % url_patterns.ORG,
+            self, name=urls.UrlNames.CONNECTION_START_AS_ORG)
+    ]
+
+  def templatePath(self):
+    """See base.GCIRequestHandler.templatePath for specification."""
+    return 'codein/connection/start_connection_as_org.html'
+
+  def context(self, data, check, mutator):
+    """See base.GCIRequestHandler.context for specification."""
+    return {
+        'page_name': START_CONNECTION_AS_ORG_PAGE_NAME,
+        'forms': [_formToStartConnectionAsOrg()]
+        }
 
 
 class ManageConnectionAsUser(base.GCIRequestHandler):
