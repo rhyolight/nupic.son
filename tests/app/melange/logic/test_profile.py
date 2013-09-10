@@ -21,6 +21,7 @@ from melange.logic import profile as profile_logic
 from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model
+from soc.models import user as user_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
@@ -360,3 +361,41 @@ class AssignOrgAdminRoleForOrgTest(unittest.TestCase):
     self.assertIn(other_org.key(), self.profile.mentor_for)
     self.assertTrue(self.profile.is_org_admin)
     self.assertListEqual(self.profile.org_admin_for, [self.org.key()])
+
+
+class GetProfileForUsernameTest(unittest.TestCase):
+  """Unit tests for getProfileForUsername function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    # seed a program
+    self.program_key = seeder_logic.seed(program_model.Program).key()
+
+    # seed a user
+    user_properties = {'key_name': 'test'}
+    self.user = seeder_logic.seed(user_model.User, properties=user_properties)
+
+    # seed a profile
+    profile_properties = {
+        'key_name': '%s/%s' % (
+            self.program_key.name(), self.user.key().name()),
+        'parent': self.user,
+        }
+    self.profile = seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
+
+  def testForNoProfile(self):
+    """Tests that no entity is returned when a user does not have a profile."""
+    profile = profile_logic.getProfileForUsername('other', self.program_key)
+    self.assertIsNone(profile)
+
+  def testForOtherProgram(self):
+    """Tests that no entity is returned for a different program."""
+    other_program = seeder_logic.seed(program_model.Program)
+    profile = profile_logic.getProfileForUsername('other', other_program.key())
+    self.assertIsNone(profile)
+
+  def testForExistingProfile(self):
+    """Tests that profile is returned if exists."""
+    profile = profile_logic.getProfileForUsername('test', self.program_key)
+    self.assertEqual(profile.key(), self.profile.key())

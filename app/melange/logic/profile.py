@@ -14,6 +14,8 @@
 
 """Logic for profiles."""
 
+from google.appengine.ext import db
+
 from melange import types
 from melange.appengine import db as melange_db
 
@@ -138,6 +140,25 @@ def assignOrgAdminRoleForOrg(profile, org_key):
     profile.is_org_admin = True
     profile.org_admin_for.append(org_key)
     profile.put()
+
+
+def getProfileForUsername(username, program_key, models=types.MELANGE_MODELS):
+  """Returns profile entity for a user with the specified username and
+  for the specified program.
+
+  Args:
+    username: a string containing username of the user.
+    program_key: program key.
+    models: instance of types.Models that represent appropriate models.
+
+  Returns:
+    profile entity for the specified user and program or None if the user
+    does not have a profile for this program.
+  """
+  profile_key = db.Key.from_path(
+      models.profile_model.kind(), '%s/%s' % (program_key.name(), username),
+      parent=db.Key.from_path('User', username))
+  return db.get(profile_key)
 
 
 def _handleExtraAttrs(query, extra_attrs):

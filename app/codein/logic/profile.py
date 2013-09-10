@@ -135,3 +135,19 @@ def isMentorRoleEligibleForOrg(profile, org_key):
     return canResignAsOrgAdminForOrg(profile, org_key)
   else:
     return rich_bool.TRUE
+
+
+def getProfileForUsername(username, program_key):
+  """Returns profile entity for a user with the specified username and
+  for the specified program.
+
+  Args:
+    username: a string containing username of the user.
+    program_key: program key.
+
+  Returns:
+    profile entity for the specified user and program or None if the user
+    does not have a profile for this program.
+  """
+  return profile_logic.getProfileForUsername(username, program_key,
+      models=types.CI_MODELS)
