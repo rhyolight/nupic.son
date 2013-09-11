@@ -54,6 +54,20 @@ def _getManageAsUserUrl(connection):
       connection.parent_key().name(), connection.key().id())
 
 
+def _getManageAsOrgUrl(connection):
+  """Returns URL to 'Manage Connection As Org' page for the specified
+  connection entity.
+
+  Args:
+    connection: connection entity.
+
+  Returns:
+    The URL to 'Manage Connection As Org' for the specified connection.
+  """
+  return '/gci/connection/manage/org/%s/%s' % (
+      connection.parent_key().name(), connection.key().id())
+
+
 class NoConnectionExistsAccessCheckerTest(unittest.TestCase):
   """Unit tests for NoConnectionExistsAccessChecker class."""
 
@@ -214,6 +228,28 @@ class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):
         new=access.ALL_ALLOWED_ACCESS_CHECKER):
       response = self.post(url)
       self.assertResponseBadRequest(response)
+
+
+class ManageConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
+  """Unit tests for ManageConnectionAsOrg class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    self.profile_helper.createOrgAdmin(self.org)
+
+    profile_helper = profile_utils.GCIProfileHelper(
+       self.program, False)
+    profile_helper.createOtherUser('other@example.com')
+    other_profile = profile_helper.createProfile()
+
+    connection = connection_utils.seed_new_connection(other_profile, self.org)
+
+    response = self.get(_getManageAsOrgUrl(connection))
+    self.assertResponseOK(response)
 
 
 class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):

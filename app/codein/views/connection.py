@@ -501,6 +501,31 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
       raise exception.BadRequest('No valid form data is found in POST.')
 
 
+class ManageConnectionAsOrg(base.GCIRequestHandler):
+  """View to manage an existing connection by the organization."""
+
+  # TODO(daniel): add actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    """See base.GCIRequestHandler.djangoURLPatterns for specification."""
+    return [
+        ci_url_patterns.url(
+            r'connection/manage/org/%s$' % url_patterns.USER_ID,
+            self, name=urls.UrlNames.CONNECTION_MANAGE_AS_ORG)
+    ]
+
+  def templatePath(self):
+    """See base.GCIRequestHandler.templatePath for specification."""
+    return 'codein/connection/manage_connection_as_user.html'
+
+  def context(self, data, check, mutator):
+    """See base.GCIRequestHandler.context for specification."""
+    return {
+        'page_name': 'TODO(daniel): implement this page context'
+    }
+
+
 class FormHandler(object):
   """Simplified version of request handler that is able to take care of
   the received data.

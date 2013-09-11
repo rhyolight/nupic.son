@@ -18,6 +18,7 @@
 class UrlNames(object):
   """URL names for Code In views."""
 
+  CONNECTION_MANAGE_AS_ORG = 'connection_manage_as_org'
   CONNECTION_MANAGE_AS_USER = 'connection_manage_as_user'
   CONNECTION_START_AS_ORG = 'connection_start_as_org'
   CONNECTION_START_AS_USER = 'connection_start_as_user'
