@@ -14,6 +14,7 @@
 
 """Unit tests for connection related views."""
 
+import mock
 import unittest
 
 from codein.views import connection as connection_view
@@ -24,6 +25,7 @@ from google.appengine.ext import db
 
 from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
+from melange.request import access
 from melange.request import exception
 
 from soc.models import organization as org_model
@@ -36,6 +38,20 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from tests import profile_utils
 from tests import test_utils
 from tests.utils import connection_utils
+
+
+def _getManageAsUserUrl(connection):
+  """Returns URL to 'Manage Connection As User' page for the specified
+  connection entity.
+
+  Args:
+    connection: connection entity.
+
+  Returns:
+    The URL to 'Manage Connection As User' for the specified connection.
+  """
+  return '/gci/connection/manage/user/%s/%s' % (
+      connection.parent_key().name(), connection.key().id())
 
 
 class NoConnectionExistsAccessCheckerTest(unittest.TestCase):
@@ -172,6 +188,32 @@ class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):
     self.assertResponseOK(response)
     self.assertTemplateUsed(
         response, 'modules/gci/form_base.html')
+
+  def testConnectionExists(self):
+    """Tests that exception is raised when connection already exists."""
+    profile = self.profile_helper.createProfile()
+
+    # seed a connection between the user and organization
+    connection_properties = {
+        'parent': profile,
+        'organization': self.org
+        }
+    connection = seeder_logic.seed(
+        connection_model.Connection, properties=connection_properties)
+
+    url = self._getUrl(profile, self.org)
+
+    # check that user is redirected when a connection exists
+    response = self.get(url)
+    self.assertResponseRedirect(response, _getManageAsUserUrl(connection))
+
+    # check that bad request is raised when a connection already exists
+    # on POST request after access checker concludes
+    with mock.patch.object(
+        connection_view.StartConnectionAsUser, 'access_checker',
+        new=access.ALL_ALLOWED_ACCESS_CHECKER):
+      response = self.post(url)
+      self.assertResponseBadRequest(response)
 
 
 class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
