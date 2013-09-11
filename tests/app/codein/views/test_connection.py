@@ -33,6 +33,7 @@ from soc.models import user as user_model
 from soc.modules.gci.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import profile_utils
 from tests import test_utils
 from tests.utils import connection_utils
 
@@ -97,6 +98,41 @@ class StartConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     response = self.get(self._getUrl(self.org))
     self.assertResponseOK(response)
     self._assertPageTemplatesUsed(response)
+
+  def testConnectionStarted(self):
+    """Tests that connection is created successfully."""
+    self.profile_helper.createOrgAdmin(self.org)
+
+    profile_helper = profile_utils.GCIProfileHelper(
+       self.program, False)
+    profile_helper.createOtherUser('first@example.com')
+    first_profile = profile_helper.createProfile()
+
+    profile_helper = profile_utils.GCIProfileHelper(
+       self.program, False)
+    profile_helper.createOtherUser('second@example.com')
+    second_profile = profile_helper.createProfile()
+
+    post_data = {
+        'role': connection_model.MENTOR_ROLE,
+        'users': '%s, %s' % (first_profile.link_id, second_profile.link_id)
+        }
+    response = self.post(self._getUrl(self.org), post_data)
+    self.assertResponseRedirect(response, self._getUrl(self.org))
+
+    # check that connection with the first profile is created
+    connection = connection_model.Connection.all().ancestor(
+        first_profile.key()).filter('organization', self.org).get()
+    self.assertIsNotNone(connection)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+
+    # check that connection with the second profile is created
+    connection = connection_model.Connection.all().ancestor(
+        second_profile.key()).filter('organization', self.org).get()
+    self.assertIsNotNone(connection)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
 
 
 class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):

@@ -411,7 +411,22 @@ class StartConnectionAsOrg(base.GCIRequestHandler):
     """See base.GCIRequestHandler.post for specification."""
     form = _formToStartConnectionAsOrg(data=data.POST, request_data=data)
     if form.is_valid():
-      raise exception.Forbidden('TODO(daniel): implement the function.')
+      profiles, _, _ = form.cleaned_data['users']
+
+      connections = []
+      for profile in profiles:
+        # TODO(daniel): get actual recipients of notification email
+        connections.append(connection_view.createConnectionTxn(
+            data=data, profile=profile, organization=data.organization,
+            org_role=form.cleaned_data['role'],
+            message=form.cleaned_data['message'],
+            context=notifications.userConnectionContext,
+            recipients=[]))
+
+      # TODO(daniel): add some message with whom connections are started
+      url = links.Linker().organization(
+          data.organization, urls.UrlNames.CONNECTION_START_AS_ORG)
+      return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get(data, check, mutator)
