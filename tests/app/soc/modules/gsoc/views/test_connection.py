@@ -126,7 +126,7 @@ class OrgConnectionPageTest(test_utils.GSoCDjangoTestCase):
     response = self.post(self._connectionPageURL(), post_data)
 
     profile = db.get(self.profile_helper.profile.key())
-    self.assertResponseForbidden(response)
+    self.assertResponseBadRequest(response)
     self.assertTrue(profile.is_org_admin)
     self.assertIn(self.org.key(), profile.org_admin_for)
 

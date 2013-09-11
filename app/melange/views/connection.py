@@ -60,7 +60,7 @@ def createConnectionTxn(
     The newly created Connection entity.
   """
   if connection_logic.connectionExists(profile.parent(), organization):
-    raise exception.Forbidden(
+    raise exception.BadRequest(
         message=connection_logic.CONNECTION_EXISTS_ERROR %
         (profile.name, organization.name))
 
