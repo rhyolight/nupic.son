@@ -190,3 +190,23 @@ class TestLinker(unittest.TestCase):
             profile.parent_key().name(), 42),
         self.linker.userId(
             profile, 42, ci_urls.UrlNames.CONNECTION_MANAGE_AS_USER))
+
+  def testOrganization(self):
+    """Tests organization function."""
+    # seed a program
+    program = seeder_logic.seed(program_model.Program)
+    program.program_id = program.link_id
+    program.sponsor = program.scope
+
+    # seed an organization
+    org_properties = {
+        'scope': program,
+        'program': program
+        }
+    organization = seeder_logic.seed(
+        org_model.Organization, properties=org_properties)
+
+    url = self.linker.organization(
+        organization, ci_urls.UrlNames.CONNECTION_START_AS_ORG)
+    self.assertEqual(
+        '/gci/connection/start/org/%s' % organization.key().name(), url)

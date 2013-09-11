@@ -153,3 +153,21 @@ class Linker(object):
         'id': entity_id,
         }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
+
+  def organization(self, org, url_name):
+    """Returns the URL of an organization's named page.
+
+    Args:
+      org: organization entity.
+      url_name: the name with which a URL was registered with Django.
+
+    Returns:
+      The URL of the page matching the given name for the given organization.
+    """
+    program = org.program
+    kwargs = {
+        'sponsor': program_logic.getSponsorKey(program).name(),
+        'program': program.program_id,
+        'organization': org.link_id
+        }
+    return urlresolvers.reverse(url_name, kwargs=kwargs)
