@@ -584,8 +584,8 @@ class ManageConnectionAsOrg(base.GCIRequestHandler):
       FormHandler implementation to handler the received data.
     """
     if ACTIONS_FORM_NAME in data.POST:
-      # TODO(daniel): implement
-      return exception.BadRequest('TODO(daniel): not implemented yet.')
+      # TODO(daniel): eliminate passing self object.
+      return OrgActionsFormHandler(self)
     elif MESSAGE_FORM_NAME in data.POST:
       # TODO(daniel): eliminate passing self object.
       return MessageFormHandler(self)
@@ -650,7 +650,7 @@ class MessageFormHandler(FormHandler):
 
 class UserActionsFormHandler(FormHandler):
   """Form handler implementation to handle incoming data that is supposed to
-  take an action on the existing connection.
+  take an action on the existing connection by users.
   """
 
   def handle(self, data, check, mutator):
@@ -714,3 +714,61 @@ class UserActionsFormHandler(FormHandler):
 
     # TODO(daniel): if the user is not eligible, some information should be
     # displayed to them
+
+
+class OrgActionsFormHandler(FormHandler):
+  """Form handler implementation to handle incoming data that is supposed to
+  take an action on the existing connection by organization administrators.
+  """
+
+  def handle(self, data, check, mutator):
+    """Takes an action on the connection based on the data that was sent
+    in the current request.
+
+    See FormHandler.handle for specification.
+    """
+    actions_form = _formToManageConnectionAsOrg(
+        data=data.POST, instance=data.url_connection)
+    if actions_form.is_valid():
+      role = actions_form.cleaned_data['role']
+      if role == connection_model.NO_ROLE:
+        self._handleNoRoleSelection(data)
+      elif role == connection_model.MENTOR_ROLE:
+        self._handleMentorSelection(data)
+      else:
+        self._handleOrgAdminSelection(data)
+
+      url = links.Linker().userId(
+          data.url_profile, data.url_connection.key().id(),
+          urls.UrlNames.CONNECTION_MANAGE_AS_ORG)
+      return http.HttpResponseRedirect(url)
+    else:
+      # TODO(nathaniel): problematic self-use.
+      return self._view.get(data, check, mutator)
+
+  def _handleNoRoleSelection(self, data):
+    """Makes all necessary changes if an organization administrator
+    selects connection_model.NO_ROLE.
+
+    Args:
+      data: A soc.views.helper.request_data.RequestData.
+    """
+    raise NotImplementedError
+
+  def _handleMentorSelection(self, data):
+    """Makes all necessary changes if an organization administrator
+    selects connection_model.MENTOR_ROLE.
+
+    Args:
+      data: A soc.views.helper.request_data.RequestData.
+    """
+    raise NotImplementedError
+
+  def _handleOrgAdminSelection(self, data):
+    """Makes all necessary changes if an organization administrator
+    selects connection_model.ORG_ADMIN_ROLE.
+
+    Args:
+      data: A soc.views.helper.request_data.RequestData.
+    """
+    raise NotImplementedError
