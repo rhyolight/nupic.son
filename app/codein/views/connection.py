@@ -44,7 +44,7 @@ from soc.views.helper import url_patterns
 ACTIONS_FORM_NAME = 'actions_form'
 MESSAGE_FORM_NAME = 'message_form'
 
-MANAGE_CONNECTION_AS_USER_PAGE_NAME = translation.ugettext(
+MANAGE_CONNECTION_PAGE_NAME = translation.ugettext(
     'Manage connection')
 
 START_CONNECTION_AS_ORG_PAGE_NAME = translation.ugettext(
@@ -68,8 +68,11 @@ CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT = translation.ugettext(
 CONNECTION_AS_ORG_FORM_MESSAGE_HELP_TEXT = translation.ugettext(
     'Optional message to users')
 
-CONNECTION_FORM_ORG_ROLE_HELP_TEXT = translation.ugettext(
-    'What type of role you designate to the users')
+MANAGE_CONNECTION_FORM_ORG_ROLE_HELP_TEXT = translation.ugettext(
+    'Type of role you designate to the user')
+
+START_CONNECTION_FORM_ORG_ROLE_HELP_TEXT = translation.ugettext(
+    'Type of role you designate to the users')
 
 CONNECTION_FORM_USER_ROLE_HELP_TEXT = translation.ugettext(
     'Whether you request role from organization or not')
@@ -278,7 +281,7 @@ def _formToStartConnectionAsOrg(**kwargs):
   form = ConnectionForm(**kwargs)
   form.removeField('user_role')
   form.fields['role'].label = CONNECTION_FORM_ORG_ROLE_LABEL
-  form.fields['role'].help_text = CONNECTION_FORM_ORG_ROLE_HELP_TEXT
+  form.fields['role'].help_text = START_CONNECTION_FORM_ORG_ROLE_HELP_TEXT
   form.fields['role'].choices = ACTUAL_ORG_ROLE_CHOICES
 
   form.setHelpTextForMessage(CONNECTION_AS_ORG_FORM_MESSAGE_HELP_TEXT)
@@ -308,6 +311,28 @@ def _formToManageConnectionAsUser(**kwargs):
   form = ConnectionForm(**kwargs)
   form.removeField('message')
   form.removeField('role')
+  form.removeField('users')
+  return form
+
+
+def _formToManageConnectionAsOrg(instance=None, **kwargs):
+  """Returns a Django form to manage connection as an organization admin.
+
+  Args:
+    instance: connection entity.
+
+  Returns:
+    ConnectionForm adjusted to manage connection as an organization admin.
+  """
+  form = ConnectionForm(instance=instance, **kwargs)
+  form.removeField('user_role')
+  form.removeField('message')
+
+  form.fields['role'].label = CONNECTION_FORM_ORG_ROLE_LABEL
+  form.fields['role'].help_text = MANAGE_CONNECTION_FORM_ORG_ROLE_HELP_TEXT
+  form.fields['role'].choices = ALL_ORG_ROLE_CHOICES
+  form.fields['role'].initial = instance.org_role
+
   form.removeField('users')
   return form
 
@@ -467,7 +492,7 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
     messages = connection_logic.getConnectionMessages(data.url_connection)
 
     return {
-        'page_name': MANAGE_CONNECTION_AS_USER_PAGE_NAME,
+        'page_name': MANAGE_CONNECTION_PAGE_NAME,
         'actions_form': actions_form,
         'message_form': message_form,
         'summary': summary,
@@ -521,9 +546,27 @@ class ManageConnectionAsOrg(base.GCIRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.GCIRequestHandler.context for specification."""
+    actions_form = _formToManageConnectionAsOrg(
+        data=data.POST or None, instance=data.url_connection,
+        name=ACTIONS_FORM_NAME)
+    message_form = MessageForm(data=data.POST or None, name=MESSAGE_FORM_NAME)
+
+    summary = readonly.ReadOnlyTemplate(data)
+    summary.addItem(
+        ORGANIZATION_ITEM_LABEL, data.url_connection.organization.name)
+    summary.addItem(USER_ITEM_LABEL, data.url_profile.name())
+    summary.addItem(USER_ROLE_ITEM_LABEL, _getValueForUserRoleItem(data))
+    summary.addItem(INITIALIZED_ON_LABEL, data.url_connection.created_on)
+
+    messages = connection_logic.getConnectionMessages(data.url_connection)
+
     return {
-        'page_name': 'TODO(daniel): implement this page context'
-    }
+        'page_name': MANAGE_CONNECTION_PAGE_NAME,
+        'actions_form': actions_form,
+        'message_form': message_form,
+        'summary': summary,
+        'messages': messages,
+        }
 
 
 class FormHandler(object):
