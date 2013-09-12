@@ -521,7 +521,7 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
       return UserActionsFormHandler(self)
     elif MESSAGE_FORM_NAME in data.POST:
       # TODO(daniel): eliminate passing self object.
-      return MessageFormHandler(self)
+      return MessageFormHandler(self, urls.UrlNames.CONNECTION_MANAGE_AS_USER)
     else:
       raise exception.BadRequest('No valid form data is found in POST.')
 
@@ -588,7 +588,7 @@ class ManageConnectionAsOrg(base.GCIRequestHandler):
       return OrgActionsFormHandler(self)
     elif MESSAGE_FORM_NAME in data.POST:
       # TODO(daniel): eliminate passing self object.
-      return MessageFormHandler(self)
+      return MessageFormHandler(self, urls.UrlNames.CONNECTION_MANAGE_AS_ORG)
     else:
       raise exception.BadRequest('No valid form data is found in POST.')
 
@@ -627,6 +627,18 @@ class MessageFormHandler(FormHandler):
   create a new connection message.
   """
 
+  def __init__(self, view, url_name):
+    """Initializes new instance of form handler.
+
+    Args:
+      view: callback to implementation of base.RequestHandler
+        that creates this object.
+      url_name: name of the URL that should be used for redirect after
+        the request is handled successfully.
+    """
+    super(MessageFormHandler, self).__init__(view)
+    self._url_name = url_name
+
   def handle(self, data, check, mutator):
     """Creates and persists a new connection message based on the data
     that was sent in the current request.
@@ -640,8 +652,7 @@ class MessageFormHandler(FormHandler):
           data.url_connection.key(), data.url_profile.key(), content)
 
       url = links.Linker().userId(
-          data.url_profile, data.url_connection.key().id(),
-          urls.UrlNames.CONNECTION_MANAGE_AS_USER)
+          data.url_profile, data.url_connection.key().id(), self._url_name)
       return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-use.
