@@ -568,6 +568,30 @@ class ManageConnectionAsOrg(base.GCIRequestHandler):
         'messages': messages,
         }
 
+  def post(self, data, check, mutator):
+    """See base.GCIRequestHandler.post for specification."""
+    handler = self._dispatchPostData(data)
+    return handler.handle(data, check, mutator)
+
+  def _dispatchPostData(self, data):
+    """Picks form handler that is capable of handling the data that was sent
+    in the the current request.
+
+    Args:
+      data: request_data.RequestData for the current request.
+
+    Returns:
+      FormHandler implementation to handler the received data.
+    """
+    if ACTIONS_FORM_NAME in data.POST:
+      # TODO(daniel): implement
+      return exception.BadRequest('TODO(daniel): not implemented yet.')
+    elif MESSAGE_FORM_NAME in data.POST:
+      # TODO(daniel): eliminate passing self object.
+      return MessageFormHandler(self)
+    else:
+      raise exception.BadRequest('No valid form data is found in POST.')
+
 
 class FormHandler(object):
   """Simplified version of request handler that is able to take care of
