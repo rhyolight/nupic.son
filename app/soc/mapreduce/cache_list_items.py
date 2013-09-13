@@ -34,7 +34,7 @@ def mapProcess(entity):
   params = ctx.mapreduce_spec.mapper.params
 
   list_id = params['list_id']
-  col_funcs = [(c.name, c.getValue) for c in lists.getList(list_id).columns]
+  col_funcs = [(c.col_id, c.getValue) for c in lists.getList(list_id).columns]
   query_pickle = params['query_pickle']
 
   query = pickle.loads(query_pickle)
@@ -56,7 +56,7 @@ def reduceProcess(data_id, entities):
 
   list_id = params['list_id']
 
-  ndb.transaction(lambda: cached_list.cacheItems(
+  ndb.transaction(lambda: cached_list.setCacheItems(
       data_id, map(json.loads, entities), lists.getList(list_id).valid_period))
 
 
