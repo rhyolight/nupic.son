@@ -55,6 +55,7 @@ class CanResignAsOrgAdminForOrgTest(unittest.TestCase):
     can_resign = profile_logic.canResignAsOrgAdminForOrg(
         self.org_admin, self.organization_one.key())
     self.assertFalse(can_resign)
+    self.assertEqual(can_resign.extra, profile_logic.ONLY_ORG_ADMIN)
 
   def testMoreOrgAdmins(self):
     """Tests that org admin can resign if there is another one."""

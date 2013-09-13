@@ -72,7 +72,10 @@ def canResignAsOrgAdminForOrg(profile, org_key):
     org_key: organization key.
 
   Returns:
-    True, if the mentor is allowed to resign; False otherwise
+    RichBool whose value is set to True, if the organization administrator
+    is allowed to resign. Otherwise, RichBool whose value is set to False
+    and extra part is a string that represents the reason why the user
+    is not allowed to resign.
   """
   return profile_logic.canResignAsOrgAdminForOrg(
       profile, org_key, models=types.CI_MODELS)
