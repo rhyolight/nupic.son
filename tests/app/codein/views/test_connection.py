@@ -261,65 +261,424 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     """See unittest.TestCase.setUp for specification."""
     self.init()
 
-  def testHandleNoRoleSelection(self):
-    """Tests that NO ROLE choice is handled properly."""
-    profile = self.profile_helper.createMentor(self.org)
-    connection = connection_logic.queryForAncestorAndOrganization(
-        profile.key(), self.org.key()).get()
+    # view used as a callback for handler
+    self.view = connection_view.ManageConnectionAsUser()
 
-    request = http.HttpRequest()
-    request.POST = {'user_role': connection_model.NO_ROLE}
+  def testUserNoRoleToNoRoleWhileNoRoleOffered(self):
+    """Tests NO ROLE if user has no role and no role is offered."""
+    profile = self.profile_helper.createProfile()
 
-    kwargs = {
+    # no role is offered to the user; the user does not request any role
+    connection = connection_utils.seed_new_connection(profile, self.org)
+
+    self.kwargs = {
         'sponsor': self.sponsor.link_id,
         'program': self.program.program_id,
         'user': profile.link_id,
         'id': connection.key().id()
         }
+    
+    request = http.HttpRequest()
+    # the user still does not request any role
+    request.POST = {'user_role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
 
-    data = request_data.RequestData(request, None, kwargs)
-
-    view = connection_view.ManageConnectionAsUser()
-
-    handler = connection_view.UserActionsFormHandler(view)
+    handler = connection_view.UserActionsFormHandler(self.view)
     handler.handle(data, None, None)
 
     # check if all data is updated properly
     connection = db.get(connection.key())
     profile = db.get(profile.key())
     self.assertEqual(connection.user_role, connection_model.NO_ROLE)
-    self.assertNotIn(self.org.key(), profile.mentor_for)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
 
-  def testHandleRoleSelection(self):
-    """Tests that ROLE choice is handled properly."""
+  def testUserNoRoleToNoRoleWhileMentorRoleOffered(self):
+    """Tests NO ROLE if user has no role and mentor role is offered."""
     profile = self.profile_helper.createProfile()
+
+    # mentor role is offered to the user; the user does not request any role
     connection = connection_utils.seed_new_connection(
-        profile, self.org, org_role=connection_model.MENTOR_ROLE)
+    profile, self.org, org_role=connection_model.MENTOR_ROLE)
 
-    request = http.HttpRequest()
-    request.POST = {'user_role': connection_model.ROLE}
-
-    kwargs = {
+    self.kwargs = {
         'sponsor': self.sponsor.link_id,
         'program': self.program.program_id,
         'user': profile.link_id,
         'id': connection.key().id()
         }
+    
+    request = http.HttpRequest()
+    # the user still does not request any role
+    request.POST = {'user_role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
 
-    data = request_data.RequestData(request, None, kwargs)
+    handler = connection_view.UserActionsFormHandler(self.view)
+    handler.handle(data, None, None)
 
-    view = connection_view.ManageConnectionAsUser()
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
 
-    handler = connection_view.UserActionsFormHandler(view)
+  def testUserNoRoleToNoRoleWhileOrgAdminRoleOffered(self):
+    """Tests NO ROLE if user has no role and org admin role is offered."""
+    profile = self.profile_helper.createProfile()
+
+    # org admin role is offered to the user; the user does not request any role
+    connection = connection_utils.seed_new_connection(
+    profile, self.org, org_role=connection_model.ORG_ADMIN_ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+    
+    request = http.HttpRequest()
+    # the user still does not request any role
+    request.POST = {'user_role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.UserActionsFormHandler(self.view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
+
+  def testUserNoRoleToRoleWhileNoRoleOffered(self):
+    """Tests ROLE if user has no role and no role is offered."""
+    profile = self.profile_helper.createProfile()
+
+    # no role is offered to the user; the user does not request any role
+    connection = connection_utils.seed_new_connection(profile, self.org)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+    
+    request = http.HttpRequest()
+    # the user requests a role now
+    request.POST = {'user_role': connection_model.ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.UserActionsFormHandler(self.view)
     handler.handle(data, None, None)
 
     # check if all data is updated properly
     connection = db.get(connection.key())
     profile = db.get(profile.key())
     self.assertEqual(connection.user_role, connection_model.ROLE)
-    self.assertIn(self.org.key(), profile.mentor_for)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
+
+  def testUserNoRoleToRoleWhileMentorRoleOffered(self):
+    """Tests ROLE if user has no role and mentor role is offered."""
+    profile = self.profile_helper.createProfile()
+
+    # mentor role is offered to the user; the user does not request any role
+    connection = connection_utils.seed_new_connection(
+        profile, self.org, org_role=connection_model.MENTOR_ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+    
+    request = http.HttpRequest()
+    # the user requests a role now
+    request.POST = {'user_role': connection_model.ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.UserActionsFormHandler(self.view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertIn(self.org.key(), profile.mentor_for)
+
+  def testUserNoRoleToRoleWhileOrgAdminRoleOffered(self):
+    """Tests ROLE if user has no role and org admin role is offered."""
+    profile = self.profile_helper.createProfile()
+
+    # org admin role is offered to the user; the user does not request any role
+    connection = connection_utils.seed_new_connection(
+        profile, self.org, org_role=connection_model.ORG_ADMIN_ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+    
+    request = http.HttpRequest()
+    # the user requests a role now
+    request.POST = {'user_role': connection_model.ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.UserActionsFormHandler(self.view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertIn(self.org.key(), profile.org_admin_for)
+    self.assertIn(self.org.key(), profile.mentor_for)
+
+  def testUserRoleToRoleWhileNoRoleOffered(self):
+    """Tests ROLE if user has role and no role is offered."""
+    profile = self.profile_helper.createProfile()
+
+    # no role is offered to the user; the user requests role
+    connection = connection_utils.seed_new_connection(
+        profile, self.org, user_role=connection_model.ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+    
+    request = http.HttpRequest()
+    # the user still requests a role
+    request.POST = {'user_role': connection_model.ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.UserActionsFormHandler(self.view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
+
+  def testUserRoleToRoleWhileMentorRoleOffered(self):
+    """Tests ROLE if user has role and mentor role is offered."""
+    # mentor role is offered to the user; the user requests role
+    profile = self.profile_helper.createMentor(self.org)
+    connection = connection_model.Connection.all().ancestor(
+        profile).filter('organization', self.org).get()
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+    
+    request = http.HttpRequest()
+    # the user still requests a role
+    request.POST = {'user_role': connection_model.ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.UserActionsFormHandler(self.view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertIn(self.org.key(), profile.mentor_for)
+
+  def testUserRoleToRoleWhileOrgAdminRoleOffered(self):
+    """Tests ROLE if user has role and org admin role is offered."""
+    # org admin role is offered to the user; the user requests role
+    profile = self.profile_helper.createOrgAdmin(self.org)
+    connection = connection_model.Connection.all().ancestor(
+        profile).filter('organization', self.org).get()
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+    
+    request = http.HttpRequest()
+    # the user still requests a role
+    request.POST = {'user_role': connection_model.ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.UserActionsFormHandler(self.view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertIn(self.org.key(), profile.org_admin_for)
+    self.assertIn(self.org.key(), profile.mentor_for)
+
+  def testUserRoleToNoRoleWhileNoRoleOffered(self):
+    """Tests NO ROLE if user has role and no role is offered."""
+    profile = self.profile_helper.createProfile()
+
+    # no role is offered to the user; the user requests role
+    connection = connection_utils.seed_new_connection(
+        profile, self.org, user_role=connection_model.ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+    
+    request = http.HttpRequest()
+    # the user does not request role anymore
+    request.POST = {'user_role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.UserActionsFormHandler(self.view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
+
+  def testUserRoleToNoRoleWhileMentorRoleOffered(self):
+    """Tests NO ROLE if user has role and mentor role is offered."""
+    # mentor role is offered to the user; the user requests role
+    profile = self.profile_helper.createMentor(self.org)
+    connection = connection_model.Connection.all().ancestor(
+        profile).filter('organization', self.org).get()
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+    
+    request = http.HttpRequest()
+    # the user does not request role anymore
+    request.POST = {'user_role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.UserActionsFormHandler(self.view)
+
+    # assume that mentor is not eligible to quit
+    with mock.patch.object(
+        profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
+      handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertIn(self.org.key(), profile.mentor_for)
+
+    # try again but now, the user is eligible to quit
+    request = http.HttpRequest()
+    # the user does not request role anymore
+    request.POST = {'user_role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.UserActionsFormHandler(self.view)
+
+    # assume that mentor is eligible to quit
+    with mock.patch.object(
+        profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.TRUE):
+      handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
+
+  def testUserRoleToNoRoleWhileOrgAdminRoleOffered(self):
+    """Tests NO ROLE if user has role and org admin role is offered."""
+    # org admin role is offered to the user; the user requests role
+    profile = self.profile_helper.createOrgAdmin(self.org)
+    connection = connection_model.Connection.all().ancestor(
+        profile).filter('organization', self.org).get()
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+    
+    request = http.HttpRequest()
+    # the user does not request role anymore
+    request.POST = {'user_role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.UserActionsFormHandler(self.view)
+
+    # assume that mentor is not eligible to quit
+    with mock.patch.object(
+        profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
+      handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertIn(self.org.key(), profile.org_admin_for)
+    self.assertIn(self.org.key(), profile.mentor_for)
+
+    # try again but now, the user is eligible to quit
+    request = http.HttpRequest()
+    # the user does not request role anymore
+    request.POST = {'user_role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.UserActionsFormHandler(self.view)
+
+    # assume that mentor is eligible to quit
+    with mock.patch.object(
+        profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.TRUE):
+      handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
 
 
 class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
@@ -332,276 +691,11 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     # view used as a callback for handler
     self.view = connection_view.ManageConnectionAsOrg()
 
-  @mock.patch.object(
-      profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE)
-  def testNoRoleForIneligibleOrgAdmin(self, mock_func):
-    """Tests NO ROLE is handled for org admin who is ineligible."""
-    profile = self.profile_helper.createOrgAdmin(self.org)
-    connection = connection_model.Connection.all().ancestor(
-        profile).filter('organization', self.org).get()
-
-    self.kwargs = {
-        'sponsor': self.sponsor.link_id,
-        'program': self.program.program_id,
-        'user': profile.link_id,
-        'id': connection.key().id()
-        }
-    
-    request = http.HttpRequest()
-    request.POST = {'role': connection_model.NO_ROLE}
-    data = request_data.RequestData(request, None, self.kwargs)
-
-    handler = connection_view.OrgActionsFormHandler(self.view)
-    handler.handle(data, None, None)
-
-    # check if all data is updated properly
-    connection = db.get(connection.key())
-    profile = db.get(profile.key())
-    self.assertEqual(connection.user_role, connection_model.ROLE)
-    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
-    self.assertIn(self.org.key(), profile.org_admin_for)
-    self.assertIn(self.org.key(), profile.mentor_for)
-
-  @mock.patch.object(
-      profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.TRUE)
-  def testNoRoleForEligibleOrgAdmin(self, mock_func):
-    """Tests NO ROLE is handled for org admin who is eligible."""
-    profile = self.profile_helper.createOrgAdmin(self.org)
-    connection = connection_model.Connection.all().ancestor(
-        profile).filter('organization', self.org).get()
-
-    self.kwargs = {
-        'sponsor': self.sponsor.link_id,
-        'program': self.program.program_id,
-        'user': profile.link_id,
-        'id': connection.key().id()
-        }
-
-    request = http.HttpRequest()
-    request.POST = {'role': connection_model.NO_ROLE}
-    data = request_data.RequestData(request, None, self.kwargs)
-
-    handler = connection_view.OrgActionsFormHandler(self.view)
-    handler.handle(data, None, None)
-
-    # check if all data is updated properly
-    connection = db.get(connection.key())
-    profile = db.get(profile.key())
-    self.assertEqual(connection.user_role, connection_model.ROLE)
-    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
-    self.assertNotIn(self.org.key(), profile.org_admin_for)
-    self.assertNotIn(self.org.key(), profile.mentor_for)
-
-  @mock.patch.object(
-      profile_logic, 'isMentorRoleEligibleForOrg',
-      return_value=rich_bool.FALSE)
-  def testMentorRoleForIneligibleOrgAdmin(self, mock_func):
-    """Tests MENTOR ROLE is handled for org admin who is ineligible."""
-    profile = self.profile_helper.createOrgAdmin(self.org)
-    connection = connection_model.Connection.all().ancestor(
-        profile).filter('organization', self.org).get()
-
-    self.kwargs = {
-        'sponsor': self.sponsor.link_id,
-        'program': self.program.program_id,
-        'user': profile.link_id,
-        'id': connection.key().id()
-        }
-    
-    request = http.HttpRequest()
-    request.POST = {'role': connection_model.MENTOR_ROLE}
-    data = request_data.RequestData(request, None, self.kwargs)
-
-    handler = connection_view.OrgActionsFormHandler(self.view)
-    handler.handle(data, None, None)
-
-    # check if all data is updated properly
-    connection = db.get(connection.key())
-    profile = db.get(profile.key())
-    self.assertEqual(connection.user_role, connection_model.ROLE)
-    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
-    self.assertIn(self.org.key(), profile.org_admin_for)
-    self.assertIn(self.org.key(), profile.mentor_for)
-
-  @mock.patch.object(
-      profile_logic, 'isMentorRoleEligibleForOrg', return_value=rich_bool.TRUE)
-  def testMentorRoleForEligibleOrgAdmin(self, mock_func):
-    """Tests MENTOR ROLE is handled for org admin who is eligible."""
-    profile = self.profile_helper.createOrgAdmin(self.org)
-    connection = connection_model.Connection.all().ancestor(
-        profile).filter('organization', self.org).get()
-
-    self.kwargs = {
-        'sponsor': self.sponsor.link_id,
-        'program': self.program.program_id,
-        'user': profile.link_id,
-        'id': connection.key().id()
-        }
-
-    request = http.HttpRequest()
-    request.POST = {'role': connection_model.MENTOR_ROLE}
-    data = request_data.RequestData(request, None, self.kwargs)
-
-    handler = connection_view.OrgActionsFormHandler(self.view)
-    handler.handle(data, None, None)
-
-    # check if all data is updated properly
-    connection = db.get(connection.key())
-    profile = db.get(profile.key())
-    self.assertEqual(connection.user_role, connection_model.ROLE)
-    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
-    self.assertNotIn(self.org.key(), profile.org_admin_for)
-    self.assertIn(self.org.key(), profile.mentor_for)
-
-  def testOrgAdminRoleForOrgAdmin(self):
-    """Tests ORG ADMIN is handled for an existing org admin."""
-    profile = self.profile_helper.createOrgAdmin(self.org)
-    connection = connection_model.Connection.all().ancestor(
-        profile).filter('organization', self.org).get()
-
-    self.kwargs = {
-        'sponsor': self.sponsor.link_id,
-        'program': self.program.program_id,
-        'user': profile.link_id,
-        'id': connection.key().id()
-        }
-
-    request = http.HttpRequest()
-    request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
-    data = request_data.RequestData(request, None, self.kwargs)
-
-    handler = connection_view.OrgActionsFormHandler(self.view)
-    handler.handle(data, None, None)
-
-    # check if all data is updated properly
-    connection = db.get(connection.key())
-    profile = db.get(profile.key())
-    self.assertEqual(connection.user_role, connection_model.ROLE)
-    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
-    self.assertIn(self.org.key(), profile.org_admin_for)
-    self.assertIn(self.org.key(), profile.mentor_for)
-
-  @mock.patch.object(
-      profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE)
-  def testNoRoleForIneligibleMentor(self, mock_func):
-    """Tests NO ROLE is handled for mentor who is ineligible."""
-    profile = self.profile_helper.createMentor(self.org)
-    connection = connection_model.Connection.all().ancestor(
-        profile).filter('organization', self.org).get()
-
-    self.kwargs = {
-        'sponsor': self.sponsor.link_id,
-        'program': self.program.program_id,
-        'user': profile.link_id,
-        'id': connection.key().id()
-        }
-
-    request = http.HttpRequest()
-    request.POST = {'role': connection_model.NO_ROLE}
-    data = request_data.RequestData(request, None, self.kwargs)
-
-    handler = connection_view.OrgActionsFormHandler(self.view)
-    handler.handle(data, None, None)
-
-    # check if all data is updated properly
-    connection = db.get(connection.key())
-    profile = db.get(profile.key())
-    self.assertEqual(connection.user_role, connection_model.ROLE)
-    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
-    self.assertNotIn(self.org.key(), profile.org_admin_for)
-    self.assertIn(self.org.key(), profile.mentor_for)
-
-  @mock.patch.object(
-      profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.TRUE)
-  def testNoRoleForEligibleMentor(self, mock_func):
-    """Tests NO ROLE is handled for mentor who is eligible."""
-    profile = self.profile_helper.createMentor(self.org)
-    connection = connection_model.Connection.all().ancestor(
-        profile).filter('organization', self.org).get()
-
-    self.kwargs = {
-        'sponsor': self.sponsor.link_id,
-        'program': self.program.program_id,
-        'user': profile.link_id,
-        'id': connection.key().id()
-        }
-
-    request = http.HttpRequest()
-    request.POST = {'role': connection_model.NO_ROLE}
-    data = request_data.RequestData(request, None, self.kwargs)
-
-    handler = connection_view.OrgActionsFormHandler(self.view)
-    handler.handle(data, None, None)
-
-    # check if all data is updated properly
-    connection = db.get(connection.key())
-    profile = db.get(profile.key())
-    self.assertEqual(connection.user_role, connection_model.ROLE)
-    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
-    self.assertNotIn(self.org.key(), profile.org_admin_for)
-    self.assertNotIn(self.org.key(), profile.mentor_for)
-
-  def testMentorRoleForMentor(self):
-    """Tests MENTOR ROLE is handled for mentor."""
-    profile = self.profile_helper.createMentor(self.org)
-    connection = connection_model.Connection.all().ancestor(
-        profile).filter('organization', self.org).get()
-
-    self.kwargs = {
-        'sponsor': self.sponsor.link_id,
-        'program': self.program.program_id,
-        'user': profile.link_id,
-        'id': connection.key().id()
-        }
-
-    request = http.HttpRequest()
-    request.POST = {'role': connection_model.MENTOR_ROLE}
-    data = request_data.RequestData(request, None, self.kwargs)
-
-    handler = connection_view.OrgActionsFormHandler(self.view)
-    handler.handle(data, None, None)
-
-    # check if all data is updated properly
-    connection = db.get(connection.key())
-    profile = db.get(profile.key())
-    self.assertEqual(connection.user_role, connection_model.ROLE)
-    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
-    self.assertNotIn(self.org.key(), profile.org_admin_for)
-    self.assertIn(self.org.key(), profile.mentor_for)
-
-  def testOrgAdminRoleForMentor(self):
-    """Tests ORG ADMIN ROLE is handled for mentor."""
-    profile = self.profile_helper.createMentor(self.org)
-    connection = connection_model.Connection.all().ancestor(
-        profile).filter('organization', self.org).get()
-
-    self.kwargs = {
-        'sponsor': self.sponsor.link_id,
-        'program': self.program.program_id,
-        'user': profile.link_id,
-        'id': connection.key().id()
-        }
-
-    request = http.HttpRequest()
-    request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
-    data = request_data.RequestData(request, None, self.kwargs)
-
-    handler = connection_view.OrgActionsFormHandler(self.view)
-    handler.handle(data, None, None)
-
-    # check if all data is updated properly
-    connection = db.get(connection.key())
-    profile = db.get(profile.key())
-    self.assertEqual(connection.user_role, connection_model.ROLE)
-    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
-    self.assertIn(self.org.key(), profile.org_admin_for)
-    self.assertIn(self.org.key(), profile.mentor_for)
-
-  def testNoRoleForUser(self):
-    """Tests NO ROLE is handled for user with no role."""
+  def testNoRoleToNoRoleWhileNoRoleRequested(self):
+    """Tests NO ROLE if no role offered and user requests no role."""
     profile = self.profile_helper.createProfile()
 
-    # user that does not request any role from organization
+    # user does not request any role from organization
     connection = connection_utils.seed_new_connection(profile, self.org)
 
     self.kwargs = {
@@ -612,6 +706,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
         }
 
     request = http.HttpRequest()
+    # no role is still offered 
     request.POST = {'role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -626,9 +721,13 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
-    # user that requests a role from organization
-    connection.user_role = connection_model.ROLE
-    connection.put()
+  def testNoRoleToNoRoleWhileRoleRequested(self):
+    """Tests NO ROLE if no role offered and user requests role."""
+    profile = self.profile_helper.createProfile()
+
+    # user requests role from organization
+    connection = connection_utils.seed_new_connection(
+        profile, self.org, user_role=connection_model.ROLE)
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -638,6 +737,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
         }
 
     request = http.HttpRequest()
+    # no role is still offered 
     request.POST = {'role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -652,11 +752,11 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
-  def testMentorRoleForUser(self):
-    """Tests MENTOR ROLE is handled for user with no role."""
+  def testNoRoleToMentorRoleWhileNoRoleRequested(self):
+    """Tests MENTOR ROLE if no role offered and user requests no role."""
     profile = self.profile_helper.createProfile()
 
-    # user that does not request any role from organization
+    # user does not request any role from organization
     connection = connection_utils.seed_new_connection(profile, self.org)
 
     self.kwargs = {
@@ -667,6 +767,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
         }
 
     request = http.HttpRequest()
+    # mentor role is offered now 
     request.POST = {'role': connection_model.MENTOR_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -681,9 +782,13 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
-    # user that requests a role from organization
-    connection.user_role = connection_model.ROLE
-    connection.put()
+  def testNoRoleToMentorRoleWhileRoleRequested(self):
+    """Tests MENTOR ROLE if no role offered and user requests role."""
+    profile = self.profile_helper.createProfile()
+
+    # user requests role from organization
+    connection = connection_utils.seed_new_connection(
+        profile, self.org, user_role=connection_model.ROLE)
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -693,6 +798,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
         }
 
     request = http.HttpRequest()
+    # mentor role is offered now 
     request.POST = {'role': connection_model.MENTOR_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -707,11 +813,11 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
-  def testOrgAdminRoleForUser(self):
-    """Tests ORG ADMIN ROLE is handled for user with no role."""
+  def testNoRoleToOrgAdminRoleWhileNoRoleRequested(self):
+    """Tests ORG ADMIN ROLE if no role offered and user requests no role."""
     profile = self.profile_helper.createProfile()
 
-    # user that does not request any role from organization
+    # user does not request any role from organization
     connection = connection_utils.seed_new_connection(profile, self.org)
 
     self.kwargs = {
@@ -722,6 +828,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
         }
 
     request = http.HttpRequest()
+    # org admin role is offered now 
     request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -736,9 +843,13 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
-    # user that requests a role from organization
-    connection.user_role = connection_model.ROLE
-    connection.put()
+  def testNoRoleToOrgAdminRoleWhileRoleRequested(self):
+    """Tests ORG ADMIN ROLE if no role offered and user requests role."""
+    profile = self.profile_helper.createProfile()
+
+    # user requests role from organization
+    connection = connection_utils.seed_new_connection(
+        profile, self.org, user_role=connection_model.ROLE)
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -748,6 +859,444 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
         }
 
     request = http.HttpRequest()
+    # org admin role is offered now 
+    request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.OrgActionsFormHandler(self.view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertIn(self.org.key(), profile.org_admin_for)
+    self.assertIn(self.org.key(), profile.mentor_for)
+
+  def testMentorRoleToNoRoleWhileNoRoleRequested(self):
+    """Tests NO ROLE if mentor role offered and user requests no role."""
+    profile = self.profile_helper.createProfile()
+
+    # user does not request any role from organization
+    connection = connection_utils.seed_new_connection(
+        profile, self.org, org_role=connection_model.MENTOR_ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+
+    request = http.HttpRequest()
+    # no role is offered now 
+    request.POST = {'role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.OrgActionsFormHandler(self.view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
+
+  def testMentorRoleToNoRoleWhileRoleRequested(self):
+    """Tests NO ROLE if mentor role offered and user requests role."""
+    # user is a mentor for organization
+    profile = self.profile_helper.createMentor(self.org)
+    connection = connection_model.Connection.all().ancestor(
+        profile).filter('organization', self.org).get()
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+
+    request = http.HttpRequest()
+    # no role is offered now 
+    request.POST = {'role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # assume that mentor cannot be removed
+    with mock.patch.object(
+        profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
+      handler = connection_view.OrgActionsFormHandler(self.view)
+      handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertIn(self.org.key(), profile.mentor_for)
+
+    # now the mentor can be removed
+    request = http.HttpRequest()
+    # no role is offered now 
+    request.POST = {'role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # assume that mentor can be removed
+    with mock.patch.object(
+        profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.TRUE):
+      handler = connection_view.OrgActionsFormHandler(self.view)
+      handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
+
+  def testMentorRoleToMentorRoleWhileNoRoleRequested(self):
+    """Tests MENTOR ROLE if mentor role offered and user requests no role."""
+    profile = self.profile_helper.createProfile()
+
+    # user does not request any role from organization
+    connection = connection_utils.seed_new_connection(
+        profile, self.org, org_role=connection_model.MENTOR_ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+
+    request = http.HttpRequest()
+    # mentor role is offered now 
+    request.POST = {'role': connection_model.MENTOR_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.OrgActionsFormHandler(self.view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
+
+  def testMentorRoleToMentorRoleWhileRoleRequested(self):
+    """Tests MENTOR ROLE if mentor role offered and user requests role."""
+    # user is a mentor for organization
+    profile = self.profile_helper.createMentor(self.org)
+    connection = connection_model.Connection.all().ancestor(
+        profile).filter('organization', self.org).get()
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+
+    request = http.HttpRequest()
+    # mentor role is offered now 
+    request.POST = {'role': connection_model.MENTOR_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.OrgActionsFormHandler(self.view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertIn(self.org.key(), profile.mentor_for)
+
+  def testMentorRoleToOrgAdminRoleWhileNoRoleRequested(self):
+    """Tests ORG ADMIN if mentor role offered and user requests no role."""
+    profile = self.profile_helper.createProfile()
+
+    # user does not request any role from organization
+    connection = connection_utils.seed_new_connection(
+        profile, self.org, org_role=connection_model.MENTOR_ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+
+    request = http.HttpRequest()
+    # org admin role is offered now 
+    request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.OrgActionsFormHandler(self.view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
+
+  def testMentorRoleToOrgAdminRoleWhileRoleRequested(self):
+    """Tests ORG ADMIN if mentor role offered and user requests role."""
+    # user is a mentor for organization
+    profile = self.profile_helper.createMentor(self.org)
+    connection = connection_model.Connection.all().ancestor(
+        profile).filter('organization', self.org).get()
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+
+    request = http.HttpRequest()
+    # org admin role is offered now 
+    request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.OrgActionsFormHandler(self.view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertIn(self.org.key(), profile.org_admin_for)
+    self.assertIn(self.org.key(), profile.mentor_for)
+
+  def testOrgAdminRoleToNoRoleWhileNoRoleRequested(self):
+    """Tests NO ROLE if org admin offered and user requests no role."""
+    profile = self.profile_helper.createProfile()
+
+    # user does not request any role from organization
+    connection = connection_utils.seed_new_connection(
+        profile, self.org, org_role=connection_model.ORG_ADMIN_ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+
+    request = http.HttpRequest()
+    # no role is offered now 
+    request.POST = {'role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.OrgActionsFormHandler(self.view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
+
+  def testOrgAdminRoleToNoRoleWhileRoleRequested(self):
+    """Tests NO ROLE if org admin offered and user requests role."""
+    # user is an org admin for organization
+    profile = self.profile_helper.createOrgAdmin(self.org)
+    connection = connection_model.Connection.all().ancestor(
+        profile).filter('organization', self.org).get()
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+
+    request = http.HttpRequest()
+    # no role is offered now 
+    request.POST = {'role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # assume that org admin cannot be removed
+    with mock.patch.object(
+        profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
+      handler = connection_view.OrgActionsFormHandler(self.view)
+      handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertIn(self.org.key(), profile.org_admin_for)
+    self.assertIn(self.org.key(), profile.mentor_for)
+
+    # now the mentor can be removed
+    request = http.HttpRequest()
+    # no role is offered now 
+    request.POST = {'role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # assume that org admin can be removed
+    with mock.patch.object(
+        profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.TRUE):
+      handler = connection_view.OrgActionsFormHandler(self.view)
+      handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
+
+  def testOrgAdminRoleToMentorRoleWhileNoRoleRequested(self):
+    """Tests MENTOR ROLE if org admin offered and user requests no role."""
+    profile = self.profile_helper.createProfile()
+
+    # user does not request any role from organization
+    connection = connection_utils.seed_new_connection(
+        profile, self.org, org_role=connection_model.ORG_ADMIN_ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+
+    request = http.HttpRequest()
+    # mentor role is offered now 
+    request.POST = {'role': connection_model.MENTOR_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.OrgActionsFormHandler(self.view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
+
+  def testOrgAdminRoleToMentorRoleWhileRoleRequested(self):
+    """Tests MENTOR ROLE if org admin offered and user requests role."""
+    # user is an org admin for organization
+    profile = self.profile_helper.createOrgAdmin(self.org)
+    connection = connection_model.Connection.all().ancestor(
+        profile).filter('organization', self.org).get()
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+
+    request = http.HttpRequest()
+    # mentor role is offered now
+    request.POST = {'role': connection_model.MENTOR_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # assume that org admin cannot be removed
+    with mock.patch.object(
+        profile_logic, 'isMentorRoleEligibleForOrg',
+        return_value=rich_bool.FALSE):
+      handler = connection_view.OrgActionsFormHandler(self.view)
+      handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertIn(self.org.key(), profile.org_admin_for)
+    self.assertIn(self.org.key(), profile.mentor_for)
+
+    # now the org admin can be removed
+    request = http.HttpRequest()
+    # mentor role is offered now 
+    request.POST = {'role': connection_model.MENTOR_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # assume that org admin can be removed
+    with mock.patch.object(
+        profile_logic, 'isMentorRoleEligibleForOrg',
+        return_value=rich_bool.TRUE):
+      handler = connection_view.OrgActionsFormHandler(self.view)
+      handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertIn(self.org.key(), profile.mentor_for)
+
+  def testOrgAdminRoleToOrgAdminRoleWhileNoRoleRequested(self):
+    """Tests ORG ADMIN if org admin offered and user requests no role."""
+    profile = self.profile_helper.createProfile()
+
+    # user does not request any role from organization
+    connection = connection_utils.seed_new_connection(
+        profile, self.org, org_role=connection_model.ORG_ADMIN_ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+
+    request = http.HttpRequest()
+    # org admin role is offered now 
+    request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.OrgActionsFormHandler(self.view)
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = db.get(connection.key())
+    profile = db.get(profile.key())
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key(), profile.mentor_for)
+
+  def testOrgAdminRoleToOrgAdminRoleWhileRoleRequested(self):
+    """Tests ORG ADMIN if org admin offered and user requests role."""
+    # user is a org admin for organization
+    profile = self.profile_helper.createOrgAdmin(self.org)
+    connection = connection_model.Connection.all().ancestor(
+        profile).filter('organization', self.org).get()
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.link_id,
+        'id': connection.key().id()
+        }
+
+    request = http.HttpRequest()
+    # org admin role is offered now 
     request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
