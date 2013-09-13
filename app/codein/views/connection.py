@@ -764,7 +764,12 @@ class OrgActionsFormHandler(FormHandler):
     Args:
       data: A soc.views.helper.request_data.RequestData.
     """
-    raise NotImplementedError
+    org_key = connection_model.Connection.organization.get_value_for_datastore(
+        data.url_connection)
+    is_eligible = profile_logic.isNoRoleEligibleForOrg(
+        data.url_profile, org_key)
+    if is_eligible:
+      connection_view.handleOrgNoRoleSelection(data.url_connection)
 
   def _handleMentorSelection(self, data):
     """Makes all necessary changes if an organization administrator
@@ -773,7 +778,12 @@ class OrgActionsFormHandler(FormHandler):
     Args:
       data: A soc.views.helper.request_data.RequestData.
     """
-    raise NotImplementedError
+    org_key = connection_model.Connection.organization.get_value_for_datastore(
+        data.url_connection)
+    is_eligible = profile_logic.isMentorRoleEligibleForOrg(
+        data.url_profile, org_key)
+    if is_eligible:
+      connection_view.handleMentorRoleSelection(data.url_connection)
 
   def _handleOrgAdminSelection(self, data):
     """Makes all necessary changes if an organization administrator
@@ -782,4 +792,4 @@ class OrgActionsFormHandler(FormHandler):
     Args:
       data: A soc.views.helper.request_data.RequestData.
     """
-    raise NotImplementedError
+    connection_view.handleOrgAdminRoleSelection(data.url_connection)
