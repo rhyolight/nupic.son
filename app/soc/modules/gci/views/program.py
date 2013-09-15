@@ -54,7 +54,7 @@ class CreateProgramForm(gci_forms.GCIModelForm):
         'scope', 'timeline', 'org_admin_agreement', 'events_page',
         'mentor_agreement', 'student_agreement', 'about_page',
         'connect_with_us_page', 'help_page', 'task_types', 'link_id',
-        'sponsor', 'terms_and_conditions']
+        'sponsor', 'terms_and_conditions', 'schools']
 
   def clean(self):
     """Cleans the data input by the user as a response to the form."""
@@ -87,7 +87,7 @@ class EditProgramForm(gci_forms.GCIModelForm):
     css_prefix = 'edit_program_form'
     model = program_model.GCIProgram
     exclude = ['link_id', 'scope', 'timeline', 'task_types', 'program_id',
-        'sponsor']
+        'sponsor', 'schools']
 
   def clean(self):
     """Cleans the data input by the user as a response to the form.
