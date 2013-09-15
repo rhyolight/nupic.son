@@ -42,9 +42,12 @@ class GCIConversationTest(unittest.TestCase):
     self.conv_utils = conversation_utils.GCIConversationHelper()
     self.program_key = self.conv_utils.program_key
 
-    # Ndb keys of three dummy users
+    # Create three dummy users
+    user_ranges = range(3)
+    self.user_emails = list('user-%d@example.net' % x for x in user_ranges)
     self.user_keys = list(
-        self.conv_utils.createUser(return_key=True) for _ in range(3))
+        self.conv_utils.createUser(return_key=True, email=self.user_emails[x])
+        for x in user_ranges)
 
     # Conversation created by user 0 including user 1
     self.conv_a = self.conv_utils.createConversation(
@@ -1057,3 +1060,46 @@ class GCIConversationTest(unittest.TestCase):
         gciconversation_logic.queryForProgramAndUser(
             program=self.program_key, user=user_winner_key)))
     self.assertEqual(expected_keys, actual_keys)
+
+  def testGetSubscribedEmails(self):
+    """Tests that getSubscribedEmails correctly returns email addresses of
+    users subscribed to a conversation.
+    """
+    # Create a few users with unique email addresses
+    email_a = 'a@example.net'
+    user_a_key = self.conv_utils.createUser(
+        return_key=True, email=email_a)
+    self.conv_utils.addUser(
+        conversation=self.conv_a.key, user=user_a_key,
+        enable_notifications=False)
+    self.conv_utils.addUser(
+        conversation=self.conv_b.key, user=user_a_key,
+        enable_notifications=False)
+
+    # Add another new user to the two conversations with notifications enabled
+    email_b = 'b@example.net'
+    user_b_key = self.conv_utils.createUser(
+        return_key=True, email=email_b)
+    self.conv_utils.addUser(
+        conversation=self.conv_a.key, user=user_b_key,
+        enable_notifications=True)
+    self.conv_utils.addUser(
+        conversation=self.conv_b.key, user=user_b_key,
+        enable_notifications=True)
+
+    # Test that first conversation has certain subscribed users
+    expected = set([self.user_emails[0], self.user_emails[1], email_b])
+    actual = set(gciconversation_logic.getSubscribedEmails(self.conv_a.key))
+    self.assertEqual(expected, actual)
+
+    # Test that second conversation has certain subscribed users
+    expected = set([self.user_emails[1], self.user_emails[2], email_b])
+    actual = set(gciconversation_logic.getSubscribedEmails(self.conv_b.key))
+    self.assertEqual(expected, actual)
+
+    # Test that second conversation has certain subscribed users, excluding
+    # a particular user
+    expected = set([self.user_emails[1], email_b])
+    actual = set(gciconversation_logic.getSubscribedEmails(
+        self.conv_b.key, exclude=[self.user_keys[2]]))
+    self.assertEqual(expected, actual)

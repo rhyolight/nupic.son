@@ -101,18 +101,21 @@ class ConversationHelper(object):
 
     return conversation
 
-  def addUser(self, conversation, user):
+  def addUser(self, conversation, user, enable_notifications=True):
     """Creates a conversationuser for the given conversation and user.
 
     Args:
       conversation: Key (ndb) of conversation.
       user: Key (ndb) of user.
+      enable_notifications: Whether the user is subscribed to notifications for
+                            the conversation.
 
     Returns:
       The created GCIConversationUser entity.
     """
     conv_user = self.conversation_user_model_class(
-        conversation=conversation, user=user)
+        conversation=conversation, user=user,
+        enable_notifications=enable_notifications)
     conv_user.put()
 
     return conv_user
@@ -172,7 +175,7 @@ class ConversationHelper(object):
 
   def createUser(
       self, roles=None, mentor_organizations=None, admin_organizations=None,
-      winning_organization=None, return_key=False):
+      winning_organization=None, return_key=False, developer=False, email=None):
     """Creates a dummy user with a profile.
 
     Concrete subclasses must implement this method.
@@ -186,6 +189,8 @@ class ConversationHelper(object):
                            If None, none will be set.
       winning_organization: A GCIConversation the user is a winner for.
       return_key: Whether just an ndb key for the entity will be returned.
+      developer: Whether the user is a developer.
+      email: The email address for the user's profile.
 
     Returns:
       If return_key is True, an ndb key for the created user entity is returned.
@@ -213,7 +218,7 @@ class GCIConversationHelper(ConversationHelper):
 
   def createUser(
       self, roles=None, mentor_organizations=None, admin_organizations=None,
-      winning_organization=None, return_key=False, developer=False):
+      winning_organization=None, return_key=False, developer=False, email=None):
     """Creates a dummy user with a GCIProfile.
 
     See ConversationHelper.createUser for full specification.
@@ -231,6 +236,9 @@ class GCIConversationHelper(ConversationHelper):
 
     if developer:
       profile.createDeveloper()
+
+    if email:
+      profile.email = email
 
     if mentor_organizations:
       roles.update([MENTOR])

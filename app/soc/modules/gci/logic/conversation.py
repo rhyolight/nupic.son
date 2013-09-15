@@ -581,3 +581,38 @@ def refreshConversationsForUserAndProgram(user, program):
         .filter(gciconversation_model.GCIConversation.organization ==
             ndb.Key.from_old_key(student_info.winner_for.key())))
     map(addToConversation, query)
+
+
+def getSubscribedEmails(conversation, exclude=None):
+  """Gets the list of email addresses for all users subscribed to a
+  conversation.
+
+  Args:
+    conversation: Key (ndb) of GCIConversation.
+    exclude: Keys (ndb) of Users that, if given, will not be in the set of
+             emails.
+
+  Returns:
+    Set of email addresses.
+  """
+  conversation_ent = conversation.get()
+  conv_users = queryConversationUserForConversation(conversation)
+  program_key = ndb.Key.to_old_key(conversation_ent.program)
+  addresses = set()
+
+  for conv_user in conv_users:
+    if conv_user.enable_notifications and (
+        not exclude or conv_user.user not in exclude):
+      user_key = ndb.Key.to_old_key(conv_user.user)
+      profile_results = gciprofile_logic.queryProfileForUserAndProgram(
+          user=user_key, program=program_key).fetch(1)
+
+      if len(profile_results) == 0:
+        raise Exception('Could not find GCIProfile for user %s and program. %s'
+            % (conv_user.name, program_key.name()))
+
+      profile = profile_results[0]
+      addresses.add(profile.email)
+
+  return addresses
+
