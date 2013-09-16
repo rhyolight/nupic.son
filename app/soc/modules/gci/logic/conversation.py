@@ -19,12 +19,15 @@ from google.appengine.ext import ndb
 
 from datetime import timedelta
 
+from soc.tasks import mailer
+
 from soc.modules.gci.models import conversation as gciconversation_model
 from soc.modules.gci.models import message as gcimessage_model
 from soc.modules.gci.models import profile as gciprofile_model
 
 from soc.modules.gci.logic import message as gcimessage_logic
 from soc.modules.gci.logic import profile as gciprofile_logic
+from soc.modules.gci.logic.helper import notifications
 
 from soc.models import conversation as conversation_model
 
@@ -616,3 +619,22 @@ def getSubscribedEmails(conversation, exclude=None):
 
   return addresses
 
+
+def notifyParticipantsOfMessage(message, is_reply):
+  """Notifies participants in a conversation's participants of a new message.
+
+  Args:
+    message: Key (ndb) of GCIMessage of which to notify participants.
+    is_reply: Whether this message is a reply to an existing conversation.
+  """
+  message_ent = message.get()
+  conversation_ent = message_ent.conversation.get()
+
+  to_emails = getSubscribedEmails(
+      message_ent.conversation, exclude=[message_ent.author])
+
+  context = notifications.getTaskConversationMessageContext(
+      message, list(to_emails), is_reply)
+
+  txn = mailer.getSpawnMailTaskTxn(context, parent=None)
+  db.run_in_transaction(txn)

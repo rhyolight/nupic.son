@@ -267,9 +267,12 @@ class ConversationCreateForm(gci_forms.GCIModelForm):
     else:
       gciconversation_logic.refreshConversationParticipants(conversation.key)
 
-    gciconversation_logic.createMessage(
+    message = gciconversation_logic.createMessage(
         conversation=conversation.key, user=creator,
         content=cleaned_data['message_content'])
+
+    gciconversation_logic.notifyParticipantsOfMessage(
+        message.key, False)
 
     return conversation
 

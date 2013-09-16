@@ -116,6 +116,8 @@ class PostReply(GCIRequestHandler):
 
   def post(self, data, check, mutator):
     message = self.createReplyFromForm(data)
+    gciconversation_logic.notifyParticipantsOfMessage(
+        message.key, True)
     return data.redirect.id().to(
         name=url_names.GCI_CONVERSATION,
         anchor='m%d' % message.key.integer_id())

@@ -15,6 +15,7 @@
 """Tests for GCI logic for conversations."""
 
 import unittest
+import json
 
 from datetime import datetime
 from datetime import timedelta
@@ -22,6 +23,7 @@ from datetime import timedelta
 from google.appengine.ext import ndb
 
 from soc.models import user as user_model
+from soc.models import email as email_model
 from soc.models import conversation as conversation_model
 
 from tests.utils import conversation_utils
@@ -1103,3 +1105,82 @@ class GCIConversationTest(unittest.TestCase):
     actual = set(gciconversation_logic.getSubscribedEmails(
         self.conv_b.key, exclude=[self.user_keys[2]]))
     self.assertEqual(expected, actual)
+
+  def testNotifyParticipantsOfMessage(self):
+    """Tests that notifyParticipantsOfMessage sends the correct email
+    notification to subscribed recipients of a conversation for a message.
+    """
+    # Create a few users with unique email addresses
+    email_a = 'a@example.net'
+    user_a = self.conv_utils.createUser(email=email_a)
+    user_a_key = ndb.Key.from_old_key(user_a.key())
+    self.conv_utils.addUser(
+        conversation=self.conv_a.key, user=user_a_key,
+        enable_notifications=False)
+    self.conv_utils.addUser(
+        conversation=self.conv_b.key, user=user_a_key,
+        enable_notifications=False)
+
+    # Add another new user to the two conversations with notifications enabled
+    email_b = 'b@example.net'
+    user_b = self.conv_utils.createUser(email=email_b)
+    user_b_key = ndb.Key.from_old_key(user_b.key())
+    self.conv_utils.addUser(
+        conversation=self.conv_a.key, user=user_b_key,
+        enable_notifications=True)
+    self.conv_utils.addUser(
+        conversation=self.conv_b.key, user=user_b_key,
+        enable_notifications=True)
+
+    # Add a new message and send an email notification for it as if it were the
+    # first message.
+    content = 'Hello universe?'
+    message = self.conv_utils.addMessage(
+        self.conv_a.key, user=user_b_key, content=content)
+    gciconversation_logic.notifyParticipantsOfMessage(
+        message.key, False)
+
+    # Get last entity in email entity group
+    email = email_model.Email.all().get()
+    email_ctx = json.loads(email.context)
+    
+    # Test that email has correct recipients
+    expected = set([self.user_emails[0], self.user_emails[1]])
+    actual = set(email_ctx['bcc'])
+    self.assertSetEqual(expected, actual)
+
+    # Test that email subject has conversation subject and sender username
+    self.assertIn(self.conv_a.subject, email_ctx['subject'])
+    self.assertIn(user_b.name, email_ctx['subject'])
+
+    # Assert that email HTML has correct content
+    self.assertIn(content, email_ctx['html'])
+    self.assertIn('created', email_ctx['html'])
+
+    # Delete email context from datastore
+    email.delete()
+
+    # Add a new message and send an email notification for it as if it were a
+    # reply
+    content = 'The universe is busy at the moment. Please check back later.'
+    message = self.conv_utils.addMessage(
+        self.conv_a.key, user=user_a_key, content=content)
+    gciconversation_logic.notifyParticipantsOfMessage(
+        message.key, True)
+
+    # Get last entity in email entity group
+    email = email_model.Email.all().get()
+    email_ctx = json.loads(email.context)
+    
+    # Test that email has correct recipients
+    expected = set([self.user_emails[0], self.user_emails[1], email_b])
+    actual = set(email_ctx['bcc'])
+    self.assertSetEqual(expected, actual)
+
+    # Test that email subject has conversation subject and sender username
+    self.assertIn(self.conv_a.subject, email_ctx['subject'])
+    self.assertIn(user_a.name, email_ctx['subject'])
+
+    # Assert that email HTML has correct content
+    self.assertIn(content, email_ctx['html'])
+    self.assertIn('replied', email_ctx['html'])
