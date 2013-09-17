@@ -48,6 +48,9 @@ MESSAGE_FORM_NAME = 'message_form'
 LIST_CONNECTIONS_FOR_USER_PAGE_NAME = translation.ugettext(
     'List of connections for %s')
 
+LIST_CONNECTIONS_FOR_ORG_ADMIN_PAGE_NAME = translation.ugettext(
+    'List connections for organization admin')
+
 MANAGE_CONNECTION_PAGE_NAME = translation.ugettext(
     'Manage connection')
 
@@ -809,6 +812,16 @@ class CIUserConnectionList(connection_list.UserConnectionList):
     return 'codein/connection/_connection_list.html'
 
 
+class CIOrgAdminConnectionList(connection_list.OrgAdminConnectionList):
+  """Template to list all connections for organization administrators."""
+
+  url_names = urls.UrlNames
+
+  def templatePath(self):
+    """See template.Template.templatePath for specification."""
+    return 'codein/connection/_connection_list.html'
+
+
 class ListConnectionsForUser(base.GCIRequestHandler):
   """View to list all connections for a user."""
 
@@ -842,6 +855,40 @@ class ListConnectionsForUser(base.GCIRequestHandler):
   def jsonContext(self, data, check, mutator):
     """See base.GCIRequestHandler.jsonContext for specification."""
     list_content = CIUserConnectionList(data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exception.BadRequest(message='This data cannot be accessed.')
+
+
+class ListConnectionsForOrgAdmin(base.GCIRequestHandler):
+  """View to list all connections for an organization administrator."""
+
+  # TODO(daniel): add actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    """See base.GCIRequestHandler.djangoURLPatterns for specification."""
+    return [
+        ci_url_patterns.url(
+            r'connection/list/org/%s$' % url_patterns.PROFILE,
+            self, name=urls.UrlNames.CONNECTION_LIST_FOR_ORG_ADMIN)
+    ]
+
+  def templatePath(self):
+    """See base.GCIRequestHandler.templatePath for specification."""
+    return 'codein/connection/list_connections.html'
+
+  def context(self, data, check, mutator):
+    """See base.GCIRequestHandler.context for specification."""
+    return {
+        'connection_list': CIOrgAdminConnectionList(data),
+        'page_name': LIST_CONNECTIONS_FOR_ORG_ADMIN_PAGE_NAME,
+        }
+
+  def jsonContext(self, data, check, mutator):
+    """See base.GCIRequestHandler.jsonContext for specification."""
+    list_content = CIOrgAdminConnectionList(data).getListData()
     if list_content:
       return list_content.content()
     else:

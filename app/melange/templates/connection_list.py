@@ -115,3 +115,45 @@ class UserConnectionList(ConnectionList):
             self.url_names.CONNECTION_MANAGE_AS_USER))
 
     return list_config
+
+
+class OrgAdminConnectionList(ConnectionList):
+  """Template for list of all connections for a particular
+  organization administrator.
+  """
+
+  def _getDescription(self):
+    """See ConnectionList._getDescription for specification."""
+    return translation.ugettext(
+        'List of connections with mentors and admins for my organizations.')
+
+  def _getQuery(self):
+    """See ConnectionList._getQuery for specification."""
+    return connection_logic.queryForOrganizationAdmin(self.data.url_profile)
+
+  def _getListConfig(self):
+    """See ConnectionList._getListConfig for specification."""
+    list_config = lists.ListConfiguration(add_key_column=False)
+    list_config.addPlainTextColumn('key', 'Key',
+        lambda e, *args: e.keyName(), hidden=True)
+
+    list_config.addPlainTextColumn('user', 'User',
+        lambda e, *args: e.parent_key().parent().name())
+
+    # organization column is added only when the user is an admin for
+    # more than one organization
+    if len(self.data.url_profile.org_admin_for) > 1:
+      list_config.addPlainTextColumn('organization', 'Organization',
+          lambda e, *args: e.organization.name)
+
+    list_config.addPlainTextColumn('role', 'Role',
+        lambda e, *args: e.getRole())
+    list_config.addSimpleColumn('last_modified', 'Last Modified On')
+
+    linker = links.Linker()
+    list_config.setRowAction(
+        lambda e, *args: linker.userId(
+            e.parent(), e.key().id(),
+            self.url_names.CONNECTION_MANAGE_AS_ORG))
+
+    return list_config
