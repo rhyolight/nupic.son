@@ -28,6 +28,7 @@ from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
 from melange.request import access
 from melange.request import exception
+from melange.templates import connection_list
 from melange.views import connection as connection_view
 
 from soc.logic import cleaning
@@ -43,6 +44,9 @@ from soc.views.helper import url_patterns
 
 ACTIONS_FORM_NAME = 'actions_form'
 MESSAGE_FORM_NAME = 'message_form'
+
+LIST_CONNECTIONS_FOR_USER_PAGE_NAME = translation.ugettext(
+    'List of connections for %s')
 
 MANAGE_CONNECTION_PAGE_NAME = translation.ugettext(
     'Manage connection')
@@ -793,3 +797,52 @@ class OrgActionsFormHandler(FormHandler):
       data: A soc.views.helper.request_data.RequestData.
     """
     connection_view.handleOrgAdminRoleSelection(data.url_connection)
+
+
+class CIUserConnectionList(connection_list.UserConnectionList):
+  """Template to list all connections for user."""
+
+  url_names = urls.UrlNames
+
+  def templatePath(self):
+    """See template.Template.templatePath for specification."""
+    return 'codein/connection/_connection_list.html'
+
+
+class ListConnectionsForUser(base.GCIRequestHandler):
+  """View to list all connections for a user."""
+
+  # TODO(daniel): add actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    """See base.GCIRequestHandler.djangoURLPatterns for specification."""
+    return [
+        ci_url_patterns.url(
+            r'connection/list/user/%s$' % url_patterns.PROFILE,
+            self, name=urls.UrlNames.CONNECTION_LIST_FOR_USER)
+    ]
+
+  def templatePath(self):
+    """See base.GCIRequestHandler.templatePath for specification."""
+    return 'codein/connection/list_connections.html'
+
+  def context(self, data, check, mutator):
+    """See base.GCIRequestHandler.context for specification."""
+
+    page_name = (
+        LIST_CONNECTIONS_FOR_USER_PAGE_NAME %
+            data.url_profile.parent_key().name())
+
+    return {
+        'connection_list': CIUserConnectionList(data),
+        'page_name': page_name,
+        }
+
+  def jsonContext(self, data, check, mutator):
+    """See base.GCIRequestHandler.jsonContext for specification."""
+    list_content = CIUserConnectionList(data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exception.BadRequest(message='This data cannot be accessed.')

@@ -1310,3 +1310,52 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
+
+
+class ListConnectionsForUserTest(test_utils.GCIDjangoTestCase):
+  """Unit tests for ListConnectionsForUser class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def _getUrl(self, profile):
+    """Returns URL to 'list connections for user' view for the specified user.
+
+    Args:
+      profile: profile entity.
+
+    Returns:
+      URL to 'list connections for user' view.
+    """
+    return '/gci/connection/list/user/%s' % profile.key().name()
+
+  def _assertPageTemplatesUsed(self, response):
+    """Asserts that all templates for the tested page are used."""
+    self.assertGCITemplatesUsed(response)
+    self.assertTemplateUsed(response,
+        'codein/connection/list_connections.html')
+    self.assertTemplateUsed(response,
+        'codein/connection/_connection_list.html')
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    profile = self.profile_helper.createProfile()
+    response = self.get(self._getUrl(profile))
+    self.assertResponseOK(response)
+    self._assertPageTemplatesUsed(response)
+
+  def testListData(self):
+    """Tests that correct list data is loaded."""
+    profile = self.profile_helper.createMentor(self.org)
+
+    second_org = self.program_helper.createNewOrg()
+    connection_utils.seed_new_connection(profile, second_org)
+
+    third_org = self.program_helper.createNewOrg()
+    connection_utils.seed_new_connection(profile, third_org)
+
+    list_data = self.getListData(self._getUrl(profile), 0)
+
+    # check that all three connections are listed
+    self.assertEqual(len(list_data), 3)
