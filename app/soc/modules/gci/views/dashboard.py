@@ -679,15 +679,21 @@ class MyOrgsTaskList(Component):
         logging.warning("Invalid task id in '%s'", properties)
         continue
 
-      def publish_task_txn():
+      @db.transactional(xg=True)
+      def publish_task_txn(profile_key):
+        """Publishes or unpublishes a task in a transaction.
+
+        profile_key: profile key of the user who takes this action.
+        """
         task = GCITask.get_by_id(int(task_key))
+        profile = GCIProfile.get(profile_key)
 
         if not task:
           logging.warning("Task with task_id '%s' does not exist", task_key)
           return
 
         org_key = GCITask.org.get_value_for_datastore(task)
-        if not self.data.orgAdminFor(org_key):
+        if not org_key in profile.org_admin_for:
           logging.warning('Not an org admin')
           return
 
@@ -706,7 +712,7 @@ class MyOrgsTaskList(Component):
             logging.warning(
                 'Trying to unpublish task with %s status.', task.status)
 
-      db.run_in_transaction(publish_task_txn)
+      publish_task_txn(self.data.profile.key())
     return True
 
   def context(self):
