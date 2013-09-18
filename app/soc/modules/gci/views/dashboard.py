@@ -22,8 +22,13 @@ from google.appengine.ext import db
 from django import http
 from django.utils.translation import ugettext
 
+from codein.views.helper import urls
+
 from melange.request import exception
+from melange.templates import connection_list
+
 from soc.logic import document as document_logic
+from soc.logic import links
 from soc.logic import org_app as org_app_logic
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.dashboard import Component
@@ -33,7 +38,6 @@ from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import document as gsoc_document_logic
 from soc.modules.gci.logic import task as task_logic
-from soc.modules.gci.models.request import GCIRequest
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.task import GCITask
@@ -244,8 +248,8 @@ class DashboardPage(GCIRequestHandler):
 
     components.append(MyOrgsTaskList(data))
 
-    # add org list just before creating task and invitation, so mentor can
-    # choose which organization the task or invitite will be created for
+    # add org list just before creating a task, so mentor can
+    # choose which organization the task will be created for
     components.append(MyOrgsListBeforeCreateTask(data))
 
     return components
@@ -256,15 +260,6 @@ class DashboardPage(GCIRequestHandler):
 
     # add list of mentors component
     components.append(MyOrgsMentorsList(data))
-
-    # add invite mentors component
-    components.append(MyOrgsListBeforeInviteMentor(data))
-
-    # add invite org admins component
-    components.append(MyOrgsListBeforeInviteOrgAdmin(data))
-
-    # add list of all the invitations
-    components.append(OrgAdminInvitesList(data))
 
     # add bulk create tasks component
     components.append(MyOrgsListBeforeBulkCreateTask(data))
@@ -317,10 +312,7 @@ class DashboardPage(GCIRequestHandler):
     if data.student_info:
       links += self._getStudentLinks(data)
     else:
-      if data.is_org_admin:
-        links += self._getOrgAdminLinks(data)
-      if data.is_mentor:
-        links += self._getMentorLinks(data)
+      links.extend(self._getNonStudentLinks(data))
 
     return links
 
@@ -338,10 +330,51 @@ class DashboardPage(GCIRequestHandler):
 
     return links
 
+  def _getNonStudentLinks(self, data):
+    """Gets the main dashboard links for users with non-student profile.
+
+    Args:
+      data: RequestData object for the current request.
+
+    Returns:
+      A list of dicts, each of which describes a single link.
+    """
+    links = []
+    if data.profile:
+      links.append(self._getMyConnectionsLink(data))
+      if data.is_org_admin:
+        links.extend(self._getOrgAdminLinks(data))
+      if data.is_mentor:
+        links.extend(self._getMentorLinks(data))
+    return links
+
+  def _getMyConnectionsLink(self, data):
+    """Gets the link to list of connections for the user."""
+    linker = links.Linker()
+    return {
+        'name': 'list_user_connections',
+        'description': connection_list.USER_CONNECTION_LIST_DESCRIPTION,
+        'title': ugettext('My Connections'),
+        'link': linker.profile(
+            data.profile, urls.UrlNames.CONNECTION_LIST_FOR_USER)
+        }
+
+  def _getOrgAdminConnectionsLink(self, data):
+    """Gets the link to list of connections for the organization admin."""
+    linker = links.Linker()
+    return {
+        'name': 'list_org_admin_connections',
+        'description': connection_list.ORG_ADMIN_CONNECTION_LIST_DESCRIPTION,
+        'title': ugettext('Organization Connections'),
+        'link': linker.profile(
+            data.profile, urls.UrlNames.CONNECTION_LIST_FOR_ORG_ADMIN)
+        }
+
   def _getOrgAdminLinks(self, data):
     """Get the main dashboard links for org-admin."""
     links = []
 
+    links.append(self._getOrgAdminConnectionsLink(data))
     # add propose winners component
     if data.timeline.allReviewsStopped():
       links.append(self._getProposeWinnersLink(data))
@@ -350,33 +383,6 @@ class DashboardPage(GCIRequestHandler):
   def _getMentorLinks(self, data):
     """Get the main dashboard links for mentor."""
     return []
-
-  def _getMyInvitationsLink(self, data):
-    """Get the link of incoming invitations list (invitations sent to me)."""
-    # TODO(nathaniel): Eliminate this state-setting call.
-    data.redirect.program()
-
-    return {
-        'name': 'list_invites',
-        'description': ugettext(
-            'List of all invites which have been sent to me.'),
-        'title': 'Invites to me',
-        'link': data.redirect.urlOf(url_names.GCI_LIST_INVITES)
-        }
-
-  def _getMyOrgInvitationsLink(self, data):
-    """Get the link of outgoing invitations list (invitations sent by my orgs).
-    """
-    # TODO(nathaniel): Eliminate this state-setting call.
-    data.redirect.program()
-
-    return {
-        'name': 'list_org_invites',
-        'description': ugettext(
-            'List of all invites which have been sent by my organizations.'),
-        'title': 'My organization outgoing invitations',
-        'link': data.redirect.urlOf(url_names.GCI_LIST_ORG_INVITES)
-        }
 
   def _getStudentFormsLink(self, data):
     """Get the link for uploading student forms."""
@@ -868,57 +874,6 @@ class MyOrgsListBeforeBulkCreateTask(MyOrgsList):
     self._list_config.setRowAction(RowAction)
 
 
-class MyOrgsListBeforeInviteMentor(MyOrgsList):
-  """Component for listing the orgs of the current user, just before creating
-  invite.
-  """
-
-  def _setIdx(self):
-    self.idx = 4
-
-  def _getContext(self):
-    org_list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=self.idx, preload_list=False)
-
-    return {
-        'name': 'invite_mentor',
-        'title': 'Invite Mentor',
-        'lists': [org_list],
-        'description': ugettext('Invite mentors to be part of your '
-            'organization.')}
-
-  def _setRowAction(self, request, data):
-    self._list_config.setRowAction(
-        lambda entity, *args: data.redirect.invite('mentor', entity)
-            .urlOf(url_names.GCI_SEND_INVITE))
-
-
-class MyOrgsListBeforeInviteOrgAdmin(MyOrgsList):
-  """Component for listing the organizations of the current user, just before
-  he or she creates a new org admin invite.
-  """
-
-  def _setIdx(self):
-    self.idx = 5
-
-  def _getContext(self):
-    org_list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=self.idx, preload_list=False)
-
-    return {
-        'name': 'invite_org_admin',
-        'title': 'Invite Org Admin',
-        'lists': [org_list],
-        'description': ugettext('Invite org admins to be part of your '
-            'organization. Please note that once they accept your invitation, '
-            'they will become mentors too.')}
-
-  def _setRowAction(self, request, data):
-    self._list_config.setRowAction(
-        lambda entity, *args: data.redirect.invite('org_admin', entity)
-            .urlOf(url_names.GCI_SEND_INVITE))
-
-
 class MyOrgsScoresList(MyOrgsList):
   """Component for listing all organizations for which the current user may
   see scores of the students.
@@ -1051,64 +1006,6 @@ class MyOrgsListBeforeOrgProfile(MyOrgsList):
       return data.redirect.urlOf(url_names.EDIT_GCI_ORG_PROFILE, secure=True)
 
     self._list_config.setRowAction(RowAction)
-
-
-class OrgAdminInvitesList(Component):
-  """Template for list of invites that have been sent by the organizations
-  that the current user is organization admin for.
-  """
-
-  def __init__(self, data):
-    self.data = data
-
-    # GCIRequest entities have user entities as parents, so the keys
-    # for the list items should be parent scoped.
-    list_config = lists.ListConfiguration()
-    list_config.addPlainTextColumn('to', 'To',
-        lambda entity, *args: entity.user.name)
-    list_config.addSimpleColumn('status', 'Status')
-
-    # organization column should be added only if the user is an administrator
-    # for more than one organization
-    if len(self.data.org_admin_for) > 1:
-      list_config.addPlainTextColumn('org', 'From',
-        lambda entity, *args: entity.org.name)
-
-    list_config.setRowAction(lambda entity, *args: data.redirect.userId(
-        entity.parent_key().name(), entity.key().id()).urlOf(
-        url_names.GCI_MANAGE_INVITE))
-
-    self.idx = 9
-    self._list_config = list_config
-
-  def getListData(self):
-    if lists.getListIndex(self.data.request) != self.idx:
-      return None
-
-    q = GCIRequest.all()
-    q.filter('type', 'Invitation')
-    q.filter('org IN', [e.key() for e in self.data.org_admin_for])
-
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.data.request, self._list_config, q, lists.keyStarter)
-
-    return response_builder.build()
-
-  def context(self):
-    invite_list = lists.ListConfigurationResponse(
-        self.data, self._list_config, self.idx)
-
-    return {
-        'name': 'outgoing_invitations',
-        'title': 'Outgoing Invitations',
-        'lists': [invite_list],
-        'description': ugettext(
-            'See all the invitations that have been sent '
-            'by your organizations.')
-    }
-
-  def templatePath(self):
-    return 'modules/gci/dashboard/list_component.html'
 
 
 class DocumentComponent(Component):

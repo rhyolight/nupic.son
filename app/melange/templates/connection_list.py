@@ -23,6 +23,12 @@ from soc.views import template
 from soc.views.helper import lists
 
 
+ORG_ADMIN_CONNECTION_LIST_DESCRIPTION = translation.ugettext(
+    'List of connections with mentors and admins for my organizations.')
+
+USER_CONNECTION_LIST_DESCRIPTION = translation.ugettext(
+    'List of my connections with organizations.')
+
 class ConnectionList(template.Template):
   """Template for list of connections."""
 
@@ -91,7 +97,7 @@ class UserConnectionList(ConnectionList):
 
   def _getDescription(self):
     """See ConnectionList._getDescription for specification."""
-    return translation.ugettext('List of my connections with organizations.')
+    return USER_CONNECTION_LIST_DESCRIPTION
 
   def _getQuery(self):
     """See ConnectionList._getQuery for specification."""
@@ -124,8 +130,7 @@ class OrgAdminConnectionList(ConnectionList):
 
   def _getDescription(self):
     """See ConnectionList._getDescription for specification."""
-    return translation.ugettext(
-        'List of connections with mentors and admins for my organizations.')
+    return ORG_ADMIN_CONNECTION_LIST_DESCRIPTION
 
   def _getQuery(self):
     """See ConnectionList._getQuery for specification."""
