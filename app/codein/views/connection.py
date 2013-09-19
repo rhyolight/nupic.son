@@ -36,6 +36,7 @@ from soc.logic import links
 from soc.logic import user as user_logic
 from soc.logic.helper import notifications
 from soc.models import user as user_model
+from soc.modules.gci.templates import org_list
 from soc.modules.gci.views import base
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_patterns as ci_url_patterns
@@ -53,6 +54,9 @@ LIST_CONNECTIONS_FOR_ORG_ADMIN_PAGE_NAME = translation.ugettext(
 
 MANAGE_CONNECTION_PAGE_NAME = translation.ugettext(
     'Manage connection')
+
+PICK_ORGANIZATION_TO_CONNECT = translation.ugettext(
+    'Pick organization to connect with')
 
 START_CONNECTION_AS_ORG_PAGE_NAME = translation.ugettext(
     'Start connections with users')
@@ -893,3 +897,46 @@ class ListConnectionsForOrgAdmin(base.GCIRequestHandler):
       return list_content.content()
     else:
       raise exception.BadRequest(message='This data cannot be accessed.')
+
+
+class _OrganizationsToStartConnectionList(org_list.BasicOrgList):
+  """List of organizations to start connection with."""
+
+  def _getRedirect(self):
+    """See org_list.OrgList._getRedirect for specification."""
+    linker = links.Linker()
+    return lambda e, *args: linker.userOrg(
+        self.data.profile, e, urls.UrlNames.CONNECTION_START_AS_USER) 
+
+  def _getDescription(self):
+    return 'List of organizations accepted into %s' % (
+        self.data.program.name)
+
+
+class PickOrganizationToConnectPage(base.GCIRequestHandler):
+  """Page for non-student users to pick organization to start connection."""
+
+  # TODO(daniel): add actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def templatePath(self):
+    return 'modules/gci/accepted_orgs/base.html'
+
+  def djangoURLPatterns(self):
+    return [
+        ci_url_patterns.url(r'connection/pick_org/%s$' % url_patterns.PROGRAM,
+            self, name=urls.UrlNames.CONNECTION_PICK_ORG),
+    ]
+
+  def jsonContext(self, data, check, mutator):
+    list_content = _OrganizationsToStartConnectionList(data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exception.BadRequest(message='You do not have access to this data')
+
+  def context(self, data, check, mutator):
+    return {
+        'page_name': PICK_ORGANIZATION_TO_CONNECT,
+        'accepted_orgs_list': _OrganizationsToStartConnectionList(data),
+    }

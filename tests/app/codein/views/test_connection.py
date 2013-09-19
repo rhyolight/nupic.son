@@ -1409,3 +1409,26 @@ class ListConnectionsForOrgAdminTest(test_utils.GCIDjangoTestCase):
 
     # check that all three connections are listed
     self.assertEqual(len(list_data), 3)
+
+
+class PickOrganizationToConnectPageTest(test_utils.GCIDjangoTestCase):
+  """Unit tests for PickOrganizationToConnectPage class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def _getUrl(self, profile):
+    """Returns URL to 'pick organization to connect' page.
+
+    Returns:
+      URL to 'pick organization to connect' view.
+    """
+    return '/gci/connection/pick_org/%s' % self.program.key().name()
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    profile = self.profile_helper.createProfile()
+    response = self.get(self._getUrl(profile))
+    self.assertResponseOK(response)
+    self.assertGCITemplatesUsed(response)
