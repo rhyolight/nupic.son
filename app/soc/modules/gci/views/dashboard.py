@@ -25,7 +25,6 @@ from django.utils.translation import ugettext
 from codein.views.helper import urls
 
 from melange.request import exception
-from melange.templates import connection_list
 
 from soc.logic import document as document_logic
 from soc.logic import links
@@ -61,7 +60,21 @@ class MainDashboard(Dashboard):
       data: The RequestData object
     """
     super(MainDashboard, self).__init__(data)
-    self.subpages = []
+
+    if not data.profile.is_student:
+      connection_dashboard = ConnectionsDashboard(data)
+
+      self.subpages = [{
+          'name': 'connections_dashboard',
+          'description': ugettext(
+              'Connect with organizations, check current status and '
+              'participate in the program.'),
+          'title': 'Connections',
+          'link': '',
+          'subpage_links': connection_dashboard.getSubpagesLink(),
+          }]
+    else:
+      self.subpages = []
 
   def context(self):
     """Returns the context of main dashboard."""
@@ -100,6 +113,75 @@ class ComponentsDashboard(Dashboard):
         'name': self.name,
         'backlinks': self.backlinks,
         'components': self.components,
+    }
+
+
+class ConnectionsDashboard(Dashboard):
+  """Dashboard grouping connection related elements."""
+
+  def __init__(self, data):
+    """Initializes new instance of this class."""
+    super(ConnectionsDashboard, self).__init__(data)
+
+    linker = links.Linker()
+
+    self.subpages = [
+        {
+            'name': 'list_connections_for_user',
+            'description': ugettext(
+                'Check status of your existing connections with '
+                'organizations and communicate with administrators.'),
+            'title': ugettext('See your connections'),
+            'link': linker.program(
+                data.program, urls.UrlNames.CONNECTION_PICK_ORG)
+        },                     
+        {
+            'name': 'connect',
+            'description': ugettext(
+                'Connect with organizations and request a role to '
+                'participate in the program.'),
+            'title': ugettext('Connect with organizations'),
+            'link': linker.program(
+                data.program, urls.UrlNames.CONNECTION_PICK_ORG)
+        }]
+
+    # add organization admin specific items
+    if data.profile.is_org_admin:
+      self.subpages.append({
+          'name': 'list_connections_for_org_admin',
+          'description': ugettext(
+              'Manage connections for the organizations for which you have '
+              'administrator role at this moment.'),
+          'title': ugettext('See organization\'s connections'),
+          'link': linker.profile(
+              data.profile, urls.UrlNames.CONNECTION_LIST_FOR_ORG_ADMIN)
+          })
+
+      for org in data.org_admin_for:
+        self.subpages.append({
+            'name': 'connect_for_%s' % org.link_id,
+            'description': ugettext(
+                'Connect with users and offer them role in your '
+                'organization.'),
+            'title': ugettext('Connect users with %s' % org.name),
+            'link': linker.organization(
+                org, urls.UrlNames.CONNECTION_START_AS_ORG)
+            })
+
+  def context(self):
+    """See dashboard.Dashboard.context for specification."""
+    subpages = self._divideSubPages(self.subpages)
+
+    return {
+        'title': 'Connections',
+        'name': 'connections_dashboard',
+        'backlinks': [
+            {
+                'to': 'main',
+                'title': 'Participant dashboard'
+            },
+        ],
+        'subpages': subpages
     }
 
 
@@ -158,6 +240,7 @@ class DashboardPage(GCIRequestHandler):
           }))
 
     dashboards.append(main)
+    dashboards.append(ConnectionsDashboard(data))
 
     return dashboards
 
@@ -341,40 +424,16 @@ class DashboardPage(GCIRequestHandler):
     """
     links = []
     if data.profile:
-      links.append(self._getMyConnectionsLink(data))
       if data.is_org_admin:
         links.extend(self._getOrgAdminLinks(data))
       if data.is_mentor:
         links.extend(self._getMentorLinks(data))
     return links
 
-  def _getMyConnectionsLink(self, data):
-    """Gets the link to list of connections for the user."""
-    linker = links.Linker()
-    return {
-        'name': 'list_user_connections',
-        'description': connection_list.USER_CONNECTION_LIST_DESCRIPTION,
-        'title': ugettext('My Connections'),
-        'link': linker.profile(
-            data.profile, urls.UrlNames.CONNECTION_LIST_FOR_USER)
-        }
-
-  def _getOrgAdminConnectionsLink(self, data):
-    """Gets the link to list of connections for the organization admin."""
-    linker = links.Linker()
-    return {
-        'name': 'list_org_admin_connections',
-        'description': connection_list.ORG_ADMIN_CONNECTION_LIST_DESCRIPTION,
-        'title': ugettext('Organization Connections'),
-        'link': linker.profile(
-            data.profile, urls.UrlNames.CONNECTION_LIST_FOR_ORG_ADMIN)
-        }
-
   def _getOrgAdminLinks(self, data):
     """Get the main dashboard links for org-admin."""
     links = []
 
-    links.append(self._getOrgAdminConnectionsLink(data))
     # add propose winners component
     if data.timeline.allReviewsStopped():
       links.append(self._getProposeWinnersLink(data))
