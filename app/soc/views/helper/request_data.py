@@ -174,6 +174,7 @@ class RequestData(object):
     GET: the GET dictionary (from the request object)
     POST: the POST dictionary (from the request object)
     is_developer: is the current user a developer
+    is_host: is the current user a host of the program
     gae_user: the Google Appengine user object
     timeline: the timeline helper
 
@@ -216,6 +217,7 @@ class RequestData(object):
     # TODO(daniel): check if this field is really used
     self._path = self._unset
     self._is_developer = self._unset
+    self._is_host = self._unset
     self._gae_user = self._unset
     self._css_path = self._unset
     self._ds_write_disabled = self._unset
@@ -274,6 +276,20 @@ class RequestData(object):
       else:
         self._is_developer = False
     return self._is_developer
+
+  @property
+  def is_host(self):
+    """Returns the is_host field."""
+    if not self._isSet(self._is_host):
+      if not self.user:
+        self._is_host = False
+      elif 'sponsor' in self.kwargs:
+        key = db.Key.from_path('Sponsor', self.kwargs.get('sponsor'))
+        self._is_host = key in self.user.host_for
+      else:
+        key = program_logic.getSponsorKey(self.program)
+        self._is_host = key in self.user.host_for
+    return self._is_host
 
   @property
   def path(self):

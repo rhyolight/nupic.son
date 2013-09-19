@@ -25,7 +25,6 @@ from google.appengine.ext import db
 from melange.request import exception
 from melange.utils import time
 from soc.models import site as site_model
-from soc.logic import program as program_logic
 from soc.views.helper.access_checker import isSet
 from soc.views.helper import request_data
 
@@ -179,7 +178,6 @@ class RequestData(request_data.RequestData):
     css_path: a part of the css to fetch the GSoC specific CSS resources
     programs: All GSoC programs.
     program_timeline: The GSoCTimeline entity
-    is_host: is the current user a host of the program
     is_mentor: is the current user a mentor in the program
     is_student: is the current user a student in the program
     is_org_admin: is the current user an org admin in the program
@@ -212,7 +210,6 @@ class RequestData(request_data.RequestData):
     self._org_app = self._unset
 
     # user profile specific fields
-    self._is_host = self._unset
     self._is_mentor = self._unset
     self._is_student = self._unset
     self._is_org_admin = self._unset
@@ -231,20 +228,6 @@ class RequestData(request_data.RequestData):
     if not self._isSet(self._css_path):
       self._css_path = 'gsoc'
     return self._css_path
-
-  @property
-  def is_host(self):
-    """Returns the is_host field."""
-    if not self._isSet(self._is_host):
-      if not self.user:
-        self._is_host = False
-      elif 'sponsor' in self.kwargs:
-        key = db.Key.from_path('Sponsor', self.kwargs.get('sponsor'))
-        self._is_host = key in self.user.host_for
-      else:
-        key = program_logic.getSponsorKey(self._program)
-        self._is_host = key in self.user.host_for
-    return self._is_host
 
   @property
   def is_mentor(self):

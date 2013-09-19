@@ -28,6 +28,8 @@ from soc.models import user as user_model
 from soc.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import profile_utils
+
 
 class UrlUserPropertyTest(unittest.TestCase):
   """Unit tests for url_user property of RequestData class."""
@@ -242,3 +244,30 @@ class UrlConnectionPropertyTest(unittest.TestCase):
     data = request_data.RequestData(None, None, kwargs)
     url_connection = data.url_connection
     self.assertEqual(connection.key(), url_connection.key())
+
+
+class IsHostPropertyTest(unittest.TestCase):
+  """Unit tests for is_host property of RequestData class."""
+
+  def testForHostUser(self):
+    """Tests that True is returned for a user who is a host."""
+    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+    user_properties = {'host_for': [sponsor.key()]}
+    user = seeder_logic.seed(user_model.User, properties=user_properties)
+    profile_utils.login(str(user.account), user.user_id)
+
+    kwargs = {'sponsor': sponsor.link_id}
+    data = request_data.RequestData(None, None, kwargs)
+    is_host = data.is_host
+    self.assertTrue(is_host)
+
+  def testForNonHostUser(self):
+    """Tests that False is returned for a user who is not a host."""
+    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+    user = seeder_logic.seed(user_model.User)
+    profile_utils.login(str(user.account), user.user_id)
+
+    kwargs = {'sponsor': sponsor.link_id}
+    data = request_data.RequestData(None, None, kwargs)
+    is_host = data.is_host
+    self.assertFalse(is_host)
