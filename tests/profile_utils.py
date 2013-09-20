@@ -18,11 +18,15 @@
 
 import os
 
+from google.appengine.ext import db
+
 from datetime import datetime
 from datetime import timedelta
 
 from melange.models import connection as connection_model
 
+from soc.models import user as user_model
+from soc.modules.seeder.logic.providers import user as user_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests.utils import connection_utils
@@ -51,6 +55,32 @@ def logout():
   """
   del os.environ['USER_EMAIL']
   del os.environ['USER_ID']
+
+
+def seedUser(email=None, **kwargs):
+  """Seeds a new user.
+
+  Args:
+    email: email address specifying
+    kwargs: initial values for instance's properties, as keyword arguments.
+  """
+  properties = {'status': 'valid'}
+
+  if email is not None:
+    properties['account'] = user_provider.FixedUserProvider(value=email)
+  else:
+    properties['account'] = user_provider.CurrentUserProvider()
+
+  properties.update(**kwargs)
+  user = seeder_logic.seed(user_model.User, properties=properties)
+
+  # this is tricky - AppEngine SDK sets user_id for user's account
+  # only after it is retrieved from datastore for the first time
+  user = user_model.User.get(user.key())
+  user.user_id = user.account.user_id()
+  user.put()
+
+  return user
 
 
 class ProfileHelper(object):
@@ -103,11 +133,7 @@ class ProfileHelper(object):
     """
     if self.user:
       return self.user
-    from soc.models.user import User
-    from soc.modules.seeder.logic.providers.user import CurrentUserProvider
-    properties = {'account': CurrentUserProvider(),
-                  'status': 'valid', 'is_developer': self.dev_test}
-    self.user = self.seed(User, properties=properties)
+    self.user = seedUser(is_developer=self.dev_test)
     return self.user
 
   def createDeveloper(self):
@@ -121,10 +147,8 @@ class ProfileHelper(object):
   def createOtherUser(self, email):
     """Creates a user entity for the specified email.
     """
-    from soc.models.user import User
-    from soc.modules.seeder.logic.providers.user import FixedUserProvider
-    properties = {'account': FixedUserProvider(value=email), 'status': 'valid'}
-    self.user = self.seed(User, properties=properties)
+    # TODO(daniel): does it really should override self.user state??
+    self.user = seedUser(email=email)
     return self
 
   def deleteProfile(self):
