@@ -30,6 +30,8 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from tests.utils import connection_utils
 
 
+DEFAULT_EMAIL = 'test@example.com'
+
 def generate_eligible_student_birth_date(program):
   eligible_age = program.student_min_age + program.student_max_age // 2
   return datetime.date(datetime.today() - timedelta(days=eligible_age * 365))
@@ -42,8 +44,7 @@ def login(user):
   Args:
     user: user entity.
   """
-  os.environ['USER_EMAIL'] = user.account.email()
-  os.environ['USER_ID'] = user.account.user_id() or ''
+  signInToGoogleAccount(user.account.email(), user.account.user_id())
 
 
 def logout():
@@ -52,6 +53,21 @@ def logout():
   """
   del os.environ['USER_EMAIL']
   del os.environ['USER_ID']
+
+
+def signInToGoogleAccount(email, user_id=None):
+  """Signs in an email address for the account that is logged in by setting
+  'USER_EMAIL' and 'USER_ID' environmental variables.
+
+  The Google account associated with the specified email will be considered
+  currently logged in, after this function terminates.
+
+  Args:
+    email: the user email as a string, e.g.: 'test@example.com'
+    user_id: the user id as a string
+  """
+  os.environ['USER_EMAIL'] = email
+  os.environ['USER_ID'] = user_id or ''
 
 
 def seedUser(email=None, **kwargs):
@@ -112,6 +128,7 @@ class ProfileHelper(object):
     """
     if self.user:
       return self.user
+
     self.user = seedUser(is_developer=self.dev_test)
     return self.user
 
