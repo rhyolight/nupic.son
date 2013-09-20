@@ -31,7 +31,6 @@ from melange.utils import rich_bool
 
 from soc.models import organization as org_model
 from soc.models import profile as profile_model
-from soc.models import user as user_model
 
 from soc.modules.gci.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
@@ -76,7 +75,7 @@ class NoConnectionExistsAccessCheckerTest(unittest.TestCase):
     """See unittest.TestCase.setUp for specification."""
     self.data = request_data.RequestData(None, None, None)
 
-    user = seeder_logic.seed(user_model.User)
+    user = profile_utils.seedUser()
     self.data._url_profile = seeder_logic.seed(profile_model.Profile,
         {'parent': user})
     self.data._url_org = seeder_logic.seed(org_model.Organization)

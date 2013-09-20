@@ -23,14 +23,13 @@ from soc.logic import links
 from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model
-from soc.models import user as user_model
 from soc.modules.gci.views.helper import url_names as gci_url_names
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import profile_utils
 
 TEST_PROGRAM_NAME = 'test_program'
 TEST_SPONSOR_KEY_NAME = 'test_sponsor_key_name'
-
 
 class MockKey(object):
 
@@ -115,7 +114,7 @@ class TestLinker(unittest.TestCase):
     program.sponsor = program.scope
 
     # seed a user
-    user = seeder_logic.seed(user_model.User)
+    user = profile_utils.seedUser()
 
     # seed a profile
     profile_properties = {
@@ -148,7 +147,7 @@ class TestLinker(unittest.TestCase):
     program.sponsor = program.scope
 
     # seed a user
-    user = seeder_logic.seed(user_model.User)
+    user = profile_utils.seedUser()
 
     # seed a profile
     profile_properties = {
@@ -175,7 +174,7 @@ class TestLinker(unittest.TestCase):
     program.sponsor = program.scope
 
     # seed a user
-    user = seeder_logic.seed(user_model.User)
+    user = profile_utils.seedUser()
 
     # seed a profile
     profile_properties = {

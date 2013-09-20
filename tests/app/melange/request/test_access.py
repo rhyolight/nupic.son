@@ -23,7 +23,6 @@ from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model
 from soc.models import sponsor as sponsor_model
-from soc.models import user as user_model
 from soc.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
@@ -338,7 +337,7 @@ class IsUrlUserAccessCheckerTest(unittest.TestCase):
   def setUp(self):
     """See unittest.setUp for specification."""
     self.data = request_data.RequestData(None, None, {})
-    self.data._user = seeder_logic.seed(user_model.User)
+    self.data._user = profile_utils.seedUser()
 
   def testForMissingUserData(self):
     """Tests for URL data that does not contain any user data."""

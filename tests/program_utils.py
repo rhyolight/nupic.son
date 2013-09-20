@@ -34,6 +34,7 @@ from soc.modules.gsoc.models.timeline import GSoCTimeline
 from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import profile_utils
 from tests import timeline_utils
 
 
@@ -93,7 +94,7 @@ class ProgramHelper(object):
     if self.program is None:
       self.createProgram()
 
-    user = seeder_logic.seed(User)
+    user = profile_utils.seedUser()
     properties = {
         'scope': self.program,
         'program': self.program,
@@ -194,7 +195,7 @@ class GSoCProgramHelper(ProgramHelper):
     properties.update(override)
 
     self.program = self.seed(GSoCProgram, properties)
-    user = seeder_logic.seed(User)
+    user = profile_utils.seedUser()
     properties = {
         'prefix': 'gsoc_program',
         'scope': self.program,
@@ -292,7 +293,7 @@ class GCIProgramHelper(ProgramHelper):
     properties.update(override)
 
     self.program = self.seed(GCIProgram, properties)
-    user = seeder_logic.seed(User)
+    user = profile_utils.seedUser()
     properties = {
         'prefix': 'gci_program', 'scope': self.program,
         'read_access': 'public', 'key_name': DocumentKeyNameProvider(),

@@ -24,7 +24,6 @@ from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model
 from soc.models import sponsor as sponsor_model
-from soc.models import user as user_model
 from soc.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
@@ -49,7 +48,7 @@ class UrlUserPropertyTest(unittest.TestCase):
 
   def testUserExists(self):
     """Tests that user is returned correctly if exists."""
-    user = seeder_logic.seed(user_model.User)
+    user = profile_utils.seedUser()
     data = request_data.RequestData(None, None, {'user': user.link_id})
     url_user = data.url_user
     self.assertEqual(user.key(), url_user.key())
@@ -95,7 +94,7 @@ class UrlProfilePropertyTest(unittest.TestCase):
     """Tests that profile is returned correctly if exists."""
     sponsor = seeder_logic.seed(sponsor_model.Sponsor)
     program = seeder_logic.seed(program_model.Program)
-    user = seeder_logic.seed(user_model.User)
+    user = profile_utils.seedUser()
     profile_properties = {
         'key_name': '%s/%s/%s' % 
             (sponsor.link_id, program.program_id, user.link_id),
@@ -223,7 +222,7 @@ class UrlConnectionPropertyTest(unittest.TestCase):
     """Tests that connection is returned correctly if exists."""
     sponsor = seeder_logic.seed(sponsor_model.Sponsor)
     program = seeder_logic.seed(program_model.Program)
-    user = seeder_logic.seed(user_model.User)
+    user = profile_utils.seedUser()
     profile_properties = {
         'key_name': '%s/%s/%s' % 
             (sponsor.link_id, program.program_id, user.link_id),
@@ -252,8 +251,7 @@ class IsHostPropertyTest(unittest.TestCase):
   def testForHostUser(self):
     """Tests that True is returned for a user who is a host."""
     sponsor = seeder_logic.seed(sponsor_model.Sponsor)
-    user_properties = {'host_for': [sponsor.key()]}
-    user = seeder_logic.seed(user_model.User, properties=user_properties)
+    user = profile_utils.seedUser(host_for=[sponsor.key()])
     profile_utils.login(user)
 
     kwargs = {'sponsor': sponsor.link_id}
@@ -264,7 +262,7 @@ class IsHostPropertyTest(unittest.TestCase):
   def testForNonHostUser(self):
     """Tests that False is returned for a user who is not a host."""
     sponsor = seeder_logic.seed(sponsor_model.Sponsor)
-    user = seeder_logic.seed(user_model.User)
+    user = profile_utils.seedUser()
     profile_utils.login(user)
 
     kwargs = {'sponsor': sponsor.link_id}

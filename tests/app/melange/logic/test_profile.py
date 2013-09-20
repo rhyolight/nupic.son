@@ -21,9 +21,9 @@ from melange.logic import profile as profile_logic
 from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model
-from soc.models import user as user_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import profile_utils
 
 class CanResignAsOrgAdminForOrgTest(unittest.TestCase):
   """Unit tests for canResignAsOrgAdminForOrg function."""
@@ -373,8 +373,7 @@ class GetProfileForUsernameTest(unittest.TestCase):
     self.program_key = seeder_logic.seed(program_model.Program).key()
 
     # seed a user
-    user_properties = {'key_name': 'test'}
-    self.user = seeder_logic.seed(user_model.User, properties=user_properties)
+    self.user = profile_utils.seedUser(key_name='test')
 
     # seed a profile
     profile_properties = {

@@ -24,8 +24,8 @@ from soc.models import profile as profile_model
 from soc.models.program import Program
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import profile_utils
 from tests.utils import connection_utils
-from tests.profile_utils import ProfileHelper
 from tests.program_utils import ProgramHelper
 
 class ConnectionTest(unittest.TestCase):
@@ -35,8 +35,9 @@ class ConnectionTest(unittest.TestCase):
   def setUp(self):
     self.program = seeder_logic.seed(Program)
     
-    self.profile_helper = ProfileHelper(self.program, dev_test=False)
-    user = self.profile_helper.createUser()
+    self.profile_helper = profile_utils.ProfileHelper(
+        self.program, dev_test=False)
+    user = profile_utils.seedUser()
     profile_properties = {'link_id': user.link_id, 'student_info': None,
         'user': user,'parent': user, 'scope': self.program,
         'status': 'active','email': user.account.email(),
