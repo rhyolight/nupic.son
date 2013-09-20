@@ -16,17 +16,18 @@
 import httplib
 import unittest
 
-from nose.plugins import skip
-
 from melange.request import access
 from melange.request import exception
 
+from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model
+from soc.models import sponsor as sponsor_model
 from soc.models import user as user_model
 from soc.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import profile_utils
 from tests import timeline_utils
 
 
@@ -66,34 +67,105 @@ class AllAllowedAccessCheckerTest(unittest.TestCase):
     access_checker.checkAccess(Explosive(), Explosive(), Explosive())
 
 
-# TODO(nathaniel): Because the idea of RequestData objects having
-# an "is_host" attribute isn't unified across all program types
-# (it is actually separately implemented in GCI's and GSoC's
-# individual RequestData subclasses) this text can't be written
-# without either bringing in GCI-specific or GSoC-specific code
-# or faking out too much.
 class ProgramAdministratorAccessCheckerTest(unittest.TestCase):
   """Tests the ProgramAdministratorAccessChecker class."""
 
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+
+    program_properties = {
+        'sponsor': self.sponsor,
+        'scope': self.sponsor,
+        }
+    self.program = seeder_logic.seed(
+        program_model.Program, properties=program_properties)
+
+    # seed a user who will be tested for access
+    self.user = profile_utils.seedUser(is_developer=False)
+    profile_utils.login(self.user)
+
+    kwargs = {
+        'sponsor': self.sponsor.key().name(),
+        'program': self.program.program_id,
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
   def testProgramAdministratorsAllowedAccess(self):
     """Tests that a program administrator is allowed access."""
-    raise skip.SkipTest()
+    # make the user a program administrator
+    self.user.host_for = [self.sponsor.key()]
+    self.user.put()
+
+    access_checker = access.ProgramAdministratorAccessChecker()
+    access_checker.checkAccess(self.data, None, None)
 
   def testOrganizationAdministratorsDeniedAccess(self):
     """Tests that an organization administrator is denied access."""
-    raise skip.SkipTest()
+    # seed a profile who is org admin
+    org = seeder_logic.seed(org_model.Organization)
+    profile_properties = {
+        'is_org_admin': True,
+        'org_admin_for': [org.key()],
+        'is_mentor': True,
+        'mentor_for': [org.key()],
+        'is_student': False,
+        'parent': self.user,
+        }
+    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+
+    access_checker = access.ProgramAdministratorAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.message,
+        access._MESSAGE_NOT_PROGRAM_ADMINISTRATOR)
 
   def testMentorDeniedAccess(self):
     """Tests that a mentor is denied access."""
-    raise skip.SkipTest()
+    # seed a profile who is org mentor
+    org = seeder_logic.seed(org_model.Organization)
+    profile_properties = {
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'is_mentor': True,
+        'mentor_for': [org.key()],
+        'is_student': False,
+        'parent': self.user,
+        }
+    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+
+    access_checker = access.ProgramAdministratorAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.message,
+        access._MESSAGE_NOT_PROGRAM_ADMINISTRATOR)
 
   def testStudentDeniedAccess(self):
     """Tests that students are denied access."""
-    raise skip.SkipTest()
+    # seed a profile who is a student
+    profile_properties = {
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'is_mentor': False,
+        'mentor_for': [],
+        'is_student': True,
+        'parent': self.user,
+        }
+    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+
+    access_checker = access.ProgramAdministratorAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.message,
+        access._MESSAGE_NOT_PROGRAM_ADMINISTRATOR)
 
   def testAnonymousDeniedAccess(self):
     """Tests that logged-out users are denied access."""
-    raise skip.SkipTest()
+    access_checker = access.ProgramAdministratorAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.message,
+        access._MESSAGE_NOT_PROGRAM_ADMINISTRATOR)
 
 
 class DeveloperAccessCheckerTest(unittest.TestCase):
