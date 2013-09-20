@@ -21,7 +21,7 @@ from google.appengine.api import users
 
 from soc.modules.seeder.logic.providers.provider import BaseDataProvider
 from soc.modules.seeder.logic.providers.email import FixedEmailProvider
-from soc.modules.seeder.logic.providers.email import RandomEmailProvider
+from soc.modules.seeder.logic.providers.email import UniqueEmailProvider
 
 
 
@@ -49,7 +49,7 @@ class FixedUserProvider(FixedEmailProvider):
 
 
 # pylint: disable=R0901
-class RandomUserProvider(RandomEmailProvider):
+class RandomUserProvider(UniqueEmailProvider):
   """Data provider that returns a random user.
   """
 

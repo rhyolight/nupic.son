@@ -17,7 +17,6 @@
 """
 
 from soc.modules.seeder.logic.providers.provider import BaseDataProvider
-from soc.modules.seeder.logic.providers.string import RandomNameProvider
 from soc.modules.seeder.logic.providers.provider import FixedValueProvider
 from soc.modules.seeder.logic.providers.provider import ParameterValueError
 from django.core.validators import email_re
@@ -46,9 +45,16 @@ class FixedEmailProvider(EmailProvider, FixedValueProvider):
       raise ParameterValueError('%s is not a valid e-mail address' % value)
 
 
-class RandomEmailProvider(EmailProvider, RandomNameProvider):
-  """Data provider that returns a random e-mail.
-  """
+class UniqueEmailProvider(EmailProvider):
+  """Data provider that returns a unique email address."""
+
+  counter = 0
+
+  @staticmethod
+  def getUsername():
+    """Returns a unique username for the generated email address."""
+    UniqueEmailProvider.counter += 1
+    return 'username%s' % UniqueEmailProvider.counter
 
   @staticmethod
   def getRandomDomain():
@@ -58,5 +64,6 @@ class RandomEmailProvider(EmailProvider, RandomNameProvider):
     return "gmail.com"
 
   def getValue(self):
-    name = RandomNameProvider.getValue(self)
-    return '.'.join(name.split()).lower() + '@' + self.getRandomDomain()
+    return '%s@%s' % (
+        UniqueEmailProvider.getUsername(),
+        UniqueEmailProvider.getRandomDomain())
