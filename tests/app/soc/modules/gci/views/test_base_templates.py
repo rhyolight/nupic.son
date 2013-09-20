@@ -36,7 +36,8 @@ class MockRequestData(object):
       user_email: the user email as a string.
     """
     if user_email is not None:
-      profile_utils.login(user_email, '42')
+      user = profile_utils.seedUser(email=user_email)
+      profile_utils.login(user)
       self.gae_user = users.User()
     else:
       self.gae_user = None

@@ -18,8 +18,6 @@
 
 import os
 
-from google.appengine.ext import db
-
 from datetime import datetime
 from datetime import timedelta
 
@@ -37,16 +35,15 @@ def generate_eligible_student_birth_date(program):
   return datetime.date(datetime.today() - timedelta(days=eligible_age * 365))
 
 
-def login(user_email, user_id):
-  """Logs in the specified user by setting the 'USER_EMAIL'
-  and 'USER_ID' environment variables.
+def login(user):
+  """Logs in the specified user by setting 'USER_EMAIL' and 'USER_ID'
+  environmental variables.
 
   Args:
-    user_email: the user email as a string, e.g.: 'test@example.com'
-    user_id: the user id as a string, e.g.: '42'
+    user: user entity.
   """
-  os.environ['USER_EMAIL'] = user_email
-  os.environ['USER_ID'] = user_id
+  os.environ['USER_EMAIL'] = user.account.email()
+  os.environ['USER_ID'] = user.account.user_id() or ''
 
 
 def logout():

@@ -254,7 +254,7 @@ class IsHostPropertyTest(unittest.TestCase):
     sponsor = seeder_logic.seed(sponsor_model.Sponsor)
     user_properties = {'host_for': [sponsor.key()]}
     user = seeder_logic.seed(user_model.User, properties=user_properties)
-    profile_utils.login(str(user.account), user.user_id)
+    profile_utils.login(user)
 
     kwargs = {'sponsor': sponsor.link_id}
     data = request_data.RequestData(None, None, kwargs)
@@ -265,7 +265,7 @@ class IsHostPropertyTest(unittest.TestCase):
     """Tests that False is returned for a user who is not a host."""
     sponsor = seeder_logic.seed(sponsor_model.Sponsor)
     user = seeder_logic.seed(user_model.User)
-    profile_utils.login(str(user.account), user.user_id)
+    profile_utils.login(user)
 
     kwargs = {'sponsor': sponsor.link_id}
     data = request_data.RequestData(None, None, kwargs)
