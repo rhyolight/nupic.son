@@ -170,8 +170,8 @@ class ConnectionForm(gci_forms.GCIModelForm):
     Overrides the default cleaning of the link_ids field to add custom
     validation to the users field.
     """
-    identifiers = set([
-        token.strip() for token in self.cleaned_data['users'].split(',')])
+    identifiers = set(
+        token.strip() for token in self.cleaned_data['users'].split(','))
 
     emails = []
     users = []
