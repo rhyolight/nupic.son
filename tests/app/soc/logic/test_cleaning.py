@@ -41,16 +41,13 @@ class CleaningTest(GSoCDjangoTestCase):
     """
     self.init()
     # Ensure that current user is created
-    profile_utils.signInToGoogleAccount('current_user@example.com')
     self.user = profile_utils.seedUser(
         key_name='current_user', link_id='current_user', name='Current User')
     profile_utils.login(self.user)
 
     # Create another user
-    profile_utils.signInToGoogleAccount('another_user@example.com')
     self.another_user = profile_utils.seedUser(
         key_name='another_user', link_id='another_user', name='Another User')
-    profile_utils.login(self.user)
 
     # Create a dummy form object
     self.form = Form()
