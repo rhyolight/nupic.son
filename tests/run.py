@@ -146,6 +146,26 @@ class AppEngineDatastoreClearPlugin(plugins.Plugin):
     clean_datastore()
 
 
+class DefaultUserSignInPlugin(plugins.Plugin):
+  """Nose plugin to sign in a user with the default Google Account
+  between tests.
+  """
+
+  name = 'DefaultUserSignInPlugin'
+  enabled = True
+
+  def options(self, parser, env):
+    return plugins.Plugin.options(self, parser, env)
+
+  def configure(self, parser, env):
+    plugins.Plugin.configure(self, parser, env)
+    self.enabled = True
+
+  def afterTest(self, test):
+    os.environ['USER_EMAIL'] = 'test@example.com'
+    os.environ['USER_ID'] = '42'
+
+
 def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
            keyboardCaught, shouldStop, loaderClass, resultClass, config):
   """To replace the test runner of multiprocess.
@@ -307,7 +327,7 @@ def run_pyunit_tests():
   import django.test.utils
   django.test.utils.setup_test_environment()
 
-  plugins = [AppEngineDatastoreClearPlugin()]
+  plugins = [AppEngineDatastoreClearPlugin(), DefaultUserSignInPlugin()]
   # For coverage
   if '--coverage' in sys.argv:
     from nose.plugins import cover
