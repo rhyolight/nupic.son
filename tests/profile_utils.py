@@ -82,7 +82,7 @@ def seedUser(email=None, **kwargs):
   if email is not None:
     properties['account'] = user_provider.FixedUserProvider(value=email)
   else:
-    properties['account'] = user_provider.CurrentUserProvider()
+    properties['account'] = user_provider.RandomUserProvider()
 
   properties.update(**kwargs)
   user = seeder_logic.seed(user_model.User, properties=properties)
@@ -129,7 +129,9 @@ class ProfileHelper(object):
     if self.user:
       return self.user
 
-    self.user = seedUser(is_developer=self.dev_test)
+    email = os.environ['USER_EMAIL']
+
+    self.user = seedUser(email=email, is_developer=self.dev_test)
     return self.user
 
   def createDeveloper(self):
