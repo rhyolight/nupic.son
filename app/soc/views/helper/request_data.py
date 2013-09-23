@@ -20,6 +20,7 @@ from google.appengine.ext import db
 from django import http
 from django.core import urlresolvers
 
+from melange import types
 from melange.appengine import system
 from melange.models import connection as connection_model
 from melange.request import exception
@@ -28,8 +29,6 @@ from melange.utils import time
 from soc.logic import program as program_logic
 from soc.logic import site as site_logic
 from soc.logic import user
-from soc.models import organization as org_model
-from soc.models import profile as profile_model
 from soc.models import sponsor as sponsor_model
 from soc.models import user as user_model
 from soc.views.helper import access_checker
@@ -177,6 +176,7 @@ class RequestData(object):
     is_host: is the current user a host of the program
     gae_user: the Google Appengine user object
     timeline: the timeline helper
+    models: types.Models implementation defining model classes
 
   Optional fields (may not be specified for all requests):
     url_connection: connection entity for the data in kwargs.
@@ -184,9 +184,6 @@ class RequestData(object):
     url_profile: profile entity for the data in kwargs.
     url_user: user entity for the data in kwargs.
   """
-
-  __org_model = org_model.Organization
-  __profile_model = profile_model.Profile
 
   # class attribute which is assigned to all fields which have not been set
   _unset = object()
@@ -204,6 +201,7 @@ class RequestData(object):
     self.request = request
     self.args = args
     self.kwargs = kwargs
+    self.models = types.MELANGE_MODELS
 
     self._redirect = self._unset
     self._site = self._unset
@@ -352,7 +350,7 @@ class RequestData(object):
         self._profile = None
       else:
         key_name = '%s/%s' % (self.program.key().name(), self.user.link_id)
-        self._profile = self.__profile_model.get_by_key_name(
+        self._profile = self.models.profile_model.get_by_key_name(
             key_name, parent=self.user)
     return self._profile
 
@@ -442,7 +440,8 @@ class RequestData(object):
       exception.UserError: if no profile entity is found.
     """
     if not self._isSet(self._url_profile):
-      self._url_profile = self.__profile_model.get(self._getUrlProfileKey())
+      self._url_profile = self.models.profile_model.get(
+          self._getUrlProfileKey())
       if not self._url_profile:
         raise exception.NotFound(message='Requested profile does not exist.')
     return self._url_profile
@@ -470,7 +469,7 @@ class RequestData(object):
         raise exception.BadRequest(
             message='The request does not contain full organization data.')
 
-      self._url_org = self.__org_model.get_by_key_name(key_name)
+      self._url_org = self.models.org_model.get_by_key_name(key_name)
 
       if not self._url_org:
         raise exception.NotFound(
@@ -519,7 +518,7 @@ class RequestData(object):
       fields = ['sponsor', 'program', 'user']
       profile_key_name = '/'.join(self.kwargs[i] for i in fields)
       return db.Key.from_path(
-          'User', self.kwargs['user'], self.__profile_model.kind(),
+          'User', self.kwargs['user'], self.models.profile_model.kind(),
           profile_key_name)
     except KeyError:
       raise exception.BadRequest(

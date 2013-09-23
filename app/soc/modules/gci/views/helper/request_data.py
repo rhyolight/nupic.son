@@ -20,6 +20,9 @@ from google.appengine.ext import db
 
 # TODO(nathaniel): Still reticent about having the RequestData object
 # allowed to raise exceptions from the exception module.
+
+from codein import types
+
 from melange.request import exception
 from melange.utils import time
 
@@ -184,9 +187,6 @@ class RequestData(request_data.RequestData):
     out_of_band: 404 when the program does not exist
   """
 
-  __org_model = org_model.GCIOrganization
-  __profile_model = profile_model.GCIProfile
-
   def __init__(self, request, args, kwargs):
     """Constructs a new RequestData object.
 
@@ -196,6 +196,8 @@ class RequestData(request_data.RequestData):
       kwargs: The kwargs that Django sends along with the request.
     """
     super(RequestData, self).__init__(request, args, kwargs)
+
+    self.models = types.CI_MODELS
 
     # program wide fields
     self._program_timeline = self._unset

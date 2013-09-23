@@ -33,6 +33,8 @@ from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.views.helper import url_names
 
+from summerofcode import types
+
 
 class TimelineHelper(request_data.TimelineHelper):
   """Helper class for the determination of the currently active period.
@@ -190,9 +192,6 @@ class RequestData(request_data.RequestData):
     out_of_band: 404 when the program does not exist
   """
 
-  __org_model = org_model.GSoCOrganization
-  __profile_model = profile_model.GSoCProfile
-
   def __init__(self, request, args, kwargs):
     """Constructs a new RequestData object.
 
@@ -202,6 +201,8 @@ class RequestData(request_data.RequestData):
       kwargs: The kwargs that Django sends along with the request.
     """
     super(RequestData, self).__init__(request, args, kwargs)
+
+    self.models = types.SOC_MODELS
 
     # program wide fields
     self._program = self._unset
