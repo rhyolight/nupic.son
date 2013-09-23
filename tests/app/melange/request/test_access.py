@@ -384,6 +384,15 @@ class IsUrlUserAccessCheckerTest(unittest.TestCase):
       access_checker.checkAccess(self.data, None, None)
     self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
+  def testNonLoggedInUserAccessDenied(self):
+    """Tests that exception is raised for a non logged-in user."""
+    data = request_data.RequestData(None, None, {})
+    data._gae_user = None
+    data.kwargs['user'] = 'some_username'
+    access_checker = access.IsUrlUserAccessChecker()
+    with self.assertRaises(exception.LoginRequired):
+      access_checker.checkAccess(data, None, None)
+
   def testNonUserAccessDenied(self):
     """Tests that access is denied for a user with no User entity."""
     self.data.kwargs['user'] = self.data._user.link_id

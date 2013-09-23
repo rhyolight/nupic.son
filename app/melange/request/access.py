@@ -207,6 +207,8 @@ class IsUrlUserAccessChecker(AccessChecker):
     if not key_name:
       raise exception.BadRequest('The request does not contain user data.')
 
+    ensureLoggedIn(data)
+
     if not data.user or data.user.key().name() != key_name:
       raise exception.Forbidden(message=_MESSAGE_NOT_USER_IN_URL)
 
