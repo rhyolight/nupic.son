@@ -60,7 +60,7 @@ class MainDashboard(Dashboard):
       data: The RequestData object
     """
     super(MainDashboard, self).__init__(data)
-    self.subpages = self._initSubpages(data)
+    self.subpages = _initMainDashboardSubpages(data)
 
   def context(self):
     """Returns the context of main dashboard."""
@@ -74,29 +74,30 @@ class MainDashboard(Dashboard):
   def addSubpages(self, subpage):
     self.subpages.append(subpage)
 
-  def _initSubpages(self, data):
-    """Initializes list of subpages for the dashboard.
 
-    Args:
-      data: request_data.RequestData for the current request.
+def _initMainDashboardSubpages(data):
+  """Initializes list of subpages for the main dashboard.
 
-    Returns:
-      initial list of subpages to set for the dashboard.
-    """
-    if not data.profile.is_student:
-      connection_dashboard = ConnectionsDashboard(data)
+  Args:
+    request_data.RequestData for the current request.
 
-      return [{
-          'name': 'connections_dashboard',
-          'description': ugettext(
-              'Connect with organizations, check current status and '
-              'participate in the program.'),
-          'title': 'Connections',
-          'link': '',
-          'subpage_links': connection_dashboard.getSubpagesLink(),
-          }]
-    else:
-      return []
+  Returns:
+    initial list of subpages to set for the main dashboard.
+  """
+  if not data.profile.is_student:
+    connection_dashboard = ConnectionsDashboard(data)
+
+    return [{
+        'name': 'connections_dashboard',
+        'description': ugettext(
+            'Connect with organizations, check current status and '
+            'participate in the program.'),
+        'title': 'Connections',
+        'link': '',
+        'subpage_links': connection_dashboard.getSubpagesLink(),
+        }]
+  else:
+    return []
 
 
 class ComponentsDashboard(Dashboard):
@@ -136,7 +137,7 @@ class ConnectionsDashboard(Dashboard):
       data: request_data.RequestData for the current request.
     """
     super(ConnectionsDashboard, self).__init__(data)
-    self.subpages = self._initSubpages(data)
+    self.subpages = _initConnectionDashboardSubpages(data)
 
 
   def context(self):
@@ -155,61 +156,62 @@ class ConnectionsDashboard(Dashboard):
         'subpages': subpages
     }
 
-  def _initSubpages(self, data):
-    """Initializes list of subpages for the dashboard.
 
-    Args:
-      data: request_data.RequestData for the current request.
+def _initConnectionDashboardSubpages(data):
+  """Initializes list of subpages for the connection dashboard.
 
-    Returns:
-      initial list of subpages to set for the dashboard.
-    """
-    linker = links.Linker()
+  Args:
+    data: request_data.RequestData for the current request.
 
-    subpages = [
-        {
-            'name': 'list_connections_for_user',
-            'description': ugettext(
-                'Check status of your existing connections with '
-                'organizations and communicate with administrators.'),
-            'title': ugettext('See your connections'),
-            'link': linker.program(
-                data.program, urls.UrlNames.CONNECTION_PICK_ORG)
-        },                     
-        {
-            'name': 'connect',
-            'description': ugettext(
-                'Connect with organizations and request a role to '
-                'participate in the program.'),
-            'title': ugettext('Connect with organizations'),
-            'link': linker.program(
-                data.program, urls.UrlNames.CONNECTION_PICK_ORG)
-        }]
+  Returns:
+    initial list of subpages to set for the connection dashboard.
+  """
+  linker = links.Linker()
 
-    # add organization admin specific items
-    if data.profile.is_org_admin:
-      subpages.append({
-          'name': 'list_connections_for_org_admin',
+  subpages = [
+      {
+          'name': 'list_connections_for_user',
           'description': ugettext(
-              'Manage connections for the organizations for which you have '
-              'administrator role at this moment.'),
-          'title': ugettext('See organization\'s connections'),
-          'link': linker.profile(
-              data.profile, urls.UrlNames.CONNECTION_LIST_FOR_ORG_ADMIN)
+              'Check status of your existing connections with '
+              'organizations and communicate with administrators.'),
+          'title': ugettext('See your connections'),
+          'link': linker.program(
+              data.program, urls.UrlNames.CONNECTION_PICK_ORG)
+      },                     
+      {
+          'name': 'connect',
+          'description': ugettext(
+              'Connect with organizations and request a role to '
+              'participate in the program.'),
+          'title': ugettext('Connect with organizations'),
+          'link': linker.program(
+              data.program, urls.UrlNames.CONNECTION_PICK_ORG)
+      }]
+
+  # add organization admin specific items
+  if data.profile.is_org_admin:
+    subpages.append({
+        'name': 'list_connections_for_org_admin',
+        'description': ugettext(
+            'Manage connections for the organizations for which you have '
+            'administrator role at this moment.'),
+        'title': ugettext('See organization\'s connections'),
+        'link': linker.profile(
+            data.profile, urls.UrlNames.CONNECTION_LIST_FOR_ORG_ADMIN)
+        })
+
+    for org in data.org_admin_for:
+      subpages.append({
+          'name': 'connect_for_%s' % org.link_id,
+          'description': ugettext(
+              'Connect with users and offer them role in your '
+              'organization.'),
+          'title': ugettext('Connect users with %s' % org.name),
+          'link': linker.organization(
+              org, urls.UrlNames.CONNECTION_START_AS_ORG)
           })
 
-      for org in data.org_admin_for:
-        subpages.append({
-            'name': 'connect_for_%s' % org.link_id,
-            'description': ugettext(
-                'Connect with users and offer them role in your '
-                'organization.'),
-            'title': ugettext('Connect users with %s' % org.name),
-            'link': linker.organization(
-                org, urls.UrlNames.CONNECTION_START_AS_ORG)
-            })
-
-    return subpages
+  return subpages
 
 
 # TODO(nathaniel): Make all attributes of this class private except
