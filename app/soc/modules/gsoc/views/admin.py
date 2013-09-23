@@ -1166,8 +1166,8 @@ class StudentsList(Template):
     list_config.addSimpleColumn('surname', "Surname", hidden=True)
     list_config.addSimpleColumn('name_on_documents', "Legal name", hidden=True)
     list_config.addSimpleColumn('gender', 'Gender', hidden=True)
-    list_config.addSimpleTextColumn('birth_date', "Birthdate",
-                                    column_type=lists.BIRTHDATE, hidden=True)
+    list_config.addSimpleColumn('birth_date', "Birthdate",
+                                column_type=lists.BIRTHDATE, hidden=True)
     list_config.setRowAction(
         lambda e, *args: data.redirect.profile(e.link_id).urlOf(
             url_names.GSOC_PROFILE_SHOW_ADMIN, secure=True))
