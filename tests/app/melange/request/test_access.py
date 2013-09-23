@@ -257,7 +257,15 @@ class NonStudentUrlProfileAccessCheckerTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.setUp for specification."""
-    # seed a profile
+    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+
+    program_properties = {
+        'sponsor': sponsor,
+        'scope': sponsor,
+        }
+    program = seeder_logic.seed(
+        program_model.Program, properties=program_properties)
+
     profile_properties = {
         'status': 'active',
         'is_student': False
@@ -265,15 +273,20 @@ class NonStudentUrlProfileAccessCheckerTest(unittest.TestCase):
     self.url_profile = seeder_logic.seed(
         profile_model.Profile, properties=profile_properties)
 
+    kwargs = {
+        'sponsor': sponsor.key().name(),
+        'program': program.link_id,
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
   def testUrlUserWithNoProfileAccessDenied(self):
     """Tests that access is denied for a user that does not have a profile."""
-    data = request_data.RequestData(None, None, None)
-    data._url_profile = None
+    self.data.kwargs['user'] = 'non_existing_user'
 
     access_checker = access.NonStudentUrlProfileAccessChecker()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(data, None, None)
-    self.assertEqual(context.exception.message, access._MESSAGE_NO_PROFILE)
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.NOT_FOUND)
 
   def testStudentAccessDenied(self):
     """Tests that access is denied for a user with a student profile."""

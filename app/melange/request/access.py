@@ -29,6 +29,9 @@ _MESSAGE_NOT_DEVELOPER = translation.ugettext(
     'This page is only accessible to developers.')
 
 _MESSAGE_NO_PROFILE = translation.ugettext(
+    'Active profile is required to access this page.')
+
+_MESSAGE_NO_URL_PROFILE = translation.ugettext(
     'Active profile for %s is required to access this page.')
 
 _MESSAGE_PROGRAM_NOT_EXISTING = translation.ugettext(
@@ -167,8 +170,9 @@ class NonStudentUrlProfileAccessChecker(AccessChecker):
 
   def checkAccess(self, data, check, mutator):
     """See AccessChecker.checkAccess for specification."""
-    if not data.url_profile or data.url_profile.status != 'active':
-      raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
+    if data.url_profile.status != 'active':
+      raise exception.Forbidden(
+          message=_MESSAGE_NO_URL_PROFILE % data.kwargs['user'])
 
     if data.url_profile.is_student:
       raise exception.Forbidden(message=_MESSAGE_STUDENTS_DENIED)
