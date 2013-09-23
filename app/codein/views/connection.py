@@ -909,6 +909,7 @@ class _OrganizationsToStartConnectionList(org_list.BasicOrgList):
         self.data.profile, e, urls.UrlNames.CONNECTION_START_AS_USER) 
 
   def _getDescription(self):
+    """See org_list.OrgList._getDescription for specification."""
     return 'List of organizations accepted into %s' % (
         self.data.program.name)
 
@@ -920,15 +921,18 @@ class PickOrganizationToConnectPage(base.GCIRequestHandler):
   access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
 
   def templatePath(self):
+    """See base.GCIRequestHandler.templatePath for specification."""
     return 'modules/gci/accepted_orgs/base.html'
 
   def djangoURLPatterns(self):
+    """See base.GCIRequestHandler.djangoURLPatterns for specification."""
     return [
         ci_url_patterns.url(r'connection/pick_org/%s$' % url_patterns.PROGRAM,
             self, name=urls.UrlNames.CONNECTION_PICK_ORG),
     ]
 
   def jsonContext(self, data, check, mutator):
+    """See base.GCIRequestHandler.jsonContext for specification."""
     list_content = _OrganizationsToStartConnectionList(data).getListData()
     if list_content:
       return list_content.content()
@@ -936,6 +940,7 @@ class PickOrganizationToConnectPage(base.GCIRequestHandler):
       raise exception.BadRequest(message='You do not have access to this data')
 
   def context(self, data, check, mutator):
+    """See base.GCIRequestHandler.context for specification."""
     return {
         'page_name': PICK_ORGANIZATION_TO_CONNECT,
         'accepted_orgs_list': _OrganizationsToStartConnectionList(data),
