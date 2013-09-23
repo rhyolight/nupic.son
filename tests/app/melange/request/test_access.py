@@ -16,6 +16,8 @@
 import httplib
 import unittest
 
+from django import http
+
 from melange.request import access
 from melange.request import exception
 
@@ -55,6 +57,40 @@ class NoneAllowedAccessChecker(access.AccessChecker):
   def checkAccess(self, data, check, mutator):
     """See access.AccessChecker.checkAccess for specification."""
     raise exception.Forbidden(message=self._identifier)
+
+
+class EnsureLoggedInTest(unittest.TestCase):
+  """Unit tests for ensureLoggedIn function."""
+
+  def testForLoggedInUser(self):
+    """Tests that no exception is raised for a logged-in user."""
+    data = request_data.RequestData(None, None, {})
+    data._gae_user = 'unused'
+    access.ensureLoggedIn(data)
+
+  def testForLoggedOutUser(self):
+    """Tests that exception is raised for a non logged-in user."""
+    data = request_data.RequestData(None, None, {})
+    data._gae_user = None
+    with self.assertRaises(exception.LoginRequired):
+      access.ensureLoggedIn(data)
+
+
+class EnsureLoggedOutTest(unittest.TestCase):
+  """Unit tests for ensureLoggedOut function."""
+
+  def testForLoggedInUser(self):
+    """Tests that exception is raised for a logged-in user."""
+    data = request_data.RequestData(http.HttpRequest(), None, {})
+    data._gae_user = 'unused'
+    with self.assertRaises(exception.Redirect):
+      access.ensureLoggedOut(data)
+
+  def testForLoggedOutUser(self):
+    """Tests that no exception is raised for a non logged-in user."""
+    data = request_data.RequestData(http.HttpRequest(), None, {})
+    data._gae_user = None
+    access.ensureLoggedOut(data)
 
 
 class AllAllowedAccessCheckerTest(unittest.TestCase):

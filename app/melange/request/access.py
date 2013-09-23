@@ -44,27 +44,33 @@ _MESSAGE_NOT_USER_IN_URL = translation.ugettext(
     'You are not logged in as the user in the URL.')
 
 
-def ensureLoggedIn(self):
+def ensureLoggedIn(data):
   """Ensures that the user is logged in.
+
+  Args:
+    data: request_data.RequestData for the current request.
 
   Raises:
     exception.LoginRequired: If the user is not logged in.
   """
-  if not self.data.gae_user:
+  if not data.gae_user:
     raise exception.LoginRequired()
 
 
-def ensureLoggedOut(self):
+def ensureLoggedOut(data):
   """Ensures that the user is logged out.
+
+  Args:
+    data: request_data.RequestData for the current request.
 
   Raises:
     exception.Redirect: If the user is logged in this
       exception will redirect them to the logout page.
   """
-  if self.data.gae_user:
+  if data.gae_user:
     # TODO(nathaniel): One-off linker object.
     linker = links.Linker()
-    raise exception.Redirect(linker.logout(self.data.request))
+    raise exception.Redirect(linker.logout(data.request))
 
 
 class AccessChecker(object):
