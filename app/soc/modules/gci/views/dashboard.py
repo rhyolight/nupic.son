@@ -60,21 +60,7 @@ class MainDashboard(Dashboard):
       data: The RequestData object
     """
     super(MainDashboard, self).__init__(data)
-
-    if not data.profile.is_student:
-      connection_dashboard = ConnectionsDashboard(data)
-
-      self.subpages = [{
-          'name': 'connections_dashboard',
-          'description': ugettext(
-              'Connect with organizations, check current status and '
-              'participate in the program.'),
-          'title': 'Connections',
-          'link': '',
-          'subpage_links': connection_dashboard.getSubpagesLink(),
-          }]
-    else:
-      self.subpages = []
+    self.subpages = self._initSubpages(data)
 
   def context(self):
     """Returns the context of main dashboard."""
@@ -87,6 +73,30 @@ class MainDashboard(Dashboard):
 
   def addSubpages(self, subpage):
     self.subpages.append(subpage)
+
+  def _initSubpages(self, data):
+    """Initializes list of subpages for the dashboard.
+
+    Args:
+      data: request_data.RequestData for the current request.
+
+    Returns:
+      initial list of subpages to set for the dashboard.
+    """
+    if not data.profile.is_student:
+      connection_dashboard = ConnectionsDashboard(data)
+
+      return [{
+          'name': 'connections_dashboard',
+          'description': ugettext(
+              'Connect with organizations, check current status and '
+              'participate in the program.'),
+          'title': 'Connections',
+          'link': '',
+          'subpage_links': connection_dashboard.getSubpagesLink(),
+          }]
+    else:
+      return []
 
 
 class ComponentsDashboard(Dashboard):
@@ -120,12 +130,43 @@ class ConnectionsDashboard(Dashboard):
   """Dashboard grouping connection related elements."""
 
   def __init__(self, data):
-    """Initializes new instance of this class."""
-    super(ConnectionsDashboard, self).__init__(data)
+    """Initializes new instance of this class.
 
+    Args:
+      data: request_data.RequestData for the current request.
+    """
+    super(ConnectionsDashboard, self).__init__(data)
+    self.subpages = self._initSubpages(data)
+
+
+  def context(self):
+    """See dashboard.Dashboard.context for specification."""
+    subpages = self._divideSubPages(self.subpages)
+
+    return {
+        'title': 'Connections',
+        'name': 'connections_dashboard',
+        'backlinks': [
+            {
+                'to': 'main',
+                'title': 'Participant dashboard'
+            },
+        ],
+        'subpages': subpages
+    }
+
+  def _initSubpages(self, data):
+    """Initializes list of subpages for the dashboard.
+
+    Args:
+      data: request_data.RequestData for the current request.
+
+    Returns:
+      initial list of subpages to set for the dashboard.
+    """
     linker = links.Linker()
 
-    self.subpages = [
+    subpages = [
         {
             'name': 'list_connections_for_user',
             'description': ugettext(
@@ -147,7 +188,7 @@ class ConnectionsDashboard(Dashboard):
 
     # add organization admin specific items
     if data.profile.is_org_admin:
-      self.subpages.append({
+      subpages.append({
           'name': 'list_connections_for_org_admin',
           'description': ugettext(
               'Manage connections for the organizations for which you have '
@@ -158,7 +199,7 @@ class ConnectionsDashboard(Dashboard):
           })
 
       for org in data.org_admin_for:
-        self.subpages.append({
+        subpages.append({
             'name': 'connect_for_%s' % org.link_id,
             'description': ugettext(
                 'Connect with users and offer them role in your '
@@ -168,21 +209,7 @@ class ConnectionsDashboard(Dashboard):
                 org, urls.UrlNames.CONNECTION_START_AS_ORG)
             })
 
-  def context(self):
-    """See dashboard.Dashboard.context for specification."""
-    subpages = self._divideSubPages(self.subpages)
-
-    return {
-        'title': 'Connections',
-        'name': 'connections_dashboard',
-        'backlinks': [
-            {
-                'to': 'main',
-                'title': 'Participant dashboard'
-            },
-        ],
-        'subpages': subpages
-    }
+    return subpages
 
 
 # TODO(nathaniel): Make all attributes of this class private except
