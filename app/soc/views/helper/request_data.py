@@ -410,19 +410,21 @@ class RequestData(object):
       Retrieved connection entity.
 
     Raises:
-      ValueError: if some data is missing in the current request.
-      exception.UserError: if no entity is found.
+      exception.BadRequest: if some data is missing in the current request.
+      exception.NotFound: if no entity is found.
     """
     if not self._isSet(self._url_connection):
       try:
         connection_key = db.Key.from_path('Connection', int(self.kwargs['id']),
             parent=self._getUrlProfileKey())
       except KeyError:
-        raise ValueError('The request does not contain connection id.')
+        raise exception.BadRequest(
+            message='The request does not contain connection id.')
 
       self._url_connection = connection_model.Connection.get(connection_key)
       if not self._url_connection:
-        raise exception.NotFound('Requested connection does not exist.')
+        raise exception.NotFound(
+            message='Requested connection does not exist.')
     return self._url_connection
 
   @property
@@ -456,7 +458,7 @@ class RequestData(object):
       Retrieved organization entity.
 
     Raises:
-      ValueError: if the current request does not contain any
+      exception.BadRequest: if the current request does not contain any
         organization data.
       exception.NotFound: if the organization is not found.
     """
@@ -465,13 +467,14 @@ class RequestData(object):
         fields = ['sponsor', 'program', 'organization']
         key_name = '/'.join(self.kwargs[i] for i in fields)
       except KeyError:
-        raise ValueError(
-            'The request does not contain full organization data.')
+        raise exception.BadRequest(
+            message='The request does not contain full organization data.')
 
       self._url_org = self.__org_model.get_by_key_name(key_name)
 
       if not self._url_org:
-        raise exception.NotFound('Requested organization does not exist.')
+        raise exception.NotFound(
+            message='Requested organization does not exist.')
     return self._url_org
 
   @property
@@ -485,13 +488,15 @@ class RequestData(object):
       Retrieved user entity.
 
     Raises:
-      ValueError: if the current request does not contain any user data.
+      exception.BadRequest: if the current request does not contain
+        any user data.
       exception.NotFound: if the user is not found.
     """
     if not self._isSet(self._url_user):
       key_name = self.kwargs.get('user')
       if not key_name:
-        raise ValueError('The request does not contain user data.')
+        raise exception.BadRequest(
+            message='The request does not contain user data.')
 
       self._url_user = user_model.User.get_by_key_name(key_name)
 
@@ -508,7 +513,7 @@ class RequestData(object):
       current request.
 
     Raises:
-      ValueError: if some data is missing in the current request.
+      exception.BadRequest: if some data is missing in the current request.
     """
     try:
       fields = ['sponsor', 'program', 'user']
@@ -517,7 +522,8 @@ class RequestData(object):
           'User', self.kwargs['user'], self.__profile_model.kind(),
           profile_key_name)
     except KeyError:
-      raise ValueError('The request does not contain full profile data.')
+      raise exception.BadRequest(
+          message='The request does not contain full profile data.')
 
   def _getProgramWideFields(self):
     """Fetches program wide fields in a single database round-trip."""

@@ -36,8 +36,9 @@ class UrlUserPropertyTest(unittest.TestCase):
   def testNoUserData(self):
     """Tests that error is raised if there is no user data in kwargs."""
     data = request_data.RequestData(None, None, {})
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_user
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
   def testUserDoesNotExist(self):
     """Tests that error is raised if requested user does not exist."""
@@ -61,8 +62,9 @@ class UrlProfilePropertyTest(unittest.TestCase):
     """Tests that error is raised if there is no profile data in kwargs."""
     # no data at all
     data = request_data.RequestData(None, None, {})
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_profile
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
     
     # program data but no user identifier
     kwargs = {
@@ -70,13 +72,15 @@ class UrlProfilePropertyTest(unittest.TestCase):
         'program': 'program_id'
         }
     data = request_data.RequestData(None, None, kwargs)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_profile
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # user identifier present but no program data
     data = request_data.RequestData(None, None, {'user': 'user_id'})
-    with self.assertRaises(ValueError):
-      data.url_profile    
+    with self.assertRaises(exception.UserError) as context:
+      data.url_profile
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
   def testProfileDoesNotExist(self):
     """Tests that error is raised if requested profile does not exist."""
@@ -120,8 +124,9 @@ class UrlOrgPropertyTest(unittest.TestCase):
     """Tests that error is raised if there is no org data in kwargs."""
     # no data at all
     data = request_data.RequestData(None, None, {})
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_org
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # program data but no user identifier
     kwargs = {
@@ -129,13 +134,15 @@ class UrlOrgPropertyTest(unittest.TestCase):
         'program': 'program_id'
         }
     data = request_data.RequestData(None, None, kwargs)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_org
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # user identifier present but no program data
     data = request_data.RequestData(None, None, {'organization': 'org_id'})
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_org
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
   def testOrgDoesNotExist(self):
     """Tests that error is raised if requested organization does not exist."""
@@ -176,8 +183,9 @@ class UrlConnectionPropertyTest(unittest.TestCase):
     """Tests that error is raised if there is no enough data in the URL."""
     # no data at all
     data = request_data.RequestData(None, None, {})
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_connection
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # program and connection data but no user identifier
     kwargs = {
@@ -186,8 +194,9 @@ class UrlConnectionPropertyTest(unittest.TestCase):
         'id': '1',
         }
     data = request_data.RequestData(None, None, kwargs)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_connection
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # profile data but no connection identifier
     kwargs = {
@@ -196,14 +205,16 @@ class UrlConnectionPropertyTest(unittest.TestCase):
         'user': 'user_id',
         }
     data = request_data.RequestData(None, None, kwargs)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_connection
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # only connection id
     kwargs = {'id': '1'}
     data = request_data.RequestData(None, None, kwargs)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_connection
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
   def testConnectionDoesNotExist(self):
     """Tests that error is raised if requested connection does not exist."""
