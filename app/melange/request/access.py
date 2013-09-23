@@ -206,3 +206,5 @@ class IsUrlUserAccessChecker(AccessChecker):
 
     if not data.user or data.user.key().name() != key_name:
       raise exception.Forbidden(message=_MESSAGE_NOT_USER_IN_URL)
+
+IS_URL_USER_ACCESS_CHECKER = IsUrlUserAccessChecker()
