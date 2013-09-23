@@ -18,6 +18,7 @@ import unittest
 
 from codein import types
 
+from soc.modules.gci.models import organization as org_model
 from soc.modules.gci.models import profile as profile_model
 
 
@@ -27,6 +28,10 @@ class TestCodeInModels(unittest.TestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.models = types.CI_MODELS
+
+  def testOrgModel(self):
+    """Tests org_model attribute."""
+    self.assertEqual(self.models.org_model, org_model.GCIOrganization)
 
   def testProfileModel(self):
     """Tests profile_model attribute."""

@@ -18,7 +18,9 @@ import unittest
 
 from melange import types
 
+from soc.models import organization as org_model
 from soc.models import profile as profile_model
+
 
 class ModelsTest(unittest.TestCase):
   """Unit tests for Models class."""
@@ -26,6 +28,10 @@ class ModelsTest(unittest.TestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.models = types.MELANGE_MODELS
+
+  def testOrgModel(self):
+    """Tests org_model attribute."""
+    self.assertEqual(self.models.org_model, org_model.Organization)
 
   def testProfileModel(self):
     """Tests profile_model attribute."""
