@@ -415,11 +415,15 @@ class StartConnectionAsUser(base.GCIRequestHandler):
       return self.get(data, check, mutator)
 
 
+START_CONNECTION_AS_ORG_ACCESS_CHECKER = access.ConjuctionAccessChecker([
+    access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+    access.IS_USER_ORG_ADMIN_FOR_ORG
+    ])
+
 class StartConnectionAsOrg(base.GCIRequestHandler):
   """View to start connections with users as organization administrators."""
 
-  # TODO(daniel): add actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = START_CONNECTION_AS_ORG_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.GCIRequestHandler.djangoURLPatterns for specification."""
