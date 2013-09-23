@@ -366,7 +366,7 @@ def _getValueForUserRoleItem(data):
 START_CONNECTION_AS_USER_ACCESS_CHECKER = access.ConjuctionAccessChecker([
     access.PROGRAM_ACTIVE_ACCESS_CHECKER,
     access.IS_URL_USER_ACCESS_CHECKER,
-    access.NON_STUDENT_ACCESS_CHECKER,
+    access.NON_STUDENT_URL_PROFILE_ACCESS_CHECKER,
     NO_CONNECTION_EXISTS_ACCESS_CHECKER])
 
 class StartConnectionAsUser(base.GCIRequestHandler):

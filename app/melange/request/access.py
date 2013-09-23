@@ -29,7 +29,7 @@ _MESSAGE_NOT_DEVELOPER = translation.ugettext(
     'This page is only accessible to developers.')
 
 _MESSAGE_NO_PROFILE = translation.ugettext(
-    'You need to have an active profile to access this page.')
+    'Active profile for %s is required to access this page.')
 
 _MESSAGE_PROGRAM_NOT_EXISTING = translation.ugettext(
     'Requested program does not exist.')
@@ -156,21 +156,18 @@ class ConjuctionAccessChecker(AccessChecker):
       checker.checkAccess(data, check, mutator)
 
 
-class NonStudentAccessChecker(AccessChecker):
-  """AccessChecker that ensures that the user has a non-student profile."""
+class NonStudentUrlProfileAccessChecker(AccessChecker):
+  """AccessChecker that ensures that the URL user has a non-student profile."""
 
   def checkAccess(self, data, check, mutator):
     """See AccessChecker.checkAccess for specification."""
-    if not data.gae_user:
-      raise exception.LoginRequired()
-
-    if not data.profile or data.profile.status != 'active':
+    if not data.url_profile or data.url_profile.status != 'active':
       raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
 
-    if data.profile.is_student:
+    if data.url_profile.is_student:
       raise exception.Forbidden(message=_MESSAGE_STUDENTS_DENIED)
 
-NON_STUDENT_ACCESS_CHECKER = NonStudentAccessChecker()
+NON_STUDENT_URL_PROFILE_ACCESS_CHECKER = NonStudentUrlProfileAccessChecker()
 
 
 class ProgramActiveAccessChecker(AccessChecker):
