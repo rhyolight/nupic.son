@@ -46,6 +46,8 @@ _MESSAGE_STUDENTS_DENIED = translation.ugettext(
 _MESSAGE_NOT_USER_IN_URL = translation.ugettext(
     'You are not logged in as the user in the URL.')
 
+_MESSAGE_NOT_ORG_ADMIN_FOR_ORG = translation.ugettext(
+    'You are not organization administrator for %s')
 
 def ensureLoggedIn(data):
   """Ensures that the user is logged in.
@@ -217,3 +219,20 @@ class IsUrlUserAccessChecker(AccessChecker):
       raise exception.Forbidden(message=_MESSAGE_NOT_USER_IN_URL)
 
 IS_URL_USER_ACCESS_CHECKER = IsUrlUserAccessChecker()
+
+
+class IsUserOrgAdminForUrlOrg(AccessChecker):
+  """AccessChecker that ensures that the logged in user is organization
+  administrator for the organization whose identifier is uset in URL data.
+  """
+
+  def checkAccess(self, data, check, mutator):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.profile:
+      raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
+
+    if data.url_org.key() not in data.profile.org_admin_for:
+      raise exception.Forbidden(
+          message=_MESSAGE_NOT_ORG_ADMIN_FOR_ORG % data.url_org.key().name())
+
+IS_USER_ORG_ADMIN_FOR_ORG = IsUserOrgAdminForUrlOrg()

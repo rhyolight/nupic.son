@@ -428,3 +428,113 @@ class IsUrlUserAccessCheckerTest(unittest.TestCase):
     self.data.kwargs['user'] = self.data._user.link_id
     access_checker = access.IsUrlUserAccessChecker()
     access_checker.checkAccess(self.data, None, None)
+
+
+class IsUserOrgAdminForUrlOrgTest(unittest.TestCase):
+  """Tests for IsUserOrgAdminForUrlOrg class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+
+    program_properties = {
+        'sponsor': sponsor,
+        'scope': sponsor,
+        }
+    program = seeder_logic.seed(
+        program_model.Program, properties=program_properties)
+
+    org_properties = {
+        'program': program,
+        'scope': program,
+        }
+    self.organization = seeder_logic.seed(
+        org_model.Organization, properties=org_properties)
+
+    kwargs = {
+        'sponsor': sponsor.key().name(),
+        'program': program.link_id,
+        'organization': self.organization.link_id,
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+  def testNoProfileAccessDenied(self):
+    """Tests that error is raised if profile does not exist."""
+    self.data._profile = None
+
+    access_checker = access.IsUserOrgAdminForUrlOrg()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+    self.assertEqual(context.exception.message, access._MESSAGE_NO_PROFILE)
+
+  def testForNonExistingOrg(self):
+    """Tests that error is raised when organization does not exist."""
+    profile_properties = {
+        'is_org_admin': True,
+        'org_admin_for': [self.organization.key()],
+        'is_mentor': True,
+        'mentor_for': [self.organization.key()],
+        'is_student': False,
+        }
+    self.data._profile = seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
+
+    self.data.kwargs['organization'] = 'non_existing_org_id'
+
+    access_checker = access.IsUserOrgAdminForUrlOrg()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.NOT_FOUND)
+
+  def testMentorAccessDenied(self):
+    """Tests that a mentor is denied access."""
+    profile_properties = {
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'is_mentor': True,
+        'mentor_for': [self.organization.key()],
+        'is_student': False,
+        }
+    self.data._profile = seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
+    self.data._url_org = self.organization
+
+    access_checker = access.IsUserOrgAdminForUrlOrg()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testStudentAccessDenied(self):
+    """Tests that a student is denied access."""
+    profile_properties = {
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'is_mentor': False,
+        'mentor_for': [],
+        'is_student': True,
+        }
+    self.data._profile = seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
+    self.data._url_org = self.organization
+
+    access_checker = access.IsUserOrgAdminForUrlOrg()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testOrgAdminAccessGranted(self):
+    """Tests that an organization administrator is granted access."""
+    profile_properties = {
+        'is_org_admin': True,
+        'org_admin_for': [self.organization.key()],
+        'is_mentor': True,
+        'mentor_for': [self.organization.key()],
+        'is_student': False,
+        }
+    self.data._profile = seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
+    self.data._url_org = self.organization
+
+    access_checker = access.IsUserOrgAdminForUrlOrg()
+    access_checker.checkAccess(self.data, None, None)
