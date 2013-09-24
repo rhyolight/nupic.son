@@ -15,6 +15,7 @@
 """Module containing the conversation view with messages."""
 
 from django import forms as django_forms
+from django import http
 from django.core import urlresolvers
 from django.utils import translation
 from django.utils import html
@@ -25,6 +26,9 @@ from google.appengine.ext import db
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.helper import access_checker
+
+from soc.views import template as template_view
+from soc.views import toggle_button as toggle_button_view
 
 from soc.logic.helper import timeformat as timeformat_helper
 from soc.logic import cleaning
@@ -127,6 +131,53 @@ class PostReply(GCIRequestHandler):
     raise exception.MethodNotAllowed()
 
 
+class UserActions(template_view.Template):
+  """Template to render the left side user actions."""
+
+  DEF_ENABLE_NOTIFICATIONS_HELP = translation.ugettext(
+      'Choosing Yes will enable email notifications for this conversation.')
+
+  def __init__(self, data):
+    super(UserActions, self).__init__(data)
+    self.toggle_buttons = []
+
+  def context(self):
+    """See soc.views.template.Template.context for full specification."""
+    assert access_checker.isSet(self.data.conversation)
+    assert access_checker.isSet(self.data.user)
+
+    query = gciconversation_logic.queryConversationUserForConversationAndUser(
+        self.data.conversation.key, ndb.Key.from_old_key(self.data.user.key()))
+    conv_user_results = query.fetch(1)
+    assert conv_user_results
+
+    conv_user = conv_user_results[0]
+
+    self.data.redirect.id()
+
+    url = self.data.redirect.urlOf(
+        url_names.GCI_CONVERSATION_NOTIFICATION_TOGGLE)
+
+    enable_notifications = toggle_button_view.ToggleButtonTemplate(
+        self.data, 'on_off', translation.ugettext('Enable Notifications'),
+        'notifications-enabled', url,
+        checked=conv_user.enable_notifications,
+        help_text=self.DEF_ENABLE_NOTIFICATIONS_HELP,
+        labels={
+            'checked': 'Yes',
+            'unchecked': 'No'})
+    self.toggle_buttons.append(enable_notifications)
+
+    return {
+      'title': translation.ugettext('Conversation Actions'),
+      'toggle_buttons': self.toggle_buttons,
+    }
+
+  def templatePath(self):
+    """See soc.views.template.Template.templatePath for full specification."""
+    return 'modules/gci/conversation/_user_action.html'
+
+
 class ConversationPage(GCIRequestHandler):
   """View for a conversation."""
 
@@ -181,6 +232,82 @@ class ConversationPage(GCIRequestHandler):
         'num_users': num_users,
         'messages': messages,
         'user_list': UserList(data),
+        'user_actions': UserActions(data),
         'reply_action': urlresolvers.reverse(url_names.GCI_CONVERSATION_REPLY, 
             kwargs=data.kwargs)
     }
+
+
+class NotificationsEnabled(GCIRequestHandler):
+  """View which handles enabling/disabling notifications by the toggle button.
+  """
+
+  def djangoURLPatterns(self):
+    """See soc.modules.gci.views.base.GCIRequestHandler.djangoURLPatterns for
+    full specification.
+    """
+    return [
+        url(r'conversation/notifications-enabled/%s$' % url_patterns.ID, self,
+            name=url_names.GCI_CONVERSATION_NOTIFICATION_TOGGLE),
+    ]
+
+  def checkAccess(self, data, check, mutator):
+    """See soc.modules.gci.views.base.GCIRequestHandler.checkAccess for full
+    specification.
+    """
+    check.isProgramVisible()
+    check.isProfileActive()
+    check.isMessagingEnabled()
+    mutator.conversationFromKwargs()
+    check.isUserInConversation()
+
+  def toggleNotificationsEnabled(self, data, value):
+    """Makes email notifications enabled or disabled.
+
+    Args:
+      data: A RequestData describing the current request.
+      value: can be either "checked" or "unchecked".
+    """
+    assert access_checker.isSet(data.conversation)
+    assert access_checker.isSet(data.user)
+
+    query = gciconversation_logic.queryConversationUserForConversationAndUser(
+        data.conversation.key, ndb.Key.from_old_key(data.user.key()))
+    conv_user_results = query.fetch(1)
+    assert conv_user_results
+    conv_user = conv_user_results[0]
+
+    if value != 'checked' and value != 'unchecked':
+      raise exception.BadRequest(
+          message='Invalid post data. Value must be checked or unchecked.')
+    if value == 'checked' and not conv_user.enable_notifications:
+      raise exception.BadRequest(message='Notifications were already disabled.')
+    if value == 'unchecked' and conv_user.enable_notifications:
+      raise exception.BadRequest(message='Notifications were already enabled.')
+
+    conv_user_key = conv_user.key
+
+    @ndb.transactional(xg=True)
+    def set_notifications_enabled_txn():
+      # transactionally get latest GCIConversationUser
+      conv_user = conv_user_key.get()
+      if value == 'unchecked':
+        conv_user.enable_notifications = True
+      elif value == 'checked':
+        conv_user.enable_notifications = False
+
+      conv_user.put()
+
+    set_notifications_enabled_txn()
+
+  def post(self, data, check, mutator):
+    """See soc.modules.gci.views.base.GCIRequestHandler.post for full
+    specification.
+    """
+    value = data.POST.get('value')
+    self.toggleNotificationsEnabled(data, value)
+    return http.HttpResponse()
+
+  def get(self, data, check, mutator):
+    """Special Handler for HTTP GET since this view only handles POST."""
+    raise exception.MethodNotAllowed()

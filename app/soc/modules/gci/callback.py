@@ -127,6 +127,7 @@ class Callback(object):
     self.views.append(task_create.TaskCreatePage())
     self.views.append(conversations.ConversationsPage())
     self.views.append(conversation.ConversationPage())
+    self.views.append(conversation.NotificationsEnabled())
     self.views.append(conversation.PostReply())
     self.views.append(conversation_create.ConversationCreatePage())
 
