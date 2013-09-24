@@ -14,12 +14,15 @@
 
 """Logic for profiles."""
 
+from google.appengine.ext import db
+
 from melange import types
+from melange.utils import rich_bool
 from melange.appengine import db as melange_db
 
 
-# TODO(daniel): it would be nice if this function returned something more
-# verbose than "False", i.e. explanation why
+ONLY_ORG_ADMIN = 'only_org_admin'
+
 def canResignAsOrgAdminForOrg(profile, org_key, models=types.MELANGE_MODELS):
   """Tells whether the specified profile can resign from their organization
   administrator role for the specified organization.
@@ -33,7 +36,10 @@ def canResignAsOrgAdminForOrg(profile, org_key, models=types.MELANGE_MODELS):
     models: instance of types.Models that represent appropriate models.
 
   Returns:
-    True, if the mentor is allowed to resign; False otherwise
+    RichBool whose value is set to True, if the organization administrator
+    is allowed to resign. Otherwise, RichBool whose value is set to False
+    and extra part is a string that represents the reason why the user
+    is not allowed to resign.
   """
   if org_key not in profile.org_admin_for:
     raise ValueError(
@@ -44,15 +50,12 @@ def canResignAsOrgAdminForOrg(profile, org_key, models=types.MELANGE_MODELS):
   org_admin_keys = getOrgAdmins(org_key, keys_only=True, models=models)
   org_admin_keys.remove(profile.key())
 
-  if org_admin_keys:
-    # try to retrieve the first org admin from the list
-    # therefore, it can be safely used within a XG transaction
-    if models.profile_model.get(org_admin_keys[0]):
-      return True
-    else:
-      return False
+  # try to retrieve the first org admin from the list
+  # therefore, it can be safely used within a XG transaction
+  if org_admin_keys and models.profile_model.get(org_admin_keys[0]):
+    return rich_bool.TRUE
   else:
-    return False
+    return rich_bool.RichBool(False, extra=ONLY_ORG_ADMIN)
 
 
 def getOrgAdmins(org_key, keys_only=False, extra_attrs=None,
@@ -138,6 +141,25 @@ def assignOrgAdminRoleForOrg(profile, org_key):
     profile.is_org_admin = True
     profile.org_admin_for.append(org_key)
     profile.put()
+
+
+def getProfileForUsername(username, program_key, models=types.MELANGE_MODELS):
+  """Returns profile entity for a user with the specified username and
+  for the specified program.
+
+  Args:
+    username: a string containing username of the user.
+    program_key: program key.
+    models: instance of types.Models that represent appropriate models.
+
+  Returns:
+    profile entity for the specified user and program or None if the user
+    does not have a profile for this program.
+  """
+  profile_key = db.Key.from_path(
+      models.profile_model.kind(), '%s/%s' % (program_key.name(), username),
+      parent=db.Key.from_path('User', username))
+  return db.get(profile_key)
 
 
 def _handleExtraAttrs(query, extra_attrs):

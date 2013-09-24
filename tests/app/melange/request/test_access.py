@@ -16,17 +16,19 @@
 import httplib
 import unittest
 
-from nose.plugins import skip
+from django import http
 
 from melange.request import access
 from melange.request import exception
 
+from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model
-from soc.models import user as user_model
+from soc.models import sponsor as sponsor_model
 from soc.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import profile_utils
 from tests import timeline_utils
 
 
@@ -57,6 +59,40 @@ class NoneAllowedAccessChecker(access.AccessChecker):
     raise exception.Forbidden(message=self._identifier)
 
 
+class EnsureLoggedInTest(unittest.TestCase):
+  """Unit tests for ensureLoggedIn function."""
+
+  def testForLoggedInUser(self):
+    """Tests that no exception is raised for a logged-in user."""
+    data = request_data.RequestData(None, None, {})
+    data._gae_user = 'unused'
+    access.ensureLoggedIn(data)
+
+  def testForLoggedOutUser(self):
+    """Tests that exception is raised for a non logged-in user."""
+    data = request_data.RequestData(None, None, {})
+    data._gae_user = None
+    with self.assertRaises(exception.LoginRequired):
+      access.ensureLoggedIn(data)
+
+
+class EnsureLoggedOutTest(unittest.TestCase):
+  """Unit tests for ensureLoggedOut function."""
+
+  def testForLoggedInUser(self):
+    """Tests that exception is raised for a logged-in user."""
+    data = request_data.RequestData(http.HttpRequest(), None, {})
+    data._gae_user = 'unused'
+    with self.assertRaises(exception.Redirect):
+      access.ensureLoggedOut(data)
+
+  def testForLoggedOutUser(self):
+    """Tests that no exception is raised for a non logged-in user."""
+    data = request_data.RequestData(http.HttpRequest(), None, {})
+    data._gae_user = None
+    access.ensureLoggedOut(data)
+
+
 class AllAllowedAccessCheckerTest(unittest.TestCase):
   """Tests the AllAllowedAccessChecker class."""
 
@@ -66,34 +102,105 @@ class AllAllowedAccessCheckerTest(unittest.TestCase):
     access_checker.checkAccess(Explosive(), Explosive(), Explosive())
 
 
-# TODO(nathaniel): Because the idea of RequestData objects having
-# an "is_host" attribute isn't unified across all program types
-# (it is actually separately implemented in GCI's and GSoC's
-# individual RequestData subclasses) this text can't be written
-# without either bringing in GCI-specific or GSoC-specific code
-# or faking out too much.
 class ProgramAdministratorAccessCheckerTest(unittest.TestCase):
   """Tests the ProgramAdministratorAccessChecker class."""
 
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+
+    program_properties = {
+        'sponsor': self.sponsor,
+        'scope': self.sponsor,
+        }
+    self.program = seeder_logic.seed(
+        program_model.Program, properties=program_properties)
+
+    # seed a user who will be tested for access
+    self.user = profile_utils.seedUser(is_developer=False)
+    profile_utils.login(self.user)
+
+    kwargs = {
+        'sponsor': self.sponsor.key().name(),
+        'program': self.program.program_id,
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
   def testProgramAdministratorsAllowedAccess(self):
     """Tests that a program administrator is allowed access."""
-    raise skip.SkipTest()
+    # make the user a program administrator
+    self.user.host_for = [self.sponsor.key()]
+    self.user.put()
+
+    access_checker = access.ProgramAdministratorAccessChecker()
+    access_checker.checkAccess(self.data, None, None)
 
   def testOrganizationAdministratorsDeniedAccess(self):
     """Tests that an organization administrator is denied access."""
-    raise skip.SkipTest()
+    # seed a profile who is org admin
+    org = seeder_logic.seed(org_model.Organization)
+    profile_properties = {
+        'is_org_admin': True,
+        'org_admin_for': [org.key()],
+        'is_mentor': True,
+        'mentor_for': [org.key()],
+        'is_student': False,
+        'parent': self.user,
+        }
+    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+
+    access_checker = access.ProgramAdministratorAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.message,
+        access._MESSAGE_NOT_PROGRAM_ADMINISTRATOR)
 
   def testMentorDeniedAccess(self):
     """Tests that a mentor is denied access."""
-    raise skip.SkipTest()
+    # seed a profile who is org mentor
+    org = seeder_logic.seed(org_model.Organization)
+    profile_properties = {
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'is_mentor': True,
+        'mentor_for': [org.key()],
+        'is_student': False,
+        'parent': self.user,
+        }
+    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+
+    access_checker = access.ProgramAdministratorAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.message,
+        access._MESSAGE_NOT_PROGRAM_ADMINISTRATOR)
 
   def testStudentDeniedAccess(self):
     """Tests that students are denied access."""
-    raise skip.SkipTest()
+    # seed a profile who is a student
+    profile_properties = {
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'is_mentor': False,
+        'mentor_for': [],
+        'is_student': True,
+        'parent': self.user,
+        }
+    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+
+    access_checker = access.ProgramAdministratorAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.message,
+        access._MESSAGE_NOT_PROGRAM_ADMINISTRATOR)
 
   def testAnonymousDeniedAccess(self):
     """Tests that logged-out users are denied access."""
-    raise skip.SkipTest()
+    access_checker = access.ProgramAdministratorAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.message,
+        access._MESSAGE_NOT_PROGRAM_ADMINISTRATOR)
 
 
 class DeveloperAccessCheckerTest(unittest.TestCase):
@@ -145,44 +252,60 @@ class ConjuctionAccessCheckerTest(unittest.TestCase):
     self.assertEqual(context.exception.message, 'last')
 
 
-class NonStudentAccessCheckerTest(unittest.TestCase):
-  """Tests for NonStudentAccessChecker class."""
+class NonStudentUrlProfileAccessCheckerTest(unittest.TestCase):
+  """Tests for NonStudentUrlProfileAccessChecker class."""
 
   def setUp(self):
     """See unittest.setUp for specification."""
-    # seed a profile
-    profile_properties = {'status': 'active'}
-    self.profile = seeder_logic.seed(profile_model.Profile, profile_properties)
+    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
 
-  def testUserWithNoLoggedInAccessDenied(self):
-    """Tests that access is denied for a user that is not logged in."""
-    data = request_data.RequestData(None, None, None)
-    data._gae_user = None
+    program_properties = {
+        'sponsor': sponsor,
+        'scope': sponsor,
+        }
+    program = seeder_logic.seed(
+        program_model.Program, properties=program_properties)
 
-    access_checker = access.NonStudentAccessChecker()
-    with self.assertRaises(exception.LoginRequired):
-      access_checker.checkAccess(data, None, None)
+    profile_properties = {
+        'status': 'active',
+        'is_student': False
+        }
+    self.url_profile = seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
 
-  def testUserWithNoProfileAccessDenied(self):
+    kwargs = {
+        'sponsor': sponsor.key().name(),
+        'program': program.link_id,
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+  def testUrlUserWithNoProfileAccessDenied(self):
     """Tests that access is denied for a user that does not have a profile."""
-    data = request_data.RequestData(None, None, None)
-    data._gae_user = 'unused'
-    data._profile = None
+    self.data.kwargs['user'] = 'non_existing_user'
 
-    access_checker = access.NonStudentAccessChecker()
+    access_checker = access.NonStudentUrlProfileAccessChecker()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(data, None, None)
-    self.assertEqual(context.exception.message, access._MESSAGE_NO_PROFILE)
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.NOT_FOUND)
 
   def testStudentAccessDenied(self):
     """Tests that access is denied for a user with a student profile."""
-    self.profile.is_student = True
+    # additionally, seed a profile who is not a student
+    # access should be still denied as the check corresponds to URL profile
+    profile_properties = {
+        'status': 'active',
+        'is_student': False
+        }
+    profile =  seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
+
+    self.url_profile.is_student = True
 
     data = request_data.RequestData(None, None, None)
-    data._gae_user = 'unused'
-    data._profile = self.profile
+    data._url_profile = self.url_profile
+    data._profile = profile
 
-    access_checker = access.NonStudentAccessChecker()
+    access_checker = access.NonStudentUrlProfileAccessChecker()
     with self.assertRaises(exception.UserError) as context:
       access_checker.checkAccess(data, None, None)
     self.assertEqual(context.exception.message,
@@ -190,13 +313,12 @@ class NonStudentAccessCheckerTest(unittest.TestCase):
 
   def testNonStudentAccessGranted(self):
     """Tests that access is granted for users with non-student accounts."""
-    self.profile.is_student = False
+    self.url_profile.is_student = False
 
     data = request_data.RequestData(None, None, None)
-    data._gae_user = 'unused'
-    data._profile = self.profile
+    data._url_profile = self.url_profile
 
-    access_checker = access.NonStudentAccessChecker()
+    access_checker = access.NonStudentUrlProfileAccessChecker()
     access_checker.checkAccess(data, None, None)
 
 
@@ -266,7 +388,7 @@ class IsUrlUserAccessCheckerTest(unittest.TestCase):
   def setUp(self):
     """See unittest.setUp for specification."""
     self.data = request_data.RequestData(None, None, {})
-    self.data._user = seeder_logic.seed(user_model.User)
+    self.data._user = profile_utils.seedUser()
 
   def testForMissingUserData(self):
     """Tests for URL data that does not contain any user data."""
@@ -274,6 +396,15 @@ class IsUrlUserAccessCheckerTest(unittest.TestCase):
     with self.assertRaises(exception.UserError) as context:
       access_checker.checkAccess(self.data, None, None)
     self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
+
+  def testNonLoggedInUserAccessDenied(self):
+    """Tests that exception is raised for a non logged-in user."""
+    data = request_data.RequestData(None, None, {})
+    data._gae_user = None
+    data.kwargs['user'] = 'some_username'
+    access_checker = access.IsUrlUserAccessChecker()
+    with self.assertRaises(exception.LoginRequired):
+      access_checker.checkAccess(data, None, None)
 
   def testNonUserAccessDenied(self):
     """Tests that access is denied for a user with no User entity."""
@@ -296,4 +427,114 @@ class IsUrlUserAccessCheckerTest(unittest.TestCase):
     """Tests that access is granted for a user who is defined in URL."""
     self.data.kwargs['user'] = self.data._user.link_id
     access_checker = access.IsUrlUserAccessChecker()
+    access_checker.checkAccess(self.data, None, None)
+
+
+class IsUserOrgAdminForUrlOrgTest(unittest.TestCase):
+  """Tests for IsUserOrgAdminForUrlOrg class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+
+    program_properties = {
+        'sponsor': sponsor,
+        'scope': sponsor,
+        }
+    program = seeder_logic.seed(
+        program_model.Program, properties=program_properties)
+
+    org_properties = {
+        'program': program,
+        'scope': program,
+        }
+    self.organization = seeder_logic.seed(
+        org_model.Organization, properties=org_properties)
+
+    kwargs = {
+        'sponsor': sponsor.key().name(),
+        'program': program.link_id,
+        'organization': self.organization.link_id,
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+  def testNoProfileAccessDenied(self):
+    """Tests that error is raised if profile does not exist."""
+    self.data._profile = None
+
+    access_checker = access.IsUserOrgAdminForUrlOrg()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+    self.assertEqual(context.exception.message, access._MESSAGE_NO_PROFILE)
+
+  def testForNonExistingOrg(self):
+    """Tests that error is raised when organization does not exist."""
+    profile_properties = {
+        'is_org_admin': True,
+        'org_admin_for': [self.organization.key()],
+        'is_mentor': True,
+        'mentor_for': [self.organization.key()],
+        'is_student': False,
+        }
+    self.data._profile = seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
+
+    self.data.kwargs['organization'] = 'non_existing_org_id'
+
+    access_checker = access.IsUserOrgAdminForUrlOrg()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.NOT_FOUND)
+
+  def testMentorAccessDenied(self):
+    """Tests that a mentor is denied access."""
+    profile_properties = {
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'is_mentor': True,
+        'mentor_for': [self.organization.key()],
+        'is_student': False,
+        }
+    self.data._profile = seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
+    self.data._url_org = self.organization
+
+    access_checker = access.IsUserOrgAdminForUrlOrg()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testStudentAccessDenied(self):
+    """Tests that a student is denied access."""
+    profile_properties = {
+        'is_org_admin': False,
+        'org_admin_for': [],
+        'is_mentor': False,
+        'mentor_for': [],
+        'is_student': True,
+        }
+    self.data._profile = seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
+    self.data._url_org = self.organization
+
+    access_checker = access.IsUserOrgAdminForUrlOrg()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testOrgAdminAccessGranted(self):
+    """Tests that an organization administrator is granted access."""
+    profile_properties = {
+        'is_org_admin': True,
+        'org_admin_for': [self.organization.key()],
+        'is_mentor': True,
+        'mentor_for': [self.organization.key()],
+        'is_student': False,
+        }
+    self.data._profile = seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
+    self.data._url_org = self.organization
+
+    access_checker = access.IsUserOrgAdminForUrlOrg()
     access_checker.checkAccess(self.data, None, None)

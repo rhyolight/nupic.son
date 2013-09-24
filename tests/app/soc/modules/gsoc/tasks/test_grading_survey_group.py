@@ -16,12 +16,6 @@
 
 import httplib
 
-from tests import profile_utils
-from tests import test_utils
-from tests import timeline_utils
-
-from soc.models import user as user_model
-
 from soc.modules.gsoc.models import grading_project_survey as gps_model
 from soc.modules.gsoc.models import grading_project_survey_record as gpsr_model
 from soc.modules.gsoc.models import grading_record as gr_model
@@ -29,7 +23,10 @@ from soc.modules.gsoc.models import grading_survey_group as gsg_model
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import project_survey as ps_model
 from soc.modules.gsoc.models import project_survey_record as psr_model
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+from tests import profile_utils
+from tests import test_utils
+from tests import timeline_utils
 
 
 class GradingSurveyGroupTest(
@@ -68,7 +65,7 @@ class GradingSurveyGroupTest(
   def createSurveys(self):
     """Creates the surveys and records required for the tests.
     """
-    user = seeder_logic.seed(user_model.User)
+    user = profile_utils.seedUser()
     survey_values = {
         'author': user,
         'title': 'Title',

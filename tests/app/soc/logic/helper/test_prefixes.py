@@ -18,13 +18,10 @@
 
 import unittest
 
-from google.appengine.api import users
-
 from soc.logic.helper import prefixes
 from soc.models.organization import Organization
 from soc.models.program import Program
 from soc.models.site import Site
-from soc.models.user import User
 
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.program import GCIProgram
@@ -33,13 +30,16 @@ from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.timeline import GSoCTimeline
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import profile_utils
+
+
 class TestPrefixes(unittest.TestCase):
   """Tests for prefix helper functions for models with document prefixes.
   """
 
   def setUp(self):
 
-    self.user = seeder_logic.seed(User)
+    self.user = profile_utils.seedUser()
 
     self.program_timeline = seeder_logic.seed(GSoCTimeline)
 

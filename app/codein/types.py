@@ -16,7 +16,9 @@
 
 from melange import types
 
-from soc.modules.gci.models import profile as profile_model
+from soc.modules.gci.models import organization
+from soc.modules.gci.models import profile
 
 
-CI_MODELS = types.Models(profile_model=profile_model.GCIProfile)
+CI_MODELS = types.Models(
+    org_model=organization.GCIOrganization, profile_model=profile.GCIProfile)

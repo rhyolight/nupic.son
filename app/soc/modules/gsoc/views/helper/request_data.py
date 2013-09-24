@@ -25,7 +25,6 @@ from google.appengine.ext import db
 from melange.request import exception
 from melange.utils import time
 from soc.models import site as site_model
-from soc.logic import program as program_logic
 from soc.views.helper.access_checker import isSet
 from soc.views.helper import request_data
 
@@ -33,6 +32,8 @@ from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.views.helper import url_names
+
+from summerofcode import types
 
 
 class TimelineHelper(request_data.TimelineHelper):
@@ -179,7 +180,6 @@ class RequestData(request_data.RequestData):
     css_path: a part of the css to fetch the GSoC specific CSS resources
     programs: All GSoC programs.
     program_timeline: The GSoCTimeline entity
-    is_host: is the current user a host of the program
     is_mentor: is the current user a mentor in the program
     is_student: is the current user a student in the program
     is_org_admin: is the current user an org admin in the program
@@ -192,9 +192,6 @@ class RequestData(request_data.RequestData):
     out_of_band: 404 when the program does not exist
   """
 
-  __org_model = org_model.GSoCOrganization
-  __profile_model = profile_model.GSoCProfile
-
   def __init__(self, request, args, kwargs):
     """Constructs a new RequestData object.
 
@@ -205,6 +202,8 @@ class RequestData(request_data.RequestData):
     """
     super(RequestData, self).__init__(request, args, kwargs)
 
+    self.models = types.SOC_MODELS
+
     # program wide fields
     self._program = self._unset
     self._program_timeline = self._unset
@@ -212,7 +211,6 @@ class RequestData(request_data.RequestData):
     self._org_app = self._unset
 
     # user profile specific fields
-    self._is_host = self._unset
     self._is_mentor = self._unset
     self._is_student = self._unset
     self._is_org_admin = self._unset
@@ -231,20 +229,6 @@ class RequestData(request_data.RequestData):
     if not self._isSet(self._css_path):
       self._css_path = 'gsoc'
     return self._css_path
-
-  @property
-  def is_host(self):
-    """Returns the is_host field."""
-    if not self._isSet(self._is_host):
-      if not self.user:
-        self._is_host = False
-      elif 'sponsor' in self.kwargs:
-        key = db.Key.from_path('Sponsor', self.kwargs.get('sponsor'))
-        self._is_host = key in self.user.host_for
-      else:
-        key = program_logic.getSponsorKey(self._program)
-        self._is_host = key in self.user.host_for
-    return self._is_host
 
   @property
   def is_mentor(self):

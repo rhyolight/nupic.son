@@ -18,9 +18,10 @@ import unittest
 from soc.logic import validate
 from soc.models import profile as profile_model
 from soc.models import program as program_model
-from soc.models import user as user_model
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+from tests import profile_utils
 
 
 class ValidateTest(unittest.TestCase):
@@ -170,7 +171,7 @@ class HasNonStudentProfileForProgramTest(unittest.TestCase):
     self.program = seeder_logic.seed(program_model.Program)
 
     # seed a user
-    self.user = seeder_logic.seed(user_model.User)
+    self.user = profile_utils.seedUser()
 
     # seed a profile
     profile_properties = {

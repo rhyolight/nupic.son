@@ -23,6 +23,8 @@ from soc.models import user as user_model
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import profile_utils
+
 
 class HostTest(unittest.TestCase):
   """Tests for logic of Host Model."""
@@ -40,8 +42,7 @@ class HostTest(unittest.TestCase):
     # hosts of the program
     user_entities = []
     for _ in range(5):
-      user_properties = {'host_for': [self.sponsor.key()]}
-      user_entity = seeder_logic.seed(user_model.User, user_properties)
+      user_entity = profile_utils.seedUser(host_for=[self.sponsor.key()])
       user_entities.append(user_entity)
 
     expected_host_keys = set(user.key() for user in user_entities)

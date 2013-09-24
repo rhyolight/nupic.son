@@ -12,26 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test for sending Survey reminders.
-"""
-
-
-import httplib
-
-from tests import timeline_utils
-from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import GSoCDjangoTestCase
-from tests.test_utils import MailTestCase
-from tests.test_utils import TaskQueueTestCase
-
-from soc.models import user as user_model
+"""Test for sending Survey reminders."""
 
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
-class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
+from tests import profile_utils
+from tests import test_utils
+from tests import timeline_utils
+
+
+class SurveyRemindersTest(
+    test_utils.MailTestCase, test_utils.GSoCDjangoTestCase,
+    test_utils.TaskQueueTestCase):
   """Tests for accept_proposals task.
   """
 
@@ -48,14 +42,14 @@ class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
   def createMentor(self):
     """Creates a new mentor.
     """
-    profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+    profile_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
     profile_helper.createOtherUser('mentor@example.com')
     self.mentor = profile_helper.createMentor(self.org)
 
   def createStudent(self):
     """Creates a Student with a project.
     """
-    profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+    profile_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
     profile_helper.createOtherUser('student@example.com')
     self.student = profile_helper.createStudentWithProject(self.org,
                                                            self.mentor)
@@ -65,7 +59,7 @@ class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
     """Creates the surveys and records required for the tests in the old
     format.
     """
-    user = seeder_logic.seed(user_model.User)
+    user = profile_utils.seedUser()
     survey_values = {
         'author': user,
         'title': 'Title',
@@ -88,12 +82,14 @@ class SurveyRemindersTest(MailTestCase, GSoCDjangoTestCase, TaskQueueTestCase):
     """Creates a project that is withdrawn.
     """
     # list response with projects
-    mentor_profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor_profile_helper = profile_utils.GSoCProfileHelper(
+        self.gsoc, self.dev_test)
     mentor_profile_helper.createOtherUser('mentor@example.com')
     mentor = mentor_profile_helper.createMentor(self.org)
 
     # Create a student with the project.
-    student_profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
+    student_profile_helper = profile_utils.GSoCProfileHelper(
+        self.gsoc, self.dev_test)
     student_profile = student_profile_helper.createStudentWithProject(
         self.org, mentor)
 

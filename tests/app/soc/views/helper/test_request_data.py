@@ -24,9 +24,10 @@ from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model
 from soc.models import sponsor as sponsor_model
-from soc.models import user as user_model
 from soc.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+from tests import profile_utils
 
 
 class UrlUserPropertyTest(unittest.TestCase):
@@ -35,8 +36,9 @@ class UrlUserPropertyTest(unittest.TestCase):
   def testNoUserData(self):
     """Tests that error is raised if there is no user data in kwargs."""
     data = request_data.RequestData(None, None, {})
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_user
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
   def testUserDoesNotExist(self):
     """Tests that error is raised if requested user does not exist."""
@@ -47,7 +49,7 @@ class UrlUserPropertyTest(unittest.TestCase):
 
   def testUserExists(self):
     """Tests that user is returned correctly if exists."""
-    user = seeder_logic.seed(user_model.User)
+    user = profile_utils.seedUser()
     data = request_data.RequestData(None, None, {'user': user.link_id})
     url_user = data.url_user
     self.assertEqual(user.key(), url_user.key())
@@ -60,8 +62,9 @@ class UrlProfilePropertyTest(unittest.TestCase):
     """Tests that error is raised if there is no profile data in kwargs."""
     # no data at all
     data = request_data.RequestData(None, None, {})
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_profile
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
     
     # program data but no user identifier
     kwargs = {
@@ -69,13 +72,15 @@ class UrlProfilePropertyTest(unittest.TestCase):
         'program': 'program_id'
         }
     data = request_data.RequestData(None, None, kwargs)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_profile
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # user identifier present but no program data
     data = request_data.RequestData(None, None, {'user': 'user_id'})
-    with self.assertRaises(ValueError):
-      data.url_profile    
+    with self.assertRaises(exception.UserError) as context:
+      data.url_profile
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
   def testProfileDoesNotExist(self):
     """Tests that error is raised if requested profile does not exist."""
@@ -93,7 +98,7 @@ class UrlProfilePropertyTest(unittest.TestCase):
     """Tests that profile is returned correctly if exists."""
     sponsor = seeder_logic.seed(sponsor_model.Sponsor)
     program = seeder_logic.seed(program_model.Program)
-    user = seeder_logic.seed(user_model.User)
+    user = profile_utils.seedUser()
     profile_properties = {
         'key_name': '%s/%s/%s' % 
             (sponsor.link_id, program.program_id, user.link_id),
@@ -119,8 +124,9 @@ class UrlOrgPropertyTest(unittest.TestCase):
     """Tests that error is raised if there is no org data in kwargs."""
     # no data at all
     data = request_data.RequestData(None, None, {})
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_org
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # program data but no user identifier
     kwargs = {
@@ -128,13 +134,15 @@ class UrlOrgPropertyTest(unittest.TestCase):
         'program': 'program_id'
         }
     data = request_data.RequestData(None, None, kwargs)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_org
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # user identifier present but no program data
     data = request_data.RequestData(None, None, {'organization': 'org_id'})
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_org
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
   def testOrgDoesNotExist(self):
     """Tests that error is raised if requested organization does not exist."""
@@ -175,8 +183,9 @@ class UrlConnectionPropertyTest(unittest.TestCase):
     """Tests that error is raised if there is no enough data in the URL."""
     # no data at all
     data = request_data.RequestData(None, None, {})
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_connection
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # program and connection data but no user identifier
     kwargs = {
@@ -185,8 +194,9 @@ class UrlConnectionPropertyTest(unittest.TestCase):
         'id': '1',
         }
     data = request_data.RequestData(None, None, kwargs)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_connection
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # profile data but no connection identifier
     kwargs = {
@@ -195,14 +205,16 @@ class UrlConnectionPropertyTest(unittest.TestCase):
         'user': 'user_id',
         }
     data = request_data.RequestData(None, None, kwargs)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_connection
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # only connection id
     kwargs = {'id': '1'}
     data = request_data.RequestData(None, None, kwargs)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(exception.UserError) as context:
       data.url_connection
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
   def testConnectionDoesNotExist(self):
     """Tests that error is raised if requested connection does not exist."""
@@ -221,7 +233,7 @@ class UrlConnectionPropertyTest(unittest.TestCase):
     """Tests that connection is returned correctly if exists."""
     sponsor = seeder_logic.seed(sponsor_model.Sponsor)
     program = seeder_logic.seed(program_model.Program)
-    user = seeder_logic.seed(user_model.User)
+    user = profile_utils.seedUser()
     profile_properties = {
         'key_name': '%s/%s/%s' % 
             (sponsor.link_id, program.program_id, user.link_id),
@@ -242,3 +254,29 @@ class UrlConnectionPropertyTest(unittest.TestCase):
     data = request_data.RequestData(None, None, kwargs)
     url_connection = data.url_connection
     self.assertEqual(connection.key(), url_connection.key())
+
+
+class IsHostPropertyTest(unittest.TestCase):
+  """Unit tests for is_host property of RequestData class."""
+
+  def testForHostUser(self):
+    """Tests that True is returned for a user who is a host."""
+    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+    user = profile_utils.seedUser(host_for=[sponsor.key()])
+    profile_utils.login(user)
+
+    kwargs = {'sponsor': sponsor.link_id}
+    data = request_data.RequestData(None, None, kwargs)
+    is_host = data.is_host
+    self.assertTrue(is_host)
+
+  def testForNonHostUser(self):
+    """Tests that False is returned for a user who is not a host."""
+    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+
+    kwargs = {'sponsor': sponsor.link_id}
+    data = request_data.RequestData(None, None, kwargs)
+    is_host = data.is_host
+    self.assertFalse(is_host)

@@ -44,7 +44,7 @@ from soc.modules.seeder.logic.providers.text import RandomMarkdownDocumentProvid
 from soc.modules.seeder.logic.providers.link import FixedLinkProvider
 from soc.modules.seeder.logic.providers.link import RandomLinkProvider
 from soc.modules.seeder.logic.providers.email import FixedEmailProvider
-from soc.modules.seeder.logic.providers.email import RandomEmailProvider
+from soc.modules.seeder.logic.providers.email import UniqueEmailProvider
 from soc.modules.seeder.logic.providers.phone_number import FixedPhoneNumberProvider
 from soc.modules.seeder.logic.providers.phone_number import RandomPhoneNumberProvider
 from soc.modules.seeder.logic.providers.reference import RandomReferenceProvider
@@ -97,7 +97,7 @@ class Logic():
     providers['LinkProperty'] = [FixedLinkProvider,
                                  RandomLinkProvider]
     providers['EmailProperty'] = [FixedEmailProvider,
-                                  RandomEmailProvider]
+                                  UniqueEmailProvider]
     providers['PhoneNumberProperty'] = [FixedPhoneNumberProvider,
                                         RandomPhoneNumberProvider]
     providers['ReferenceProperty'] = [RandomReferenceProvider,

@@ -91,6 +91,9 @@ class QueryBuilder(object):
     if self._author is not None:
       query.filter('author', self._author)
 
+    if self._order is not None:
+      query.order(self._order)
+
     for ancestor in self._ancestors:
       query.ancestor(ancestor)
 

@@ -23,26 +23,28 @@ from datetime import timedelta
 
 from melange.models import connection as connection_model
 
+from soc.models import user as user_model
+from soc.modules.seeder.logic.providers import user as user_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests.utils import connection_utils
 
+
+DEFAULT_EMAIL = 'test@example.com'
 
 def generate_eligible_student_birth_date(program):
   eligible_age = program.student_min_age + program.student_max_age // 2
   return datetime.date(datetime.today() - timedelta(days=eligible_age * 365))
 
 
-def login(user_email, user_id):
-  """Logs in the specified user by setting the 'USER_EMAIL'
-  and 'USER_ID' environment variables.
+def login(user):
+  """Logs in the specified user by setting 'USER_EMAIL' and 'USER_ID'
+  environmental variables.
 
   Args:
-    user_email: the user email as a string, e.g.: 'test@example.com'
-    user_id: the user id as a string, e.g.: '42'
+    user: user entity.
   """
-  os.environ['USER_EMAIL'] = user_email
-  os.environ['USER_ID'] = user_id
+  signInToGoogleAccount(user.account.email(), user.account.user_id())
 
 
 def logout():
@@ -51,6 +53,47 @@ def logout():
   """
   del os.environ['USER_EMAIL']
   del os.environ['USER_ID']
+
+
+def signInToGoogleAccount(email, user_id=None):
+  """Signs in an email address for the account that is logged in by setting
+  'USER_EMAIL' and 'USER_ID' environmental variables.
+
+  The Google account associated with the specified email will be considered
+  currently logged in, after this function terminates.
+
+  Args:
+    email: the user email as a string, e.g.: 'test@example.com'
+    user_id: the user id as a string
+  """
+  os.environ['USER_EMAIL'] = email
+  os.environ['USER_ID'] = user_id or ''
+
+
+def seedUser(email=None, **kwargs):
+  """Seeds a new user.
+
+  Args:
+    email: email address specifying
+    kwargs: initial values for instance's properties, as keyword arguments.
+  """
+  properties = {'status': 'valid', 'is_developer': False}
+
+  if email is not None:
+    properties['account'] = user_provider.FixedUserProvider(value=email)
+  else:
+    properties['account'] = user_provider.RandomUserProvider()
+
+  properties.update(**kwargs)
+  user = seeder_logic.seed(user_model.User, properties=properties)
+
+  # this is tricky - AppEngine SDK sets user_id for user's account
+  # only after it is retrieved from datastore for the first time
+  user = user_model.User.get(user.key())
+  user.user_id = user.account.user_id()
+  user.put()
+
+  return user
 
 
 class ProfileHelper(object):
@@ -80,34 +123,15 @@ class ProfileHelper(object):
     return seeder_logic.seedn(model, n, properties, recurse=False,
         auto_seed_optional_properties=auto_seed_optional_properties)
 
-  def login(self, user_email, user_id):
-    """Logs in the specified user.
-
-    Args:
-      user_email: the user email as a string, e.g.: 'test@example.com'
-      user_id: the user id as a string, e.g.: '42'
-    """
-    import os
-    os.environ['USER_EMAIL'] = user_email
-    os.environ['USER_ID'] = user_id
-
-  def logout(self):
-    """Logs out the current user.
-    """
-    import os
-    del os.environ['USER_EMAIL']
-    del os.environ['USER_ID']
-
   def createUser(self):
     """Creates a user entity for the current user.
     """
     if self.user:
       return self.user
-    from soc.models.user import User
-    from soc.modules.seeder.logic.providers.user import CurrentUserProvider
-    properties = {'account': CurrentUserProvider(),
-                  'status': 'valid', 'is_developer': self.dev_test}
-    self.user = self.seed(User, properties=properties)
+
+    email = os.environ['USER_EMAIL']
+
+    self.user = seedUser(email=email, is_developer=self.dev_test)
     return self.user
 
   def createDeveloper(self):
@@ -121,10 +145,8 @@ class ProfileHelper(object):
   def createOtherUser(self, email):
     """Creates a user entity for the specified email.
     """
-    from soc.models.user import User
-    from soc.modules.seeder.logic.providers.user import FixedUserProvider
-    properties = {'account': FixedUserProvider(value=email), 'status': 'valid'}
-    self.user = self.seed(User, properties=properties)
+    # TODO(daniel): does it really should override self.user state??
+    self.user = seedUser(email=email)
     return self
 
   def deleteProfile(self):

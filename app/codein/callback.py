@@ -32,7 +32,12 @@ class Callback(object):
 
   def registerViews(self):
     """Instantiates all view objects."""
+    self.views.append(connection.ListConnectionsForOrgAdmin())
+    self.views.append(connection.ListConnectionsForUser())
+    self.views.append(connection.ManageConnectionAsOrg())
     self.views.append(connection.ManageConnectionAsUser())
+    self.views.append(connection.PickOrganizationToConnectPage())
+    self.views.append(connection.StartConnectionAsOrg())
     self.views.append(connection.StartConnectionAsUser())
 
   def registerWithSitemap(self):

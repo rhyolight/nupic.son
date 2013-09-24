@@ -14,6 +14,7 @@
 
 """Definitions of Melange types."""
 
+from soc.models import organization
 from soc.models import profile
 
 
@@ -21,15 +22,19 @@ class Models(object):
   """Class that encapsulates methods that return appropriate model classes.
 
   Attributes:
+    org_model: class that represents organization model.
     profile_model: class that represents profile model.
   """
 
-  def __init__(self, profile_model=None):
+  def __init__(self, org_model=None, profile_model=None):
     """Initializes new instance of Models class.
 
     Args:
+      org_model: class that represents organization model.
       profile_model: class that represents profile model.
     """
+    self.org_model = org_model
     self.profile_model = profile_model
 
-MELANGE_MODELS = Models(profile_model=profile.Profile)
+MELANGE_MODELS = Models(
+    org_model=organization.Organization, profile_model=profile.Profile)

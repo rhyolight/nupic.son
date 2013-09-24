@@ -20,6 +20,7 @@ from google.appengine.ext import db
 from django import http
 from django.core import urlresolvers
 
+from melange import types
 from melange.appengine import system
 from melange.models import connection as connection_model
 from melange.request import exception
@@ -28,8 +29,6 @@ from melange.utils import time
 from soc.logic import program as program_logic
 from soc.logic import site as site_logic
 from soc.logic import user
-from soc.models import organization as org_model
-from soc.models import profile as profile_model
 from soc.models import sponsor as sponsor_model
 from soc.models import user as user_model
 from soc.views.helper import access_checker
@@ -174,8 +173,10 @@ class RequestData(object):
     GET: the GET dictionary (from the request object)
     POST: the POST dictionary (from the request object)
     is_developer: is the current user a developer
+    is_host: is the current user a host of the program
     gae_user: the Google Appengine user object
     timeline: the timeline helper
+    models: types.Models implementation defining model classes
 
   Optional fields (may not be specified for all requests):
     url_connection: connection entity for the data in kwargs.
@@ -183,9 +184,6 @@ class RequestData(object):
     url_profile: profile entity for the data in kwargs.
     url_user: user entity for the data in kwargs.
   """
-
-  __org_model = org_model.Organization
-  __profile_model = profile_model.Profile
 
   # class attribute which is assigned to all fields which have not been set
   _unset = object()
@@ -203,6 +201,7 @@ class RequestData(object):
     self.request = request
     self.args = args
     self.kwargs = kwargs
+    self.models = types.MELANGE_MODELS
 
     self._redirect = self._unset
     self._site = self._unset
@@ -216,6 +215,7 @@ class RequestData(object):
     # TODO(daniel): check if this field is really used
     self._path = self._unset
     self._is_developer = self._unset
+    self._is_host = self._unset
     self._gae_user = self._unset
     self._css_path = self._unset
     self._ds_write_disabled = self._unset
@@ -274,6 +274,20 @@ class RequestData(object):
       else:
         self._is_developer = False
     return self._is_developer
+
+  @property
+  def is_host(self):
+    """Returns the is_host field."""
+    if not self._isSet(self._is_host):
+      if not self.user:
+        self._is_host = False
+      elif 'sponsor' in self.kwargs:
+        key = db.Key.from_path('Sponsor', self.kwargs.get('sponsor'))
+        self._is_host = key in self.user.host_for
+      else:
+        key = program_logic.getSponsorKey(self.program)
+        self._is_host = key in self.user.host_for
+    return self._is_host
 
   @property
   def path(self):
@@ -336,7 +350,7 @@ class RequestData(object):
         self._profile = None
       else:
         key_name = '%s/%s' % (self.program.key().name(), self.user.link_id)
-        self._profile = self.__profile_model.get_by_key_name(
+        self._profile = self.models.profile_model.get_by_key_name(
             key_name, parent=self.user)
     return self._profile
 
@@ -394,19 +408,21 @@ class RequestData(object):
       Retrieved connection entity.
 
     Raises:
-      ValueError: if some data is missing in the current request.
-      exception.UserError: if no entity is found.
+      exception.BadRequest: if some data is missing in the current request.
+      exception.NotFound: if no entity is found.
     """
     if not self._isSet(self._url_connection):
       try:
         connection_key = db.Key.from_path('Connection', int(self.kwargs['id']),
             parent=self._getUrlProfileKey())
       except KeyError:
-        raise ValueError('The request does not contain connection id.')
+        raise exception.BadRequest(
+            message='The request does not contain connection id.')
 
       self._url_connection = connection_model.Connection.get(connection_key)
       if not self._url_connection:
-        raise exception.NotFound('Requested connection does not exist.')
+        raise exception.NotFound(
+            message='Requested connection does not exist.')
     return self._url_connection
 
   @property
@@ -424,7 +440,8 @@ class RequestData(object):
       exception.UserError: if no profile entity is found.
     """
     if not self._isSet(self._url_profile):
-      self._url_profile = self.__profile_model.get(self._getUrlProfileKey())
+      self._url_profile = self.models.profile_model.get(
+          self._getUrlProfileKey())
       if not self._url_profile:
         raise exception.NotFound(message='Requested profile does not exist.')
     return self._url_profile
@@ -440,7 +457,7 @@ class RequestData(object):
       Retrieved organization entity.
 
     Raises:
-      ValueError: if the current request does not contain any
+      exception.BadRequest: if the current request does not contain any
         organization data.
       exception.NotFound: if the organization is not found.
     """
@@ -449,13 +466,14 @@ class RequestData(object):
         fields = ['sponsor', 'program', 'organization']
         key_name = '/'.join(self.kwargs[i] for i in fields)
       except KeyError:
-        raise ValueError(
-            'The request does not contain full organization data.')
+        raise exception.BadRequest(
+            message='The request does not contain full organization data.')
 
-      self._url_org = self.__org_model.get_by_key_name(key_name)
+      self._url_org = self.models.org_model.get_by_key_name(key_name)
 
       if not self._url_org:
-        raise exception.NotFound('Requested organization does not exist.')
+        raise exception.NotFound(
+            message='Requested organization does not exist.')
     return self._url_org
 
   @property
@@ -469,13 +487,15 @@ class RequestData(object):
       Retrieved user entity.
 
     Raises:
-      ValueError: if the current request does not contain any user data.
+      exception.BadRequest: if the current request does not contain
+        any user data.
       exception.NotFound: if the user is not found.
     """
     if not self._isSet(self._url_user):
       key_name = self.kwargs.get('user')
       if not key_name:
-        raise ValueError('The request does not contain user data.')
+        raise exception.BadRequest(
+            message='The request does not contain user data.')
 
       self._url_user = user_model.User.get_by_key_name(key_name)
 
@@ -492,16 +512,17 @@ class RequestData(object):
       current request.
 
     Raises:
-      ValueError: if some data is missing in the current request.
+      exception.BadRequest: if some data is missing in the current request.
     """
     try:
       fields = ['sponsor', 'program', 'user']
       profile_key_name = '/'.join(self.kwargs[i] for i in fields)
       return db.Key.from_path(
-          'User', self.kwargs['user'], self.__profile_model.kind(),
+          'User', self.kwargs['user'], self.models.profile_model.kind(),
           profile_key_name)
     except KeyError:
-      raise ValueError('The request does not contain full profile data.')
+      raise exception.BadRequest(
+          message='The request does not contain full profile data.')
 
   def _getProgramWideFields(self):
     """Fetches program wide fields in a single database round-trip."""

@@ -16,12 +16,11 @@ import datetime
 
 from django import forms
 
-from google.appengine.api import users
-
-from soc.models.user import User
 from soc.logic import cleaning
-from tests.test_utils import GSoCDjangoTestCase
+
+from tests import profile_utils
 from tests import program_utils
+from tests.test_utils import GSoCDjangoTestCase
 
 
 class Form(object):
@@ -42,23 +41,14 @@ class CleaningTest(GSoCDjangoTestCase):
     """
     self.init()
     # Ensure that current user is created
-    user_properties = {
-        'account': users.get_current_user(),
-        'link_id': 'current_user',
-        'key_name': 'current_user',
-        'name': 'Current User',
-        }
-    self.user = User(**user_properties)
-    self.user.put()
+    self.user = profile_utils.seedUser(
+        key_name='current_user', link_id='current_user', name='Current User')
+    profile_utils.login(self.user)
+
     # Create another user
-    another_user_properties = {
-        'account': users.User(email="another_user@email.com"),
-        'link_id': 'another_user',
-        'key_name': 'another_user',
-        'name': 'Another User',
-        }
-    self.another_user = User(**another_user_properties)
-    self.another_user.put()
+    self.another_user = profile_utils.seedUser(
+        key_name='another_user', link_id='another_user', name='Another User')
+
     # Create a dummy form object
     self.form = Form()
 

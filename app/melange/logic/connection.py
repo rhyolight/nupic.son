@@ -35,6 +35,22 @@ def queryForAncestorAndOrganization(ancestor, organization, keys_only=False):
   query.filter('organization', organization)
   return query
 
+
+def queryForOrganizationAdmin(profile):
+  """Returns a query to fetch all connection entities that can be managed
+  from organization perspective by the specified profile.
+
+  Args:
+    profile: profile entity.
+
+  Returns:
+    db.Query object to fetch all connection entities to manage.
+  """
+  query = Connection.all()
+  query.filter('organization IN', profile.org_admin_for)
+  return query
+
+
 def connectionExists(profile, organization):
   """Check to see whether or not a Connection exists between a user and
   an organization.

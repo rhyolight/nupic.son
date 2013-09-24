@@ -18,6 +18,7 @@ import unittest
 
 from summerofcode import types
 
+from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.models import profile as profile_model
 
 
@@ -27,6 +28,10 @@ class TestSummerOfCodeModels(unittest.TestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.models = types.SOC_MODELS
+
+  def testOrgModel(self):
+    """Tests org_model attribute."""
+    self.assertEqual(self.models.org_model, org_model.GSoCOrganization)
 
   def testProfileModel(self):
     """Tests profile_model attribute."""

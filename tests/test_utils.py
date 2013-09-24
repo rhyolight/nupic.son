@@ -357,10 +357,9 @@ class DjangoTestCase(TestCase):
     client.FakePayload = NonFailingFakePayload
 
   def _post_teardown(self):
-    """ Performs any post-test cleanup.
-    """
-    os.environ['USER_EMAIL'] = 'test@example.com'
-    os.environ['USER_ID'] = '42'
+    """ Performs any post-test cleanup."""
+    # presence of this function is required by Django test runner
+    pass
 
   def createOrg(self, override={}):
     """Creates an organization for the defined properties.
