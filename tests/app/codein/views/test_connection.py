@@ -129,8 +129,8 @@ class StartConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     self.assertResponseOK(response)
     self._assertPageTemplatesUsed(response)
 
-  def testConnectionStarted(self):
-    """Tests that connection is created successfully."""
+  def testConnectionStartedForNonStudent(self):
+    """Tests that connection is created successfully for non-students."""
     self.profile_helper.createOrgAdmin(self.org)
 
     profile_helper = profile_utils.GCIProfileHelper(
@@ -163,6 +163,27 @@ class StartConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     self.assertIsNotNone(connection)
     self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
     self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+
+  def testConnectionNotStartedForStudent(self):
+    """Tests that connection is not created for a student."""
+    self.profile_helper.createOrgAdmin(self.org)
+
+    profile_helper = profile_utils.GCIProfileHelper(
+       self.program, False)
+    profile_helper.createOtherUser('first@example.com')
+    profile = profile_helper.createStudent()
+
+    post_data = {
+        'role': connection_model.MENTOR_ROLE,
+        'users': '%s' % profile.link_id
+        }
+    response = self.post(self._getUrl(self.org), post_data)
+    self.assertResponseBadRequest(response)
+
+    # check that no connection has been created
+    connection = connection_model.Connection.all().ancestor(
+        profile.key()).filter('organization', self.org).get()
+    self.assertIsNone(connection)
 
 
 class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):
