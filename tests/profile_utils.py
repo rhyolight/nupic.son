@@ -77,7 +77,7 @@ def seedUser(email=None, **kwargs):
     email: email address specifying
     kwargs: initial values for instance's properties, as keyword arguments.
   """
-  properties = {'status': 'valid'}
+  properties = {'status': 'valid', 'is_developer': False}
 
   if email is not None:
     properties['account'] = user_provider.FixedUserProvider(value=email)
