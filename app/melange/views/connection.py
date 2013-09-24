@@ -59,26 +59,25 @@ def createConnectionTxn(
   Returns:
     The newly created Connection entity.
   """
-  if connection_logic.connectionExists(profile.parent(), organization):
-    raise exception.BadRequest(
-        message=connection_logic.CONNECTION_EXISTS_ERROR %
-        (profile.name, organization.name))
-
-  # create the new connection.
-  new_connection = connection_logic.createConnection(
-      profile=profile, org=organization,
-      org_role=org_role, user_role=user_role)
-  # attach any user-provided messages to the connection.
-  if message:
-    connection_logic.createConnectionMessage(
-        connection=new_connection, author=profile, content=message)
-  # dispatch an email to the user.
-  notification = context(data=data, connection=new_connection,
-      recipients=recipients, message=message)
-  sub_txn = mailer.getSpawnMailTaskTxn(notification, parent=new_connection)
-  sub_txn()
-
-  return new_connection
+  can_create = connection_logic.canCreateConnection(profile, organization.key())
+  if not can_create:
+    raise exception.BadRequest(message=can_create.extra)
+  else:
+    # create the new connection.
+    new_connection = connection_logic.createConnection(
+        profile=profile, org=organization,
+        org_role=org_role, user_role=user_role)
+    # attach any user-provided messages to the connection.
+    if message:
+      connection_logic.createConnectionMessage(
+          connection=new_connection, author=profile, content=message)
+    # dispatch an email to the user.
+    notification = context(data=data, connection=new_connection,
+        recipients=recipients, message=message)
+    sub_txn = mailer.getSpawnMailTaskTxn(notification, parent=new_connection)
+    sub_txn()
+  
+    return new_connection
 
 @db.transactional
 def createConnectionMessageTxn(connection_key, profile_key, content):
