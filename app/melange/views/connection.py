@@ -64,20 +64,21 @@ def createConnectionTxn(
     raise exception.BadRequest(message=can_create.extra)
   else:
     # create the new connection.
-    new_connection = connection_logic.createConnection(
+    connection = connection_logic.createConnection(
         profile=profile, org=organization,
         org_role=org_role, user_role=user_role)
     # attach any user-provided messages to the connection.
     if message:
       connection_logic.createConnectionMessage(
-          connection=new_connection, author=profile, content=message)
+          connection.key(), message, author_key=profile.key())
     # dispatch an email to the user.
-    notification = context(data=data, connection=new_connection,
+    notification = context(data=data, connection=connection,
         recipients=recipients, message=message)
-    sub_txn = mailer.getSpawnMailTaskTxn(notification, parent=new_connection)
+    sub_txn = mailer.getSpawnMailTaskTxn(notification, parent=connection)
     sub_txn()
   
-    return new_connection
+    return connection
+
 
 @db.transactional
 def createConnectionMessageTxn(connection_key, profile_key, content):
@@ -93,7 +94,7 @@ def createConnectionMessageTxn(connection_key, profile_key, content):
     a newly created ConnectionMessage entity.
   """
   message = connection_logic.createConnectionMessage(
-      connection_key, profile_key, content)
+      connection_key, content, author_key=profile_key)
 
   # TODO(daniel): emails should be enqueued
   return message

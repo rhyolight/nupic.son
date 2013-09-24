@@ -520,9 +520,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
             profile, data.url_connection.organization.key())
 
         connection_logic.createConnectionMessage(
-            connection=connection_entity, author=None,
-            content=USER_ASSIGNED_MENTOR % profile.name(),
-            auto_generated=True)
+            connection_entity, USER_ASSIGNED_MENTOR % profile.name())
 
     org_selected_mentor_txn()
 
@@ -545,9 +543,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
             profile, data.url_connection.organization.key())
 
         connection_logic.createConnectionMessage(
-            connection=connection_entity, author=None,
-            content=USER_ASSIGNED_ORG_ADMIN % profile.name(),
-            auto_generated=True)
+            connection_entity, USER_ASSIGNED_ORG_ADMIN % profile.name())
 
     org_selected_orgadmin_txn()
 
@@ -564,9 +560,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
         profile_logic.assignNoRoleForOrg(profile, org_key)
 
         connection_logic.createConnectionMessage(
-            connection=connection_entity, author=None,
-            content=USER_ASSIGNED_NO_ROLE % profile.name(),
-            auto_generated=True)
+            connection_entity, USER_ASSIGNED_NO_ROLE % profile.name())
 
     can_resign = canUserResignRoleForOrg(
       data.url_connection.parent_key(), data.url_connection.organization.key())
@@ -646,18 +640,14 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
              data.url_connection.organization.key())
         # Generate a message on the connection to indicate the new role.
         connection_logic.createConnectionMessage(
-            connection=connection_entity, author=None,
-            content=USER_ASSIGNED_MENTOR % profile.name(),
-            auto_generated=True)
+            connection_entity, USER_ASSIGNED_MENTOR % profile.name())
       elif connection_entity.orgOfferedOrgAdminRole():
         promoted = not profile.is_mentor
         profile_logic.assignOrgAdminRoleForOrg(
             profile, data.url_connection.organization.key())
         # Generate a message on the connection to indicate the new role.
         connection_logic.createConnectionMessage(
-            connection=connection_entity, author=None,
-            content=USER_ASSIGNED_ORG_ADMIN % profile.name(),
-            auto_generated=True)
+            connection_entity, USER_ASSIGNED_ORG_ADMIN % profile.name())
 
       if promoted:
         connection_view.sendMentorWelcomeMail(data, profile, message)
@@ -677,9 +667,7 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
           profile, data.url_connection.organization.key())
       # Generate a message on the connection to indicate the removed role.
       connection_logic.createConnectionMessage(
-          connection=connection_entity, author=None,
-          content=USER_ASSIGNED_NO_ROLE % profile.name(),
-          auto_generated=True)
+          connection_entity, USER_ASSIGNED_NO_ROLE % profile.name())
 
     can_resign = canUserResignRoleForOrg(
       data.profile.key(), data.url_connection.organization.key())

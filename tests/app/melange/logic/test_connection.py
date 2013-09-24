@@ -106,11 +106,10 @@ class CreateConnectionMessageTest(ConnectionTest):
     """Tests that a onnectionMessage can be added to an existing
     GSoCConnection object.
     """
-    message = connection_logic.createConnectionMessage(
-        connection=self.connection,
-        author=self.profile,
-        content='Test message!'
-        )
+    # seed connection message
+    connection_logic.createConnectionMessage(
+        self.connection, 'Test message!', author_key=self.profile.key())
+
     message = connection.ConnectionMessage.all().ancestor(
         self.connection).get()
     self.assertTrue(isinstance(message, connection.ConnectionMessage))
