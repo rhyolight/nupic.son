@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests for soc.modules.gsoc.logic.connection."""
 
+import mock
 import unittest
 
 from nose.plugins import skip
@@ -234,3 +235,43 @@ class QueryForOrganizationAdminTest(unittest.TestCase):
     self.assertIn(
         self.third_connection.key(),
         [connection.key() for connection in connections])
+
+
+class CanCreateConnectionTest(unittest.TestCase):
+  """Unit tests for canCreateConnection function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.profile = seeder_logic.seed(profile_model.Profile)
+    self.org = seeder_logic.seed(org_model.Organization)
+
+  def testForStudent(self):
+    """Tests that a student profile cannot create a connection."""
+    # make the profile a student
+    self.profile.is_student = True
+
+    result = connection_logic.canCreateConnection(self.profile, self.org.key())
+    self.assertFalse(result)
+    self.assertEqual(
+        result.extra, 
+        connection_logic._PROFILE_IS_STUDENT % self.profile.link_id)
+
+  @mock.patch.object(connection_logic, 'connectionExists', return_value=True)
+  def testForExistingConnection(self, mock_func):
+    """Tests that a non-student profile with connection cannot create one."""
+    # profile is not a student
+    self.profile.is_student = False
+
+    result = connection_logic.canCreateConnection(self.profile, self.org.key())
+    self.assertFalse(result)
+    self.assertEqual(
+        result.extra, connection_logic._CONNECTION_EXISTS % (
+            self.profile.link_id, self.org.key().name()))
+
+  def testForNonExistingConnection(self):
+    """Tests that a non-student profile with no connection can create one."""
+    # profile is not a student
+    self.profile.is_student = False
+
+    result = connection_logic.canCreateConnection(self.profile, self.org.key())
+    self.assertTrue(result)

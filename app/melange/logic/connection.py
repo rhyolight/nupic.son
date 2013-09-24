@@ -11,16 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Query and functions for Connection.
 """
+
+from django.utils import translation
 
 from melange.logic import connection_message as connection_message_logic
 from melange.models.connection import Connection
 from melange.models.connection import ConnectionMessage
+from melange.utils import rich_bool
 
-CONNECTION_EXISTS_ERROR = \
-    "Connection between %s and %s already exists."
+
+_CONNECTION_EXISTS = translation.ugettext(
+    'Connection between %s and %s already exists.')
+
+_PROFILE_IS_STUDENT = translation.ugettext(
+    'Profile %s is a student.')
 
 def queryForAncestor(ancestor, keys_only=False):
   """Returns a Query object for Connections with the specified ancestor.
@@ -66,6 +72,31 @@ def connectionExists(profile, organization):
   query = queryForAncestorAndOrganization(profile, organization, True)
   return query.count(limit=1) > 0
 
+
+def canCreateConnection(profile, org_key):
+  """Tells whether a connection between the specified profile and organization
+  can be created.
+
+  Args:
+    profile: profile entity.
+    org_key: organization key.
+
+  Returns:
+    RichBool whose value is set to True, if a connection can be created.
+    Otherwise, RichBool whose value is set to False and extra part is
+    a string that represents the reason why it is not possible to create
+    a new connection.
+  """
+  if profile.is_student:
+    return rich_bool.RichBool(
+        False, extra=_PROFILE_IS_STUDENT % profile.link_id)
+  elif connectionExists(profile, org_key):
+    return rich_bool.RichBool(
+        False, extra=_CONNECTION_EXISTS % (profile.link_id, org_key.name()))
+  else:
+    return rich_bool.TRUE
+
+
 def createConnection(profile, org, user_role, org_role):
   """Create a new Connection instance based on the contents of the form
   and the roles provided.
@@ -83,7 +114,7 @@ def createConnection(profile, org, user_role, org_role):
       ValueError if a connection exists between the user and organization.
   """
   if connectionExists(profile.parent_key(), org):
-    raise ValueError(CONNECTION_EXISTS_ERROR % (profile.name(), org.name))
+    raise ValueError(_CONNECTION_EXISTS % (profile.name(), org.name))
 
   connection = Connection(parent=profile, organization=org)
   connection.user_role = user_role
