@@ -250,6 +250,24 @@ class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):
       response = self.post(url)
       self.assertResponseBadRequest(response)
 
+  def testStudentProfile(self):
+    """Tests that exception is raised when user profile starts connection."""
+    profile = self.profile_helper.createStudent()
+
+    url = self._getUrl(profile, self.org)
+
+    # check that user is forbidden to access the page
+    response = self.get(url)
+    self.assertResponseForbidden(response)
+
+    # check that bad request is raised on POST request
+    # even when access checker gets through
+    with mock.patch.object(
+        connection_view.StartConnectionAsUser, 'access_checker',
+        new=access.ALL_ALLOWED_ACCESS_CHECKER):
+      response = self.post(url)
+      self.assertResponseBadRequest(response)
+
 
 class ManageConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
   """Unit tests for ManageConnectionAsOrg class."""
