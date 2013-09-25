@@ -114,8 +114,12 @@ def handleUserNoRoleSelectionTxn(connection):
   connection = db.get(connection.key())
 
   if connection.user_role != connection_model.NO_ROLE:
+    old_user_role = connection.user_role
+
     connection.user_role = connection_model.NO_ROLE
     connection.put()
+
+    connection_logic.generateMessageOnUpdateByUser(connection, old_user_role)
   
     profile = db.get(connection.parent_key())
     org_key = connection_model.Connection.organization.get_value_for_datastore(
@@ -140,8 +144,12 @@ def handleUserRoleSelectionTxn(data, connection):
   connection = db.get(connection.key())
 
   if connection.user_role != connection_model.ROLE:
+    old_user_role = connection.user_role
+
     connection.user_role = connection_model.ROLE
     connection.put()
+
+    connection_logic.generateMessageOnUpdateByUser(connection, old_user_role)
 
     profile = db.get(connection.parent_key())
     org_key = connection_model.Connection.organization.get_value_for_datastore(
@@ -165,7 +173,7 @@ def handleUserRoleSelectionTxn(data, connection):
 
 
 @db.transactional
-def handleOrgNoRoleSelection(connection):
+def handleOrgNoRoleSelection(connection, org_admin):
   """Updates organization role of the specified connection and all
   corresponding entities with connection_model.NO_ROLE selection.
 
@@ -174,12 +182,19 @@ def handleOrgNoRoleSelection(connection):
 
   Args:
     connection: connection entity.
+    org_admin: profile entity of organization administrator who updates
+      organization role for the connection.
   """
   connection = db.get(connection.key())
 
   if connection.org_role != connection_model.NO_ROLE:
+    old_org_role = connection.org_role
+
     connection.org_role = connection_model.NO_ROLE
     connection.put()
+
+    connection_logic.generateMessageOnUpdateByOrg(
+        connection, org_admin, old_org_role)
 
     profile = db.get(connection.parent_key())
     org_key = connection_model.Connection.organization.get_value_for_datastore(
@@ -190,7 +205,7 @@ def handleOrgNoRoleSelection(connection):
 
 
 @db.transactional
-def handleMentorRoleSelection(connection):
+def handleMentorRoleSelection(connection, org_admin):
   """Updates organization role of the specified connection and all
   corresponding entities with connection_model.MENTOR_ROLE selection.
 
@@ -199,12 +214,19 @@ def handleMentorRoleSelection(connection):
 
   Args:
     connection: connection entity.
+    org_admin: profile entity of organization administrator who updates
+      organization role for the connection.
   """
   connection = db.get(connection.key())
 
   if connection.org_role != connection_model.MENTOR_ROLE:
+    old_org_role = connection.org_role
+
     connection.org_role = connection_model.MENTOR_ROLE
     connection.put()
+
+    connection_logic.generateMessageOnUpdateByOrg(
+        connection, org_admin, old_org_role)
 
     if connection.userRequestedRole():
       profile = db.get(connection.parent_key())
@@ -221,7 +243,7 @@ def handleMentorRoleSelection(connection):
 
 
 @db.transactional
-def handleOrgAdminRoleSelection(connection):
+def handleOrgAdminRoleSelection(connection, org_admin):
   """Updates organization role of the specified connection and all
   corresponding entities with connection_model.ORG_ADMIN_ROLE selection.
 
@@ -230,12 +252,19 @@ def handleOrgAdminRoleSelection(connection):
 
   Args:
     connection: connection entity.
+    org_admin: profile entity of organization administrator who updates
+      organization role for the connection.
   """
   connection = db.get(connection.key())
 
   if connection.org_role != connection_model.ORG_ADMIN_ROLE:
+    old_org_role = connection.org_role
+
     connection.org_role = connection_model.ORG_ADMIN_ROLE
     connection.put()
+
+    connection_logic.generateMessageOnUpdateByOrg(
+        connection, org_admin, old_org_role)
 
     if connection.userRequestedRole():
       profile = db.get(connection.parent_key())

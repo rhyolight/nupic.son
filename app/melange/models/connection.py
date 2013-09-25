@@ -33,6 +33,13 @@ MENTOR_ROLE = 'mentor'
 NO_ROLE = 'no_role'
 ROLE = 'role'
 
+VERBOSE_ROLE_NAMES = {
+    NO_ROLE: ugettext('No Role'),
+    ROLE: ugettext('Role'),
+    MENTOR_ROLE: ugettext('Mentor'),
+    ORG_ADMIN_ROLE: ugettext('Organization Administrator')
+    }
+
 # Response tuples that encapsulate the available roles that users and org
 # admins may respond with in their respective ShowConnection views.
 USER_RESPONSES = ((NO_ROLE, 'No Role'), (ROLE, 'Role'))

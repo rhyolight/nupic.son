@@ -785,7 +785,8 @@ class OrgActionsFormHandler(FormHandler):
     is_eligible = profile_logic.isNoRoleEligibleForOrg(
         data.url_profile, org_key)
     if is_eligible:
-      connection_view.handleOrgNoRoleSelection(data.url_connection)
+      connection_view.handleOrgNoRoleSelection(
+          data.url_connection, data.profile)
 
   def _handleMentorSelection(self, data):
     """Makes all necessary changes if an organization administrator
@@ -799,7 +800,8 @@ class OrgActionsFormHandler(FormHandler):
     is_eligible = profile_logic.isMentorRoleEligibleForOrg(
         data.url_profile, org_key)
     if is_eligible:
-      connection_view.handleMentorRoleSelection(data.url_connection)
+      connection_view.handleMentorRoleSelection(
+          data.url_connection, data.profile)
 
   def _handleOrgAdminSelection(self, data):
     """Makes all necessary changes if an organization administrator
@@ -808,7 +810,8 @@ class OrgActionsFormHandler(FormHandler):
     Args:
       data: A soc.views.helper.request_data.RequestData.
     """
-    connection_view.handleOrgAdminRoleSelection(data.url_connection)
+    connection_view.handleOrgAdminRoleSelection(
+        data.url_connection, data.profile)
 
 
 class CIUserConnectionList(connection_list.UserConnectionList):
