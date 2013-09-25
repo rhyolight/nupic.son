@@ -154,25 +154,41 @@ def getSurveyActivePeriod(survey, extension=None):
   return Period(start=period_start, end=period_end)
 
 
+def _isSurveyInPeriodStates(survey, profile_key, period_states):
+  """Tells whether the specified survey is currently in one of the specified
+  period states for the specified profile.
+
+  Args:
+    survey: survey entity.
+    profile_key: profile key for which the survey state is checked.
+    period_states: list of allowed PERIOD_STATES.
+
+  Returns:
+    True, if the survey is currently in one of the specified period states.
+    False, otherwise.
+  """
+  active_period = getSurveyActivePeriod(survey)
+  if active_period.state in period_states:
+    return True
+  else:
+    # try finding a personal extension for the student
+    extension = getPersonalExtension(profile_key, survey.key())
+    active_period = getSurveyActivePeriod(survey, extension=extension)
+    return active_period.state in period_states
+
+
 def isSurveyActive(survey, profile_key):
   """Tells whether the specified survey is currently active for the specified
   profile or not.
 
   Args:
     survey: survey entity.
-    profile_key: profile for which survey state is checked.
+    profile_key: profile key for which the survey state is checked.
 
   Returns:
     True, if the survey is currently active. False, otherwise.
   """
-  active_period = getSurveyActivePeriod(survey)
-  if active_period.state == IN_PERIOD_STATE:
-    return True
-  else:
-    # try finding a personal extension for the student
-    extension = getPersonalExtension(profile_key, survey.key())
-    active_period = getSurveyActivePeriod(survey, extension=extension)
-    return active_period.state == IN_PERIOD_STATE
+  return _isSurveyInPeriodStates(survey, profile_key, [IN_PERIOD_STATE])
 
 
 def createOrUpdatePersonalExtension(profile_key, survey_key, **kwargs):
