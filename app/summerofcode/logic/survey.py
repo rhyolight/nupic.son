@@ -191,6 +191,24 @@ def isSurveyActive(survey, profile_key):
   return _isSurveyInPeriodStates(survey, profile_key, [IN_PERIOD_STATE])
 
 
+def hasSurveyStarted(survey, profile_key):
+  """Tells whether the specified survey has already started for the specified
+  profile or not.
+
+  Please not that the function returns True even if the survey is not
+  active anymore.
+
+  Args:
+    survey: survey entity.
+    profile_key: profile key for which the survey state is checked.
+
+  Returns:
+    True, if the survey has already started. False, otherwise.
+  """
+  return _isSurveyInPeriodStates(
+      survey, profile_key, [IN_PERIOD_STATE, POST_PERIOD_STATE])
+
+
 def createOrUpdatePersonalExtension(profile_key, survey_key, **kwargs):
   """Creates personal extension for the specified survey and profile.
 

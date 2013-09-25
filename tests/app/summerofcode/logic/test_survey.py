@@ -403,3 +403,70 @@ class IsSurveyActiveTest(unittest.TestCase):
 
     result = survey_logic.isSurveyActive(self.survey, self.profile.key())
     self.assertFalse(result)
+
+
+class HasSurveyStartedTest(unittest.TestCase):
+  """Unit tests for hasSurveyStarted function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.survey = seeder_logic.seed(soc_survey_model.Survey)
+    # TODO(daniel): NDB migration; no key translation after Survey migrates
+    self.survey_key = ndb.Key.from_old_key(self.survey.key())
+    self.profile = seeder_logic.seed(profile_model.Profile)
+    self.profile_key =  ndb.Key.from_old_key(self.profile.key())
+
+  def testSurveyHasStarted(self):
+    """Tests for survey that has already started."""
+    # survey is in active state
+    self.survey.survey_start = timeline_utils.past(delta=100)
+    self.survey.survey_end = timeline_utils.future(delta=100)
+
+    result = survey_logic.hasSurveyStarted(self.survey, self.profile.key())
+    self.assertTrue(result)
+
+    # survey has already ended
+    self.survey.survey_start = timeline_utils.past(delta=200)
+    self.survey.survey_end = timeline_utils.past(delta=100)
+
+    result = survey_logic.hasSurveyStarted(self.survey, self.profile.key())
+    self.assertTrue(result)
+
+  def testSurveyHasNotStarted(self):
+    """Tests for survey that has not started yet."""
+    # survey has not started yet
+    self.survey.survey_start = timeline_utils.future(delta=100)
+    self.survey.survey_end = timeline_utils.future(delta=200)
+
+    result = survey_logic.hasSurveyStarted(self.survey, self.profile.key())
+    self.assertFalse(result)
+
+  def testSurveyHasStartedWithExtension(self):
+    """Tests for survey that has started only with an extension."""
+    # survey has not started yet
+    self.survey.survey_start = timeline_utils.future(delta=100)
+    self.survey.survey_end = timeline_utils.future(delta=200)
+
+    # seed an extension
+    self.extension = survey_model.PersonalExtension(
+        parent=self.profile_key, survey=self.survey_key)
+    self.extension.start_date = timeline_utils.past()
+    self.extension.put()
+
+    result = survey_logic.hasSurveyStarted(self.survey, self.profile.key())
+    self.assertTrue(result)
+
+  def testSurveyHasNotStartedWithExtension(self):
+    """Tests for survey that has not started even with an extension."""
+    # survey has not started yet
+    self.survey.survey_start = timeline_utils.future(delta=100)
+    self.survey.survey_end = timeline_utils.future(delta=200)
+
+    # seed an extension
+    self.extension = survey_model.PersonalExtension(
+        parent=self.profile_key, survey=self.survey_key)
+    self.extension.start_date = timeline_utils.future(delta=50)
+    self.extension.put()
+
+    result = survey_logic.hasSurveyStarted(self.survey, self.profile.key())
+    self.assertFalse(result)
