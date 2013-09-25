@@ -139,7 +139,7 @@ def createConnectionMessage(connection_key, content, author_key=None):
   """
   message = connection_model.ConnectionMessage(
       parent=connection_key, content=content, author=author_key,
-      is_auto_generated=bool(author_key))
+      is_auto_generated=not bool(author_key))
   message.put()
 
   return message
