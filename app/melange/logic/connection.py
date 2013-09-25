@@ -27,6 +27,22 @@ _CONNECTION_EXISTS = translation.ugettext(
 _PROFILE_IS_STUDENT = translation.ugettext(
     'Profile %s is a student.')
 
+_ORG_ROLE_CHANGED = translation.ugettext(
+    'Role offered by organization changed to <strong>%s</strong> by %s.')
+
+_ORG_STARTED_CONNECTION = translation.ugettext(
+    'Organization started connection by %s and offers %s.')
+
+_USER_STARTED_CONNECTION = translation.ugettext(
+    'User started connection and requests role.')
+
+_USER_REQUESTS_ROLE = translation.ugettext(
+    'User requests role from organization.')
+
+_USER_DOES_NOT_REQUEST_ROLE = translation.ugettext(
+    'User does not request role from organization.')
+
+
 def queryForAncestor(ancestor, keys_only=False):
   """Returns a Query object for Connections with the specified ancestor.
   """
@@ -139,7 +155,7 @@ def createConnectionMessage(connection_key, content, author_key=None):
   """
   message = connection_model.ConnectionMessage(
       parent=connection_key, content=content, author=author_key,
-      is_auto_generated=bool(author_key))
+      is_auto_generated=not bool(author_key))
   message.put()
 
   return message
@@ -158,3 +174,51 @@ def getConnectionMessages(connection, limit=1000):
   builder = connection_message_logic.QueryBuilder()
   return builder.addAncestor(connection).setOrder('created').build().fetch(
       limit=limit)
+
+
+def generateMessageOnUpdateByOrg(connection, org_admin, old_org_role):
+  """Creates auto-generated message after the specified connection is
+  updated by the specified organization administrator.
+
+  Args:
+    connection: connection entity.
+    org_admin: profile entity of organization administrator who updates
+      organization role for the connection.
+    old_org_role: previous organization role, before the connection
+      is updated.
+
+  Returns:
+    newly created connection message or None, if nothing has changed.
+  """
+  if connection.org_role != old_org_role:
+    lines = []
+    lines.append(_ORG_ROLE_CHANGED % (connection_model.VERBOSE_ROLE_NAMES[
+        connection.org_role], org_admin.name()))
+    
+    content = '\n'.join(lines)
+    return createConnectionMessage(connection.key(), content)
+  else:
+    return None
+
+def generateMessageOnUpdateByUser(connection, old_user_role):
+  """Creates auto-generated message after the specified connection is
+  updated by the connected user.
+
+  Args:
+    connection: connection entity.
+    old_user_role: previous user role, before the connection is updated.
+
+  Returns:
+    newly created connection message or None, if nothing has changed.
+  """
+  if connection.user_role != old_user_role:
+    lines = []
+    if connection.user_role == connection_model.NO_ROLE:
+      lines.append(_USER_DOES_NOT_REQUEST_ROLE)
+    else: # user requests role
+      lines.append(_USER_REQUESTS_ROLE)
+    
+    content = '\n'.join(lines)
+    return createConnectionMessage(connection.key(), content)
+  else:
+    None

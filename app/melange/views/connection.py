@@ -112,13 +112,19 @@ def handleUserNoRoleSelectionTxn(connection):
     connection: connection entity.
   """
   connection = db.get(connection.key())
-  connection.user_role = connection_model.NO_ROLE
-  connection.put()
 
-  profile = db.get(connection.parent_key())
-  org_key = connection_model.Connection.organization.get_value_for_datastore(
-      connection)
-  profile_logic.assignNoRoleForOrg(profile, org_key)
+  if connection.user_role != connection_model.NO_ROLE:
+    old_user_role = connection.user_role
+
+    connection.user_role = connection_model.NO_ROLE
+    connection.put()
+
+    connection_logic.generateMessageOnUpdateByUser(connection, old_user_role)
+  
+    profile = db.get(connection.parent_key())
+    org_key = connection_model.Connection.organization.get_value_for_datastore(
+        connection)
+    profile_logic.assignNoRoleForOrg(profile, org_key)
 
   # TODO(daniel): generate connection message
 
@@ -136,32 +142,38 @@ def handleUserRoleSelectionTxn(data, connection):
     connection: connection entity.
   """
   connection = db.get(connection.key())
-  connection.user_role = connection_model.ROLE
-  connection.put()
 
-  profile = db.get(connection.parent_key())
-  org_key = connection_model.Connection.organization.get_value_for_datastore(
-      connection)
+  if connection.user_role != connection_model.ROLE:
+    old_user_role = connection.user_role
 
-  if connection.orgOfferedMentorRole():
-    send_email = not profile.is_mentor
-    profile_logic.assignMentorRoleForOrg(profile, org_key)
-    # TODO(daniel): generate connection message
-  elif connection.orgOfferedOrgAdminRole():
-    send_email = not profile.is_mentor
-    profile_logic.assignOrgAdminRoleForOrg(profile, org_key)
-    # TODO(daniel): generate connection message
-  else:
-    # no role has been offered by organization
-    send_email = False
+    connection.user_role = connection_model.ROLE
+    connection.put()
 
-  if send_email:
-    message = 'TODO(daniel): supply actual message.'
-    sendMentorWelcomeMail(data, profile, message)
+    connection_logic.generateMessageOnUpdateByUser(connection, old_user_role)
+
+    profile = db.get(connection.parent_key())
+    org_key = connection_model.Connection.organization.get_value_for_datastore(
+        connection)
+
+    if connection.orgOfferedMentorRole():
+      send_email = not profile.is_mentor
+      profile_logic.assignMentorRoleForOrg(profile, org_key)
+      # TODO(daniel): generate connection message
+    elif connection.orgOfferedOrgAdminRole():
+      send_email = not profile.is_mentor
+      profile_logic.assignOrgAdminRoleForOrg(profile, org_key)
+      # TODO(daniel): generate connection message
+    else:
+      # no role has been offered by organization
+      send_email = False
+
+    if send_email:
+      message = 'TODO(daniel): supply actual message.'
+      sendMentorWelcomeMail(data, profile, message)
 
 
 @db.transactional
-def handleOrgNoRoleSelection(connection):
+def handleOrgNoRoleSelection(connection, org_admin):
   """Updates organization role of the specified connection and all
   corresponding entities with connection_model.NO_ROLE selection.
 
@@ -170,21 +182,30 @@ def handleOrgNoRoleSelection(connection):
 
   Args:
     connection: connection entity.
+    org_admin: profile entity of organization administrator who updates
+      organization role for the connection.
   """
   connection = db.get(connection.key())
-  connection.org_role = connection_model.NO_ROLE
-  connection.put()
 
-  profile = db.get(connection.parent_key())
-  org_key = connection_model.Connection.organization.get_value_for_datastore(
-      connection)
-  profile_logic.assignNoRoleForOrg(profile, org_key)
+  if connection.org_role != connection_model.NO_ROLE:
+    old_org_role = connection.org_role
 
-  # TODO(daniel): generate connection message
+    connection.org_role = connection_model.NO_ROLE
+    connection.put()
+
+    connection_logic.generateMessageOnUpdateByOrg(
+        connection, org_admin, old_org_role)
+
+    profile = db.get(connection.parent_key())
+    org_key = connection_model.Connection.organization.get_value_for_datastore(
+        connection)
+    profile_logic.assignNoRoleForOrg(profile, org_key)
+
+    # TODO(daniel): generate connection message
 
 
 @db.transactional
-def handleMentorRoleSelection(connection):
+def handleMentorRoleSelection(connection, org_admin):
   """Updates organization role of the specified connection and all
   corresponding entities with connection_model.MENTOR_ROLE selection.
 
@@ -193,26 +214,36 @@ def handleMentorRoleSelection(connection):
 
   Args:
     connection: connection entity.
+    org_admin: profile entity of organization administrator who updates
+      organization role for the connection.
   """
   connection = db.get(connection.key())
-  connection.org_role = connection_model.MENTOR_ROLE
-  connection.put()
 
-  if connection.userRequestedRole():
-    profile = db.get(connection.parent_key())
-    send_email = not profile.is_mentor
+  if connection.org_role != connection_model.MENTOR_ROLE:
+    old_org_role = connection.org_role
 
-    org_key = connection_model.Connection.organization.get_value_for_datastore(
-        connection)
-    profile_logic.assignMentorRoleForOrg(profile, org_key)
+    connection.org_role = connection_model.MENTOR_ROLE
+    connection.put()
 
-    if send_email:
-      pass
-      # TODO(daniel): send actual welcome email
+    connection_logic.generateMessageOnUpdateByOrg(
+        connection, org_admin, old_org_role)
+
+    if connection.userRequestedRole():
+      profile = db.get(connection.parent_key())
+      send_email = not profile.is_mentor
+
+      org_key = (
+          connection_model.Connection.organization.get_value_for_datastore(
+              connection))
+      profile_logic.assignMentorRoleForOrg(profile, org_key)
+
+      if send_email:
+        pass
+        # TODO(daniel): send actual welcome email
 
 
 @db.transactional
-def handleOrgAdminRoleSelection(connection):
+def handleOrgAdminRoleSelection(connection, org_admin):
   """Updates organization role of the specified connection and all
   corresponding entities with connection_model.ORG_ADMIN_ROLE selection.
 
@@ -221,19 +252,29 @@ def handleOrgAdminRoleSelection(connection):
 
   Args:
     connection: connection entity.
+    org_admin: profile entity of organization administrator who updates
+      organization role for the connection.
   """
   connection = db.get(connection.key())
-  connection.org_role = connection_model.ORG_ADMIN_ROLE
-  connection.put()
 
-  if connection.userRequestedRole():
-    profile = db.get(connection.parent_key())
-    send_email = not profile.is_mentor
+  if connection.org_role != connection_model.ORG_ADMIN_ROLE:
+    old_org_role = connection.org_role
 
-    org_key = connection_model.Connection.organization.get_value_for_datastore(
-        connection)
-    profile_logic.assignOrgAdminRoleForOrg(profile, org_key)
+    connection.org_role = connection_model.ORG_ADMIN_ROLE
+    connection.put()
 
-    if send_email:
-      pass
-      # TODO(daniel): send actual welcome email
+    connection_logic.generateMessageOnUpdateByOrg(
+        connection, org_admin, old_org_role)
+
+    if connection.userRequestedRole():
+      profile = db.get(connection.parent_key())
+      send_email = not profile.is_mentor
+
+      org_key = (
+          connection_model.Connection.organization.get_value_for_datastore(
+              connection))
+      profile_logic.assignOrgAdminRoleForOrg(profile, org_key)
+
+      if send_email:
+        pass
+        # TODO(daniel): send actual welcome email

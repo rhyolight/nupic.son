@@ -24,6 +24,7 @@ from django import http
 
 from google.appengine.ext import db
 
+from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
 from melange.request import access
 from melange.request import exception
@@ -331,6 +332,11 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
+
   def testUserNoRoleToNoRoleWhileMentorRoleOffered(self):
     """Tests NO ROLE if user has no role and mentor role is offered."""
     profile = self.profile_helper.createProfile()
@@ -361,6 +367,11 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
 
   def testUserNoRoleToNoRoleWhileOrgAdminRoleOffered(self):
     """Tests NO ROLE if user has no role and org admin role is offered."""
@@ -393,6 +404,11 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
+
   def testUserNoRoleToRoleWhileNoRoleOffered(self):
     """Tests ROLE if user has no role and no role is offered."""
     profile = self.profile_helper.createProfile()
@@ -422,6 +438,11 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.NO_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(connection_logic._USER_REQUESTS_ROLE, message.content)
 
   def testUserNoRoleToRoleWhileMentorRoleOffered(self):
     """Tests ROLE if user has no role and mentor role is offered."""
@@ -454,6 +475,11 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(connection_logic._USER_REQUESTS_ROLE, message.content)
+
   def testUserNoRoleToRoleWhileOrgAdminRoleOffered(self):
     """Tests ROLE if user has no role and org admin role is offered."""
     profile = self.profile_helper.createProfile()
@@ -484,6 +510,11 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(connection_logic._USER_REQUESTS_ROLE, message.content)
 
   def testUserRoleToRoleWhileNoRoleOffered(self):
     """Tests ROLE if user has role and no role is offered."""
@@ -516,6 +547,11 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
+
   def testUserRoleToRoleWhileMentorRoleOffered(self):
     """Tests ROLE if user has role and mentor role is offered."""
     # mentor role is offered to the user; the user requests role
@@ -545,6 +581,11 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
+
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
 
   def testUserRoleToRoleWhileOrgAdminRoleOffered(self):
     """Tests ROLE if user has role and org admin role is offered."""
@@ -576,6 +617,11 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
+
   def testUserRoleToNoRoleWhileNoRoleOffered(self):
     """Tests NO ROLE if user has role and no role is offered."""
     profile = self.profile_helper.createProfile()
@@ -606,6 +652,11 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.NO_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(connection_logic._USER_DOES_NOT_REQUEST_ROLE, message.content)
 
   def testUserRoleToNoRoleWhileMentorRoleOffered(self):
     """Tests NO ROLE if user has role and mentor role is offered."""
@@ -641,6 +692,11 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
+
     # try again but now, the user is eligible to quit
     request = http.HttpRequest()
     # the user does not request role anymore
@@ -661,6 +717,11 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(connection_logic._USER_DOES_NOT_REQUEST_ROLE, message.content)
 
   def testUserRoleToNoRoleWhileOrgAdminRoleOffered(self):
     """Tests NO ROLE if user has role and org admin role is offered."""
@@ -696,6 +757,11 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
+
     # try again but now, the user is eligible to quit
     request = http.HttpRequest()
     # the user does not request role anymore
@@ -716,6 +782,26 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(connection_logic._USER_DOES_NOT_REQUEST_ROLE, message.content)
+
+
+def _generatedMessageContent(org_role, org_admin):
+  """Returns part of content of a message that is generated when role offered
+  by organization changes.
+
+  Args:
+    org_role: new role offered by organization.
+    org_admin: profile entity of org admin who changed the role
+
+  Returns:
+    a string that is a part of message content that is generated.
+  """
+  return connection_logic._ORG_ROLE_CHANGED % (
+      connection_model.VERBOSE_ROLE_NAMES[org_role], org_admin.name())
 
 
 class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
@@ -758,6 +844,11 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
+
   def testNoRoleToNoRoleWhileRoleRequested(self):
     """Tests NO ROLE if no role offered and user requests role."""
     profile = self.profile_helper.createProfile()
@@ -789,6 +880,11 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
+
   def testNoRoleToMentorRoleWhileNoRoleRequested(self):
     """Tests MENTOR ROLE if no role offered and user requests no role."""
     profile = self.profile_helper.createProfile()
@@ -819,6 +915,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.MENTOR_ROLE, data._profile), message.content)
+
   def testNoRoleToMentorRoleWhileRoleRequested(self):
     """Tests MENTOR ROLE if no role offered and user requests role."""
     profile = self.profile_helper.createProfile()
@@ -838,6 +940,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     # mentor role is offered now 
     request.POST = {'role': connection_model.MENTOR_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
+    data._profile = seeder_logic.seed(profile_model.Profile)
 
     handler = connection_view.OrgActionsFormHandler(self.view)
     handler.handle(data, None, None)
@@ -849,6 +952,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.MENTOR_ROLE, data.profile), message.content)
 
   def testNoRoleToOrgAdminRoleWhileNoRoleRequested(self):
     """Tests ORG ADMIN ROLE if no role offered and user requests no role."""
@@ -868,6 +977,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     # org admin role is offered now 
     request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
+    data._profile = seeder_logic.seed(profile_model.Profile)
 
     handler = connection_view.OrgActionsFormHandler(self.view)
     handler.handle(data, None, None)
@@ -879,6 +989,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.ORG_ADMIN_ROLE, data.profile), message.content)
 
   def testNoRoleToOrgAdminRoleWhileRoleRequested(self):
     """Tests ORG ADMIN ROLE if no role offered and user requests role."""
@@ -899,6 +1015,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     # org admin role is offered now 
     request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
+    data._profile = seeder_logic.seed(profile_model.Profile)
 
     handler = connection_view.OrgActionsFormHandler(self.view)
     handler.handle(data, None, None)
@@ -910,6 +1027,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.ORG_ADMIN_ROLE, data.profile), message.content)
 
   def testMentorRoleToNoRoleWhileNoRoleRequested(self):
     """Tests NO ROLE if mentor role offered and user requests no role."""
@@ -930,6 +1053,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     # no role is offered now 
     request.POST = {'role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
+    data._profile = seeder_logic.seed(profile_model.Profile)
 
     handler = connection_view.OrgActionsFormHandler(self.view)
     handler.handle(data, None, None)
@@ -941,6 +1065,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.NO_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.NO_ROLE, data.profile), message.content)
 
   def testMentorRoleToNoRoleWhileRoleRequested(self):
     """Tests NO ROLE if mentor role offered and user requests role."""
@@ -975,11 +1105,17 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
+
     # now the mentor can be removed
     request = http.HttpRequest()
     # no role is offered now 
     request.POST = {'role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
+    data._profile = seeder_logic.seed(profile_model.Profile)
 
     # assume that mentor can be removed
     with mock.patch.object(
@@ -994,6 +1130,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.NO_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.NO_ROLE, data.profile), message.content)
 
   def testMentorRoleToMentorRoleWhileNoRoleRequested(self):
     """Tests MENTOR ROLE if mentor role offered and user requests no role."""
@@ -1026,6 +1168,11 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
+
   def testMentorRoleToMentorRoleWhileRoleRequested(self):
     """Tests MENTOR ROLE if mentor role offered and user requests role."""
     # user is a mentor for organization
@@ -1056,6 +1203,11 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
+
   def testMentorRoleToOrgAdminRoleWhileNoRoleRequested(self):
     """Tests ORG ADMIN if mentor role offered and user requests no role."""
     profile = self.profile_helper.createProfile()
@@ -1075,6 +1227,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     # org admin role is offered now 
     request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
+    data._profile = seeder_logic.seed(profile_model.Profile)
 
     handler = connection_view.OrgActionsFormHandler(self.view)
     handler.handle(data, None, None)
@@ -1086,6 +1239,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.ORG_ADMIN_ROLE, data.profile), message.content)
 
   def testMentorRoleToOrgAdminRoleWhileRoleRequested(self):
     """Tests ORG ADMIN if mentor role offered and user requests role."""
@@ -1105,6 +1264,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     # org admin role is offered now 
     request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
+    data._profile = seeder_logic.seed(profile_model.Profile)
 
     handler = connection_view.OrgActionsFormHandler(self.view)
     handler.handle(data, None, None)
@@ -1116,6 +1276,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.ORG_ADMIN_ROLE, data.profile), message.content)
 
   def testOrgAdminRoleToNoRoleWhileNoRoleRequested(self):
     """Tests NO ROLE if org admin offered and user requests no role."""
@@ -1136,6 +1302,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     # no role is offered now 
     request.POST = {'role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
+    data._profile = seeder_logic.seed(profile_model.Profile)
 
     handler = connection_view.OrgActionsFormHandler(self.view)
     handler.handle(data, None, None)
@@ -1147,6 +1314,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.NO_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.NO_ROLE, data.profile), message.content)
 
   def testOrgAdminRoleToNoRoleWhileRoleRequested(self):
     """Tests NO ROLE if org admin offered and user requests role."""
@@ -1181,11 +1354,17 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
+
     # now the mentor can be removed
     request = http.HttpRequest()
     # no role is offered now 
     request.POST = {'role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
+    data._profile = seeder_logic.seed(profile_model.Profile)
 
     # assume that org admin can be removed
     with mock.patch.object(
@@ -1200,6 +1379,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.NO_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.NO_ROLE, data.profile), message.content)
 
   def testOrgAdminRoleToMentorRoleWhileNoRoleRequested(self):
     """Tests MENTOR ROLE if org admin offered and user requests no role."""
@@ -1220,6 +1405,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     # mentor role is offered now 
     request.POST = {'role': connection_model.MENTOR_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
+    data._profile = seeder_logic.seed(profile_model.Profile)
 
     handler = connection_view.OrgActionsFormHandler(self.view)
     handler.handle(data, None, None)
@@ -1231,6 +1417,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.MENTOR_ROLE, data.profile), message.content)
 
   def testOrgAdminRoleToMentorRoleWhileRoleRequested(self):
     """Tests MENTOR ROLE if org admin offered and user requests role."""
@@ -1266,11 +1458,17 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
+
     # now the org admin can be removed
     request = http.HttpRequest()
     # mentor role is offered now 
     request.POST = {'role': connection_model.MENTOR_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
+    data._profile = seeder_logic.seed(profile_model.Profile)
 
     # assume that org admin can be removed
     with mock.patch.object(
@@ -1286,6 +1484,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.MENTOR_ROLE, data.profile), message.content)
 
   def testOrgAdminRoleToOrgAdminRoleWhileNoRoleRequested(self):
     """Tests ORG ADMIN if org admin offered and user requests no role."""
@@ -1318,6 +1522,11 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
+
   def testOrgAdminRoleToOrgAdminRoleWhileRoleRequested(self):
     """Tests ORG ADMIN if org admin offered and user requests role."""
     # user is a org admin for organization
@@ -1347,6 +1556,11 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
+
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.all().ancestor(connection)
+    message = query.get()
+    self.assertIsNone(message)
 
 
 class ListConnectionsForUserTest(test_utils.GCIDjangoTestCase):
