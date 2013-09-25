@@ -544,7 +544,15 @@ class MyEvaluationsComponent(Component):
     self.evals = evals
     self.record = None
 
-    list_config = lists.ListConfiguration()
+    list_config = lists.ListConfiguration(add_key_column=False)
+
+    # key column must be added manually, as it must use evaluation_id
+    # which is not part of the project entity
+    list_config.addPlainTextColumn(
+        'key', 'Key', (lambda entity, evaluation_id, *args: '%s/%s/%s' % (
+            evaluation_id, entity.parent().key().name(),
+            entity.key().id())), hidden=True)
+
     list_config.addPlainTextColumn(
         'evaluation', 'Evaluation',
         lambda ent, eval, *args: eval.capitalize() if eval else '')
@@ -1582,7 +1590,15 @@ class StudentEvaluationComponent(Component):
 
     self.record = None
 
-    list_config = lists.ListConfiguration()
+    list_config = lists.ListConfiguration(add_key_column=False)
+
+    # key column must be added manually, as it must use evaluation_id
+    # which is not part of the project entity
+    list_config.addPlainTextColumn(
+        'key', 'Key', (lambda entity, evaluation_id, *args: "%s/%s/%s" % (
+            evaluation_id, entity.parent().key().name(),
+            entity.key().id())), hidden=True)
+
     list_config.addPlainTextColumn(
         'evaluation', 'Evaluation',
         lambda ent, eval, *args: eval.capitalize() if eval else '')
