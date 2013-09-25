@@ -48,15 +48,11 @@ limitations under the License.
     </div>
      
     {% for message in messages %}
-      <div class="block block-connection-message">
-        <div class="block-connection-message-header clearfix">
-          <span class="author">{{ message.getAuthor }}</span>
-          <span class="datetime"> {{ message.created }}</span>
-        </div>
-        <div class="block-connection-message-content">
-          {{ message.content }}
-        </div>
-      </div>
+      {% if message.is_auto_generated %}
+        {% include 'codein/connection/_connection_auto_message.html' %}
+      {% else %}
+        {% include 'codein/connection/_connection_user_message.html' %}
+      {% endif %}
     {% endfor %}
      
     <form action="#" method="post" class="form-create-task clearfix">
