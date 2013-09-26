@@ -41,13 +41,10 @@ def siteMenuContext(data):
       'help_link': redirect.document(help_page).url(),
   }
 
-  # TODO(nathaniel): This should be "the one application-wide linker object"
-  # rather than a one-off instantiation.
-  linker = links.Linker()
   if data.gae_user:
-    context['logout_link'] = linker.logout(data.request)
+    context['logout_link'] = links.LINKER.logout(data.request)
   else:
-    context['login_link'] = linker.login(data.request)
+    context['login_link'] = links.LINKER.login(data.request)
 
   if data.profile:
     context['dashboard_link'] = redirect.dashboard().url()
@@ -96,11 +93,8 @@ class Header(template.Template):
         'gci_link': gci_link,
         }
 
-    # TODO(nathaniel): This should be "the one application-wide linker object"
-    # rather than a one-off instantiation.
-    linker = links.Linker()
     if self.data.gae_user:
-      context['logout_link'] = linker.logout(self.data.request)
+      context['logout_link'] = links.LINKER.logout(self.data.request)
       context['user_email'] = self.data.gae_user.email()
 
     return context

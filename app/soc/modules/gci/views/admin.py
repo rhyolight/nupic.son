@@ -187,8 +187,6 @@ class ProgramSettingsDashboard(Dashboard):
     # TODO(nathaniel): Eliminate this state-setting call.
     data.redirect.program()
 
-    linker = links.Linker()
-
     subpages = [
         {
             'name': 'edit_program',
@@ -226,7 +224,7 @@ class ProgramSettingsDashboard(Dashboard):
             'description': ugettext(
                 'Create a new program.'),
             'title': 'Create a program',
-            'link': linker.sponsor(
+            'link': links.LINKER.sponsor(
                 data.sponsor, url_names.GCI_PROGRAM_CREATE),
         },
     ]

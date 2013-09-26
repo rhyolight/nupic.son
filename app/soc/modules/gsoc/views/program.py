@@ -467,7 +467,7 @@ class UploadUniversitiesPage(base.GSoCRequestHandler):
       _uploadUniversitiesTxn(
           form.cleaned_data['universities'], data.program)
 
-      url = links.Linker().program(
+      url = links.LINKER.program(
           data.program, url_names.GSOC_PROGRAM_UPLOAD_UNIVERSITIES)
       return http.HttpResponseRedirect(url)
     else:

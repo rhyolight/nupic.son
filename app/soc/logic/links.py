@@ -171,3 +171,6 @@ class Linker(object):
         'organization': org.link_id
         }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
+
+# Since Linker is stateless, there might as well be just one of it.
+LINKER = Linker()

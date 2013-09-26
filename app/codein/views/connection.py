@@ -129,7 +129,7 @@ class NoConnectionExistsAccessChecker(access.AccessChecker):
     connection = connection_logic.queryForAncestorAndOrganization(
         data.url_profile, data.url_org).get()
     if connection:
-      url = links.Linker().userId(
+      url = links.LINKER.userId(
           data.url_profile, connection.key().id(),
           urls.UrlNames.CONNECTION_MANAGE_AS_USER)
       raise exception.Redirect(url)
@@ -405,7 +405,7 @@ class StartConnectionAsUser(base.GCIRequestHandler):
           notifications.userConnectionContext, [],
           user_role=connection_model.ROLE)
 
-      url = links.Linker().userId(
+      url = links.LINKER.userId(
           data.url_profile, connection.key().id(),
           urls.UrlNames.CONNECTION_MANAGE_AS_USER)
       return http.HttpResponseRedirect(url)
@@ -465,7 +465,7 @@ class StartConnectionAsOrg(base.GCIRequestHandler):
             recipients=[]))
 
       # TODO(daniel): add some message with whom connections are started
-      url = links.Linker().organization(
+      url = links.LINKER.organization(
           data.organization, urls.UrlNames.CONNECTION_START_AS_ORG)
       return http.HttpResponseRedirect(url)
     else:
@@ -667,7 +667,7 @@ class MessageFormHandler(FormHandler):
       connection_view.createConnectionMessageTxn(
           data.url_connection.key(), data.url_profile.key(), content)
 
-      url = links.Linker().userId(
+      url = links.LINKER.userId(
           data.url_profile, data.url_connection.key().id(), self._url_name)
       return http.HttpResponseRedirect(url)
     else:
@@ -694,7 +694,7 @@ class UserActionsFormHandler(FormHandler):
       else:
         self._handleRoleSelection(data)
 
-      url = links.Linker().userId(
+      url = links.LINKER.userId(
           data.url_profile, data.url_connection.key().id(),
           urls.UrlNames.CONNECTION_MANAGE_AS_USER)
       return http.HttpResponseRedirect(url)
@@ -765,7 +765,7 @@ class OrgActionsFormHandler(FormHandler):
       else:
         self._handleOrgAdminSelection(data)
 
-      url = links.Linker().userId(
+      url = links.LINKER.userId(
           data.url_profile, data.url_connection.key().id(),
           urls.UrlNames.CONNECTION_MANAGE_AS_ORG)
       return http.HttpResponseRedirect(url)
@@ -912,8 +912,7 @@ class _OrganizationsToStartConnectionList(org_list.BasicOrgList):
 
   def _getRedirect(self):
     """See org_list.OrgList._getRedirect for specification."""
-    linker = links.Linker()
-    return lambda e, *args: linker.userOrg(
+    return lambda e, *args: links.LINKER.userOrg(
         self.data.profile, e, urls.UrlNames.CONNECTION_START_AS_USER) 
 
   def _getDescription(self):
