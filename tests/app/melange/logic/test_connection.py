@@ -19,7 +19,7 @@ import unittest
 from nose.plugins import skip
 
 from melange.logic import connection as connection_logic
-from melange.models import connection
+from melange.models import connection as connection_model
 from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models.program import Program
@@ -84,22 +84,22 @@ class CreateConnectionTest(ConnectionTest):
     self.connection.delete()
     connection_logic.createConnection(
         profile=self.profile, org=self.org,
-        user_role=connection.NO_ROLE,
-        org_role=connection.MENTOR_ROLE,
+        user_role=connection_model.NO_ROLE,
+        org_role=connection_model.MENTOR_ROLE,
         )
-    new_connection = connection.Connection.all().get()
+    new_connection = connection_model.Connection.all().get()
     self.assertEqual(self.profile.key(), new_connection.parent().key())
     self.assertEqual(self.org.key(), new_connection.organization.key())
-    self.assertEqual(connection.NO_ROLE, new_connection.user_role)
-    self.assertEqual(connection.MENTOR_ROLE, new_connection.org_role)
+    self.assertEqual(connection_model.NO_ROLE, new_connection.user_role)
+    self.assertEqual(connection_model.MENTOR_ROLE, new_connection.org_role)
     
     # Also test to ensure that a connection will not be created if a logically
     # equivalent connection already exists.
     self.assertRaises(
         ValueError, connection_logic.createConnection,
         profile=self.profile, org=self.org, 
-        user_role=connection.NO_ROLE,
-        org_role=connection.NO_ROLE
+        user_role=connection_model.NO_ROLE,
+        org_role=connection_model.NO_ROLE
         )
 
 class CreateConnectionMessageTest(ConnectionTest):
@@ -111,7 +111,7 @@ class CreateConnectionMessageTest(ConnectionTest):
     connection_logic.createConnectionMessage(
         self.connection, TEST_MESSAGE_CONTENT, author_key=self.profile.key())
 
-    message = connection.ConnectionMessage.all().ancestor(
+    message = connection_model.ConnectionMessage.all().ancestor(
         self.connection).get()
     self.assertEqual(message.parent_key(), self.connection.key())
     self.assertEqual(message.content, TEST_MESSAGE_CONTENT)
@@ -124,7 +124,8 @@ class CreateConnectionMessageTest(ConnectionTest):
     connection_logic.createConnectionMessage(
         self.connection.key(), TEST_MESSAGE_CONTENT)
 
-    message = connection.ConnectionMessage.all().ancestor(self.connection).get()
+    message = connection_model.ConnectionMessage.all().ancestor(
+        self.connection).get()
     self.assertEqual(message.parent_key(), self.connection.key())
     self.assertEqual(message.content, TEST_MESSAGE_CONTENT)
     self.assertIsNone(message.author)
@@ -289,3 +290,36 @@ class CanCreateConnectionTest(unittest.TestCase):
 
     result = connection_logic.canCreateConnection(self.profile, self.org.key())
     self.assertTrue(result)
+
+
+class GenerateMessageOnStartByUserTest(unittest.TestCase):
+  """Unit tests for generateMessageOnStartByUser function."""
+
+  def testMessageIsCreated(self):
+    """Tests that correct message is returned by the function."""
+    # seed a connection and create a message
+    connection = seeder_logic.seed(connection_model.Connection)
+    message = connection_logic.generateMessageOnStartByUser(connection)
+
+    self.assertEqual(message.parent_key(), connection.key())
+    self.assertEqual(message.content, connection_logic._USER_STARTED_CONNECTION)
+    self.assertTrue(message.is_auto_generated)
+
+
+class GenerateMessageOnStartByOrgTest(unittest.TestCase):
+  """Unit tests for generateMessageOnStartByOrg function."""
+
+  def testMessageIsCreated(self):
+    """Tests that correct message is returned by the function."""
+    # seed a connection, org admin's profile and create a message
+    connection = seeder_logic.seed(connection_model.Connection)
+    org_admin = seeder_logic.seed(profile_model.Profile)
+    message = connection_logic.generateMessageOnStartByOrg(
+        connection, org_admin)
+
+    self.assertEqual(message.parent_key(), connection.key())
+    self.assertEqual(
+        message.content, connection_logic._ORG_STARTED_CONNECTION % (
+            org_admin.name(),
+            connection_model.VERBOSE_ROLE_NAMES[connection.org_role]))
+    self.assertTrue(message.is_auto_generated)
