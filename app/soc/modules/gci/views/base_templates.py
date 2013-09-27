@@ -191,8 +191,7 @@ class Status(Template):
     context = {
         'user_email': accounts.denormalizeAccount(self.data.user.account).email(),
         'link_id': self.data.user.link_id,
-        # TODO(nathaniel): one-off linker object.
-        'logout_link': links.Linker().logout(self.data.request),
+        'logout_link': links.LINKER.logout(self.data.request),
         'dashboard_link': self.data.redirect.dashboard().url(),
     }
 
@@ -225,17 +224,13 @@ class LoggedInAs(Template):
   def context(self):
     """See template.Template.context for specification."""
     context = {}
-
-    # TODO(nathaniel): This should be "the one application-wide linker object"
-    # rather than a one-off instantiation.
-    linker = links.Linker()
     if self.data.gae_user:
       context['logged_in_as'] = self.data.gae_user.email()
-      context['link_url'] = linker.logout(self.data.request)
+      context['link_url'] = links.LINKER.logout(self.data.request)
       context['link_label'] = LOGOUT_LINK_LABEL
     else:
       context['logged_in_as'] = NOT_LOGGED_IN
-      context['link_url'] = linker.login(self.data.request)
+      context['link_url'] = links.LINKER.login(self.data.request)
       context['link_label'] = LOGIN_LINK_LABEL
     return context
 

@@ -37,7 +37,7 @@ class RequestHandler(object):
   # TODO(nathaniel): Pass these as construction parameters like
   # real injected dependencies.
   initializer = initialize.MELANGE_INITIALIZER
-  linker = links.Linker()
+  linker = links.LINKER
   renderer = render.MELANGE_RENDERER
   error_handler = error.MELANGE_ERROR_HANDLER
   access_checker = None

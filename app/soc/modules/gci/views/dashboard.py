@@ -166,8 +166,6 @@ def _initConnectionDashboardSubpages(data):
   Returns:
     initial list of subpages to set for the connection dashboard.
   """
-  linker = links.Linker()
-
   subpages = [
       {
           'name': 'list_connections_for_user',
@@ -175,7 +173,7 @@ def _initConnectionDashboardSubpages(data):
               'Check status of your existing connections with '
               'organizations and communicate with administrators.'),
           'title': ugettext('See your connections'),
-          'link': linker.program(
+          'link': links.LINKER.program(
               data.program, urls.UrlNames.CONNECTION_PICK_ORG)
       },                     
       {
@@ -184,7 +182,7 @@ def _initConnectionDashboardSubpages(data):
               'Connect with organizations and request a role to '
               'participate in the program.'),
           'title': ugettext('Connect with organizations'),
-          'link': linker.program(
+          'link': links.LINKER.program(
               data.program, urls.UrlNames.CONNECTION_PICK_ORG)
       }]
 
@@ -196,7 +194,7 @@ def _initConnectionDashboardSubpages(data):
             'Manage connections for the organizations for which you have '
             'administrator role at this moment.'),
         'title': ugettext('See organization\'s connections'),
-        'link': linker.profile(
+        'link': links.LINKER.profile(
             data.profile, urls.UrlNames.CONNECTION_LIST_FOR_ORG_ADMIN)
         })
 
@@ -207,7 +205,7 @@ def _initConnectionDashboardSubpages(data):
               'Connect with users and offer them role in your '
               'organization.'),
           'title': ugettext('Connect users with %s' % org.name),
-          'link': linker.organization(
+          'link': links.LINKER.organization(
               org, urls.UrlNames.CONNECTION_START_AS_ORG)
           })
 

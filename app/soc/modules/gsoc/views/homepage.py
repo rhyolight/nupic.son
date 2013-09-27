@@ -108,8 +108,7 @@ class Apply(Template):
 
     # signup block
     if signup and not self.data.gae_user:
-      # TODO(nathaniel): One-off linker object.
-      context['login_link'] = links.Linker().login(self.data.request)
+      context['login_link'] = links.LINKER.login(self.data.request)
     if signup and not self.data.profile:
       if self.data.timeline.orgSignup():
         redirector.createProfile('org_admin')

@@ -44,11 +44,11 @@ def profileTabs(data, selected_tab_id=None):
   tabs_list = []
 
   # add View Profile tab
-  url = links.Linker().program(data.program, url_names.GSOC_PROFILE_SHOW)
+  url = links.LINKER.program(data.program, url_names.GSOC_PROFILE_SHOW)
   tabs_list.append(tabs.Tab(VIEW_PROFILE_TAB_ID, VIEW_PROFILE_NAME, url))
 
   # add Edit Profile tab
-  url = links.Linker().program(data.program, url_names.GSOC_PROFILE_EDIT)
+  url = links.LINKER.program(data.program, url_names.GSOC_PROFILE_EDIT)
   tabs_list.append(tabs.Tab(EDIT_PROFILE_TAB_ID, EDIT_PROFILE_NAME, url))
 
   if selected_tab_id and selected_tab_id not in [

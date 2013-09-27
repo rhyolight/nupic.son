@@ -430,9 +430,7 @@ class BaseAccessChecker(object):
   def isLoggedOut(self):
     """Ensures that the user is logged out."""
     if self.data.gae_user:
-      # TODO(nathaniel): One-off linker object.
-      linker = links.Linker()
-      raise exception.Redirect(linker.logout(self.data.request))
+      raise exception.Redirect(links.LINKER.logout(self.data.request))
 
   def isUser(self):
     """Checks if the current user has an User entity.

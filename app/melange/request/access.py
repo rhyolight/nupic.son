@@ -73,9 +73,7 @@ def ensureLoggedOut(data):
       exception will redirect them to the logout page.
   """
   if data.gae_user:
-    # TODO(nathaniel): One-off linker object.
-    linker = links.Linker()
-    raise exception.Redirect(linker.logout(data.request))
+    raise exception.Redirect(links.LINKER.logout(data.request))
 
 
 class AccessChecker(object):

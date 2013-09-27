@@ -114,9 +114,8 @@ class UserConnectionList(ConnectionList):
         lambda e, *args: e.getRole())
     list_config.addSimpleColumn('last_modified', 'Last Modified On')
 
-    linker = links.Linker()
     list_config.setRowAction(
-        lambda e, *args: linker.userId(
+        lambda e, *args: links.LINKER.userId(
             e.parent(), e.key().id(),
             self.url_names.CONNECTION_MANAGE_AS_USER))
 
@@ -155,9 +154,8 @@ class OrgAdminConnectionList(ConnectionList):
         lambda e, *args: e.getRole())
     list_config.addSimpleColumn('last_modified', 'Last Modified On')
 
-    linker = links.Linker()
     list_config.setRowAction(
-        lambda e, *args: linker.userId(
+        lambda e, *args: links.LINKER.userId(
             e.parent(), e.key().id(),
             self.url_names.CONNECTION_MANAGE_AS_ORG))
 
