@@ -42,7 +42,8 @@ def sendMentorWelcomeMail(data, profile, message):
 @db.transactional
 def createConnectionTxn(
     data, profile, organization, message, context, recipients,
-    org_role=connection_model.NO_ROLE, user_role=connection_model.NO_ROLE):
+    org_role=connection_model.NO_ROLE, user_role=connection_model.NO_ROLE,
+    org_admin=None):
   """Creates a new Connection entity, attach any messages provided by the
   initiator and send a notification email to the recipient(s).
 
@@ -55,6 +56,9 @@ def createConnectionTxn(
     recipients: List of one or more recipients for the notification email.
     org_state: Org state for the connection.
     user_state: User state for the connection.
+    org_admin: profile entity of organization administrator who started
+      the connection. Should be supplied only if the connection was initialized
+      by organization.
 
   Returns:
     The newly created Connection entity.
@@ -67,6 +71,15 @@ def createConnectionTxn(
     connection = connection_logic.createConnection(
         profile=profile, org=organization,
         org_role=org_role, user_role=user_role)
+
+    # auto-generate a message indicated that the connection has been started
+    if org_admin:
+      # connection has been initialized by organization
+      connection_logic.generateMessageOnStartByOrg(connection, org_admin)
+    else:
+      # connection has been initialized by user
+      connection_logic.generateMessageOnStartByUser(connection)
+
     # attach any user-provided messages to the connection.
     if message:
       connection_logic.createConnectionMessage(

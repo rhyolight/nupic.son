@@ -176,6 +176,38 @@ def getConnectionMessages(connection, limit=1000):
       limit=limit)
 
 
+def generateMessageOnStartByUser(connection):
+  """Creates auto-generated message after the specified connection is
+  started by user.
+
+  Args:
+    connection: connection entity.
+
+  Returns:
+    newly created connection message.
+  """
+  return createConnectionMessage(connection.key(), _USER_STARTED_CONNECTION)
+
+
+def generateMessageOnStartByOrg(connection, org_admin):
+  """Creates auto-generated message after the specified connection is
+  started by the specified organization administrator.
+
+  Args:
+    connection: connection entity.
+    org_admin: profile entity of organization administrator who started
+      the connection.
+
+  Returns:
+    newly created connection message.
+  """
+  content = _ORG_STARTED_CONNECTION % (
+      org_admin.name(),
+      connection_model.VERBOSE_ROLE_NAMES[connection.org_role])
+
+  return createConnectionMessage(connection.key(), content)
+
+
 def generateMessageOnUpdateByOrg(connection, org_admin, old_org_role):
   """Creates auto-generated message after the specified connection is
   updated by the specified organization administrator.
@@ -199,6 +231,7 @@ def generateMessageOnUpdateByOrg(connection, org_admin, old_org_role):
     return createConnectionMessage(connection.key(), content)
   else:
     return None
+
 
 def generateMessageOnUpdateByUser(connection, old_user_role):
   """Creates auto-generated message after the specified connection is

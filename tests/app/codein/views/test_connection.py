@@ -132,7 +132,7 @@ class StartConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
 
   def testConnectionStartedForNonStudent(self):
     """Tests that connection is created successfully for non-students."""
-    self.profile_helper.createOrgAdmin(self.org)
+    org_admin = self.profile_helper.createOrgAdmin(self.org)
 
     profile_helper = profile_utils.GCIProfileHelper(
        self.program, False)
@@ -157,6 +157,17 @@ class StartConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     self.assertIsNotNone(connection)
     self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
     self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+
+    # check that auto-generated message is created
+    message = connection_model.ConnectionMessage.all().ancestor(
+        connection).get()
+    self.assertIsNotNone(message)
+    self.assertTrue(message.is_auto_generated)
+    self.assertEqual(
+        message.content,
+        connection_logic._ORG_STARTED_CONNECTION % (
+            org_admin.name(),
+            connection_model.VERBOSE_ROLE_NAMES[connection_model.MENTOR_ROLE]))
 
     # check that connection with the second profile is created
     connection = connection_model.Connection.all().ancestor(

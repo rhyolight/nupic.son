@@ -458,11 +458,9 @@ class StartConnectionAsOrg(base.GCIRequestHandler):
       for profile in profiles:
         # TODO(daniel): get actual recipients of notification email
         connections.append(connection_view.createConnectionTxn(
-            data=data, profile=profile, organization=data.organization,
-            org_role=form.cleaned_data['role'],
-            message=form.cleaned_data['message'],
-            context=notifications.userConnectionContext,
-            recipients=[]))
+            data, profile, data.organization, form.cleaned_data['message'],
+            notifications.userConnectionContext, [],
+            org_role=form.cleaned_data['role'], org_admin=data.profile))
 
       # TODO(daniel): add some message with whom connections are started
       url = links.Linker().organization(
