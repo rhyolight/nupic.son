@@ -354,6 +354,7 @@ class DjangoTestCase(TestCase):
   def _pre_setup(self):
     """Performs any pre-test setup.
     """
+    self.dev_test = False
     client.FakePayload = NonFailingFakePayload
 
   def _post_teardown(self):
