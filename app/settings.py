@@ -91,6 +91,7 @@ TEMPLATE_DIRS = (
     # TODO(proto): customize the template search directories
     os.path.join(ROOT_PATH, 'soc', 'templates'),
     os.path.join(ROOT_PATH, 'shell', 'templates'),
+    os.path.join(ROOT_PATH, 'melange', 'content', 'html'),
     os.path.join(ROOT_PATH, 'summerofcode', 'content', 'html'),
     os.path.join(ROOT_PATH, 'codein', 'content', 'html'),
 )
@@ -109,6 +110,7 @@ GCI_TASK_QUOTA_LIMIT_ENABLED = False
 
 CALLBACK_MODULE_NAMES = [
     'codein.callback',
+    'melange.callback',
     'soc.modules.soc_core.callback',
     'soc.modules.gsoc.callback',
     'soc.modules.gci.callback',

@@ -115,6 +115,7 @@ def load_melange():
 
   callback_module_names = [
       'codein.callback',
+      'melange.callback',
       'soc.modules.soc_core.callback',
       'soc.modules.gsoc.callback',
       'soc.modules.gci.callback',
