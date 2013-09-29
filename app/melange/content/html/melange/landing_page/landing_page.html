@@ -1,0 +1,15 @@
+<html>
+
+
+<body>
+
+  <section class="projects">
+    {% for program_section in program_sections %}
+      {{ program_section.render }}
+    {% empty %}
+      <span>Sorry, there are no active programs at this time</span>
+    {% endfor %}
+  </section>
+
+</body>
+</html>

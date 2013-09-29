@@ -1,0 +1,20 @@
+<div class="program {% if is_active %} active{% endif %}">
+  <a href="{{ homepage_url }}">
+    <div class="active-banner">
+      <div class="triangle-top" />
+      <div class="triangle-bottom" />
+      <p>Currently<br>Active!</p>
+    </div>
+    <div class="program-image">
+      <img src="{{ image_url }} alt="{{ program.name }}" />
+    </div>
+    <div class="program-info">
+      <div class="program-title>{{ program.name }}</div>
+      <div class="program-description">
+        <p>{{ program.description }}</p>
+        <p class="unactive-description">TODO(daniel): unactive description</p>
+        <p class="program-button">Visit</p>
+      </div>
+    </div>
+  </a>
+</div>
