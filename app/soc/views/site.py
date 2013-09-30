@@ -40,6 +40,9 @@ from soc.views.helper import request_data
 DEF_NO_DEVELOPER = ugettext(
     'This page is only accessible to developers.')
 
+CI_PROGRAM_IMAGE_PATH = '/images/gci/logo/landing-page-%s.png'
+SOC_PROGRAM_IMAGE_PATH = '/images/gsoc/logo/landing-page-%s.png'
+
 
 def getProgramMap():
   # TODO(nathaniel): Magic string? This isn't a program.
@@ -179,15 +182,18 @@ class SiteHomepage(base.RequestHandler):
 class ProgramSection(template.Template):
   """Template that displays a program on the landing page."""
 
-  def __init__(self, data, program):
+  def __init__(self, data, program, image_path):
     """Initializes new instance of this class for the specified program.
 
     Args:
       data: request_data.RequestData for the current request.
       program: program entity.
+      image_path: path to the static file with a logo image to be put
+        on the landing page.
     """
     self.data = data
     self._program = program
+    self._image_path = image_path
 
   def templatePath(self):
     """See template.Template.templatePath for specification."""
@@ -236,13 +242,17 @@ class LandingPage(base.RequestHandler):
       latest_soc = soc_program_model.GSoCProgram.get_by_key_name(
           data.site.latest_gsoc)
       if latest_soc:
-        program_sections.append(ProgramSection(data, latest_soc))
+        program_sections.append(
+            ProgramSection(data, latest_soc,
+                SOC_PROGRAM_IMAGE_PATH % latest_soc.program_id))
 
     if data.site.latest_gci:
       latest_ci = ci_program_model.GCIProgram.get_by_key_name(
           data.site.latest_gci)
       if latest_ci:
-        program_sections.append(ProgramSection(data, latest_ci))
+        program_sections.append(
+            ProgramSection(
+                data, latest_ci, CI_PROGRAM_IMAGE_PATH % latest_ci.program_id))
 
     if len(program_sections) == 1:
       # do not bother to show landing page if there is only one active program
