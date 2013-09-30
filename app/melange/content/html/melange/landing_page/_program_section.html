@@ -1,19 +1,19 @@
-<div class="program {% if is_active %} active{% endif %}">
+<div class="project {% if is_active %} active{% endif %}">
   <a href="{{ homepage_url }}">
     <div class="active-banner">
-      <div class="triangle-top" />
-      <div class="triangle-bottom" />
+      <div class="triangle-top"></div>
+      <div class="triangle-bottom"></div>
       <p>Currently<br>Active!</p>
     </div>
-    <div class="program-image">
-      <img src="{{ image_url }} alt="{{ program.name }}" />
+    <div class="project-image">
+      <img src="/soc/content/{{ app_version }}/{{ image_path }}" alt="{{ program.name }}" />
     </div>
-    <div class="program-info">
-      <div class="program-title>{{ program.name }}</div>
-      <div class="program-description">
+    <div class="project-info">
+      <div class="project-title>{{ program.name }}</div>
+      <div class="project-description">
         <p>{{ program.description }}</p>
         <p class="unactive-description">TODO(daniel): unactive description</p>
-        <p class="program-button">Visit</p>
+        <p class="project-button">Visit</p>
       </div>
     </div>
   </a>
