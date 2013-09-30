@@ -191,7 +191,7 @@ class ProgramSection(template.Template):
       image_path: path to the static file with a logo image to be put
         on the landing page.
     """
-    self.data = data
+    super(ProgramSection, self).__init__(data)
     self._program = program
     self._image_path = image_path
 
