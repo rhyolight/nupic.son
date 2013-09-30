@@ -199,10 +199,17 @@ class ProgramSection(template.Template):
     """See template.Template.templatePath for specification."""
     return 'melange/landing_page/_program_section.html'
 
+  def isActive(self):
+    """Tells whether the program in this section is currently active or not.
+
+    Returns:
+      bool indication whether the program is currently active or not.
+    """
+    return  request_data.TimelineHelper(
+        self._program.timeline, None).programActive()
+
   def context(self):
     """See template.Template.context for specification."""
-    is_active = request_data.TimelineHelper(
-        self._program.timeline, None).programActive()
 
     homepage_url = links.LINKER.program(
         self._program, self._program.homepage_url_name)
@@ -210,7 +217,8 @@ class ProgramSection(template.Template):
     return {
         'program': self._program,
         'homepage_url': homepage_url,
-        'is_active': is_active
+        'is_active': self.isActive(),
+        'image_path': self._image_path,
         }
 
 
@@ -259,4 +267,9 @@ class LandingPage(base.RequestHandler):
       # just redirect to the corresponding home page instead
       raise exception.Redirect(program_sections[0].context()['homepage_url'])
     else:
-      return {'program_sections': program_sections}
+      active_programs_counter = len([
+          program_section for program_section in program_sections
+              if program_section.isActive()])
+      return {
+          'active_programs_counter': active_programs_counter,
+          'program_sections': program_sections}
