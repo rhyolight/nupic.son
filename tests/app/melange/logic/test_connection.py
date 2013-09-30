@@ -13,6 +13,8 @@
 # limitations under the License.
 """Tests for soc.modules.gsoc.logic.connection."""
 
+from datetime import datetime
+from datetime import timedelta
 import mock
 import unittest
 
@@ -323,3 +325,67 @@ class GenerateMessageOnStartByOrgTest(unittest.TestCase):
             org_admin.name(),
             connection_model.VERBOSE_ROLE_NAMES[connection.org_role]))
     self.assertTrue(message.is_auto_generated)
+
+class CreateAnonymousConnectionTest(ConnectionTest):
+  """Unit test for createAnonymousConnection function."""
+
+  def testCreateAnonymousConnection(self):
+    """Test that an AnonymousConnection can be created successfully."""
+    connection_logic.createAnonymousConnection(org=self.org,
+        org_role=connection_model.MENTOR_ROLE)
+    expected_expiration =  datetime.today() + timedelta(7)
+
+    connection = connection_model.AnonymousConnection.all().get()
+    self.assertEquals(expected_expiration.date(),
+        connection.expiration_date.date())
+    self.assertEquals(connection_model.MENTOR_ROLE, connection.org_role)
+
+
+class ActivateAnonymousConnectionTest(ConnectionTest):
+  """Unit test for actions related to the activateAnonymousConnection
+  function."""
+
+  def testInvalidToken(self):
+     """Test that the function will raise an error if the token does not
+     correspond to an AnonymousConnection object."""
+     token = "bad_token"
+     self.assertRaises(
+         ValueError,
+         connection_logic.activateAnonymousConnection,
+         profile=self.profile,
+         token=token
+         )
+
+  def testExpiredConnection(self):
+    """Test that a user is prevented from activating a Connection that was
+    created more than a week ago."""
+    connection_logic.createAnonymousConnection(
+        org=self.org, org_role=connection_model.ORG_ADMIN_ROLE)
+    # Cause the anonymous connection to "expire."
+    anonymous_connection = connection_model.AnonymousConnection.all().get()
+    anonymous_connection.expiration_date = datetime.today() - timedelta(1)
+    anonymous_connection.put()
+
+    self.assertRaises(
+         ValueError,
+         connection_logic.activateAnonymousConnection,
+         profile=self.profile,
+         token=anonymous_connection.token
+         )
+
+  def testSuccessfulActivation(self):
+    """Test that given a valid token and date, an AnonymousConnection will be
+    used to activate a new Connection for the user."""
+    self.connection.delete()
+    connection_logic.createAnonymousConnection(
+        org=self.org, org_role=connection_model.ORG_ADMIN_ROLE)
+    anonymous_connection = connection_model.AnonymousConnection.all().get()
+
+    connection_logic.activateAnonymousConnection(profile=self.profile,
+        token=anonymous_connection.token)
+    query = connection_model.Connection.all().ancestor(self.profile)
+    query.filter('org_role =', connection_model.ORG_ADMIN_ROLE)
+    connection = query.get()
+
+    self.assertEquals(connection.user_role, connection_model.NO_ROLE)
+    self.assertEquals(connection.organization.key(), self.org.key())

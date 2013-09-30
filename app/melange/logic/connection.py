@@ -13,6 +13,9 @@
 # limitations under the License.
 """Query and functions for Connection.
 """
+from datetime import datetime
+from datetime import timedelta
+import uuid
 
 from django.utils import translation
 
@@ -23,6 +26,12 @@ from melange.utils import rich_bool
 
 _CONNECTION_EXISTS = translation.ugettext(
     'Connection between %s and %s already exists.')
+
+_INVALID_TOKEN = translation.ugettext(
+    'No Connection exists for token %s.')
+
+_CONNECTION_EXPIRED = translation.ugettext(
+    'The Connection for the token %s has expired.')
 
 _PROFILE_IS_STUDENT = translation.ugettext(
     'Profile %s is a student.')
@@ -140,6 +149,28 @@ def createConnection(profile, org, user_role, org_role):
   return connection
 
 
+def createAnonymousConnection(org, org_role):
+  """Create a new AnonymousConnection to act as a placeholder so that a
+  user can register and enroll with an organization from within a week
+  of the date the connection is created.
+
+  Args:
+    org: Organization instance for which
+    org_role: String constant from connection models module. This should
+      either be MENTOR_ROLE or ORG_ADMIN_ROLE (constants from module).
+  """
+  # AnonymousConnection objects will only be considered valid for one week.
+  expiration = datetime.today() + timedelta(7)
+  token = uuid.uuid4().hex
+
+  connection = connection_model.AnonymousConnection(
+      parent=org,
+      org_role=org_role,
+      token=token,
+      expiration_date=expiration
+      )
+  connection.put()
+
 def createConnectionMessage(connection_key, content, author_key=None):
   """Create a new ConnectionMessage to represent a message left
   on the specified connection.
@@ -160,6 +191,32 @@ def createConnectionMessage(connection_key, content, author_key=None):
 
   return message
 
+def activateAnonymousConnection(profile, token):
+  """Take an AnonymousConnection object and use it to enroll a profile in
+  the specified role for the organization.
+
+  Args:
+    profile: Profile with which to establish the connection.
+    token: Token generated for the AnonymousConnection object.
+
+  Raises:
+    ValueError if the AnonymousConnection does not exist or if it has expired.
+  """
+  anonymous_connection = connection_model.AnonymousConnection.all().filter(
+      'token =', token).get()
+  if not anonymous_connection:
+    raise ValueError(_INVALID_TOKEN % token)
+  if datetime.today() > anonymous_connection.expiration_date:
+    anonymous_connection.delete()
+    raise ValueError(_CONNECTION_EXPIRED % token)
+
+  org_role = anonymous_connection.org_role
+  createConnection(
+      profile=profile,
+      org=anonymous_connection.parent(),
+      org_role=org_role,
+      user_role=connection_model.NO_ROLE
+      )
 
 def getConnectionMessages(connection, limit=1000):
   """Returns messages for the specified connection
