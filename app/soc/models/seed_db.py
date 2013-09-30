@@ -61,7 +61,7 @@ def seed(request, *args, **kwargs):
 
   site_properties = {
       'key_name': 'site',
-      'latest_gsoc': 'google/gsoc2009',
+      'latest_gsoc': 'google/gsoc2014',
       'latest_gci': 'google/gci2009',
       }
 
@@ -134,8 +134,8 @@ def seed(request, *args, **kwargs):
   after = now + datetime.timedelta(365)
 
   timeline_properties = {
-      'key_name': 'google/gsoc2009',
-      'link_id': 'gsoc2009',
+      'key_name': 'google/gsoc2014',
+      'link_id': 'gsoc2014',
       'scope': google,
       'program_start': before,
       'program_end': after,
@@ -144,28 +144,28 @@ def seed(request, *args, **kwargs):
       'student_signup_end': after,
   }
 
-  gsoc2009_timeline = GSoCTimeline(**timeline_properties)
-  gsoc2009_timeline.put()
+  gsoc2014_timeline = GSoCTimeline(**timeline_properties)
+  gsoc2014_timeline.put()
 
 
   program_properties = {
-      'key_name': 'google/gsoc2009',
-      'link_id': 'gsoc2009',
-      'program_id': 'gsoc2009',
+      'key_name': 'google/gsoc2014',
+      'link_id': 'gsoc2014',
+      'program_id': 'gsoc2014',
       'sponsor': google,
       'scope': google,
-      'name': 'Google Summer of Code 2009',
+      'name': 'Google Summer of Code 2014',
       'short_name': 'GSoC 2009',
       'group_label': 'GSOC',
-      'description': 'This is the program for GSoC 2009.',
+      'description': 'This is the program for GSoC 2014.',
       'apps_tasks_limit': 42,
       'slots': 42,
-      'timeline': gsoc2009_timeline,
+      'timeline': gsoc2014_timeline,
       'status': program_model.STATUS_VISIBLE,
       }
 
-  gsoc2009 = GSoCProgram(**program_properties)
-  gsoc2009.put()
+  gsoc2014 = GSoCProgram(**program_properties)
+  gsoc2014.put()
 
 
   timeline_properties.update({
@@ -243,17 +243,17 @@ def seed(request, *args, **kwargs):
   melange.put()
 
   group_properties.update({
-    'scope': gsoc2009,
-    'program': gsoc2009,
+    'scope': gsoc2014,
+    'program': gsoc2014,
     })
 
   role_properties = {
-      'key_name': 'google/gsoc2009/test',
+      'key_name': 'google/gsoc2014/test',
       'parent': current_user,
       'link_id': 'test',
       'public_name': 'test',
-      'scope': gsoc2009,
-      'program': gsoc2009,
+      'scope': gsoc2014,
+      'program': gsoc2014,
       'user': current_user,
       'given_name': 'Test',
       'surname': 'Example',
@@ -277,7 +277,7 @@ def seed(request, *args, **kwargs):
   orgs = []
   for i in range(15):
     group_properties.update({
-        'key_name': 'google/gsoc2009/org_%d' % i,
+        'key_name': 'google/gsoc2014/org_%d' % i,
         'link_id': 'org_%d' % i,
         'name': 'Organization %d' % i,
         'short_name': 'Org %d' % i,
@@ -347,11 +347,11 @@ def seed(request, *args, **kwargs):
 
   student_id = 'student'
   student_properties = {
-      'key_name': gsoc2009.key().name() + "/" + student_id,
+      'key_name': gsoc2014.key().name() + "/" + student_id,
       'link_id': student_id,
       'parent': student_user,
-      'scope': gsoc2009,
-      'program': gsoc2009,
+      'scope': gsoc2014,
+      'program': gsoc2014,
       'user': student_user,
       'is_student': True,
       'public_name': 'Student',
@@ -383,8 +383,8 @@ def seed(request, *args, **kwargs):
   student_info_properties = {
       'key_name': melange_student.key().name(),
       'parent': melange_student,
-      'expected_graduation': 2009,
-      'program': gsoc2009,
+      'expected_graduation': 2016,
+      'program': gsoc2014,
       'school_country': 'United States',
       'school_name': 'Test School',
       'school_home_page': 'http://www.example.com',
@@ -406,7 +406,7 @@ def seed(request, *args, **kwargs):
   student_user2.put()
   student_id = 'student2'
   student_properties.update({
-      'key_name': gsoc2009.key().name() + "/" + student_id,
+      'key_name': gsoc2014.key().name() + "/" + student_id,
       'link_id': student_id,
       'user': student_user2,
       'parent': student_user2,
@@ -424,7 +424,7 @@ def seed(request, *args, **kwargs):
       'parent': melange_student,
       'has_mentor': True,
       'org': orgs[1],
-      'program': gsoc2009,
+      'program': gsoc2014,
       }
   melange_proposal = GSoCProposal(**proposal_properties)
   melange_proposal.put()
@@ -435,7 +435,7 @@ def seed(request, *args, **kwargs):
       'status': 'accepted',
       'parent': melange_student,
       'mentors': [profile.key()],
-      'program':  gsoc2009,
+      'program':  gsoc2014,
       'org': orgs[1].key(),
        }
 
@@ -461,7 +461,7 @@ def seed(request, *args, **kwargs):
       })
 
   student_info_properties.update({
-      'key_name': gsoc2009.key().name() + "/" + student_id,
+      'key_name': gsoc2014.key().name() + "/" + student_id,
       'link_id': student_id,
       'parent': melange_student2,
   })
