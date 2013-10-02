@@ -188,3 +188,8 @@ class Site(db.Model):
   google_plus = db.StringProperty(required=False,
       verbose_name=ugettext('Google+ page'))
   google_plus.help_text = ugettext('Google+ page of the site.')
+
+  #: Field storing description of the site.
+  description = db.TextProperty(verbose_name=ugettext('Description'))
+  description.help_text = ugettext(
+      'Description of the site to be placed on the site header.')
