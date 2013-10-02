@@ -1,0 +1,61 @@
+.social-media {
+	max-width: 700px;
+	padding: 1em 5% 1.4em;
+	margin: 0 auto;
+	text-align: center;	
+
+	li {
+		&:extend(h3);
+		font-weight: 400;
+		display: inline-block;
+		margin: 4px .5em 0;
+	}
+}
+
+
+.blogger-icon, .google-icon, .email-icon {
+	a {
+		&:extend(.ir); //these styles are in _helper.scss
+		display: block;
+		width: 28px;
+		height: 28px;
+		margin-bottom: -5px;
+	}
+}
+
+.google-icon {
+	a {
+		background: url('../img/google-icon-sprite.svg');
+		&:hover {
+			background-position: 100%;
+		}
+	}
+
+	.no-svg & a {
+		background-image: url('../img/google-icon-sprite.png');
+	}
+}
+
+.blogger-icon {
+	a {
+		background: url('../img/blogger-icon-sprite.svg');
+		&:hover {
+			background-position: 100%;
+		}
+	}
+	.no-svg & a {
+		background-image: url('../img/blogger-icon-sprite.png');
+	}
+}
+
+.email-icon {
+	a {
+		background: url('../img/email-icon-sprite.svg');
+		&:hover {
+			background-position: 100%;
+		}
+	}
+	.no-svg & a {
+		background-image: url('../img/email-icon-sprite.png');
+	}
+}

@@ -1,0 +1,58 @@
+// ==========================================================================
+// Footer
+// ==========================================================================
+
+.main-footer {
+	max-width: 700px;
+	padding: 1em 5% 10em;
+	margin: 0 auto;
+	text-align: center;
+
+	p {
+		font-size: 0.8em;
+		color: #999999;
+	}
+
+	.melange-logo {
+		width: 70px;
+		margin: 0 2.5em 0 0.5em;
+	}
+
+	.echoditto-logo {
+		&:extend(.ir); //these styles are in _helper.scss
+		display: inline-block;
+		width: 70px;
+		height: 20px;
+		background: url('../img/echoditto-logo-sprite.png');
+		margin: 0 5px -3px;
+		&:hover {
+			background-position: 100%;
+		}
+	}
+
+	.neal-maher-logo {
+		&:extend(.ir); //these styles are in _helper.scss
+		display: inline-block;
+		width: 59px;
+		height: 20px;
+		background: url('../img/neal-maher-logo-sprite.png');
+		margin: 0 5px -3px;
+		&:hover {
+			background-position: 100%;
+		}
+	}
+
+	.powered, .empowered {
+		display: block;
+		margin-bottom: 1em;
+
+		@media @break-medium {
+			display: inline;
+			margin: 0;
+		}
+	}
+}
+
+
+
+

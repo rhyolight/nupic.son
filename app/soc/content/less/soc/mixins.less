@@ -1,0 +1,55 @@
+
+
+@import "lesshat";
+
+// ==========================================================================
+// Breakpoints
+
+@small: 45em;
+@medium: 62em;
+
+@break-small: ~"only screen and (min-width: 45em)";
+@break-medium: ~"only screen and (min-width: 62em)";
+
+// ==========================================================================
+// Colors
+
+
+@alert-yellow:      #ebe16f;
+@alert-red:         #fbe3e4;
+@alert-green:       #e6efc2;
+@alert-blue:        #d5edf8;
+
+@black:             #000;
+@white:             #fff;
+@web-black:			#666666;
+
+@google-blue: 			#1F93CF;
+@google-orange: 		#F29B07;
+
+@link-color:        @google-blue;
+@link-color-hover:   @google-orange;
+
+
+// ==========================================================================
+// Typography
+
+@serif:        'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+@sans-serif:   @serif;
+
+
+// ==========================================================================
+// clearfix
+
+.clearfix {
+  zoom: 1; // For IE 6/7 (trigger hasLayout)
+
+  &:before, &:after {
+    content: "";
+    display: table;
+  }
+
+  &:after {
+    clear:both;
+  }
+}
