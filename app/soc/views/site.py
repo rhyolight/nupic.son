@@ -43,6 +43,8 @@ DEF_NO_DEVELOPER = ugettext(
 CI_PROGRAM_IMAGE_PATH = '/images/gci/logo/landing-page-%s.png'
 SOC_PROGRAM_IMAGE_PATH = '/images/gsoc/logo/landing-page-%s.png'
 
+LANDING_PAGE_NAME = ugettext('Welcome to Melange')
+
 
 def getProgramMap():
   # TODO(nathaniel): Magic string? This isn't a program.
@@ -302,4 +304,5 @@ class LandingPage(base.RequestHandler):
           'active_programs_counter': active_programs_counter,
           'contact_us_section': contact_us_section,
           'program_sections': program_sections,
+          'page_name': LANDING_PAGE_NAME,
           }
