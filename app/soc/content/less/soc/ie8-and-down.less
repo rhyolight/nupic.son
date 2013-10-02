@@ -24,20 +24,20 @@
 }
 
 .project-image {
-	filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../img/non-bg.png', sizingMethod='scale');
-	-ms-filter: "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../img/non-bg.png', sizingMethod='scale')";
+	filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='@{images_soc_location}/non-bg.png', sizingMethod='scale');
+	-ms-filter: "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='@{images_soc_location}/non-bg.png', sizingMethod='scale')";
 
 	.active & {
-		filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../img/active-bg.jpg', sizingMethod='scale');
-		-ms-filter: "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../img/active-bg.jpg', sizingMethod='scale')";
+		filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='@{images_soc_location}/active-bg.jpg', sizingMethod='scale');
+		-ms-filter: "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='@{images_soc_location}/active-bg.jpg', sizingMethod='scale')";
 	}
 
 	a:hover & {
-		filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../img/non-bg-hover.png', sizingMethod='scale');
-		-ms-filter: "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../img/non-bg-hover.png', sizingMethod='scale')";
+		filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='@{images_soc_location}/non-bg-hover.png', sizingMethod='scale');
+		-ms-filter: "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='@{images_soc_location}/non-bg-hover.png', sizingMethod='scale')";
 
 		.active & {
-			filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../img/active-bg-hover.png', sizingMethod='scale');
+			filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='@{images_soc_location}/active-bg-hover.png', sizingMethod='scale');
 			-ms-filter: "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../img/active-bg-hover.png', sizingMethod='scale')";
 		}
 	}
@@ -79,14 +79,14 @@
 			width: 50px;
 
 			&:before {
-				background: url('../img/house-icon-small.png');
+				background: url('@{images_soc_location}/house-icon-small.png');
 				width: 14px;
 				height: 14px;
 			}
 		}
 
 		a:hover .project-button:before {
-			background: url('../img/house-icon-small.png');
+			background: url('@{images_soc_location}/house-icon-small.png');
 			width: 14px;
 			height: 14px;
 			background-position: 100%;
@@ -150,7 +150,7 @@
 				width: 60px;
 
 				&:before {
-					background: url('../img/house-icon.png');
+					background: url('@{images_soc_location}/house-icon.png');
 					width: 18px;
 					height: 18px;
 					background-position: 100%;
@@ -158,7 +158,7 @@
 			}
 
 			a:hover .project-button:before {
-				background: url('../img/house-icon.png');
+				background: url('@{images_soc_location}/house-icon.png');
 				width: 18px;
 				height: 18px;
 				background-position: 0;

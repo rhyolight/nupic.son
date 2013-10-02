@@ -1,7 +1,7 @@
 // ==========================================================================
 // projects
 // ==========================================================================
-
+@import "common.less";
 
 .projects {
 	max-width: 460px;
@@ -64,7 +64,7 @@
 	&:before {
 		content:"";
    		float:left;
-		background: url('../img/house-icon.svg');
+		background: url('@{images_soc_location}/house-icon.svg');
 		width: 18px;
 		height: 18px;
 		padding: 0;
@@ -72,7 +72,7 @@
 	}
 
 	.no-svg &:before {
-		background-image: url('../img/house-icon.png');		
+		background-image: url('@{images_soc_location}/house-icon.png');		
 	}
 
 	.active & {
@@ -85,25 +85,25 @@
 
 	a:hover & {
 		&:before {
-			background: url('../img/house-icon.svg');
+			background: url('@{images_soc_location}/house-icon.svg');
 			background-position: 100%;
 		}
 
 	}
 
 	.no-svg a:hover &:before {
-		background-image: url('../img/house-icon.png');		
+		background-image: url('@{images_soc_location}/house-icon.png');		
 	}
 
 	.active a:hover & {
 		color: @google-blue;
 		&:before {
-			background: url('../img/house-icon.svg');
+			background: url('@{images_soc_location}/house-icon.svg');
 		}		
 	}
 
 	.no-svg .active a:hover &:before {
-		background-image: url('../img/house-icon.png');		
+		background-image: url('@{images_soc_location}/house-icon.png');		
 	}
 
 }
@@ -119,7 +119,7 @@
 }
 
 .project-image {
-	background: url('../img/non-bg.png');
+	background: url('@{images_soc_location}/non-bg.png');
 	.background-size(cover);
 	padding: 20px;
 	height: 275px;
@@ -130,16 +130,16 @@
 	}
 
 	.active & {
-		background: url('../img/active-bg.jpg');
+		background: url('@{images_soc_location}/active-bg.jpg');
 		.background-size(cover);
 	}
 
 	a:hover & {
-		background: url('../img/non-bg-hover.png');
+		background: url('@{images_soc_location}/non-bg-hover.png');
 		.background-size(cover);
 
 		.active & {
-			background: url('../img/active-bg-hover.png');
+			background: url('@{images_soc_location}/active-bg-hover.png');
 			.background-size(cover);
 		}
 	}
@@ -168,7 +168,7 @@
 	}
 
 	.triangle-top {
-		background: url('../img/arrow-top.svg');
+		background: url('@{images_soc_location}/arrow-top.svg');
 		position: absolute;
 		left: 0;
 		top: 0;
@@ -178,11 +178,11 @@
 	}
 
 	.no-svg & .triangle-top {
-		background-image: url('../img/arrow-top.png');
+		background-image: url('@{images_soc_location}/arrow-top.png');
 	}
 
 	.triangle-bottom {
-		background: url('../img/arrow-bottom.svg');
+		background: url('@{images_soc_location}/arrow-bottom.svg');
 		position: absolute;
 		left: 0;
 		bottom: 0;
@@ -192,7 +192,7 @@
 	}
 
 	.no-svg & .triangle-bottom {
-		background-image: url('../img/arrow-bottom.png');
+		background-image: url('@{images_soc_location}/arrow-bottom.png');
 	}
 
 	.active & {
@@ -245,25 +245,25 @@
 			width: 50px;
 
 			&:before {
-				background: url('../img/house-icon-small.svg');
+				background: url('@{images_soc_location}/house-icon-small.svg');
 				width: 14px;
 				height: 14px;
 			}
 		}
 
 		.no-svg & .project-button:before {
-			background-image: url('../img/house-icon-small.png');
+			background-image: url('@{images_soc_location}/house-icon-small.png');
 		}
 
 		a:hover .project-button:before {
-			background: url('../img/house-icon-small.svg');
+			background: url('@{images_soc_location}/img/house-icon-small.svg');
 			width: 14px;
 			height: 14px;
 			background-position: 100%;
 		}
 
 		.no-svg & a:hover .project-button:before {
-			background-image: url('../img/house-icon-small.png');
+			background-image: url('@{images_soc_location}/house-icon-small.png');
 		}
 
 		// this makes the active project look big
@@ -323,7 +323,7 @@
 				width: 60px;
 
 				&:before {
-					background: url('../img/house-icon.svg');
+					background: url('@{images_soc_location}/house-icon.svg');
 					width: 18px;
 					height: 18px;
 					background-position: 100%;
@@ -331,18 +331,18 @@
 			}
 
 			.no-svg & .project-button:before {
-				background-image: url('../img/house-icon.png');
+				background-image: url('@{images_soc_location}/house-icon.png');
 			}
 
 			a:hover .project-button:before {
-				background: url('../img/house-icon.svg');
+				background: url('@{images_soc_location}/house-icon.svg');
 				width: 18px;
 				height: 18px;
 				background-position: 0;
 			}
 
 			.no-svg & a:hover .project-button:before {
-				background-image: url('../img/house-icon.png');
+				background-image: url('@{images_soc_location}/house-icon.png');
 			}
 
 		}
