@@ -210,7 +210,6 @@ class ProgramSection(template.Template):
 
   def context(self):
     """See template.Template.context for specification."""
-
     homepage_url = links.LINKER.program(
         self._program, self._program.homepage_url_name)
 
@@ -219,6 +218,32 @@ class ProgramSection(template.Template):
         'homepage_url': homepage_url,
         'is_active': self.isActive(),
         'image_path': self._image_path,
+        }
+
+
+class ContactUsSection(template.Template):
+  """Template that displays contact information on the landing page."""
+
+  def templatePath(self):
+    """See template.Template.templatePath for specification."""
+    return 'melange/landing_page/_contact_us_section.html'
+
+  def isAnyContactChannelSet(self):
+    """Tells whether there is at least one contact channel set for the site.
+
+    Returns:
+      True if at least one contact channel is defined; False otherwise.
+    """
+    return (self.data.site.blog or self.data.site.google_plus or
+        self.data.site.irc_channel or self.data.site.mailing_list)
+
+  def context(self):
+    """See template.Template.context for specification."""
+    return {
+        'blog': self.data.site.blog,
+        'google_plus': self.data.site.google_plus,
+        'irc_channel': self.data.site.irc_channel,
+        'mailing_list': self.data.site.mailing_list,
         }
 
 
@@ -270,6 +295,11 @@ class LandingPage(base.RequestHandler):
       active_programs_counter = len([
           program_section for program_section in program_sections
               if program_section.isActive()])
+
+      contact_us_section = ContactUsSection(data)
+
       return {
           'active_programs_counter': active_programs_counter,
-          'program_sections': program_sections}
+          'contact_us_section': contact_us_section,
+          'program_sections': program_sections,
+          }

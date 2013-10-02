@@ -22,5 +22,11 @@ limitations under the License.
       <span>Sorry, there are no active programs at this time</span>
     {% endfor %}
   </section>
+
+  {% if contact_us_section.isAnyContactChannelSet %}
+    <section class="main-footer" role="contentinfo">
+      {{ contact_us_section.render }}
+    </section>
+  {% endif %}
 </main>
 {% endblock page_content %}

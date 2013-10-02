@@ -38,6 +38,24 @@ class LandingPageTest(test_utils.DjangoTestCase):
     self.gsoc_program = seeder_logic.seed(gsoc_program_model.GSoCProgram)
     self.gci_program = seeder_logic.seed(gci_program_model.GCIProgram)
 
+  def _assertPageTemplatesUsed(self, response):
+    """Asserts that all templates for the tested page are used."""
+    self.assertTemplateUsed(
+        response, 'melange/landing_page/_program_section.html')
+    self.assertTemplateUsed(
+        response, 'melange/landing_page/_contact_us_section.html')
+
+  def testPageLoads(self):
+    """Tests that page loads correctly."""
+    self.site.latest_gsoc = self.gsoc_program.key().name()
+    self.site.latest_gci = self.gci_program.key().name()
+    self.site.mailing_list = 'dev@test.com'
+    self.site.put()
+
+    response = self.get('/landing_page')
+    self.assertResponseOK(response)    
+    self._assertPageTemplatesUsed(response)
+
   def testOneLatestProgram(self):
     """Tests that redirect response is returned for one defined program."""
     self.site.latest_gsoc = self.gsoc_program.key().name()
