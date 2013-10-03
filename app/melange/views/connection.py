@@ -54,8 +54,8 @@ def createConnectionTxn(
     message: User-provided message for the connection.
     context: The notification context method.
     recipients: List of one or more recipients for the notification email.
-    org_state: Org state for the connection.
-    user_state: User state for the connection.
+    org_role: Org role for the connection.
+    user_role: User role for the connection.
     org_admin: profile entity of organization administrator who started
       the connection. Should be supplied only if the connection was initialized
       by organization.
@@ -92,6 +92,31 @@ def createConnectionTxn(
   
     return connection
 
+@db.transactional
+def createAnonymousConnectionTxn(data, organization, org_role, email, message):
+  """Create an AnonymousConnection so that an unregistered user can join
+  an organization and dispatch an email to the
+
+  Args:
+    data: RequestData for the current request.
+    organization: Organization with which to connect.
+    org_role: Role offered to the user.
+    email: Email address of the user to which to send the notification.
+    message: Any message provided by the organization to the user(s).
+
+  Returns"
+    Newly created AnonymousConnection entity.
+  """
+  anonymous_connection = connection_logic.createAnonymousConnection(
+      org=organization, org_role=org_role)
+
+  notification = notifications.anonymousConnectionContext(
+      data=data, connection=anonymous_connection, email=email, message=message)
+  sub_txn = mailer.getSpawnMailTaskTxn(
+      notification, parent=anonymous_connection)
+  sub_txn()
+
+  return anonymous_connection
 
 @db.transactional
 def createConnectionMessageTxn(connection_key, profile_key, content):
