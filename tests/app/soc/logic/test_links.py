@@ -19,6 +19,8 @@ import urllib
 
 from codein.views.helper import urls as ci_urls
 
+from melange.views.helper import urls
+
 from soc.logic import links
 from soc.models import organization as org_model
 from soc.models import profile as profile_model
@@ -138,6 +140,15 @@ class TestLinker(unittest.TestCase):
     self.assertEqual(
         '/gci/program/create/%s' % TEST_SPONSOR_KEY_NAME,
         self.linker.sponsor(MockSponsor(), 'gci_program_create'))
+
+  def testUser(self):
+    """Tests user function."""
+    # seed a user
+    user = profile_utils.seedUser()
+
+    self.assertEqual(
+        '/site/settings/user/%s' % user.key().name(),
+        self.linker.user(user, urls.UrlNames.USER_SETTINGS))
 
   def testUserOrg(self):
     """Tests userOrg function."""
