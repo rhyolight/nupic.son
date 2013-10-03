@@ -341,6 +341,21 @@ class CreateAnonymousConnectionTest(ConnectionTest):
     self.assertEquals(connection_model.MENTOR_ROLE, connection.org_role)
 
 
+class QueryAnonymousConnectionTest(ConnectionTest):
+  """Unit test for the queryAnonymousConnectionForToken function."""
+
+  def testQueryForAnonymousConnection(self):
+    """Test that the function will correctly fetch AnonymousConnection objects
+    given a valid token."""
+    connection = connection_logic.queryAnonymousConnectionForToken('bad_token')
+    self.assertEquals(None, connection)
+
+    connection_logic.createAnonymousConnection(org=self.org,
+        org_role=connection_model.MENTOR_ROLE)
+    token = connection_model.AnonymousConnection.all().get().token
+    connection = connection_logic.queryAnonymousConnectionForToken(token)
+    self.assertNotEquals(None, connection)
+
 class ActivateAnonymousConnectionTest(ConnectionTest):
   """Unit test for actions related to the activateAnonymousConnection
   function."""
@@ -389,3 +404,5 @@ class ActivateAnonymousConnectionTest(ConnectionTest):
 
     self.assertEquals(connection.user_role, connection_model.NO_ROLE)
     self.assertEquals(connection.organization.key(), self.org.key())
+    anonymous_connection = connection_model.AnonymousConnection.all().get()
+    self.assertEquals(None, anonymous_connection)
