@@ -254,7 +254,7 @@ class LandingPage(base.RequestHandler):
   the main URL for the application.
   """
   # TODO(daniel): it should be changed to All Allowed Checker
-  access_checker = access.DEVELOPER_ACCESS_CHECKER
+  access_checker = access.HostOrDeveloperAccessChecker()
 
   def djangoURLPatterns(self):
     """See base.RequestHandler.getDjangoURLPatterns for specification."""
