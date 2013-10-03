@@ -19,15 +19,15 @@ from google.appengine.runtime import apiproxy_errors
 
 from melange.request import exception
 from soc.logic import accounts
-from soc.models import user
+from soc.models import user as user_model
+
 
 MELANGE_DELETED_USER = 'melange_deleted_user'
-
 
 def isFormerAccount(account):
   """Returns true if account is a former account of some User.
   """
-  return user.User.all().filter('former_accounts', account).count() > 0
+  return user_model.User.all().filter('former_accounts', account).count() > 0
 
 
 def forCurrentAccount():
@@ -112,7 +112,7 @@ def forAccount(account):
 
   account = accounts.normalizeAccount(account)
 
-  q = user.User.all()
+  q = user_model.User.all()
   q.filter('account', account)
   q.filter('status', 'valid')
   return q.get()
@@ -127,18 +127,18 @@ def forUserId(user_id):
   if not user_id:
     raise exception.BadRequest(message="Missing argument 'user_id'")
 
-  q = user.User.all()
+  q = user_model.User.all()
   q.filter('user_id', user_id)
   q.filter('status', 'valid')
   return q.get()
 
 
-def isDeveloper(account=None, user_ent=None):
+def isDeveloper(account=None, user=None):
   """Returns true iff the specified user is a Developer.
 
   Args:
     account: if not supplied, defaults to the current account
-    user_ent: if not specified, defaults to the current user
+    user: if not specified, defaults to the current user
   """
   current = accounts.getCurrentAccount()
 
@@ -146,12 +146,12 @@ def isDeveloper(account=None, user_ent=None):
     # default account to the current logged in account
     account = current
 
-  if account and (not user_ent):
+  if account and (not user):
     # default user to the current logged in user
-    user_ent = forAccount(account)
+    user = forAccount(account)
 
   # pylint: disable=E1103
-  if user_ent and user_ent.is_developer:
+  if user and user.is_developer:
     return True
 
   if account and (account == current):
@@ -161,13 +161,13 @@ def isDeveloper(account=None, user_ent=None):
 def getOrCreateDummyMelangeDeletedUser():
   """Fetches or creates the dummy melange deleted user entity.
   """
-  q = user.User.all().filter('link_id', MELANGE_DELETED_USER)
+  q = user_model.User.all().filter('link_id', MELANGE_DELETED_USER)
   user_ent = q.get()
 
   # If the requested user does not exist, create one.
   if not user_ent:
     account = users.User(email=MELANGE_DELETED_USER)
-    user_ent = user.User(
+    user_ent = user_model.User(
         key_name=MELANGE_DELETED_USER, account=account,
         link_id=MELANGE_DELETED_USER)
     user_ent.put()
