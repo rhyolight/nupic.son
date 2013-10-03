@@ -22,17 +22,23 @@ from django.core import urlresolvers
 
 from melange import types
 from melange.appengine import system
+from melange.logic import settings as settings_logic
 from melange.models import connection as connection_model
 from melange.request import exception
 from melange.utils import time
+from melange.views.helper import urls
 
+from soc.logic import links
 from soc.logic import program as program_logic
 from soc.logic import site as site_logic
-from soc.logic import user
+from soc.logic import user as user_logic
 from soc.models import sponsor as sponsor_model
 from soc.models import user as user_model
 from soc.views.helper import access_checker
 
+
+VIEW_AS_USER_DOES_NOT_EXIST = ('The requested user does not exist. Please go '
+    'to <a href="%s">User Settings</a> page and change the value.')
 
 class TimelineHelper(object):
   """Helper class for the determination of the currently active period.
@@ -339,7 +345,23 @@ class RequestData(object):
   def user(self):
     """Returns the user field."""
     if not self._isSet(self._user):
-      self._user = user.current()
+      self._user = user_logic.current()
+
+      # developer may view the page as another user
+      if self._user and user_logic.isDeveloper(user=self._user):
+        settings = settings_logic.getUserSettings(self._user.key())
+        if settings.view_as is not None:
+          user = user_model.User.get(settings.view_as.to_old_key())
+          if user:
+            self._user = user
+          else:
+            # TODO(daniel): use main LINKER object when merged
+            linker = links.Linker()
+            user_settings_url = linker.user(
+                self._user, urls.UrlNames.USER_SETTINGS)
+            raise exception.BadRequest(
+                message=VIEW_AS_USER_DOES_NOT_EXIST % user_settings_url)
+
     return self._user
 
   @property
