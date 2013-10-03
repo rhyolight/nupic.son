@@ -1,0 +1,39 @@
+{% extends "melange/root.html" %}
+{% comment %}
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+{% endcomment %}
+
+{% block stylesheets %}
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/soc/main.css" />
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,400,300,600' rel='stylesheet' type='text/css'>
+{% endblock stylesheets %}
+
+{% block body %}
+  <header class="main-header" role="banner">
+    <h1><span>Welcome to </span><span class="visuallyhidden">melange</span><img src="/soc/content/{{ app_version }}/images/soc/logo/melange-logo.png" alt="melange"/></h1>
+    <p>{{ site_description }}</p>
+  </header>
+
+  <main class="main-content" role="main">
+    {% block page_content %}
+      {{ templ.render }} 
+    {% endblock page_content %}
+  </main>
+
+  <footer class="main-footer" role="contentinfo">
+    <p>
+      <span class="powered">Powered by: <img class="melange-logo" src="/soc/content/{{ app_version }}/images/soc/logo/melange-logo.png" alt="melange"/></span>
+      <span class="empowered">Empowered by: <a class="ir echoditto-logo" href="http://www.echoditto.com/">echoditto</a> <span class="plus-symbol">+</span> <a class="ir neal-maher-logo" href="http://nealmaher.com/">neal maher</a></span>
+    </p>
+  </footer>
+{% endblock body %}

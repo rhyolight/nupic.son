@@ -1,0 +1,30 @@
+// Welcome to my Sass setup!
+// I like to break out my sass into individual files,
+// so this page mainly just imports those partials
+
+
+// import normalize (a version of css reset)
+@import "normalize";
+
+// import mixins and variables (special Sass stuff)
+@import "mixins";
+
+// import site partials
+@import "elements/helper";
+@import "elements/grid";
+@import "elements/link-styles";
+@import "elements/headers-styles";
+
+// partials specific to a page
+@import "elements/general";
+@import "elements/header";
+@import "elements/footer";
+@import "elements/projects";
+@import "elements/latest";
+@import "elements/social-media";
+
+
+// print stylesheet
+@media print {
+	@import "print";
+}

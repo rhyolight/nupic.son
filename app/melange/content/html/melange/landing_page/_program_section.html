@@ -1,0 +1,20 @@
+<div class="project {% if is_active %} active{% endif %}">
+  <a href="{{ homepage_url }}">
+    <div class="active-banner">
+      <div class="triangle-top"></div>
+      <div class="triangle-bottom"></div>
+      <p>Currently<br>Active!</p>
+    </div>
+    <div class="project-image">
+      <img src="/soc/content/{{ app_version }}/{{ image_path }}" alt="{{ program.name }}" />
+    </div>
+    <div class="project-info">
+      <div class="project-title>{{ program.name }}</div>
+      <div class="project-description">
+        <p>{{ program.description }}</p>
+        <p class="unactive-description">TODO(daniel): unactive description</p>
+        <p class="project-button">Visit</p>
+      </div>
+    </div>
+  </a>
+</div>

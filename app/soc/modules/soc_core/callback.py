@@ -43,6 +43,7 @@ class Callback(object):
     self.views.append(oauth.PopupOAuthVerified())
     self.views.append(site.EditSitePage())
     self.views.append(site.SiteHomepage())
+    self.views.append(site.LandingPage())
     self.views.append(user.CreateUserPage())
     self.views.append(user.EditUserPage())
     self.views.append(warmup.WarmupPage())

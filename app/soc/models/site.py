@@ -166,3 +166,30 @@ class Site(db.Model):
       verbose_name=ugettext('Latest GCI'))
   latest_gci.help_text = ugettext(
       'The key of the latest GCI program')
+ 
+  #: Optional public mailing list.
+  mailing_list = db.StringProperty(required=False,
+      verbose_name=ugettext('Mailing List'))
+  mailing_list.help_text = ugettext(
+      'Mailing list email address, URL to sign-up page, etc.')
+
+  #: Optional public IRC channel.
+  irc_channel = db.StringProperty(required=False,
+      verbose_name=ugettext('Public IRC Channel'))
+  irc_channel.help_text = ugettext(
+     'Address of a public IRC channel.')
+
+  #: Blog page about the site.
+  blog = db.StringProperty(required=False,
+      verbose_name=ugettext('Blog'))
+  blog.help_text = ugettext('Blog page about the site.')
+
+  #: Google Plus page of the site.
+  google_plus = db.StringProperty(required=False,
+      verbose_name=ugettext('Google+ page'))
+  google_plus.help_text = ugettext('Google+ page of the site.')
+
+  #: Field storing description of the site.
+  description = db.TextProperty(verbose_name=ugettext('Description'))
+  description.help_text = ugettext(
+      'Description of the site to be placed on the site header.')

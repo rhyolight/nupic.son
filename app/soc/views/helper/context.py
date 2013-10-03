@@ -61,4 +61,5 @@ def default(data):
       'ds_write_disabled': data.ds_write_disabled,
       'css_path': css_path,
       'gdata_is_logged_in': str(bool(gdata_is_logged_in)).lower(),
+      'site_description': data.site.description,
   }

@@ -27,14 +27,23 @@ from django.utils.translation import ugettext
 from melange.request import access
 from melange.request import exception
 from soc.logic import cleaning
+from soc.logic import links
 from soc.logic import site as site_logic
 from soc.models import document
 from soc.models import site
 from soc.views import base
 from soc.views import forms as views_forms
+from soc.views import template
+from soc.views.helper import request_data
+
 
 DEF_NO_DEVELOPER = ugettext(
     'This page is only accessible to developers.')
+
+CI_PROGRAM_IMAGE_PATH = '/images/gci/logo/landing-page-%s.png'
+SOC_PROGRAM_IMAGE_PATH = '/images/gsoc/logo/landing-page-%s.png'
+
+LANDING_PAGE_NAME = ugettext('Welcome to Melange')
 
 
 def getProgramMap():
@@ -170,3 +179,130 @@ class SiteHomepage(base.RequestHandler):
       return self.error_handler.handleUserError(user_error, data)
     except exception.ServerError as server_error:
       return self.error_handler.handleServerError(server_error, data)
+
+
+class ProgramSection(template.Template):
+  """Template that displays a program on the landing page."""
+
+  def __init__(self, data, program, image_path):
+    """Initializes new instance of this class for the specified program.
+
+    Args:
+      data: request_data.RequestData for the current request.
+      program: program entity.
+      image_path: path to the static file with a logo image to be put
+        on the landing page.
+    """
+    super(ProgramSection, self).__init__(data)
+    self._program = program
+    self._image_path = image_path
+
+  def templatePath(self):
+    """See template.Template.templatePath for specification."""
+    return 'melange/landing_page/_program_section.html'
+
+  def isActive(self):
+    """Tells whether the program in this section is currently active or not.
+
+    Returns:
+      bool indication whether the program is currently active or not.
+    """
+    return  request_data.TimelineHelper(
+        self._program.timeline, None).programActive()
+
+  def context(self):
+    """See template.Template.context for specification."""
+    homepage_url = links.LINKER.program(
+        self._program, self._program.homepage_url_name)
+
+    return {
+        'program': self._program,
+        'homepage_url': homepage_url,
+        'is_active': self.isActive(),
+        'image_path': self._image_path,
+        }
+
+
+class ContactUsSection(template.Template):
+  """Template that displays contact information on the landing page."""
+
+  def templatePath(self):
+    """See template.Template.templatePath for specification."""
+    return 'melange/landing_page/_contact_us_section.html'
+
+  def isAnyContactChannelSet(self):
+    """Tells whether there is at least one contact channel set for the site.
+
+    Returns:
+      True if at least one contact channel is defined; False otherwise.
+    """
+    return (self.data.site.blog or self.data.site.google_plus or
+        self.data.site.irc_channel or self.data.site.mailing_list)
+
+  def context(self):
+    """See template.Template.context for specification."""
+    return {
+        'blog': self.data.site.blog,
+        'google_plus': self.data.site.google_plus,
+        'irc_channel': self.data.site.irc_channel,
+        'mailing_list': self.data.site.mailing_list,
+        }
+
+
+class LandingPage(base.RequestHandler):
+  """View with the landing page that is displayed when user visits
+  the main URL for the application.
+  """
+  # TODO(daniel): it should be changed to All Allowed Checker
+  access_checker = access.DEVELOPER_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.getDjangoURLPatterns for specification."""
+    # TODO(daniel): this should be changed to '/' when the page is public
+    return [django_url(r'^landing_page$', self, name='landing_page')]
+
+  def templatePath(self):
+    """See base.RequestHandler.templatePath for specification."""
+    return 'melange/landing_page/landing_page.html'
+
+  def context(self, data, check, mutator):
+    """See base.RequestHandler.context for specification."""
+    # TODO(daniel): these models should not be imported directly here
+    from soc.modules.gsoc.models import program as soc_program_model
+    from soc.modules.gci.models import program as ci_program_model
+
+    program_sections = []
+
+    if data.site.latest_gsoc:
+      latest_soc = soc_program_model.GSoCProgram.get_by_key_name(
+          data.site.latest_gsoc)
+      if latest_soc:
+        program_sections.append(
+            ProgramSection(data, latest_soc,
+                SOC_PROGRAM_IMAGE_PATH % latest_soc.program_id))
+
+    if data.site.latest_gci:
+      latest_ci = ci_program_model.GCIProgram.get_by_key_name(
+          data.site.latest_gci)
+      if latest_ci:
+        program_sections.append(
+            ProgramSection(
+                data, latest_ci, CI_PROGRAM_IMAGE_PATH % latest_ci.program_id))
+
+    if len(program_sections) == 1:
+      # do not bother to show landing page if there is only one active program
+      # just redirect to the corresponding home page instead
+      raise exception.Redirect(program_sections[0].context()['homepage_url'])
+    else:
+      active_programs_counter = len([
+          program_section for program_section in program_sections
+              if program_section.isActive()])
+
+      contact_us_section = ContactUsSection(data)
+
+      return {
+          'active_programs_counter': active_programs_counter,
+          'contact_us_section': contact_us_section,
+          'program_sections': program_sections,
+          'page_name': LANDING_PAGE_NAME,
+          }

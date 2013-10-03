@@ -73,6 +73,7 @@ module.exports = function(grunt) {
           '<%= meta.src.css_soc_dir %>/search_page.css': '<%= meta.src.less_soc_dir %>/search_page.less',
           '<%= meta.src.css_soc_dir %>/server-error-style.css': '<%= meta.src.less_soc_dir %>/server-error-style.less',
           '<%= meta.src.css_soc_dir %>/user-error-style.css': '<%= meta.src.less_soc_dir %>/user-error-style.less',
+          '<%= meta.src.css_soc_dir %>/main.css': '<%= meta.src.less_soc_dir %>/main.less',
           /* Development GSOC files */
           '<%= meta.src.css_gsoc_dir %>/buttons.css': '<%= meta.src.less_gsoc_dir %>/buttons.less',
           '<%= meta.src.css_gsoc_dir %>/dashboard.css': '<%= meta.src.less_gsoc_dir %>/dashboard.less',
@@ -107,6 +108,7 @@ module.exports = function(grunt) {
           '<%= meta.build.css_soc_dir %>/search_page.css': '<%= meta.src.less_soc_dir %>/search_page.less',
           '<%= meta.build.css_soc_dir %>/server-error-style.css': '<%= meta.src.less_soc_dir %>/server-error-style.less',
           '<%= meta.build.css_soc_dir %>/user-error-style.css': '<%= meta.src.less_soc_dir %>/user-error-style.less',
+          '<%= meta.build.css_soc_dir %>/main.css': '<%= meta.src.less_soc_dir %>/main.less',
           /* Build GSOC files */
           '<%= meta.build.css_gsoc_dir %>/buttons.css': '<%= meta.src.less_gsoc_dir %>/buttons.less',
           '<%= meta.build.css_gsoc_dir %>/dashboard.css': '<%= meta.src.less_gsoc_dir %>/dashboard.less',
