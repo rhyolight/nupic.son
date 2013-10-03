@@ -624,16 +624,16 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = url_names.GSOC_SHOW_USER_CONNECTION
     return self
 
-  def profile_anonymous_connection(self, role, connection_hash):
+  def profile_anonymous_connection(self, role, token):
     """ Sets up kwargs for the gsoc_profile_anonymous_connection reirect.
 
     Args:
-      role: Role (org admin | mentor) to which the user will be promoted
+      role: Role (org_admin | mentor) to which the user will be promoted
           after their profile is created.
-      connection_hash: The hashed key of an AnonymousConnection object.
+      token: The UUID token for an AnonymousConnection object.
     """
     self.createProfile(role)
-    self.kwargs['key'] = connection_hash
+    self.kwargs['key'] = token
     self._url_name = url_names.GSOC_ANONYMOUS_CONNECTION
     return self
 
