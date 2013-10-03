@@ -39,39 +39,6 @@ from soc.modules.gsoc.views.helper import url_names
 from summerofcode.templates import tabs
 
 
-def _handleAnonymousConnection(data, profile):
-  """Handler for automatically created and accepting a new connection.
-
-  Args:
-    data: RequestData object for the current request.
-    profile: The profile that should have just been created.
-  """
-
-  @db.transactional(xg=True)
-  def activate_new_connection_txn():
-    # Create the new connection based on the values of the placeholder.
-    new_connection = Connection(parent=data.user.key(),
-        organization=data.anonymous_connection.parent(),
-        profile=profile,
-        role=data.anonymous_connection.role)
-    # Set the apropriate fields to automatically accept the connection.
-    new_connection.org_state = connection.STATE_ACCEPTED
-    new_connection.user_state = connection.STATE_ACCEPTED
-    new_connection.put()
-    # The user and org should "agree" on a role; promote the user.
-    profile.is_mentor = True
-    profile.mentor_for.append(new_connection.organization.key())
-    profile.mentor_for = list(set(profile.mentor_for))
-    if new_connection.role == connection.ORG_ADMIN_ROLE:
-      profile.is_org_admin = True
-      profile.org_admin_for.append(new_connection.organization.key())
-      profile.org_admin_for = list(set(profile.org_admin_for))
-    profile.put()
-    # We no longer need the placeholder.
-    data.anonymous_connection.delete()
-
-  activate_new_connection_txn()
-
 class StudentNotificationForm(gsoc_forms.GSoCModelForm):
   """Django form for student notification settings.
   """
@@ -283,10 +250,6 @@ class GSoCProfilePage(profile.ProfilePage, base.GSoCRequestHandler):
     if not self.validate(data=data, entities=profile_entity):
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
-
-    if data.anonymous_connection:
-      # profile_entity should contain the profile that was just created.
-      _handleAnonymousConnection(data, profile_entity[0])
 
     data.redirect.program()
 
