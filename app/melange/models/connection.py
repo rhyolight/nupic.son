@@ -156,6 +156,15 @@ class AnonymousConnection(db.Model):
   #: week, based on the implementation in melange.logic.connection.
   expiration_date = db.DateTimeProperty()
 
+  def getRole(self):
+    """Returns the assigned role as a more meaningful string."""
+    if self.org_role == MENTOR_ROLE:
+      return 'Mentor'
+    elif self.org_role == ORG_ADMIN_ROLE:
+      return 'Org Admin'
+    else:
+      return 'No Role'
+
 
 class ConnectionMessage(db.Model):
   """Model of a message that may be sent along with or in response to
