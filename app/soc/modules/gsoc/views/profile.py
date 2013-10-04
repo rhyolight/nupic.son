@@ -18,8 +18,8 @@ from google.appengine.ext import db
 from django.forms import fields
 from django.core.urlresolvers import reverse
 
-from melange.models import connection
-from melange.models.connection import Connection
+from melange.logic import connection as connection_logic
+from melange.views import connection as connection_view
 from soc.logic import cleaning
 from soc.logic import dicts
 from soc.models.user import User
@@ -37,6 +37,19 @@ from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_names
 
 from summerofcode.templates import tabs
+
+
+def _handleAnonymousConnection(data, profile, token):
+  """Utilize logic methods to create a new Connection object, delete the
+  AnonymousConnection placeholder and promote the user to their new role.
+
+  Args:
+    profile: Profile that just registered for the connection.
+    token: Token for the AnonymousConnection object.
+  """
+  new_connection = connection_logic.activateAnonymousConnection(
+      profile=profile, token=token)
+  connection_view.handleUserRoleSelectionTxn(data, new_connection)
 
 
 class StudentNotificationForm(gsoc_forms.GSoCModelForm):
@@ -251,6 +264,12 @@ class GSoCProfilePage(profile.ProfilePage, base.GSoCRequestHandler):
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
 
+    if data.anonymous_connection:
+      profile=profile_entity[0]
+      token=data.anonymous_connection.token
+      connection = _handleAnonymousConnection(
+          data=data, profile=profile, token=token)
+
     data.redirect.program()
 
     return data.redirect.to(
@@ -267,6 +286,9 @@ class GSoCProfilePage(profile.ProfilePage, base.GSoCRequestHandler):
 
   def _getCreateConnectedProfileURLName(self):
     return url_names.GSOC_ANONYMOUS_CONNECTION
+
+  def _getShowConnectionURLName(self):
+    return url_names.GSOC_SHOW_CONNECTION
 
   def _getEditProfileURLPattern(self):
     return url_patterns.PROGRAM
