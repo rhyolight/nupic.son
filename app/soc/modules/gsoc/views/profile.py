@@ -40,10 +40,11 @@ from summerofcode.templates import tabs
 
 
 def _handleAnonymousConnection(data, profile, token):
-  """Utilize logic methods to create a new Connection object, delete the
-  AnonymousConnection placeholder and promote the user to their new role.
+  """Replace the AnonymousConnection object with a Connection and proceed
+  as if the user had viewed and selected to opt in for the role.
 
   Args:
+    data: RequestData object for the current request.
     profile: Profile that just registered for the connection.
     token: Token for the AnonymousConnection object.
   """

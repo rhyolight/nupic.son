@@ -187,15 +187,15 @@ def queryAnonymousConnectionForToken(token):
   return query.get()
 
 def activateAnonymousConnection(profile, token):
-  """Take an AnonymousConnection object and use it create a new Connection
-  between the user and an organization.
+  """Create a new Connection between the user and an organization from an
+  existing AnonymousConnection and removes the latter.
 
   Args:
     profile: Profile with which to establish the connection.
     token: Token generated for the AnonymousConnection object.
 
   Returns:
-    Newly created Connection obejct with org_role set to whatever the org
+    Newly created Connection object with org_role set to whatever the org
     originally specified and user_role set to NO_ROLE.
 
   Raises:
