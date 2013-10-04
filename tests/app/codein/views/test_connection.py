@@ -332,6 +332,39 @@ class ManageConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(message.author.key(), self.profile_helper.profile.key())
 
 
+class ManageConnectionAsUserTest(test_utils.GCIDjangoTestCase):
+  """Unit tests for ManageConnectionAsUser class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+    profile = self.profile_helper.createProfile()
+    self.connection = connection_utils.seed_new_connection(profile, self.org)
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    response = self.get(_getManageAsUserUrl(self.connection))
+    self.assertResponseOK(response)
+
+  def testSendNewMessage(self):
+    """Tests that sending a new connection message works."""
+    post_data = {
+        connection_view.MESSAGE_FORM_NAME: '',
+        'content': _TEST_MESSAGE_CONTENT,
+        }
+    response = self.post(_getManageAsUserUrl(self.connection), post_data)
+    self.assertResponseRedirect(response, _getManageAsUserUrl(self.connection))
+
+    # check that a new message is created
+    query = connection_model.ConnectionMessage.all().ancestor(self.connection)
+    message = query.get()
+    self.assertIsNotNone(message)
+    self.assertEqual(message.content, _TEST_MESSAGE_CONTENT)
+    self.assertFalse(message.is_auto_generated)
+    self.assertEqual(message.author.key(), self.profile_helper.profile.key())
+
+
 class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
   """Unit tests for UserActionsFormHandler class."""
 
