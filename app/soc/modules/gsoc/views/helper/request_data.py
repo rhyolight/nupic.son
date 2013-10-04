@@ -630,7 +630,8 @@ class RedirectHelper(request_data.RedirectHelper):
     Args:
       role: Role (org_admin | mentor) to which the user will be promoted
           after their profile is created.
-      token: The UUID token for an AnonymousConnection object.
+      token: The UUID token (string representation) for an
+          AnonymousConnection object.
     """
     self.createProfile(role)
     self.kwargs['key'] = token

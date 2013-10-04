@@ -95,7 +95,7 @@ def createConnectionTxn(
 @db.transactional
 def createAnonymousConnectionTxn(data, organization, org_role, email, message):
   """Create an AnonymousConnection so that an unregistered user can join
-  an organization and dispatch an email to the
+  an organization and dispatch an email to the newly Connected user.
 
   Args:
     data: RequestData for the current request.
@@ -104,7 +104,7 @@ def createAnonymousConnectionTxn(data, organization, org_role, email, message):
     email: Email address of the user to which to send the notification.
     message: Any message provided by the organization to the user(s).
 
-  Returns"
+  Returns:
     Newly created AnonymousConnection entity.
   """
   anonymous_connection = connection_logic.createAnonymousConnection(

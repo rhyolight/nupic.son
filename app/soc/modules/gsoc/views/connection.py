@@ -316,12 +316,12 @@ class OrgConnectionPage(base.GSoCRequestHandler):
     data.unregistered = []
     for user in data.anonymous_users:
       connection_view.createAnonymousConnectionTxn(
-        data=data,
-        organization=data.organization,
-        org_role=connection_form.cleaned_data['org_role'],
-        email=user,
-        message=connection_form.cleaned_data['message']
-        )
+          data=data,
+          organization=data.organization,
+          org_role=connection_form.cleaned_data['org_role'],
+          email=user,
+          message=connection_form.cleaned_data['message']
+          )
       data.unregistered.append(user)
 
     return True
