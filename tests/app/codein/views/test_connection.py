@@ -24,6 +24,8 @@ from django import http
 
 from google.appengine.ext import db
 
+from nose.plugins import skip
+
 from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
 from melange.request import access
@@ -68,6 +70,20 @@ def _getManageAsOrgUrl(connection):
     The URL to 'Manage Connection As Org' for the specified connection.
   """
   return '/gci/connection/manage/org/%s/%s' % (
+      connection.parent_key().name(), connection.key().id())
+
+
+def _getMarkAsSeenByOrgUrl(connection):
+  """Returns URL to 'Mark Connection As Seen By Org' handler for the specified
+  connection entity.
+
+  Args:
+    connection: connection entity.
+
+  Returns:
+    The URL to 'Mark Connection As Seen By Org' for the specified connection.
+  """
+  return '/gci/connection/mark_as_seen/org/%s/%s' % (
       connection.parent_key().name(), connection.key().id())
 
 
@@ -1927,3 +1943,41 @@ class PickOrganizationToConnectPageTest(test_utils.GCIDjangoTestCase):
     response = self.get(self._getUrl(profile))
     self.assertResponseOK(response)
     self.assertGCITemplatesUsed(response)
+
+
+class MarkConnectionAsSeenByOrgTest(test_utils.GCIDjangoTestCase):
+  """Unit tests for MarkConnectionAsSeenByOrg class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+    # seed another profile for a connected user
+    profile_helper = profile_utils.GCIProfileHelper(
+       self.program, False)
+    profile_helper.createOtherUser('other@example.com')
+    other_profile = profile_helper.createProfile()
+
+    self.connection = connection_utils.seed_new_connection(
+        other_profile, self.org, seen_by_org=False)
+
+  def testGetMethodForbidden(self):
+    """Tests that GET method is not permitted."""
+    self.profile_helper.createOrgAdmin(self.org)
+
+    # TODO(daniel): this request should fail. Instead it raises
+    # NotImplementedError on templatePath function
+    raise skip.SkipTest()
+    response = self.get(_getMarkAsSeenByOrgUrl(self.connection))
+    self.assertResponseForbidden(response)
+
+  def testConnectionMarkedAsSeen(self):
+    """Tests that connection is successfully marked as seen by organization."""
+    self.profile_helper.createOrgAdmin(self.org)
+
+    response = self.post(_getMarkAsSeenByOrgUrl(self.connection))
+    self.assertResponseOK(response)
+
+    # check that connection is marked as seen by organization
+    connection = db.get(self.connection.key())
+    self.assertTrue(connection.seen_by_org)

@@ -610,6 +610,26 @@ class ManageConnectionAsOrg(base.GCIRequestHandler):
       raise exception.BadRequest('No valid form data is found in POST.')
 
 
+class MarkConnectionAsSeenByOrg(base.GCIRequestHandler):
+  """Handler to mark connection as seen by organization."""
+
+  # TODO(daniel): add actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    """See base.GCIRequestHandler.djangoURLPatterns for specification."""
+    return [
+        ci_url_patterns.url(
+            r'connection/mark_as_seen/org/%s$' % url_patterns.USER_ID,
+            self, name=urls.UrlNames.CONNECTION_MARK_AS_SEEN_BY_ORG)
+    ]
+
+  def post(self, data, check, mutator):
+    """See base.GCIRequestHandler.post for specification."""
+    connection_view.markConnectionAsSeenByOrg(data.url_connection.key())
+    return http.HttpResponse()
+
+
 class FormHandler(object):
   """Simplified version of request handler that is able to take care of
   the received data.
