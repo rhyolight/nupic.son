@@ -84,6 +84,14 @@ class Connection(db.Model):
   #: that either the org or user modified the connection.
   last_modified = db.DateTimeProperty(auto_now_add=True)
 
+  #: Property indicating that a member of the organization has seen
+  #: the latest changes made by the user.
+  seen_by_org = db.BooleanProperty()
+
+  #: Property indicating that the user has seen the latest changes made
+  #: by a member of the organization.
+  seen_by_user = db.BooleanProperty()
+
   def userRequestedRole(self):
     """Indicate whether or not a user has requested to be promoted to a 
     role for an organization.

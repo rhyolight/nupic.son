@@ -41,6 +41,8 @@ from tests import test_utils
 from tests.utils import connection_utils
 
 
+_TEST_MESSAGE_CONTENT = 'Test message content'
+
 def _getManageAsUserUrl(connection):
   """Returns URL to 'Manage Connection As User' page for the specified
   connection entity.
@@ -288,19 +290,73 @@ class ManageConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     """See unittest.TestCase.setUp for specification."""
     self.init()
 
-  def testPageLoads(self):
-    """Tests that page loads properly."""
-    self.profile_helper.createOrgAdmin(self.org)
-
+    # seed another profile for a connected user
     profile_helper = profile_utils.GCIProfileHelper(
        self.program, False)
     profile_helper.createOtherUser('other@example.com')
     other_profile = profile_helper.createProfile()
 
-    connection = connection_utils.seed_new_connection(other_profile, self.org)
+    self.connection = connection_utils.seed_new_connection(
+        other_profile, self.org)
 
-    response = self.get(_getManageAsOrgUrl(connection))
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    self.profile_helper.createOrgAdmin(self.org)
+
+    response = self.get(_getManageAsOrgUrl(self.connection))
     self.assertResponseOK(response)
+
+  def testSendNewMessage(self):
+    """Tests that sending a new connection message works."""
+    self.profile_helper.createOrgAdmin(self.org)
+
+    post_data = {
+        connection_view.MESSAGE_FORM_NAME: '',
+        'content': _TEST_MESSAGE_CONTENT,
+        }
+    response = self.post(_getManageAsOrgUrl(self.connection), post_data)
+    self.assertResponseRedirect(response, _getManageAsOrgUrl(self.connection))
+
+    # check that a new message is created
+    query = connection_model.ConnectionMessage.all().ancestor(self.connection)
+    message = query.get()
+    self.assertIsNotNone(message)
+    self.assertEqual(message.content, _TEST_MESSAGE_CONTENT)
+    self.assertFalse(message.is_auto_generated)
+    self.assertEqual(message.author.key(), self.profile_helper.profile.key())
+
+
+class ManageConnectionAsUserTest(test_utils.GCIDjangoTestCase):
+  """Unit tests for ManageConnectionAsUser class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+    profile = self.profile_helper.createProfile()
+    self.connection = connection_utils.seed_new_connection(profile, self.org)
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    response = self.get(_getManageAsUserUrl(self.connection))
+    self.assertResponseOK(response)
+
+  def testSendNewMessage(self):
+    """Tests that sending a new connection message works."""
+    post_data = {
+        connection_view.MESSAGE_FORM_NAME: '',
+        'content': _TEST_MESSAGE_CONTENT,
+        }
+    response = self.post(_getManageAsUserUrl(self.connection), post_data)
+    self.assertResponseRedirect(response, _getManageAsUserUrl(self.connection))
+
+    # check that a new message is created
+    query = connection_model.ConnectionMessage.all().ancestor(self.connection)
+    message = query.get()
+    self.assertIsNotNone(message)
+    self.assertEqual(message.content, _TEST_MESSAGE_CONTENT)
+    self.assertFalse(message.is_auto_generated)
+    self.assertEqual(message.author.key(), self.profile_helper.profile.key())
 
 
 class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
@@ -319,6 +375,8 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # no role is offered to the user; the user does not request any role
     connection = connection_utils.seed_new_connection(profile, self.org)
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -343,6 +401,10 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -354,7 +416,9 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # mentor role is offered to the user; the user does not request any role
     connection = connection_utils.seed_new_connection(
-    profile, self.org, org_role=connection_model.MENTOR_ROLE)
+        profile, self.org, org_role=connection_model.MENTOR_ROLE)
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -379,6 +443,10 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -391,6 +459,8 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     # org admin role is offered to the user; the user does not request any role
     connection = connection_utils.seed_new_connection(
     profile, self.org, org_role=connection_model.ORG_ADMIN_ROLE)
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -414,6 +484,10 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
 
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
@@ -449,6 +523,10 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.NO_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertTrue(connection.seen_by_user)
+    self.assertFalse(connection.seen_by_org)
 
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
@@ -486,6 +564,10 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # connection changed, so seen by properties are changed
+    self.assertTrue(connection.seen_by_user)
+    self.assertFalse(connection.seen_by_org)
+
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -522,6 +604,10 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # connection changed, so seen by properties are changed
+    self.assertTrue(connection.seen_by_user)
+    self.assertFalse(connection.seen_by_org)
+
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -534,6 +620,8 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     # no role is offered to the user; the user requests role
     connection = connection_utils.seed_new_connection(
         profile, self.org, user_role=connection_model.ROLE)
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -558,6 +646,10 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -569,6 +661,8 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     profile = self.profile_helper.createMentor(self.org)
     connection = connection_model.Connection.all().ancestor(
         profile).filter('organization', self.org).get()
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -593,6 +687,10 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -604,6 +702,8 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     profile = self.profile_helper.createOrgAdmin(self.org)
     connection = connection_model.Connection.all().ancestor(
         profile).filter('organization', self.org).get()
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -627,6 +727,10 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
+
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
 
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
@@ -664,10 +768,15 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # connection changed, so seen by properties are changed
+    self.assertTrue(connection.seen_by_user)
+    self.assertFalse(connection.seen_by_org)
+
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
-    self.assertIn(connection_logic._USER_DOES_NOT_REQUEST_ROLE, message.content)
+    self.assertIn(
+        connection_logic._USER_DOES_NOT_REQUEST_ROLE, message.content)
 
   def testUserRoleToNoRoleWhileMentorRoleOffered(self):
     """Tests NO ROLE if user has role and mentor role is offered."""
@@ -675,6 +784,8 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     profile = self.profile_helper.createMentor(self.org)
     connection = connection_model.Connection.all().ancestor(
         profile).filter('organization', self.org).get()
+    old_seen_by_user = connection.seen_by_user
+    old_seen_by_org = connection.seen_by_org
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -703,6 +814,10 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -729,10 +844,15 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # connection changed, so seen by properties are changed
+    self.assertTrue(connection.seen_by_user)
+    self.assertFalse(connection.seen_by_org)
+
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
-    self.assertIn(connection_logic._USER_DOES_NOT_REQUEST_ROLE, message.content)
+    self.assertIn(
+        connection_logic._USER_DOES_NOT_REQUEST_ROLE, message.content)
 
   def testUserRoleToNoRoleWhileOrgAdminRoleOffered(self):
     """Tests NO ROLE if user has role and org admin role is offered."""
@@ -740,6 +860,8 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     profile = self.profile_helper.createOrgAdmin(self.org)
     connection = connection_model.Connection.all().ancestor(
         profile).filter('organization', self.org).get()
+    old_seen_by_user = connection.seen_by_user
+    old_seen_by_org = connection.seen_by_org
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -768,6 +890,10 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -793,6 +919,10 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertTrue(connection.seen_by_user)
+    self.assertFalse(connection.seen_by_org)
 
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
@@ -831,6 +961,8 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # user does not request any role from organization
     connection = connection_utils.seed_new_connection(profile, self.org)
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -855,6 +987,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -867,6 +1003,8 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     # user requests role from organization
     connection = connection_utils.seed_new_connection(
         profile, self.org, user_role=connection_model.ROLE)
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -891,6 +1029,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+    
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -925,6 +1067,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
 
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
@@ -964,6 +1110,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -1000,6 +1150,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
 
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
@@ -1039,6 +1193,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -1077,6 +1235,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -1089,6 +1251,8 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     profile = self.profile_helper.createMentor(self.org)
     connection = connection_model.Connection.all().ancestor(
         profile).filter('organization', self.org).get()
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -1116,6 +1280,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -1142,6 +1310,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -1155,6 +1327,8 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     # user does not request any role from organization
     connection = connection_utils.seed_new_connection(
         profile, self.org, org_role=connection_model.MENTOR_ROLE)
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -1179,6 +1353,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -1190,6 +1368,8 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     profile = self.profile_helper.createMentor(self.org)
     connection = connection_model.Connection.all().ancestor(
         profile).filter('organization', self.org).get()
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -1213,6 +1393,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
+
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
 
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
@@ -1251,6 +1435,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -1287,6 +1475,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
 
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
@@ -1326,6 +1518,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -1338,6 +1534,8 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     profile = self.profile_helper.createOrgAdmin(self.org)
     connection = connection_model.Connection.all().ancestor(
         profile).filter('organization', self.org).get()
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -1365,6 +1563,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -1390,6 +1592,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.NO_ROLE)
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
 
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
@@ -1429,6 +1635,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -1441,6 +1651,8 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     profile = self.profile_helper.createOrgAdmin(self.org)
     connection = connection_model.Connection.all().ancestor(
         profile).filter('organization', self.org).get()
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -1469,6 +1681,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -1496,6 +1712,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
 
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
     # check that a connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -1509,6 +1729,8 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     # user does not request any role from organization
     connection = connection_utils.seed_new_connection(
         profile, self.org, org_role=connection_model.ORG_ADMIN_ROLE)
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -1533,6 +1755,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertNotIn(self.org.key(), profile.org_admin_for)
     self.assertNotIn(self.org.key(), profile.mentor_for)
 
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
     message = query.get()
@@ -1544,6 +1770,8 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     profile = self.profile_helper.createOrgAdmin(self.org)
     connection = connection_model.Connection.all().ancestor(
         profile).filter('organization', self.org).get()
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -1567,6 +1795,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertIn(self.org.key(), profile.org_admin_for)
     self.assertIn(self.org.key(), profile.mentor_for)
+
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
 
     # check that no connection message is created
     query = connection_model.ConnectionMessage.all().ancestor(connection)
