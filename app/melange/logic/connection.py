@@ -42,6 +42,39 @@ _USER_REQUESTS_ROLE = translation.ugettext(
 _USER_DOES_NOT_REQUEST_ROLE = translation.ugettext(
     'User does not request role from organization.')
 
+#: Constant indicating that action has been initiated by an organization.
+ORG_ACTION_ORIGIN = 'org_origin'
+
+#: Constant indicating that action has been initiated by a user.
+USER_ACTION_ORIGIN = 'user_origin'
+
+
+def _updateSeenByProperties(connection, action_origin):
+  """Updates seen_by_org and seen_by_user properties of the specified
+  connection based on the specified origin of the action which has been taken.
+
+  Please note that updated connection entity is not saved in the datastore.
+
+  Args:
+    connection: Connection entity.
+    action_origin: Origin of the action. Must be one of ORG_ACTION_ORIGIN
+      or USER_ACTION_ORIGIN.
+
+  Returns:
+    Updated connection entity.
+  """
+  if action_origin == ORG_ACTION_ORIGIN:
+    connection.seen_by_org = True
+    connection.seen_by_user = False
+  elif action_origin == USER_ACTION_ORIGIN:
+    connection.seen_by_org = False
+    connection.seen_by_user = True
+  else:
+    raise ValueError(
+        'Invalid value specified as the origin of action: %s' % action_origin)
+
+  return connection
+
 
 def queryForAncestor(ancestor, keys_only=False):
   """Returns a Query object for Connections with the specified ancestor.
