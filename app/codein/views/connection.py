@@ -576,12 +576,17 @@ class ManageConnectionAsOrg(base.GCIRequestHandler):
 
     messages = connection_logic.getConnectionMessages(data.url_connection)
 
+    mark_as_seen_url = links.LINKER.userId(
+        data.url_profile, data.url_connection.key().id(),
+        urls.UrlNames.CONNECTION_MARK_AS_SEEN_BY_ORG)
+
     return {
         'page_name': MANAGE_CONNECTION_PAGE_NAME,
         'actions_form': actions_form,
         'message_form': message_form,
         'summary': summary,
         'messages': messages,
+        'mark_as_seen_url': mark_as_seen_url,
         }
 
   def post(self, data, check, mutator):
