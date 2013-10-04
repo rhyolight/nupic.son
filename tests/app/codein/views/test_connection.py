@@ -24,8 +24,6 @@ from django import http
 
 from google.appengine.ext import db
 
-from nose.plugins import skip
-
 from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
 from melange.request import access
@@ -325,10 +323,6 @@ class ManageConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     self.assertIsNotNone(message)
     self.assertEqual(message.content, _TEST_MESSAGE_CONTENT)
     self.assertFalse(message.is_auto_generated)
-
-    # TODO(daniel): this test fails because of a bug in MessageFormHandler
-    # which always picks url_user for the author
-    raise skip.SkipTest()
     self.assertEqual(message.author.key(), self.profile_helper.profile.key())
 
 

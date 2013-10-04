@@ -535,7 +535,9 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
       return UserActionsFormHandler(self)
     elif MESSAGE_FORM_NAME in data.POST:
       # TODO(daniel): eliminate passing self object.
-      return MessageFormHandler(self, urls.UrlNames.CONNECTION_MANAGE_AS_USER)
+      return MessageFormHandler(
+          self, data.url_profile.key(),
+          urls.UrlNames.CONNECTION_MANAGE_AS_USER)
     else:
       raise exception.BadRequest('No valid form data is found in POST.')
 
@@ -602,7 +604,8 @@ class ManageConnectionAsOrg(base.GCIRequestHandler):
       return OrgActionsFormHandler(self)
     elif MESSAGE_FORM_NAME in data.POST:
       # TODO(daniel): eliminate passing self object.
-      return MessageFormHandler(self, urls.UrlNames.CONNECTION_MANAGE_AS_ORG)
+      return MessageFormHandler(
+          self, data.profile.key(), urls.UrlNames.CONNECTION_MANAGE_AS_ORG)
     else:
       raise exception.BadRequest('No valid form data is found in POST.')
 
@@ -641,16 +644,18 @@ class MessageFormHandler(FormHandler):
   create a new connection message.
   """
 
-  def __init__(self, view, url_name):
+  def __init__(self, view, author_key, url_name):
     """Initializes new instance of form handler.
 
     Args:
       view: callback to implementation of base.RequestHandler
         that creates this object.
+      author_key: profile key of the user who is the author of the message.
       url_name: name of the URL that should be used for redirect after
         the request is handled successfully.
     """
     super(MessageFormHandler, self).__init__(view)
+    self._author_key = author_key
     self._url_name = url_name
 
   def handle(self, data, check, mutator):
@@ -663,7 +668,7 @@ class MessageFormHandler(FormHandler):
     if message_form.is_valid():
       content = message_form.cleaned_data['content']
       connection_view.createConnectionMessageTxn(
-          data.url_connection.key(), data.url_profile.key(), content)
+          data.url_connection.key(), self._author_key, content)
 
       url = links.LINKER.userId(
           data.url_profile, data.url_connection.key().id(), self._url_name)
