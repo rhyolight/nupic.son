@@ -71,6 +71,8 @@ limitations under the License.
   [
     dep.uniform,
     null,
-    tc("/soc/content/{{ app_version }}/js/templates/modules/gci/connection/connection.js"),
+    tc("/soc/content/{{ app_version }}/js/templates/modules/gci/connection/connection.js", {
+      'mark_as_seen_url': '{{ mark_as_seen_url }}'
+    }),
   ]
 {% endblock %}
