@@ -15,8 +15,7 @@
 melange.templates.inherit(
   function (_self, context) {
     jQuery("select, input:radio, input:file, input:checkbox").uniform();
-    tinyMCE.init(melange.tinyMceConfig(["melange-description-textarea",
-                                       "accepted_orgs_msg"]));
+    tinyMCE.init(melange.tinyMceConfig(["accepted_orgs_msg"]));
     melange.autocomplete.makeAutoComplete("org_admin_agreement");
     melange.autocomplete.makeAutoComplete("mentor_agreement");
     melange.autocomplete.makeAutoComplete("student_agreement");
