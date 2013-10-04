@@ -130,6 +130,8 @@ def handleUserNoRoleSelectionTxn(connection):
     old_user_role = connection.user_role
 
     connection.user_role = connection_model.NO_ROLE
+    connection = connection_logic._updateSeenByProperties(
+        connection, connection_logic.USER_ACTION_ORIGIN)
     connection.put()
 
     connection_logic.generateMessageOnUpdateByUser(connection, old_user_role)
@@ -138,8 +140,6 @@ def handleUserNoRoleSelectionTxn(connection):
     org_key = connection_model.Connection.organization.get_value_for_datastore(
         connection)
     profile_logic.assignNoRoleForOrg(profile, org_key)
-
-  # TODO(daniel): generate connection message
 
 
 @db.transactional
@@ -160,6 +160,8 @@ def handleUserRoleSelectionTxn(data, connection):
     old_user_role = connection.user_role
 
     connection.user_role = connection_model.ROLE
+    connection = connection_logic._updateSeenByProperties(
+        connection, connection_logic.USER_ACTION_ORIGIN)
     connection.put()
 
     connection_logic.generateMessageOnUpdateByUser(connection, old_user_role)
@@ -204,6 +206,8 @@ def handleOrgNoRoleSelection(connection, org_admin):
     old_org_role = connection.org_role
 
     connection.org_role = connection_model.NO_ROLE
+    connection = connection_logic._updateSeenByProperties(
+        connection, connection_logic.ORG_ACTION_ORIGIN)
     connection.put()
 
     connection_logic.generateMessageOnUpdateByOrg(
@@ -236,6 +240,8 @@ def handleMentorRoleSelection(connection, org_admin):
     old_org_role = connection.org_role
 
     connection.org_role = connection_model.MENTOR_ROLE
+    connection = connection_logic._updateSeenByProperties(
+        connection, connection_logic.ORG_ACTION_ORIGIN)
     connection.put()
 
     connection_logic.generateMessageOnUpdateByOrg(
@@ -274,6 +280,8 @@ def handleOrgAdminRoleSelection(connection, org_admin):
     old_org_role = connection.org_role
 
     connection.org_role = connection_model.ORG_ADMIN_ROLE
+    connection = connection_logic._updateSeenByProperties(
+        connection, connection_logic.ORG_ACTION_ORIGIN)
     connection.put()
 
     connection_logic.generateMessageOnUpdateByOrg(
