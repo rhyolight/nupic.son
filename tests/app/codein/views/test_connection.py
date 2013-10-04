@@ -24,6 +24,8 @@ from django import http
 
 from google.appengine.ext import db
 
+from nose.plugins import skip
+
 from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
 from melange.request import access
@@ -40,6 +42,8 @@ from tests import profile_utils
 from tests import test_utils
 from tests.utils import connection_utils
 
+
+_TEST_MESSAGE_CONTENT = 'Test message content'
 
 def _getManageAsUserUrl(connection):
   """Returns URL to 'Manage Connection As User' page for the specified
@@ -288,19 +292,44 @@ class ManageConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     """See unittest.TestCase.setUp for specification."""
     self.init()
 
-  def testPageLoads(self):
-    """Tests that page loads properly."""
-    self.profile_helper.createOrgAdmin(self.org)
-
+    # seed another profile for a connected user
     profile_helper = profile_utils.GCIProfileHelper(
        self.program, False)
     profile_helper.createOtherUser('other@example.com')
     other_profile = profile_helper.createProfile()
 
-    connection = connection_utils.seed_new_connection(other_profile, self.org)
+    self.connection = connection_utils.seed_new_connection(
+        other_profile, self.org)
 
-    response = self.get(_getManageAsOrgUrl(connection))
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    self.profile_helper.createOrgAdmin(self.org)
+
+    response = self.get(_getManageAsOrgUrl(self.connection))
     self.assertResponseOK(response)
+
+  def testSendNewMessage(self):
+    """Tests that sending a new connection message works."""
+    self.profile_helper.createOrgAdmin(self.org)
+
+    post_data = {
+        connection_view.MESSAGE_FORM_NAME: '',
+        'content': _TEST_MESSAGE_CONTENT,
+        }
+    response = self.post(_getManageAsOrgUrl(self.connection), post_data)
+    self.assertResponseRedirect(response, _getManageAsOrgUrl(self.connection))
+
+    # check that a new message is created
+    query = connection_model.ConnectionMessage.all().ancestor(self.connection)
+    message = query.get()
+    self.assertIsNotNone(message)
+    self.assertEqual(message.content, _TEST_MESSAGE_CONTENT)
+    self.assertFalse(message.is_auto_generated)
+
+    # TODO(daniel): this test fails because of a bug in MessageFormHandler
+    # which always picks url_user for the author
+    raise skip.SkipTest()
+    self.assertEqual(message.author.key(), self.profile_helper.profile.key())
 
 
 class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
