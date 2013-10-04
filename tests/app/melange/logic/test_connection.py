@@ -13,6 +13,8 @@
 # limitations under the License.
 """Tests for soc.modules.gsoc.logic.connection."""
 
+from google.appengine.ext import db
+
 from datetime import datetime
 from datetime import timedelta
 import mock

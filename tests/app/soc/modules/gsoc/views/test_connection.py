@@ -109,10 +109,28 @@ class OrgConnectionPageTest(test_utils.GSoCDjangoTestCase):
 
     query = connection.Connection.all().ancestor(other_profile)
     connection_entity = query.get()
-    self.assertNotEqual(None, connection_entity)
+    self.assertIsNotNone(connection_entity)
     self.assertEquals(connection.MENTOR_ROLE, connection_entity.org_role)
     self.assertEquals(connection.NO_ROLE, connection_entity.user_role)
     self.assertEquals(self.org.key(), connection_entity.organization.key())
+
+  def testInitiateAnonymousConnection(self):
+    """Tests that given a valid email address that is not affiliated with any
+    existing profile will cause an AnonymousConnection to be created and will
+    receive an email with the url.
+    """
+    self.profile_helper.createOrgAdmin(self.org)
+    post_data = {
+      'users' : 'test@somethingelese.com',
+      'org_role' : connection.MENTOR_ROLE,
+      }
+    response = self.post(self._connectionPageURL(), post_data)
+
+    query = connection.AnonymousConnection.all().ancestor(self.org)
+    connection_entity = query.get()
+    self.assertIsNotNone(connection_entity)
+    self.assertEquals(connection.MENTOR_ROLE, connection_entity.org_role)
+    self.assertEquals(self.org.key(), connection_entity.parent().key())
 
   def testGuarnateedOneOrgAdmin(self):
     """Test that the root org admin cannot establish a connection with him or
@@ -147,6 +165,18 @@ class OrgConnectionPageEmailsTest(test_utils.MailTestCase, OrgConnectionPageTest
         }
     self.post(self._connectionPageURL(), post_data)
     self.assertEmailSent(to=other_profile.email)
+
+  def testAnonymousConnectionNotificationEmailsSent(self):
+    """Tests that an email is sent to an unregistered email address when
+    an org admin initiates a new connection.
+    """
+    self.profile_helper.createOrgAdmin(self.org)
+    post_data = {
+        'org_role' : connection.MENTOR_ROLE,
+        'users' : 'test@something.com'
+        }
+    self.post(self._connectionPageURL(), post_data)
+    self.assertEmailSent(bcc='test@something.com')
 
 class UserConnectionPageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for UserConnectionPage."""
