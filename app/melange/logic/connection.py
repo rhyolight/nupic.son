@@ -183,7 +183,7 @@ def queryAnonymousConnectionForToken(token):
     AnonymousConnection object matching the token or None if it doesn't exist.
   """
   query = connection_model.AnonymousConnection.all()
-  query.filter('token =', token)
+  query.filter('token', token)
   return query.get()
 
 def activateAnonymousConnection(profile, token):

@@ -47,10 +47,14 @@ def _handleAnonymousConnection(data, profile, token):
     data: RequestData object for the current request.
     profile: Profile that just registered for the connection.
     token: Token for the AnonymousConnection object.
+
+  Returns:
+    Newly created Connection enttiy.
   """
   new_connection = connection_logic.activateAnonymousConnection(
       profile=profile, token=token)
   connection_view.handleUserRoleSelectionTxn(data, new_connection)
+  return new_connection
 
 
 class StudentNotificationForm(gsoc_forms.GSoCModelForm):
@@ -270,6 +274,9 @@ class GSoCProfilePage(profile.ProfilePage, base.GSoCRequestHandler):
       token=data.anonymous_connection.token
       connection = _handleAnonymousConnection(
           data=data, profile=profile, token=token)
+      data.redirect.show_user_connection(connection=connection)
+      return data.redirect.to(
+          self._getShowUserConnectionURLName(), secure=True)
 
     data.redirect.program()
 
@@ -288,8 +295,8 @@ class GSoCProfilePage(profile.ProfilePage, base.GSoCRequestHandler):
   def _getCreateConnectedProfileURLName(self):
     return url_names.GSOC_ANONYMOUS_CONNECTION
 
-  def _getShowConnectionURLName(self):
-    return url_names.GSOC_SHOW_CONNECTION
+  def _getShowUserConnectionURLName(self):
+    return url_names.GSOC_SHOW_USER_CONNECTION
 
   def _getEditProfileURLPattern(self):
     return url_patterns.PROGRAM
