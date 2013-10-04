@@ -177,7 +177,7 @@ def queryAnonymousConnectionForToken(token):
   should have been provided by the url.
 
   Args:
-    token: Token (UUID) for the AnonymousConnection.
+    token: Token (string representation of UUID) for the AnonymousConnection.
 
   Returns:
     AnonymousConnection object matching the token or None if it doesn't exist.
@@ -187,12 +187,16 @@ def queryAnonymousConnectionForToken(token):
   return query.get()
 
 def activateAnonymousConnection(profile, token):
-  """Take an AnonymousConnection object and use it to enroll a profile in
-  the specified role for the organization.
+  """Take an AnonymousConnection object and use it create a new Connection
+  between the user and an organization.
 
   Args:
     profile: Profile with which to establish the connection.
     token: Token generated for the AnonymousConnection object.
+
+  Returns:
+    Newly created Connection obejct with org_role set to whatever the org
+    originally specified and user_role set to NO_ROLE.
 
   Raises:
     ValueError if the AnonymousConnection does not exist or if it has expired.
