@@ -311,3 +311,15 @@ def markConnectionAsSeenByOrg(connection_key):
   connection = db.get(connection_key)
   connection.seen_by_org = True
   connection.put()
+
+
+@db.transactional
+def markConnectionAsSeenByUser(connection_key):
+  """Marks the specified connection as seen by organization.
+
+  Args:
+    connection: Connection key.
+  """
+  connection = db.get(connection_key)
+  connection.seen_by_user = True
+  connection.put()

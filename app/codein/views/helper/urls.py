@@ -22,6 +22,7 @@ class UrlNames(object):
   CONNECTION_LIST_FOR_USER = 'connection_list_for_user'
   CONNECTION_MANAGE_AS_ORG = 'connection_manage_as_org'
   CONNECTION_MARK_AS_SEEN_BY_ORG = 'connection_mark_as_seen_by_org'
+  CONNECTION_MARK_AS_SEEN_BY_USER = 'connection_mark_as_seen_by_user'
   CONNECTION_MANAGE_AS_USER = 'connection_manage_as_user'
   CONNECTION_PICK_ORG = 'connection_pick_org'
   CONNECTION_START_AS_ORG = 'connection_start_as_org'

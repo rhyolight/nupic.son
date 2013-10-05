@@ -24,8 +24,6 @@ from django import http
 
 from google.appengine.ext import db
 
-from nose.plugins import skip
-
 from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
 from melange.request import access
@@ -84,6 +82,20 @@ def _getMarkAsSeenByOrgUrl(connection):
     The URL to 'Mark Connection As Seen By Org' for the specified connection.
   """
   return '/gci/connection/mark_as_seen/org/%s/%s' % (
+      connection.parent_key().name(), connection.key().id())
+
+
+def _getMarkAsSeenByUserUrl(connection):
+  """Returns URL to 'Mark Connection As Seen By User' handler for the specified
+  connection entity.
+
+  Args:
+    connection: connection entity.
+
+  Returns:
+    The URL to 'Mark Connection As Seen By User' for the specified connection.
+  """
+  return '/gci/connection/mark_as_seen/user/%s/%s' % (
       connection.parent_key().name(), connection.key().id())
 
 
@@ -1961,13 +1973,12 @@ class MarkConnectionAsSeenByOrgTest(test_utils.GCIDjangoTestCase):
     self.connection = connection_utils.seed_new_connection(
         other_profile, self.org, seen_by_org=False)
 
+  @unittest.skip(
+      'This request should fail instead of raising NotImplementedError')
   def testGetMethodForbidden(self):
     """Tests that GET method is not permitted."""
     self.profile_helper.createOrgAdmin(self.org)
 
-    # TODO(daniel): this request should fail. Instead it raises
-    # NotImplementedError on templatePath function
-    raise skip.SkipTest()
     response = self.get(_getMarkAsSeenByOrgUrl(self.connection))
     self.assertResponseForbidden(response)
 
@@ -1981,3 +1992,32 @@ class MarkConnectionAsSeenByOrgTest(test_utils.GCIDjangoTestCase):
     # check that connection is marked as seen by organization
     connection = db.get(self.connection.key())
     self.assertTrue(connection.seen_by_org)
+
+
+class MarkConnectionAsSeenByUserTest(test_utils.GCIDjangoTestCase):
+  """Unit tests for MarkConnectionAsSeenByUser class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+    profile = self.profile_helper.createProfile()
+
+    self.connection = connection_utils.seed_new_connection(
+        profile, self.org, seen_by_user=False)
+
+  @unittest.skip(
+      'This request should fail instead of raising NotImplementedError')
+  def testGetMethodForbidden(self):
+    """Tests that GET method is not permitted."""
+    response = self.get(_getMarkAsSeenByOrgUrl(self.connection))
+    self.assertResponseForbidden(response)
+
+  def testConnectionMarkedAsSeen(self):
+    """Tests that connection is successfully marked as seen by user."""
+    response = self.post(_getMarkAsSeenByUserUrl(self.connection))
+    self.assertResponseOK(response)
+
+    # check that connection is marked as seen by organization
+    connection = db.get(self.connection.key())
+    self.assertTrue(connection.seen_by_user)
