@@ -35,6 +35,7 @@ from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.task import UNPUBLISHED
 from soc.modules.gci.models import conversation as gciconversation_model
 from soc.modules.gci.logic import conversation as gciconversation_logic
+from soc.modules.gci.views.helper import url_names
 
 
 DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT = ugettext(
@@ -332,7 +333,7 @@ class AccessChecker(access_checker.AccessChecker):
     if not self.data.profile:
       get_params = get_params or {}
       profile_url = self.data.redirect.createProfile('org_admin').urlOf(
-          'create_gci_profile', secure=True)
+          url_names.GCI_PROFILE_CREATE, secure=True)
 
       if get_params:
         profile_url += '?' + urllib.urlencode(get_params)

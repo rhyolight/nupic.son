@@ -64,7 +64,7 @@ class HowItWorks(Template):
       start_text = 'Register as a Student'
 
       start_link = self.data.redirect.createProfile('student').urlOf(
-          'create_gci_profile', secure=True)
+          url_names.GCI_PROFILE_CREATE, secure=True)
 
       # TODO(nathaniel): make this .program() call unnecessary.
       self.data.redirect.program()
