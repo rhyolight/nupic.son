@@ -14,7 +14,12 @@
     {% endfor %}
    </table>
   </div>
-  <div class="block-footer"><a href="{{ org_list_url }}">{% if all_participating_orgs %}Mentoring organization details{% else %}See all mentoring organizations{% endif %}</a></div>
+  <div class="block-footer">
+    <span class="left-side"><a href="{{ org_list_url }}">{% if all_participating_orgs %}Mentoring organization details{% else %}See all mentoring organizations{% endif %}</a></span>
+    {% if register_url %}
+    <span class="right-side"><a href="{{ url }}">Register as a mentor</a></span>
+    {% endif %}
+  </div>
  </div>
 {% endif %}
 <!-- end .block.block-home-participating-orgs -->

@@ -163,13 +163,22 @@ class ParticipatingOrgs(Template):
 
     accepted_orgs_url = self.data.redirect.urlOf('gci_accepted_orgs')
 
-    return {
+    context = {
         'participating_orgs': participating_orgs,
         'participating_orgs_table_rows': participating_orgs_table_rows,
         'org_list_url': accepted_orgs_url,
         'all_participating_orgs': (
             self.data.program.nr_accepted_orgs <= len(participating_orgs)),
     }
+
+    if not self.data.profile:
+      redirector = self.data.redirect
+      redirector.program()
+      redirector.createProfile('mentor')
+      context['register_url'] = redirector.urlOf(
+          url_names.GCI_PROFILE_CREATE, secure=True)
+
+    return context
 
   def templatePath(self):
     return "modules/gci/homepage/_participating_orgs.html"
