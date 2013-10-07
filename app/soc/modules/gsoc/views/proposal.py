@@ -30,7 +30,6 @@ from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.forms import GSoCModelForm
-from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -151,7 +150,7 @@ class UpdateProposal(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'proposal/update/%s$' % gsoc_url_patterns.PROPOSAL,
+         url(r'proposal/update/%s$' % url_patterns.USER_ID,
          self, name='update_gsoc_proposal'),
     ]
 
