@@ -44,7 +44,7 @@ PROFILE_EXCLUDE = [
     'link_id', 'user', 'scope', 'status',
     'agreed_to_tos_on', 'name_on_documents', 'program',
     # notification fields
-    'notify_new_requests', 'notify_new_invites',
+    'notify_new_requests',
     'notify_invite_handled', 'notify_request_handled',
     # role data fields
     'student_info', 'mentor_for', 'org_admin_for',

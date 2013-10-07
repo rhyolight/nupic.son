@@ -328,7 +328,6 @@ class GSoCProfileHelper(ProfileHelper):
       public_comments=False, private_comments=False):
     self.createProfile()
     self.profile.notify_new_requests = new_requests
-    self.profile.notify_new_invites = new_invites
     self.profile.notify_invite_handled = invite_handled
     self.profile.notify_request_handled = request_handled
     self.profile.notify_new_proposals = new_proposals
@@ -466,7 +465,6 @@ class GCIProfileHelper(ProfileHelper):
       comments=False):
     self.createProfile()
     self.profile.notify_new_requests = new_requests
-    self.profile.notify_new_invites = new_invites
     self.profile.notify_invite_handled = invite_handled
     self.profile.notify_request_handled = request_handled
     self.profile.notify_comments = comments
