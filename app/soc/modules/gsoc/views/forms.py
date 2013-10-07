@@ -282,9 +282,6 @@ class GSoCBoundField(forms.BoundField):
         Uploaded on: %(uploaded)s UTC
         <p>
     """
-
-    import logging
-    logging.error(self.field._file)
     current_file = current_file_fmt % {
         'name': self.field._file.filename,
         'link': self.field._link,
