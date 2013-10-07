@@ -28,7 +28,6 @@ from soc.modules.gci.views import dashboard
 from soc.modules.gci.views import delete_account
 from soc.modules.gci.views import document
 from soc.modules.gci.views import homepage
-from soc.modules.gci.views import invite
 from soc.modules.gci.views import leaderboard
 from soc.modules.gci.views import moderate_delete_account
 from soc.modules.gci.views import org_app
@@ -81,10 +80,6 @@ class Callback(object):
     self.views.append(document.EventsPage())
     self.views.append(document.DocumentListPage())
     self.views.append(homepage.Homepage())
-    self.views.append(invite.InvitePage())
-    self.views.append(invite.ManageInvite())
-    self.views.append(invite.RespondInvite())
-    self.views.append(invite.ListUserInvitesPage())
     self.views.append(leaderboard.LeaderboardPage())
     self.views.append(leaderboard.StudentTasksPage())
     self.views.append(subscribed_tasks.SubscribedTasksPage())

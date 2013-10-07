@@ -46,13 +46,7 @@ DEF_REJECTED_ORG = ugettext(
 DEF_HANDLED_REQUEST_SUBJECT = ugettext(
     '[%(org)s] Request to become a %(role_verbose)s has been %(action)s')
 
-DEF_HANDLED_INVITE_SUBJECT = ugettext(
-    '[%(org)s] Invitation to become a %(role_verbose)s has been %(action)s')
-
 DEF_MENTOR_WELCOME_MAIL_SUBJECT = ugettext('Welcome to %s')
-
-DEF_ORG_INVITE_NOTIFICATION_TEMPLATE = \
-    'soc/notification/invitation.html'
 
 # TODO(dcrodman): This needs to be removed once connection is stable.
 DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = \
@@ -78,9 +72,6 @@ DEF_REJECTED_ORG_TEMPLATE = \
 
 DEF_HANDLED_REQUEST_NOTIFICATION_TEMPLATE = \
     'soc/notification/handled_request.html'
-
-DEF_HANDLED_INVITE_NOTIFICATION_TEMPLATE = \
-    'soc/notification/handled_invite.html'
 
 DEF_MENTOR_WELCOME_MAIL_TEMPLATE = \
     'soc/notification/mentor_welcome_mail.html'
@@ -234,39 +225,6 @@ def anonymousConnectionContext(data, email, anonymous_connection, message):
 
   return getContext(data, email, message_properties, subject, template)
 
-# TODO(dcrodman): This needs to be removed once connection is stable.
-def inviteContext(data, invite):
-  """Sends out an invite notification to the user the request is for.
-
-  Args:
-    data: a RequestData object with 'invite' and 'invite_profile' set.
-  """
-
-  assert isSet(data.invite_profile)
-
-  # do not send notifications if the user has opted out
-  if not data.invite_profile.notify_new_invites:
-    return {}
-
-  invitation_url = data.redirect.request(invite).url(full=True)
-
-  edit_link = data.redirect.editProfile().url(full=True)
-
-  message_properties = {
-      'role_verbose': invite.roleName(),
-      'org': invite.org.name,
-      'invitation_url': invitation_url,
-      'profile_edit_link': edit_link,
-  }
-
-  subject = DEF_INVITATION % message_properties
-
-  template = DEF_ORG_INVITE_NOTIFICATION_TEMPLATE
-
-  to_email = data.invite_profile.email
-
-  return getContext(data, [to_email], message_properties, subject, template)
-
 
 # TODO(dcrodman): This needs to be removed once connection is stable.
 def requestContext(data, request, admin_emails):
@@ -324,42 +282,6 @@ def handledRequestContext(data, status):
   template = DEF_HANDLED_REQUEST_NOTIFICATION_TEMPLATE
 
   to_email = data.requester_profile.email
-
-  # from user set to None to not leak who rejected it.
-  return getContext(data, [to_email], message_properties, subject, template)
-
-
-# TODO(dcrodman): This needs to be removed once connection is stable.
-def handledInviteContext(data):
-  """Sends a message that the invite to obtain a role has been handled.
-
-  Args:
-    data: a RequestData object.
-  """
-
-  assert isSet(data.invite)
-  assert isSet(data.invited_profile)
-
-  # do not send notifications if the user has opted out
-  if not data.invited_profile.notify_invite_handled:
-    return {}
-
-  status = data.invite.status
-  action = 'resubmitted' if status == 'pending' else status
-  edit_link = data.redirect.editProfile().url(full=True)
-
-  message_properties = {
-      'role_verbose': data.invite.roleName(),
-      'org': data.invite.org.name,
-      'action': action,
-      'profile_edit_link': edit_link,
-      }
-
-  subject = DEF_HANDLED_INVITE_SUBJECT % message_properties
-
-  template = DEF_HANDLED_INVITE_NOTIFICATION_TEMPLATE
-
-  to_email = data.invited_profile.email
 
   # from user set to None to not leak who rejected it.
   return getContext(data, [to_email], message_properties, subject, template)
