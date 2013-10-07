@@ -52,7 +52,7 @@ class LandingPageTest(test_utils.DjangoTestCase):
     self.site.mailing_list = 'dev@test.com'
     self.site.put()
 
-    response = self.get('/landing_page')
+    response = self.get('/')
     self.assertResponseOK(response)    
     self._assertPageTemplatesUsed(response)
 
@@ -62,14 +62,14 @@ class LandingPageTest(test_utils.DjangoTestCase):
     self.site.latest_gci = None
     self.site.put()
 
-    response = self.get('/landing_page')
+    response = self.get('/')
     self.assertResponseRedirect(response)
 
     self.site.latest_gsoc = None
     self.site.latest_gci = self.gci_program.key().name()
     self.site.put()
 
-    response = self.get('/landing_page')
+    response = self.get('/')
     self.assertResponseRedirect(response)
 
   def testTwoLatestPrograms(self):
@@ -78,5 +78,5 @@ class LandingPageTest(test_utils.DjangoTestCase):
     self.site.latest_gci = self.gci_program.key().name()
     self.site.put()
 
-    response = self.get('/landing_page')
+    response = self.get('/')
     self.assertResponseOK(response)
