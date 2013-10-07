@@ -221,8 +221,7 @@ class MainDashboard(Dashboard):
             'name': 'manage_organizations',
             'description': ugettext(
                 'Manage organizations from active program. You can allocate '
-                'slots for organizations, manage invitations for '
-                'org admin/mentors, and withdraw/accept students/mentors '
+                'slots for organizations, list mentors and administrators '
                 'from various organizations'),
             'title': 'Manage organizations',
             'link': '',

@@ -22,11 +22,6 @@ from soc.logic.accounts import denormalizeAccount
 from soc.tasks import mailer
 from soc.views.helper.access_checker import isSet
 
-DEF_INVITATION = ugettext(
-    '[%(org)s] Invitation to become a %(role_verbose)s.')
-
-DEF_NEW_REQUEST = ugettext(
-    '[%(org)s] New request from %(requester)s to become a %(role_verbose)s')
 
 DEF_NEW_USER_CONNECTION = ugettext(
     'New connection for %(org)s' )
@@ -43,14 +38,7 @@ DEF_ACCEPTED_ORG = ugettext(
 DEF_REJECTED_ORG = ugettext(
     '[%(org)s] Your organization application has been rejected.')
 
-DEF_HANDLED_REQUEST_SUBJECT = ugettext(
-    '[%(org)s] Request to become a %(role_verbose)s has been %(action)s')
-
 DEF_MENTOR_WELCOME_MAIL_SUBJECT = ugettext('Welcome to %s')
-
-# TODO(dcrodman): This needs to be removed once connection is stable.
-DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE = \
-    'soc/notification/new_request.html'
 
 # TODO(nathaniel): "gsoc" reference outside of app/soc/modules/gsoc.
 DEF_NEW_USER_CONNECTION_NOTIFICATION_TEMPLATE = \
@@ -69,9 +57,6 @@ DEF_ACCEPTED_ORG_TEMPLATE = \
 
 DEF_REJECTED_ORG_TEMPLATE = \
     'soc/notification/org_rejected.html'
-
-DEF_HANDLED_REQUEST_NOTIFICATION_TEMPLATE = \
-    'soc/notification/handled_request.html'
 
 DEF_MENTOR_WELCOME_MAIL_TEMPLATE = \
     'soc/notification/mentor_welcome_mail.html'
@@ -224,67 +209,6 @@ def anonymousConnectionContext(data, email, anonymous_connection, message):
   template = DEF_NEW_ANONYMOUS_CONNECTION_NOTIFICATION_TEMPLATE
 
   return getContext(data, email, message_properties, subject, template)
-
-
-# TODO(dcrodman): This needs to be removed once connection is stable.
-def requestContext(data, request, admin_emails):
-  """Sends out a notification to the persons who can process this Request.
-
-  Args:
-    request_entity: an instance of Request model.
-  """
-
-  assert isSet(data.organization)
-
-  request_url = data.redirect.request(request).url(full=True)
-  edit_link = data.redirect.editProfile().url(full=True)
-
-  message_properties = {
-      'requester': data.profile.name(),
-      'role_verbose': request.roleName(),
-      'org': request.org.name,
-      'request_url': request_url,
-      'profile_edit_link': edit_link,
-      }
-
-  subject = DEF_NEW_REQUEST % message_properties
-
-  template = DEF_NEW_REQUEST_NOTIFICATION_TEMPLATE
-
-  return getContext(data, admin_emails, message_properties, subject, template)
-
-
-# TODO(dcrodman): This needs to be removed once connection is stable.
-def handledRequestContext(data, status):
-  """Sends a message that the request to get a role has been handled.
-
-  Args:
-    data: a RequestData object.
-  """
-  assert isSet(data.request_entity)
-  assert isSet(data.requester_profile)
-
-  # do not send notifications if the user has opted out
-  if not data.requester_profile.notify_request_handled:
-    return {}
-
-  edit_link = data.redirect.editProfile().url(full=True)
-
-  message_properties = {
-      'role_verbose': data.request_entity.roleName(),
-      'org': data.request_entity.org.name,
-      'action': status,
-      'profile_edit_link': edit_link,
-      }
-
-  subject = DEF_HANDLED_REQUEST_SUBJECT % message_properties
-
-  template = DEF_HANDLED_REQUEST_NOTIFICATION_TEMPLATE
-
-  to_email = data.requester_profile.email
-
-  # from user set to None to not leak who rejected it.
-  return getContext(data, [to_email], message_properties, subject, template)
 
 
 def getMentorWelcomeMailContext(profile, data, message):

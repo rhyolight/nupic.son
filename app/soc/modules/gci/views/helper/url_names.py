@@ -14,11 +14,6 @@
 
 """Module for storing GCI related URL names."""
 
-GCI_LIST_REQUESTS = 'gci_list_requests'
-GCI_MANAGE_REQUEST = 'gci_manage_request'
-GCI_RESPOND_REQUEST = 'gci_respond_request'
-GCI_SEND_REQUEST = 'gci_send_request'
-
 GCI_PROGRAM_CREATE = 'gci_program_create'
 GCI_PROGRAM_EDIT = 'gci_program_edit'
 

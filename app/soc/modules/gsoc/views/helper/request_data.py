@@ -546,19 +546,6 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = 'gsoc_events'
     return self
 
-  # (dcrodman) This method will become obsolete when the connection module
-  # is commited to the main branch.
-  def request(self, request):
-    """Sets the _url_name for a request."""
-    assert request
-    self.id(request.key().id())
-    self.kwargs['user'] = request.parent_key().name()
-    if request.type == 'Request':
-      self._url_name = 'show_gsoc_request'
-    else:
-      self._url_name = 'gsoc_invitation'
-    return self
-
   def connect_user(self, user=None, organization=None):
     """Sets the _url_name for a gsoc_user_connection redirect.
 
