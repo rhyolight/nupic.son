@@ -18,7 +18,32 @@ from google.appengine.api import users
 
 from django.core import urlresolvers
 
+from melange.appengine import system
+
 from soc.logic import program as program_logic
+from soc.logic import site as site_logic
+from soc.models import profile as profile_model
+
+
+def getAbsoluteUrl(relative_url, hostname, secure=False):
+  """Constructs absolute URL based on the specified relative URL.
+
+  Args:
+    relative_url: Relative path to a resource.
+    hostname: Name of the host.
+    secure: Whether the URL should support HTTPS or not.
+
+  Returns:
+    A full path to the resource.
+  """
+  # TODO(nathaniel): consider using scheme-relative urls here?
+  if secure:
+    protocol = 'https'
+    hostname = system.getSecureHostname()
+  else:
+    protocol = 'http'
+
+  return '%s://%s%s' % (protocol, hostname, relative_url)
 
 
 class Linker(object):
@@ -174,3 +199,39 @@ class Linker(object):
 
 # Since Linker is stateless, there might as well be just one of it.
 LINKER = Linker()
+
+
+class AbsoluteLinker(object):
+  """Absolute URL creator for Melange."""
+
+  def __init__(self, linker, hostname):
+    """Initializes a new instance of this class.
+
+    Args:
+      linker: Linker instance to create relative URLs.
+      hostname: Hostname of the application defined as a string.
+    """
+    self._linker = linker
+    self._hostname = hostname
+
+  def userId(self, profile, entity_id, url_name, secure=False):
+    """Returns the absolute URL of a page whose address contains parts
+    associated with the specified profile and numeric identifier
+    of some other entity.
+
+    Args:
+      profile: Profile entity.
+      entity_id: Numeric ID of entity.
+      url_name: The name with which a URL was registered with Django.
+      secure: Whether the returned URL should support HTTPS or not.
+
+    Returns:
+      The URL of the page matching the given names for the given profile
+      and organization.
+    """
+    relative_url = self._linker.userId(profile, entity_id, url_name)
+    return getAbsoluteUrl(relative_url, self._hostname, secure=secure)
+
+# TODO(daniel): hostname should not be obtained via interaction with database
+# at module loading time.
+ABSOLUTE_LINKER = AbsoluteLinker(LINKER, site_logic.getHostname())
