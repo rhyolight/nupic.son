@@ -234,19 +234,3 @@ class IsUserOrgAdminForUrlOrg(AccessChecker):
           message=_MESSAGE_NOT_ORG_ADMIN_FOR_ORG % data.url_org.key().name())
 
 IS_USER_ORG_ADMIN_FOR_ORG = IsUserOrgAdminForUrlOrg()
-
-
-# TODO(daniel): Remove when not needed
-class HostOrDeveloperAccessChecker(AccessChecker):
-  """AccessChecker that ensures that the user is a program administrator."""
-
-  def checkAccess(self, data, check, mutator):
-    """See AccessChecker.checkAccess for specification."""
-    if data.is_developer:
-      # NOTE(nathaniel): Developers are given all the powers of
-      # program administrators.
-      return
-    elif not data.gae_user:
-      raise exception.LoginRequired()
-    elif not data.user.host_for:
-      raise exception.Forbidden(message=_MESSAGE_NOT_PROGRAM_ADMINISTRATOR)

@@ -252,8 +252,7 @@ class LandingPage(base.RequestHandler):
   """View with the landing page that is displayed when user visits
   the main URL for the application.
   """
-  # TODO(daniel): it should be changed to All Allowed Checker
-  access_checker = access.HostOrDeveloperAccessChecker()
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.RequestHandler.getDjangoURLPatterns for specification."""

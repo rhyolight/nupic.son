@@ -28,11 +28,13 @@ class LandingPageTest(test_utils.DjangoTestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
-    # TODO(daniel): eliminate it when page is publicly accessible
-    user = profile_utils.seedUser(is_developer=True)
+    user = profile_utils.seedUser()
     profile_utils.login(user)
 
-    site_properties = {'key_name': 'site'}
+    site_properties = {
+        'key_name': 'site',
+        'maintenance_mode': False
+        }
     self.site = seeder_logic.seed(site_model.Site, properties=site_properties)
 
     self.gsoc_program = seeder_logic.seed(gsoc_program_model.GSoCProgram)
