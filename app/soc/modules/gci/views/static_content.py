@@ -16,6 +16,7 @@
 
 from google.appengine.ext import blobstore
 
+from django.forms import util
 from django.utils import translation
 
 from melange.request import access
@@ -50,7 +51,7 @@ class ContentUploadForm(gci_forms.GCIModelForm):
     """Appends a form error message indicating that the file field is required.
     """
     if not self._errors:
-      self._errors = ErrorDict()
+      self._errors = util.ErrorDict()
 
     self._errors['content'] = self.error_class([DEF_NO_UPLOAD])
 
