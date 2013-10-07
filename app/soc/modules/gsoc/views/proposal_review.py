@@ -24,6 +24,7 @@ from django.utils.translation import ugettext
 
 from melange.request import exception
 from soc.logic import cleaning
+from soc.logic import links
 from soc.views.helper import url as url_helper
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
@@ -436,9 +437,8 @@ class ReviewProposal(base.GSoCRequestHandler):
       is_editable = data.timeline.afterStudentSignupEnd() and \
           data.proposal.is_editable_post_deadline
       if data.timeline.studentSignup() or is_editable:
-        data.redirect.proposal(
-            id=data.proposal.key().id(), student=data.proposer.link_id)
-        context['update_link'] = data.redirect.urlOf('update_gsoc_proposal')
+        context['update_link'] = links.LINKER.userId(
+            data.proposer, data.proposal.key().id(), 'update_gsoc_proposal')
 
     possible_mentors = db.get(data.proposal.possible_mentors)
     possible_mentors = self.sanitizePossibleMentors(data, possible_mentors)

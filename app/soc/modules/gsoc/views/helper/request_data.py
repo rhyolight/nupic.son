@@ -445,16 +445,6 @@ class RedirectHelper(request_data.RedirectHelper):
   """Helper for constructing redirects."""
 
   # TODO(daniel): id built-in function should not be shadowed
-  def proposal(self, id=None, student=None):
-    """Sets the kwargs for an url_patterns.PROPOSAL redirect."""
-    if not student:
-      assert 'user' in self._data.kwargs
-      student = self._data.kwargs['user']
-    self.id(id)
-    self.kwargs['user'] = student
-    return self
-
-  # TODO(daniel): id built-in function should not be shadowed
   def review(self, id=None, student=None):
     """Sets the kwargs for an url_patterns.REVIEW redirect."""
     if not student:
