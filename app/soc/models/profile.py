@@ -445,12 +445,6 @@ class Profile(soc.models.linkable.Linkable):
       'Whether to send an email notification when new requests are submitted.')
   notify_new_requests.group = NOTIFICATION_SETTINGS_GROUP
 
-  notify_invite_handled = db.BooleanProperty(required=False, default=True,
-      verbose_name=ugettext('Notify of handled invitations'))
-  notify_invite_handled.help_text = ugettext(
-      'Whether to send an email notification when an invite is handled.')
-  notify_invite_handled.group = NOTIFICATION_SETTINGS_GROUP
-
   notify_request_handled = db.BooleanProperty(required=False, default=True,
       verbose_name=ugettext('Notify of handled requests'))
   notify_request_handled.help_text = ugettext(
