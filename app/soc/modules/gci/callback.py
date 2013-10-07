@@ -41,6 +41,7 @@ from soc.modules.gci.views import profile_show
 from soc.modules.gci.views import program
 from soc.modules.gci.views import propose_winners
 from soc.modules.gci.views import request
+from soc.modules.gci.views import static_content
 from soc.modules.gci.views import student_forms
 from soc.modules.gci.views import students_info
 from soc.modules.gci.views import task
@@ -115,6 +116,8 @@ class Callback(object):
     self.views.append(request.SendRequestPage())
     self.views.append(request.ManageRequestPage())
     self.views.append(request.RespondRequestPage())
+    self.views.append(static_content.StaticContentUpload())
+    self.views.append(static_content.StaticContentDownload())
     self.views.append(student_forms.StudentFormUpload())
     self.views.append(student_forms.StudentFormDownload())
     self.views.append(students_info.StudentsInfoPage())
