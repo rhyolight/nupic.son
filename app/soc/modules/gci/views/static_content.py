@@ -18,6 +18,7 @@ from google.appengine.ext import blobstore
 
 from django.utils import translation
 
+from melange.request import access
 from melange.request import exception
 from soc.models import static_content
 from soc.views.helper import blobstore as bs_helper
@@ -28,13 +29,11 @@ from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
-
 CONTENT_KEY_NAME_FMT = '%(program_key_name)s/%(content_id)s'
 
 DEF_CONTENT_NOT_FOUND = translation.ugettext('Content with given ID not found')
 
 DEF_NO_UPLOAD = translation.ugettext('An error occurred, please upload a file.')
-
 
 class ContentUploadForm(gci_forms.GCIModelForm):
   """Django form to upload a static file.
@@ -81,9 +80,8 @@ class StaticContentUpload(base.GCIRequestHandler):
         url(r'content/upload/%s$' % url_patterns.PROGRAM, self,
             name=url_names.GCI_CONTENT_UPLOAD)]
 
-  def checkAccess(self, data, check, mutator):
-    """Allows access only to program host."""
-    check.isHost()
+  # Allow only program hosts to upload static content.
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
 
   def templatePath(self):
     """Returns the path to the template."""
@@ -176,14 +174,12 @@ class StaticContentDownload(base.GCIRequestHandler):
     """Allows public to download the content anonymously."""
     content_id = data.kwargs.get('content_id')
     if not content_id:
-      diaf
       raise exception.NotFound(message=DEF_CONTENT_NOT_FOUND)
 
     q = static_content.StaticContent.all()
     q.filter('content_id', content_id)
     entity = q.get()
     if not entity:
-      diaf
       raise exception.NotFound(message=DEF_CONTENT_NOT_FOUND)
 
     return bs_helper.sendBlob(entity.content)
