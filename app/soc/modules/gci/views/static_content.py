@@ -19,10 +19,10 @@ from google.appengine.ext import blobstore
 from django.utils import translation
 
 from melange.request import exception
+from soc.models import static_content
 from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns
 
-from soc.modules.gci.models import static_content
 from soc.modules.gci.views import base
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_names
@@ -41,7 +41,7 @@ class ContentUploadForm(gci_forms.GCIModelForm):
   """
 
   class Meta:
-    model = static_content.GCIStaticContent
+    model = static_content.StaticContent
     css_prefix = 'gci_static_content'
     fields = ['content_id', 'content']
 
@@ -179,7 +179,7 @@ class StaticContentDownload(base.GCIRequestHandler):
       diaf
       raise exception.NotFound(message=DEF_CONTENT_NOT_FOUND)
 
-    q = static_content.GCIStaticContent.all()
+    q = static_content.StaticContent.all()
     q.filter('content_id', content_id)
     entity = q.get()
     if not entity:

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing the GCIStaticContent model."""
+"""Module containing the StaticContent model."""
 
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
@@ -20,10 +20,11 @@ from google.appengine.ext import db
 from django.utils import translation
 
 
-class GCIStaticContent(db.Model):
-  """GCI static content name and its blobstore key.
+class StaticContent(db.Model):
+  """Static content name and its blobstore key.
 
   Parent:
+    soc.modules.gsoc.models.program.GSoCProgram or
     soc.modules.gci.models.program.GCIProgram
   """
 
