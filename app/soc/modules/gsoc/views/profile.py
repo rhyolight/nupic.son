@@ -49,7 +49,7 @@ def _handleAnonymousConnection(data, profile, token):
     token: Token for the AnonymousConnection object.
 
   Returns:
-    Newly created Connection enttiy.
+    Newly created Connection entity.
   """
   new_connection = connection_logic.activateAnonymousConnection(
       profile=profile, token=token)

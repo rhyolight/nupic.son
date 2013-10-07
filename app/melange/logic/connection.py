@@ -149,12 +149,13 @@ def createConnection(profile, org, user_role, org_role):
   return connection
 
 
-def createAnonymousConnection(org, org_role):
+def createAnonymousConnection(email, org, org_role):
   """Create a new AnonymousConnection to act as a placeholder so that a
   user can register and enroll with an organization from within a week
   of the date the connection is created.
 
   Args:
+    email: Email address for the user who is receiving the AnonymousConnection.
     org: Organization instance for which the anonymous connection was created.
     org_role: String constant from connection models module. This should
       either be MENTOR_ROLE or ORG_ADMIN_ROLE (constants from module).
@@ -167,7 +168,8 @@ def createAnonymousConnection(org, org_role):
       parent=org,
       org_role=org_role,
       token=token,
-      expiration_date=expiration
+      expiration_date=expiration,
+      email=email
       )
   connection.put()
   return connection

@@ -334,13 +334,14 @@ class CreateAnonymousConnectionTest(ConnectionTest):
   def testCreateAnonymousConnection(self):
     """Test that an AnonymousConnection can be created successfully."""
     connection_logic.createAnonymousConnection(org=self.org,
-        org_role=connection_model.MENTOR_ROLE)
+        org_role=connection_model.MENTOR_ROLE, email='person@test.com')
     expected_expiration =  datetime.today() + timedelta(7)
 
     connection = connection_model.AnonymousConnection.all().get()
     self.assertEquals(expected_expiration.date(),
         connection.expiration_date.date())
     self.assertEquals(connection_model.MENTOR_ROLE, connection.org_role)
+    self.assertEquals('person@test.com', connection.email)
 
 
 class QueryAnonymousConnectionTest(ConnectionTest):
@@ -357,7 +358,7 @@ class QueryAnonymousConnectionTest(ConnectionTest):
     """Test that the function will correctly fetch AnonymousConnection objects
     given a valid token."""
     connection_logic.createAnonymousConnection(org=self.org,
-        org_role=connection_model.MENTOR_ROLE)
+        org_role=connection_model.MENTOR_ROLE, email='person@test.com')
     token = connection_model.AnonymousConnection.all().get().token
     connection = connection_logic.queryAnonymousConnectionForToken(token)
     self.assertIsNotNone(connection)
@@ -381,7 +382,10 @@ class ActivateAnonymousConnectionTest(ConnectionTest):
     """Test that a user is prevented from activating a Connection that was
     created more than a week ago."""
     connection_logic.createAnonymousConnection(
-        org=self.org, org_role=connection_model.ORG_ADMIN_ROLE)
+        org=self.org,
+        org_role=connection_model.ORG_ADMIN_ROLE,
+        email='test@something.com'
+        )
     # Cause the anonymous connection to "expire."
     anonymous_connection = connection_model.AnonymousConnection.all().get()
     anonymous_connection.expiration_date = datetime.today() - timedelta(1)
@@ -399,7 +403,10 @@ class ActivateAnonymousConnectionTest(ConnectionTest):
     used to activate a new Connection for the user."""
     self.connection.delete()
     connection_logic.createAnonymousConnection(
-        org=self.org, org_role=connection_model.ORG_ADMIN_ROLE)
+        org=self.org,
+        org_role=connection_model.ORG_ADMIN_ROLE,
+        email='test@something.com'
+        )
     anonymous_connection = connection_model.AnonymousConnection.all().get()
 
     connection_logic.activateAnonymousConnection(profile=self.profile,

@@ -108,7 +108,7 @@ def createAnonymousConnectionTxn(data, organization, org_role, email, message):
     Newly created AnonymousConnection entity.
   """
   anonymous_connection = connection_logic.createAnonymousConnection(
-      org=organization, org_role=org_role)
+      org=organization, org_role=org_role, email=email)
 
   notification = notifications.anonymousConnectionContext(
       data=data, connection=anonymous_connection, email=email, message=message)

@@ -131,6 +131,7 @@ class OrgConnectionPageTest(test_utils.GSoCDjangoTestCase):
     self.assertIsNotNone(connection_entity)
     self.assertEquals(connection.MENTOR_ROLE, connection_entity.org_role)
     self.assertEquals(self.org.key(), connection_entity.parent().key())
+    self.assertEquals('test@somethingelese.com', connection_entity.email)
 
   def testGuarnateedOneOrgAdmin(self):
     """Test that the root org admin cannot establish a connection with him or
