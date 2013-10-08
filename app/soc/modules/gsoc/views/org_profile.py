@@ -148,7 +148,7 @@ class OrgProfilePage(base.GSoCRequestHandler):
          url(r'profile/organization/%s$' % url_patterns.PROGRAM,
          self, name=url_names.GSOC_ORG_PROFILE_CREATE),
          url(r'profile/organization/%s$' % url_patterns.ORG,
-         self, name='edit_gsoc_org_profile'),
+         self, name=url_names.GSOC_ORG_PROFILE_EDIT),
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -204,7 +204,7 @@ class OrgProfilePage(base.GSoCRequestHandler):
     org_profile = self.createOrgProfileFromForm(data)
     if org_profile:
       data.redirect.organization(organization=org_profile)
-      return data.redirect.to('edit_gsoc_org_profile', validated=True)
+      return data.redirect.to(url_names.GSOC_ORG_PROFILE_EDIT, validated=True)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
