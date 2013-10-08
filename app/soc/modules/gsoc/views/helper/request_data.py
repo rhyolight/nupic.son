@@ -606,12 +606,6 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = url_names.GSOC_ANONYMOUS_CONNECTION
     return self
 
-  def connection_comment(self, comment, full=False, secure=False):
-    """Creates a direct link to a comment."""
-    self.show_connection(self._data.user, self._data.connection)
-    url = self.urlOf(url_names.GSOC_SHOW_CONNECTION, full=full, secure=secure)
-    return url
-
   # TODO(daniel): id built-in function should not be shadowed
   def project(self, id=None, student=None):
     """Returns the URL to the Student Project.
