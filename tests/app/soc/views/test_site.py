@@ -14,6 +14,8 @@
 
 """Tests for site related views."""
 
+import httplib
+
 from soc.models import site as site_model
 from soc.modules.gci.models import program as gci_program_model
 from soc.modules.gsoc.models import program as gsoc_program_model
@@ -28,8 +30,8 @@ class LandingPageTest(test_utils.DjangoTestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
+    self.user = profile_utils.seedUser()
+    profile_utils.login(self.user)
 
     site_properties = {
         'key_name': 'site',
@@ -80,5 +82,23 @@ class LandingPageTest(test_utils.DjangoTestCase):
     self.site.latest_gci = self.gci_program.key().name()
     self.site.put()
 
+    response = self.get('/')
+    self.assertResponseOK(response)
+
+  def testMaintenanceMode(self):
+    """Tests that page is accessible only to developers when in maintenance."""
+    self.site.latest_gsoc = self.gsoc_program.key().name()
+    self.site.latest_gci = self.gci_program.key().name()
+    self.site.put()
+
+    # the page should is in maintenance mode
+    self.site.maintenance_mode = True
+    self.site.put()
+
+    # check that page is not accessible for non-developers
+    response = self.get('/')
+    self.assertResponseCode(response, httplib.SERVICE_UNAVAILABLE)
+
+    self.user.is_developer = True
     response = self.get('/')
     self.assertResponseOK(response)
