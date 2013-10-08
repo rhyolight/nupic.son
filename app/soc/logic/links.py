@@ -206,6 +206,8 @@ class Linker(object):
 LINKER = Linker()
 
 
+# TODO(daniel): replace this class probably with something that can handle
+# not only absolute URLs but also some other options, like GET arguments.
 class AbsoluteLinker(object):
   """Absolute URL creator for Melange."""
 
@@ -218,6 +220,20 @@ class AbsoluteLinker(object):
     """
     self._linker = linker
     self._hostname = hostname
+
+  def program(self, program, url_name, secure=False):
+    """Returns the absolute URL of a program's named page.
+
+    Args:
+      program: A program.
+      url_name: The name with which a URL was registered with Django.
+      secure: Whether the returned URL should support HTTPS or not.
+
+    Returns:
+      The URL of the page matching the given name for the given program.
+    """
+    relative_url = self._linker.program(program, url_name)
+    return getAbsoluteUrl(relative_url, self._hostname, secure=secure)
 
   def userId(self, profile, entity_id, url_name, secure=False):
     """Returns the absolute URL of a page whose address contains parts
