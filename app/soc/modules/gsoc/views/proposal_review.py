@@ -196,7 +196,7 @@ class UserActions(Template):
 
     ignore_proposal_url = links.LINKER.userId(
         self.data.url_profile, self.data.kwargs['id'],
-        'gsoc_proposal_ignore')
+        url_names.PROPOSAL_IGNORE)
 
     ignore_button_checked = False
     if self.data.proposal.status == 'ignored':
@@ -841,7 +841,7 @@ class IgnoreProposal(base.GSoCRequestHandler):
   def djangoURLPatterns(self):
     return [
          url(r'proposal/ignore/%s$' % url_patterns.USER_ID,
-         self, name='gsoc_proposal_ignore'),
+         self, name=url_names.PROPOSAL_IGNORE),
     ]
 
   def checkAccess(self, data, check, mutator):

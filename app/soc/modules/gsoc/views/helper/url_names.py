@@ -33,6 +33,7 @@ GSOC_PROJECT_CODE_SAMPLE_UPLOAD = 'gsoc_project_code_sample_upload'
 GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD = 'gsoc_project_code_sample_download'
 GSOC_PROJECT_CODE_SAMPLE_DELETE = 'gsoc_project_code_sample_delete'
 
+PROPOSAL_IGNORE = 'proposal_ignore'
 PROPOSAL_REVIEW = 'proposal_review'
 PROPOSAL_WITHDRAW = 'proposal_withdraw'
 
