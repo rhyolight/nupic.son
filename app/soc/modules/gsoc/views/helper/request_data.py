@@ -65,6 +65,10 @@ class TimelineHelper(request_data.TimelineHelper):
       name of the current period on the timeline as described in this method's
       documentation
     """
+    # NOTE(daniel): this is a temporary fix to the timeline widget
+    # it should be replaced/fixed shortly
+    return 'offseason'
+
     if not self.programActive():
       return 'offseason'
 
