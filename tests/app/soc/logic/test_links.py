@@ -23,32 +23,11 @@ from soc.logic import links
 from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model
+from soc.models import sponsor as sponsor_model
 from soc.modules.gci.views.helper import url_names as gci_url_names
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import profile_utils
-
-TEST_PROGRAM_NAME = 'test_program'
-TEST_SPONSOR_KEY_NAME = 'test_sponsor_key_name'
-
-class MockKey(object):
-
-  def __init__(self, name):
-    self._name = name
-
-  def name(self):
-    return self._name
-
-
-class MockSponsor(object):
-  def key(self):
-    return MockKey(TEST_SPONSOR_KEY_NAME)
-
-
-# TODO(nathaniel): use a real program here.
-class MockProgram(object):
-  sponsor = MockSponsor()
-  link_id = TEST_PROGRAM_NAME
 
 
 class _PathOnlyMockHttpRequest(object):
@@ -130,14 +109,25 @@ class TestLinker(unittest.TestCase):
         self.linker.profile(profile, gci_url_names.GCI_PROFILE_SHOW_ADMIN))
 
   def testProgram(self):
+    """Tests program function."""
+    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+
+    program_properties = {
+        'sponsor': sponsor,
+        'scope': sponsor,
+        }
+    program = seeder_logic.seed(
+        program_model.Program, properties=program_properties)
     self.assertEqual(
-        '/gci/homepage/%s/%s' % (TEST_SPONSOR_KEY_NAME, TEST_PROGRAM_NAME),
-        self.linker.program(MockProgram(), 'gci_homepage'))
+        '/gci/homepage/%s' % program.key().name(),
+        self.linker.program(program, 'gci_homepage'))
 
   def testSponsor(self):
+    """Tests sponsor function."""
+    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
     self.assertEqual(
-        '/gci/program/create/%s' % TEST_SPONSOR_KEY_NAME,
-        self.linker.sponsor(MockSponsor(), 'gci_program_create'))
+        '/gci/program/create/%s' % sponsor.key().name(),
+        self.linker.sponsor(sponsor, 'gci_program_create'))
 
   def testUserOrg(self):
     """Tests userOrg function."""
