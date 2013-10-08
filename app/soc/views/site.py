@@ -149,7 +149,6 @@ class SiteHomepage(base.RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        django_url(r'^$', self, name='site_home'),
         django_url(r'^(login)$', self, name='login'),
         django_url(r'^(logout)$', self, name='logout'),
     ]
@@ -253,13 +252,11 @@ class LandingPage(base.RequestHandler):
   """View with the landing page that is displayed when user visits
   the main URL for the application.
   """
-  # TODO(daniel): it should be changed to All Allowed Checker
-  access_checker = access.HostOrDeveloperAccessChecker()
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.RequestHandler.getDjangoURLPatterns for specification."""
-    # TODO(daniel): this should be changed to '/' when the page is public
-    return [django_url(r'^landing_page$', self, name='landing_page')]
+    return [django_url(r'^$', self, name='landing_page')]
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""
