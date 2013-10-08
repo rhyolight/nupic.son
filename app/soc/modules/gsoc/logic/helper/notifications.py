@@ -51,10 +51,13 @@ DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE = \
 
 
 def newProposalContext(data, proposal, to_emails):
-  """Sends out a notification to alert the user of a new comment.
+  """Sends out a notification to alert users of a new proposal.
 
   Args:
-    data: a RequestData object
+    data: a RequestData object.
+    proposal: Newly created proposal entity.
+    to_emails: List of email addresses of users who should
+        receive notifications.
   """
   proposal_notification_url = links.ABSOLUTE_LINKER.userId(
       data.profile, proposal.key().id(), 'review_gsoc_proposal')
