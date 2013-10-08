@@ -41,6 +41,7 @@ GSOC_ORG_BAN = 'gsoc_org_ban'
 
 GSOC_ORG_HOME = 'gsoc_org_home'
 GSOC_ORG_LIST_FOR_HOST = 'gsoc_org_list_for_host'
+GSOC_ORG_PROFILE_CREATE = 'gsoc_org_profile_create'
 
 GSOC_ORG_CONNECTION = 'gsoc_org_connection'
 GSOC_USER_CONNECTION = 'gsoc_user_connection'

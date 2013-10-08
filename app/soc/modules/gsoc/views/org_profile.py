@@ -146,7 +146,7 @@ class OrgProfilePage(base.GSoCRequestHandler):
   def djangoURLPatterns(self):
     return [
          url(r'profile/organization/%s$' % url_patterns.PROGRAM,
-         self, name='create_gsoc_org_profile'),
+         self, name=url_names.GSOC_ORG_PROFILE_CREATE),
          url(r'profile/organization/%s$' % url_patterns.ORG,
          self, name='edit_gsoc_org_profile'),
     ]

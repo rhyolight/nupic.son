@@ -315,7 +315,7 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList,
       raise exception.BadRequest(message='Missing data')
 
     parsed = json.loads(post_data)
-    url = data.redirect.urlOf('create_gsoc_org_profile', full=True)
+    url = data.redirect.urlOf(url_names.GSOC_ORG_PROFILE_CREATE, full=True)
 
     for oaid, properties in parsed.iteritems():
       record = OrgAppRecord.get_by_id(long(oaid))

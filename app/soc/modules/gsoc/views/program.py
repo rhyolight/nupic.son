@@ -172,7 +172,7 @@ class GSoCProgramMessagesForm(forms.GSoCModelForm):
 
     self.request_data.redirect.program()
     apply_url = self.request_data.redirect.urlOf(
-        'create_gsoc_org_profile', full=True, secure=True)
+        url_names.GSOC_ORG_PROFILE_CREATE, full=True, secure=True)
 
     org_app_context = {
       'url': apply_url + '?org_id=' + TEST_ORG_ID,
