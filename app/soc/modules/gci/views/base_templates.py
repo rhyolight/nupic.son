@@ -70,7 +70,7 @@ def siteMenuContext(data):
     context['tasks_link'] = redirect.urlOf('gci_list_tasks')
     if not data.user:
       context['register_as_student_link'] = redirect.createProfile(
-          'student').urlOf('create_gci_profile', secure=True)
+          'student').urlOf(url_names.GCI_PROFILE_CREATE, secure=True)
 
   return context
 
