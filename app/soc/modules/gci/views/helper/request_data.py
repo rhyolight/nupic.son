@@ -465,11 +465,3 @@ class RedirectHelper(request_data.RedirectHelper):
     super(RedirectHelper, self).orgHomepage(link_id)
     self._url_name = url_names.GCI_ORG_HOME
     return self
-
-  def editProfile(self):
-    """Returns the URL for the edit profile page.
-    """
-    self.program()
-    self._url_name = 'edit_gci_profile'
-
-    return self

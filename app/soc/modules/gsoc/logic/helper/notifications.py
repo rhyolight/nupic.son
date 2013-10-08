@@ -62,7 +62,8 @@ def newProposalContext(data, proposal, to_emails):
   """
   proposal_notification_url = links.ABSOLUTE_LINKER.userId(
       data.profile, proposal.key().id(), url_names.PROPOSAL_REVIEW)
-  edit_link = data.redirect.editProfile().url(full=True)
+  edit_profile_url = links.ABSOLUTE_LINKER.program(
+      data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
 
   message_properties = {
       'proposal_notification_url': proposal_notification_url,
@@ -70,7 +71,7 @@ def newProposalContext(data, proposal, to_emails):
       'proposal_name': proposal.title,
       'proposal_content': proposal.content,
       'org': proposal.org.name,
-      'profile_edit_link': edit_link,
+      'profile_edit_link': edit_profile_url,
   }
 
   # determine the subject
@@ -91,7 +92,8 @@ def updatedProposalContext(data, proposal, to_emails):
 
   proposal_notification_url = links.ABSOLUTE_LINKER.userId(
       data.profile, proposal.key().id(), url_names.PROPOSAL_REVIEW)
-  edit_link = data.redirect.editProfile().url(full=True)
+  edit_profile_url = links.ABSOLUTE_LINKER.program(
+      data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
 
   message_properties = {
       'proposal_notification_url': proposal_notification_url,
@@ -99,7 +101,7 @@ def updatedProposalContext(data, proposal, to_emails):
       'proposal_name': proposal.title,
       'proposal_content': proposal.content,
       'org': data.organization.name,
-      'profile_edit_link': edit_link,
+      'profile_edit_link': edit_profile_url,
   }
 
   # determine the subject
@@ -125,7 +127,8 @@ def newReviewContext(data, comment, to_emails):
       links.ABSOLUTE_LINKER.userId(
           data.proposer, data.proposal.key().id(), url_names.PROPOSAL_REVIEW),
       comment.key().id())
-  edit_link = data.redirect.editProfile().url(full=True)
+  edit_profile_url = links.ABSOLUTE_LINKER.program(
+      data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
 
   review_type = 'private' if comment.is_private else 'public'
   reviewed_name = data.proposal.title
@@ -138,7 +141,7 @@ def newReviewContext(data, comment, to_emails):
       'review_visibility': review_type,
       'proposer_name': data.proposer.name(),
       'org': data.proposal.org.name,
-      'profile_edit_link': edit_link,
+      'profile_edit_link': edit_profile_url,
       }
 
   # determine the subject
