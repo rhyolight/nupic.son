@@ -16,10 +16,13 @@
 
 from google.appengine.ext import db
 
+from django import http
 from django.utils.translation import ugettext
 
 from melange.request import exception
+
 from soc.logic import cleaning
+from soc.logic import links
 from soc.views.helper import url_patterns
 from soc.tasks import mailer
 
@@ -131,8 +134,9 @@ class ProposalPage(base.GSoCRequestHandler):
     """Handler for HTTP POST request."""
     proposal = self.createFromForm(data)
     if proposal:
-      data.redirect.review(proposal.key().id(), data.user.link_id)
-      return data.redirect.to('review_gsoc_proposal')
+      url = links.LINKER.userId(
+          data.profile, proposal.key().id(), 'review_gsoc_proposal')
+      return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
@@ -268,5 +272,6 @@ class UpdateProposal(base.GSoCRequestHandler):
     elif data.action == self.ACTIONS['resubmit']:
       self._resubmit(data)
 
-    data.redirect.review(data.proposal.key().id(), data.user.link_id)
-    return data.redirect.to('review_gsoc_proposal')
+    url = links.LINKER.userId(
+        data.profile, data.proposal.key().id(), 'review_gsoc_proposal')
+    return http.HttpResponseRedirect(url)

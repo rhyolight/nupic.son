@@ -24,6 +24,8 @@ from google.appengine.ext import db
 # about the RequestData object raising exceptions generally.
 from melange.request import exception
 from melange.utils import time
+
+from soc.logic import links
 from soc.models import site as site_model
 from soc.views.helper.access_checker import isSet
 from soc.views.helper import request_data
@@ -444,16 +446,6 @@ class RequestData(request_data.RequestData):
 class RedirectHelper(request_data.RedirectHelper):
   """Helper for constructing redirects."""
 
-  # TODO(daniel): id built-in function should not be shadowed
-  def review(self, id=None, student=None):
-    """Sets the kwargs for an url_patterns.REVIEW redirect."""
-    if not student:
-      assert 'user' in self._data.kwargs
-      student = self._data.kwargs['user']
-    self.id(id)
-    self.kwargs['user'] = student
-    return self
-
   # (dcrodman) This method will become obsolete when the connection module
   # is commited to the main branch.
   def invite(self, role=None):
@@ -616,9 +608,16 @@ class RedirectHelper(request_data.RedirectHelper):
 
   def comment(self, comment, full=False, secure=False):
     """Creates a direct link to a comment."""
-    review = comment.parent()
-    self.review(review.key().id_or_name(), review.parent().link_id)
-    url = self.urlOf('review_gsoc_proposal', full=full, secure=secure)
+    proposal = comment.parent()
+
+    # TODO(daniel): support secure URLs
+    if full:
+      url = links.ABSOLUTE_LINKER.userId(
+          proposal.parent(), proposal.key().id(), 'review_gsoc_proposal')
+    else:
+      url = links.LINKER.userId(
+          proposal.parent(), proposal.key().id(), 'review_gsoc_proposal')
+
     return "%s#c%s" % (url, comment.key().id())
 
   def connection_comment(self, comment, full=False, secure=False):

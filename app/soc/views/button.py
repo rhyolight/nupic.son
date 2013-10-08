@@ -16,6 +16,7 @@
 
 from django.utils.translation import ugettext
 
+from soc.logic import links
 from soc.views.template import Template
 
 
@@ -74,7 +75,8 @@ class ButtonTemplate(Template):
   @property
   def link(self):
     """Returns the post url for the button."""
-    return self.data.redirect.review().urlOf(self._url_name)
+    return links.LINKER.userId(
+        self.data.url_profile, self.data.kwargs['id'], self._url_name)
 
   @property
   def id(self):

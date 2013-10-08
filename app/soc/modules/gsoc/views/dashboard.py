@@ -25,8 +25,10 @@ from django.utils.translation import ugettext
 from melange.logic import connection as connection_logic
 from melange.models.connection import Connection
 from melange.request import exception
+
 from soc.logic import cleaning
 from soc.logic import document as document_logic
+from soc.logic import links
 from soc.logic import org_app as org_app_logic
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.universities import UNIVERSITIES
@@ -431,8 +433,7 @@ class MyProposalsComponent(Component):
     list_config.addPlainTextColumn('org', 'Organization',
                           lambda ent, *args: ent.org.name)
     list_config.setRowAction(lambda e, *args:
-        data.redirect.review(e.key().id_or_name(), e.parent().link_id).
-        urlOf('review_gsoc_proposal'))
+        links.LINKER.userId(e.parent(), e.key().id(), 'review_gsoc_proposal'))
     self._list_config = list_config
 
     super(MyProposalsComponent, self).__init__(data)
@@ -820,8 +821,7 @@ class SubmittedProposalsComponent(Component):
 
     # row action
     list_config.setRowAction(lambda e, *args:
-        data.redirect.review(e.key().id_or_name(), e.parent().link_id).
-        urlOf('review_gsoc_proposal'))
+        links.LINKER.userId(e.parent(), e.key().id(), 'review_gsoc_proposal'))
     list_config.setDefaultSort('last_modified_on', 'desc')
 
     # additional columns

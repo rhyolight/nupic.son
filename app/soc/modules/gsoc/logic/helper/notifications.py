@@ -16,8 +16,10 @@
 
 from django.utils.translation import ugettext
 
+from soc.logic import links
 from soc.logic.helper.notifications import getContext
 from soc.views.helper.access_checker import isSet
+
 
 DEF_NEW_PROPOSAL_SUBJECT = ugettext(
     '[%(org)s] New proposal by %(proposer_name)s: %(proposal_name)s')
@@ -54,8 +56,8 @@ def newProposalContext(data, proposal, to_emails):
   Args:
     data: a RequestData object
   """
-  data.redirect.review(proposal.key().id(), data.user.link_id)
-  proposal_notification_url = data.redirect.urlOf('review_gsoc_proposal', full=True)
+  proposal_notification_url = links.ABSOLUTE_LINKER.userId(
+      data.profile, proposal.key().id(), 'review_gsoc_proposal')
   edit_link = data.redirect.editProfile().url(full=True)
 
   message_properties = {
@@ -83,8 +85,8 @@ def updatedProposalContext(data, proposal, to_emails):
   """
   assert isSet(data.organization)
 
-  data.redirect.review(proposal.key().id(), data.user.link_id)
-  proposal_notification_url = data.redirect.urlOf('review_gsoc_proposal', full=True)
+  proposal_notification_url = links.ABSOLUTE_LINKER.userId(
+      data.profile, proposal.key().id(), 'review_gsoc_proposal')
   edit_link = data.redirect.editProfile().url(full=True)
 
   message_properties = {
