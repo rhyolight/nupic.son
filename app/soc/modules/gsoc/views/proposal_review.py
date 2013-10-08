@@ -266,7 +266,7 @@ class UserActions(Template):
 
       withdraw_proposal_url = links.LINKER.userId(
           self.data.url_profile, self.data.kwargs['id'],
-          'gsoc_proposal_withdraw')
+          url_names.PROPOSAL_WITHDRAW)
       withdraw_proposal = ToggleButtonTemplate(
           self.data, 'on_off', 'Withdraw Proposal', 'withdraw-proposal',
           withdraw_proposal_url, checked=checked,
@@ -1064,7 +1064,7 @@ class WithdrawProposal(base.GSoCRequestHandler):
   def djangoURLPatterns(self):
     return [
          url(r'proposal/withdraw/%s$' % url_patterns.USER_ID,
-         self, name='gsoc_proposal_withdraw'),
+         self, name=url_names.PROPOSAL_WITHDRAW),
     ]
 
   def checkAccess(self, data, check, mutator):

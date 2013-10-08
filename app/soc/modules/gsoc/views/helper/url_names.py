@@ -34,6 +34,7 @@ GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD = 'gsoc_project_code_sample_download'
 GSOC_PROJECT_CODE_SAMPLE_DELETE = 'gsoc_project_code_sample_delete'
 
 PROPOSAL_REVIEW = 'proposal_review'
+PROPOSAL_WITHDRAW = 'proposal_withdraw'
 
 GSOC_ORG_BAN = 'gsoc_org_ban'
 
