@@ -119,7 +119,12 @@ def newReviewContext(data, comment, to_emails):
   assert isSet(data.proposal)
   assert isSet(data.proposer)
 
-  review_notification_url = data.redirect.comment(comment, full=True)
+  # TODO(daniel): the second part of this URL should probably be added by
+  # a utility class
+  review_notification_url = '%s#c%s' % (
+      links.ABSOLUTE_LINKER.userId(
+          data.proposer, data.proposal.key().id(), url_names.PROPOSAL_REVIEW),
+      comment.key().id())
   edit_link = data.redirect.editProfile().url(full=True)
 
   review_type = 'private' if comment.is_private else 'public'

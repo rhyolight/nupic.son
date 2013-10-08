@@ -606,20 +606,6 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = url_names.GSOC_ANONYMOUS_CONNECTION
     return self
 
-  def comment(self, comment, full=False, secure=False):
-    """Creates a direct link to a comment."""
-    proposal = comment.parent()
-
-    # TODO(daniel): support secure URLs
-    if full:
-      url = links.ABSOLUTE_LINKER.userId(
-          proposal.parent(), proposal.key().id(), url_names.PROPOSAL_REVIEW)
-    else:
-      url = links.LINKER.userId(
-          proposal.parent(), proposal.key().id(), url_names.PROPOSAL_REVIEW)
-
-    return "%s#c%s" % (url, comment.key().id())
-
   def connection_comment(self, comment, full=False, secure=False):
     """Creates a direct link to a comment."""
     self.show_connection(self._data.user, self._data.connection)
