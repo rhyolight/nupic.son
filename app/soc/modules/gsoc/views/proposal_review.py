@@ -314,7 +314,7 @@ class ReviewProposal(base.GSoCRequestHandler):
   def djangoURLPatterns(self):
     return [
          url(r'proposal/review/%s$' % url_patterns.USER_ID,
-         self, name='review_gsoc_proposal'),
+         self, name=url_names.PROPOSAL_REVIEW),
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -580,7 +580,7 @@ class PostComment(base.GSoCRequestHandler):
       # in Melange.
       # TODO (Madhu): Replace this in favor of PJAX for loading comments.
       redirect_url = links.LINKER.userId(
-          data.proposer, data.proposal.key().id(), 'review_gsoc_proposal')
+          data.proposer, data.proposal.key().id(), url_names.PROPOSAL_REVIEW)
       proposal_match = resolve(redirect_url)
       proposal_view = proposal_match[0]
       data.request.method = 'GET'
@@ -827,7 +827,7 @@ class AssignMentor(base.GSoCRequestHandler):
     data.proposer = data.proposal.parent()
 
     url = links.LINKER.userId(
-        data.proposer, data.proposal.key().id(), 'review_gsoc_proposal')
+        data.proposer, data.proposal.key().id(), url_names.PROPOSAL_REVIEW)
     return http.HttpResponseRedirect(url)
 
   def get(self, data, check, mutator):

@@ -613,10 +613,10 @@ class RedirectHelper(request_data.RedirectHelper):
     # TODO(daniel): support secure URLs
     if full:
       url = links.ABSOLUTE_LINKER.userId(
-          proposal.parent(), proposal.key().id(), 'review_gsoc_proposal')
+          proposal.parent(), proposal.key().id(), url_names.PROPOSAL_REVIEW)
     else:
       url = links.LINKER.userId(
-          proposal.parent(), proposal.key().id(), 'review_gsoc_proposal')
+          proposal.parent(), proposal.key().id(), url_names.PROPOSAL_REVIEW)
 
     return "%s#c%s" % (url, comment.key().id())
 

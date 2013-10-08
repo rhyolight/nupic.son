@@ -136,7 +136,7 @@ class Duplicate(Template):
               'title': proposal.title,
               'link': links.LINKER.userId(
                   proposal.parent(), proposal.key().id(),
-                  'review_gsoc_proposal'),
+                  url_names.PROPOSAL_REVIEW),
               })
 
     context['orgs'] = orgs_details

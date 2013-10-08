@@ -33,6 +33,7 @@ from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.forms import GSoCModelForm
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -135,7 +136,7 @@ class ProposalPage(base.GSoCRequestHandler):
     proposal = self.createFromForm(data)
     if proposal:
       url = links.LINKER.userId(
-          data.profile, proposal.key().id(), 'review_gsoc_proposal')
+          data.profile, proposal.key().id(), url_names.PROPOSAL_REVIEW)
       return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-use.
@@ -273,5 +274,5 @@ class UpdateProposal(base.GSoCRequestHandler):
       self._resubmit(data)
 
     url = links.LINKER.userId(
-        data.profile, data.proposal.key().id(), 'review_gsoc_proposal')
+        data.profile, data.proposal.key().id(), url_names.PROPOSAL_REVIEW)
     return http.HttpResponseRedirect(url)

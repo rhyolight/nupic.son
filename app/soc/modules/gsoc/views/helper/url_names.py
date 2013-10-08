@@ -33,6 +33,8 @@ GSOC_PROJECT_CODE_SAMPLE_UPLOAD = 'gsoc_project_code_sample_upload'
 GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD = 'gsoc_project_code_sample_download'
 GSOC_PROJECT_CODE_SAMPLE_DELETE = 'gsoc_project_code_sample_delete'
 
+PROPOSAL_REVIEW = 'proposal_review'
+
 GSOC_ORG_BAN = 'gsoc_org_ban'
 
 GSOC_ORG_HOME = 'gsoc_org_home'

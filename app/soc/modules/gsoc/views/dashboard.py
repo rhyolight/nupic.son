@@ -433,7 +433,8 @@ class MyProposalsComponent(Component):
     list_config.addPlainTextColumn('org', 'Organization',
                           lambda ent, *args: ent.org.name)
     list_config.setRowAction(lambda e, *args:
-        links.LINKER.userId(e.parent(), e.key().id(), 'review_gsoc_proposal'))
+        links.LINKER.userId(
+            e.parent(), e.key().id(), url_names.PROPOSAL_REVIEW))
     self._list_config = list_config
 
     super(MyProposalsComponent, self).__init__(data)
@@ -821,7 +822,8 @@ class SubmittedProposalsComponent(Component):
 
     # row action
     list_config.setRowAction(lambda e, *args:
-        links.LINKER.userId(e.parent(), e.key().id(), 'review_gsoc_proposal'))
+        links.LINKER.userId(
+            e.parent(), e.key().id(), url_names.PROPOSAL_REVIEW))
     list_config.setDefaultSort('last_modified_on', 'desc')
 
     # additional columns

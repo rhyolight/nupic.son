@@ -19,6 +19,7 @@ from django.utils.translation import ugettext
 from soc.logic import links
 from soc.logic.helper.notifications import getContext
 from soc.views.helper.access_checker import isSet
+from soc.modules.gsoc.views.helper import url_names
 
 
 DEF_NEW_PROPOSAL_SUBJECT = ugettext(
@@ -60,7 +61,7 @@ def newProposalContext(data, proposal, to_emails):
         receive notifications.
   """
   proposal_notification_url = links.ABSOLUTE_LINKER.userId(
-      data.profile, proposal.key().id(), 'review_gsoc_proposal')
+      data.profile, proposal.key().id(), url_names.PROPOSAL_REVIEW)
   edit_link = data.redirect.editProfile().url(full=True)
 
   message_properties = {
@@ -89,7 +90,7 @@ def updatedProposalContext(data, proposal, to_emails):
   assert isSet(data.organization)
 
   proposal_notification_url = links.ABSOLUTE_LINKER.userId(
-      data.profile, proposal.key().id(), 'review_gsoc_proposal')
+      data.profile, proposal.key().id(), url_names.PROPOSAL_REVIEW)
   edit_link = data.redirect.editProfile().url(full=True)
 
   message_properties = {
