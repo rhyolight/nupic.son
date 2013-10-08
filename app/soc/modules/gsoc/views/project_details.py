@@ -24,6 +24,7 @@ from django.utils.translation import ugettext
 
 from melange.request import exception
 from soc.views.helper import blobstore as bs_helper
+from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
 from soc.views.toggle_button import ToggleButtonTemplate
@@ -36,7 +37,6 @@ from soc.modules.gsoc.views import assign_mentor
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_names
-from soc.modules.gsoc.views.helper import url_patterns
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -176,7 +176,7 @@ class ProjectDetailsUpdate(base.GSoCRequestHandler):
   def djangoURLPatterns(self):
     """Returns the list of tuples for containing URL to view method mapping."""
     return [
-        url(r'project/update/%s$' % url_patterns.PROJECT, self,
+        url(r'project/update/%s$' % url_patterns.USER_ID, self,
             name=url_names.GSOC_PROJECT_UPDATE)
     ]
 
@@ -231,7 +231,7 @@ class CodeSampleUploadFilePost(base.GSoCRequestHandler):
   def djangoURLPatterns(self):
     """Returns the list of tuples for containing URL to view method mapping."""
     return [
-        url(r'project/code_sample/upload/%s$' % url_patterns.PROJECT, self,
+        url(r'project/code_sample/upload/%s$' % url_patterns.USER_ID, self,
             name=url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD)
     ]
 
@@ -284,7 +284,7 @@ class CodeSampleDownloadFileGet(base.GSoCRequestHandler):
   def djangoURLPatterns(self):
     """Returns the list of tuples for containing URL to view method mapping."""
     return [
-        url(r'project/code_sample/download/%s$' % url_patterns.PROJECT, self,
+        url(r'project/code_sample/download/%s$' % url_patterns.USER_ID, self,
             name=url_names.GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD)
     ]
 
@@ -317,7 +317,7 @@ class CodeSampleDeleteFilePost(base.GSoCRequestHandler):
   def djangoURLPatterns(self):
     """Returns the list of tuples for containing URL to view method mapping."""
     return [
-        url(r'project/code_sample/delete/%s$' % url_patterns.PROJECT, self,
+        url(r'project/code_sample/delete/%s$' % url_patterns.USER_ID, self,
             name=url_names.GSOC_PROJECT_CODE_SAMPLE_DELETE)
     ]
 
@@ -468,7 +468,7 @@ class ProjectDetails(base.GSoCRequestHandler):
     """Returns the list of tuples for containing URL to view method mapping."""
 
     return [
-        url(r'project/%s$' % url_patterns.PROJECT, self,
+        url(r'project/%s$' % url_patterns.USER_ID, self,
             name='gsoc_project_details')
     ]
 
@@ -510,7 +510,7 @@ class AssignMentors(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'project/assign_mentors/%s$' % url_patterns.PROJECT,
+         url(r'project/assign_mentors/%s$' % url_patterns.USER_ID,
          self, name='gsoc_project_assign_mentors'),
     ]
 
@@ -580,7 +580,7 @@ class FeaturedProject(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'project/featured/%s$' % url_patterns.PROJECT,
+         url(r'project/featured/%s$' % url_patterns.USER_ID,
          self, name='gsoc_featured_project'),
     ]
 

@@ -32,10 +32,10 @@ def url(regex, view, kwargs=None, name=None):
 
 
 SURVEY    = namedLinkIdPattern(['sponsor', 'program', 'survey'])
-PROJECT   = namedIdBasedPattern(['sponsor', 'program', 'user'])
 COMMENT   = namedIdBasedPattern(['sponsor', 'program', 'user'])
 SURVEY_RECORD = namedIdBasedPattern(['sponsor', 'program', 'survey', 'user'])
-GRADING_RECORD = '/'.join([PROJECT, r'(?P<group>(\d+))', r'(?P<record>(\d+))'])
+GRADING_RECORD = '/'.join([
+    url_patterns.USER_ID, r'(?P<group>(\d+))', r'(?P<record>(\d+))'])
 PREFIXES = "(gsoc_program|gsoc_org)"
 DOCUMENT = url_patterns.DOCUMENT_FMT % PREFIXES
 ORG_DOCUMENT = url_patterns.ORG_DOCUMENT_FMT % PREFIXES
