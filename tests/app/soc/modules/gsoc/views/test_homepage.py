@@ -16,6 +16,7 @@
 """Tests for program homepage related views.
 """
 
+import unittest
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
@@ -72,6 +73,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     self.assertResponseOK(response)
     self.assertHomepageTemplatesUsed(response)
 
+  @unittest.skip('timeline widget is currently disabled')
   def testHomepageDuringSignup(self):
     """Tests the student homepage during the signup period.
     """
@@ -108,6 +110,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     self.assertEqual(featured_project_tmpl.featured_project.key(),
                      project.key())
 
+  @unittest.skip('timeline widget is currently disabled')
   def testHomepageAfterStudentsAnnounced(self):
     """Tests the student homepage after the student's have been announced.
     """
