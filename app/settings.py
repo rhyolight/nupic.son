@@ -29,16 +29,14 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-# 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_ENGINE = 'dummy'
-# None of the following are used with appengine
-DATABASE_NAME = ''             # Or path to database file if using sqlite3.
-DATABASE_USER = ''             # Not used with sqlite3.
-DATABASE_PASSWORD = ''         # Not used with sqlite3.
-# Set to empty string for localhost. Not used with sqlite3.
-DATABASE_HOST = ''
-# Set to empty string for default. Not used with sqlite3.
-DATABASE_PORT = ''
+# A dictionary containing the settings for all databases to be
+# used with Django.
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.dummy',
+        'NAME': 'dummy'
+    }
+}
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
