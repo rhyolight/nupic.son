@@ -33,7 +33,7 @@ from google.appengine.ext import db
 from google.appengine.ext import testbed
 
 from django.test import client
-from django.test import TestCase
+from django import test
 
 from soc.logic.helper import xsrfutil
 from soc.middleware import xsrf as xsrf_middleware
@@ -341,7 +341,7 @@ class GCITestCase(SoCTestCase):
         self.gci, self.dev_test)
 
 
-class DjangoTestCase(TestCase):
+class DjangoTestCase(test.TransactionTestCase):
   """Class extending Django TestCase in order to extend its functions.
 
   As well as remove the functions which are not supported by Google App Engine,
