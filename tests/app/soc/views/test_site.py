@@ -100,5 +100,6 @@ class LandingPageTest(test_utils.DjangoTestCase):
     self.assertResponseCode(response, httplib.SERVICE_UNAVAILABLE)
 
     self.user.is_developer = True
+    self.user.put()
     response = self.get('/')
     self.assertResponseOK(response)
