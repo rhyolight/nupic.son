@@ -387,6 +387,9 @@ class GSoCProgramMessagesPage(
 class UniversitiesForm(forms.GSoCModelForm):
   """Form to submit list of universities."""
 
+  class Meta:
+    pass
+
   universities = forms.CharField(
       widget=forms.Textarea(), label=_UNIVERSITIES_LIST_LABEL, 
       help_text=_UNIVERSITIES_LIST_HELP_TEXT)
