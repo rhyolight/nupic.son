@@ -299,3 +299,27 @@ def handleOrgAdminRoleSelection(connection, org_admin):
       if send_email:
         pass
         # TODO(daniel): send actual welcome email
+
+
+@db.transactional
+def markConnectionAsSeenByOrg(connection_key):
+  """Marks the specified connection as seen by organization.
+
+  Args:
+    connection: Connection key.
+  """
+  connection = db.get(connection_key)
+  connection.seen_by_org = True
+  connection.put()
+
+
+@db.transactional
+def markConnectionAsSeenByUser(connection_key):
+  """Marks the specified connection as seen by organization.
+
+  Args:
+    connection: Connection key.
+  """
+  connection = db.get(connection_key)
+  connection.seen_by_user = True
+  connection.put()

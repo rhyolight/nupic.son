@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" This module contains the object used to represent invitations and
-requests between a user and an organization
+""" This module contains a model used to represent a connection between
+a user and an organization.
 """
 from django.utils.translation import ugettext
 from google.appengine.ext import db
@@ -53,12 +53,14 @@ ORG_RESPONSES = (
 class Connection(db.Model):
   """Connection model.
 
-  This model is intended to be used to represent either an invitation or
-  request between a User and an Organization. The type of role to be granted
-  to the user is determined by the role field and promotion is handled
-  depending on the states of user and org acceptance. The methods below
-  are simply convenience to clean up a lot of the logic in the connection
-  module for determining valid actions.
+  This model is intended to be used to represent a connection between a user
+  and an organization. Each initiated connection specifies a role which
+  the organization has granted to the user and a role which the user requests
+  from the organization. These two properties put together determine what
+  type of role the user has for the organization at this moment.
+
+  The class also defines a number of convenience methods to clean up 
+  a lot of the logic in the connection module for determining valid actions.
 
   Parent: soc.models.profile.Profile
   """

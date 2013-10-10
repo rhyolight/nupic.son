@@ -505,12 +505,17 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
 
     messages = connection_logic.getConnectionMessages(data.url_connection)
 
+    mark_as_seen_url = links.LINKER.userId(
+        data.url_profile, data.url_connection.key().id(),
+        urls.UrlNames.CONNECTION_MARK_AS_SEEN_BY_USER)
+
     return {
         'page_name': MANAGE_CONNECTION_PAGE_NAME,
         'actions_form': actions_form,
         'message_form': message_form,
         'summary': summary,
         'messages': messages,
+        'mark_as_seen_url': mark_as_seen_url,
         }
 
   def post(self, data, check, mutator):
@@ -576,12 +581,17 @@ class ManageConnectionAsOrg(base.GCIRequestHandler):
 
     messages = connection_logic.getConnectionMessages(data.url_connection)
 
+    mark_as_seen_url = links.LINKER.userId(
+        data.url_profile, data.url_connection.key().id(),
+        urls.UrlNames.CONNECTION_MARK_AS_SEEN_BY_ORG)
+
     return {
         'page_name': MANAGE_CONNECTION_PAGE_NAME,
         'actions_form': actions_form,
         'message_form': message_form,
         'summary': summary,
         'messages': messages,
+        'mark_as_seen_url': mark_as_seen_url,
         }
 
   def post(self, data, check, mutator):
@@ -608,6 +618,46 @@ class ManageConnectionAsOrg(base.GCIRequestHandler):
           self, data.profile.key(), urls.UrlNames.CONNECTION_MANAGE_AS_ORG)
     else:
       raise exception.BadRequest('No valid form data is found in POST.')
+
+
+class MarkConnectionAsSeenByOrg(base.GCIRequestHandler):
+  """Handler to mark connection as seen by organization."""
+
+  # TODO(daniel): add actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    """See base.GCIRequestHandler.djangoURLPatterns for specification."""
+    return [
+        ci_url_patterns.url(
+            r'connection/mark_as_seen/org/%s$' % url_patterns.USER_ID,
+            self, name=urls.UrlNames.CONNECTION_MARK_AS_SEEN_BY_ORG)
+    ]
+
+  def post(self, data, check, mutator):
+    """See base.GCIRequestHandler.post for specification."""
+    connection_view.markConnectionAsSeenByOrg(data.url_connection.key())
+    return http.HttpResponse()
+
+
+class MarkConnectionAsSeenByUser(base.GCIRequestHandler):
+  """Handler to mark connection as seen by user."""
+
+  # TODO(daniel): add actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    """See base.GCIRequestHandler.djangoURLPatterns for specification."""
+    return [
+        ci_url_patterns.url(
+            r'connection/mark_as_seen/user/%s$' % url_patterns.USER_ID,
+            self, name=urls.UrlNames.CONNECTION_MARK_AS_SEEN_BY_USER)
+    ]
+
+  def post(self, data, check, mutator):
+    """See base.GCIRequestHandler.post for specification."""
+    connection_view.markConnectionAsSeenByUser(data.url_connection.key())
+    return http.HttpResponse()
 
 
 class FormHandler(object):
