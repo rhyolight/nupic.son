@@ -33,7 +33,7 @@ from google.appengine.ext import db
 from google.appengine.ext import testbed
 
 from django.test import client
-from django.test import TestCase
+from django.test import testcases
 
 from soc.logic.helper import xsrfutil
 from soc.middleware import xsrf as xsrf_middleware
@@ -167,6 +167,10 @@ class NonFailingFakePayload(object):
 
   def readline(self, length=None):
     return self.__content.readline(length)
+
+# monkey patch FakePayload class
+# TODO(daniel): figure out why standard FakePayload does not work
+client.FakePayload = NonFailingFakePayload
 
 
 class SoCTestCase(unittest.TestCase):
@@ -341,7 +345,7 @@ class GCITestCase(SoCTestCase):
         self.gci, self.dev_test)
 
 
-class DjangoTestCase(TestCase):
+class DjangoTestCase(testcases.TestCase):
   """Class extending Django TestCase in order to extend its functions.
 
   As well as remove the functions which are not supported by Google App Engine,
@@ -352,9 +356,11 @@ class DjangoTestCase(TestCase):
   _request_id = 0
 
   def _pre_setup(self):
-    """Performs any pre-test setup.
-    """
-    client.FakePayload = NonFailingFakePayload
+    """Performs any pre-test setup."""
+    # NOTE: super is not called, as TestCase class performs initialization
+    # that is not suitable for Melange tests, because no real Django datastore
+    # backend is used.
+    self.client = client.Client()
 
   def _post_teardown(self):
     """ Performs any post-test cleanup."""
