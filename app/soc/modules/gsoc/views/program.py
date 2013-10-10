@@ -14,9 +14,7 @@
 
 """Module for the program settings pages."""
 
-import csv
-import StringIO
-
+from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
 from django import forms as django_forms
@@ -24,7 +22,7 @@ from django import http
 from django.utils import html as html_utils
 from django.utils import translation
 
-from melange.logic import universities as universities_logic
+from melange.logic import school as school_logic
 from melange.request import access
 
 from soc.logic import links
@@ -33,6 +31,7 @@ from soc.logic.helper import notifications
 from soc.models import document
 from soc.views import program as soc_program_view
 from soc.views.helper import access_checker
+from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns as soc_url_patterns
 
 from soc.modules.gsoc.models import program as program_model
@@ -67,11 +66,14 @@ TEST_ORG_ENTITY = {
 TEST_PROPOSAL_TITLE = translation.ugettext(
     'Proposal title for test')
 
-_UNIVERSITIES_LIST_LABEL = translation.ugettext('List of Universities')
+_SCHOOLS_LIST_LABEL = translation.ugettext('File to upload')
 
-_UNIVERSITIES_LIST_HELP_TEXT = translation.ugettext(
-    'Each line should contain tab separated university unique identifier, '
+_SCHOOLS_LIST_HELP_TEXT = translation.ugettext(
+    'File with a list of predefined schools to be uploaded for the program. '
+    'Each line should contain tab separated unique school identifier, '
     'name, and country, respectively.')
+
+_UPLOAD_SCHOOLS_PAGE_NAME = translation.ugettext('Upload schools for program')
 
 class TimelineForm(forms.GSoCModelForm):
   """Django form to edit timeline settings."""
@@ -97,7 +99,7 @@ class CreateProgramForm(forms.GSoCModelForm):
         'student_max_age', 'min_slots', 'org_admin_agreement',
         'mentor_agreement', 'student_agreement', 'about_page',
         'connect_with_us_page', 'help_page', 'link_id',
-        'sponsor']
+        'sponsor', 'schools']
 
 
 class EditProgramForm(forms.GSoCModelForm):
@@ -113,7 +115,7 @@ class EditProgramForm(forms.GSoCModelForm):
     exclude = [
         'link_id', 'scope', 'timeline', 'min_slots',
         'slots_allocation', 'student_max_age', 'program_id',
-        'sponsor']
+        'sponsor', 'schools']
 
 
 class GSoCProgramMessagesForm(forms.GSoCModelForm):
@@ -384,60 +386,40 @@ class GSoCProgramMessagesPage(
     return url_names.GSOC_EDIT_PROGRAM_MESSAGES
 
 
-class UniversitiesForm(forms.GSoCModelForm):
-  """Form to submit list of universities."""
-
-  universities = forms.CharField(
-      widget=forms.Textarea(), label=_UNIVERSITIES_LIST_LABEL, 
-      help_text=_UNIVERSITIES_LIST_HELP_TEXT)
-
-  def clean_universities(self):
-    """Cleans data passed to universities field.
-
-    Returns:
-      list of tuples. Each element of that tuple represents a single
-      university and has exactly three elements. The first one is unique
-      identifier of the university, the second one is its name and the third
-      one is the country in which the institution is located.
-    """
-    reader = csv.reader(
-        StringIO.StringIO(self.cleaned_data['universities']), delimiter='\t')
-
-    universities = []
-    for i, row in enumerate(reader):
-      # skip empty lines
-      if not row:
-        continue
-
-      # check if each university description has correct number of positions
-      if len(row) != 3:
-        raise forms.ValidationError(
-            'University in line %s has wrong number of fields' % i)
-      else:
-        universities.append((
-            html_utils.escape(row[0]),
-            html_utils.escape(row[1]),
-            html_utils.escape(row[2])))
-
-    return universities
-
-
 # TODO(daniel): this function should be transactional once Program is NDB
 #@ndb.transactional
-def _uploadUniversitiesTxn(input_data, program):
-  """Uploads a list of predefined universities from the specified input data
+def _uploadSchoolsTxn(input_data, program):
+  """Uploads a list of predefined schools from the specified input data
   for the specified program in a transaction.
 
   Args:
-    input_data: data containing universities, as received 
-      from UniversitiesForm.
+    input_data: data containing schools, as received from SchoolsForm.
     program_key: program key.
   """
-  universities_logic.uploadUniversities(input_data, program)
+  school_logic.uploadSchools(input_data, program)
 
 
-class UploadUniversitiesPage(base.GSoCRequestHandler):
-  """View for program administrators to upload list of predefined universities
+class UploadSchoolsForm(forms.GSoCModelForm):
+  """Form to upload list of predefined schools for the program."""
+
+  schools = forms.FileField(
+      label=_SCHOOLS_LIST_LABEL, help_text=_SCHOOLS_LIST_HELP_TEXT)
+
+  def __init__(self, blob_info=None, download_link=None, **kwargs):
+    """Initializes a new instance of the form.
+
+    Args:
+      blob_info: blobstore.BlobInfo with the previously uploaded file.
+      download_link: URL to download the previously uploaded file.
+    """
+    super(UploadSchoolsForm, self).__init__(**kwargs)
+    field = self.fields['schools']
+    field._file = blob_info
+    field._link = download_link
+
+
+class UploadSchoolsPage(base.GSoCRequestHandler):
+  """View for program administrators to upload list of predefined schools
   for the program."""
 
   access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
@@ -446,31 +428,73 @@ class UploadUniversitiesPage(base.GSoCRequestHandler):
     """See base.GSoCRequestHandler.djangoURLPatterns for specification."""
     return [
         url_patterns.url(
-            r'program/universities/upload/%s$' % soc_url_patterns.PROGRAM,
-            self, name=url_names.GSOC_PROGRAM_UPLOAD_UNIVERSITIES),
+            r'program/schools/upload/%s$' % soc_url_patterns.PROGRAM,
+            self, name=url_names.GSOC_PROGRAM_UPLOAD_SCHOOLS),
     ]
 
   def templatePath(self):
     """See base.GSoCRequestHandler.templatePath for specification."""
-    return 'modules/gsoc/form_base.html'
+    return 'modules/gsoc/program/schools.html'
+
+  def jsonContext(self, data, check, mutator):
+    """See base.GSoCRequestHandler.jsonContext for specification."""
+    url = links.Linker().program(
+        data.program, url_names.GSOC_PROGRAM_UPLOAD_SCHOOLS)
+    return {
+        'upload_link': blobstore.create_upload_url(url),
+        }
 
   def context(self, data, check, mutator):
     """See base.GSoCRequestHandler.context for specification."""
+    if data.program.schools is not None:
+      form = UploadSchoolsForm(
+          data=data.POST or None, blob_info=data.program.schools,
+          download_link=links.Linker().program(
+              data.program, url_names.GSOC_PROGRAM_DOWNLOAD_SCHOOLS))
+    else:
+      form = UploadSchoolsForm(data=data.POST or None)
+
     return {
-        'forms': [UniversitiesForm(data=data.POST or None)]
+        'page_name': _UPLOAD_SCHOOLS_PAGE_NAME,
+        'forms': [form],
+        'error': bool(form.errors),
         }
 
   def post(self, data, check, mutator):
     """See base.GSoCRequestHandler.post for specification."""
-    form = UniversitiesForm(data=data.POST)
-    if form.is_valid():
-      _uploadUniversitiesTxn(
-          form.cleaned_data['universities'], data.program)
+    form = UploadSchoolsForm(data=data.POST, files=data.request.file_uploads)
+    if not form.is_valid():
+      # we are not storing this form, remove the uploaded blob from the cloud
+      for blob_info in data.request.file_uploads.itervalues():
+        blob_info.delete()
 
-      url = links.LINKER.program(
-          data.program, url_names.GSOC_PROGRAM_UPLOAD_UNIVERSITIES)
-      return http.HttpResponseRedirect(url)
-    else:
-      # TODO(nathaniel): problematic self-call.
+      # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
-    
+    else:
+      data.program.schools = blobstore.BlobInfo(form.cleaned_data['schools'])
+      data.program.put()
+
+    # TODO(daniel): inform user about possible errors somehow
+    url = links.Linker().program(
+        data.program, url_names.GSOC_PROGRAM_UPLOAD_SCHOOLS)
+    return http.HttpResponseRedirect(url)
+
+
+class DownloadSchoolsHandler(base.GSoCRequestHandler):
+  """Handler to download a previously uploaded file with schools that are
+  defined for the specified program.
+  """
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    """See base.GSoCRequestHandler.djangoURLPatterns for specification."""
+    return [
+        url_patterns.url(
+            r'program/schools/download/%s$' % soc_url_patterns.PROGRAM,
+            self, name=url_names.GSOC_PROGRAM_DOWNLOAD_SCHOOLS),
+    ]
+
+  def get(self, data, check, mutator):
+    """See base.GSoCRequestHandler.get for specification."""
+    return bs_helper.sendBlob(data.program.schools)

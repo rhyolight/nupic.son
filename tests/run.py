@@ -82,6 +82,12 @@ def clean_datastore():
     datastore.Clear()
 
 
+def clear_memcache():
+  """Clears all entries that exist in memcache."""
+  from google.appengine.api import memcache
+  memcache.flush_all()
+
+
 def begin(self):
   """Used to stub out nose.plugins.cover.Coverage.begin.
 
@@ -164,6 +170,22 @@ class DefaultUserSignInPlugin(plugins.Plugin):
   def afterTest(self, test):
     os.environ['USER_EMAIL'] = 'test@example.com'
     os.environ['USER_ID'] = '42'
+
+
+class AppEngineMemcacheClearPlugin(plugins.Plugin):
+  """Nose plugin to clear the AppEngine memecache entries between the tests."""
+
+  name = 'AppEngineMemcacheClearPlugin'
+  enabled = True
+
+  def configure(self, parser, env):
+    """See plugins.Plugin.configure for specification."""
+    super(AppEngineMemcacheClearPlugin, self).configure(parser, env)
+    self.enabled = True
+
+  def afterTest(self, test):
+    """See plugins.Plugin.afterTest for specification."""
+    clear_memcache()
 
 
 def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
@@ -327,7 +349,12 @@ def run_pyunit_tests():
   import django.test.utils
   django.test.utils.setup_test_environment()
 
-  plugins = [AppEngineDatastoreClearPlugin(), DefaultUserSignInPlugin()]
+  plugins = [
+      AppEngineDatastoreClearPlugin(),
+      AppEngineMemcacheClearPlugin(),
+      DefaultUserSignInPlugin()
+      ]
+
   # For coverage
   if '--coverage' in sys.argv:
     from nose.plugins import cover

@@ -26,7 +26,8 @@ GSOC_PROFILE_SHOW_ADMIN = 'gsoc_profile_show_admin'
 
 GSOC_PROGRAM_CREATE = 'gsoc_program_create'
 GSOC_PROGRAM_EDIT = 'gsoc_program_edit'
-GSOC_PROGRAM_UPLOAD_UNIVERSITIES = 'gsoc_program_edit_universities'
+GSOC_PROGRAM_DOWNLOAD_SCHOOLS = 'gsoc_program_download_schools'
+GSOC_PROGRAM_UPLOAD_SCHOOLS = 'gsoc_program_upload_schools'
 
 GSOC_PROJECT_UPDATE = 'gsoc_project_update'
 GSOC_PROJECT_CODE_SAMPLE_UPLOAD = 'gsoc_project_code_sample_upload'

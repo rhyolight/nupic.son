@@ -269,7 +269,7 @@ class GSoCBoundField(forms.BoundField):
         }
     return self.as_widget(attrs=attrs)
 
-  def renderFileInput(self):
+  def renderFileInput(self):    
     attrs = {
         'id': self.name + self.idSuffix(self),
         }
@@ -282,7 +282,6 @@ class GSoCBoundField(forms.BoundField):
         Uploaded on: %(uploaded)s UTC
         <p>
     """
-
     current_file = current_file_fmt % {
         'name': self.field._file.filename,
         'link': self.field._link,
@@ -348,7 +347,11 @@ class GSoCBoundField(forms.BoundField):
         note if note else self.help_text)
 
   def div_class(self):
-    prefix = getattr(self.form.Meta, 'css_prefix', None)
+    if hasattr(self.form, 'Meta'):
+      prefix = getattr(self.form.Meta, 'css_prefix', None)
+    else:
+      prefix = None
+
     name = prefix + '_' + self.name if prefix else self.name
 
     widget_div_class = self.field.widget.attrs.get('div_class', None)
