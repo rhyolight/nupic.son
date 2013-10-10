@@ -165,7 +165,6 @@ class Program(linkable_model.Linkable):
       # TODO(nathaniel): Someone got their HTML in this Python.
       '<tt>%s: Program Stealth-Mode Visible to Hosts and Devs only.<br/>'
       '%s: Visible to everyone.<br/>'
-      'Inactive: Not visible in sidebar, not editable.<br/>'
       '%s: Not visible or editable by anyone.</tt>' % (
           STATUS_INVISIBLE, STATUS_VISIBLE, STATUS_INVALID))
 
