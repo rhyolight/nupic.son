@@ -25,10 +25,10 @@ from django.utils.translation import ugettext
 from melange.logic import connection as connection_logic
 from melange.models.connection import Connection
 from melange.request import exception
+from melange.request import links
 
 from soc.logic import cleaning
 from soc.logic import document as document_logic
-from soc.logic import links
 from soc.logic import org_app as org_app_logic
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.universities import UNIVERSITIES

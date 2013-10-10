@@ -19,7 +19,8 @@ import urllib
 
 from codein.views.helper import urls as ci_urls
 
-from soc.logic import links
+from melange.request import links
+
 from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model

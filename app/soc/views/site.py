@@ -26,8 +26,9 @@ from django.utils.translation import ugettext
 
 from melange.request import access
 from melange.request import exception
+from melange.request import links
+
 from soc.logic import cleaning
-from soc.logic import links
 from soc.logic import site as site_logic
 from soc.models import document
 from soc.models import site

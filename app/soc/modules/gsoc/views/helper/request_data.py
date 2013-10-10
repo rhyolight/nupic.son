@@ -25,7 +25,6 @@ from google.appengine.ext import db
 from melange.request import exception
 from melange.utils import time
 
-from soc.logic import links
 from soc.models import site as site_model
 from soc.views.helper.access_checker import isSet
 from soc.views.helper import request_data

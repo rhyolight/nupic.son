@@ -16,7 +16,8 @@
 
 from django.utils.translation import ugettext
 
-from soc.logic import links
+from melange.request import links
+
 from soc.views.template import Template
 
 

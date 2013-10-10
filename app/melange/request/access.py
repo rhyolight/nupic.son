@@ -17,8 +17,8 @@
 from django.utils import translation
 
 from melange.request import exception
+from melange.request import links
 
-from soc.logic import links
 from soc.models import program as program_model
 
 

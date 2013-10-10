@@ -21,8 +21,9 @@ from google.appengine.ext import ndb
 from django.core.urlresolvers import reverse
 from django.utils import translation
 
+from melange.request import links
+
 from soc.logic import accounts
-from soc.logic import links
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic.program import getMostRecentProgram

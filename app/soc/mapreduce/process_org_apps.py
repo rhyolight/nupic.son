@@ -17,11 +17,12 @@
 from mapreduce import context
 from mapreduce import operation
 
+from melange.request import links
+
 from soc.logic import org_app as org_app_logic
 
 # MapReduce requires import of processed model classes.
 # pylint: disable=unused-import
-from soc.logic import links
 from soc.models.site import Site
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.org_app_survey import OrgAppSurvey

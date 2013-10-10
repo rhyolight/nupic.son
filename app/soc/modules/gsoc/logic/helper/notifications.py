@@ -16,7 +16,8 @@
 
 from django.utils.translation import ugettext
 
-from soc.logic import links
+from melange.request import links
+
 from soc.logic.helper.notifications import getContext
 from soc.views.helper.access_checker import isSet
 from soc.modules.gsoc.views.helper import url_names

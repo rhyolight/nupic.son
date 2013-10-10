@@ -26,8 +26,8 @@ from django.utils import translation
 
 from melange.logic import universities as universities_logic
 from melange.request import access
+from melange.request import links
 
-from soc.logic import links
 from soc.logic import mail_dispatcher
 from soc.logic.helper import notifications
 from soc.models import document

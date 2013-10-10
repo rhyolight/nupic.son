@@ -23,8 +23,9 @@ from django import forms as django_forms
 from django.utils.translation import ugettext
 
 from melange.request import exception
+from melange.request import links
+
 from soc.logic import cleaning
-from soc.logic import links
 from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet

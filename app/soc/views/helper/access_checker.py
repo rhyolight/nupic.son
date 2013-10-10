@@ -23,7 +23,8 @@ from django.utils.translation import ugettext
 from google.appengine.ext import db
 
 from melange.request import exception
-from soc.logic import links
+from melange.request import links
+
 from soc.models import document
 from soc.models import org_app_record
 from soc.models import program as program_model

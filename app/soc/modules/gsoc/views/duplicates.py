@@ -20,8 +20,8 @@ from google.appengine.ext import db
 from django import http
 
 from melange.request import access
+from melange.request import links
 
-from soc.logic import links
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 

@@ -27,8 +27,8 @@ from django.template import loader
 from melange.request import error
 from melange.request import exception
 from melange.request import initialize
+from melange.request import links
 from melange.request import render
-from soc.logic import links
 
 
 class RequestHandler(object):
