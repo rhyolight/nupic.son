@@ -28,11 +28,11 @@ from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
 from melange.request import access
 from melange.request import exception
+from melange.request import links
 from melange.templates import connection_list
 from melange.views import connection as connection_view
 
 from soc.logic import cleaning
-from soc.logic import links
 from soc.logic import user as user_logic
 from soc.logic.helper import notifications
 from soc.models import user as user_model

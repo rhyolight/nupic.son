@@ -547,20 +547,15 @@ class RedirectHelper(object):
     self.args = []
     self.kwargs = {}
 
-  def sponsor(self, program=None):
-    """Sets kwargs for an url_patterns.SPONSOR redirect."""
-    if not program:
-      assert access_checker.isSet(self._data.program)
-      program = self._data.program
-    self._clear()
-    self.kwargs['sponsor'] = program_logic.getSponsorKey(program).name()
-
   def program(self, program=None):
     """Sets kwargs for an url_patterns.PROGRAM redirect."""
     if not program:
       assert access_checker.isSet(self._data.program)
       program = self._data.program
-    self.sponsor(program)
+
+    self._clear()
+
+    self.kwargs['sponsor'] = program_logic.getSponsorKey(program).name()
     self.kwargs['program'] = program.link_id
 
   def organization(self, organization=None):

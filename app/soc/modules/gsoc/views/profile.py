@@ -83,8 +83,8 @@ class StudentNotificationForm(gsoc_forms.GSoCModelForm):
 
 
 MENTOR_FIELDS = [
-    'notify_request_handled', 'notify_invite_handled',
-    'notify_new_invites', 'notify_new_proposals', 'notify_proposal_updates',
+    'notify_request_handled',
+    'notify_new_proposals', 'notify_proposal_updates',
     'notify_public_comments', 'notify_private_comments',
 ]
 

@@ -16,9 +16,12 @@
 
 from google.appengine.ext import db
 
+from django import http
 from django.utils.translation import ugettext
 
 from melange.request import exception
+from melange.request import links
+
 from soc.logic import cleaning
 from soc.views.helper import url_patterns
 from soc.tasks import mailer
@@ -30,7 +33,7 @@ from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.forms import GSoCModelForm
-from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -132,8 +135,9 @@ class ProposalPage(base.GSoCRequestHandler):
     """Handler for HTTP POST request."""
     proposal = self.createFromForm(data)
     if proposal:
-      data.redirect.review(proposal.key().id(), data.user.link_id)
-      return data.redirect.to('review_gsoc_proposal')
+      url = links.LINKER.userId(
+          data.profile, proposal.key().id(), url_names.PROPOSAL_REVIEW)
+      return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
@@ -151,7 +155,7 @@ class UpdateProposal(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'proposal/update/%s$' % gsoc_url_patterns.PROPOSAL,
+         url(r'proposal/update/%s$' % url_patterns.USER_ID,
          self, name='update_gsoc_proposal'),
     ]
 
@@ -269,5 +273,6 @@ class UpdateProposal(base.GSoCRequestHandler):
     elif data.action == self.ACTIONS['resubmit']:
       self._resubmit(data)
 
-    data.redirect.review(data.proposal.key().id(), data.user.link_id)
-    return data.redirect.to('review_gsoc_proposal')
+    url = links.LINKER.userId(
+        data.profile, data.proposal.key().id(), url_names.PROPOSAL_REVIEW)
+    return http.HttpResponseRedirect(url)

@@ -264,7 +264,8 @@ class OrgHome(base.GSoCRequestHandler):
       # TODO(nathaniel): make this .organization call unnecessary.
       data.redirect.organization(organization=organization)
 
-      context['edit_link'] = data.redirect.urlOf('edit_gsoc_org_profile')
+      context['edit_link'] = data.redirect.urlOf(
+          url_names.GSOC_ORG_PROFILE_EDIT)
       context['start_connection_link'] = data.redirect.connect_org().urlOf(
           url_names.GSOC_ORG_CONNECTION)
 

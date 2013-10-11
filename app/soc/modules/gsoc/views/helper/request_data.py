@@ -24,6 +24,7 @@ from google.appengine.ext import db
 # about the RequestData object raising exceptions generally.
 from melange.request import exception
 from melange.utils import time
+
 from soc.models import site as site_model
 from soc.views.helper.access_checker import isSet
 from soc.views.helper import request_data
@@ -448,26 +449,6 @@ class RequestData(request_data.RequestData):
 class RedirectHelper(request_data.RedirectHelper):
   """Helper for constructing redirects."""
 
-  # TODO(daniel): id built-in function should not be shadowed
-  def proposal(self, id=None, student=None):
-    """Sets the kwargs for an url_patterns.PROPOSAL redirect."""
-    if not student:
-      assert 'user' in self._data.kwargs
-      student = self._data.kwargs['user']
-    self.id(id)
-    self.kwargs['user'] = student
-    return self
-
-  # TODO(daniel): id built-in function should not be shadowed
-  def review(self, id=None, student=None):
-    """Sets the kwargs for an url_patterns.REVIEW redirect."""
-    if not student:
-      assert 'user' in self._data.kwargs
-      student = self._data.kwargs['user']
-    self.id(id)
-    self.kwargs['user'] = student
-    return self
-
   # (dcrodman) This method will become obsolete when the connection module
   # is commited to the main branch.
   def invite(self, role=None):
@@ -550,19 +531,6 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = 'gsoc_events'
     return self
 
-  # (dcrodman) This method will become obsolete when the connection module
-  # is commited to the main branch.
-  def request(self, request):
-    """Sets the _url_name for a request."""
-    assert request
-    self.id(request.key().id())
-    self.kwargs['user'] = request.parent_key().name()
-    if request.type == 'Request':
-      self._url_name = 'show_gsoc_request'
-    else:
-      self._url_name = 'gsoc_invitation'
-    return self
-
   def connect_user(self, user=None, organization=None):
     """Sets the _url_name for a gsoc_user_connection redirect.
 
@@ -641,19 +609,6 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = url_names.GSOC_ANONYMOUS_CONNECTION
     return self
 
-  def comment(self, comment, full=False, secure=False):
-    """Creates a direct link to a comment."""
-    review = comment.parent()
-    self.review(review.key().id_or_name(), review.parent().link_id)
-    url = self.urlOf('review_gsoc_proposal', full=full, secure=secure)
-    return "%s#c%s" % (url, comment.key().id())
-
-  def connection_comment(self, comment, full=False, secure=False):
-    """Creates a direct link to a comment."""
-    self.show_connection(self._data.user, self._data.connection)
-    url = self.urlOf(url_names.GSOC_SHOW_CONNECTION, full=full, secure=secure)
-    return url
-
   # TODO(daniel): id built-in function should not be shadowed
   def project(self, id=None, student=None):
     """Returns the URL to the Student Project.
@@ -712,12 +667,5 @@ class RedirectHelper(request_data.RedirectHelper):
 
     self.kwargs['group'] = record.grading_survey_group.key().id_or_name()
     self.kwargs['record'] = record.key().id()
-
-    return self
-
-  def editProfile(self):
-    """Returns the URL for the edit profile page."""
-    self.program()
-    self._url_name = url_names.GSOC_PROFILE_EDIT
 
     return self

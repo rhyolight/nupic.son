@@ -40,6 +40,7 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
 from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.views.helper import url_names
 
 
 DEF_FAILED_PREVIOUS_EVAL = ugettext(
@@ -485,7 +486,7 @@ class AccessChecker(access_checker.AccessChecker):
       # TODO(nathaniel): make this .organization call unnecessary.
       self.data.redirect.organization(organization=gsoc_org)
 
-      edit_url = self.data.redirect.urlOf('edit_gsoc_org_profile')
+      edit_url = self.data.redirect.urlOf(url_names.GSOC_ORG_PROFILE_EDIT)
 
       raise exception.Forbidden(message=DEF_ORG_EXISTS % (org_id, edit_url))
 

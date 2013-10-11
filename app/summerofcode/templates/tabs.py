@@ -16,9 +16,9 @@
 
 from django.utils import translation
 
+from melange.request import links
 from melange.templates import tabs
 
-from soc.logic import links
 from soc.modules.gsoc.views.helper import url_names
 
 

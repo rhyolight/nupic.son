@@ -1,4 +1,4 @@
-# Copyright 2008 the Melange authors.
+# Copyright 2013 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,16 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains the GCIRequest Model."""
-
-
-from soc.models.request import Request
-
-
-# TODO(nathaniel): Empty subclass.
-class GCIRequest(Request):
-  """GCIRequest model.
-
-  See soc.models.request.Request model for details.
-  """
-  pass
+"""Modules for handling Summer Of Code-specific HTTP requests."""

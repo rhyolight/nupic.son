@@ -25,9 +25,9 @@ from django.utils.translation import ugettext
 from codein.views.helper import urls
 
 from melange.request import exception
+from melange.request import links
 
 from soc.logic import document as document_logic
-from soc.logic import links
 from soc.logic import org_app as org_app_logic
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.dashboard import Component

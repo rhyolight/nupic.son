@@ -46,12 +46,10 @@ Usage:
 
   context = { 'sender': 'melange-noreply@example.com',
               'to': 'test@example.com',
-              'subject': 'You have been invited to become a Host',
+              'subject': 'New proposal by student: example proposal',
               'sender_name': 'Alice',
-              'to_name': 'Melange Team',
-              'role': 'Host',
               'group': 'Google Summer of Code 2009',
-              'invitation_url': 'http://invitation-url'}
+              'proposal_notification_url': 'http://proposal_notification_url' }
 
   sendMailFromTemplate('soc/mail/invitation.html', context)
 """

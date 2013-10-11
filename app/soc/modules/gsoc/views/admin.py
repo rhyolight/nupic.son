@@ -24,9 +24,10 @@ from django.utils.translation import ugettext
 
 from melange.request import access
 from melange.request import exception
+from melange.request import links
+
 from soc.logic import accounts
 from soc.logic import cleaning
-from soc.logic import links
 from soc.models.user import User
 from soc.views.dashboard import Dashboard
 from soc.views.helper import addresses
@@ -221,8 +222,7 @@ class MainDashboard(Dashboard):
             'name': 'manage_organizations',
             'description': ugettext(
                 'Manage organizations from active program. You can allocate '
-                'slots for organizations, manage invitations for '
-                'org admin/mentors, and withdraw/accept students/mentors '
+                'slots for organizations, list mentors and administrators '
                 'from various organizations'),
             'title': 'Manage organizations',
             'link': '',

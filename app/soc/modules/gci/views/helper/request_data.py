@@ -465,33 +465,3 @@ class RedirectHelper(request_data.RedirectHelper):
     super(RedirectHelper, self).orgHomepage(link_id)
     self._url_name = url_names.GCI_ORG_HOME
     return self
-
-  def request(self, request):
-    """Sets the _url_name for a request.
-    """
-    assert request
-    if request.type == 'Request':
-      self.userId(request.parent_key().name(), request.key().id())
-      self._url_name = url_names.GCI_RESPOND_REQUEST
-    else:
-      self.id(request.key().id())
-      self._url_name = url_names.GCI_RESPOND_INVITE
-    return self
-
-  def invite(self, role=None, organization=None):
-    """Sets args for an url_patterns.INVITE redirect.
-    """
-    if not role:
-      assert 'role' in self._data.kwargs
-      role = self._data.kwargs['role']
-    self.organization(organization)
-    self.kwargs['role'] = role
-    return self
-
-  def editProfile(self):
-    """Returns the URL for the edit profile page.
-    """
-    self.program()
-    self._url_name = 'edit_gci_profile'
-
-    return self

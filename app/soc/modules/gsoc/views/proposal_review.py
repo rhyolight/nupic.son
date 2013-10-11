@@ -23,8 +23,11 @@ from django import forms as django_forms
 from django.utils.translation import ugettext
 
 from melange.request import exception
+from melange.request import links
+
 from soc.logic import cleaning
 from soc.views.helper import url as url_helper
+from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
 from soc.views.toggle_button import ToggleButtonTemplate
@@ -41,7 +44,7 @@ from soc.modules.gsoc.views import assign_mentor
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_names
-from soc.modules.gsoc.views.helper import url_patterns
+
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -160,13 +163,14 @@ class UserActions(Template):
   def _mentorContext(self):
     """Construct the context needed for mentor actions.
     """
-    # TODO(nathaniel): Eliminate this state-setting call.
-    self.data.redirect.review()
+
+    wish_to_mentor_url = links.LINKER.userId(
+        self.data.url_profile, self.data.kwargs['id'],
+        'gsoc_proposal_wish_to_mentor')
 
     wish_to_mentor = ToggleButtonTemplate(
         self.data, 'on_off', 'Wish to Mentor', 'wish-to-mentor',
-        self.data.redirect.urlOf('gsoc_proposal_wish_to_mentor'),
-        checked=self.data.isPossibleMentorForProposal(),
+        wish_to_mentor_url, checked=self.data.isPossibleMentorForProposal(),
         help_text=self.DEF_WISH_TO_MENTOR_HELP,
         labels = {
             'checked': 'Yes',
@@ -191,8 +195,9 @@ class UserActions(Template):
     """
     context = {}
 
-    # TODO(nathaniel): Eliminate this state-setting call.
-    self.data.redirect.review()
+    ignore_proposal_url = links.LINKER.userId(
+        self.data.url_profile, self.data.kwargs['id'],
+        url_names.PROPOSAL_IGNORE)
 
     ignore_button_checked = False
     if self.data.proposal.status == 'ignored':
@@ -200,8 +205,7 @@ class UserActions(Template):
     if self.data.proposal.status in ['pending', 'ignored']:
       ignore_proposal = ToggleButtonTemplate(
           self.data, 'on_off', 'Ignore Proposal', 'proposal-ignore',
-          self.data.redirect.urlOf('gsoc_proposal_ignore'),
-          checked=ignore_button_checked,
+          ignore_proposal_url, checked=ignore_button_checked,
           help_text=self.DEF_IGNORE_PROPOSAL_HELP,
           note=self.DEF_IGNORE_PROPOSAL_NOTE,
           labels={
@@ -229,9 +233,12 @@ class UserActions(Template):
       if self.data.proposal.mentor:
         current_mentors.append(self.data.proposal.mentor.key())
 
+      assign_mentor_url = links.LINKER.userId(
+          self.data.url_profile, self.data.kwargs['id'],
+          'gsoc_proposal_assign_mentor')
+
       context['assign_mentor'] = assign_mentor.AssignMentorFields(
-          self.data, current_mentors,
-          self.data.redirect.review().urlOf('gsoc_proposal_assign_mentor'),
+          self.data, current_mentors, assign_mentor_url,
           all_mentors_keys, possible_mentors_keys)
 
     return context
@@ -239,13 +246,13 @@ class UserActions(Template):
   def _proposerContext(self):
     """Construct the context needed for proposer actions.
     """
-    # TODO(nathaniel): Eliminate this state-setting call.
-    self.data.redirect.review()
+    publicly_visible_url = links.LINKER.userId(
+        self.data.url_profile, self.data.kwargs['id'],
+        'gsoc_proposal_publicly_visible')
 
     publicly_visible = ToggleButtonTemplate(
         self.data, 'on_off', 'Publicly Visible', 'publicly-visible',
-        self.data.redirect.urlOf('gsoc_proposal_publicly_visible'),
-        checked=self.data.proposal.is_publicly_visible,
+        publicly_visible_url, checked=self.data.proposal.is_publicly_visible,
         help_text=self.DEF_PUBLICLY_VISIBLE_HELP,
         labels = {
             'checked': 'Yes',
@@ -257,9 +264,13 @@ class UserActions(Template):
         checked = True
       elif self.data.proposal.status == 'pending':
         checked = False
+
+      withdraw_proposal_url = links.LINKER.userId(
+          self.data.url_profile, self.data.kwargs['id'],
+          url_names.PROPOSAL_WITHDRAW)
       withdraw_proposal = ToggleButtonTemplate(
           self.data, 'on_off', 'Withdraw Proposal', 'withdraw-proposal',
-          self.data.redirect.urlOf('gsoc_proposal_withdraw'), checked=checked,
+          withdraw_proposal_url, checked=checked,
           help_text=self.DEF_WITHDRAW_PROPOSAL_HELP,
           labels = {
               'checked': 'Yes',
@@ -303,8 +314,8 @@ class ReviewProposal(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'proposal/review/%s$' % url_patterns.REVIEW,
-         self, name='review_gsoc_proposal'),
+         url(r'proposal/review/%s$' % url_patterns.USER_ID,
+         self, name=url_names.PROPOSAL_REVIEW),
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -436,9 +447,8 @@ class ReviewProposal(base.GSoCRequestHandler):
       is_editable = data.timeline.afterStudentSignupEnd() and \
           data.proposal.is_editable_post_deadline
       if data.timeline.studentSignup() or is_editable:
-        data.redirect.proposal(
-            id=data.proposal.key().id(), student=data.proposer.link_id)
-        context['update_link'] = data.redirect.urlOf('update_gsoc_proposal')
+        context['update_link'] = links.LINKER.userId(
+            data.proposer, data.proposal.key().id(), 'update_gsoc_proposal')
 
     possible_mentors = db.get(data.proposal.possible_mentors)
     possible_mentors = self.sanitizePossibleMentors(data, possible_mentors)
@@ -493,7 +503,7 @@ class PostComment(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'proposal/comment/%s$' % url_patterns.REVIEW,
+         url(r'proposal/comment/%s$' % url_patterns.USER_ID,
          self, name='comment_gsoc_proposal'),
     ]
 
@@ -570,8 +580,8 @@ class PostComment(base.GSoCRequestHandler):
       # do not want any one to use this a model for writing code elsewhere
       # in Melange.
       # TODO (Madhu): Replace this in favor of PJAX for loading comments.
-      data.redirect.review(data.proposal.key().id(), data.proposer.link_id)
-      redirect_url = data.redirect.urlOf('review_gsoc_proposal')
+      redirect_url = links.LINKER.userId(
+          data.proposer, data.proposal.key().id(), url_names.PROPOSAL_REVIEW)
       proposal_match = resolve(redirect_url)
       proposal_view = proposal_match[0]
       data.request.method = 'GET'
@@ -587,7 +597,7 @@ class PostScore(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'proposal/score/%s$' % url_patterns.REVIEW,
+         url(r'proposal/score/%s$' % url_patterns.USER_ID,
          self, name='score_gsoc_proposal'),
     ]
 
@@ -678,7 +688,7 @@ class WishToMentor(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'proposal/wish_to_mentor/%s$' % url_patterns.REVIEW,
+         url(r'proposal/wish_to_mentor/%s$' % url_patterns.USER_ID,
          self, name='gsoc_proposal_wish_to_mentor'),
     ]
 
@@ -741,7 +751,7 @@ class AssignMentor(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'proposal/assign_mentor/%s$' % url_patterns.REVIEW,
+         url(r'proposal/assign_mentor/%s$' % url_patterns.USER_ID,
          self, name='gsoc_proposal_assign_mentor'),
     ]
 
@@ -817,8 +827,9 @@ class AssignMentor(base.GSoCRequestHandler):
 
     data.proposer = data.proposal.parent()
 
-    data.redirect.review(data.proposal.key().id(), data.proposer.link_id)
-    return data.redirect.to('review_gsoc_proposal')
+    url = links.LINKER.userId(
+        data.proposer, data.proposal.key().id(), url_names.PROPOSAL_REVIEW)
+    return http.HttpResponseRedirect(url)
 
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
@@ -830,8 +841,8 @@ class IgnoreProposal(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'proposal/ignore/%s$' % url_patterns.REVIEW,
-         self, name='gsoc_proposal_ignore'),
+         url(r'proposal/ignore/%s$' % url_patterns.USER_ID,
+         self, name=url_names.PROPOSAL_IGNORE),
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -889,7 +900,7 @@ class ProposalModificationPostDeadline(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'proposal/modification/%s$' % url_patterns.REVIEW,
+         url(r'proposal/modification/%s$' % url_patterns.USER_ID,
          self, name='gsoc_proposal_modification'),
     ]
 
@@ -944,7 +955,7 @@ class AcceptProposal(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'proposal/accept/%s$' % url_patterns.REVIEW,
+         url(r'proposal/accept/%s$' % url_patterns.USER_ID,
          self, name='gsoc_proposal_accept'),
     ]
 
@@ -999,7 +1010,7 @@ class ProposalPubliclyVisible(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'proposal/publicly_visible/%s$' % url_patterns.REVIEW,
+         url(r'proposal/publicly_visible/%s$' % url_patterns.USER_ID,
          self, name='gsoc_proposal_publicly_visible'),
     ]
 
@@ -1053,8 +1064,8 @@ class WithdrawProposal(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'proposal/withdraw/%s$' % url_patterns.REVIEW,
-         self, name='gsoc_proposal_withdraw'),
+         url(r'proposal/withdraw/%s$' % url_patterns.USER_ID,
+         self, name=url_names.PROPOSAL_WITHDRAW),
     ]
 
   def checkAccess(self, data, check, mutator):

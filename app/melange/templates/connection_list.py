@@ -17,8 +17,8 @@
 from django.utils import translation
 
 from melange.logic import connection as connection_logic
+from melange.request import links
 
-from soc.logic import links
 from soc.views import template
 from soc.views.helper import lists
 

@@ -118,7 +118,6 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertNotIn('mentor_profile_link', context)
     self.assertNotIn('role', context)
     self.assertNotIn('mentor_applied', context)
-    self.assertNotIn('invited_role', context)
     self.assertNotIn('mentor_request_link', context)
 
   def assertMentor(self):
@@ -130,7 +129,6 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertNotIn('mentor_profile_link', context)
     self.assertEqual('a mentor', context['role'])
     self.assertNotIn('mentor_applied', context)
-    self.assertNotIn('invited_role', context)
     self.assertNotIn('mentor_request_link', context)
 
   def testAnonymousPreSignup(self):
@@ -142,7 +140,6 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertIn('mentor_profile_link', context)
     self.assertNotIn('role', context)
     self.assertNotIn('mentor_applied', context)
-    self.assertNotIn('invited_role', context)
     self.assertNotIn('mentor_request_link', context)
 
   def testAnonymousDuringSignup(self):
@@ -156,7 +153,6 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertIn('mentor_profile_link', context)
     self.assertNotIn('role', context)
     self.assertNotIn('mentor_applied', context)
-    self.assertNotIn('invited_role', context)
     self.assertNotIn('mentor_request_link', context)
 
   def testAnonymousPostSignup(self):
@@ -168,7 +164,6 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertIn('mentor_profile_link', context)
     self.assertNotIn('role', context)
     self.assertNotIn('mentor_applied', context)
-    self.assertNotIn('invited_role', context)
     self.assertNotIn('mentor_request_link', context)
 
   def testAnonymousStudentsAnnounced(self):
@@ -180,7 +175,6 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.assertNotIn('mentor_profile_link', context)
     self.assertNotIn('role', context)
     self.assertNotIn('mentor_applied', context)
-    self.assertNotIn('invited_role', context)
     self.assertNotIn('mentor_request_link', context)
 
   def testMentorPreSignup(self):
