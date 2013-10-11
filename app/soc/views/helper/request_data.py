@@ -115,7 +115,7 @@ class TimelineHelper(object):
     return time.isBetween(start, end)
 
   def beforeOrgSignupStart(self):
-    return self.org_app and time.isBefore(self.orgSignupStart())
+    return not self.org_app or time.isBefore(self.orgSignupStart())
 
   def afterOrgSignupStart(self):
     return self.org_app and time.isAfter(self.orgSignupStart())

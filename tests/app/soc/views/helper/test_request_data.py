@@ -20,6 +20,7 @@ import unittest
 from melange.models import connection as connection_model
 from melange.request import exception
 
+from soc.models import org_app_survey as org_app_survey_model
 from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model
@@ -28,6 +29,37 @@ from soc.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import profile_utils
+from tests import timeline_utils
+
+
+class TimelineHelperTest(unittest.TestCase):
+  """Unit tests for TimelineHelper class."""
+
+  def setUp(self):
+    """See unitest.TestCase.setUp for specification."""
+    org_app = seeder_logic.seed(org_app_survey_model.OrgAppSurvey)
+    self.timeline_helper = request_data.TimelineHelper(None, org_app)
+
+  def testBeforeOrgSignupStart(self):
+    """Tests for beforeOrgSignupStart function."""
+    # organization application has yet to start
+    self.timeline_helper.org_app.survey_start = timeline_utils.future(delta=1)
+    self.timeline_helper.org_app.survey_end = timeline_utils.future(delta=2)
+    self.assertTrue(self.timeline_helper.beforeOrgSignupStart())
+
+    # organization application has started
+    self.timeline_helper.org_app.survey_start = timeline_utils.past(delta=1)
+    self.timeline_helper.org_app.survey_end = timeline_utils.future(delta=2)
+    self.assertFalse(self.timeline_helper.beforeOrgSignupStart())
+
+    # organization application has ended
+    self.timeline_helper.org_app.survey_start = timeline_utils.past(delta=2)
+    self.timeline_helper.org_app.survey_end = timeline_utils.past(delta=1)
+    self.assertFalse(self.timeline_helper.beforeOrgSignupStart())
+
+    # no organization application is defined
+    self.timeline_helper.org_app = None
+    self.assertTrue(self.timeline_helper.beforeOrgSignupStart())
 
 
 class UrlUserPropertyTest(unittest.TestCase):
