@@ -339,6 +339,8 @@ class DashboardPage(GCIRequestHandler):
       components += self._getMentorComponents(data)
     elif data.is_mentor:
       components += self._getMentorComponents(data)
+    else: # non student profiles
+      components += self._getNonStudentProfileCompontents(data)
 
     return components
 
@@ -381,6 +383,12 @@ class DashboardPage(GCIRequestHandler):
     components.append(MyOrgsScoresList(data))
 
     return components
+
+  def _getNonStudentProfileCompontents(self, data):
+    """Get the dashboard components for a user with a non-student profile
+    who does not have any actual role for any organization.
+    """
+    return [self._getMyOrgApplicationsComponent(data)]
 
   def _getMyOrgApplicationsComponent(self, data):
     """Returns MyOrgApplicationsComponent iff this user is main_admin or
