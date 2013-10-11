@@ -12,16 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""OrgAppSurvey related functions.
-"""
-
+"""OrgAppSurvey related functions."""
 
 from google.appengine.ext import db
+
+from melange import types
+from melange.logic import profile as profile_logic
 
 from soc.logic import mail_dispatcher
 from soc.logic.helper import notifications
 from soc.models import org_app_survey
-from soc.models import org_app_record
+from soc.models import org_app_record as org_app_record_model
 
 
 def getForProgram(program):
@@ -50,7 +51,7 @@ def setStatus(data, record, new_status, accept_url):
   if record.status == new_status:
     return
 
-  if new_status not in org_app_record.OrgAppRecord.status.choices:
+  if new_status not in org_app_record_model.OrgAppRecord.status.choices:
     return
 
   record_key = record.key()
@@ -73,3 +74,36 @@ def setStatus(data, record, new_status, accept_url):
       sub_txn()
 
   db.run_in_transaction(txn)
+
+
+def getOrgAdmins(org_app_record, models=types.MELANGE_MODELS):
+  """Returns organization administrators which are defined in the specified
+  organization application record.
+
+  Args:
+    org_app_record: Organization application record entity.
+    models: instance of types.Models that represent appropriate models.
+
+  Returns:
+    List of profile entities of the organization administrators defined
+    in the organization application record.
+  """
+  org_app = org_app_record.survey
+  program_key = (org_app_survey.OrgAppSurvey.program
+      .get_value_for_datastore(org_app))
+
+  user_keys = ([
+      org_app_record_model.OrgAppRecord.main_admin
+          .get_value_for_datastore(org_app_record),
+      org_app_record_model.OrgAppRecord.backup_admin
+          .get_value_for_datastore(org_app_record)
+      ])
+
+  profiles = []
+  for user_key in user_keys:
+    profile = profile_logic.getProfileForUsername(
+        user_key.name(), program_key, models=models)
+    if profile:
+      profiles.append(profile)
+
+  return profiles
