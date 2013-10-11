@@ -84,7 +84,7 @@ def _initMainDashboardSubpages(data):
   Returns:
     initial list of subpages to set for the main dashboard.
   """
-  if not data.profile.is_student:
+  if not data.profile.is_student and data.timeline.orgsAnnounced():
     connection_dashboard = ConnectionsDashboard(data)
 
     return [{
