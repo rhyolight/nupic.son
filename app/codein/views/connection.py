@@ -378,7 +378,7 @@ class StartConnectionAsUser(base.GCIRequestHandler):
     """See base.GCIRequestHandler.djangoURLPatterns for specification."""
     return [
         ci_url_patterns.url(
-            r'connection/start/user/%s$' % url_patterns.USER_ORG,
+            r'connection/start/user/%s$' % url_patterns.ORG,
             self, name=urls.UrlNames.CONNECTION_START_AS_USER)
     ]
 
@@ -965,8 +965,8 @@ class _OrganizationsToStartConnectionList(org_list.BasicOrgList):
 
   def _getRedirect(self):
     """See org_list.OrgList._getRedirect for specification."""
-    return lambda e, *args: links.LINKER.userOrg(
-        self.data.profile, e, urls.UrlNames.CONNECTION_START_AS_USER) 
+    return lambda e, *args: links.LINKER.organization(
+        e, urls.UrlNames.CONNECTION_START_AS_USER) 
 
   def _getDescription(self):
     """See org_list.OrgList._getDescription for specification."""

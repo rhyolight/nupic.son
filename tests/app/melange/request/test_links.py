@@ -152,10 +152,10 @@ class TestLinker(unittest.TestCase):
     org = seeder_logic.seed(org_model.Organization)
 
     self.assertEqual(
-        '/gci/connection/start/user/%s/%s/%s' % (profile.program.key().name(),
+        '/gci/student_tasks_for_org/%s/%s/%s' % (profile.program.key().name(),
             profile.parent_key().name(), org.link_id),
         self.linker.userOrg(
-            profile, org, ci_urls.UrlNames.CONNECTION_START_AS_USER))
+            profile, org, gci_url_names.GCI_STUDENT_TASKS_FOR_ORG))
 
   def testUserId(self):
     """Tests userId function."""
