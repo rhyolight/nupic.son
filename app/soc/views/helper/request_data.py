@@ -29,6 +29,7 @@ from melange.utils import time
 from soc.logic import program as program_logic
 from soc.logic import site as site_logic
 from soc.logic import user
+from soc.models import site as site_model
 from soc.models import sponsor as sponsor_model
 from soc.models import user as user_model
 from soc.views.helper import access_checker
@@ -526,7 +527,35 @@ class RequestData(object):
 
   def _getProgramWideFields(self):
     """Fetches program wide fields in a single database round-trip."""
-    raise NotImplementedError
+    keys = []
+
+    # add program's key
+    if self.kwargs.get('sponsor') and self.kwargs.get('program'):
+      program_key_name = "%s/%s" % (
+          self.kwargs['sponsor'], self.kwargs['program'])
+      program_key = db.Key.from_path(
+          self.models.program_model.kind(), program_key_name)
+    else:
+      program_key = site_model.Site.active_program.get_value_for_datastore(
+          self.site)
+      program_key_name = program_key.name()
+    keys.append(program_key)
+
+    # add timeline's key
+    keys.append(db.Key.from_path(
+        self.models.timeline_model.kind(), program_key_name))
+
+    # add org_app's key
+    org_app_key_name = '%s/%s/orgapp' % (
+        self.models.program_model.prefix, program_key_name)
+    keys.append(db.Key.from_path('OrgAppSurvey', org_app_key_name))
+
+    self._program, self._program_timeline, self._org_app = db.get(keys)
+
+    # raise an exception if no program is found
+    if not self._program:
+      raise exception.NotFound(
+          message="There is no program for url '%s'" % program_key_name)
 
 
 # TODO(nathaniel): This should be immutable.
