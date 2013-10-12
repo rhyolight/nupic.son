@@ -19,9 +19,11 @@ from melange import types
 from soc.modules.gci.models import organization
 from soc.modules.gci.models import profile
 from soc.modules.gci.models import program
+from soc.modules.gci.models import timeline
 
 
 CI_MODELS = types.Models(
     org_model=organization.GCIOrganization,
     profile_model=profile.GCIProfile,
-    program_model=program.GCIProgram)
+    program_model=program.GCIProgram,
+    timeline_model=timeline.GCITimeline)

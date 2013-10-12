@@ -21,6 +21,7 @@ from codein import types
 from soc.modules.gci.models import organization as org_model
 from soc.modules.gci.models import profile as profile_model
 from soc.modules.gci.models import program as program_model
+from soc.modules.gci.models import timeline as timeline_model
 
 
 class TestCodeInModels(unittest.TestCase):
@@ -41,3 +42,7 @@ class TestCodeInModels(unittest.TestCase):
   def testProgramModel(self):
     """Tests program_model attribute."""
     self.assertEqual(self.models.program_model, program_model.GCIProgram)
+
+  def testTimelineModel(self):
+    """Tests timeline_model attribute."""
+    self.assertEqual(self.models.timeline_model, timeline_model.GCITimeline)
