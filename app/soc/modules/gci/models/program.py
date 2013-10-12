@@ -42,6 +42,10 @@ class GCIProgram(soc_program_model.Program):
 
   _messages_model = GCIProgramMessages
 
+  #: string used as a prefix of various key names for other models
+  #TODO(daniel): eliminate this
+  prefix = 'gci_program'
+
   homepage_url_name = "gci_homepage"
 
   #: Required property containing the number of Tasks Students can work
