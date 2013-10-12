@@ -219,7 +219,8 @@ class ConnectionForm(gci_forms.GCIModelForm):
     # TODO(daniel): anonymous connections should be supported
     if users or emails:
       raise gci_forms.ValidationError(
-          'Anonymous connections are not supported.')
+          'Anonymous connections are not supported at this time. '
+          'Please provide usernames of users with profiles only.')
 
     return profiles, users, emails
 
