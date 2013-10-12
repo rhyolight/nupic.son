@@ -97,6 +97,9 @@ CONNECTION_FORM_USER_ROLE_LABEL = translation.ugettext(
 MESSAGE_FORM_CONTENT_LABEL = translation.ugettext(
     'Send New Message')
 
+MESSAGE_CONNECTION_CANNOT_BE_ACCESSED = translation.ugettext(
+    'Requested connection cannot by accessed by this user.')
+
 ORGANIZATION_ITEM_LABEL = translation.ugettext('Organization')
 USER_ITEM_LABEL = translation.ugettext('User')
 USER_ROLE_ITEM_LABEL = translation.ugettext('User Requests Role')
@@ -470,11 +473,25 @@ class StartConnectionAsOrg(base.GCIRequestHandler):
       return self.get(data, check, mutator)
 
 
+class UrlConnectionIsForCurrentUserAccessChecker(access.AccessChecker):
+  """AccessChecker that ensures that connection which is retrieved from URL
+  data belongs to the user who is currently logged in.
+  """
+
+  def checkAccess(self, data, check, mutator):
+    """See AccessChecker.checkAccess for specification."""
+    if data.url_connection.parent_key() != data.profile.key():
+      raise exception.Forbidden(message=MESSAGE_CONNECTION_CANNOT_BE_ACCESSED)
+
+MANAGE_CONNECTION_AS_USER_ACCESS_CHECKER = access.ConjuctionAccessChecker([
+    access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+    UrlConnectionIsForCurrentUserAccessChecker(),
+    ])
+
 class ManageConnectionAsUser(base.GCIRequestHandler):
   """View to manage an existing connection by the user."""
 
-  # TODO(daniel): add actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = MANAGE_CONNECTION_AS_USER_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.GCIRequestHandler.djangoURLPatterns for specification."""

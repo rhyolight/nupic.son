@@ -14,6 +14,7 @@
 
 """Unit tests for connection related views."""
 
+import httplib
 import mock
 import unittest
 
@@ -126,6 +127,70 @@ class NoConnectionExistsAccessCheckerTest(unittest.TestCase):
     access_checker = connection_view.NoConnectionExistsAccessChecker()
     with self.assertRaises(exception.Redirect):
       access_checker.checkAccess(self.data, None, None)
+
+
+class UrlConnectionIsForCurrentUserAccessCheckerTest(unittest.TestCase):
+  """Unit tests for UrlConnectionIsForCurrentUserAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.data = request_data.RequestData(None, None, None)
+
+    self.user = profile_utils.seedUser()
+    self.data._profile = seeder_logic.seed(profile_model.Profile,
+        properties={'parent': self.user})
+    self.data._url_org = seeder_logic.seed(org_model.Organization)
+
+    properties={
+        'parent': self.data._profile,
+        'organization': self.data._url_org
+        }
+    self.data._url_connection = seeder_logic.seed(
+        connection_model.Connection, properties=properties)
+
+  def testConnectedUserAccessGranted(self):
+    """Tests that access is granted for the connected user."""
+    profile_utils.login(self.user)
+    access_checker = (
+        connection_view.UrlConnectionIsForCurrentUserAccessChecker())
+    access_checker.checkAccess(self.data, None, None)
+
+  def testAnotherUserAccessDenied(self):
+    """Tests that another (not connected) user is denied access."""
+    # seed another user who is currently logged in
+    other_user = profile_utils.seedUser()
+    profile_utils.login(other_user)
+
+    self.data._profile = seeder_logic.seed(
+        profile_model.Profile, properties={'parent': other_user})
+
+    access_checker = (
+        connection_view.UrlConnectionIsForCurrentUserAccessChecker())
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testOrgAdminAccessDenied(self):
+    """Tests that org admin for connected organization is denied access."""
+    # seed another user who is currently logged in
+    other_user = profile_utils.seedUser()
+    profile_utils.login(other_user)
+
+    profile_properties = {
+        'parent': other_user,
+        'is_mentor': True,
+        'mentor_for': [self.data._url_org.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.data._url_org.key()]
+        }
+    self.data._profile = seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
+
+    access_checker = (
+        connection_view.UrlConnectionIsForCurrentUserAccessChecker())
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
 
 
 class StartConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
