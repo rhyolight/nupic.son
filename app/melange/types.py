@@ -16,6 +16,7 @@
 
 from soc.models import organization
 from soc.models import profile
+from soc.models import program
 
 
 class Models(object):
@@ -24,17 +25,22 @@ class Models(object):
   Attributes:
     org_model: class that represents organization model.
     profile_model: class that represents profile model.
+    program_model: class that represents program model.
   """
 
-  def __init__(self, org_model=None, profile_model=None):
+  def __init__(self, org_model=None, profile_model=None, program_model=None):
     """Initializes new instance of Models class.
 
     Args:
       org_model: class that represents organization model.
       profile_model: class that represents profile model.
+      program_model: class that represents program model.
     """
     self.org_model = org_model
     self.profile_model = profile_model
+    self.program_model = program_model
 
 MELANGE_MODELS = Models(
-    org_model=organization.Organization, profile_model=profile.Profile)
+    org_model=organization.Organization,
+    profile_model=profile.Profile,
+    program_model=program.Program)
