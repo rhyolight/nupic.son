@@ -180,6 +180,21 @@ class NonStudentUrlProfileAccessChecker(AccessChecker):
 NON_STUDENT_URL_PROFILE_ACCESS_CHECKER = NonStudentUrlProfileAccessChecker()
 
 
+class NonStudentProfileAccessChecker(AccessChecker):
+  """AccessChecker that ensures that the currently logged-in user
+  has a non-student profile."""
+
+  def checkAccess(self, data, check, mutator):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.profile or data.profile.status != 'active':
+      raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
+
+    if data.profile.is_student:
+      raise exception.Forbidden(message=_MESSAGE_STUDENTS_DENIED)
+
+NON_STUDENT_PROFILE_ACCESS_CHECKER = NonStudentProfileAccessChecker()
+
+
 class ProgramActiveAccessChecker(AccessChecker):
   """AccessChecker that ensures that the program is currently active.
 
@@ -221,7 +236,7 @@ IS_URL_USER_ACCESS_CHECKER = IsUrlUserAccessChecker()
 
 class IsUserOrgAdminForUrlOrg(AccessChecker):
   """AccessChecker that ensures that the logged in user is organization
-  administrator for the organization whose identifier is uset in URL data.
+  administrator for the organization whose identifier is set in URL data.
   """
 
   def checkAccess(self, data, check, mutator):

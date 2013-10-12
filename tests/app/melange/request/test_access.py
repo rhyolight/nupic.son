@@ -322,6 +322,71 @@ class NonStudentUrlProfileAccessCheckerTest(unittest.TestCase):
     access_checker.checkAccess(data, None, None)
 
 
+class NonStudentProfileAccessCheckerTest(unittest.TestCase):
+  """Tests for NonStudentProfileAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.setUp for specification."""
+    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+
+    program_properties = {
+        'sponsor': sponsor,
+        'scope': sponsor,
+        }
+    program = seeder_logic.seed(
+        program_model.Program, properties=program_properties)
+
+    kwargs = {
+        'sponsor': sponsor.key().name(),
+        'program': program.link_id,
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+  def testUserWithNoProfileAccessDenied(self):
+    """Tests that access is denied if current user has no profile"""
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+
+    access_checker = access.NON_STUDENT_PROFILE_ACCESS_CHECKER
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testUserWithStudentProfileAccessDenied(self):
+    """Tests that access is denied if current user has student profile."""
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+
+    profile_properties = {
+        'is_student': True,
+        'parent': user,
+        'status': 'active',
+        }
+    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+
+    access_checker = access.NON_STUDENT_PROFILE_ACCESS_CHECKER
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testUserWithNonStudentProfileAccessGranted(self):
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+
+    profile_properties = {
+        'is_student': False,
+        'parent': user,
+        'status': 'active',
+        'program': self.data.program,
+        'scope': self.data.program,
+        'link_id': user.link_id,
+        }
+    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+
+    access_checker = access.NON_STUDENT_PROFILE_ACCESS_CHECKER
+    access_checker.checkAccess(self.data, None, None)
+
+
 class ProgramActiveAccessCheckerTest(unittest.TestCase):
   """Tests for ProgramActiveAccessChecker class."""
 
