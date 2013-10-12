@@ -656,11 +656,16 @@ class ManageConnectionAsOrg(base.GCIRequestHandler):
       raise exception.BadRequest('No valid form data is found in POST.')
 
 
+MARK_CONNECTION_AS_SEEN_BY_ORG_ACCESS_CHECKER = (
+    access.ConjuctionAccessChecker([
+        access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+        IsUserOrgAdminForUrlConnection()
+    ]))
+
 class MarkConnectionAsSeenByOrg(base.GCIRequestHandler):
   """Handler to mark connection as seen by organization."""
 
-  # TODO(daniel): add actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = MARK_CONNECTION_AS_SEEN_BY_ORG_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.GCIRequestHandler.djangoURLPatterns for specification."""
@@ -676,11 +681,16 @@ class MarkConnectionAsSeenByOrg(base.GCIRequestHandler):
     return http.HttpResponse()
 
 
+MARK_CONNECION_AS_SEEN_BY_USER_ACCESS_CHECKER = (
+    access.ConjuctionAccessChecker([
+        access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+        UrlConnectionIsForCurrentUserAccessChecker(),
+    ]))
+
 class MarkConnectionAsSeenByUser(base.GCIRequestHandler):
   """Handler to mark connection as seen by user."""
 
-  # TODO(daniel): add actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = MARK_CONNECION_AS_SEEN_BY_USER_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.GCIRequestHandler.djangoURLPatterns for specification."""
