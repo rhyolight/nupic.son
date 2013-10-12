@@ -563,11 +563,31 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
       raise exception.BadRequest('No valid form data is found in POST.')
 
 
+class IsUserOrgAdminForUrlConnection(access.AccessChecker):
+  """AccessChecker that ensures that the logged in user is organization
+  administrator for the connection which is retrieved from the URL data.
+  """
+
+  def checkAccess(self, data, check, mutator):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.profile:
+      raise exception.Forbidden(message=access._MESSAGE_NO_PROFILE)
+
+    org_key = (connection_model.Connection.organization
+        .get_value_for_datastore(data.url_connection))
+    if org_key not in data.profile.org_admin_for:
+      raise exception.Forbidden(
+          message=access._MESSAGE_NOT_ORG_ADMIN_FOR_ORG % org_key.name())
+
+MANAGE_CONNECTION_AS_ORG_ACCESS_CHECKER = access.ConjuctionAccessChecker([
+    access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+    IsUserOrgAdminForUrlConnection()
+    ])
+
 class ManageConnectionAsOrg(base.GCIRequestHandler):
   """View to manage an existing connection by the organization."""
 
-  # TODO(daniel): add actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = MANAGE_CONNECTION_AS_ORG_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.GCIRequestHandler.djangoURLPatterns for specification."""

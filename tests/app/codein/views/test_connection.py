@@ -193,6 +193,83 @@ class UrlConnectionIsForCurrentUserAccessCheckerTest(unittest.TestCase):
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
 
 
+class IsUserOrgAdminForUrlConnectionTest(unittest.TestCase):
+  """Unit tests for IsUserOrgAdminForUrlConnection class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.data = request_data.RequestData(None, None, None)
+
+    self.connected_user = profile_utils.seedUser()
+    self.data._profile = seeder_logic.seed(profile_model.Profile,
+        properties={'parent': self.connected_user})
+    self.data._url_org = seeder_logic.seed(org_model.Organization)
+
+    properties={
+        'parent': self.data._profile,
+        'organization': self.data._url_org
+        }
+    self.data._url_connection = seeder_logic.seed(
+        connection_model.Connection, properties=properties)
+
+  def testOrgAdminAccessGranted(self):
+    """Tests that access is granted for org admin for the connected org."""
+    # seed a user who is currently logged in
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+
+    profile_properties = {
+        'parent': user,
+        'is_mentor': True,
+        'mentor_for': [self.data._url_org.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.data._url_org.key()]
+        }
+    self.data._profile = seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
+
+    access_checker = connection_view.IsUserOrgAdminForUrlConnection()
+    access_checker.checkAccess(self.data, None, None)
+
+  def testConnectedUserAccessDenied(self):
+    """Tests that access is denied for connected user."""
+    profile_utils.login(self.connected_user)
+
+    # make sure that connected user is not org admin for organization
+    self.data._profile.is_org_admin = False
+    self.data._profile.org_admin_for = []
+
+    access_checker = connection_view.IsUserOrgAdminForUrlConnection()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testOtherOrgAdminAccessDenied(self):
+    """Tests that access is denied for org admin for another org."""
+    # seed another organization
+    other_org = seeder_logic.seed(org_model.Organization)
+
+    # seed a user who is currently logged in
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+
+    # seed a profile and make it org admin for the other org.
+    profile_properties = {
+        'parent': user,
+        'is_mentor': True,
+        'mentor_for': [other_org.key()],
+        'is_org_admin': True,
+        'org_admin_for': [other_org.key()]
+        }
+    self.data._profile = seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
+
+    access_checker = connection_view.IsUserOrgAdminForUrlConnection()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+
 class StartConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
   """Unit tests for StartConnectionAsOrg class."""
 
