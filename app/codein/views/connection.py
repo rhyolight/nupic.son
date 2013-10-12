@@ -120,17 +120,17 @@ ALL_ORG_ROLE_CHOICES = [
 
 
 class NoConnectionExistsAccessChecker(access.AccessChecker):
-  """AccessChecker that ensures that no connection exists between the user
-  and organization which are specified in the URL.
+  """AccessChecker that ensures that no connection exists between the user,
+  who is currently logged-in, and organization which is specified in the URL.
   """
 
   def checkAccess(self, data, check, mutator):
     """See access.AccessChecker.checkAccess for specification."""
     connection = connection_logic.queryForAncestorAndOrganization(
-        data.url_profile, data.url_org).get()
+        data.profile, data.url_org).get()
     if connection:
       url = links.LINKER.userId(
-          data.url_profile, connection.key().id(),
+          data.profile, connection.key().id(),
           urls.UrlNames.CONNECTION_MANAGE_AS_USER)
       raise exception.Redirect(url)
 
@@ -365,8 +365,7 @@ def _getValueForUserRoleItem(data):
 
 START_CONNECTION_AS_USER_ACCESS_CHECKER = access.ConjuctionAccessChecker([
     access.PROGRAM_ACTIVE_ACCESS_CHECKER,
-    access.IS_URL_USER_ACCESS_CHECKER,
-    access.NON_STUDENT_URL_PROFILE_ACCESS_CHECKER,
+    access.NON_STUDENT_PROFILE_ACCESS_CHECKER,
     NO_CONNECTION_EXISTS_ACCESS_CHECKER])
 
 class StartConnectionAsUser(base.GCIRequestHandler):
@@ -400,13 +399,13 @@ class StartConnectionAsUser(base.GCIRequestHandler):
     if form.is_valid():
       # TODO(daniel): get actual recipients of notification email
       connection = connection_view.createConnectionTxn(
-          data, data.url_profile, data.organization,
+          data, data.profile, data.organization,
           form.cleaned_data['message'],
           notifications.userConnectionContext, [],
           user_role=connection_model.ROLE)
 
       url = links.LINKER.userId(
-          data.url_profile, connection.key().id(),
+          data.profile, connection.key().id(),
           urls.UrlNames.CONNECTION_MANAGE_AS_USER)
       return http.HttpResponseRedirect(url)
 

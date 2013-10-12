@@ -107,7 +107,7 @@ class NoConnectionExistsAccessCheckerTest(unittest.TestCase):
     self.data = request_data.RequestData(None, None, None)
 
     user = profile_utils.seedUser()
-    self.data._url_profile = seeder_logic.seed(profile_model.Profile,
+    self.data._profile = seeder_logic.seed(profile_model.Profile,
         {'parent': user})
     self.data._url_org = seeder_logic.seed(org_model.Organization)
 
@@ -119,7 +119,7 @@ class NoConnectionExistsAccessCheckerTest(unittest.TestCase):
   def testConnectionExists(self):
     """Tests that access is denied if connection already exists."""
     connection_properties = {
-        'parent': self.data._url_profile,
+        'parent': self.data._profile,
         'organization': self.data._url_org
         }
     seeder_logic.seed(connection_model.Connection, connection_properties)
@@ -235,32 +235,31 @@ class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):
     """See unittest.TestCase.setUp for specification."""
     self.init()
 
-  def _getUrl(self, profile, org):
+  def _getUrl(self, org):
     """Returns URL to 'start connection as user' view for the specified
-    profile and organization.
+    organization and the currently logged-in user.
 
     Args:
-      profile: profile entity.
       org: organization entity.
 
     Returns:
       URL to 'start connection as user' view.
     """
-    return '/gci/connection/start/user/%s/%s' % (
-        profile.key().name(), org.link_id)
+    return '/gci/connection/start/user/%s' % org.key().name()
 
   def testStudentAccessDenied(self):
     """Tests that students cannot access the site."""
-    profile = self.profile_helper.createStudent()
-    url = self._getUrl(profile, self.org)
+    self.profile_helper.createStudent()
+
+    url = self._getUrl(self.org)
     response = self.get(url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testNonStudentAccessGranted(self):
     """Tests that a user with non-student profile can access the site."""
-    profile = self.profile_helper.createProfile()
-    url = self._getUrl(profile, self.org)
+    self.profile_helper.createProfile()
+    url = self._getUrl(self.org)
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertTemplateUsed(
@@ -278,7 +277,7 @@ class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):
     connection = seeder_logic.seed(
         connection_model.Connection, properties=connection_properties)
 
-    url = self._getUrl(profile, self.org)
+    url = self._getUrl(self.org)
 
     # check that user is redirected when a connection exists
     response = self.get(url)
@@ -294,9 +293,9 @@ class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):
 
   def testStudentProfile(self):
     """Tests that exception is raised when user profile starts connection."""
-    profile = self.profile_helper.createStudent()
+    self.profile_helper.createStudent()
 
-    url = self._getUrl(profile, self.org)
+    url = self._getUrl(self.org)
 
     # check that user is forbidden to access the page
     response = self.get(url)
