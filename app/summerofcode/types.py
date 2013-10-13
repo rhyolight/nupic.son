@@ -18,7 +18,12 @@ from melange import types
 
 from soc.modules.gsoc.models import organization
 from soc.modules.gsoc.models import profile
+from soc.modules.gsoc.models import program
+from soc.modules.gsoc.models import timeline
 
 
 SOC_MODELS = types.Models(
-    org_model=organization.GSoCOrganization, profile_model=profile.GSoCProfile)
+    org_model=organization.GSoCOrganization,
+    profile_model=profile.GSoCProfile,
+    program_model=program.GSoCProgram,
+    timeline_model=timeline.GSoCTimeline)

@@ -26,7 +26,6 @@ from codein import types
 from melange.request import exception
 from melange.utils import time
 
-from soc.models.site import Site
 from soc.views.helper import request_data
 
 from soc.modules.gci.logic.helper import timeline as timeline_helper
@@ -361,34 +360,6 @@ class RequestData(request_data.RequestData):
         self._org_map = dict((i.key(), i) for i in orgs)
       else:
         self._org_map = {}
-
-  def _getProgramWideFields(self):
-    """See request_data.RequestData._getProgramWideFields for specification."""
-    keys = []
-
-    # add program's key
-    if self.kwargs.get('sponsor') and self.kwargs.get('program'):
-      program_key_name = "%s/%s" % (
-          self.kwargs['sponsor'], self.kwargs['program'])
-      program_key = db.Key.from_path('GCIProgram', program_key_name)
-    else:
-      program_key = Site.active_program.get_value_for_datastore(self.site)
-      program_key_name = program_key.name()
-    keys.append(program_key)
-
-    # add timeline's key
-    keys.append(db.Key.from_path('GCITimeline', program_key_name))
-
-    # add org_app's key
-    org_app_key_name = 'gci_program/%s/orgapp' % program_key_name
-    keys.append(db.Key.from_path('OrgAppSurvey', org_app_key_name))
-
-    self._program, self._program_timeline, self._org_app = db.get(keys)
-
-    # raise an exception if no program is found
-    if not self._program:
-      raise exception.NotFound(
-          message="There is no program for url '%s'" % program_key_name)
 
   def getOrganization(self, org_key):
     """Retrieves the specified organization.

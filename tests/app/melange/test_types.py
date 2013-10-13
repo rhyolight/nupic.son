@@ -20,6 +20,8 @@ from melange import types
 
 from soc.models import organization as org_model
 from soc.models import profile as profile_model
+from soc.models import program as program_model
+from soc.models import timeline as timeline_model
 
 
 class ModelsTest(unittest.TestCase):
@@ -36,3 +38,11 @@ class ModelsTest(unittest.TestCase):
   def testProfileModel(self):
     """Tests profile_model attribute."""
     self.assertEqual(self.models.profile_model, profile_model.Profile)
+
+  def testProgramModel(self):
+    """Tests program_model attribute."""
+    self.assertEqual(self.models.program_model, program_model.Program)
+
+  def testTimelineModel(self):
+    """Tests timeline_model attribute."""
+    self.assertEqual(self.models.timeline_model, timeline_model.Timeline)

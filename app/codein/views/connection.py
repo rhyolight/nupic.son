@@ -97,6 +97,9 @@ CONNECTION_FORM_USER_ROLE_LABEL = translation.ugettext(
 MESSAGE_FORM_CONTENT_LABEL = translation.ugettext(
     'Send New Message')
 
+MESSAGE_CONNECTION_CANNOT_BE_ACCESSED = translation.ugettext(
+    'Requested connection cannot by accessed by this user.')
+
 ORGANIZATION_ITEM_LABEL = translation.ugettext('Organization')
 USER_ITEM_LABEL = translation.ugettext('User')
 USER_ROLE_ITEM_LABEL = translation.ugettext('User Requests Role')
@@ -120,17 +123,17 @@ ALL_ORG_ROLE_CHOICES = [
 
 
 class NoConnectionExistsAccessChecker(access.AccessChecker):
-  """AccessChecker that ensures that no connection exists between the user
-  and organization which are specified in the URL.
+  """AccessChecker that ensures that no connection exists between the user,
+  who is currently logged-in, and organization which is specified in the URL.
   """
 
   def checkAccess(self, data, check, mutator):
     """See access.AccessChecker.checkAccess for specification."""
     connection = connection_logic.queryForAncestorAndOrganization(
-        data.url_profile, data.url_org).get()
+        data.profile, data.url_org).get()
     if connection:
       url = links.LINKER.userId(
-          data.url_profile, connection.key().id(),
+          data.profile, connection.key().id(),
           urls.UrlNames.CONNECTION_MANAGE_AS_USER)
       raise exception.Redirect(url)
 
@@ -216,7 +219,8 @@ class ConnectionForm(gci_forms.GCIModelForm):
     # TODO(daniel): anonymous connections should be supported
     if users or emails:
       raise gci_forms.ValidationError(
-          'Anonymous connections are not supported.')
+          'Anonymous connections are not supported at this time. '
+          'Please provide usernames of users with profiles only.')
 
     return profiles, users, emails
 
@@ -365,8 +369,7 @@ def _getValueForUserRoleItem(data):
 
 START_CONNECTION_AS_USER_ACCESS_CHECKER = access.ConjuctionAccessChecker([
     access.PROGRAM_ACTIVE_ACCESS_CHECKER,
-    access.IS_URL_USER_ACCESS_CHECKER,
-    access.NON_STUDENT_URL_PROFILE_ACCESS_CHECKER,
+    access.NON_STUDENT_PROFILE_ACCESS_CHECKER,
     NO_CONNECTION_EXISTS_ACCESS_CHECKER])
 
 class StartConnectionAsUser(base.GCIRequestHandler):
@@ -378,7 +381,7 @@ class StartConnectionAsUser(base.GCIRequestHandler):
     """See base.GCIRequestHandler.djangoURLPatterns for specification."""
     return [
         ci_url_patterns.url(
-            r'connection/start/user/%s$' % url_patterns.USER_ORG,
+            r'connection/start/user/%s$' % url_patterns.ORG,
             self, name=urls.UrlNames.CONNECTION_START_AS_USER)
     ]
 
@@ -400,13 +403,13 @@ class StartConnectionAsUser(base.GCIRequestHandler):
     if form.is_valid():
       # TODO(daniel): get actual recipients of notification email
       connection = connection_view.createConnectionTxn(
-          data, data.url_profile, data.organization,
+          data, data.profile, data.organization,
           form.cleaned_data['message'],
           notifications.userConnectionContext, [],
           user_role=connection_model.ROLE)
 
       url = links.LINKER.userId(
-          data.url_profile, connection.key().id(),
+          data.profile, connection.key().id(),
           urls.UrlNames.CONNECTION_MANAGE_AS_USER)
       return http.HttpResponseRedirect(url)
 
@@ -471,11 +474,25 @@ class StartConnectionAsOrg(base.GCIRequestHandler):
       return self.get(data, check, mutator)
 
 
+class UrlConnectionIsForCurrentUserAccessChecker(access.AccessChecker):
+  """AccessChecker that ensures that connection which is retrieved from URL
+  data belongs to the user who is currently logged in.
+  """
+
+  def checkAccess(self, data, check, mutator):
+    """See AccessChecker.checkAccess for specification."""
+    if data.url_connection.parent_key() != data.profile.key():
+      raise exception.Forbidden(message=MESSAGE_CONNECTION_CANNOT_BE_ACCESSED)
+
+MANAGE_CONNECTION_AS_USER_ACCESS_CHECKER = access.ConjuctionAccessChecker([
+    access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+    UrlConnectionIsForCurrentUserAccessChecker(),
+    ])
+
 class ManageConnectionAsUser(base.GCIRequestHandler):
   """View to manage an existing connection by the user."""
 
-  # TODO(daniel): add actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = MANAGE_CONNECTION_AS_USER_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.GCIRequestHandler.djangoURLPatterns for specification."""
@@ -547,11 +564,31 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
       raise exception.BadRequest('No valid form data is found in POST.')
 
 
+class IsUserOrgAdminForUrlConnection(access.AccessChecker):
+  """AccessChecker that ensures that the logged in user is organization
+  administrator for the connection which is retrieved from the URL data.
+  """
+
+  def checkAccess(self, data, check, mutator):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.profile:
+      raise exception.Forbidden(message=access._MESSAGE_NO_PROFILE)
+
+    org_key = (connection_model.Connection.organization
+        .get_value_for_datastore(data.url_connection))
+    if org_key not in data.profile.org_admin_for:
+      raise exception.Forbidden(
+          message=access._MESSAGE_NOT_ORG_ADMIN_FOR_ORG % org_key.name())
+
+MANAGE_CONNECTION_AS_ORG_ACCESS_CHECKER = access.ConjuctionAccessChecker([
+    access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+    IsUserOrgAdminForUrlConnection()
+    ])
+
 class ManageConnectionAsOrg(base.GCIRequestHandler):
   """View to manage an existing connection by the organization."""
 
-  # TODO(daniel): add actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = MANAGE_CONNECTION_AS_ORG_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.GCIRequestHandler.djangoURLPatterns for specification."""
@@ -620,11 +657,16 @@ class ManageConnectionAsOrg(base.GCIRequestHandler):
       raise exception.BadRequest('No valid form data is found in POST.')
 
 
+MARK_CONNECTION_AS_SEEN_BY_ORG_ACCESS_CHECKER = (
+    access.ConjuctionAccessChecker([
+        access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+        IsUserOrgAdminForUrlConnection()
+    ]))
+
 class MarkConnectionAsSeenByOrg(base.GCIRequestHandler):
   """Handler to mark connection as seen by organization."""
 
-  # TODO(daniel): add actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = MARK_CONNECTION_AS_SEEN_BY_ORG_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.GCIRequestHandler.djangoURLPatterns for specification."""
@@ -640,11 +682,16 @@ class MarkConnectionAsSeenByOrg(base.GCIRequestHandler):
     return http.HttpResponse()
 
 
+MARK_CONNECION_AS_SEEN_BY_USER_ACCESS_CHECKER = (
+    access.ConjuctionAccessChecker([
+        access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+        UrlConnectionIsForCurrentUserAccessChecker(),
+    ]))
+
 class MarkConnectionAsSeenByUser(base.GCIRequestHandler):
   """Handler to mark connection as seen by user."""
 
-  # TODO(daniel): add actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = MARK_CONNECION_AS_SEEN_BY_USER_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.GCIRequestHandler.djangoURLPatterns for specification."""
@@ -965,8 +1012,8 @@ class _OrganizationsToStartConnectionList(org_list.BasicOrgList):
 
   def _getRedirect(self):
     """See org_list.OrgList._getRedirect for specification."""
-    return lambda e, *args: links.LINKER.userOrg(
-        self.data.profile, e, urls.UrlNames.CONNECTION_START_AS_USER) 
+    return lambda e, *args: links.LINKER.organization(
+        e, urls.UrlNames.CONNECTION_START_AS_USER) 
 
   def _getDescription(self):
     """See org_list.OrgList._getDescription for specification."""

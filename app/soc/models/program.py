@@ -44,6 +44,10 @@ PROGRAM_DOCUMENTS_GROUP = translation.ugettext(
 class Program(linkable_model.Linkable):
   """The Program model, representing a Program ran by a Sponsor."""
 
+  #: string used as a prefix of various key names for other models
+  #TODO(daniel): eliminate this
+  prefix = 'program'
+
   #: Identifier of the program which is be the last part of its unique key name
   program_id = db.StringProperty(required=True,
       verbose_name=translation.ugettext('Program ID'))
