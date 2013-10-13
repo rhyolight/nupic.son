@@ -107,6 +107,7 @@ GCI_TASK_QUOTA_LIMIT_ENABLED = False
 
 CALLBACK_MODULE_NAMES = [
     'codein.callback',
+    'melange.callback',
     'soc.modules.soc_core.callback',
     'soc.modules.gsoc.callback',
     'soc.modules.gci.callback',

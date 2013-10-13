@@ -134,6 +134,19 @@ class Linker(object):
     }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
 
+  def user(self, user, url_name):
+    """Returns the URL of a user's named page.
+
+    Args:
+      user: User entity.
+      url_name: The name with which a URL was registered with Django.
+
+    Returns:
+      The URL of the page matching the given name for the given user.
+    """
+    kwargs = {'user': user.key().name()}
+    return urlresolvers.reverse(url_name, kwargs=kwargs)
+
   def userOrg(self, profile, org, url_name):
     """Returns the URL of a page whose address contains parts associated
     with the specified profile and organization.

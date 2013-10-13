@@ -17,7 +17,10 @@
 import httplib
 import unittest
 
+from google.appengine.ext import ndb
+
 from melange.models import connection as connection_model
+from melange.models import settings as settings_model
 from melange.request import exception
 
 from soc.models import org_app_survey as org_app_survey_model
@@ -312,3 +315,46 @@ class IsHostPropertyTest(unittest.TestCase):
     data = request_data.RequestData(None, None, kwargs)
     is_host = data.is_host
     self.assertFalse(is_host)
+
+
+class UserPropertyTest(unittest.TestCase):
+  """Unit tests for user property of RequestData class."""
+
+  def testNoUser(self):
+    """Tests that None is returned for no user entity."""
+    data = request_data.RequestData(None, None, None)
+    self.assertIsNone(data.user)
+
+  def testUserExists(self):
+    """Tests that user entity is returned when it exists."""
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+
+    data = request_data.RequestData(None, None, None)
+    self.assertEqual(data.user.key(), user.key())
+
+  def testForDeveloperWithViewAsUser(self):
+    """Tests for developer who has 'view_as' property set."""
+    user = profile_utils.seedUser(is_developer=True)
+    profile_utils.login(user)
+
+    # set the settings so that 'view_as' is set to an existing user
+    other_user = profile_utils.seedUser()
+    settings = settings_model.UserSettings(
+        parent=ndb.Key.from_old_key(user.key()),
+        view_as=ndb.Key.from_old_key(other_user.key()))
+    settings.put()
+
+    # check that the other user is returned
+    data = request_data.RequestData(None, None, None)
+    self.assertEqual(data.user.key(), other_user.key())
+
+    # set the settings so that 'view_as' is set to a non-existing user
+    settings.view_as = ndb.Key('User', 'non_existing')
+    settings.put()
+
+    # check that an error is raised
+    data = request_data.RequestData(None, None, None)
+    with self.assertRaises(exception.UserError) as context:
+      user = data.user
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)

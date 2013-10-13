@@ -361,6 +361,7 @@ class DjangoTestCase(testcases.TestCase):
     # that is not suitable for Melange tests, because no real Django datastore
     # backend is used.
     self.client = client.Client()
+    self.dev_test = False
 
   def _post_teardown(self):
     """ Performs any post-test cleanup."""
