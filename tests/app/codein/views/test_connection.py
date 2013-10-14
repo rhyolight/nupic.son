@@ -72,6 +72,19 @@ def _getManageAsOrgUrl(connection):
       connection.parent_key().name(), connection.key().id())
 
 
+def _getListConnectionsForOrgAdminUrl(profile):
+  """Returns URL to 'List Connections For Org Admin' page for the specified
+  profile entity.
+
+  Args:
+    profile: profile entity.
+
+  Returns:
+    The URL to 'List Connection For Org Admin' for the specified profile.
+  """
+  return '/gci/connection/list/org/%s' % profile.key().name()
+
+
 def _getMarkAsSeenByOrgUrl(connection):
   """Returns URL to 'Mark Connection As Seen By Org' handler for the specified
   connection entity.
@@ -2168,3 +2181,19 @@ class MarkConnectionAsSeenByUserTest(test_utils.GCIDjangoTestCase):
     # check that connection is marked as seen by organization
     connection = db.get(self.connection.key())
     self.assertTrue(connection.seen_by_user)
+
+
+class OrgAdminConnectionListTest(test_utils.GCIDjangoTestCase):
+  """Unit tests for OrgAdminConnectionList class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    profile = self.profile_helper.createOrgAdmin(self.org)
+    url = _getListConnectionsForOrgAdminUrl(profile)
+
+    response = self.get(url)
+    self.assertResponseOK(response)
