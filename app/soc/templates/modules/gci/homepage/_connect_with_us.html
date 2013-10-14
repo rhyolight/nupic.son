@@ -1,31 +1,26 @@
 <div class="block block-connect">
   <div class="block-title">Connect With Us</div>
-  <div class="block-content">
-    <ul class="menu menu-center-inline">
-      {% if program.facebook %}
-        <li><a href="{{ program.facebook }}">
-          <img src="/soc/content/{{ app_version }}/images/gci/block-connect-fb.gif" height="29" width="29" alt="Facebook" />
-        </a></li>
-      {% endif %}
-      {% if program.twitter %}
-        <li><a href="{{ program.twitter }}">
-          <img src="/soc/content/{{ app_version }}/images/gci/block-connect-tw.gif" height="29" width="29" alt="Twitter" />
-        </a></li>
+  <div class="social-media">
+    <ul class="menu">
+      {% if program.gplus %}
+        <li class="gplus-icon">
+          <a class="ir" href="{{ program.gplus }}">Google+</a>
+        </li>
       {% endif %}
       {% if program.blogger %}
-        <li><a href="{{ program.blogger }}">
-          <img src="/soc/content/{{ app_version }}/images/gci/block-connect-bl.gif" height="29" width="29" alt="Blogger" />
-        </a></li>
+        <li class="blogger-icon">
+          <a class="ir" href="{{ program.blogger }}">Blog</a>
+        </li>
       {% endif %}
       {% if program.email %}
-        <li><a href="{{ program.email }}">
-          <img src="/soc/content/{{ app_version }}/images/gci/block-connect-em.gif" height="29" width="29" alt="Email" />
-        </a></li>
+        <li class="email-icon">
+          <a class="ir" href="mailto:{{ program.email }}">Email</a>
+        </li>
       {% endif %}
       {% if program.irc %}
-        <li><a href="{{ program.irc }}">
-          <img src="/soc/content/{{ app_version }}/images/gci/block-connect-irc.gif" height="29" width="29" alt="IRC" />
-        </a></li>
+        <li class="irc-icon">
+          <a href="{{ program.irc }}">IRC</a>
+        </li>
       {% endif %}
     </ul>
   </div>
