@@ -30,6 +30,7 @@ from melange.request import access
 from melange.request import exception
 from melange.request import links
 from melange.templates import connection_list
+from melange.utils import rich_bool
 from melange.views import connection as connection_view
 
 from soc.logic import cleaning
@@ -484,6 +485,7 @@ class UrlConnectionIsForCurrentUserAccessChecker(access.AccessChecker):
     if data.url_connection.parent_key() != data.profile.key():
       raise exception.Forbidden(message=MESSAGE_CONNECTION_CANNOT_BE_ACCESSED)
 
+
 MANAGE_CONNECTION_AS_USER_ACCESS_CHECKER = access.ConjuctionAccessChecker([
     access.PROGRAM_ACTIVE_ACCESS_CHECKER,
     UrlConnectionIsForCurrentUserAccessChecker(),
@@ -790,14 +792,18 @@ class UserActionsFormHandler(FormHandler):
     if actions_form.is_valid():
       user_role = actions_form.cleaned_data['user_role']
       if user_role == connection_model.NO_ROLE:
-        self._handleNoRoleSelection(data)
+        success = self._handleNoRoleSelection(data)
       else:
-        self._handleRoleSelection(data)
+        success = self._handleRoleSelection(data)
 
-      url = links.LINKER.userId(
-          data.url_profile, data.url_connection.key().id(),
-          urls.UrlNames.CONNECTION_MANAGE_AS_USER)
-      return http.HttpResponseRedirect(url)
+      if success:
+        url = links.LINKER.userId(
+            data.url_profile, data.url_connection.key().id(),
+            urls.UrlNames.CONNECTION_MANAGE_AS_USER)
+        return http.HttpResponseRedirect(url)
+      else:
+        raise exception.BadRequest(success.extra)
+
     else:
       # TODO(nathaniel): problematic self-use.
       return self._view.get(data, check, mutator)
@@ -807,6 +813,12 @@ class UserActionsFormHandler(FormHandler):
 
     Args:
       data: A soc.views.helper.request_data.RequestData.
+
+    Returns:
+      RichBool whose value is set to True, if the selection has been handled
+      successfully. Otherwise, RichBool whose value is set to False and extra
+      part is a string representation of the reason why the picked selection
+      is not possible.
     """
     org_key = connection_model.Connection.organization.get_value_for_datastore(
         data.url_connection)
@@ -815,14 +827,19 @@ class UserActionsFormHandler(FormHandler):
     if is_eligible:
       connection_view.handleUserNoRoleSelectionTxn(data.url_connection)
 
-    # TODO(daniel): if the user is not eligible, some information should be
-    # displayed to them
+    return is_eligible
 
   def _handleRoleSelection(self, data):
     """Makes all necessary changes if user selects connection_model.ROLE.
 
     Args:
       data: A soc.views.helper.request_data.RequestData.
+
+    Returns:
+      RichBool whose value is set to True, if the selection has been handled
+      successfully. Otherwise, RichBool whose value is set to False and extra
+      part is a string representation of the reason why the picked selection
+      is not possible.
     """
     org_key = connection_model.Connection.organization.get_value_for_datastore(
         data.url_connection)
@@ -839,8 +856,7 @@ class UserActionsFormHandler(FormHandler):
       data.site
       connection_view.handleUserRoleSelectionTxn(data, data.url_connection)
 
-    # TODO(daniel): if the user is not eligible, some information should be
-    # displayed to them
+    return is_eligible
 
 
 class OrgActionsFormHandler(FormHandler):
@@ -859,16 +875,20 @@ class OrgActionsFormHandler(FormHandler):
     if actions_form.is_valid():
       role = actions_form.cleaned_data['role']
       if role == connection_model.NO_ROLE:
-        self._handleNoRoleSelection(data)
+        success = self._handleNoRoleSelection(data)
       elif role == connection_model.MENTOR_ROLE:
-        self._handleMentorSelection(data)
+        success = self._handleMentorSelection(data)
       else:
-        self._handleOrgAdminSelection(data)
+        success = self._handleOrgAdminSelection(data)
 
-      url = links.LINKER.userId(
-          data.url_profile, data.url_connection.key().id(),
-          urls.UrlNames.CONNECTION_MANAGE_AS_ORG)
-      return http.HttpResponseRedirect(url)
+      if success:
+        url = links.LINKER.userId(
+            data.url_profile, data.url_connection.key().id(),
+            urls.UrlNames.CONNECTION_MANAGE_AS_ORG)
+        return http.HttpResponseRedirect(url)
+      else:
+        raise exception.BadRequest(success.extra)
+
     else:
       # TODO(nathaniel): problematic self-use.
       return self._view.get(data, check, mutator)
@@ -879,6 +899,12 @@ class OrgActionsFormHandler(FormHandler):
 
     Args:
       data: A soc.views.helper.request_data.RequestData.
+
+    Returns:
+      RichBool whose value is set to True, if the selection has been handled
+      successfully. Otherwise, RichBool whose value is set to False and extra
+      part is a string representation of the reason why the picked selection
+      is not possible.
     """
     org_key = connection_model.Connection.organization.get_value_for_datastore(
         data.url_connection)
@@ -887,6 +913,7 @@ class OrgActionsFormHandler(FormHandler):
     if is_eligible:
       connection_view.handleOrgNoRoleSelection(
           data.url_connection, data.profile)
+    return is_eligible
 
   def _handleMentorSelection(self, data):
     """Makes all necessary changes if an organization administrator
@@ -894,6 +921,12 @@ class OrgActionsFormHandler(FormHandler):
 
     Args:
       data: A soc.views.helper.request_data.RequestData.
+
+    Returns:
+      RichBool whose value is set to True, if the selection has been handled
+      successfully. Otherwise, RichBool whose value is set to False and extra
+      part is a string representation of the reason why the picked selection
+      is not possible.
     """
     org_key = connection_model.Connection.organization.get_value_for_datastore(
         data.url_connection)
@@ -902,6 +935,7 @@ class OrgActionsFormHandler(FormHandler):
     if is_eligible:
       connection_view.handleMentorRoleSelection(
           data.url_connection, data.profile)
+    return is_eligible
 
   def _handleOrgAdminSelection(self, data):
     """Makes all necessary changes if an organization administrator
@@ -909,9 +943,16 @@ class OrgActionsFormHandler(FormHandler):
 
     Args:
       data: A soc.views.helper.request_data.RequestData.
+
+    Returns:
+      RichBool whose value is set to True, if the selection has been handled
+      successfully. Otherwise, RichBool whose value is set to False and extra
+      part is a string representation of the reason why the picked selection
+      is not possible.
     """
     connection_view.handleOrgAdminRoleSelection(
         data.url_connection, data.profile)
+    return rich_bool.TRUE
 
 
 class CIUserConnectionList(connection_list.UserConnectionList):

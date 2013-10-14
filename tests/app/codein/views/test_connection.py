@@ -968,12 +968,13 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     request.POST = {'user_role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
-    handler = connection_view.UserActionsFormHandler(self.view)
-
     # assume that mentor is not eligible to quit
+    handler = connection_view.UserActionsFormHandler(self.view)
     with mock.patch.object(
         profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
-      handler.handle(data, None, None)
+      with self.assertRaises(exception.UserError) as context: 
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # check if all data is updated properly
     connection = db.get(connection.key())
@@ -1044,12 +1045,13 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     request.POST = {'user_role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
-    handler = connection_view.UserActionsFormHandler(self.view)
-
     # assume that mentor is not eligible to quit
+    handler = connection_view.UserActionsFormHandler(self.view)
     with mock.patch.object(
         profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
-      handler.handle(data, None, None)
+      with self.assertRaises(exception.UserError) as context:
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # check if all data is updated properly
     connection = db.get(connection.key())
@@ -1436,10 +1438,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     data = request_data.RequestData(request, None, self.kwargs)
 
     # assume that mentor cannot be removed
+    handler = connection_view.OrgActionsFormHandler(self.view)
     with mock.patch.object(
         profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
-      handler = connection_view.OrgActionsFormHandler(self.view)
-      handler.handle(data, None, None)
+      with self.assertRaises(exception.UserError) as context:
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # check if all data is updated properly
     connection = db.get(connection.key())
@@ -1719,10 +1723,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     data = request_data.RequestData(request, None, self.kwargs)
 
     # assume that org admin cannot be removed
+    handler = connection_view.OrgActionsFormHandler(self.view)
     with mock.patch.object(
         profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
-      handler = connection_view.OrgActionsFormHandler(self.view)
-      handler.handle(data, None, None)
+      with self.assertRaises(exception.UserError) as context:
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # check if all data is updated properly
     connection = db.get(connection.key())
@@ -1836,11 +1842,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     data = request_data.RequestData(request, None, self.kwargs)
 
     # assume that org admin cannot be removed
+    handler = connection_view.OrgActionsFormHandler(self.view)
     with mock.patch.object(
         profile_logic, 'isMentorRoleEligibleForOrg',
         return_value=rich_bool.FALSE):
-      handler = connection_view.OrgActionsFormHandler(self.view)
       handler.handle(data, None, None)
+
 
     # check if all data is updated properly
     connection = db.get(connection.key())
@@ -1867,11 +1874,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     data._profile = seeder_logic.seed(profile_model.Profile)
 
     # assume that org admin can be removed
+    handler = connection_view.OrgActionsFormHandler(self.view)
     with mock.patch.object(
         profile_logic, 'isMentorRoleEligibleForOrg',
         return_value=rich_bool.TRUE):
-      handler = connection_view.OrgActionsFormHandler(self.view)
-      handler.handle(data, None, None)
 
     # check if all data is updated properly
     connection = db.get(connection.key())
