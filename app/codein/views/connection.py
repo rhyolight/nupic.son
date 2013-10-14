@@ -975,11 +975,14 @@ class CIOrgAdminConnectionList(connection_list.OrgAdminConnectionList):
     return 'codein/connection/_connection_list.html'
 
 
+LIST_CONNECTIONAS_FOR_USER_ACCESS_CHECKER = access.ConjuctionAccessChecker([
+    access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+    access.NON_STUDENT_PROFILE_ACCESS_CHECKER])
+
 class ListConnectionsForUser(base.GCIRequestHandler):
   """View to list all connections for a user."""
 
-  # TODO(daniel): add actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = LIST_CONNECTIONAS_FOR_USER_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.GCIRequestHandler.djangoURLPatterns for specification."""
@@ -1014,11 +1017,16 @@ class ListConnectionsForUser(base.GCIRequestHandler):
       raise exception.BadRequest(message='This data cannot be accessed.')
 
 
+LIST_CONNECTIONS_FOR_ORG_ADMIN_ACCESS_CHECKER = (
+    access.ConjuctionAccessChecker([
+        access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+        access.NON_STUDENT_URL_PROFILE_ACCESS_CHECKER,
+        access.IS_URL_USER_ACCESS_CHECKER]))
+
 class ListConnectionsForOrgAdmin(base.GCIRequestHandler):
   """View to list all connections for an organization administrator."""
 
-  # TODO(daniel): add actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = LIST_CONNECTIONS_FOR_ORG_ADMIN_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.GCIRequestHandler.djangoURLPatterns for specification."""
@@ -1062,11 +1070,15 @@ class _OrganizationsToStartConnectionList(org_list.BasicOrgList):
         self.data.program.name)
 
 
+PICK_ORGANIZATION_TO_CONNECT_ACCESS_CHECKER = (
+    access.ConjuctionAccessChecker([
+        access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+        access.NON_STUDENT_PROFILE_ACCESS_CHECKER]))
+
 class PickOrganizationToConnectPage(base.GCIRequestHandler):
   """Page for non-student users to pick organization to start connection."""
 
-  # TODO(daniel): add actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = PICK_ORGANIZATION_TO_CONNECT_ACCESS_CHECKER
 
   def templatePath(self):
     """See base.GCIRequestHandler.templatePath for specification."""
