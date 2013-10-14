@@ -2197,3 +2197,29 @@ class OrgAdminConnectionListTest(test_utils.GCIDjangoTestCase):
 
     response = self.get(url)
     self.assertResponseOK(response)
+
+  def testListData(self):
+    """Tests that all connections for orgs administrated by user are listed."""
+    self.profile_helper.createOrgAdmin(self.org)
+
+    # seed a few connections for organization
+    for _ in range(3):
+      user = profile_utils.seedUser()
+      profile = seeder_logic.seed(
+          profile_model.Profile, properties={'parent': user})
+      connection_utils.seed_new_connection(profile, self.org)
+
+    # seed another organization which is not administrated by the user
+    other_org = seeder_logic.seed(org_model.Organization)
+
+    # seed a few connections for the other organization
+    for _ in range(5):
+      profile = seeder_logic.seed(profile_model.Profile)
+      connection_utils.seed_new_connection(profile, other_org)
+
+    list_data = self.getListData(
+        _getListConnectionsForOrgAdminUrl(self.profile_helper.profile), 0)
+
+    # check that four connections are listed: the three ones created above
+    # plus one for the organization admin itself
+    self.assertEqual(len(list_data), 4)
