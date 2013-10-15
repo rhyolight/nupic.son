@@ -281,8 +281,7 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(record.name, params['name'])
 
 
-class GCIOrgAppRecordsPageTest(test_utils.MailTestCase,
-                               test_utils.GCIDjangoTestCase):
+class GCIOrgAppRecordsPageTest(test_utils.GCIDjangoTestCase):
   """Tests for organization applications edit page.
   """
 

@@ -18,13 +18,12 @@
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
-from tests.test_utils import MailTestCase
 
 from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models.proposal import GSoCProposal
 
 
-class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
+class ProposalReviewTest(GSoCDjangoTestCase):
   """Tests proposal review page.
   """
 

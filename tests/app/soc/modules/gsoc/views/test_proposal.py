@@ -17,13 +17,12 @@
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
-from tests.test_utils import MailTestCase
 
 from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models import proposal as proposal_model
 
 
-class ProposalTest(MailTestCase, GSoCDjangoTestCase):
+class ProposalTest(GSoCDjangoTestCase):
   """Tests proposal page.
   """
 
@@ -68,7 +67,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
         url, proposal_model.GSoCProposal, override)
     self.assertResponseRedirect(response)
 
-    self.assertEmailSent(to=mentor.profile.email, n=1)
+    self.assertEmailSent(to=mentor.profile.email)
     # TODO(daniel): add assertEmailNotSent to DjangoTestCase
     #self.assertEmailNotSent(to=other_mentor.profile.email)
 
@@ -182,7 +181,7 @@ class ProposalTest(MailTestCase, GSoCDjangoTestCase):
     # to created_on
     self.assertNotEqual(proposal.created_on, proposal.last_modified_on)
 
-    self.assertEmailSent(to=mentor.profile.email, n=1)
+    self.assertEmailSent(to=mentor.profile.email)
 
   def testUpdateProposalAfterDeadline(self):
     """Tests attempting to update a proposal after the deadline has passed."""

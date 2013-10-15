@@ -28,11 +28,10 @@ from soc.modules.gci.models.profile import GCIProfile
 from tests.gci_task_utils import GCITaskHelper
 from tests.profile_utils import GCIProfileHelper
 from tests.test_utils import GCIDjangoTestCase
-from tests.test_utils import MailTestCase
 from tests.test_utils import TaskQueueTestCase
 
 
-class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
+class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
   """Tests GCITask public view.
   """
 

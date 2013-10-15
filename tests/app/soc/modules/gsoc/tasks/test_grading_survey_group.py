@@ -30,8 +30,7 @@ from tests import timeline_utils
 
 
 class GradingSurveyGroupTest(
-    test_utils.MailTestCase, test_utils.GSoCDjangoTestCase,
-    test_utils.TaskQueueTestCase):
+    test_utils.GSoCDjangoTestCase, test_utils.TaskQueueTestCase):
   """Tests for accept_proposals task.
   """
 

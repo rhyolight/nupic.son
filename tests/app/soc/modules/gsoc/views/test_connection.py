@@ -150,7 +150,7 @@ class OrgConnectionPageTest(test_utils.GSoCDjangoTestCase):
     self.assertIn(self.org.key(), profile.org_admin_for)
 
 
-class OrgConnectionPageEmailsTest(test_utils.MailTestCase, OrgConnectionPageTest):
+class OrgConnectionPageEmailsTest(OrgConnectionPageTest):
 
   def testConnectionNotificationEmailsSent(self):
     """Test that an email is sent to a user when an org admin initiates
@@ -218,7 +218,7 @@ class UserConnectionPageTest(test_utils.GSoCDjangoTestCase):
     self.assertEquals(connection.NO_ROLE, connection_entity.org_role)
     self.assertEquals(self.org.key(), connection_entity.organization.key())
 
-class UserConnectionPageEmailsTest(test_utils.MailTestCase, UserConnectionPageTest):
+class UserConnectionPageEmailsTest(UserConnectionPageTest):
 
   def testConnectionNotificationEmailsSent(self):
     """Test that an email is sent to all org admins when a user initiates
