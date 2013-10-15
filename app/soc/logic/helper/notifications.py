@@ -117,6 +117,100 @@ def getDefaultContext(request_data, emails, subject, extra_context=None):
 
   return default_context
 
+
+class StartConnectionByUserContextProvider(object):
+  """Provider of notification email content to be sent after a new connection
+  has been started by a user.
+  """
+
+  def __init__(self, linker, url_names):
+    """Initializes a new instance of this class.
+
+    Args:
+      linker: links.Linker to be used to generate URLs.
+      url_names: urls.UrlNames object containing registered names of URLs.
+    """
+    self._linker = linker
+    self._url_names = url_names
+
+  def getContext(
+      self, emails, data, org, profile, connection_key, message):
+    """Provides notification context of an email to send out when a new
+    connection is started by a user.
+
+    Args:
+      emails: List of email addresses to which the notification should be sent.
+      data: request_data.RequestData for the current request.
+      org: Organization entity.
+      profile: Profile entity.
+      connection_id: Numerical identifier of the newly started connection.
+      message: Optional message to be sent along with the connection.
+
+    Returns:
+      A dictionary containing the context for a message to be sent.
+    """
+    subject = DEF_NEW_USER_CONNECTION % {'org': org.name}
+    connection_url = self._linker.userId(
+        profile, connection_key.id(), self._url_names.CONNECTION_MANAGE_AS_ORG)
+
+    message_properties = {
+        'connection_url': connection_url,
+        'name': profile.name(),
+        'org_name': org.name,
+        'message': message,
+        }
+
+    template = DEF_NEW_USER_CONNECTION_NOTIFICATION_TEMPLATE
+    return getContext(data, emails, message_properties, subject, template)
+
+
+class StartConnectionByOrgContextProvider(object):
+  """Provider of notification email content to be sent after a new connection
+  has been started by an organization.
+  """
+
+  def __init__(self, linker, url_names):
+    """Initializes a new instance of this class.
+
+    Args:
+      linker: links.Linker to be used to generate URLs.
+      url_names: urls.UrlNames object containing registered names of URLs.
+    """
+    self._linker = linker
+    self._url_names = url_names
+
+  def getContext(
+      self, emails, data, org, profile, connection_key, message):
+    """Provides notification context of an email to send out when a new
+    connection is started by an organization.
+
+    Args:
+      emails: List of email addresses to which the notification should be sent.
+      data: request_data.RequestData for the current request.
+      org: Organization entity.
+      profile: Profile entity.
+      connection_id: Numerical identifier of the newly started connection.
+      message: Optional message to be sent along with the connection.
+
+    Returns:
+      A dictionary containing the context for a message to be sent.
+    """
+    subject = DEF_NEW_ORG_CONNECTION % {'org': org.name}
+    connection_url = self._linker.userId(
+        profile, connection_key.id(),
+        self._url_names.CONNECTION_MANAGE_AS_USER)
+
+    message_properties = {
+        'connection_url': connection_url,
+        'name': profile.name(),
+        'org_name': org.name,
+        'message': message,
+        }
+
+    template = DEF_NEW_ORG_CONNECTION_NOTIFICATION_TEMPLATE
+    return getContext(data, emails, message_properties, subject, template)
+
+
 def userConnectionContext(data, connection, recipients, message):
   """Send out a notification email to the organization administrators for the
   given org when a user opens a connection with the organization.
@@ -140,7 +234,7 @@ def userConnectionContext(data, connection, recipients, message):
       'connection_url' : '',
       'name' : connection.parent().name(),
       'org_name' : connection.organization.name,
-      'message' : message
+      'message' : message,
       }
   template = DEF_NEW_USER_CONNECTION_NOTIFICATION_TEMPLATE
   return getContext(data, recipients, message_properties, subject, template)
