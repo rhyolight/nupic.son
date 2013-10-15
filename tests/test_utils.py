@@ -20,6 +20,7 @@ import os
 import datetime
 import httplib
 import StringIO
+import urlparse
 import unittest
 
 # TODO(daniel): gaetestbed is deprecated; it should not be used.
@@ -38,6 +39,7 @@ from django.test import testcases
 from soc.logic.helper import xsrfutil
 from soc.middleware import xsrf as xsrf_middleware
 from soc.modules import callback
+from soc.tasks import mailer
 from soc.views import template
 
 from tests import profile_utils
@@ -47,6 +49,11 @@ from tests import timeline_utils
 
 # key of request argument associated with testbed object
 TESTBED_ARG_KEY = 'TESTBED'
+
+# root directory of the application source tree
+APP_ROOT_PATH = os.path.normpath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), '../app'))
+
 
 class MockRequest(object):
   """Shared dummy request object to mock common aspects of a request.
@@ -206,6 +213,7 @@ class SoCTestCase(unittest.TestCase):
     self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
 
     self.testbed.init_blobstore_stub()
+    self.testbed.init_taskqueue_stub(root_path=APP_ROOT_PATH)
 
   @staticmethod
   def use_hr_schema(func):
@@ -660,6 +668,27 @@ class DjangoTestCase(testcases.TestCase):
 
     if errors:
       self.fail("\n".join(errors))
+
+  def executeTasks(self, url, queue_names=None):
+    """Executes tasks with specified URL in specified task queues.
+
+    Args:
+      url: URL associated with the task to run.
+      queue_names: Names of the task queues by which the tasks should be
+        executed.
+    """
+    taskqueue_stub = self.testbed.get_stub(testbed.TASKQUEUE_SERVICE_NAME)
+
+    tasks = taskqueue_stub.get_filtered_tasks(queue_names=queue_names)
+
+    for queue_name in queue_names:
+      taskqueue_stub.FlushQueue(queue_name)
+
+    for task in tasks:
+      postdata = urlparse.parse_qs(task.payload)
+      postdata.update(xsrf_token=self.getXsrfToken(path=url, data=postdata))
+      # Run the task with Django test client
+      self.post(url, postdata)
 
 
 class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
