@@ -156,15 +156,28 @@ class AnonymousConnection(db.Model):
 
   #: A string to designate the role that will be recreated for the actual
   #: connection object.
-  role = db.StringProperty(choices=[MENTOR_ROLE, ORG_ADMIN_ROLE])
+  org_role = db.StringProperty(choices=(MENTOR_ROLE, ORG_ADMIN_ROLE))
 
-  #: Hash hexdigest() of this object's key to save time when validating
-  #: when the user registers.
-  hash_id = db.StringProperty()
+  #: UUID for the object to be included in a url.
+  token = db.StringProperty()
 
-  #: The email to which the anonymous connection was sent; this should be
-  #: queried against to prevent duplicate anonymous connections.
-  email = db.StringProperty()
+  #: Date until which this object is considered "valid" and can be used to
+  #: enroll as a mentor/admin for an organization. This will likely be a
+  #: week, based on the implementation in melange.logic.connection.
+  expiration_date = db.DateTimeProperty()
+
+  #: Email address representing the user for which the AnonymousConnection
+  #: was created.
+  email = db.EmailProperty()
+
+  def getRole(self):
+    """Returns the assigned role as a more meaningful string."""
+    if self.org_role == MENTOR_ROLE:
+      return 'Mentor'
+    elif self.org_role == ORG_ADMIN_ROLE:
+      return 'Org Admin'
+    else:
+      return 'No Role'
 
 
 class ConnectionMessage(db.Model):

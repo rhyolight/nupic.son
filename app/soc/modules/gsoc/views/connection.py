@@ -207,9 +207,7 @@ class OrgConnectionForm(ConnectionForm):
         if user:
           self.request_data.valid_users.append(user)
         else:
-          #self.request_data.anonymous_users.append(user_id)
-          raise gsoc_forms.ValidationError(
-              '%s does not correspond to a profile.' % user_id)
+          self.request_data.anonymous_users.append(user_id)
       else:
         user = clean_link_id(user_id)
         self.request_data.valid_users.append(user)
@@ -313,18 +311,18 @@ class OrgConnectionPage(base.GSoCRequestHandler):
           context=notifications.orgConnectionContext,
           recipients=[profile.email])
 
-    # TODO(drew):Re-implement anonymous connection.
-
-    #q = connection.AnonymousConnection.all()
-    #data.sent_email_to = []
-    #data.duplicate_email = []
-    #for email in data.anonymous_users:
-    #  new_q = q.filter('email', email).get()
-    #  if new_q:
-    #    data.duplicate_email.append(email)
-    #  else:
-    #    data.sent_email_to.append(email)
-    #    db.run_in_transaction(create_anonymous_connection_txn, email)
+    # anonymous_connections should contain the emails of unregistered users
+    # from the form.
+    data.unregistered = []
+    for user in data.anonymous_users:
+      connection_view.createAnonymousConnectionTxn(
+          data=data,
+          organization=data.organization,
+          org_role=connection_form.cleaned_data['org_role'],
+          email=user,
+          message=connection_form.cleaned_data['message']
+          )
+      data.unregistered.append(user)
 
     return True
 
@@ -344,19 +342,16 @@ class OrgConnectionPage(base.GSoCRequestHandler):
         message=data.organization.role_request_message,
         data=data.POST or None)
 
-    emailed = dupes = None
-    if 'emailed' in data.request.GET:
-      emailed = data.request.GET['emailed'].split(',')
-    if 'dupes' in data.request.GET:
-      dupes = data.request.GET['dupes'].split(',')
+    unregistered = None
+    if 'unregistered' in data.request.GET:
+      unregistered = data.request.GET['unregistered'].split(',')
 
     return {
       'page_name': 'Open a connection',
       'program': data.program,
       'connection_form': connection_form,
       'error': bool(connection_form.errors),
-      'sent_email_to' : emailed,
-      'dupes' : dupes
+      'unregistered' : unregistered,
     }
 
   def post(self, data, check, mutator):
@@ -370,12 +365,9 @@ class OrgConnectionPage(base.GSoCRequestHandler):
     if self._generate(data):
       data.redirect.organization()
       extra = []
-      #if len(data.sent_email_to) > 0:
-      #  emailed = ','.join(data.sent_email_to)
-      #  extra = ['emailed=%s' % emailed, ]
-      #if len(data.duplicate_email) > 0:
-      #  dupes = ','.join(data.duplicate_email)
-      #  extra.append('dupes=%s' % dupes)
+      if len(data.unregistered) > 0:
+        unregistered = ','.join(data.unregistered)
+        extra = ['unregistered=%s' % unregistered, ]
       return data.redirect.to(url_names.GSOC_ORG_CONNECTION, validated=True,
           extra=extra)
     else:

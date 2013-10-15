@@ -38,9 +38,9 @@ limitations under the License.
     {% else %}
       <div id="flash-message" class="flash-success">
       <p>Connection(s) established successfully.</p>
-      {% if sent_email_to %}
-        {% for email in sent_email_to %}
-          <p>Invitation sent to: {{ email }}</p>
+      {% if unregistered %}
+        {% for email in unregistered %}
+          <p>Invited {{ email }} to the program.</p>
         {% endfor %}
       {% endif %}
     {% endif %}

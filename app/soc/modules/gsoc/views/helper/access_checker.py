@@ -25,6 +25,7 @@ from soc.logic import validate
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 
+from melange.logic import connection as connection_logic
 from melange.models.connection import AnonymousConnection
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
@@ -184,9 +185,11 @@ class Mutator(access_checker.Mutator):
   def anonymousConnectionFromKwargs(self):
     """Set the anonymous_connection entity in the RequestData object.
     """
-    q = AnonymousConnection.all().filter('hash_id =', self.data.kwargs['key'])
-    self.data.anonymous_connection = q.get()
-    if not self.data.anonymous_connection:
+    token = self.data.kwargs['key']
+    connection = connection_logic.queryAnonymousConnectionForToken(token)
+    if connection:
+      self.data.anonymous_connection = connection
+    else:
       raise exception.Forbidden(
           message='Invalid key in url; unable to establish connection.')
 
