@@ -368,6 +368,10 @@ def _getValueForUserRoleItem(data):
     return 'No'
 
 
+START_CONNECTION_BY_USER_CONTEXT_PROVIDER = (
+    notifications.StartConnectionByUserContextProvider(
+        links.ABSOLUTE_LINKER, urls.UrlNames))
+
 START_CONNECTION_AS_USER_ACCESS_CHECKER = access.ConjuctionAccessChecker([
     access.PROGRAM_ACTIVE_ACCESS_CHECKER,
     access.NON_STUDENT_PROFILE_ACCESS_CHECKER,
@@ -402,11 +406,15 @@ class StartConnectionAsUser(base.GCIRequestHandler):
     """See base.GCIRequestHandler.post for specification."""
     form = _formToStartConnectionAsUser(data=data.POST)
     if form.is_valid():
-      # TODO(daniel): get actual recipients of notification email
+
+      # create notification that will be sent to organization administrators
+      org_admins = profile_logic.getOrgAdmins(data.organization.key())
+      emails = [org_admin.email for org_admin in org_admins]
+
       connection = connection_view.createConnectionTxn(
           data, data.profile, data.organization,
           form.cleaned_data['message'],
-          notifications.userConnectionContext, [],
+          START_CONNECTION_BY_USER_CONTEXT_PROVIDER, emails,
           user_role=connection_model.ROLE)
 
       url = links.LINKER.userId(
@@ -418,6 +426,10 @@ class StartConnectionAsUser(base.GCIRequestHandler):
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
 
+
+START_CONNECTION_BY_ORG_CONTEXT_PROVIDER = (
+    notifications.StartConnectionByOrgContextProvider(
+        links.ABSOLUTE_LINKER, urls.UrlNames))
 
 START_CONNECTION_AS_ORG_ACCESS_CHECKER = access.ConjuctionAccessChecker([
     access.PROGRAM_ACTIVE_ACCESS_CHECKER,
@@ -460,10 +472,9 @@ class StartConnectionAsOrg(base.GCIRequestHandler):
 
       connections = []
       for profile in profiles:
-        # TODO(daniel): get actual recipients of notification email
         connections.append(connection_view.createConnectionTxn(
             data, profile, data.organization, form.cleaned_data['message'],
-            notifications.userConnectionContext, [],
+            START_CONNECTION_BY_ORG_CONTEXT_PROVIDER, [profile.email],
             org_role=form.cleaned_data['role'], org_admin=data.profile))
 
       # TODO(daniel): add some message with whom connections are started
