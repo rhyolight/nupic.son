@@ -93,7 +93,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.profile_helper.createMentor(self.org)
 
     no_comments = self.task.comments()
-    self.assertLength(no_comments, 0)
+    self.assertEqual(len(no_comments), 0)
 
     comment_title = 'Test Comment Title'
     comment_content = 'Test Comment Content'
@@ -109,7 +109,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertResponseRedirect(response)
 
     one_comment = self.task.comments()
-    self.assertLength(one_comment, 1)
+    self.assertEqual(len(one_comment), 1)
 
     comment = one_comment[0]
     self.assertEqual(comment_title, comment.title)
@@ -124,7 +124,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """Tests leaving a comment with an empty title."""
     self.profile_helper.createMentor(self.org)
 
-    self.assertLength(self.task.comments(), 0)
+    self.assertEqual(len(self.task.comments()), 0)
 
     comment_content = 'Test Comment Content'
 
@@ -139,7 +139,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertResponseRedirect(response)
 
     comments = self.task.comments()
-    self.assertLength(comments, 1)
+    self.assertEqual(len(comments), 1)
 
     comment = comments[0]
     self.assertIsNone(comment.title)
@@ -313,7 +313,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     # check if a comment has been created
     comments = self.task.comments()
-    self.assertLength(comments, 1)
+    self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
     # check if the update task has been enqueued
@@ -346,7 +346,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     # check if a comment has been created
     comments = self.task.comments()
-    self.assertLength(comments, 1)
+    self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonClose(self):
@@ -374,7 +374,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     # check if a comment has been created
     comments = self.task.comments()
-    self.assertLength(comments, 1)
+    self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
     # check if OrgScore has been updated
@@ -415,7 +415,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     # check if a comment has been created
     comments = self.task.comments()
-    self.assertLength(comments, 1)
+    self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonExtendDeadline(self):
@@ -447,7 +447,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     # check if a comment has been created
     comments = self.task.comments()
-    self.assertLength(comments, 1)
+    self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonClaim(self):
@@ -467,7 +467,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     # check if a comment has been created
     comments = self.task.comments()
-    self.assertLength(comments, 1)
+    self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonUnclaim(self):
@@ -491,7 +491,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     # check if a comment has been created
     comments = self.task.comments()
-    self.assertLength(comments, 1)
+    self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonSubscribe(self):
@@ -538,7 +538,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.task.put()
 
     no_work = self.task.workSubmissions()
-    self.assertLength(no_work, 0)
+    self.assertEqual(len(no_work), 0)
 
     work_url = 'http://www.example.com/'
     work_data = {
@@ -551,7 +551,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertResponseRedirect(response)
 
     one_work = self.task.workSubmissions()
-    self.assertLength(one_work, 1)
+    self.assertEqual(len(one_work), 1)
 
     work = one_work[0]
     self.assertEqual(work_url, work.url_to_work)
@@ -613,13 +613,13 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     work = GCITaskHelper(self.program).createWorkSubmission(
         self.task, self.profile_helper.profile)
 
-    self.assertLength(self.task.workSubmissions(), 1)
+    self.assertEqual(len(self.task.workSubmissions()), 1)
 
     url = '%s?delete_submission' %self._taskPageUrl(self.task)
     response = self.post(url, {work.key().id(): ''})
 
     self.assertResponseRedirect(response)
-    self.assertLength(self.task.workSubmissions(), 0)
+    self.assertEqual(len(self.task.workSubmissions()), 0)
 
   def _taskPageUrl(self, task):
     """Returns the url of the task page.

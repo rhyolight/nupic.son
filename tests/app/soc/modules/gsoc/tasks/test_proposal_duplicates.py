@@ -185,7 +185,7 @@ class ProposalDuplicatesTest(GSoCDjangoTestCase, TaskQueueTestCase):
 
     # 2 duplicates should have been created since there are 2 students
     duplicates = GSoCProposalDuplicate.all().fetch(1000)
-    self.assertLength(duplicates, 2)
+    self.assertEqual(len(duplicates), 2)
     for dup in duplicates:
       if dup.student.key() == self.student1.key():
         self.assertTrue(dup.is_duplicate)
@@ -229,11 +229,11 @@ class ProposalDuplicatesTest(GSoCDjangoTestCase, TaskQueueTestCase):
 
     # 1 duplicate should be left after task termination
     duplicates = GSoCProposalDuplicate.all().fetch(1000)
-    self.assertLength(duplicates, 1)
+    self.assertEqual(len(duplicates), 1)
     dup = duplicates[0]
     self.assertTrue(dup.is_duplicate)
     self.assertEqual(dup.student.key(), self.student1.key())
-    self.assertLength(dup.duplicates, 2)
+    self.assertEqual(len(dup.duplicates), 2)
 
     status = duplicates_logic.getOrCreateStatusForProgram(self.gsoc)
     self.assertEqual(status.status, 'idle')
