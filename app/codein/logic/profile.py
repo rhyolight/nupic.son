@@ -154,3 +154,27 @@ def getProfileForUsername(username, program_key):
   """
   return profile_logic.getProfileForUsername(username, program_key,
       models=types.CI_MODELS)
+
+
+def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
+  """Returns organization administrators for the specified organization.
+
+  Additional constraints on administrators may be specified by passing a custom
+  extra_attrs dictionary. Each element of the dictionary maps a property
+  with a requested value. The value must be a sequence.
+
+  Please note that this function executes a non-ancestor query, so it cannot
+  be safely used within transactions.
+
+  Args:
+    org_key: organization key
+    keys_only: If true, return only keys instead of complete entities
+    extra_args: a dictionary containing additional constraints on
+        organization administrators to retrieve
+
+  Returns:
+    list of profiles entities or keys of organization administrators
+  """
+  return profile_logic.getOrgAdmins(
+      org_key, keys_only=keys_only, extra_attrs=extra_attrs,
+      models=types.CI_MODELS)
