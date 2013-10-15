@@ -19,6 +19,7 @@ import hashlib
 import os
 import datetime
 import httplib
+import re
 import StringIO
 import urlparse
 import unittest
@@ -213,6 +214,7 @@ class SoCTestCase(unittest.TestCase):
     self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
 
     self.testbed.init_blobstore_stub()
+    self.testbed.init_mail_stub()
     self.testbed.init_taskqueue_stub(root_path=APP_ROOT_PATH)
 
   @staticmethod
@@ -668,6 +670,62 @@ class DjangoTestCase(testcases.TestCase):
 
     if errors:
       self.fail("\n".join(errors))
+
+  def assertEmailSent(
+      self, to=None, cc=None, bcc=None, sender=None, subject=None,
+      body=None, html=None):
+    """Tests that an email with the specified attributes has been sent.
+
+    Args:
+      to: Recipient of the emial.
+      cc: CC recipient of the email.
+      bcc: BCC recipients of the email.
+      sender: Sender of the email.
+      subject: Subject of the email.
+      body: Body required to be included in the email.
+      html: HTML (body) required to be included in the email.
+    """
+    # some tasks might have been sent via 'mail' task queue
+    # so let us execute all pending tasks to make sure they are not waiting
+    self.executeTasks(mailer.SEND_MAIL_URL, 'mail')
+
+    mail_stub = self.testbed.get_stub(testbed.MAIL_SERVICE_NAME)
+    messages = mail_stub.get_sent_messages(
+        to=to, sender=sender, subject=subject, body=body, html=html)
+
+    # unfortunately, the returned by get_sent_messages EmailMessage objects
+    # does not offer an option to easily filter messages by CC or BCC
+    # the workaround is to transform messages back to PB
+    if cc is not None:
+      messages = [m for m in messages if re.search(cc, m.ToProto().cc_list())]
+
+    if bcc is not None:
+      messages = [
+          m for m in messages if re.search(bcc, m.ToProto().bcc_list())]
+
+    if not messages:
+      failure_message = 'Expected e-mail message sent.'
+
+      details = []
+      if to is not None:
+        details.append('To: %s' % to)
+      if sender is not None:
+        details.append('From: %s' % sender)
+      if cc is not None:
+        details.append('CC: %s' % cc)
+      if bcc is not None:
+        details.append('BCC: %s' % bcc)
+      if subject is not None:
+        details.append('Subject: %s' % subject)
+      if body is not None:
+        details.append('Body (contains): %s' % body)
+      if html is not None:
+        details.append('HTML (appends): %s' % html)
+
+      if details:
+        failure_message += ' Expected arguments: %s' % ', '.join(details)
+
+      self.fail(failure_message)
 
   def executeTasks(self, url, queue_names=None):
     """Executes tasks with specified URL in specified task queues.
