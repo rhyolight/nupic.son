@@ -689,6 +689,9 @@ class DjangoTestCase(testcases.TestCase):
     # so let us execute all pending tasks to make sure they are not waiting
     self.executeTasks(mailer.SEND_MAIL_URL, 'mail')
 
+    # get_sent_messages function treats subject as regex pattern
+    subject = subject and re.escape(subject)
+
     mail_stub = self.testbed.get_stub(testbed.MAIL_SERVICE_NAME)
     messages = mail_stub.get_sent_messages(
         to=to, sender=sender, subject=subject, body=body, html=html)
@@ -697,11 +700,14 @@ class DjangoTestCase(testcases.TestCase):
     # does not offer an option to easily filter messages by CC or BCC
     # the workaround is to transform messages back to PB
     if cc is not None:
-      messages = [m for m in messages if re.search(cc, m.ToProto().cc_list())]
+      messages = [m for m in messages if filter(
+          lambda cc_recipient: re.search(cc, cc_recipient),
+          m.ToProto().cc_list())]
 
     if bcc is not None:
-      messages = [
-          m for m in messages if re.search(bcc, m.ToProto().bcc_list())]
+      messages = [m for m in messages if filter(
+          lambda bcc_recipient: re.search(bcc, bcc_recipient),
+          m.ToProto().bcc_list())]
 
     if not messages:
       failure_message = 'Expected e-mail message sent.'
