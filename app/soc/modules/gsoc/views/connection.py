@@ -305,11 +305,10 @@ class OrgConnectionPage(base.GSoCRequestHandler):
       connection_form.instance = None
       profile = GSoCProfile.all().ancestor(user).get()
       connection_view.createConnectionTxn(
-          data=data, profile=profile, organization=data.organization,
-          org_role=connection_form.cleaned_data['org_role'],
-          message=connection_form.cleaned_data['message'],
-          context=notifications.orgConnectionContext,
-          recipients=[profile.email])
+          data, profile, data.organization,
+          connection_form.cleaned_data['message'],
+          notifications.orgConnectionContext, [profile.email],
+          org_role=connection_form.cleaned_data['org_role'])
 
     # anonymous_connections should contain the emails of unregistered users
     # from the form.
@@ -414,10 +413,10 @@ class UserConnectionPage(base.GSoCRequestHandler):
     recipients = [i.email for i in admins]
 
     connection_view.createConnectionTxn(
-        data=data, profile=data.profile, organization=data.organization,
-        user_role=connection.ROLE, recipients=recipients,
-        message=connection_form.cleaned_data['message'],
-        context=notifications.userConnectionContext)
+        data, data.profile, data.organization,
+        connection_form.cleaned_data['message'],
+        notifications.userConnectionContext,
+        recipients, user_role=connection.ROLE)
 
     return True
 
