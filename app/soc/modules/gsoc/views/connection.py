@@ -26,8 +26,10 @@ from melange.logic import connection as connection_logic
 from melange.logic import profile as profile_logic
 from melange.models import connection
 from melange.request import exception
+from melange.request import links
 from melange.utils import rich_bool
 from melange.views import connection as connection_view
+
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic.helper import notifications
@@ -43,6 +45,10 @@ from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
+
+# TODO(daniel): important - this is just temporary, as new connection views
+# are not supported by summerofcode. It should be replaced.
+from codein.views.helper import urls
 
 
 DEF_INVALID_LINK_ID = '%s is not a valid link id.'
@@ -301,13 +307,16 @@ class OrgConnectionPage(base.GSoCRequestHandler):
 
     # The valid_users field should contain a list of User instances populated
     # by the form's cleaning methods.
+    notification_context_provider = (
+        notifications.StartConnectionByOrgContextProvider(
+            links.ABSOLUTE_LINKER, urls.UrlNames))
     for user in data.valid_users:
       connection_form.instance = None
       profile = GSoCProfile.all().ancestor(user).get()
       connection_view.createConnectionTxn(
           data, profile, data.organization,
           connection_form.cleaned_data['message'],
-          notifications.orgConnectionContext, [profile.email],
+          notification_context_provider, [profile.email],
           org_role=connection_form.cleaned_data['org_role'])
 
     # anonymous_connections should contain the emails of unregistered users
@@ -412,11 +421,14 @@ class UserConnectionPage(base.GSoCRequestHandler):
     admins = q.fetch(50)
     recipients = [i.email for i in admins]
 
+    notification_context_provider = (
+        notifications.StartConnectionByUserContextProvider(
+            links.ABSOLUTE_LINKER, urls.UrlNames))
     connection_view.createConnectionTxn(
         data, data.profile, data.organization,
         connection_form.cleaned_data['message'],
-        notifications.userConnectionContext,
-        recipients, user_role=connection.ROLE)
+        notification_context_provider, recipients,
+        user_role=connection.ROLE)
 
     return True
 
