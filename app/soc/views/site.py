@@ -61,6 +61,10 @@ def getProgramMap():
 class SiteForm(views_forms.ModelForm):
   """Django form for the site settings."""
 
+  def __init__(self, bound_field_class, request_data=None, **kwargs):
+    super(SiteForm, self).__init__(bound_field_class, **kwargs)
+    self.request_data = request_data
+
   class Meta:
     model = site.Site
     exclude = ['xsrf_secret_key']
@@ -109,7 +113,8 @@ class EditSitePage(base.RequestHandler):
     # TODO: suboptimal
     from soc.modules.gsoc.views.forms import GSoCBoundField
     site_form = SiteForm(
-        GSoCBoundField, data=data.POST or None, instance=data.site)
+        GSoCBoundField, request_data=data,
+        data=data.POST or None, instance=data.site)
 
     # NOTE(nathaniel): This is an unfortunate workaround for the fact
     # that in its current form the SiteForm class will only ever present
