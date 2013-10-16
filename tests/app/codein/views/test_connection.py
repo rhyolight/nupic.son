@@ -354,12 +354,18 @@ class StartConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
             org_admin.name(),
             connection_model.VERBOSE_ROLE_NAMES[connection_model.MENTOR_ROLE]))
 
+    # check that an email to the user has been sent
+    self.assertEmailSent(to=first_profile.email)
+
     # check that connection with the second profile is created
     connection = connection_model.Connection.all().ancestor(
         second_profile.key()).filter('organization', self.org).get()
     self.assertIsNotNone(connection)
     self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
     self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+
+    # check that an email to the user has been sent
+    self.assertEmailSent(to=second_profile.email)
 
   def testConnectionNotStartedForStudent(self):
     """Tests that connection is not created for a student."""
