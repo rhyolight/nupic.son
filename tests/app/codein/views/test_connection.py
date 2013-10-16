@@ -470,6 +470,39 @@ class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):
       response = self.post(url)
       self.assertResponseBadRequest(response)
 
+  def testNonStudentProfile(self):
+    """Tests that connection is created for a non-student profile."""
+    profile = self.profile_helper.createProfile()
+
+    # seed an admin for the organization
+    other_helper = profile_utils.GCIProfileHelper(self.program, False)
+    org_admin = other_helper.createOrgAdmin(self.org)
+
+    post_data = {'role': connection_model.ROLE}
+    response = self.post(self._getUrl(self.org), post_data)
+
+    # check that a new connection is created
+    connection = connection_model.Connection.all().ancestor(
+        profile.key()).filter('organization', self.org).get()
+    self.assertIsNotNone(connection)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+
+    # check that auto-generated message is created
+    message = connection_model.ConnectionMessage.all().ancestor(
+        connection).get()
+    self.assertIsNotNone(message)
+    self.assertTrue(message.is_auto_generated)
+    self.assertEqual(
+        message.content,
+        connection_logic._USER_STARTED_CONNECTION)
+
+    # check that a message has been sent to the organization admin
+    self.assertEmailSent(to=org_admin.email)
+
+    # check that the user is redirected to 'Manage Connection' page
+    self.assertResponseRedirect(response, _getManageAsUserUrl(connection))
+
 
 class ManageConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
   """Unit tests for ManageConnectionAsOrg class."""
