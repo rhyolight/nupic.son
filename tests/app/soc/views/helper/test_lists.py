@@ -29,32 +29,43 @@ class ColumnTypeFactoryTest(unittest.TestCase):
   """Unit tests for ColumnTypeFactory class."""
 
   def testCreatePlainText(self):
+    """Tests creation of plain text column."""
     column_type = lists.ColumnTypeFactory.create(lists.PLAIN_TEXT)
     self.assertIsInstance(column_type, lists.PlainTextColumnType)
 
   def testCreateNumerical(self):
+    """Tests creation of numerical column."""
     column_type = lists.ColumnTypeFactory.create(lists.NUMERICAL)
     self.assertIsInstance(column_type, lists.NumericalColumnType)
 
   def testCreateHtml(self):
+    """Tests creation of HTML column."""
     column_type = lists.ColumnTypeFactory.create(lists.HTML)
     self.assertIsInstance(column_type, lists.HtmlColumnType)
 
+  def testCreateDate(self):
+    """Tests creation of date column."""
+    column_type = lists.ColumnTypeFactory.create(lists.DATE)
+    self.assertIsInstance(column_type, lists.DateColumnType)
+
   def testCreateWithInvalidArgument(self):
+    """Tests that an exception is raised for a wrong argument."""
     with self.assertRaises(ValueError):
-      column_type = lists.ColumnTypeFactory.create(None)
+      lists.ColumnTypeFactory.create(None)
 
     with self.assertRaises(ValueError):
-      column_type = lists.ColumnTypeFactory.create('invalid_column_type')
+      lists.ColumnTypeFactory.create('invalid_column_type')
 
 
 class NumericalColumnTypeTest(unittest.TestCase):
   """Unit tests for NumericalColumnType class."""
 
   def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
     self.column_type = lists.NumericalColumnType()
 
   def testSafeForInt(self):
+    """Tests for integer values."""
     self.assertEqual(0, self.column_type.safe(0))
     self.assertEqual(1, self.column_type.safe(1))
     self.assertEqual(-1, self.column_type.safe(-1))
@@ -63,6 +74,7 @@ class NumericalColumnTypeTest(unittest.TestCase):
     self.assertEqual(sys.maxint, self.column_type.safe(sys.maxint))
 
   def testSafeForLong(self):
+    """Tests for long values."""
     self.assertEqual(0, self.column_type.safe(0L))
     self.assertEqual(1, self.column_type.safe(1L))
     self.assertEqual(-1, self.column_type.safe(-1L))
@@ -72,6 +84,7 @@ class NumericalColumnTypeTest(unittest.TestCase):
     self.assertEqual(-10**30, self.column_type.safe(-10**30))
 
   def testSafeForFloat(self):
+    """Tests for float values."""
     self.assertEqual(0.0, self.column_type.safe(0.0))
     self.assertEqual(1.0, self.column_type.safe(1.0))
     self.assertEqual(-1.0, self.column_type.safe(-1.0))
@@ -79,6 +92,7 @@ class NumericalColumnTypeTest(unittest.TestCase):
     self.assertEqual(-math.pi, self.column_type.safe(-math.pi))
 
   def testSafeForValidString(self):
+    """Tests for string representation."""
     self.assertEqual('', self.column_type.safe(''))
 
     self.assertEqual(0, self.column_type.safe('0'))
@@ -100,6 +114,7 @@ class NumericalColumnTypeTest(unittest.TestCase):
 
 
   def testSafeForInvalidString(self):
+    """Tests for non-numerical input."""
     with self.assertRaises(ValueError):
       self.column_type.safe('a')
 
@@ -113,6 +128,7 @@ class NumericalColumnTypeTest(unittest.TestCase):
       self.column_type.safe('2e-3 a')
 
   def testSafeForInvalidType(self):
+    """Tests for invalid type."""
     with self.assertRaises(TypeError):
       self.column_type.safe(object())
 
@@ -124,12 +140,22 @@ class PlainTextColumnTypeTest(unittest.TestCase):
   """Unit tests for PlainTextColumnType class."""
 
   def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
     self.column_type = lists.PlainTextColumnType()
 
   def _escaped(self, value):
+    """Escapes the specified input value.
+
+    Args:
+      value: String to escape.
+
+    Returns:
+      Escaped string.
+    """
     return html.conditional_escape(value)
 
   def testSafe(self):
+    """Unit tests for safe function."""
     text = ''
     self.assertEqual(text, self.column_type.safe(text))
 
@@ -147,9 +173,11 @@ class HtmlColumnTypeTest(unittest.TestCase):
   """Unit tests for HtmlTextColumnType class."""
 
   def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
     self.column_type = lists.HtmlColumnType()
 
   def testSafe(self):
+    """Unit tests for safe function."""
     text = ''
     self.assertEqual(text, self.column_type.safe(text))
 
