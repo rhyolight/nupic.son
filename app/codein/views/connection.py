@@ -367,6 +367,23 @@ def _getValueForUserRoleItem(data):
   else:
     return 'No'
 
+def _getValueForOrgRoleItem(data):
+  """Returns value to be displayed for Organization Role item of connection
+  summary
+
+  Args:
+    data: request_data.RequestData for the current request.
+
+  Returns:
+    a string containing a value for Organization Role item.
+  """
+  if data.url_connection.org_role == connection_model.NO_ROLE:
+    return translation.ugettext('No role')
+  elif data.url_connection.org_role == connection_model.MENTOR_ROLE:
+    return translation.ugettext('Mentor')
+  else:
+    return translation.ugettext('Organization Administrator')
+
 
 START_CONNECTION_BY_USER_CONTEXT_PROVIDER = (
     notifications.StartConnectionByUserContextProvider(
@@ -531,6 +548,7 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
         ORGANIZATION_ITEM_LABEL, data.url_connection.organization.name)
     summary.addItem(USER_ITEM_LABEL, data.url_profile.name())
     summary.addItem(USER_ROLE_ITEM_LABEL, _getValueForUserRoleItem(data))
+    summary.addItem(ORG_ROLE_ITEM_LABEL, _getValueForOrgRoleItem(data))
     summary.addItem(INITIALIZED_ON_LABEL, data.url_connection.created_on)
 
     messages = connection_logic.getConnectionMessages(data.url_connection)
@@ -627,6 +645,7 @@ class ManageConnectionAsOrg(base.GCIRequestHandler):
         ORGANIZATION_ITEM_LABEL, data.url_connection.organization.name)
     summary.addItem(USER_ITEM_LABEL, data.url_profile.name())
     summary.addItem(USER_ROLE_ITEM_LABEL, _getValueForUserRoleItem(data))
+    summary.addItem(ORG_ROLE_ITEM_LABEL, _getValueForOrgRoleItem(data))
     summary.addItem(INITIALIZED_ON_LABEL, data.url_connection.created_on)
 
     messages = connection_logic.getConnectionMessages(data.url_connection)
