@@ -143,6 +143,7 @@ class EditSitePageTest(test_utils.DjangoTestCase):
         'active_program': self.site.active_program.key()
         }
     response = self.post('/site/edit', postdata=postdata)
+    self.assertResponseRedirect(response, url='/site/edit')
 
     site = site_model.Site.get_by_key_name('site')
     self.assertEqual(site.description, TEST_DESCRIPTION)

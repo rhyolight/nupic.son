@@ -145,9 +145,11 @@ class EditSitePage(base.RequestHandler):
     context = self.context(data, check, mutator)
     template_path = self.templatePath()
     response_content = self.renderer.render(data, template_path, context)
-    return http.HttpResponse(
-        status=httplib.OK if post_accepted else httplib.BAD_REQUEST,
-        content=response_content)
+
+    if post_accepted:
+      return http.HttpResponseRedirect('/site/edit')
+    else:
+      return http.HttpResponseBadRequest(content=response_content)
 
 
 class SiteHomepage(base.RequestHandler):
