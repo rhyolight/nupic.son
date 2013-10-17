@@ -16,6 +16,7 @@
 
 import httplib
 
+from soc.models import program as program_model
 from soc.models import site as site_model
 from soc.modules.gci.models import program as gci_program_model
 from soc.modules.gsoc.models import program as gsoc_program_model
@@ -103,3 +104,45 @@ class LandingPageTest(test_utils.DjangoTestCase):
     self.user.put()
     response = self.get('/')
     self.assertResponseOK(response)
+
+
+TEST_DESCRIPTION = 'Test description of the site.'
+
+class EditSitePageTest(test_utils.DjangoTestCase):
+  """Unit tests for EditSitePage class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+    # TODO (daniel): Edit Site Page should work without an active program
+    program = seeder_logic.seed(program_model.Program)
+
+    site_properties = {
+        'key_name': 'site',
+        'active_program': program,
+        'tos': None,
+        }
+    self.site = seeder_logic.seed(site_model.Site, properties=site_properties)
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    user = profile_utils.seedUser(is_developer=True)
+    profile_utils.login(user)
+
+    response = self.get('/site/edit')
+    self.assertResponseOK(response)
+
+  def testUpdateSettings(self):
+    """Tests that site settings are updated properly."""
+    user = profile_utils.seedUser(is_developer=True)
+    profile_utils.login(user)
+
+    postdata = {
+        'description': TEST_DESCRIPTION,
+        'active_program': self.site.active_program.key()
+        }
+    response = self.post('/site/edit', postdata=postdata)
+
+    site = site_model.Site.get_by_key_name('site')
+    self.assertEqual(site.description, TEST_DESCRIPTION)
