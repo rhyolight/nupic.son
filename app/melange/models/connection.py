@@ -84,7 +84,7 @@ class Connection(db.Model):
 
   #: Property for the ShowConnection pages to keep a record of the last time
   #: that either the org or user modified the connection.
-  last_modified = db.DateTimeProperty(auto_now_add=True)
+  last_modified = db.DateTimeProperty(auto_now=True)
 
   #: Property indicating that a member of the organization has seen
   #: the latest changes made by the user.
