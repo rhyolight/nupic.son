@@ -345,7 +345,7 @@ class GCITestCase(SoCTestCase):
         self.gci, self.dev_test)
 
 
-class DjangoTestCase(testcases.TestCase):
+class DjangoTestCase(SoCTestCase, testcases.TestCase):
   """Class extending Django TestCase in order to extend its functions.
 
   As well as remove the functions which are not supported by Google App Engine,
