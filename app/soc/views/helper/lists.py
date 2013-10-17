@@ -155,10 +155,10 @@ class DateColumnType(ColumnType):
       return 'N/A'
     elif self.birthdate:
       return dateformat.format(value, BIRTHDATE_FORMAT)
-    elif isinstance(value, datetime.date):
-      return dateformat.format(value, DATE_FORMAT)
-    else:
+    elif isinstance(value, datetime.datetime):
       return dateformat.format(value, DATETIME_FORMAT)
+    else:
+      return dateformat.format(value, DATE_FORMAT)
 
 
 class HtmlColumnType(ColumnType):
