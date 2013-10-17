@@ -1898,8 +1898,9 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     with mock.patch.object(
         profile_logic, 'isMentorRoleEligibleForOrg',
         return_value=rich_bool.FALSE):
-      handler.handle(data, None, None)
-
+      with self.assertRaises(exception.UserError) as context:
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # check if all data is updated properly
     connection = db.get(connection.key())
@@ -1930,6 +1931,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     with mock.patch.object(
         profile_logic, 'isMentorRoleEligibleForOrg',
         return_value=rich_bool.TRUE):
+      handler.handle(data, None, None)
 
     # check if all data is updated properly
     connection = db.get(connection.key())
