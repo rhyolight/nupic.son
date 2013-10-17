@@ -433,15 +433,59 @@ a.all-tasks-tasks {
   }
 }
 
-.block-connect {
-  /*Connect with us*/
+.social-media {
+  margin: 0 auto;
+  text-align: center;
+  padding: 5px 15px 15px 15px;
 
-  .block-content {
-    border-bottom: 1px solid #89a4b7;
-    padding: 15px 0;
+  li {
+    display: inline-block;
+    font-size: 1.5em;
+    line-height: 1.2em;
+    margin: 4px .25em 0;
   }
 
-  ul li {
-    margin: 0 2px;
+    // Image replacement
+  .ir {
+    background-color: transparent;
+    border: 0;
+    overflow: hidden;
+    /* IE 6/7 fallback */
+    *text-indent: -9999px;
+  }
+
+  .ir:before {
+    content: "";
+    display: block;
+    width: 0;
+    height: 100%;
+  }
+}
+
+.blogger-icon, .email-icon, .gplus-icon, .irc-icon {
+  a {
+    color: #1f93cf;
+    display: block;
+    height: 28px;
+    margin-bottom: -10px;
+    width: 28px;
+  }
+}
+
+.blogger-icon {
+  a {
+    background: url('@{images_soc_location}/blogger-icon-sprite.svg');
+  }
+}
+
+.email-icon {
+  a {
+    background: url('@{images_soc_location}/email-icon-sprite.svg');
+  }
+}
+
+.gplus-icon {
+  a {
+    background: url('@{images_soc_location}/google-icon-sprite.svg');
   }
 }
