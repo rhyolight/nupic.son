@@ -257,6 +257,8 @@ def createConnectionMessage(connection_key, content, author_key=None):
   """Create a new ConnectionMessage to represent a message left
   on the specified connection.
 
+  Please note that the created entity is not persisted in the datastore.
+
   Args:
     connection: connection key.
     content: message content as a string
@@ -266,12 +268,10 @@ def createConnectionMessage(connection_key, content, author_key=None):
   Returns:
     Newly created ConnectionMessage entity.
   """
-  message = connection_model.ConnectionMessage(
+  return connection_model.ConnectionMessage(
       parent=connection_key, content=content, author=author_key,
-      is_auto_generated=not bool(author_key))
-  message.put()
+      is_auto_generated=not bool(author_key))  
 
-  return message
 
 def getConnectionMessages(connection, limit=1000):
   """Returns messages for the specified connection
@@ -298,7 +298,10 @@ def generateMessageOnStartByUser(connection):
   Returns:
     newly created connection message.
   """
-  return createConnectionMessage(connection.key(), _USER_STARTED_CONNECTION)
+  message = createConnectionMessage(connection.key(), _USER_STARTED_CONNECTION)
+  message.put()
+
+  return message
 
 
 def generateMessageOnStartByOrg(connection, org_admin):
@@ -317,7 +320,10 @@ def generateMessageOnStartByOrg(connection, org_admin):
       org_admin.name(),
       connection_model.VERBOSE_ROLE_NAMES[connection.org_role])
 
-  return createConnectionMessage(connection.key(), content)
+  message = createConnectionMessage(connection.key(), content)
+  message.put()
+
+  return message
 
 
 def generateMessageOnUpdateByOrg(connection, org_admin, old_org_role):

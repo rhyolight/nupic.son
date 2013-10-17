@@ -85,7 +85,7 @@ def createConnectionTxn(
     # attach any user-provided messages to the connection.
     if message:
       connection_logic.createConnectionMessage(
-          connection.key(), message, author_key=profile.key())
+          connection.key(), message, author_key=profile.key()).put()
 
     # dispatch an email to the user.
     notification_context = notification_context_provider.getContext(
@@ -137,6 +137,7 @@ def createConnectionMessageTxn(connection_key, profile_key, content):
   """
   message = connection_logic.createConnectionMessage(
       connection_key, content, author_key=profile_key)
+  message.put()
 
   # TODO(daniel): emails should be enqueued
   return message
@@ -161,10 +162,12 @@ def handleUserNoRoleSelectionTxn(connection):
     connection.user_role = connection_model.NO_ROLE
     connection = connection_logic._updateSeenByProperties(
         connection, connection_logic.USER_ACTION_ORIGIN)
-    connection.put()
 
-    connection_logic.generateMessageOnUpdateByUser(connection, old_user_role)
-  
+    message = connection_logic.generateMessageOnUpdateByUser(
+        connection, old_user_role)
+
+    db.put([connection, message])
+
     profile = db.get(connection.parent_key())
     org_key = connection_model.Connection.organization.get_value_for_datastore(
         connection)
@@ -191,9 +194,11 @@ def handleUserRoleSelectionTxn(data, connection):
     connection.user_role = connection_model.ROLE
     connection = connection_logic._updateSeenByProperties(
         connection, connection_logic.USER_ACTION_ORIGIN)
-    connection.put()
 
-    connection_logic.generateMessageOnUpdateByUser(connection, old_user_role)
+    message = connection_logic.generateMessageOnUpdateByUser(
+        connection, old_user_role)
+
+    db.put([connection, message])
 
     profile = db.get(connection.parent_key())
     org_key = connection_model.Connection.organization.get_value_for_datastore(
@@ -237,10 +242,11 @@ def handleOrgNoRoleSelection(connection, org_admin):
     connection.org_role = connection_model.NO_ROLE
     connection = connection_logic._updateSeenByProperties(
         connection, connection_logic.ORG_ACTION_ORIGIN)
-    connection.put()
 
-    connection_logic.generateMessageOnUpdateByOrg(
+    message = connection_logic.generateMessageOnUpdateByOrg(
         connection, org_admin, old_org_role)
+
+    db.put([connection, message])
 
     profile = db.get(connection.parent_key())
     org_key = connection_model.Connection.organization.get_value_for_datastore(
@@ -271,10 +277,11 @@ def handleMentorRoleSelection(connection, org_admin):
     connection.org_role = connection_model.MENTOR_ROLE
     connection = connection_logic._updateSeenByProperties(
         connection, connection_logic.ORG_ACTION_ORIGIN)
-    connection.put()
 
-    connection_logic.generateMessageOnUpdateByOrg(
+    message = connection_logic.generateMessageOnUpdateByOrg(
         connection, org_admin, old_org_role)
+
+    db.put([connection, message])
 
     if connection.userRequestedRole():
       profile = db.get(connection.parent_key())
@@ -311,10 +318,11 @@ def handleOrgAdminRoleSelection(connection, org_admin):
     connection.org_role = connection_model.ORG_ADMIN_ROLE
     connection = connection_logic._updateSeenByProperties(
         connection, connection_logic.ORG_ACTION_ORIGIN)
-    connection.put()
 
-    connection_logic.generateMessageOnUpdateByOrg(
+    message = connection_logic.generateMessageOnUpdateByOrg(
         connection, org_admin, old_org_role)
+
+    db.put([connection, message])
 
     if connection.userRequestedRole():
       profile = db.get(connection.parent_key())
