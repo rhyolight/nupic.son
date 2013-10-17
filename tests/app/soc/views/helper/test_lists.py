@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 """Tests for lists helper functions."""
 
+import datetime
 import math
 import sys
 import unittest
 
+from django.utils import dateformat
 from django.utils import html
 
 from soc.views.helper import lists
@@ -160,3 +161,29 @@ class HtmlColumnTypeTest(unittest.TestCase):
 
     text = '<script>alert("hacked")</script>'
     self.assertEqual(text, self.column_type.safe(text))
+
+
+class DateColumnTypeTest(unittest.TestCase):
+  """Unit tests for DateColumnType class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.column_type = lists.DateColumnType()
+
+  def testSafe(self):
+    """Unit tests for safe function."""
+    date = ''
+    self.assertEqual('N/A', self.column_type.safe(date))
+
+    date = None
+    self.assertEqual('N/A', self.column_type.safe(date))
+
+    date = datetime.datetime.utcnow()
+    self.assertEqual(
+        dateformat.format(date, lists.DATETIME_FORMAT),
+        self.column_type.safe(date))
+
+    date = datetime.date.today()
+    self.assertEqual(
+        dateformat.format(date, lists.DATE_FORMAT),
+        self.column_type.safe(date))
