@@ -135,9 +135,14 @@ def createConnectionMessageTxn(connection_key, profile_key, content):
   Returns:
     a newly created ConnectionMessage entity.
   """
+  # connection is retrieved and stored in datastore so that its last_modified
+  # property is automatically updated by AppEngine
+  connection = db.get(connection_key)
+
   message = connection_logic.createConnectionMessage(
       connection_key, content, author_key=profile_key)
-  message.put()
+
+  db.put([connection, message])
 
   # TODO(daniel): emails should be enqueued
   return message

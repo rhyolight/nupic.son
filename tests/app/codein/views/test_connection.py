@@ -530,6 +530,7 @@ class ManageConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
   def testSendNewMessage(self):
     """Tests that sending a new connection message works."""
     self.profile_helper.createOrgAdmin(self.org)
+    last_modified = self.connection.last_modified
 
     post_data = {
         connection_view.MESSAGE_FORM_NAME: '',
@@ -545,6 +546,10 @@ class ManageConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(message.content, _TEST_MESSAGE_CONTENT)
     self.assertFalse(message.is_auto_generated)
     self.assertEqual(message.author.key(), self.profile_helper.profile.key())
+
+    # check that last_modified property is updated
+    connection = db.get(self.connection.key())
+    self.assertGreater(connection.last_modified, last_modified)
 
 
 class ManageConnectionAsUserTest(test_utils.GCIDjangoTestCase):
@@ -564,6 +569,8 @@ class ManageConnectionAsUserTest(test_utils.GCIDjangoTestCase):
 
   def testSendNewMessage(self):
     """Tests that sending a new connection message works."""
+    last_modified = self.connection.last_modified
+
     post_data = {
         connection_view.MESSAGE_FORM_NAME: '',
         'content': _TEST_MESSAGE_CONTENT,
@@ -578,6 +585,10 @@ class ManageConnectionAsUserTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(message.content, _TEST_MESSAGE_CONTENT)
     self.assertFalse(message.is_auto_generated)
     self.assertEqual(message.author.key(), self.profile_helper.profile.key())
+
+    # check that last_modified property is updated
+    connection = db.get(self.connection.key())
+    self.assertGreater(connection.last_modified, last_modified)
 
 
 class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
