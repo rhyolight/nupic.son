@@ -21,18 +21,17 @@ from django.forms import fields
 from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns
 
-from soc.modules.gsoc.models.profile import GSoCStudentInfo
+from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.views import base
-from soc.modules.gsoc.views.forms import GSoCModelForm
-from soc.modules.gsoc.views.helper.url_patterns import url
+from soc.modules.gsoc.views import forms
+from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
 
 
-class TaxForm(GSoCModelForm):
-  """Django form for the student tax form.
-  """
+class TaxForm(forms.GSoCModelForm):
+  """Django form for the student tax form."""
 
   class Meta:
-    model = GSoCStudentInfo
+    model = profile_model.GSoCStudentInfo
     css_prefix = 'student_form'
     fields = ['tax_form']
     widgets = {}
@@ -41,8 +40,7 @@ class TaxForm(GSoCModelForm):
                               required=True)
 
   def fileFieldName(self):
-    """Returns the name of the FileField in this form.
-    """
+    """Returns the name of the FileField in this form."""
     return 'tax_form'
 
   def _admin(self):
@@ -58,8 +56,8 @@ class TaxForm(GSoCModelForm):
   def _urlName(self):
     if self._admin():
       return 'gsoc_tax_form_download_admin'
-
-    return 'gsoc_tax_form_download'
+    else:
+      return 'gsoc_tax_form_download'
 
   def __init__(self, request_data=None, **kwargs):
     super(TaxForm, self).__init__(**kwargs)
@@ -74,22 +72,20 @@ class TaxForm(GSoCModelForm):
       field._link = self._r().urlOf(self._urlName())
 
 
-class EnrollmentForm(GSoCModelForm):
-  """Django form for the student enrollment form.
-  """
+class EnrollmentForm(forms.GSoCModelForm):
+  """Django form for the student enrollment form."""
 
   class Meta:
-    model = GSoCStudentInfo
+    model = profile_model.GSoCStudentInfo
     css_prefix = 'student_form'
     fields = ['enrollment_form']
     widgets = {}
 
-  enrollment_form = fields.FileField(label='Upload new enrollment form',
-                                     required=True)
+  enrollment_form = fields.FileField(
+      label='Upload new enrollment form', required=True)
 
   def fileFieldName(self):
-    """Returns the name of the FileField in this form.
-    """
+    """Returns the name of the FileField in this form."""
     return 'enrollment_form'
 
   def _admin(self):
@@ -105,8 +101,8 @@ class EnrollmentForm(GSoCModelForm):
   def _urlName(self):
     if self._admin():
       return 'gsoc_enrollment_form_download_admin'
-
-    return 'gsoc_enrollment_form_download'
+    else:
+      return 'gsoc_enrollment_form_download'
 
   def __init__(self, request_data=None, **kwargs):
     super(EnrollmentForm, self).__init__(**kwargs)
@@ -126,16 +122,19 @@ class FormPage(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'student_forms/enrollment/%s$' % url_patterns.PROGRAM,
+        gsoc_url_patterns.url(
+            r'student_forms/enrollment/%s$' % url_patterns.PROGRAM,
             self, name='gsoc_enrollment_form',
             kwargs=dict(form='enrollment', admin=False)),
-        url(r'student_forms/tax/%s$' % url_patterns.PROGRAM,
+        gsoc_url_patterns.url(r'student_forms/tax/%s$' % url_patterns.PROGRAM,
             self, name='gsoc_tax_form',
             kwargs=dict(form='tax', admin=False)),
-        url(r'student_forms/admin/enrollment/%s$' % url_patterns.PROFILE,
+        gsoc_url_patterns.url(
+            r'student_forms/admin/enrollment/%s$' % url_patterns.PROFILE,
             self, name='gsoc_enrollment_form_admin',
             kwargs=dict(form='enrollment', admin=True)),
-        url(r'student_forms/admin/tax/%s$' % url_patterns.PROFILE,
+        gsoc_url_patterns.url(
+            r'student_forms/admin/tax/%s$' % url_patterns.PROFILE,
             self, name='gsoc_tax_form_admin',
             kwargs=dict(form='tax', admin=True)),
     ]
@@ -239,17 +238,21 @@ class DownloadForm(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        url(r'student_forms/enrollment/download/%s$' % url_patterns.PROGRAM,
+        gsoc_url_patterns.url(
+            r'student_forms/enrollment/download/%s$' % url_patterns.PROGRAM,
             self, name='gsoc_enrollment_form_download',
             kwargs=dict(form='enrollment', admin=False)),
-        url(r'student_forms/tax/download/%s$' % url_patterns.PROGRAM,
+        gsoc_url_patterns.url(
+            r'student_forms/tax/download/%s$' % url_patterns.PROGRAM,
             self, name='gsoc_tax_form_download',
             kwargs=dict(form='tax', admin=False)),
-        url(r'student_forms/admin/enrollment/download/%s$' %
-                url_patterns.PROFILE,
+        gsoc_url_patterns.url(
+            (r'student_forms/admin/enrollment/download/%s$' %
+             url_patterns.PROFILE),
             self, name='gsoc_enrollment_form_download_admin',
             kwargs=dict(form='enrollment', admin=True)),
-        url(r'student_forms/admin/tax/download/%s$' % url_patterns.PROFILE,
+        gsoc_url_patterns.url(
+            r'student_forms/admin/tax/download/%s$' % url_patterns.PROFILE,
             self, name='gsoc_tax_form_download_admin',
             kwargs=dict(form='tax', admin=True)),
     ]
