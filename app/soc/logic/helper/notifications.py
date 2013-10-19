@@ -20,7 +20,6 @@ from django.utils.translation import ugettext
 from soc.logic import mail_dispatcher
 from soc.logic.accounts import denormalizeAccount
 from soc.tasks import mailer
-from soc.views.helper.access_checker import isSet
 
 
 DEF_NEW_USER_CONNECTION = ugettext(

@@ -14,7 +14,6 @@
 
 """Module for the site global pages."""
 
-import httplib
 import os
 
 from google.appengine.api import users

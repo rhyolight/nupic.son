@@ -16,6 +16,7 @@
 
 import unittest
 
+from melange import key_column_id_const
 from melange.logic import cached_list as cached_list_logic
 from melange.models import cached_list as cached_list_model
 from melange.utils import lists as cached_list_utils
@@ -24,8 +25,7 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 import datetime
 
-
-KEY = cached_list_utils.KEY_COLUMN_ID
+KEY = key_column_id_const.KEY_COLUMN_ID
 
 
 class TestCacheItems(unittest.TestCase):

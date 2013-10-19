@@ -20,6 +20,8 @@ import pickle
 from google.appengine.ext import ndb
 from google.appengine.ext import db
 
+from melange import key_column_id_const
+
 from soc.mapreduce import cache_list_items
 
 from melange.logic import cached_list
@@ -34,9 +36,6 @@ from soc.modules.gsoc.models.timeline import GSoCTimeline
 
 # string that is used as the next_key parameter in the final batch.
 FINAL_BATCH = 'done'
-
-# name of the column that has a unique value among all the rows.
-KEY_COLUMN_ID = 'key'
 
 
 class List(object):
@@ -734,7 +733,7 @@ class OraganizationColumn(Column):
     return entity.org.name
 
 
-key = KeyColumn(KEY_COLUMN_ID, 'Key', hidden=True)
+key = KeyColumn(key_column_id_const.KEY_COLUMN_ID, 'Key', hidden=True)
 student = StudentColumn('student', 'Student')
 title = SimpleColumn('title', 'Title')
 org = OraganizationColumn('org', 'Organization')

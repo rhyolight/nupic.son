@@ -19,7 +19,6 @@ from google.appengine.ext import db
 
 from django import forms as django_forms
 from django import http
-from django.utils import html as html_utils
 from django.utils import translation
 
 from melange.logic import school as school_logic

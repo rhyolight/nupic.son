@@ -26,7 +26,6 @@ from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 
 from melange.logic import connection as connection_logic
-from melange.models.connection import AnonymousConnection
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
 from soc.modules.gsoc.models import proposal as proposal_model

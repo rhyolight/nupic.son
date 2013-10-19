@@ -13,8 +13,6 @@
 # limitations under the License.
 """Module for the GSoC profile page."""
 
-from google.appengine.ext import db
-
 from django.forms import fields
 from django.core.urlresolvers import reverse
 
@@ -270,8 +268,8 @@ class GSoCProfilePage(profile.ProfilePage, base.GSoCRequestHandler):
       return self.get(data, check, mutator)
 
     if data.anonymous_connection:
-      profile=profile_entity[0]
-      token=data.anonymous_connection.token
+      profile = profile_entity[0]
+      token = data.anonymous_connection.token
       connection = _handleAnonymousConnection(
           data=data, profile=profile, token=token)
       data.redirect.show_user_connection(connection=connection)
