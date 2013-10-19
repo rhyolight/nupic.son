@@ -166,7 +166,7 @@ class Site(db.Model):
       verbose_name=ugettext('Latest GCI'))
   latest_gci.help_text = ugettext(
       'The key of the latest GCI program')
- 
+
   #: Optional public mailing list.
   mailing_list = db.StringProperty(required=False,
       verbose_name=ugettext('Mailing List'))

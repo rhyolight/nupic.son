@@ -349,7 +349,7 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
     return 'edit_gci_profile'
 
   def _getCreateProfileURLName(self):
-    return url_names.GCI_PROFILE_CREATE 
+    return url_names.GCI_PROFILE_CREATE
 
   def _getEditProfileURLPattern(self):
     return url_patterns.PROGRAM

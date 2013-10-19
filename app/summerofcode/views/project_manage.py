@@ -108,7 +108,7 @@ def _getInitialValues(extension):
 def _setPersonalExtension(profile_key, survey_key, form):
   """Sets personal extension evaluation for the specified profile and
   the specified survey based on the data sent in the specified form.
-  The extension is not set if 
+  The extension is not set if
 
   Args:
     profile_key: profile key.

@@ -294,7 +294,7 @@ class JqgridResponse(object):
       item: A dict representing a particular list item.
 
     Returns:
-      A dict containing button ids as keys and another dict containing each 
+      A dict containing button ids as keys and another dict containing each
       button's custom parameters as the value of each key. None if the list does
       not contain custom buttons.
     """
@@ -332,7 +332,7 @@ def getDataId(query):
     query: A query used to create a list.
 
   Returns:
-    A string containing an id that is unique for the given query. 
+    A string containing an id that is unique for the given query.
   """
   if isinstance(query, ndb.Query):
     return repr(query)
@@ -384,7 +384,7 @@ class Row(object):
     """Initializes a Row object.
 
     Args:
-      row_type: A string indicating the type of the row. Currently 
+      row_type: A string indicating the type of the row. Currently
         'redirect_custom' is the only supported type.
     """
     self.row_type = row_type
@@ -397,7 +397,7 @@ class Row(object):
     http://code.google.com/p/soc/wiki/Lists.
 
     Returns:
-      A dict containing data for operations/row/parameters sub object.    
+      A dict containing data for operations/row/parameters sub object.
     """
     return {
         'type': self.row_type,
@@ -413,7 +413,7 @@ class Row(object):
 
     This must be overridden by implementing subclasses.
 
-    Returns: 
+    Returns:
       A dict containing parameters that can be used in operations/row sub
       object.
     """
@@ -432,7 +432,7 @@ class Button(object):
     Args:
       button_id: A string indicating a unique id for this button.
       caption: A string defining what caption the button should show.
-      bounds: A sequence of size two with two integers or an integer and the 
+      bounds: A sequence of size two with two integers or an integer and the
         string 'all'. This indicates how many rows need to be selected for the
         button to be enabled.
       button_type: A string indicating the type of the button. Supported types
@@ -461,8 +461,8 @@ class Button(object):
     """Returns the operations regarding this row.
 
     This method can be used to create the 'operations/row' sub object of the
-    json object expected by jqgrid. Specification of the json object can be 
-    found at http://code.google.com/p/soc/wiki/Lists. 
+    json object expected by jqgrid. Specification of the json object can be
+    found at http://code.google.com/p/soc/wiki/Lists.
 
     Returns: A dict with data for operations/row sub object expected by jqgrid.
     """
@@ -655,7 +655,7 @@ class PostButton(Button):
   def _getParameters(self):
     """See Button._getParameters for specification"""
     return {
-      'url': self.url, 
+      'url': self.url,
       'keys': self.keys,
       'refresh': self.refresh,
       'redirect': self.redirect

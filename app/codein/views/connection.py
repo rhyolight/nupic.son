@@ -140,7 +140,7 @@ class NoConnectionExistsAccessChecker(access.AccessChecker):
 
 NO_CONNECTION_EXISTS_ACCESS_CHECKER = NoConnectionExistsAccessChecker()
 
-  
+
 class ConnectionForm(gci_forms.GCIModelForm):
   """Django form to show specific fields for an organization.
 
@@ -880,7 +880,7 @@ class UserActionsFormHandler(FormHandler):
       is_eligible = True
 
     if is_eligible:
-      # TODO(daniel): eliminate these calls by removing data from 
+      # TODO(daniel): eliminate these calls by removing data from
       # the call below. without these now XG transactions may be needed
       data.program
       data.site
@@ -1092,7 +1092,7 @@ class _OrganizationsToStartConnectionList(org_list.BasicOrgList):
   def _getRedirect(self):
     """See org_list.OrgList._getRedirect for specification."""
     return lambda e, *args: links.LINKER.organization(
-        e, urls.UrlNames.CONNECTION_START_AS_USER) 
+        e, urls.UrlNames.CONNECTION_START_AS_USER)
 
   def _getDescription(self):
     """See org_list.OrgList._getDescription for specification."""

@@ -47,6 +47,6 @@ class SoCLinker(links.Linker):
         'survey': survey.survey_type,
         }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
-  
+
 # Since Linker is stateless, there might as well be just one of it.
 SOC_LINKER = SoCLinker()

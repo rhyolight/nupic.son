@@ -35,8 +35,8 @@ class UserSettingsForm(forms.Form):
   def clean_view_as(self):
     """Cleans view_as field."""
     user = cleaning.clean_existing_user('view_as')(self)
-    return ndb.Key.from_old_key(user.key()) if user else None 
-     
+    return ndb.Key.from_old_key(user.key()) if user else None
+
 
 class UserSettings(base.RequestHandler):
   """View to list and set all user settings for the page."""

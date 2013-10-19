@@ -52,7 +52,7 @@ class GSoCUserReadOnlyTemplate(profile_show.UserReadOnlyTemplate):
   Of Code view.
   """
   template_path = readonly_template.GSoCModelReadOnlyTemplate.template_path
-  
+
 
 class GSoCHostActions(profile_show.HostActions):
   """Template to render the left side host actions.

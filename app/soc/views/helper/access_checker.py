@@ -750,7 +750,7 @@ class AccessChecker(BaseAccessChecker):
     org_key = self.data.url_connection.organization.key()
     if org_key not in self.data.profile.org_admin_for:
       raise exception.Forbidden(message=DEF_CONNECTION_UNACCESSIBLE)
-  
+
   def canUserAccessConnection(self):
     """Checks if the current user is allowed to access a Connection entity.
     """
@@ -758,7 +758,7 @@ class AccessChecker(BaseAccessChecker):
     # Only org admins and the user involved in the connection may view it.
     if self.data.url_connection.parent_key() != self.data.profile.key():
       raise exception.Forbidden(message=DEF_CONNECTION_UNACCESSIBLE)
-    
+
 
   def canAccessProposalEntity(self):
     """Checks if the current user is allowed to access a Proposal entity.

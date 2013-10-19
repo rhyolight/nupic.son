@@ -175,7 +175,7 @@ def _initConnectionDashboardSubpages(data):
           'title': ugettext('See your connections'),
           'link': links.LINKER.program(
               data.program, urls.UrlNames.CONNECTION_PICK_ORG)
-      },                     
+      },
       {
           'name': 'connect',
           'description': ugettext(

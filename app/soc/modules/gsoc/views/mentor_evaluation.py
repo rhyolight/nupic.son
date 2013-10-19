@@ -264,7 +264,7 @@ class GSoCMentorEvaluationPreviewPage(base.GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     check.isHost()
-    
+
 
   def templatePath(self):
     return 'modules/gsoc/_evaluation_take.html'

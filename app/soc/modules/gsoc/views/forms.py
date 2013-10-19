@@ -269,7 +269,7 @@ class GSoCBoundField(forms.BoundField):
         }
     return self.as_widget(attrs=attrs)
 
-  def renderFileInput(self):    
+  def renderFileInput(self):
     attrs = {
         'id': self.name + self.idSuffix(self),
         }

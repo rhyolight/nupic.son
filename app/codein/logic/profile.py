@@ -21,9 +21,9 @@ from melange.utils import rich_bool
 
 from soc.modules.gci.models import task as task_model
 
-
 MENTOR_HAS_TASK_ASSIGNED = 'mentor_has_task_assigned'
 NOT_MENTOR_FOR_ORG = 'not_mentor_for_org'
+
 
 def canResignAsMentorForOrg(profile, org_key):
   """Tells whether the specified profile can resign from their mentor role
@@ -47,7 +47,7 @@ def canResignAsMentorForOrg(profile, org_key):
   if org_key not in profile.mentor_for:
     return rich_bool.RichBool(False, extra=NOT_MENTOR_FOR_ORG)
 
-  # TODO(daniel): if all work is already completed/reviewed, 
+  # TODO(daniel): if all work is already completed/reviewed,
   # the mentor can always resign?
 
   # the mentor cannot have any non-closed tasks assigned

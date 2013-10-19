@@ -115,7 +115,7 @@ def createOrganizationChoices(data):
   if (data.program.sponsor.key() not in data.user.host_for and
       not data.user.is_developer):
     organization_query.filter(
-        '__key__ IN', 
+        '__key__ IN',
         list(set(data.profile.org_admin_for + data.profile.mentor_for)))
 
   return organization_query.fetch(limit=None)

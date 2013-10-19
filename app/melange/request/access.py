@@ -208,7 +208,7 @@ class ProgramActiveAccessChecker(AccessChecker):
     if not data.program:
       raise exception.NotFound(message=_MESSAGE_PROGRAM_NOT_EXISTING)
 
-    if (data.program.status != program_model.STATUS_VISIBLE 
+    if (data.program.status != program_model.STATUS_VISIBLE
         or not data.timeline.programActive()):
       raise exception.Forbidden(message=_MESSAGE_PROGRAM_NOT_ACTIVE)
 

@@ -549,14 +549,14 @@ class RedirectHelper(request_data.RedirectHelper):
       connection: The Connection instance to view.
     """
     self.connect_org(connection.organization)
-    
+
     self.kwargs['id'] = connection.key().id()
     # Need to make sure that when the view loads it can query for the
     # connection, and in order to do that it needs its parent entity.
     self.kwargs['user'] = connection.parent().parent().key().name()
     self._url_name = url_names.GSOC_SHOW_ORG_CONNECTION
     return self
-  
+
   def show_user_connection(self, connection):
     """ Sets up kwargs for a gsoc_show_org_connection redirect.
     Args:

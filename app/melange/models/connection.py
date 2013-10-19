@@ -22,7 +22,7 @@ from soc.models.profile import Profile
 
 
 # Constants to represent the different states that users and org admins
-# may select for a connection. Users may select either ROLE or NO_ROLE, 
+# may select for a connection. Users may select either ROLE or NO_ROLE,
 # meaning that they will accept whatever role the org admin assigns them.
 # Org Admins may choose the first three, either declining to accept a
 # role or selecting one. It is up to the org admins to leave messages
@@ -44,8 +44,8 @@ VERBOSE_ROLE_NAMES = {
 # admins may respond with in their respective ShowConnection views.
 USER_RESPONSES = ((NO_ROLE, 'No Role'), (ROLE, 'Role'))
 ORG_RESPONSES = (
-  (NO_ROLE, 'No Role'), 
-  (MENTOR_ROLE, 'Mentor'), 
+  (NO_ROLE, 'No Role'),
+  (MENTOR_ROLE, 'Mentor'),
   (ORG_ADMIN_ROLE, 'Org Admin')
   )
 
@@ -59,7 +59,7 @@ class Connection(db.Model):
   from the organization. These two properties put together determine what
   type of role the user has for the organization at this moment.
 
-  The class also defines a number of convenience methods to clean up 
+  The class also defines a number of convenience methods to clean up
   a lot of the logic in the connection module for determining valid actions.
 
   Parent: soc.models.profile.Profile
@@ -95,7 +95,7 @@ class Connection(db.Model):
   seen_by_user = db.BooleanProperty()
 
   def userRequestedRole(self):
-    """Indicate whether or not a user has requested to be promoted to a 
+    """Indicate whether or not a user has requested to be promoted to a
     role for an organization.
 
     Returns:
@@ -141,7 +141,7 @@ class Connection(db.Model):
     elif self.org_role == ORG_ADMIN_ROLE:
       return 'Org Admin'
     else:
-      return 'No Role' 
+      return 'No Role'
 
 
 class AnonymousConnection(db.Model):

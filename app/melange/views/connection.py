@@ -93,7 +93,7 @@ def createConnectionTxn(
     sub_txn = mailer.getSpawnMailTaskTxn(
         notification_context, parent=connection)
     sub_txn()
-  
+
     return connection
 
 @db.transactional

@@ -142,7 +142,7 @@ def numUnreadMessagesForProgramAndUser(program, user):
     user: Key (ndb) of User.
   """
   conv_users = queryForProgramAndUser(program, user).fetch(1000)
-  
+
   unread_count = 0
 
   for conv_user in conv_users:
@@ -343,7 +343,7 @@ def doesUserBelongInConversation(
       return False
   elif conversation_ent.recipients_type == conversation_model.ORGANIZATION:
     if (conversation_ent.include_admins and profile.is_org_admin and
-        ndb.Key.to_old_key(conversation_ent.organization) in 
+        ndb.Key.to_old_key(conversation_ent.organization) in
             profile.org_admin_for):
       return True
     elif (conversation_ent.include_mentors and profile.is_mentor and

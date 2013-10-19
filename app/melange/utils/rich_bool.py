@@ -18,7 +18,7 @@
 class RichBool(object):
   """Class that extends capabilities of traditional bool type.
 
-  Except for the boolean value (usually referred to as the boolean part), 
+  Except for the boolean value (usually referred to as the boolean part),
   this class may also contain an arbitrary extra object (usually referred to
   as the extra part).
 
@@ -70,7 +70,7 @@ class RichBool(object):
       extra part of the object.
     """
     return self._extra
-    
+
   def __cmp__(self, other):
     """Compares the object with the other specified object.
 
@@ -100,7 +100,7 @@ class RichBool(object):
 
     As with comparison, the value is based purely on the boolean part of
     this object. Therefore, the returned value is actually a hash function
-    of that part. 
+    of that part.
 
     Extra part is omitted. In particular, two different objects with
     the same boolean value and different extra values return the same
@@ -116,9 +116,9 @@ class RichBool(object):
 
     The test is based entirely on the boolean part of this object. Therefore,
     the object evaluates to the same value as the boolean part.
-    
+
     Returns:
-      True if boolean part of self object evaluates to True, False if 
+      True if boolean part of self object evaluates to True, False if
       boolean part evaluates to False.
     """
     return self.value.__nonzero__()

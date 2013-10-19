@@ -100,6 +100,7 @@ FORBIDDEN_IN_MELANGE = (
     'dangerous-default-value',
     'logging-not-lazy',
     'no-space-before-operator',
+    'trailing-whitespace',
     'unused-import',
 )
 

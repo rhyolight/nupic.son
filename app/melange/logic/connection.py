@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Query and functions for Connection.
-"""
+
+"""Query and functions for Connection."""
+
 from datetime import datetime
 from datetime import timedelta
 import uuid
@@ -270,7 +271,7 @@ def createConnectionMessage(connection_key, content, author_key=None):
   """
   return connection_model.ConnectionMessage(
       parent=connection_key, content=content, author=author_key,
-      is_auto_generated=not bool(author_key))  
+      is_auto_generated=not bool(author_key))
 
 
 def getConnectionMessages(connection, limit=1000):
@@ -344,7 +345,7 @@ def generateMessageOnUpdateByOrg(connection, org_admin, old_org_role):
     lines = []
     lines.append(_ORG_ROLE_CHANGED % (connection_model.VERBOSE_ROLE_NAMES[
         connection.org_role], org_admin.name()))
-    
+
     content = '\n'.join(lines)
     return createConnectionMessage(connection.key(), content)
   else:
@@ -368,7 +369,7 @@ def generateMessageOnUpdateByUser(connection, old_user_role):
       lines.append(_USER_DOES_NOT_REQUEST_ROLE)
     else: # user requests role
       lines.append(_USER_REQUESTS_ROLE)
-    
+
     content = '\n'.join(lines)
     return createConnectionMessage(connection.key(), content)
   else:
