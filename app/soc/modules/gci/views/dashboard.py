@@ -388,7 +388,13 @@ class DashboardPage(GCIRequestHandler):
     """Get the dashboard components for a user with a non-student profile
     who does not have any actual role for any organization.
     """
-    return [self._getMyOrgApplicationsComponent(data)]
+    components = []
+
+    oa_component = self._getMyOrgApplicationsComponent(data)
+    if oa_component:
+      components.append(oa_component)
+
+    return components
 
   def _getMyOrgApplicationsComponent(self, data):
     """Returns MyOrgApplicationsComponent iff this user is main_admin or
