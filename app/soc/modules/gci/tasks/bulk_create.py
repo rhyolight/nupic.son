@@ -205,7 +205,14 @@ class BulkCreateTask(object):
 
     # clean time to complete
     try:
-      task['time_to_complete'] = int(task['time_to_complete'])
+      ttc = int(task['time_to_complete'])
+
+      # Must be at least 2 days (48hrs)
+      if ttc < 2*24:
+        errors.append('Time to complete must be at least 48 hrs, given was: %s'
+                      % ttc)
+      else:
+        task['time_to_complete'] = ttc
     except (ValueError, TypeError) as e:
       errors.append('No valid time to completion found, given was: %s.'
                     % task['time_to_complete'])
