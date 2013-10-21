@@ -387,7 +387,7 @@ class RequestHandler(object):
     """
     # TODO(nathaniel): Eliminate this method entirely after eliminating
     # all overriding implementations.
-    return self.access_checker.checkAccess(data, check, mutator)
+    self.access_checker.checkAccess(data, check, mutator)
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
@@ -471,7 +471,12 @@ class RequestHandler(object):
     try:
       data, check, mutator = self.initializer.initialize(request, args, kwargs)
       self.checkMaintenanceMode(data)
-      self.checkAccess(data, check, mutator)
+
+      # TODO(nathaniel): Eliminate the presumption throughout Melange of
+      # developers-should-see-everything.
+      if not data.is_developer:
+        self.checkAccess(data, check, mutator)
+
       return self._dispatch(data, check, mutator)
     except exception.LoginRequired:
       return data.redirect.toUrl(self.linker.login(request))
