@@ -464,8 +464,9 @@ class ListConfiguration(object):
       name: The header of the column that is shown to the user.
       func: The function to be called when rendering this column for
             a single entity. This function should take an entity as first
-            argument and args and kwargs if needed. The string rendering of
-            the return value will be sent to the end user.
+            argument and args and kwargs if needed. The return value will
+            be displayed to the user for that column. If func returns None,
+            an empty string will be displayed instead.
       width: The width of the column.
       resizable: Whether the width of the column should be resizable by the
                  end user.
@@ -1160,7 +1161,9 @@ class ListContentResponse(object):
     columns = {}
     for col_id, func in self._config._col_functions.iteritems():
       col_model = self._config._col_map.get(col_id, {})
-      value = func(entity, *args, **kwargs) or ''
+      value = func(entity, *args, **kwargs)
+      if value is None:
+        value = ''
       column_type = ColumnTypeFactory.create(col_model['column_type'])
       columns[col_id] = column_type.safe(value)
 
