@@ -164,14 +164,14 @@ class UpdateProposal(base.GSoCRequestHandler):
     check.isActiveStudent()
 
     mutator.proposalFromKwargs()
-    data.organization = data.proposal.org
+    data.organization = data.url_proposal.org
 
     check.canStudentUpdateProposal()
 
     if data.POST:
       action = data.POST['action']
 
-      status = data.proposal.status
+      status = data.url_proposal.status
       if status == 'pending' and action == self.ACTIONS['resubmit']:
         error_msg = ugettext('You cannot resubmit a pending proposal')
         raise exception.Forbidden(message=error_msg)
@@ -190,13 +190,13 @@ class UpdateProposal(base.GSoCRequestHandler):
     return 'modules/gsoc/proposal/_buttons_update.html'
 
   def context(self, data, check, mutator):
-    proposal = data.proposal
-
-    proposal_form = ProposalForm(data=data.POST or None, instance=proposal)
+    proposal_form = ProposalForm(
+        data=data.POST or None, instance=data.url_proposal)
 
     return {
         'page_name': 'Update proposal',
-        'form_header_message': 'Update proposal to %s' % (proposal.org.name),
+        'form_header_message': 'Update proposal to %s' % (
+            data.url_proposal.org.name),
         'proposal_form': proposal_form,
         'is_pending': data.is_pending,
         'buttons_template': self.buttonsTemplate(),
@@ -211,12 +211,12 @@ class UpdateProposal(base.GSoCRequestHandler):
     Returns:
       an updated proposal entity or None
     """
-    proposal_form = ProposalForm(data=data.POST, instance=data.proposal)
+    proposal_form = ProposalForm(data=data.POST, instance=data.url_proposal)
 
     if not proposal_form.is_valid():
       return None
 
-    org_key = GSoCProposal.org.get_value_for_datastore(data.proposal)
+    org_key = GSoCProposal.org.get_value_for_datastore(data.url_proposal)
     extra_attrs = {
         GSoCProfile.notify_proposal_updates: [True]
         }
@@ -224,7 +224,7 @@ class UpdateProposal(base.GSoCRequestHandler):
 
     to_emails = [i.email for i in mentors]
 
-    proposal_key = data.proposal.key()
+    proposal_key = data.url_proposal.key()
 
     def update_proposal_txn():
       proposal = db.get(proposal_key)
@@ -243,7 +243,7 @@ class UpdateProposal(base.GSoCRequestHandler):
     """Withdraws a proposal."""
 
     def withdraw_proposal_txn():
-      proposal = db.get(data.proposal.key())
+      proposal = db.get(data.url_proposal.key())
       student_info = db.get(data.student_info.key())
 
       proposal_logic.withdrawProposal(proposal, student_info)
@@ -254,7 +254,7 @@ class UpdateProposal(base.GSoCRequestHandler):
     """Resubmits a proposal."""
 
     def resubmit_proposal_txn():
-      proposal = db.get(data.proposal.key())
+      proposal = db.get(data.url_proposal.key())
       student_info = db.get(data.student_info.key())
       proposal_logic.resubmitProposal(
           proposal, student_info, data.program, data.program_timeline)
@@ -274,5 +274,5 @@ class UpdateProposal(base.GSoCRequestHandler):
       self._resubmit(data)
 
     url = links.LINKER.userId(
-        data.profile, data.proposal.key().id(), url_names.PROPOSAL_REVIEW)
+        data.profile, data.url_proposal.key().id(), url_names.PROPOSAL_REVIEW)
     return http.HttpResponseRedirect(url)

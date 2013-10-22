@@ -365,7 +365,19 @@ class RequestData(request_data.RequestData):
 
   @property
   def url_proposal(self):
-    """Returns the url_proposal field."""
+    """Returns the url_proposal field.
+
+    This property represents a proposal entity corresponding to a profile whose
+    identifier is a part of the URL of the processed request. Numerical
+    identifier of the proposal is also a part of the URL.
+
+    Returns:
+      Retrieved proposal entity.
+
+    Raises:
+      exception.BadRequest: if some data is missing in the current request.
+      exception.NotFound: if no entity is found.
+    """
     if not self._isSet(self._url_proposal):
       if 'id' not in self.kwargs:
         raise exception.BadRequest(
@@ -429,11 +441,10 @@ class RequestData(request_data.RequestData):
     """Checks if the user is a possible mentor for the proposal in the data.
     """
     assert isSet(self.profile)
-    assert isSet(self.proposal)
 
     profile = mentor_profile if mentor_profile else self.profile
 
-    return profile.key() in self.proposal.possible_mentors
+    return profile.key() in self.url_proposal.possible_mentors
 
 
 class RedirectHelper(request_data.RedirectHelper):

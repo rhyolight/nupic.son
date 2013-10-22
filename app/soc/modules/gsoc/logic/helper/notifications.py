@@ -119,20 +119,18 @@ def newReviewContext(data, comment, to_emails):
   Args:
     data: a RequestData object
   """
-  assert isSet(data.proposal)
-
   # TODO(daniel): the second part of this URL should probably be added by
   # a utility class
   review_notification_url = '%s#c%s' % (
       links.ABSOLUTE_LINKER.userId(
-          data.url_profile, data.proposal.key().id(),
+          data.url_profile, data.url_proposal.key().id(),
           url_names.PROPOSAL_REVIEW),
       comment.key().id())
   edit_profile_url = links.ABSOLUTE_LINKER.program(
       data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
 
   review_type = 'private' if comment.is_private else 'public'
-  reviewed_name = data.proposal.title
+  reviewed_name = data.url_proposal.title
 
   message_properties = {
       'review_notification_url': review_notification_url,
@@ -141,7 +139,7 @@ def newReviewContext(data, comment, to_emails):
       'review_content': comment.content,
       'review_visibility': review_type,
       'proposer_name': data.url_profile.name(),
-      'org': data.proposal.org.name,
+      'org': data.url_proposal.org.name,
       'profile_edit_link': edit_profile_url,
       }
 

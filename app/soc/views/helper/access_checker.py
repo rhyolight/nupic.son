@@ -660,16 +660,14 @@ class AccessChecker(BaseAccessChecker):
   def isProposalInURLValid(self):
     """Checks if the proposal in URL exists.
     """
-    assert isSet(self.data.proposal)
-
-    if not self.data.proposal:
+    if not self.data.url_proposal:
       error_msg = DEF_ID_BASED_ENTITY_NOT_EXISTS % {
           'model': 'GSoCProposal',
           'id': self.data.kwargs['id']
           }
       raise exception.Forbidden(message=error_msg)
 
-    if self.data.proposal.status == 'invalid':
+    if self.data.url_proposal.status == 'invalid':
       error_msg = DEF_ID_BASED_ENTITY_INVALID % {
           'model': 'GSoCProposal',
           'id': self.data.kwargs['id'],
@@ -693,7 +691,7 @@ class AccessChecker(BaseAccessChecker):
     self.isProgramVisible()
 
     if (self.data.timeline.afterStudentSignupEnd() and
-        self.data.proposal.is_editable_post_deadline):
+        self.data.url_proposal.is_editable_post_deadline):
       return
 
     violation_message = '%s %s'% ((DEF_PAGE_INACTIVE_OUTSIDE %
@@ -704,7 +702,7 @@ class AccessChecker(BaseAccessChecker):
   def canStudentUpdateProposal(self):
     """Checks if the student is eligible to submit a proposal.
     """
-    assert isSet(self.data.proposal)
+    assert isSet(self.data.url_proposal)
 
     self.isActiveStudent()
     self.isProposalInURLValid()
@@ -717,7 +715,7 @@ class AccessChecker(BaseAccessChecker):
       self.canStudentUpdateProposalPostSignup()
 
     # check if the proposal belongs to the current user
-    expected_profile = self.data.proposal.parent()
+    expected_profile = self.data.url_proposal.parent()
     if expected_profile.key().name() != self.data.profile.key().name():
       error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'model': 'GSoCProposal',
@@ -726,7 +724,7 @@ class AccessChecker(BaseAccessChecker):
       raise exception.Forbidden(message=error_msg)
 
     # check if the status allows the proposal to be updated
-    status = self.data.proposal.status
+    status = self.data.url_proposal.status
     if status == 'ignored':
       raise exception.Forbidden(message=DEF_PROPOSAL_IGNORED_MESSAGE)
     elif status in ['invalid', 'accepted', 'rejected']:
@@ -763,11 +761,10 @@ class AccessChecker(BaseAccessChecker):
   def canAccessProposalEntity(self):
     """Checks if the current user is allowed to access a Proposal entity.
     """
-    assert isSet(self.data.proposal)
     assert isSet(self.data.url_user)
 
     # if the proposal is public, everyone may access it
-    if self.data.proposal.is_publicly_visible:
+    if self.data.url_proposal.is_publicly_visible:
       return
 
     if not self.data.user:
@@ -779,7 +776,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     # all the mentors and org admins from the organization may access it
-    if self.data.mentorFor(self.data.proposal.org):
+    if self.data.mentorFor(self.data.url_proposal.org):
       return
 
     raise exception.Forbidden(message=DEF_PROPOSAL_NOT_PUBLIC)
