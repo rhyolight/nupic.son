@@ -30,6 +30,7 @@ from soc.views.helper import request_data
 
 from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models import program as program_model
+from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.views.helper import url_names
 
@@ -223,6 +224,8 @@ class RequestData(request_data.RequestData):
     self._student_info = self._unset
     self._organization = self._unset
 
+    self._url_proposal = self._unset
+
     # _org_map contains only those organizations for which the current user
     # is a mentor or org admin.
     self._org_map = self._unset
@@ -359,6 +362,23 @@ class RequestData(request_data.RequestData):
     if not self._isSet(self._timeline):
       self._timeline = TimelineHelper(self.program_timeline, self.org_app)
     return self._timeline
+
+  @property
+  def url_proposal(self):
+    """Returns the url_proposal field."""
+    if not self._isSet(self._url_proposal):
+      if 'id' not in self.kwargs:
+        raise exception.BadRequest(
+            message='The request does not contain proposal id.')
+      else:
+        self._url_proposal = proposal_model.GSoCProposal.get_by_id(
+            int(self.kwargs['id']), self.url_profile)
+
+        if not self._url_proposal:
+          raise exception.NotFound(
+              message='Requested proposal does not exist.')
+
+    return self._url_proposal
 
   def _initOrgMap(self):
     """Initializes _org_map by inserting there all organizations for which
