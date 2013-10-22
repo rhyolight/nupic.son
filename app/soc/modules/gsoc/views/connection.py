@@ -44,6 +44,7 @@ from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
+from soc.tasks import mailer
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 
@@ -107,6 +108,51 @@ def clean_email(email):
   else:
     # The User entity does not exist or they do not have a profile.
     return None
+
+
+def getEmailsForConnection(data, entity):
+  """Get the emails for org admins and user who are involved in the
+  connection.
+
+  Args:
+    data: RequestData object for the current request.
+    entity: Connection object for which to get emails.
+
+  Returns:
+    List of emails for all users in the Connection excluding the
+    current user.
+  """
+  q = GSoCProfile.all().filter('org_admin_for', entity.organization)
+  q.filter('status', 'active')
+  q.filter('notify_public_comments', True)
+  emails = [p.email for p in q if p.key() != data.profile.key()]
+  # Notify the user if they are not the ones who created the message.
+  profile = entity.parent()
+  if profile.key() != data.profile.key():
+    emails.append(profile.email)
+
+  return emails
+
+@db.transactional
+def sendConnectionMessageNotification(data, emails, message):
+  """Dispatches a notification to users involved in a Connection when
+  a new message is added.
+
+  Args:
+    data: RequestData object for the current request.
+    emails: List of emails to which to send the notification.
+    message: String contents of the ConnectionMessage.
+  """
+  notification_context = notifications.connectionMessageContext(
+      data=data,
+      emails=emails,
+      connection=data.url_connection,
+      message=message
+      )
+  sub_txn = mailer.getSpawnMailTaskTxn(
+      notification_context, parent=data.url_connection)
+  sub_txn()
+
 
 # TODO(drew): Feasible to make this txn safe?
 def canUserResignRoleForOrg(profile_key, org_key):
@@ -506,7 +552,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
         'messages' : query.fetch(100)
         }
 
-  def _handleMentorSelection(self, data):
+  def _handleMentorSelection(self, data, emails):
 
     message = data.program.getProgramMessages().mentor_welcome_msg
 
@@ -533,6 +579,8 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
 
         generated_message = connection_logic.createConnectionMessage(
             connection_entity, USER_ASSIGNED_MENTOR % profile.name())
+        sendConnectionMessageNotification(
+            data, emails, generated_message.content)
 
         db.put([connection_entity, generated_message])
       else:
@@ -540,7 +588,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
 
     org_selected_mentor_txn()
 
-  def _handleOrgAdminSelection(self, data):
+  def _handleOrgAdminSelection(self, data, emails):
 
     message = data.program.getProgramMessages().mentor_welcome_msg
 
@@ -559,6 +607,8 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
 
         generated_message = connection_logic.createConnectionMessage(
             connection_entity, USER_ASSIGNED_ORG_ADMIN % profile.name())
+        sendConnectionMessageNotification(
+            data, emails, generated_message.content)
 
         db.put([connection_entity, generated_message])
       else:
@@ -566,7 +616,7 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
 
     org_selected_orgadmin_txn()
 
-  def _handleNoRoleSelection(self, data):
+  def _handleNoRoleSelection(self, data, emails):
     @db.transactional(xg=True)
     def org_selected_norole_txn():
       connection_entity = db.get(data.url_connection.key())
@@ -579,6 +629,9 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
 
         generated_message = connection_logic.createConnectionMessage(
             connection_entity, USER_ASSIGNED_NO_ROLE % profile.name())
+        sendConnectionMessageNotification(
+            data, emails, generated_message.content)
+
         db.put([connection_entity, generated_message])
       else:
         connection_entity.put()
@@ -594,12 +647,14 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
     """Handle org selection."""
     response = data.POST['role_response']
 
+    emails = getEmailsForConnection(data, data.url_connection)
+
     if response == connection.MENTOR_ROLE:
-      self._handleMentorSelection(data)
+      self._handleMentorSelection(data, emails)
     elif response == connection.ORG_ADMIN_ROLE:
-      self._handleOrgAdminSelection(data)
+      self._handleOrgAdminSelection(data, emails)
     elif response == connection.NO_ROLE:
-      self._handleNoRoleSelection(data)
+      self._handleNoRoleSelection(data, emails)
 
     return data.redirect.dashboard().to()
 
@@ -647,7 +702,7 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
       'messages' : query.fetch(1000)
       }
 
-  def _handleRoleSelection(self, data):
+  def _handleRoleSelection(self, data, emails):
 
     message = data.program.getProgramMessages().mentor_welcome_msg
 
@@ -673,6 +728,8 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
         # Generate a message on the connection to indicate the new role.
         generated_message = connection_logic.createConnectionMessage(
             connection_entity, USER_ASSIGNED_ORG_ADMIN % profile.name())
+        sendConnectionMessageNotification(
+            data, emails, generated_message.content)
 
       db.put([connection_entity, generated_message])
 
@@ -681,7 +738,7 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
 
     user_selected_role_txn()
 
-  def _handleNoRoleSelection(self, data):
+  def _handleNoRoleSelection(self, data, emails):
     @db.transactional(xg=True)
     def user_selected_norole_txn():
       connection_entity = db.get(data.url_connection.key())
@@ -694,6 +751,8 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
       # Generate a message on the connection to indicate the removed role.
       generated_message = connection_logic.createConnectionMessage(
           connection_entity, USER_ASSIGNED_NO_ROLE % profile.name())
+      sendConnectionMessageNotification(
+          data, emails, generated_message.content)
 
       db.put([connection_entity, generated_message])
 
@@ -709,10 +768,12 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
     """Handle user selection."""
     response = data.POST['role_response']
 
+    emails = getEmailsForConnection(data, data.url_connection)
+
     if response == connection.ROLE:
-      self._handleRoleSelection(data)
+      self._handleRoleSelection(data, emails)
     elif response == connection.NO_ROLE:
-      self._handleNoRoleSelection(data)
+      self._handleNoRoleSelection(data, emails)
 
     return data.redirect.dashboard().to()
 
@@ -748,19 +809,13 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
 
     message_form.cleaned_data['author'] = data.profile
 
-    q = GSoCProfile.all().filter('mentor_for', data.organization)
-    q.filter('status', 'active')
-    q.filter('notify_public_comments', True)
-    to_emails = [i.email for i in q if i.key() != data.profile.key()]
-
     def create_message_txn():
-      message = message_form.create(commit=True, parent=data.url_connection)
+      return  message_form.create(commit=True, parent=data.url_connection)
+    message = db.run_in_transaction(create_message_txn)
+    emails = getEmailsForConnection(data, data.url_connection)
+    sendConnectionMessageNotification(data, emails, message.content)
 
-      # TODO(drew): add notifications
-
-      return message
-
-    return db.run_in_transaction(create_message_txn)
+    return message
 
   def post(self, data, check, mutator):
     # Redirect to relevant Show Connection page depending on whether
