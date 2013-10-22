@@ -23,6 +23,7 @@ from django.forms.fields import ChoiceField
 from django.utils.translation import ugettext
 
 from melange.logic import connection as connection_logic
+from melange.logic import connection_message as message_logic
 from melange.logic import profile as profile_logic
 from melange.models import connection
 from melange.request import exception
@@ -488,12 +489,17 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
             kwargs=message_kwargs)
         }
 
+    messages_builder = message_logic.QueryBuilder()
+    messages_builder.addAncestor(data.url_connection)
+    query = messages_builder.build()
+
     return {
         'page_name' : 'Viewing Connection',
         'header_name' : data.url_profile.name(),
         'connection' : data.url_connection,
         'response_form' : response_form,
-        'message_box' : message_box
+        'message_box' : message_box,
+        'messages' : query.fetch(100)
         }
 
   def _handleMentorSelection(self, data):
@@ -624,12 +630,17 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
         kwargs=message_kwargs)
       }
 
+    messages_builder = message_logic.QueryBuilder()
+    messages_builder.addAncestor(data.url_connection)
+    query = messages_builder.build()
+
     return {
       'page_name' : 'Viewing Connection',
       'header_name' : data.url_connection.organization.name,
       'connection' : data.url_connection,
       'response_form' : response_form,
-      'message_box' : message_box
+      'message_box' : message_box,
+      'messages' : query.fetch(1000)
       }
 
   def _handleRoleSelection(self, data):
@@ -707,7 +718,7 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'connection/message/%s$' % url_patterns.MESSAGE, self,
+         url(r'connection_message/%s$' % url_patterns.MESSAGE, self,
              name=url_names.GSOC_CONNECTION_MESSAGE),
     ]
 
@@ -748,13 +759,17 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
     return db.run_in_transaction(create_message_txn)
 
   def post(self, data, check, mutator):
+    # Redirect to relevant Show Connection page depending on whether
+    # the user is an org admin or the user in the connection.
+    if data.profile.key() == data.url_connection.parent().key():
+      data.redirect.show_user_connection(data.url_connection)
+    else:
+      data.redirect.show_org_connection(data.url_connection)
+
     message = self.createMessageFromForm(data)
     if message:
-      data.redirect.show_connection(data.url_user, data.url_connection)
       return data.redirect.to(validated=True)
     else:
-      data.redirect.show_connection(data.url_user, data.url_connection)
-
       # TODO(nathaniel): calling GET logic from a POST handling path.
       # a bit hacky :-( may be changed when possible
       data.request.method = 'GET'
