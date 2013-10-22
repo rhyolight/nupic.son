@@ -15,13 +15,22 @@
 """Tests for proposal_review views.
 """
 
+import httplib
+import unittest
+
+from melange.request import exception
 
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
+from tests import timeline_utils
 
 from soc.modules.gsoc.models import profile as profile_model
+from soc.modules.gsoc.models import timeline as timeline_model
 from soc.modules.gsoc.models.proposal import GSoCProposal
+from soc.modules.gsoc.views import proposal_review as proposal_review_view
+from soc.modules.gsoc.views.helper import request_data
 
+from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 class ProposalReviewTest(GSoCDjangoTestCase):
   """Tests proposal review page.
@@ -380,3 +389,35 @@ class ProposalReviewTest(GSoCDjangoTestCase):
 
     proposal = GSoCProposal.all().get()
     self.assertIsNone(proposal.mentor)
+
+
+class IsBeforeStudentsAnnouncedAccessCheckerTest(unittest.TestCase):
+  """Unit tests for IsBeforeStudentsAnnouncedAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    timeline = seeder_logic.seed(timeline_model.GSoCTimeline)
+
+    self.data = request_data.RequestData(None, None, None)
+    self.data._program_timeline = timeline
+
+  def testBeforeStudentAnnounced(self):
+    """Tests that access is granted before students are accepted."""
+    self.data._program_timeline.accepted_students_announced_deadline = (
+        timeline_utils.future())
+
+    access_checker = (
+        proposal_review_view.IsBeforeStudentsAnnouncedAccessChecker())
+    access_checker.checkAccess(self.data, None, None)
+
+  def testAfterStudentAnnounced(self):
+    """Tests that access is denied after students are accepted."""
+    self.data._program_timeline.accepted_students_announced_deadline = (
+        timeline_utils.past())
+
+    access_checker = (
+        proposal_review_view.IsBeforeStudentsAnnouncedAccessChecker())
+
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)

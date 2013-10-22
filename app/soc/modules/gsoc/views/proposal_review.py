@@ -22,8 +22,10 @@ from django.core.urlresolvers import reverse
 from django import forms as django_forms
 from django.utils.translation import ugettext
 
+from melange.request import access
 from melange.request import exception
 from melange.request import links
+from melange.utils import time as time_utils
 
 from soc.logic import cleaning
 from soc.views.helper import url as url_helper
@@ -47,6 +49,9 @@ from soc.modules.gsoc.views.helper import url_names
 
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+
+RESOURCE_FORBIDDEN_AFTER_ACCEPTED_STUDENTS_ANNOUNCED = ugettext(
+    'The requested resource cannot be accessed after students are announced.')
 
 class CommentForm(GSoCModelForm):
   """Django form for the comment."""
@@ -1017,6 +1022,22 @@ class ProposalPubliclyVisible(base.GSoCRequestHandler):
   def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
     raise exception.MethodNotAllowed()
+
+
+class IsBeforeStudentsAnnouncedAccessChecker(access.AccessChecker):
+  """Access checker that ensures that the current date is before the date
+  at which accepted students are announced.
+  """
+
+  def checkAccess(self, data, check, mutator):
+    """See access.AccessChecker.checkAccess for specification."""
+    if not time_utils.isBefore(
+        data.program_timeline.accepted_students_announced_deadline):
+      raise exception.Forbidden(
+          message=RESOURCE_FORBIDDEN_AFTER_ACCEPTED_STUDENTS_ANNOUNCED)
+
+IS_BEFORE_STUDENTS_ANNOUNCED_ACCESS_CHECKER = (
+    IsBeforeStudentsAnnouncedAccessChecker())
 
 
 class WithdrawProposal(base.GSoCRequestHandler):
