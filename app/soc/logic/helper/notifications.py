@@ -14,6 +14,8 @@
 
 """Helper functions for sending out notifications."""
 
+from google.appengine.ext import db
+
 from django.template import loader
 from django.utils.translation import ugettext
 
@@ -27,6 +29,9 @@ DEF_NEW_USER_CONNECTION = ugettext(
 
 DEF_NEW_ORG_CONNECTION = ugettext(
     'New connection from %(org)s')
+
+DEF_NEW_CONNECTION_MESSAGE = ugettext(
+    'New Message on Connection.')
 
 DEF_NEW_ANONYMOUS_CONNECTION = ugettext(
     'New Google Summer of Code Connection')
@@ -46,6 +51,10 @@ DEF_NEW_USER_CONNECTION_NOTIFICATION_TEMPLATE = \
 # TODO(nathaniel): "gsoc" reference outside of app/soc/modules/gsoc.
 DEF_NEW_ORG_CONNECTION_NOTIFICATION_TEMPLATE = \
     'modules/gsoc/notification/initiated_org_connection.html'
+
+# TODO(drew): "gsoc" reference outside of app/soc/modules/gsoc.
+DEF_NEW_CONNECTION_MESSAGE_TEMPLATE = \
+    'modules/gsoc/notification/connection_message.html'
 
 # TODO(nathaniel): "gsoc" reference outside of app/soc/modules/gsoc.
 DEF_NEW_ANONYMOUS_CONNECTION_NOTIFICATION_TEMPLATE = \
@@ -199,6 +208,8 @@ class StartConnectionByOrgContextProvider(object):
         profile, connection_key.id(),
         self._url_names.CONNECTION_MANAGE_AS_USER)
 
+    connection = db.get(connection_key)
+
     message_properties = {
         'connection_url': connection_url,
         'name': profile.name(),
@@ -210,6 +221,31 @@ class StartConnectionByOrgContextProvider(object):
     template = DEF_NEW_ORG_CONNECTION_NOTIFICATION_TEMPLATE
     return getContext(data, emails, message_properties, subject, template)
 
+
+def connectionMessageContext(data, emails, connection, message):
+  """Sends out a notification to users specified by emails when a message is
+  generated on a connection. This may be used to indicate a change in
+  connection state (e.g. a user accepts a connection) or to notify the user
+  or org admin when someone leaves a custom message on the connection.
+
+  Args:
+    data: RequestData object for the current request.
+    emails: List of email addresses (as strings) to which to send the email.
+    connection: Connection object upon which the message was left.
+    message: String contents of the message to be added to the email template.
+
+  Returns:
+    A dictionary containing the context for a message to be sent.
+  """
+  subject = DEF_NEW_CONNECTION_MESSAGE
+  dashboard_url = data.redirect.dashboard().url(full=True)
+
+  message_properties = {
+      'dashboard_url' : dashboard_url,
+      'message' : message
+      }
+  template = DEF_NEW_CONNECTION_MESSAGE_TEMPLATE
+  return getContext(data, emails, message_properties, subject, template)
 
 def anonymousConnectionContext(data, email, connection, message):
   """Sends out a notification email to users who have neither user nor
