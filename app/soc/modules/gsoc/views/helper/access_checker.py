@@ -130,7 +130,6 @@ class Mutator(access_checker.Mutator):
     """
     self.data.private_comments_visible = access_checker.unset
     self.data.proposal = access_checker.unset
-    self.data.proposer = access_checker.unset
     self.data.public_comments_visible = access_checker.unset
     self.data.public_only = access_checker.unset
     super(Mutator, self).unsetAll()
@@ -152,12 +151,6 @@ class Mutator(access_checker.Mutator):
         self.data.proposal)
 
     self.data.proposal.org = self.data.getOrganization(org_key)
-
-    parent_key = self.data.proposal.parent_key()
-    if self.data.profile and parent_key == self.data.profile.key():
-      self.data.proposer = self.data.profile
-    else:
-      self.data.proposer = self.data.proposal.parent()
 
   def projectFromKwargs(self):
     """Sets the project entity in RequestData object.

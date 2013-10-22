@@ -808,9 +808,7 @@ class AccessChecker(BaseAccessChecker):
     self.isProgramVisible()
     self.isProfileActive()
 
-    assert isSet(self.data.proposer)
-
-    if self.data.proposer.key() == self.data.profile.key():
+    if self.data.url_profile.key() == self.data.profile.key():
       return
 
     raise exception.Forbidden(message=DEF_NOT_PROPOSER)

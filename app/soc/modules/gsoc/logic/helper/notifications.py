@@ -120,13 +120,13 @@ def newReviewContext(data, comment, to_emails):
     data: a RequestData object
   """
   assert isSet(data.proposal)
-  assert isSet(data.proposer)
 
   # TODO(daniel): the second part of this URL should probably be added by
   # a utility class
   review_notification_url = '%s#c%s' % (
       links.ABSOLUTE_LINKER.userId(
-          data.proposer, data.proposal.key().id(), url_names.PROPOSAL_REVIEW),
+          data.url_profile, data.proposal.key().id(),
+          url_names.PROPOSAL_REVIEW),
       comment.key().id())
   edit_profile_url = links.ABSOLUTE_LINKER.program(
       data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
@@ -140,7 +140,7 @@ def newReviewContext(data, comment, to_emails):
       'reviewed_name': reviewed_name,
       'review_content': comment.content,
       'review_visibility': review_type,
-      'proposer_name': data.proposer.name(),
+      'proposer_name': data.url_profile.name(),
       'org': data.proposal.org.name,
       'profile_edit_link': edit_profile_url,
       }
@@ -150,9 +150,9 @@ def newReviewContext(data, comment, to_emails):
 
   template = DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE
 
-  if (data.proposer.key() != data.profile.key() and
-      data.proposer.notify_public_comments and not comment.is_private):
-    to_emails.append(data.proposer.email)
+  if (data.url_profile.key() != data.profile.key() and
+      data.url_profile.notify_public_comments and not comment.is_private):
+    to_emails.append(data.url_profile.email)
 
   return getContext(data, to_emails, message_properties, subject, template)
 

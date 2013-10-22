@@ -449,7 +449,7 @@ class ReviewProposal(base.GSoCRequestHandler):
           data.proposal.is_editable_post_deadline
       if data.timeline.studentSignup() or is_editable:
         context['update_link'] = links.LINKER.userId(
-            data.proposer, data.proposal.key().id(), 'update_gsoc_proposal')
+            data.url_profile, data.proposal.key().id(), 'update_gsoc_proposal')
 
     possible_mentors = db.get(data.proposal.possible_mentors)
     possible_mentors = self.sanitizePossibleMentors(data, possible_mentors)
@@ -513,10 +513,9 @@ class PostComment(base.GSoCRequestHandler):
     check.isProfileActive()
     mutator.proposalFromKwargs()
     mutator.commentVisible(data.organization)
-    assert isSet(data.proposer)
 
     # check if the comment is given by the author of the proposal
-    if data.proposer.key() == data.profile.key():
+    if data.url_profile.key() == data.profile.key():
       data.public_only = True
       return
 
@@ -568,7 +567,6 @@ class PostComment(base.GSoCRequestHandler):
     return db.run_in_transaction(create_comment_txn)
 
   def post(self, data, check, mutator):
-    assert isSet(data.proposer)
     assert isSet(data.proposal)
 
     comment = self.createCommentFromForm(data)
@@ -581,7 +579,8 @@ class PostComment(base.GSoCRequestHandler):
       # in Melange.
       # TODO (Madhu): Replace this in favor of PJAX for loading comments.
       redirect_url = links.LINKER.userId(
-          data.proposer, data.proposal.key().id(), url_names.PROPOSAL_REVIEW)
+          data.url_profile, data.proposal.key().id(),
+          url_names.PROPOSAL_REVIEW)
       proposal_match = resolve(redirect_url)
       proposal_view = proposal_match[0]
       data.request.method = 'GET'
@@ -819,10 +818,8 @@ class AssignMentor(base.GSoCRequestHandler):
     else:
       self.unassignMentor(data)
 
-    data.proposer = data.proposal.parent()
-
     url = links.LINKER.userId(
-        data.proposer, data.proposal.key().id(), url_names.PROPOSAL_REVIEW)
+        data.url_profile, data.proposal.key().id(), url_names.PROPOSAL_REVIEW)
     return http.HttpResponseRedirect(url)
 
   def get(self, data, check, mutator):
