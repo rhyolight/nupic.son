@@ -354,8 +354,10 @@ class OrgConnectionPage(base.GSoCRequestHandler):
     if 'unregistered' in data.request.GET:
       unregistered = data.request.GET['unregistered'].split(',')
 
+    page_title = 'Connection for %s' % data.organization.name
+
     return {
-      'page_name': 'Open a connection',
+      'page_name': page_title,
       'program': data.program,
       'connection_form': connection_form,
       'error': bool(connection_form.errors),
@@ -439,9 +441,11 @@ class UserConnectionPage(base.GSoCRequestHandler):
         message=data.organization.role_request_message,
         data=data.POST or None)
 
+    page_title = 'Connection with %s' % data.organization.name
+
     return {
         'profile_created': data.GET.get('profile') == 'created',
-        'page_name': 'Open a connection',
+        'page_name': page_title,
         'program': data.program,
         'connection_form': connection_form,
         }
