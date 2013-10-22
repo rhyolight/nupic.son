@@ -77,6 +77,7 @@ TEMPLATE_LOADERS = (
 
 MIDDLEWARE_CLASSES = (
     'google.appengine.ext.appstats.recording.AppStatsDjangoMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'soc.middleware.blobstore.BlobStoreMiddleware',
     'soc.middleware.xsrf.XsrfMiddleware',
 )
