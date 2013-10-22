@@ -163,7 +163,6 @@ class UpdateProposal(base.GSoCRequestHandler):
     check.isLoggedIn()
     check.isActiveStudent()
 
-    mutator.proposalFromKwargs()
     data.organization = data.url_proposal.org
 
     check.canStudentUpdateProposal()

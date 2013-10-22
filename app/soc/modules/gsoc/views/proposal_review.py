@@ -320,7 +320,6 @@ class ReviewProposal(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.proposalFromKwargs()
     check.canAccessProposalEntity()
     mutator.commentVisible(data.url_proposal.org)
 
@@ -510,7 +509,6 @@ class PostComment(base.GSoCRequestHandler):
   def checkAccess(self, data, check, mutator):
     check.isProgramVisible()
     check.isProfileActive()
-    mutator.proposalFromKwargs()
     mutator.commentVisible(data.organization)
 
     # check if the comment is given by the author of the proposal
@@ -600,8 +598,6 @@ class PostScore(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.proposalFromKwargs()
-
     if (not data.orgAdminFor(data.url_proposal.org)
         and data.url_proposal.org.scoring_disabled):
       raise exception.BadRequest(
@@ -686,7 +682,6 @@ class WishToMentor(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.proposalFromKwargs()
     check.isMentorForOrganization(data.url_proposal.org)
 
   def addToPotentialMentors(self, data, value):
@@ -747,7 +742,6 @@ class AssignMentor(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.proposalFromKwargs()
     check.isOrgAdminForOrganization(data.url_proposal.org)
 
   def assignMentor(self, data, mentor_entity):
@@ -829,7 +823,6 @@ class IgnoreProposal(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.proposalFromKwargs()
     check.isOrgAdminForOrganization(data.url_proposal.org)
     if data.url_proposal.status == 'withdrawn':
       raise exception.Forbidden(
@@ -885,7 +878,6 @@ class ProposalModificationPostDeadline(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.proposalFromKwargs()
     check.isMentorForOrganization(data.url_proposal.org)
 
   def toggleModificationPermission(self, data, value):
@@ -937,7 +929,6 @@ class AcceptProposal(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.proposalFromKwargs()
     check.isOrgAdminForOrganization(data.url_proposal.org)
 
   def toggleStatus(self, data, value):
@@ -989,7 +980,6 @@ class ProposalPubliclyVisible(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.proposalFromKwargs()
     check.isProposer()
 
   def togglePublicVisibilty(self, data, value):
@@ -1039,7 +1029,6 @@ class WithdrawProposal(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.proposalFromKwargs()
     check.isProposer()
     check.canStudentUpdateProposal()
 

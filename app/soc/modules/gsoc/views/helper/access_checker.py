@@ -133,9 +133,6 @@ class Mutator(access_checker.Mutator):
     self.data.public_only = access_checker.unset
     super(Mutator, self).unsetAll()
 
-  def proposalFromKwargs(self):
-    return self.data.url_proposal
-
   def projectFromKwargs(self):
     """Sets the project entity in RequestData object.
     """
