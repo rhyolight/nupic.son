@@ -67,3 +67,15 @@ class SlotsTest(GSoCDjangoTestCase):
     org_data["slots"] = 20
 
     self.assertPropertiesEqual(org_data, org)
+
+  def testColumnWithZero(self):
+    """Tests that a lambda function returning a value that Python considers
+    to be False will not result in an empty column value.
+    """
+    self.org.slots = 0
+    self.org.save()
+    self.profile_helper.createHost()
+
+    url = '/gsoc/admin/slots/' + self.gsoc.key().name()
+    response = self.getListData(url, 0)
+    self.assertEquals(response[0]['columns']['slots'], 0)
