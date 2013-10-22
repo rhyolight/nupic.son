@@ -129,35 +129,9 @@ class Mutator(access_checker.Mutator):
     """Clear the fields of the data object.
     """
     self.data.private_comments_visible = access_checker.unset
-    self.data.proposal = access_checker.unset
-    self.data.proposer = access_checker.unset
     self.data.public_comments_visible = access_checker.unset
     self.data.public_only = access_checker.unset
     super(Mutator, self).unsetAll()
-
-  def proposalFromKwargs(self):
-    # can safely call int, since regexp guarnatees a number
-    proposal_id = int(self.data.kwargs['id'])
-
-    if not proposal_id:
-      raise exception.NotFound(message='Proposal id must be a positive number')
-
-    self.data.proposal = proposal_model.GSoCProposal.get_by_id(
-        proposal_id, parent=self.data.url_profile)
-
-    if not self.data.proposal:
-      raise exception.NotFound(message='Requested proposal does not exist')
-
-    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-        self.data.proposal)
-
-    self.data.proposal_org = self.data.getOrganization(org_key)
-
-    parent_key = self.data.proposal.parent_key()
-    if self.data.profile and parent_key == self.data.profile.key():
-      self.data.proposer = self.data.profile
-    else:
-      self.data.proposer = self.data.proposal.parent()
 
   def projectFromKwargs(self):
     """Sets the project entity in RequestData object.
@@ -520,8 +494,6 @@ class AccessChecker(access_checker.AccessChecker):
   def canStudentUpdateProposal(self):
     """Checks if the student is eligible to submit a proposal.
     """
-    assert access_checker.isSet(self.data.proposal)
-
     self.isActiveStudent()
     self.isProposalInURLValid()
 
@@ -533,7 +505,7 @@ class AccessChecker(access_checker.AccessChecker):
       self.canStudentUpdateProposalPostSignup()
 
     # check if the proposal belongs to the current user
-    expected_profile = self.data.proposal.parent()
+    expected_profile = self.data.url_proposal.parent()
     if expected_profile.key().name() != self.data.profile.key().name():
       error_msg = access_checker.DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'name': 'proposal'
@@ -541,7 +513,7 @@ class AccessChecker(access_checker.AccessChecker):
       raise exception.Forbidden(message=error_msg)
 
     # check if the status allows the proposal to be updated
-    status = self.data.proposal.status
+    status = self.data.url_proposal.status
     if status == 'ignored':
       raise exception.Forbidden(message=DEF_PROPOSAL_IGNORED_MESSAGE)
     elif status in ['invalid', proposal_model.STATUS_ACCEPTED, 'rejected']:

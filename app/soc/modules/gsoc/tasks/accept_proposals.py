@@ -291,7 +291,6 @@ class ProposalAcceptanceTask(object):
         proposal, transactional=transactional)
 
     proposal_key = proposal.key()
-    proposal_org_key = proposal.org.key()
 
     # pass these data along params as POST to the new task
     task_params = {'program_key': proposal.program.key().id_or_name()}
