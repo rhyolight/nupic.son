@@ -513,8 +513,8 @@ class DjangoTestCase(SoCTestCase, testcases.TestCase):
     while start != 'done':
       i += 1
       response = self.getListResponse(url, idx, start, 1000)
-      data = response.context['data'][start]
       self.assertIsJsonResponse(response)
+      data = response.context['data'][start]
       result += data
       start = response.context['next']
 
