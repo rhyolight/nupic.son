@@ -201,7 +201,8 @@ class SlotsPage(base.GSoCRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise exception.Forbidden(message='You do not have access to this data')
+      raise exception.BadRequest(
+          message='Missing idx parameter for component.')
 
   def post(self, data, check, mutator):
     slots_list = SlotsList(data)
