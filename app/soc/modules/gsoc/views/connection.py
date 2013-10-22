@@ -674,7 +674,6 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
     check.isProgramVisible()
     check.hasProfile()
 
-    check.notOrgAdmin()
     check.canUserAccessConnection()
 
   def context(self, data, check, mutator):
@@ -721,6 +720,7 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
         # Generate a message on the connection to indicate the new role.
         generated_message = connection_logic.createConnectionMessage(
             connection_entity, USER_ASSIGNED_MENTOR % profile.name())
+        db.put([connection_entity, generated_message])
       elif connection_entity.orgOfferedOrgAdminRole():
         promoted = not profile.is_mentor
         profile_logic.assignOrgAdminRoleForOrg(
@@ -730,8 +730,7 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
             connection_entity, USER_ASSIGNED_ORG_ADMIN % profile.name())
         sendConnectionMessageNotification(
             data, emails, generated_message.content)
-
-      db.put([connection_entity, generated_message])
+        db.put([connection_entity, generated_message])
 
       if promoted:
         connection_view.sendMentorWelcomeMail(data, profile, message)
