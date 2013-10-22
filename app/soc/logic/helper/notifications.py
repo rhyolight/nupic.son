@@ -202,6 +202,7 @@ class StartConnectionByOrgContextProvider(object):
     message_properties = {
         'connection_url': connection_url,
         'name': profile.name(),
+        'role' : connection.getRole(),
         'org_name': org.name,
         'message': message,
         }
@@ -209,64 +210,6 @@ class StartConnectionByOrgContextProvider(object):
     template = DEF_NEW_ORG_CONNECTION_NOTIFICATION_TEMPLATE
     return getContext(data, emails, message_properties, subject, template)
 
-
-def userConnectionContext(data, connection, recipients, message):
-  """Send out a notification email to the organization administrators for the
-  given org when a user opens a connection with the organization.
-
-  Args:
-    data: RequestData object with organization and user set.
-    connection: The new instance of Connection.
-    recipients: The email(s) of the org admins for the org.
-    message: The contents of the message field from the connection form.
-  Returns:
-    A dictionary containing a context for the mail message to be sent to
-    the recipients regarding a new connection.
-  """
-
-  subject = DEF_NEW_USER_CONNECTION % {'org' : connection.organization.name}
-
-  # TODO(daniel): add actual connection URL
-  # connection_url = data.redirect.show_user_connection(connection).url(full=True)
-
-  message_properties = {
-      'connection_url' : '',
-      'name' : connection.parent().name(),
-      'org_name' : connection.organization.name,
-      'message' : message,
-      }
-  template = DEF_NEW_USER_CONNECTION_NOTIFICATION_TEMPLATE
-  return getContext(data, recipients, message_properties, subject, template)
-
-def orgConnectionContext(data, connection, recipients, message):
-  """Send out a notification email to a user with whom an org admin opened
-  a new connection.
-
-  Args:
-    data: RequestData object with organization and user set.
-    connection: The new instance of Connection.
-    recipients: List containing the email address of the user. This is a list
-      because in the connection view module in either program receives this
-      or userConnectionContext as an argument and the other must receive a
-      list of recipients rather than a string.
-    message: The contents of the message field from the connection form.
-  Returns:
-    A dictionary containing a context for the mail message to be sent to
-    the recipient regarding a new connection.
-  """
-
-  subject = DEF_NEW_ORG_CONNECTION % {'org' : connection.organization.name}
-  connection_url = data.redirect.show_org_connection(connection).url(full=True)
-
-  message_properties = {
-      'connection_url' : connection_url,
-      'name' : connection.parent().name(),
-      'org_name' : connection.organization.name,
-      'role' : connection.getRole(),
-      'message' : message
-      }
-  template = DEF_NEW_ORG_CONNECTION_NOTIFICATION_TEMPLATE
-  return getContext(data, recipients, message_properties, subject, template)
 
 def anonymousConnectionContext(data, email, connection, message):
   """Sends out a notification email to users who have neither user nor
