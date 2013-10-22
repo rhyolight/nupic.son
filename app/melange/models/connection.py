@@ -125,7 +125,8 @@ class Connection(db.Model):
   def allFields():
     """Returns a list of all names of fields in this model.
     """
-    return ['user_role', 'org_role', 'organization', 'created_on']
+    return ['user_role', 'org_role', 'organization', 'created_on',
+        'seen_by_org', 'seen_by_user']
 
   def keyName(self):
     """Returns a string which uniquely represents the entity.
