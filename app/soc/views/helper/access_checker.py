@@ -764,7 +764,6 @@ class AccessChecker(BaseAccessChecker):
     """Checks if the current user is allowed to access a Proposal entity.
     """
     assert isSet(self.data.proposal)
-    assert isSet(self.data.proposal_org)
     assert isSet(self.data.url_user)
 
     # if the proposal is public, everyone may access it
@@ -780,7 +779,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     # all the mentors and org admins from the organization may access it
-    if self.data.mentorFor(self.data.proposal_org):
+    if self.data.mentorFor(self.data.proposal.org):
       return
 
     raise exception.Forbidden(message=DEF_PROPOSAL_NOT_PUBLIC)

@@ -225,9 +225,11 @@ class UserActions(Template):
       self.toggle_buttons.append(accept_proposal)
 
       possible_mentors_keys = self.data.proposal.possible_mentors
-      all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(
-          self.data.proposal_org) if self.data.proposal_org.list_all_mentors \
-          else []
+      if self.data.proposal.org.list_all_mentors:
+        all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(
+            self.data.proposal.org)
+      else:
+        all_mentors_keys = []
 
       current_mentors = []
       if self.data.proposal.mentor:
@@ -321,7 +323,7 @@ class ReviewProposal(base.GSoCRequestHandler):
   def checkAccess(self, data, check, mutator):
     mutator.proposalFromKwargs()
     check.canAccessProposalEntity()
-    mutator.commentVisible(data.proposal_org)
+    mutator.commentVisible(data.proposal.org)
 
   def templatePath(self):
     return 'modules/gsoc/proposal/review.html'
@@ -329,7 +331,6 @@ class ReviewProposal(base.GSoCRequestHandler):
   def getScores(self, data):
     """Gets all the scores for the proposal."""
     assert isSet(data.private_comments_visible)
-    assert isSet(data.proposal_org)
     assert isSet(data.proposal)
 
     if not data.private_comments_visible:
@@ -382,7 +383,7 @@ class ReviewProposal(base.GSoCRequestHandler):
     result = []
 
     for mentor in possible_mentors:
-      if data.proposal_org.key() in mentor.mentor_for:
+      if data.proposal.org.key() in mentor.mentor_for:
         result.append(mentor)
         continue
 
@@ -455,13 +456,13 @@ class ReviewProposal(base.GSoCRequestHandler):
     possible_mentors_names = ', '.join([m.name() for m in possible_mentors])
 
     scoring_visible = data.private_comments_visible and (
-        not data.proposal_org.scoring_disabled)
+        not data.proposal.org.scoring_disabled)
 
-    if data.orgAdminFor(data.proposal_org):
+    if data.orgAdminFor(data.proposal.org):
       scoring_visible = True
 
     duplicate = None
-    if data.program.duplicates_visible and data.orgAdminFor(data.proposal_org):
+    if data.program.duplicates_visible and data.orgAdminFor(data.proposal.org):
       q = GSoCProposalDuplicate.all()
       q.filter('duplicates', data.proposal)
       q.filter('is_duplicate', True)
@@ -478,7 +479,7 @@ class ReviewProposal(base.GSoCRequestHandler):
         'additional_info_link': additional_info,
         'comment_box': comment_box,
         'duplicate': duplicate,
-        'max_score': data.proposal_org.max_score,
+        'max_score': data.proposal.org.max_score,
         'mentor': data.proposal.mentor,
         'page_name': data.proposal.title,
         'possible_mentors': possible_mentors_names,
@@ -513,7 +514,6 @@ class PostComment(base.GSoCRequestHandler):
     mutator.proposalFromKwargs()
     mutator.commentVisible(data.organization)
     assert isSet(data.proposer)
-    assert isSet(data.proposal_org)
 
     # check if the comment is given by the author of the proposal
     if data.proposer.key() == data.profile.key():
@@ -521,7 +521,7 @@ class PostComment(base.GSoCRequestHandler):
       return
 
     data.public_only = False
-    check.isMentorForOrganization(data.proposal_org)
+    check.isMentorForOrganization(data.proposal.org)
 
   def createCommentFromForm(self, data):
     """Creates a new comment based on the data inserted in the form.
@@ -603,15 +603,13 @@ class PostScore(base.GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     mutator.proposalFromKwargs()
-    assert isSet(data.proposal_org)
 
-    org = data.proposal_org
-
-    if not data.orgAdminFor(org) and org.scoring_disabled:
+    if (not data.orgAdminFor(data.proposal.org)
+        and data.proposal.org.scoring_disabled):
       raise exception.BadRequest(
           message='Scoring is disabled for this organization')
 
-    check.isMentorForOrganization(org)
+    check.isMentorForOrganization(data.proposal.org)
 
   def createOrUpdateScore(self, data, value):
     """Creates a new score or updates a score if there is already one
@@ -628,9 +626,8 @@ class PostScore(base.GSoCRequestHandler):
       The score entity that was created/updated or None if value is 0.
     """
     assert isSet(data.proposal)
-    assert isSet(data.proposal_org)
 
-    max_score = data.proposal_org.max_score
+    max_score = data.proposal.org.max_score
 
     if value < 0 or value > max_score:
       raise exception.BadRequest(
@@ -694,9 +691,7 @@ class WishToMentor(base.GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     mutator.proposalFromKwargs()
-    assert isSet(data.proposal_org)
-
-    check.isMentorForOrganization(data.proposal_org)
+    check.isMentorForOrganization(data.proposal.org)
 
   def addToPotentialMentors(self, data, value):
     """Toggles the user from the potential mentors list.
@@ -757,8 +752,7 @@ class AssignMentor(base.GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     mutator.proposalFromKwargs()
-    assert isSet(data.proposal_org)
-    check.isOrgAdminForOrganization(data.proposal_org)
+    check.isOrgAdminForOrganization(data.proposal.org)
 
   def assignMentor(self, data, mentor_entity):
     """Assigns the mentor to the proposal.
@@ -847,8 +841,7 @@ class IgnoreProposal(base.GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     mutator.proposalFromKwargs()
-    assert isSet(data.proposal_org)
-    check.isOrgAdminForOrganization(data.proposal_org)
+    check.isOrgAdminForOrganization(data.proposal.org)
     if data.proposal.status == 'withdrawn':
       raise exception.Forbidden(
           message="You cannot ignore a withdrawn proposal")
@@ -906,8 +899,7 @@ class ProposalModificationPostDeadline(base.GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     mutator.proposalFromKwargs()
-    assert isSet(data.proposal_org)
-    check.isMentorForOrganization(data.proposal_org)
+    check.isMentorForOrganization(data.proposal.org)
 
   def toggleModificationPermission(self, data, value):
     """Toggles the permission to modify the proposal after proposal deadline.
@@ -961,8 +953,7 @@ class AcceptProposal(base.GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     mutator.proposalFromKwargs()
-    assert isSet(data.proposal_org)
-    check.isOrgAdminForOrganization(data.proposal_org)
+    check.isOrgAdminForOrganization(data.proposal.org)
 
   def toggleStatus(self, data, value):
     """Toggles the the application state between accept and pending.

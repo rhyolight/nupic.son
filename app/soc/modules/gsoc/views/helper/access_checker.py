@@ -151,7 +151,7 @@ class Mutator(access_checker.Mutator):
     org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
         self.data.proposal)
 
-    self.data.proposal_org = self.data.getOrganization(org_key)
+    self.data.proposal.org = self.data.getOrganization(org_key)
 
     parent_key = self.data.proposal.parent_key()
     if self.data.profile and parent_key == self.data.profile.key():
