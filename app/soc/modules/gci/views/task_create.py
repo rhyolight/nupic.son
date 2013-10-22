@@ -143,9 +143,9 @@ class TaskCreateForm(TaskEditPostClaimForm):
   """
 
   time_to_complete_days = django_forms.IntegerField(
-      label=ugettext('Time to complete'), min_value=2,
+      label=ugettext('Days to complete'), min_value=2,
       error_messages={
-          'min_value': ugettext('Time to complete must at least be 2 days.')
+          'min_value': ugettext('Must be at least 2 days.')
       })
 
   def __init__(self, request_data=None, **kwargs):
