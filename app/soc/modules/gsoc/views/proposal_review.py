@@ -1024,30 +1024,10 @@ class ProposalPubliclyVisible(base.GSoCRequestHandler):
     raise exception.MethodNotAllowed()
 
 
-class IsBeforeStudentsAnnouncedAccessChecker(access.AccessChecker):
-  """Access checker that ensures that the current date is before the date
-  at which accepted students are announced.
-  """
-
-  def checkAccess(self, data, check, mutator):
-    """See access.AccessChecker.checkAccess for specification."""
-    if not time_utils.isBefore(
-        data.program_timeline.accepted_students_announced_deadline):
-      raise exception.Forbidden(
-          message=RESOURCE_FORBIDDEN_AFTER_ACCEPTED_STUDENTS_ANNOUNCED)
-
-IS_BEFORE_STUDENTS_ANNOUNCED_ACCESS_CHECKER = (
-    IsBeforeStudentsAnnouncedAccessChecker())
-
-WITHDRAW_PROPOSAL_ACCESS_CHECKER = access.ConjuctionAccessChecker([
-    access.IS_URL_USER_ACCESS_CHECKER,
-    IS_BEFORE_STUDENTS_ANNOUNCED_ACCESS_CHECKER
-    ])
-
 class WithdrawProposal(base.GSoCRequestHandler):
   """View allowing the proposer to withdraw the proposal."""
 
-  access_checker = WITHDRAW_PROPOSAL_ACCESS_CHECKER
+  access_checker = access.IS_URL_USER_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     return [
@@ -1081,8 +1061,11 @@ class WithdrawProposal(base.GSoCRequestHandler):
       if value == 'unchecked':
         proposal_logic.withdrawProposal(proposal, student_info)
       elif value == 'checked':
-        proposal_logic.resubmitProposal(
+        is_submitted = proposal_logic.resubmitProposal(
             proposal, student_info, data.program, data.program_timeline)
+        if not is_submitted:
+          raise exception.Forbidden(
+              message='This proposal cannot be resubmitted at this time.')
 
       db.put(proposal)
 
