@@ -19,14 +19,20 @@ class FormHandler(object):
   the received data.
   """
 
-  def __init__(self, view):
+  # TODO(daniel): remove view from this list.
+  def __init__(self, view, url=None):
     """Initializes new instance of form handler.
 
     Args:
       view: callback to implementation of base.RequestHandler
         that creates this object.
+      url: URL that should be used for redirect after the request is
+        handled successfully. If it is not specified, the handler should
+        return response with status of 200 or construct a URL to redirect to
+        on its own.  
     """
     self._view = view
+    self._url = url
 
   def handle(self, data, check, mutator):
     """Handles the data that was received in the current request and returns
