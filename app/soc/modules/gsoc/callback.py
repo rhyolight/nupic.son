@@ -132,7 +132,7 @@ class Callback(object):
     self.views.append(proposal_review.ProposalPubliclyVisible())
     self.views.append(proposal_review.ReviewProposal())
     self.views.append(proposal_review.WishToMentor())
-    self.views.append(proposal_review.WithdrawProposal())
+    self.views.append(proposal_review.ProposalStatusSetter())
     self.views.append(proposal.UpdateProposal())
     self.views.append(search.SearchGsocPage())
     self.views.append(slot_allocation.SlotsPage())

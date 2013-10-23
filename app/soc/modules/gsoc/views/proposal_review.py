@@ -25,7 +25,7 @@ from django.utils.translation import ugettext
 from melange.request import access
 from melange.request import exception
 from melange.request import links
-from melange.utils import time as time_utils
+from melange.views.helper import form_handler
 
 from soc.logic import cleaning
 from soc.views.helper import url as url_helper
@@ -50,8 +50,14 @@ from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
-RESOURCE_FORBIDDEN_AFTER_ACCEPTED_STUDENTS_ANNOUNCED = ugettext(
-    'The requested resource cannot be accessed after students are announced.')
+TOGGLE_BUTTON_IS_WITHDRAWN = 'checked'
+TOGGLE_BUTTON_NOT_WITHDRAWN = 'unchecked'
+
+PROPOSAL_CANNOT_BE_RESUBMITTED = ugettext(
+    'This proposal cannot be resubmitted at this time.')
+
+PROPOSAL_CANNOT_BE_WITHDRAWN = ugettext(
+    'This proposal cannot be withdrawn at this time.')
 
 class CommentForm(GSoCModelForm):
   """Django form for the comment."""
@@ -275,14 +281,15 @@ class UserActions(Template):
 
       withdraw_proposal_url = links.LINKER.userId(
           self.data.url_profile, self.data.kwargs['id'],
-          url_names.PROPOSAL_WITHDRAW)
+          url_names.PROPOSAL_STATUS)
       withdraw_proposal = ToggleButtonTemplate(
           self.data, 'on_off', 'Withdraw Proposal', 'withdraw-proposal',
           withdraw_proposal_url, checked=checked,
           help_text=self.DEF_WITHDRAW_PROPOSAL_HELP,
           labels = {
-              'checked': 'Yes',
-              'unchecked': 'No',})
+              TOGGLE_BUTTON_IS_WITHDRAWN: 'Yes',
+              TOGGLE_BUTTON_NOT_WITHDRAWN: 'No'
+          })
       self.toggle_buttons.append(withdraw_proposal)
 
     return {}
@@ -1024,58 +1031,87 @@ class ProposalPubliclyVisible(base.GSoCRequestHandler):
     raise exception.MethodNotAllowed()
 
 
-class WithdrawProposal(base.GSoCRequestHandler):
-  """View allowing the proposer to withdraw the proposal."""
+class ProposalStatusSetter(base.GSoCRequestHandler):
+  """POST handler to allow a proposer to change status of their proposals.
+
+  In other words, they may want to withdraw a submitted proposal or
+  resubmit a withdrawn one.
+  """
 
   access_checker = access.IS_URL_USER_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     return [
-         url(r'proposal/withdraw/%s$' % url_patterns.USER_ID,
-         self, name=url_names.PROPOSAL_WITHDRAW),
+         url(r'proposal/status/%s$' % url_patterns.USER_ID,
+         self, name=url_names.PROPOSAL_STATUS),
     ]
-
-  def toggleWithdrawProposal(self, data, value):
-    """Toggles the the application state between withdraw and pending.
-
-    Args:
-      data: A RequestData describing the current request.
-      value: can be either "checked" or "unchecked".
-    """
-    assert isSet(data.student_info)
-
-    if value != 'checked' and value != 'unchecked':
-      raise exception.BadRequest(message="Invalid post data.")
-
-    # TODO(daniel): get some constants for that: meaning of
-    # checked and unchecked is not obvious at all :-/
-    if value == 'checked' and not data.url_proposal.status == 'withdrawn':
-      raise exception.BadRequest(message="Invalid post data.")
-    if value == 'unchecked' and data.url_proposal.status == 'withdrawn':
-      raise exception.BadRequest(message="Invalid post data.")
-
-    def update_withdraw_status_txn():
-      proposal = db.get(data.url_proposal.key())
-      student_info = db.get(data.student_info.key())
-
-      if value == 'unchecked':
-        proposal_logic.withdrawProposal(proposal, student_info)
-      elif value == 'checked':
-        is_submitted = proposal_logic.resubmitProposal(
-            proposal, student_info, data.program, data.program_timeline)
-        if not is_submitted:
-          raise exception.Forbidden(
-              message='This proposal cannot be resubmitted at this time.')
-
-      db.put(proposal)
-
-    db.run_in_transaction(update_withdraw_status_txn)
-
-  def post(self, data, check, mutator):
-    value = data.POST.get('value')
-    self.toggleWithdrawProposal(data, value)
-    return http.HttpResponse()
 
   def get(self, data, check, mutator):
     """Special handler for HTTP GET since this view only handles POST."""
     raise exception.MethodNotAllowed()
+
+  def post(self, data, check, mutator):
+    """See base.RequestHandler.post for specification."""
+    value = data.POST.get('value')
+    if value == TOGGLE_BUTTON_NOT_WITHDRAWN:
+      handler = ResubmitProposalHandler(None)
+    elif value == TOGGLE_BUTTON_IS_WITHDRAWN:
+      handler = WithdrawProposalHandler(None)
+
+    return handler.handle(data, check, mutator)
+
+
+class WithdrawProposalHandler(form_handler.FormHandler):
+  """FormHandler implementation to withdraw proposals."""
+
+  access_checker = access.IS_URL_USER_ACCESS_CHECKER
+
+  def handle(self, data, check, mutator):
+    """See form_handler.FormHandler.handle for specification."""
+    is_withdrawn = withdrawProposalTxn(
+        data.url_proposal.key(), data.profile.student_info.key())
+    if is_withdrawn:
+      return http.HttpResponse()
+    else:
+      raise exception.Forbidden(PROPOSAL_CANNOT_BE_WITHDRAWN)
+
+
+class ResubmitProposalHandler(form_handler.FormHandler):
+  """FormHandler implementation to resubmit withdrawn proposals"""
+
+  def handle(self, data, check, mutator):
+    """See form_handler.FormHandler.handle for specification."""
+    is_resubmitted = resubmitProposalTxn(
+        data.url_proposal.key(), data.profile.student_info.key(),
+        data.program, data.program.timeline)
+    if is_resubmitted:
+      return http.HttpResponse()
+    else:
+      raise exception.Forbidden(PROPOSAL_CANNOT_BE_RESUBMITTED)
+
+
+@db.transactional
+def withdrawProposalTxn(proposal_key, student_info_key):
+  """Withdraws the specified proposal in a transaction.
+
+  Args:
+    proposal_key: Proposal key.
+    student_info_key: Student info key of the student who owns the proposal.
+  """
+  proposal, student_info = db.get([proposal_key, student_info_key])
+  return proposal_logic.withdrawProposal(proposal, student_info)
+
+
+@db.transactional
+def resubmitProposalTxn(proposal_key, student_info_key, program, timeline):
+  """Resubmits the specified proposal in a transaction.
+
+  Args:
+    proposal_key: Proposal key.
+    student_info_key: Student info key of the student who owns the proposal.
+    program: Program entity.
+    timeline: Timeline enity.
+  """
+  proposal, student_info = db.get([proposal_key, student_info_key])
+  return proposal_logic.resubmitProposal(
+      proposal, student_info, program, timeline)

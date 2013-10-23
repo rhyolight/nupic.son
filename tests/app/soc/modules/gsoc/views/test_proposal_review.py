@@ -15,11 +15,22 @@
 """Tests for proposal_review views.
 """
 
+import httplib
+import mock
+
+from django import http
+
+from melange.request import exception
+
+from soc.modules.gsoc.logic import proposal as proposal_logic
+from soc.modules.gsoc.models import profile as profile_model
+from soc.modules.gsoc.models import proposal as proposal_model
+from soc.modules.gsoc.models.proposal import GSoCProposal
+from soc.modules.gsoc.views import proposal_review as proposal_review_view
+from soc.modules.gsoc.views.helper import request_data
+
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
-
-from soc.modules.gsoc.models import profile as profile_model
-from soc.modules.gsoc.models.proposal import GSoCProposal
 
 
 class ProposalReviewTest(GSoCDjangoTestCase):
@@ -311,8 +322,9 @@ class ProposalReviewTest(GSoCDjangoTestCase):
         self.profile_helper.user.key().name(),
         proposal.key().id())
 
-    url = '/gsoc/proposal/withdraw/' + suffix
-    postdata = {'value': 'unchecked'}
+    # withdraw the proposal
+    url = '/gsoc/proposal/status/' + suffix
+    postdata = {'value': proposal_review_view.TOGGLE_BUTTON_IS_WITHDRAWN}
     response = self.post(url, postdata)
 
     self.assertResponseOK(response)
@@ -326,11 +338,12 @@ class ProposalReviewTest(GSoCDjangoTestCase):
         self.profile_helper.profile.student_info.key())
     self.assertEqual(number_of_proposals - 1, student_info.number_of_proposals)
 
-    url = '/gsoc/proposal/withdraw/' + suffix
-    postdata = {'value': 'unchecked'}
+    # try withdrawing the proposal once more time
+    url = '/gsoc/proposal/status/' + suffix
+    postdata = {'value': proposal_review_view.TOGGLE_BUTTON_IS_WITHDRAWN}
     response = self.post(url, postdata)
 
-    self.assertResponseBadRequest(response)
+    self.assertResponseOK(response)
 
     # check that the student proposal is still withdrawn
     proposal = GSoCProposal.get(proposal.key())
@@ -341,8 +354,9 @@ class ProposalReviewTest(GSoCDjangoTestCase):
         self.profile_helper.profile.student_info.key())
     self.assertEqual(number_of_proposals - 1, student_info.number_of_proposals)
 
-    url = '/gsoc/proposal/withdraw/' + suffix
-    postdata = {'value': 'checked'}
+    # resubmit the proposal
+    url = '/gsoc/proposal/status/' + suffix
+    postdata = {'value': proposal_review_view.TOGGLE_BUTTON_NOT_WITHDRAWN}
     response = self.post(url, postdata)
 
     self.assertResponseOK(response)
@@ -379,3 +393,132 @@ class ProposalReviewTest(GSoCDjangoTestCase):
 
     proposal = GSoCProposal.all().get()
     self.assertIsNone(proposal.mentor)
+
+
+class WithdrawProposalHandlerTest(GSoCDjangoTestCase):
+  """Unit tests for WithdrawProposalHandler class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+    self.profile = self.profile_helper.createStudentWithProposal(
+        self.org, None)
+    self.proposal = GSoCProposal.all().get()
+
+    # view used as a callback for handler
+    self.view = proposal_review_view.ProposalStatusSetter()
+
+  def testCannotWithdrawProposal(self):
+    """Tests that an error occurs when proposal cannot be withdrawn."""
+    # proposal cannot be withdrawn, because it is rejected
+    self.proposal.status = proposal_model.STATUS_REJECTED
+    self.proposal.put()
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': self.profile.link_id,
+        'id': self.proposal.key().id()
+        }
+
+    request = http.HttpRequest()
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = proposal_review_view.WithdrawProposalHandler(self.view)
+    with mock.patch.object(
+        proposal_logic, 'canProposalBeWithdrawn', return_value=False):
+      with self.assertRaises(exception.UserError) as context:
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testWithdrawProposal(self):
+    """Tests that a proposal is successfully withdrawn if possible."""
+    old_number_of_proposals = self.profile.student_info.number_of_proposals
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': self.profile.link_id,
+        'id': self.proposal.key().id()
+        }
+
+    request = http.HttpRequest()
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = proposal_review_view.WithdrawProposalHandler(None)
+    with mock.patch.object(
+        proposal_logic, 'canProposalBeWithdrawn', return_value=True):
+      response = handler.handle(data, None, None)
+    self.assertEqual(response.status_code, httplib.OK)
+
+    # check that the proposal is withdrawn
+    proposal = GSoCProposal.all().get()
+    self.assertEqual(proposal.status, proposal_model.STATUS_WITHDRAWN)
+
+    # check that number of proposals is updated
+    student_info = profile_model.GSoCStudentInfo.all(
+        ).ancestor(self.profile).get()
+    self.assertEqual(
+        old_number_of_proposals, student_info.number_of_proposals + 1)
+
+
+class ResubmitProposalHandlerTest(GSoCDjangoTestCase):
+  """Unit tests for ResubmitProposalHandler class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+    self.profile = self.profile_helper.createStudentWithProposal(
+        self.org, None)
+    self.proposal = GSoCProposal.all().get()
+
+  def testCannotResubmitProposal(self):
+    """Tests that an error occurs when proposal cannot be withdrawn."""
+    # proposal cannot be resubmitted, because it is rejected
+    self.proposal.status = proposal_model.STATUS_REJECTED
+    self.proposal.put()
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': self.profile.link_id,
+        'id': self.proposal.key().id()
+        }
+
+    request = http.HttpRequest()
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = proposal_review_view.ResubmitProposalHandler(None)
+    with mock.patch.object(
+        proposal_logic, 'canProposalBeResubmitted', return_value=False):
+      with self.assertRaises(exception.UserError) as context:
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testResubmitProposal(self):
+    """Tests that a proposal is successfully resubmitted if possible."""
+    old_number_of_proposals = self.profile.student_info.number_of_proposals
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': self.profile.link_id,
+        'id': self.proposal.key().id()
+        }
+
+    request = http.HttpRequest()
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = proposal_review_view.ResubmitProposalHandler(None)
+    with mock.patch.object(
+        proposal_logic, 'canProposalBeResubmitted', return_value=True):
+      response = handler.handle(data, None, None)
+    self.assertEqual(response.status_code, httplib.OK)
+
+    # check that the proposal is withdrawn
+    proposal = GSoCProposal.all().get()
+    self.assertEqual(proposal.status, proposal_model.STATUS_PENDING)
+
+    # check that number of proposals is updated
+    student_info = profile_model.GSoCStudentInfo.all(
+        ).ancestor(self.profile).get()
+    self.assertEqual(
+        old_number_of_proposals, student_info.number_of_proposals - 1)
