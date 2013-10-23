@@ -30,8 +30,7 @@ extra_paths = [HERE,
                os.path.join(appengine_location, 'lib', 'antlr3'),
                appengine_location,
                os.path.join(HERE, 'app'),
-               os.path.join(HERE, 'tests'),
-               os.path.join(HERE, 'thirdparty', 'coverage'),
+               os.path.join(HERE, 'tests')
               ]
 
 import nose
@@ -103,6 +102,7 @@ def begin(self):
   coverage.exclude('#pragma[: ]+[nN][oO] [cC][oO][vV][eE][rR]')
   coverage.start()
   load_melange()
+  self._orig_begin()
 
 
 def load_melange():
@@ -361,12 +361,13 @@ def run_pyunit_tests():
     from nose.plugins import cover
     plugin = cover.Coverage()
     from mox import stubout
+    plugin._orig_begin = plugin.begin
     stubout_obj = stubout.StubOutForTesting()
     stubout_obj.SmartSet(plugin, 'begin', begin)
     plugins.append(plugin)
 
     args = ['--with-coverage',
-            '--cover-package=soc.',
+            '--cover-package=soc.,melange.,summerofcode.,codein.',
             '--cover-erase',
             '--cover-html',
             '--cover-html-dir=coverageResults']
