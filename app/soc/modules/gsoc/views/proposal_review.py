@@ -459,7 +459,7 @@ class ReviewProposal(base.GSoCRequestHandler):
       scoring_visible = True
 
     duplicate = None
-    if (data.program.duplicates_visible and 
+    if (data.program.duplicates_visible and
         data.orgAdminFor(data.url_proposal.org)):
       q = GSoCProposalDuplicate.all()
       q.filter('duplicates', data.url_proposal)
