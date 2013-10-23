@@ -423,6 +423,7 @@ class GSoCProfileHelper(ProfileHelper):
     return self.profile
   
   def createConnection(self, org):
+    self.createProfile()
     self.connection = connection_utils.seed_new_connection(self.profile, org)
     return self.connection
 
