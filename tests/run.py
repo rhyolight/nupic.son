@@ -30,8 +30,7 @@ extra_paths = [HERE,
                os.path.join(appengine_location, 'lib', 'antlr3'),
                appengine_location,
                os.path.join(HERE, 'app'),
-               os.path.join(HERE, 'tests'),
-               os.path.join(HERE, 'thirdparty', 'coverage'),
+               os.path.join(HERE, 'tests')
               ]
 
 import nose
