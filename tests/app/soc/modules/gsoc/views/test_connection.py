@@ -354,7 +354,7 @@ class ShowConnectionForUserPageTest(test_utils.GSoCDjangoTestCase):
   def _connectionPageURL(self):
     if not self.connection_url:
       self.connection_url = USER_SHOW_CONNECTION_PAGE_URL % (
-          self.org.key().name(), self.profile_helper.profile.parent().link_id,
+          self.org.key().name(), self.profile_helper.user.link_id,
           self.profile_helper.connection.key().id())
     return self.connection_url
 
@@ -365,10 +365,27 @@ class ShowConnectionForUserPageTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(self.get(url))
 
   def testOrgAdminForbiddenAccess(self):
-    """Test that an org admin for this org cannot access the view."""
+    """Test that an org admin for this org cannot access the view if they
+    are not the user for whom the Connection was created.
+    """
+    other_helper = profile_utils.GSoCProfileHelper(self.gsoc, False)
+    other_helper.createProfile()
+    other_helper.createConnection(self.org)
+
+    self.profile_helper.createOrgAdmin(self.org)
+    connection_url = USER_SHOW_CONNECTION_PAGE_URL % (
+          self.org.key().name(), other_helper.user.link_id,
+          other_helper.connection.key().id())
+
+    response = self.get(connection_url)
+    self.assertResponseForbidden(response)
+
+  def testIncludedOrgAdminAllowedAccess(self):
+    """Test that if a user is an org admin but is the one with whom the org
+    is connecting, they can view the page."""
     self.profile_helper.createOrgAdmin(self.org)
     response = self.get(self._connectionPageURL())
-    self.assertResponseForbidden(response)
+    self.assertResponseOK(response)
 
   def testTemplatesUsed(self):
     """Test that someone with a mentor profile can access this view."""
