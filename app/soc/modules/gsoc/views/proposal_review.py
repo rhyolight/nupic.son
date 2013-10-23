@@ -1039,19 +1039,21 @@ class IsBeforeStudentsAnnouncedAccessChecker(access.AccessChecker):
 IS_BEFORE_STUDENTS_ANNOUNCED_ACCESS_CHECKER = (
     IsBeforeStudentsAnnouncedAccessChecker())
 
+WITHDRAW_PROPOSAL_ACCESS_CHECKER = access.ConjuctionAccessChecker([
+    access.IS_URL_USER_ACCESS_CHECKER,
+    IS_BEFORE_STUDENTS_ANNOUNCED_ACCESS_CHECKER
+    ])
 
 class WithdrawProposal(base.GSoCRequestHandler):
   """View allowing the proposer to withdraw the proposal."""
+
+  access_checker = WITHDRAW_PROPOSAL_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     return [
          url(r'proposal/withdraw/%s$' % url_patterns.USER_ID,
          self, name=url_names.PROPOSAL_WITHDRAW),
     ]
-
-  def checkAccess(self, data, check, mutator):
-    check.isProposer()
-    check.canStudentUpdateProposal()
 
   def toggleWithdrawProposal(self, data, value):
     """Toggles the the application state between withdraw and pending.
