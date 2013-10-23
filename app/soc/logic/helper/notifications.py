@@ -208,12 +208,9 @@ class StartConnectionByOrgContextProvider(object):
         profile, connection_key.id(),
         self._url_names.CONNECTION_MANAGE_AS_USER)
 
-    connection = db.get(connection_key)
-
     message_properties = {
         'connection_url': connection_url,
         'name': profile.name(),
-        'role' : connection.getRole(),
         'org_name': org.name,
         'message': message,
         }
