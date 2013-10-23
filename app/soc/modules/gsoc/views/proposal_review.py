@@ -1071,7 +1071,10 @@ class WithdrawProposalHandler(form_handler.FormHandler):
     is_withdrawn = withdrawProposalTxn(
         data.url_proposal.key(), data.profile.student_info.key())
     if is_withdrawn:
-      return http.HttpResponse()
+      if self._url is not None:
+        return http.HttpResponseRedirect(self._url)
+      else:
+        return http.HttpResponse()
     else:
       raise exception.Forbidden(PROPOSAL_CANNOT_BE_WITHDRAWN)
 
