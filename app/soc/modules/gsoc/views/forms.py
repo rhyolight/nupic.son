@@ -331,8 +331,8 @@ class GSoCBoundField(forms.BoundField):
   def _render_error(self):
     if self.errors:
       # TODO(nathaniel): HTML in Python.
-      return '<div class="error-message">%s</div>' % html.escape(
-          self.errors[0])
+      return html.format_html(
+          u'<div class="error-message">{0}</div>', self.errors[0])
     else:
       return ''
 
