@@ -523,13 +523,9 @@ class PostComment(base.GSoCRequestHandler):
     check.isProfileActive()
     mutator.commentVisible(data.organization)
 
-    # check if the comment is given by the author of the proposal
-    if data.url_profile.key() == data.profile.key():
-      data.public_only = True
-      return
-
-    data.public_only = False
-    check.isMentorForOrganization(data.url_proposal.org)
+    # private comments may be posted only by organization members
+    if not self._isProposer(data):
+      check.isMentorForOrganization(data.url_proposal.org)
 
   def createCommentFromForm(self, data):
     """Creates a new comment based on the data inserted in the form.
@@ -540,10 +536,9 @@ class PostComment(base.GSoCRequestHandler):
     Returns:
       a newly created comment entity or None
     """
-    assert isSet(data.public_only)
     assert isSet(data.url_proposal)
 
-    if data.public_only:
+    if self._isProposer(data):
       comment_form = CommentForm(data=data.request.POST)
     else:
       # this form contains checkbox for indicating private/public comments
@@ -552,7 +547,7 @@ class PostComment(base.GSoCRequestHandler):
     if not comment_form.is_valid():
       return None
 
-    if data.public_only:
+    if self._isProposer(data):
       comment_form.cleaned_data['is_private'] = False
     comment_form.cleaned_data['author'] = data.profile
 
@@ -598,6 +593,17 @@ class PostComment(base.GSoCRequestHandler):
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
     raise exception.MethodNotAllowed()
+
+  def _isProposer(self, data):
+    """Determines whether the currently logged in user is a student to whom
+    the proposal belongs.
+
+    If so, he or she is eligible to post only public comments.
+
+    Args:
+      data: request_data.RequestData for the current request.
+    """
+    return data.url_profile.key() == data.profile.key()
 
 
 class PostScore(base.GSoCRequestHandler):

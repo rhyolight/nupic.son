@@ -134,7 +134,6 @@ class Mutator(access_checker.Mutator):
     """
     self.data.private_comments_visible = access_checker.unset
     self.data.public_comments_visible = access_checker.unset
-    self.data.public_only = access_checker.unset
 
   def projectFromKwargs(self):
     """Sets the project entity in RequestData object.
