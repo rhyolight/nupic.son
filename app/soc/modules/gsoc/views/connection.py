@@ -336,6 +336,10 @@ class OrgConnectionPage(base.GSoCRequestHandler):
     return True
 
   def checkAccess(self, data, check, mutator):
+    # TODO(nathaniel): Drop special privileges for developers.
+    if data.is_developer:
+      return
+
     assert isSet(data.organization)
     check.isProgramVisible()
     check.isOrganizationInURLActive()
@@ -401,6 +405,10 @@ class UserConnectionPage(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
+    # TODO(nathaniel): Drop special privileges for developers.
+    if data.is_developer:
+      return
+
     check.isProgramVisible()
     check.isOrganizationInURLActive()
     check.hasProfile()
@@ -476,6 +484,10 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
         ]
 
   def checkAccess(self, data, check, mutator):
+    # TODO(nathaniel): Drop special privileges for developers.
+    if data.is_developer:
+      return
+
     check.isProgramVisible()
     check.hasProfile()
     check.notStudent()
@@ -616,6 +628,10 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
     return 'modules/gsoc/connection/show_connection.html'
 
   def checkAccess(self, data, check, mutator):
+    # TODO(nathaniel): Drop special privileges for developers.
+    if data.is_developer:
+      return
+
     check.isProgramVisible()
     check.hasProfile()
 

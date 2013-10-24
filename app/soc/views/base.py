@@ -471,12 +471,7 @@ class RequestHandler(object):
     try:
       data, check, mutator = self.initializer.initialize(request, args, kwargs)
       self.checkMaintenanceMode(data)
-
-      # TODO(nathaniel): Eliminate the presumption throughout Melange of
-      # developers-should-see-everything.
-      if not data.is_developer:
-        self.checkAccess(data, check, mutator)
-
+      self.checkAccess(data, check, mutator)
       return self._dispatch(data, check, mutator)
     except exception.LoginRequired:
       return data.redirect.toUrl(self.linker.login(request))
