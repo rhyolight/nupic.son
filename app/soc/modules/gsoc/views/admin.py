@@ -154,6 +154,7 @@ class MainDashboard(Dashboard):
     manage_orgs = ManageOrganizationsDashboard(self.data)
     program_settings = ProgramSettingsDashboard(self.data)
     evaluations = EvaluationsDashboard(self.data)
+    participants = ParticipantsDashboard(self.data)
     students = StudentsDashboard(self.data)
 
     subpages = [
@@ -211,9 +212,17 @@ class MainDashboard(Dashboard):
             'link': self.data.redirect.urlOf('gsoc_withdraw_projects')
         },
         {
+            'name': 'participants',
+            'description': ugettext(
+                'List of all participants in this program.'),
+            'title': 'Participants',
+            'link': '',
+            'subpage_links': participants.getSubpagesLink(),
+        },
+        {
             'name': 'students',
             'description': ugettext(
-                'See all the registered students and their projects.'),
+                'Manage all the Student\'s projects.'),
             'title': 'Students',
             'link': '',
             'subpage_links': students.getSubpagesLink(),
@@ -686,6 +695,56 @@ class EvaluationGroupDashboard(Dashboard):
     }
 
 
+class ParticipantsDashboard(Dashboard):
+  """Dashboard for admin's all participants dashboard
+  """
+
+  def __init__(self, data):
+    """Initializes the dashboard.
+
+    Args:
+      data: The RequestData object
+    """
+    # TODO(nathaniel): Eliminate this state-setting call.
+    data.redirect.program()
+
+    subpages = [
+        {
+            'name': 'list_mentors',
+            'description': ugettext(
+                'List of all the organization admins and mentors'),
+            'title': 'List mentors and admins',
+            'link': data.redirect.urlOf('gsoc_list_mentors')
+        },
+        {
+            'name': 'list_students',
+            'description': ugettext(
+                'List of all participating students'),
+            'title': 'List students',
+            'link': data.redirect.urlOf('gsoc_students_list_admin')
+        },
+    ]
+
+    super(ParticipantsDashboard, self).__init__(data, subpages)
+
+  def context(self):
+    """Returns the context of participants dashboard.
+    """
+    subpages = self._divideSubPages(self.subpages)
+
+    return {
+        'title': 'Participants',
+        'name': 'participants',
+        'backlinks': [
+            {
+                'to': 'main',
+                'title': 'Admin dashboard'
+            },
+        ],
+        'subpages': subpages
+    }
+
+
 class StudentsDashboard(Dashboard):
   """Dashboard for student related items."""
 
@@ -699,13 +758,6 @@ class StudentsDashboard(Dashboard):
     data.redirect.program()
 
     subpages = [
-        {
-            'name': 'list_students',
-            'description': ugettext(
-                'List of all the students who have registered to the program.'),
-            'title': 'All Students',
-            'link': data.redirect.urlOf('gsoc_students_list_admin')
-        },
         {
             'name': 'list_projects',
             'description': ugettext(

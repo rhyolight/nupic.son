@@ -33,6 +33,7 @@ from soc.modules.gsoc.views import mentor_evaluation
 from soc.modules.gsoc.views import org_app
 from soc.modules.gsoc.views import org_home
 from soc.modules.gsoc.views import org_profile
+from soc.modules.gsoc.views import participants
 from soc.modules.gsoc.views import profile
 from soc.modules.gsoc.views import profile_show
 from soc.modules.gsoc.views import program
@@ -104,6 +105,7 @@ class Callback(object):
     self.views.append(org_home.OrgHome())
     self.views.append(org_home.GSoCBanOrgPost())
     self.views.append(org_profile.OrgProfilePage())
+    self.views.append(participants.MentorsListAdminPage())
     self.views.append(profile.GSoCProfilePage())
     self.views.append(profile_show.GSoCBanProfilePost())
     self.views.append(profile_show.GSoCProfileAdminPage())

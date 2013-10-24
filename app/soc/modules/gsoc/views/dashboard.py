@@ -35,7 +35,6 @@ from soc.models.universities import UNIVERSITIES
 from soc.views.base_templates import ProgramSelect
 from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
-from soc.views.helper import addresses
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.helper.surveys import dictForSurveyModel
@@ -48,7 +47,6 @@ from soc.modules.gsoc.logic.survey_record import getEvalRecord
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
-from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
@@ -797,12 +795,9 @@ class SubmittedProposalsComponent(Component):
         'possible_mentors', 'Possible mentor usernames',
         mentor_keys, hidden=True)
 
-    # organization column
-    if not data.is_host:
-      orgs = data.mentor_for
-      options = [("^%s$" % i.short_name, i.short_name) for i in orgs]
-    else:
-      options = None
+    orgs = data.mentor_for
+    options = [("^%s$" % i.short_name, i.short_name) for i in orgs]
+
 
     if options and len(options) > 1:
       options = [('', 'All')] + options
@@ -1001,17 +996,14 @@ class SubmittedProposalsComponent(Component):
     dupQ.filter('is_duplicate', True)
 
     q = GSoCProposal.all()
-    if not self.data.is_host:
-      q.filter('org IN', self.data.mentor_for)
-      dupQ.filter('orgs IN', self.data.mentor_for)
+    q.filter('org IN', self.data.mentor_for)
+    dupQ.filter('orgs IN', self.data.mentor_for)
 
-      # Only fetch the data if we will display it
-      if self.data.program.duplicates_visible:
-        for org in self.data.mentor_for:
-          accepted.extend([p.key() for p in getProposalsToBeAcceptedForOrg(org)])
-    else:
-      q.filter('program', self.data.program)
-      dupQ.filter('program', self.data.program)
+    # Only fetch the data if we will display it
+    if self.data.program.duplicates_visible:
+      for org in self.data.mentor_for:
+        accepted.extend([p.key() for p in getProposalsToBeAcceptedForOrg(org)])
+
 
     # Only fetch the data if it is going to be displayed
     if self.data.program.duplicates_visible:
@@ -1160,11 +1152,7 @@ class OrganizationsIParticipateInComponent(Component):
 
     pos = int(response.start) if response.start else 0
 
-    if self.data.is_host:
-      q = GSoCOrganization.all().filter('scope', self.data.program)
-      orgs = q.fetch(1000)
-    else:
-      orgs = self.data.mentor_for
+    orgs = self.data.mentor_for
 
     if pos < len(orgs):
       org = orgs[pos]
@@ -1407,10 +1395,7 @@ class ParticipantsComponent(Component):
         'name', 'Name', lambda ent, *args: ent.name())
     list_config.addSimpleColumn('email', "Email")
 
-    if self.data.is_host:
-      get = lambda i, orgs: orgs[i].link_id
-    else:
-      get = lambda i, orgs: orgs[i].name
+    get = lambda i, orgs: orgs[i].name
 
     list_config.addPlainTextColumn(
         'mentor_for', 'Mentor for',
@@ -1420,11 +1405,6 @@ class ParticipantsComponent(Component):
         'admin_for', 'Organization admin for',
         lambda ent, orgs, *args: ', '.join(
             [get(i, orgs) for i in ent.org_admin_for if data.orgAdminFor(i)]))
-
-    if self.data.is_host:
-      list_config.addSimpleColumn(
-          'created_on', 'Created On', column_type=lists.DATE)
-      addresses.addAddressColumns(list_config)
 
     self._list_config = list_config
 
@@ -1441,15 +1421,8 @@ class ParticipantsComponent(Component):
       return None
 
     q = GSoCProfile.all()
-
-    if self.data.is_host:
-      q.filter('scope', self.data.program)
-      q.filter('is_mentor', True)
-      prefetcher = lists.ListFieldPrefetcher(
-          GSoCProfile, ['mentor_for', 'org_admin_for'])
-    else:
-      q.filter('mentor_for IN', self.data.profile.org_admin_for)
-      prefetcher = ParticipantsComponent.AdministeredOrgsPrefetcher(self.data)
+    q.filter('mentor_for IN', self.data.profile.org_admin_for)
+    prefetcher = ParticipantsComponent.AdministeredOrgsPrefetcher(self.data)
 
     starter = lists.keyStarter
 
