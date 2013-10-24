@@ -77,8 +77,6 @@ class TaskList(Template):
     return lists.ListModelPrefetcher(GCITask, fields, list_fields)
 
   def _getListConfig(self):
-    self.data.redirect
-
     list_config = lists.ListConfiguration()
 
     if 'title' in self._columns:
