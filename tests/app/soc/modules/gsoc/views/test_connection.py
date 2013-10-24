@@ -468,6 +468,9 @@ class SubmitConnectionMessagePostTest(test_utils.GSoCDjangoTestCase):
     sent to the user.
     """
     self.profile_helper.createOrgAdmin(self.org)
+    self.profile_helper.profile.notify_new_requests = True
+    self.profile_helper.profile.put()
+
     other_helper = profile_utils.GSoCProfileHelper(self.gsoc, False)
     other_helper.createConnection(self.org)
     other_helper.profile.email = 'test@something.com'
