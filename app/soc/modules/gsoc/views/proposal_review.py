@@ -38,6 +38,7 @@ from soc.tasks import mailer
 from soc.modules.gsoc.logic import profile as profile_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.logic.helper import notifications
+from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.models.comment import GSoCComment
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.profile import GSoCProfile
@@ -52,6 +53,11 @@ from soc.modules.gsoc.views.helper.url_patterns import url
 
 TOGGLE_BUTTON_IS_WITHDRAWN = 'checked'
 TOGGLE_BUTTON_NOT_WITHDRAWN = 'unchecked'
+
+# constants indicating types of access to proposal's comments
+PRIVATE_COMMENTS = 'private_comments'
+PUBLIC_COMMENTS = 'public_comments'
+NO_COMMENTS = 'no_comments'
 
 PROPOSAL_CANNOT_BE_RESUBMITTED = ugettext(
     'This proposal cannot be resubmitted at this time.')
@@ -126,6 +132,42 @@ class Duplicate(Template):
 
   def templatePath(self):
     return 'modules/gsoc/duplicates/proposal_duplicate_review.html'
+
+
+def _isProposer(data):
+  """Determines whether the currently logged in user is a student to whom
+  the proposal belongs.
+
+  If so, he or she is eligible to post only public comments.
+
+  Args:
+    data: request_data.RequestData for the current request.
+  """
+  return data.url_user.key() == data.user.key()
+
+
+def _getApplyingCommentType(data):
+  """Returns types of comments that apply to the user who is currently
+  logged in.
+
+  Args:
+    data: request_data.RequestData for the current request.
+
+  Returns:
+    Type of comments that are available to the current user. The value is
+    one of PRIVATE_COMMENTS, PUBLIC_COMMENTS or NO_COMMENTS.
+  """
+  if not data.user:
+    return NO_COMMENTS
+  elif _isProposer(data):
+    return PUBLIC_COMMENTS
+  else:
+    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+        data.url_proposal)
+    if data.mentorFor(org_key):
+      return PRIVATE_COMMENTS
+    else:
+      return NO_COMMENTS
 
 
 class UserActions(Template):
@@ -333,16 +375,13 @@ class ReviewProposal(base.GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     check.canAccessProposalEntity()
-    mutator.commentVisible(data.url_proposal.org)
 
   def templatePath(self):
     return 'modules/gsoc/proposal/review.html'
 
   def getScores(self, data):
     """Gets all the scores for the proposal."""
-    assert isSet(data.private_comments_visible)
-
-    if not data.private_comments_visible:
+    if _getApplyingCommentType(data) != PRIVATE_COMMENTS:
       return None
 
     total = 0
@@ -367,7 +406,6 @@ class ReviewProposal(base.GSoCRequestHandler):
 
   def getComments(self, data, limit=1000):
     """Gets all the comments for the proposal visible by the current user."""
-    assert isSet(data.private_comments_visible)
     assert isSet(data.url_proposal)
 
     public_comments = []
@@ -380,7 +418,7 @@ class ReviewProposal(base.GSoCRequestHandler):
     for comment in all_comments:
       if not comment.is_private:
         public_comments.append(comment)
-      elif data.private_comments_visible:
+      elif _getApplyingCommentType(data) == PRIVATE_COMMENTS:
         private_comments.append(comment)
 
     return public_comments, private_comments
@@ -405,8 +443,6 @@ class ReviewProposal(base.GSoCRequestHandler):
     return result
 
   def context(self, data, check, mutator):
-    assert isSet(data.public_comments_visible)
-    assert isSet(data.private_comments_visible)
     assert isSet(data.url_profile)
     assert isSet(data.url_user)
 
@@ -425,7 +461,7 @@ class ReviewProposal(base.GSoCRequestHandler):
     # TODO: check if it is possible to post a comment
     comment_action = reverse('comment_gsoc_proposal', kwargs=data.kwargs)
 
-    if data.private_comments_visible:
+    if _getApplyingCommentType(data) == PRIVATE_COMMENTS:
 
       # only mentors and org admins can see that the proposal is ignored
       # TODO(daniel): replace status literals with constants
@@ -464,7 +500,7 @@ class ReviewProposal(base.GSoCRequestHandler):
     possible_mentors = self.sanitizePossibleMentors(data, possible_mentors)
     possible_mentors_names = ', '.join([m.name() for m in possible_mentors])
 
-    scoring_visible = data.private_comments_visible and (
+    scoring_visible = _getApplyingCommentType(data) == PRIVATE_COMMENTS and (
         not data.url_proposal.org.scoring_disabled)
 
     if data.orgAdminFor(data.url_proposal.org):
@@ -494,10 +530,13 @@ class ReviewProposal(base.GSoCRequestHandler):
         'page_name': data.url_proposal.title,
         'possible_mentors': possible_mentors_names,
         'private_comments': private_comments,
-        'private_comments_visible': data.private_comments_visible,
+        'private_comments_visible':
+             _getApplyingCommentType(data) == PRIVATE_COMMENTS,
         'proposal': data.url_proposal,
         'public_comments': public_comments,
-        'public_comments_visible': data.public_comments_visible,
+        'public_comments_visible':
+            _getApplyingCommentType(data) == PRIVATE_COMMENTS or
+            _getApplyingCommentType(data) == PUBLIC_COMMENTS,
         'score_action': score_action,
         'scores': scores,
         'scoring_visible': scoring_visible,
@@ -521,10 +560,9 @@ class PostComment(base.GSoCRequestHandler):
   def checkAccess(self, data, check, mutator):
     check.isProgramVisible()
     check.isProfileActive()
-    mutator.commentVisible(data.organization)
 
     # private comments may be posted only by organization members
-    if not self._isProposer(data):
+    if not _isProposer(data):
       check.isMentorForOrganization(data.url_proposal.org)
 
   def createCommentFromForm(self, data):
@@ -538,7 +576,7 @@ class PostComment(base.GSoCRequestHandler):
     """
     assert isSet(data.url_proposal)
 
-    if self._isProposer(data):
+    if _isProposer(data):
       comment_form = CommentForm(data=data.request.POST)
     else:
       # this form contains checkbox for indicating private/public comments
@@ -547,7 +585,7 @@ class PostComment(base.GSoCRequestHandler):
     if not comment_form.is_valid():
       return None
 
-    if self._isProposer(data):
+    if _isProposer(data):
       comment_form.cleaned_data['is_private'] = False
     comment_form.cleaned_data['author'] = data.profile
 
@@ -593,17 +631,6 @@ class PostComment(base.GSoCRequestHandler):
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
     raise exception.MethodNotAllowed()
-
-  def _isProposer(self, data):
-    """Determines whether the currently logged in user is a student to whom
-    the proposal belongs.
-
-    If so, he or she is eligible to post only public comments.
-
-    Args:
-      data: request_data.RequestData for the current request.
-    """
-    return data.url_profile.key() == data.profile.key()
 
 
 class PostScore(base.GSoCRequestHandler):

@@ -225,33 +225,6 @@ class Mutator(object):
   def __init__(self, data):
     self.data = data
 
-  def commentVisible(self, organization):
-    """Determines whether or not a comment is visible to a user.
-
-    Args:
-      organization: The organization for which a mentor or org admin may be
-          attemtping to view a connection.
-    """
-    assert isSet(self.data.url_user)
-
-    self.data.public_comments_visible = False
-    self.data.private_comments_visible = False
-
-    # if the user is not logged in, no comments can be made
-    if not self.data.user:
-      return
-
-    # if the current user is the proposer, he or she may access public comments
-    if self.data.user.key() == self.data.url_user.key():
-      self.data.public_comments_visible = True
-      return
-
-    # All the mentors and org admins from the organization may access public
-    # and private comments.
-    if self.data.mentorFor(organization):
-      self.data.public_comments_visible = True
-      self.data.private_comments_visible = True
-
   def orgAppRecordIfIdInKwargs(self):
     """Sets the organization application in RequestData object."""
     assert self.data.org_app
@@ -267,12 +240,9 @@ class Mutator(object):
         raise exception.NotFound(
             message=DEF_NO_ORG_APP % self.data.program.name)
 
-
+# TODO(daniel): get rid of
 class DeveloperMutator(Mutator):
-
-  def commentVisible(self, organization):
-    self.data.public_comments_visible = True
-    self.data.private_comments_visible = True
+  pass
 
 
 class BaseAccessChecker(object):

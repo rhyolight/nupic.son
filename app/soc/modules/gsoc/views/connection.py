@@ -730,7 +730,6 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
     check.isProgramVisible()
     check.isProfileActive()
     data.organization = data.url_connection.organization
-    mutator.commentVisible(data.organization)
 
   def createMessageFromForm(self, data):
     """Creates a new message based on the data inserted in the form.

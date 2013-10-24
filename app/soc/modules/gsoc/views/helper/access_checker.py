@@ -127,13 +127,6 @@ class Mutator(access_checker.Mutator):
 
   def __init__(self, data):
     super(Mutator, self).__init__(data)
-    self.unsetAll()
-
-  def unsetAll(self):
-    """Clear the fields of the data object.
-    """
-    self.data.private_comments_visible = access_checker.unset
-    self.data.public_comments_visible = access_checker.unset
 
   def projectFromKwargs(self):
     """Sets the project entity in RequestData object.
