@@ -224,7 +224,6 @@ class Mutator(object):
 
   def __init__(self, data):
     self.data = data
-    self.unsetAll()
 
   def commentVisible(self, organization):
     """Determines whether or not a comment is visible to a user.

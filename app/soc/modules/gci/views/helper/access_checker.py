@@ -88,6 +88,10 @@ class Mutator(access_checker.Mutator):
   Mutates the data object as requested.
   """
 
+  def __init__(self, data):
+    super(Mutator, self).__init__(data)
+    self.unsetAll()
+
   def unsetAll(self):
     self.data.task = access_checker.unset
     self.data.comments = access_checker.unset
@@ -95,7 +99,6 @@ class Mutator(access_checker.Mutator):
     self.data.is_visible = access_checker.unset
     self.data.full_edit = access_checker.unset
     self.data.conversation = access_checker.unset
-    super(Mutator, self).unsetAll()
 
   def taskFromKwargs(self, comments=False, work_submissions=True):
     """Sets the GCITask entity in RequestData object.
