@@ -128,7 +128,7 @@ class NoConnectionExistsAccessChecker(access.AccessChecker):
   who is currently logged-in, and organization which is specified in the URL.
   """
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See access.AccessChecker.checkAccess for specification."""
     connection = connection_logic.queryForAncestorAndOrganization(
         data.profile, data.url_org).get()
@@ -508,7 +508,7 @@ class UrlConnectionIsForCurrentUserAccessChecker(access.AccessChecker):
   data belongs to the user who is currently logged in.
   """
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     if data.url_connection.parent_key() != data.profile.key():
       raise exception.Forbidden(message=MESSAGE_CONNECTION_CANNOT_BE_ACCESSED)
@@ -600,7 +600,7 @@ class IsUserOrgAdminForUrlConnection(access.AccessChecker):
   administrator for the connection which is retrieved from the URL data.
   """
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     if not data.profile:
       raise exception.Forbidden(message=access._MESSAGE_NO_PROFILE)

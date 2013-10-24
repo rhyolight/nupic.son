@@ -387,7 +387,7 @@ class RequestHandler(object):
     """
     # TODO(nathaniel): Eliminate this method entirely after eliminating
     # all overriding implementations.
-    self.access_checker.checkAccess(data, check, mutator)
+    self.access_checker.checkAccess(data, check)
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().

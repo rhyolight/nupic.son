@@ -128,7 +128,7 @@ class NoConnectionExistsAccessCheckerTest(unittest.TestCase):
   def testNoConnectionExists(self):
     """Tests that access is granted if no connection exists."""
     access_checker = connection_view.NoConnectionExistsAccessChecker()
-    access_checker.checkAccess(self.data, None, None)
+    access_checker.checkAccess(self.data, None)
 
   def testConnectionExists(self):
     """Tests that access is denied if connection already exists."""
@@ -139,7 +139,7 @@ class NoConnectionExistsAccessCheckerTest(unittest.TestCase):
     seeder_logic.seed(connection_model.Connection, connection_properties)
     access_checker = connection_view.NoConnectionExistsAccessChecker()
     with self.assertRaises(exception.Redirect):
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
 
 
 class UrlConnectionIsForCurrentUserAccessCheckerTest(unittest.TestCase):
@@ -166,7 +166,7 @@ class UrlConnectionIsForCurrentUserAccessCheckerTest(unittest.TestCase):
     profile_utils.login(self.user)
     access_checker = (
         connection_view.UrlConnectionIsForCurrentUserAccessChecker())
-    access_checker.checkAccess(self.data, None, None)
+    access_checker.checkAccess(self.data, None)
 
   def testAnotherUserAccessDenied(self):
     """Tests that another (not connected) user is denied access."""
@@ -180,7 +180,7 @@ class UrlConnectionIsForCurrentUserAccessCheckerTest(unittest.TestCase):
     access_checker = (
         connection_view.UrlConnectionIsForCurrentUserAccessChecker())
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
 
   def testOrgAdminAccessDenied(self):
@@ -202,7 +202,7 @@ class UrlConnectionIsForCurrentUserAccessCheckerTest(unittest.TestCase):
     access_checker = (
         connection_view.UrlConnectionIsForCurrentUserAccessChecker())
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
 
 
@@ -242,7 +242,7 @@ class IsUserOrgAdminForUrlConnectionTest(unittest.TestCase):
         profile_model.Profile, properties=profile_properties)
 
     access_checker = connection_view.IsUserOrgAdminForUrlConnection()
-    access_checker.checkAccess(self.data, None, None)
+    access_checker.checkAccess(self.data, None)
 
   def testConnectedUserAccessDenied(self):
     """Tests that access is denied for connected user."""
@@ -254,7 +254,7 @@ class IsUserOrgAdminForUrlConnectionTest(unittest.TestCase):
 
     access_checker = connection_view.IsUserOrgAdminForUrlConnection()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
 
   def testOtherOrgAdminAccessDenied(self):
@@ -279,7 +279,7 @@ class IsUserOrgAdminForUrlConnectionTest(unittest.TestCase):
 
     access_checker = connection_view.IsUserOrgAdminForUrlConnection()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
 
 
