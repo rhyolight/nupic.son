@@ -281,26 +281,6 @@ class DeveloperMutator(Mutator):
     self.data.public_comments_visible = True
     self.data.private_comments_visible = True
 
-  def hostFromKwargs(self):
-    """Set the host entity for the given user in the kwargs.
-    """
-    self.data.host_user_key = None
-
-    key_name = self.data.kwargs.get('link_id', '')
-    if not key_name:
-      self.host()
-      if self.data.is_host:
-        return
-      else:
-        raise exception.NotFound(message=DEF_NO_USERNAME)
-
-    user_key = db.Key.from_path('User', key_name)
-
-    if not user_key:
-      raise exception.NotFound(message=DEF_NO_USER % key_name)
-
-    self.data.host_user_key = user_key
-
 
 class BaseAccessChecker(object):
   """Helper class for access checking.
