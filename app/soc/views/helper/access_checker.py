@@ -227,7 +227,6 @@ class Mutator(object):
     self.unsetAll()
 
   def unsetAll(self):
-    self.data.action = unset
     self.data.document = unset
     self.data.key_name = unset
 

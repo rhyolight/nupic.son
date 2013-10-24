@@ -37,6 +37,9 @@ from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
+# Key of an item in POST dictionary defining action taken on a proposal.
+ACTION_POST_KEY = 'action'
+
 class ProposalForm(GSoCModelForm):
   """Django form for the proposal page.
   """
@@ -168,7 +171,7 @@ class UpdateProposal(base.GSoCRequestHandler):
     check.canStudentUpdateProposal()
 
     if data.POST:
-      action = data.POST['action']
+      action = data.POST[ACTION_POST_KEY]
 
       status = data.url_proposal.status
       if status == 'pending' and action == self.ACTIONS['resubmit']:
@@ -180,7 +183,6 @@ class UpdateProposal(base.GSoCRequestHandler):
       if status == 'withdrawn' and action == self.ACTIONS['update']:
         error_msg = ugettext('This proposal has been withdrawn')
         raise exception.Forbidden(message=error_msg)
-      data.action = action
 
   def templatePath(self):
     return 'modules/gsoc/proposal/base.html'
@@ -242,16 +244,17 @@ class UpdateProposal(base.GSoCRequestHandler):
     """Handler for HTTP POST request."""
     url = links.LINKER.userId(
         data.profile, data.url_proposal.key().id(), url_names.PROPOSAL_REVIEW)
-    if data.action == self.ACTIONS['update']:
+
+    if data.POST[ACTION_POST_KEY] == self.ACTIONS['update']:
       proposal = self._updateFromForm(data)
       if not proposal:
         # TODO(nathaniel): problematic self-use.
         return self.get(data, check, mutator)
       else:
         return http.HttpResponseRedirect(url)
-    elif data.action == self.ACTIONS['withdraw']:
+    elif data.POST[ACTION_POST_KEY] == self.ACTIONS['withdraw']:
       handler = proposal_review_view.WithdrawProposalHandler(None, url=url)
       return handler.handle(data, check, mutator)
-    elif data.action == self.ACTIONS['resubmit']:
+    elif data.POST[ACTION_POST_KEY] == self.ACTIONS['resubmit']:
       handler = proposal_review_view.ResubmitProposalHandler(None, url=url)
       return handler.handle(data, check, mutator)
