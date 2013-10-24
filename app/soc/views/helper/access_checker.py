@@ -230,7 +230,6 @@ class Mutator(object):
     self.data.action = unset
     self.data.document = unset
     self.data.key_name = unset
-    self.data.scope_key_name = unset
     self.data.url_student_info = unset
 
   def documentKeyNameFromKwargs(self):
@@ -259,7 +258,6 @@ class Mutator(object):
     if not all(fields):
       raise exception.BadRequest(message="Missing value for document url")
 
-    self.data.scope_key_name = '/'.join(fields[1:-1])
     self.data.key_name = '/'.join(fields)
     self.data.document = document.Document.get_by_key_name(self.data.key_name)
 
