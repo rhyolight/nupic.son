@@ -13,14 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 {% block content %}
-{{ link_id }} has opened a new connection with {{ org_name }}, for which you are
-an Organization Administrator.
+A new message has been added to a Connection for which you are involved. The
+message is as follows:
 
-{% if message %}
-They provided the following message:
-	<p>{{ message }}</p>
-{% endif %}
+<p>{{ message }}</p>
 
-To respond to this connection, please visit the following url:
-<a href="{{ connection_url }}">{{ connection_url }}</a>
+To view the connection, please visit your dashboard.
+<a href="{{ dashboard_url }}">{{ dashboard_url }}</a>
 {% endblock %}

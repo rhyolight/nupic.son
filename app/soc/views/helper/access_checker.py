@@ -38,7 +38,7 @@ DEF_AGREE_TO_TOS = ugettext(
     ' in order to view this page.')
 
 DEF_ALREADY_ADMIN = ugettext(
-    'You cannot be a organization administrator for %s to access this page.')
+    'You cannot be an organization administrator for %s to access this page.')
 
 DEF_ALREADY_MENTOR = ugettext(
     'You cannot be a mentor for %s to access this page.')

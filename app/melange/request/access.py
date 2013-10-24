@@ -79,13 +79,15 @@ def ensureLoggedOut(data):
 class AccessChecker(object):
   """Interface for page access checkers."""
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """Ensure that the user's request should be satisfied.
+
+    Implementations of this method must not effect mutations of the
+    passed parameters (or anything else).
 
     Args:
       data: A request_data.RequestData describing the current request.
       check: An access_checker.AccessChecker object.
-      mutator: An access_checker.Mutator object.
 
     Raises:
       exception.LoginRequired: Indicating that the user is not logged
@@ -104,7 +106,7 @@ class AccessChecker(object):
 class AllAllowedAccessChecker(AccessChecker):
   """AccessChecker that allows all requests for access."""
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     pass
 
@@ -118,7 +120,7 @@ ALL_ALLOWED_ACCESS_CHECKER = AllAllowedAccessChecker()
 class ProgramAdministratorAccessChecker(AccessChecker):
   """AccessChecker that ensures that the user is a program administrator."""
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     if data.is_developer:
       # NOTE(nathaniel): Developers are given all the powers of
@@ -138,7 +140,7 @@ PROGRAM_ADMINISTRATOR_ACCESS_CHECKER = ProgramAdministratorAccessChecker()
 class DeveloperAccessChecker(AccessChecker):
   """AccessChecker that ensures that the user is a developer."""
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     if not data.is_developer:
       raise exception.Forbidden(message=_MESSAGE_NOT_DEVELOPER)
@@ -159,16 +161,16 @@ class ConjuctionAccessChecker(AccessChecker):
     """
     self._checkers = checkers
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     for checker in self._checkers:
-      checker.checkAccess(data, check, mutator)
+      checker.checkAccess(data, check)
 
 
 class NonStudentUrlProfileAccessChecker(AccessChecker):
   """AccessChecker that ensures that the URL user has a non-student profile."""
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     if data.url_profile.status != 'active':
       raise exception.Forbidden(
@@ -184,7 +186,7 @@ class NonStudentProfileAccessChecker(AccessChecker):
   """AccessChecker that ensures that the currently logged-in user
   has a non-student profile."""
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     if not data.profile or data.profile.status != 'active':
       raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
@@ -203,7 +205,7 @@ class ProgramActiveAccessChecker(AccessChecker):
   be set to visible.
   """
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     if not data.program:
       raise exception.NotFound(message=_MESSAGE_PROGRAM_NOT_EXISTING)
@@ -220,7 +222,7 @@ class IsUrlUserAccessChecker(AccessChecker):
   identifier is set in URL data.
   """
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     key_name = data.kwargs.get('user')
     if not key_name:
@@ -239,7 +241,7 @@ class IsUserOrgAdminForUrlOrg(AccessChecker):
   administrator for the organization whose identifier is set in URL data.
   """
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     if not data.profile:
       raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
