@@ -14,8 +14,6 @@
 
 """Helper functions for sending out notifications."""
 
-from google.appengine.ext import db
-
 from django.template import loader
 from django.utils.translation import ugettext
 

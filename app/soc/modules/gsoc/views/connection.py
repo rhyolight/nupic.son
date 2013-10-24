@@ -809,13 +809,12 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
 
     message_form.cleaned_data['author'] = data.profile
 
-    def create_message_txn():
-      return  message_form.create(commit=True, parent=data.url_connection)
-    message = db.run_in_transaction(create_message_txn)
     emails = getEmailsForConnection(data, data.url_connection)
-    sendConnectionMessageNotification(data, emails, message.content)
-
-    return message
+    def create_message_txn():
+      message = message_form.create(commit=True, parent=data.url_connection)
+      sendConnectionMessageNotification(data, emails, message.content)
+      return message
+    return db.run_in_transaction(create_message_txn)
 
   def post(self, data, check, mutator):
     # Redirect to relevant Show Connection page depending on whether
