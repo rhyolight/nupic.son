@@ -1064,8 +1064,6 @@ class ProposalStatusSetter(base.GSoCRequestHandler):
 class WithdrawProposalHandler(form_handler.FormHandler):
   """FormHandler implementation to withdraw proposals."""
 
-  access_checker = access.IS_URL_USER_ACCESS_CHECKER
-
   def handle(self, data, check, mutator):
     """See form_handler.FormHandler.handle for specification."""
     is_withdrawn = withdrawProposalTxn(
