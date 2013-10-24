@@ -19,7 +19,7 @@ import os
 from google.appengine.api import users
 
 from django import http
-from django.conf.urls.defaults import url as django_url
+from django.conf.urls import url as django_url
 from django.forms import widgets as django_widgets
 from django.utils.translation import ugettext
 

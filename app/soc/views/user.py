@@ -16,7 +16,7 @@
 
 import os
 
-from django.conf.urls.defaults import url as django_url
+from django.conf.urls import url as django_url
 
 from soc.logic import accounts
 from soc.logic import cleaning

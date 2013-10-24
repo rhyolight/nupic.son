@@ -23,7 +23,7 @@ from google.appengine.ext import db
 from google.appengine.runtime.apiproxy_errors import OverQuotaError
 from google.appengine.runtime.apiproxy_errors import DeadlineExceededError
 
-from django.conf.urls.defaults import url as django_url
+from django.conf.urls import url as django_url
 
 from melange.appengine import system
 from soc.models import email

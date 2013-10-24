@@ -16,7 +16,7 @@
 """
 
 
-from django.conf.urls.defaults import url as django_url
+from django.conf.urls import url as django_url
 
 from soc.views.helper.url_patterns import namedIdBasedPattern
 from soc.views.helper.url_patterns import namedLinkIdPattern
@@ -26,7 +26,7 @@ from soc.views.helper import url_patterns
 def url(regex, view, kwargs=None, name=None):
   """Constructs an url pattern prefixed with ^gsoc/.
 
-  Args: see django.conf.urls.defaults.url
+  Args: see django.conf.urls.url
   """
   return django_url('^gsoc/%s' % regex, view, kwargs=kwargs, name=name)
 

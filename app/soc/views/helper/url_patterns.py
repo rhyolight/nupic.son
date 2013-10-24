@@ -15,7 +15,7 @@
 """Module for constructing core URL patterns."""
 
 
-from django.conf.urls.defaults import url as django_url
+from django.conf.urls import url as django_url
 
 from soc.models import linkable
 
@@ -23,7 +23,7 @@ from soc.models import linkable
 def url(prefix, regex, view, kwargs=None, name=None):
   """Constructs an url pattern prefixed with an arbitrary prefix
 
-  Args: see django.conf.urls.defaults.url
+  Args: see django.conf.urls.url
   """
   return django_url('^%s/%s' % (prefix, regex), view, kwargs=kwargs, name=name)
 

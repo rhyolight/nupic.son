@@ -14,7 +14,7 @@
 
 """Module containing the views for GSoC accepted orgs."""
 
-from django.conf.urls.defaults import url as django_url
+from django.conf.urls import url as django_url
 from django.utils import html as html_utils
 
 from melange.request import access
