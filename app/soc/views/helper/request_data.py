@@ -543,7 +543,7 @@ class RequestData(object):
     """Returns document property."""
     if not self._isSet(self._document):
       fields = []
-      kwargs = self.data.kwargs.copy()
+      kwargs = self.kwargs.copy()
 
       prefix = kwargs.pop('prefix', None)
       fields.append(prefix)
@@ -565,8 +565,7 @@ class RequestData(object):
 
       # TODO(daniel): remove key_name from it.
       self.key_name = '/'.join(fields)
-      self._document = document_model.Document.get_by_key_name(
-          self.data.key_name)
+      self._document = document_model.Document.get_by_key_name(self.key_name)
     return self._document
 
   def _getUrlProfileKey(self):
