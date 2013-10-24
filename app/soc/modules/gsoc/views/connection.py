@@ -122,10 +122,11 @@ def getEmailsForConnection(data, entity):
     List of emails for all users in the Connection excluding the
     current user.
   """
-  q = GSoCProfile.all().filter('org_admin_for', entity.organization)
-  q.filter('status', 'active')
-  q.filter('notify_public_comments', True)
-  emails = [p.email for p in q if p.key() != data.profile.key()]
+  query = GSoCProfile.all().filter('org_admin_for', entity.organization)
+  query.filter('status', 'active')
+  query.filter('notify_public_comments', True)
+  emails = [profile.email for profile in query if \
+      profile.key() != data.profile.key()]
   # Notify the user if they are not the ones who created the message.
   profile = entity.parent()
   if profile.key() != data.profile.key():

@@ -33,6 +33,9 @@ USER_CONNECTION_PAGE_URL = '/gsoc/connect/%s/%s'
 ORG_SHOW_CONNECTION_PAGE_URL = '/gsoc/connection/%s/%s/%s'
 # See comment for ORG_SHOW_CONNECTION_PAGE_URL.
 USER_SHOW_CONNECTION_PAGE_URL = '/gsoc/connection/user/%s/%s/%s'
+# connection.SubmitConnectionMessagePost url pattern. Order is sponosr,
+# program, user link id, connection id.
+CONNECTION_MESSAGE_URL = '/gsoc/connection_message/%s/%s/%s'
 
 class OrgConnectionPageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for OrgConnectionPage."""
@@ -303,6 +306,7 @@ class ShowConnectionForOrgMemberPageTest(test_utils.GSoCDjangoTestCase):
     query = connection.ConnectionMessage.all().ancestor(connection_entity)
     expected = connection_view.USER_ASSIGNED_MENTOR % profile.name()
     self.assertIn(expected, query.get().content)
+    self.assertEmailSent(to=self.other_data.profile.email)
 
   def testAssignUserOrgAdminRole(self):
     """Test that a user will be assigned an org admin role."""
@@ -455,3 +459,60 @@ class ShowConnectionForUserPageTest(test_utils.GSoCDjangoTestCase):
     query = connection.ConnectionMessage.all().ancestor(connection_entity)
     expected = connection_view.USER_ASSIGNED_NO_ROLE % profile.name()
     self.assertIn(expected, query.get().content)
+
+class SubmitConnectionMessagePostTest(test_utils.GSoCDjangoTestCase):
+
+  def setUp(self):
+    self.init()
+
+  def testConnectionMessageCreatedForAdmin(self):
+    """Test that given valid input, a new ConnectionMessage is generated
+    with the org admin's desired message and a notification email is
+    sent to the user.
+    """
+    self.profile_helper.createOrgAdmin(self.org)
+    other_helper = profile_utils.GSoCProfileHelper(self.gsoc, False)
+    other_helper.createConnection(self.org)
+    other_helper.profile.email = 'test@something.com'
+    other_helper.profile.put()
+
+    post_data = { 'content' : 'Test message' }
+    url = CONNECTION_MESSAGE_URL % (
+        self.gsoc.key().name(),
+        other_helper.user.link_id,
+        other_helper.connection.key().id()
+        )
+    response = self.post(url, post_data)
+    self.assertResponseCode(response, 302)
+
+    message = connection.ConnectionMessage.all().get()
+    self.assertIsNotNone(message)
+    self.assertEquals('Test message', message.content)
+    self.assertEquals(self.profile_helper.profile.key().id(),
+        message.author.key().id())
+    self.assertEmailSent(to=other_helper.profile.email)
+
+  def testConnectionMessageCreatedForUser(self):
+    """Test that given valid input, a new ConnectionMessage is generated
+    with the involved user's desired message and a notification email is
+    sent to all org admins.
+    """
+    other_helper = profile_utils.GSoCProfileHelper(self.gsoc, False)
+    other_helper.createOrgAdmin(self.org)
+    self.profile_helper.createConnection(self.org)
+
+    post_data = { 'content' : 'Test message' }
+    url = CONNECTION_MESSAGE_URL % (
+        self.gsoc.key().name(),
+        self.profile_helper.user.link_id,
+        self.profile_helper.connection.key().id()
+        )
+    response = self.post(url, post_data)
+    self.assertResponseCode(response, 302)
+
+    message = connection.ConnectionMessage.all().get()
+    self.assertIsNotNone(message)
+    self.assertEquals('Test message', message.content)
+    self.assertEquals(self.profile_helper.profile.key().id(),
+        message.author.key().id())
+    self.assertEmailSent(to=other_helper.profile.email)
