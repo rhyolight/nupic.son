@@ -75,6 +75,16 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.app_directories.Loader',
 )
 
+# Create a random SECRET_KEY, this key will be different for each instance of
+# Melange that AppEngine creates, guaranteeing that we cannot accidentally rely
+# on any Django feature that uses it. That is, if we would accidentally rely on
+# such a feature, it would fail safely (by, for example, rejecting a user
+# request).
+# We would prefer if there was a way to make any such request fail with a 50x
+# error, but Django does not provide such an option.
+SECRET_KEY_LENGTH = 50
+SECRET_KEY = os.urandom(SECRET_KEY_LENGTH).encode("hex")
+
 MIDDLEWARE_CLASSES = (
     'google.appengine.ext.appstats.recording.AppStatsDjangoMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
