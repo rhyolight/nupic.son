@@ -67,6 +67,9 @@ class EditDocumentPage(GCIRequestHandler):
   def context(self, data, check, mutator):
     form = GCIDocumentForm(data=data.POST or None, instance=data.document)
 
+    # TODO(daniel): split that view into two different views (one for creation
+    # and another one for editing documents) than make data.document raise
+    # not found when document is not found
     if data.document:
       page_name = 'Edit %s' % data.document.title
     else:

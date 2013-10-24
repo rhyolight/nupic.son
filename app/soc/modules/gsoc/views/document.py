@@ -62,6 +62,9 @@ class EditDocumentPage(base.GSoCRequestHandler):
   def context(self, data, check, mutator):
     form = GSoCDocumentForm(data=data.POST or None, instance=data.document)
 
+    # TODO(daniel): split that view into two different views (one for creation
+    # and another one for editing documents) than make data.document raise
+    # not found when document is not found
     if data.document:
       page_name = 'Edit %s' % data.document.title
     else:
@@ -104,6 +107,7 @@ class DocumentPage(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
+    # TODO(daniel): remove this when data.document throws not found on its own
     if not data.document:
       raise exception.NotFound(
           message="No such document: '%s'" % data.key_name)
