@@ -13,16 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 {% block content %}
-
-Hello {{ link_id }},
-	{{ org_name }} has opened a new connection with you in order to offer you a role within their organization.
+{{ org_name }} has opened a new connection with you in order to offer you a role within their organization.
 
 {% if message %}
-	They provided the following message:
-		{{ message }}
+They provided the following message:
+	<p>{{ message }}</p>
 {% endif %}
+
 To respond to this connection, please visit the following url:
-
 <a href="{{ connection_url }}">{{ connection_url }}</a>
-
 {% endblock %}
