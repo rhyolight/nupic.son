@@ -13,6 +13,8 @@
 # limitations under the License.
 
 """Tests for connection views."""
+import httplib
+
 from nose.plugins import skip
 from google.appengine.ext import db
 
@@ -483,7 +485,7 @@ class SubmitConnectionMessagePostTest(test_utils.GSoCDjangoTestCase):
         other_helper.connection.key().id()
         )
     response = self.post(url, post_data)
-    self.assertResponseCode(response, 302)
+    self.assertResponseCode(response, httplib.FOUND)
 
     message = connection.ConnectionMessage.all().get()
     self.assertIsNotNone(message)
@@ -508,7 +510,7 @@ class SubmitConnectionMessagePostTest(test_utils.GSoCDjangoTestCase):
         self.profile_helper.connection.key().id()
         )
     response = self.post(url, post_data)
-    self.assertResponseCode(response, 302)
+    self.assertResponseCode(response, httplib.FOUND)
 
     message = connection.ConnectionMessage.all().get()
     self.assertIsNotNone(message)
