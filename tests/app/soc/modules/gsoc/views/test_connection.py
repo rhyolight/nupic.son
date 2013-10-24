@@ -221,22 +221,19 @@ class UserConnectionPageTest(test_utils.GSoCDjangoTestCase):
     self.assertEquals(connection.NO_ROLE, connection_entity.org_role)
     self.assertEquals(self.org.key(), connection_entity.organization.key())
 
-class UserConnectionPageEmailsTest(UserConnectionPageTest):
-
   def testConnectionNotificationEmailsSent(self):
     """Test that an email is sent to all org admins when a user initiates
     a connection.
     """
-    # TODO(dcrodman): Make this test pass, skipping for now because this
-    # seems to be working on local development instances.
-    raise skip.SkipTest()
-  
-    #self.profile_helper.createProfile()
-    #helper = profile_utils.GSoCProfileHelper(self.gsoc, dev_test=False)
-    #elper.createOrgAdmin(self.org)
+    self.profile_helper.createProfile()
+    helper = profile_utils.GSoCProfileHelper(self.gsoc, dev_test=False)
+    helper.createOrgAdmin(self.org)
+    helper.profile.notify_new_requests = True
+    helper.profile.put()
 
-    #self.post(self._connectionPageURL())
-    #self.assertEmailSent(to=self.profile_helper.profile.email)
+    self.post(self._connectionPageURL())
+    self.assertEmailSent(to=helper.profile.email)
+
 
 class ShowConnectionForOrgMemberPageTest(test_utils.GSoCDjangoTestCase):
 
