@@ -283,10 +283,6 @@ class Mutator(access_checker.Mutator):
             self.data.organization)
 
 
-class DeveloperMutator(access_checker.DeveloperMutator, Mutator):
-  pass
-
-
 class AccessChecker(access_checker.AccessChecker):
   """Helper classes for access checking in GSoC module.
   """

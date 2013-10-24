@@ -240,10 +240,6 @@ class Mutator(object):
         raise exception.NotFound(
             message=DEF_NO_ORG_APP % self.data.program.name)
 
-# TODO(daniel): get rid of
-class DeveloperMutator(Mutator):
-  pass
-
 
 class BaseAccessChecker(object):
   """Helper class for access checking.

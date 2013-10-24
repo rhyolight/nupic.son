@@ -181,11 +181,6 @@ class Mutator(access_checker.Mutator):
     self.data.full_edit = full_edit
 
 
-class DeveloperMutator(access_checker.DeveloperMutator,
-                       Mutator):
-  pass
-
-
 class AccessChecker(access_checker.AccessChecker):
   """Access checker for GCI specific methods.
   """
