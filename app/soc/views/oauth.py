@@ -15,7 +15,7 @@
 """Module containing views for Open Auth."""
 
 from django import http
-from django.conf.urls.defaults import url as django_url
+from django.conf.urls import url as django_url
 
 from soc.views.helper.gdata_apis import oauth as oauth_helper
 

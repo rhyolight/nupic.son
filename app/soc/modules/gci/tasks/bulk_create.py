@@ -30,7 +30,7 @@ from google.appengine.api import taskqueue
 from google.appengine.runtime import DeadlineExceededError
 
 from django import http
-from django.conf.urls.defaults import url
+from django.conf.urls import url
 
 from soc.tasks.helper import error_handler
 from soc.tasks.helper.timekeeper import Timekeeper

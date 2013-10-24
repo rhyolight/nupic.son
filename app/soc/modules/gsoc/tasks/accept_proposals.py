@@ -18,7 +18,7 @@ import datetime
 import logging
 
 from django import http
-from django.conf.urls.defaults import url as django_url
+from django.conf.urls import url as django_url
 
 from google.appengine.api import taskqueue
 from google.appengine.ext import db

@@ -14,7 +14,7 @@
 
 """Module containing the views for GSoC home page."""
 
-from django.conf.urls.defaults import url as django_url
+from django.conf.urls import url as django_url
 
 from melange.appengine import system
 from melange.request import links
