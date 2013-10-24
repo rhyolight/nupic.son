@@ -62,10 +62,6 @@ class EditDocumentPage(GCIRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.documentKeyNameFromKwargs()
-
-    assert isSet(data.key_name)
-
     check.canEditDocument()
 
   def context(self, data, check, mutator):
@@ -110,7 +106,6 @@ class DocumentPage(GCIRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.documentKeyNameFromKwargs()
     check.canViewDocument()
 
   def context(self, data, check, mutator):

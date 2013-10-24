@@ -226,39 +226,6 @@ class Mutator(object):
     self.data = data
     self.unsetAll()
 
-  def unsetAll(self):
-    self.data.document = unset
-    self.data.key_name = unset
-
-  def documentKeyNameFromKwargs(self):
-    """Returns the document key fields from kwargs.
-
-    Returns False if not all fields were supplied/consumed.
-    """
-    fields = []
-    kwargs = self.data.kwargs.copy()
-
-    prefix = kwargs.pop('prefix', None)
-    fields.append(prefix)
-
-    if prefix in ['gsoc_program', 'gsoc_org', 'gci_program', 'gci_org']:
-      fields.append(kwargs.pop('sponsor', None))
-      fields.append(kwargs.pop('program', None))
-
-    if prefix in ['gsoc_org', 'gci_org']:
-      fields.append(kwargs.pop('organization', None))
-
-    fields.append(kwargs.pop('document', None))
-
-    if any(kwargs.values()):
-      raise exception.BadRequest(message="Unexpected value for document url")
-
-    if not all(fields):
-      raise exception.BadRequest(message="Missing value for document url")
-
-    self.data.key_name = '/'.join(fields)
-    self.data.document = document.Document.get_by_key_name(self.data.key_name)
-
   def commentVisible(self, organization):
     """Determines whether or not a comment is visible to a user.
 

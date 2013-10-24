@@ -32,6 +32,7 @@ from melange.views.helper import urls
 from soc.logic import program as program_logic
 from soc.logic import site as site_logic
 from soc.logic import user as user_logic
+from soc.models import document as document_model
 from soc.models import site as site_model
 from soc.models import sponsor as sponsor_model
 from soc.models import user as user_model
@@ -233,6 +234,7 @@ class RequestData(object):
     self._url_profile = self._unset
     self._url_student_info = self._unset
     self._url_user = self._unset
+    self._document = self._unset
 
     # explicitly copy POST and GET dictionaries so they can be modified
     # the default QueryDict objects used by Django are immutable, but their
@@ -534,6 +536,38 @@ class RequestData(object):
       if not self._url_user:
         raise exception.NotFound(message='Requested user does not exist.')
     return self._url_user
+
+  # TODO(daniel): rename it to url_document
+  @property
+  def document(self):
+    """Returns document property."""
+    if not self._isSet(self._document):
+      fields = []
+      kwargs = self.data.kwargs.copy()
+
+      prefix = kwargs.pop('prefix', None)
+      fields.append(prefix)
+
+      if prefix in ['gsoc_program', 'gsoc_org', 'gci_program', 'gci_org']:
+        fields.append(kwargs.pop('sponsor', None))
+        fields.append(kwargs.pop('program', None))
+
+      if prefix in ['gsoc_org', 'gci_org']:
+        fields.append(kwargs.pop('organization', None))
+
+      fields.append(kwargs.pop('document', None))
+
+      if any(kwargs.values()):
+        raise exception.BadRequest(message="Unexpected value for document url")
+
+      if not all(fields):
+        raise exception.BadRequest(message="Missing value for document url")
+
+      # TODO(daniel): remove key_name from it.
+      self.key_name = '/'.join(fields)
+      self._document = document_model.Document.get_by_key_name(
+          self.data.key_name)
+    return self._document
 
   def _getUrlProfileKey(self):
     """Returns db.Key that represents profile for the data specified in

@@ -57,10 +57,6 @@ class EditDocumentPage(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.documentKeyNameFromKwargs()
-
-    assert isSet(data.key_name)
-
     check.canEditDocument()
 
   def context(self, data, check, mutator):
@@ -108,8 +104,6 @@ class DocumentPage(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.documentKeyNameFromKwargs()
-
     if not data.document:
       raise exception.NotFound(
           message="No such document: '%s'" % data.key_name)
