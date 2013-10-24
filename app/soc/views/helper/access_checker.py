@@ -253,12 +253,6 @@ class Mutator(object):
       self.data.public_comments_visible = True
       self.data.private_comments_visible = True
 
-  def host(self):
-    assert isSet(self.data.user)
-
-    if self.data.user.host_for:
-      self.data.is_host = True
-
   def orgAppRecordIfIdInKwargs(self):
     """Sets the organization application in RequestData object."""
     assert self.data.org_app
