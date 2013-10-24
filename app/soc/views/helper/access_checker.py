@@ -230,7 +230,6 @@ class Mutator(object):
     self.data.action = unset
     self.data.document = unset
     self.data.key_name = unset
-    self.data.url_student_info = unset
 
   def documentKeyNameFromKwargs(self):
     """Returns the document key fields from kwargs.
@@ -260,12 +259,6 @@ class Mutator(object):
 
     self.data.key_name = '/'.join(fields)
     self.data.document = document.Document.get_by_key_name(self.data.key_name)
-
-  def studentFromKwargs(self):
-    self.data.url_student_info = self.data.url_profile.student_info
-
-    if not self.data.url_student_info:
-      raise exception.NotFound(message='Requested user is not a student')
 
   def commentVisible(self, organization):
     """Determines whether or not a comment is visible to a user.

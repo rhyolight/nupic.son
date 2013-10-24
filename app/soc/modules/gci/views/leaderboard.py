@@ -157,7 +157,6 @@ class StudentTasksPage(GCIRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.studentFromKwargs()
     try:
       check.isHost()
     except exception.UserError:

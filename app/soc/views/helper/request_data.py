@@ -231,6 +231,7 @@ class RequestData(object):
     self._url_connection = self._unset
     self._url_org = self._unset
     self._url_profile = self._unset
+    self._url_student_info = self._unset
     self._url_user = self._unset
 
     # explicitly copy POST and GET dictionaries so they can be modified
@@ -468,6 +469,14 @@ class RequestData(object):
       if not self._url_profile:
         raise exception.NotFound(message='Requested profile does not exist.')
     return self._url_profile
+
+  @property
+  def url_student_info(self):
+    if not self._isSet(self._url_student_info):
+      self._url_student_info = self.url_profile.student_info
+      if not self._url_student_info:
+        raise exception.NotFound(message='Requested profile is not a student.')
+    return self._url_student_info
 
   @property
   def url_org(self):

@@ -142,7 +142,6 @@ class FormPage(base.GSoCRequestHandler):
   def checkAccess(self, data, check, mutator):
     if self._admin(data):
       check.isHost()
-      mutator.studentFromKwargs()
     else:
       check.canStudentUploadForms()
 
@@ -260,7 +259,6 @@ class DownloadForm(base.GSoCRequestHandler):
   def checkAccess(self, data, check, mutator):
     if self._admin(data):
       check.isHost()
-      mutator.studentFromKwargs()
     else:
       check.canStudentDownloadForms()
 
