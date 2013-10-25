@@ -26,6 +26,9 @@ from tests import test_utils
 from tests import survey_utils
 
 
+TEST_IRC_CHANNEL = 'irc://example.com'
+TEST_MAILING_LIST = 'http://example.com'
+
 
 class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
   """Tests the view for organization profile page.
@@ -95,8 +98,8 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
 
     postdata = {
         'home': self.createDocument().key(), 'program': self.program,
-        'scope': self.program, 'irc_channel': 'irc://example.com',
-        'pub_mailing_list': 'http://example.com', 'backup_winner': None,
+        'scope': self.program, 'irc_channel': TEST_IRC_CHANNEL,
+        'pub_mailing_list': TEST_MAILING_LIST, 'backup_winner': None,
     }
     response, _ = self.modelPost(create_url, org_model.GCIOrganization,
                                  postdata)
@@ -106,8 +109,8 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     key_name = '%s/%s' % (self.program.key().name(), 'new_org')
     organization = org_model.GCIOrganization.get_by_key_name(key_name)
     self.assertIsNotNone(organization)
-    self.assertEqual(organization.irc_channel, 'irc://example.com')
-    self.assertEqual(organization.pub_mailing_list, 'http://example.com')
+    self.assertEqual(organization.irc_channel, TEST_IRC_CHANNEL)
+    self.assertEqual(organization.pub_mailing_list, TEST_MAILING_LIST)
 
     # check that the profile is organization administrator
     profile = db.get(self.profile_helper.profile.key())
