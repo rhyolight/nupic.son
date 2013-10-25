@@ -106,6 +106,8 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     key_name = '%s/%s' % (self.program.key().name(), 'new_org')
     organization = org_model.GCIOrganization.get_by_key_name(key_name)
     self.assertIsNotNone(organization)
+    self.assertEqual(organization.irc_channel, 'irc://example.com')
+    self.assertEqual(organization.pub_mailing_list, 'http://example.com')
 
     # check that the profile is organization administrator
     profile = db.get(self.profile_helper.profile.key())
