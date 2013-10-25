@@ -431,8 +431,8 @@ class StartConnectionAsUser(base.GCIRequestHandler):
 
       connection = connection_view.createConnectionTxn(
           data, data.profile.key(), data.organization,
-          form.cleaned_data['message'],
-          START_CONNECTION_BY_USER_CONTEXT_PROVIDER, emails,
+          message=form.cleaned_data['message'], notification_context_provider=
+          START_CONNECTION_BY_USER_CONTEXT_PROVIDER, recipients=emails,
           user_role=connection_model.ROLE)
 
       url = links.LINKER.userId(
@@ -492,9 +492,11 @@ class StartConnectionAsOrg(base.GCIRequestHandler):
       for profile in profiles:
         connections.append(connection_view.createConnectionTxn(
             data, profile.key(), data.organization,
-            form.cleaned_data['message'],
-            START_CONNECTION_BY_ORG_CONTEXT_PROVIDER, [profile.email],
-            org_role=form.cleaned_data['role'], org_admin=data.profile))
+            message=form.cleaned_data['message'],
+            notification_context_provider=
+            START_CONNECTION_BY_ORG_CONTEXT_PROVIDER,
+            recipients=[profile.email], org_role=form.cleaned_data['role'],
+            org_admin=data.profile))
 
       # TODO(daniel): add some message with whom connections are started
       url = links.LINKER.organization(

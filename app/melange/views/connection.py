@@ -41,9 +41,10 @@ def sendMentorWelcomeMail(data, profile, message):
 
 @db.transactional
 def createConnectionTxn(
-    data, profile_key, organization, message, notification_context_provider,
-    recipients, org_role=connection_model.NO_ROLE,
-    user_role=connection_model.NO_ROLE, org_admin=None):
+    data, profile_key, organization, message=None,
+    notification_context_provider=None, recipients=None,
+    org_role=connection_model.NO_ROLE, user_role=connection_model.NO_ROLE,
+    org_admin=None):
   """Creates a new Connection entity, attach any messages provided by the
   initiator and send a notification email to the recipient(s).
 
@@ -94,12 +95,13 @@ def createConnectionTxn(
       connection_logic.createConnectionMessage(
           connection.key(), message, author_key=profile.key()).put()
 
-    # dispatch an email to the user.
-    notification_context = notification_context_provider.getContext(
-        recipients, data, organization, profile, connection.key(), message)
-    sub_txn = mailer.getSpawnMailTaskTxn(
-        notification_context, parent=connection)
-    sub_txn()
+    # dispatch an email to the users.
+    if notification_context_provider and recipients:
+      notification_context = notification_context_provider.getContext(
+          recipients, data, organization, profile, connection.key(), message)
+      sub_txn = mailer.getSpawnMailTaskTxn(
+          notification_context, parent=connection)
+      sub_txn()
 
     return connection
 
