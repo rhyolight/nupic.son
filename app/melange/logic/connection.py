@@ -373,4 +373,4 @@ def generateMessageOnUpdateByUser(connection, old_user_role):
     content = '\n'.join(lines)
     return createConnectionMessage(connection.key(), content)
   else:
-    None
+    return None
