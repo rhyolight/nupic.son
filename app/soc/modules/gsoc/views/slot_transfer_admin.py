@@ -149,6 +149,11 @@ class SlotsTransferAdminList(template.Template):
         else:
           if slot_transfer.status == 'rejected':
             return
+
+          if slot_transfer.status == 'accepted':
+            org.slots += slot_transfer.nr_slots
+            org.put()
+
           slot_transfer.status = 'rejected'
         slot_transfer.put()
 
