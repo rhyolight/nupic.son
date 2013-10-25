@@ -3,9 +3,8 @@
 /bin/
 /build/
 /develop-eggs/
-/docs/
 /eggs/
-/js_reports/
+/reports/
 /node_modules/
 /overrides/
 /parts/
@@ -26,7 +25,6 @@
 .project
 .pydevproject
 .ropeproject
-coverageResults
 *,cover
 /.coverage
 *.egg-info
