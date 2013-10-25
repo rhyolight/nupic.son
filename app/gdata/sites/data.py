@@ -37,6 +37,7 @@ XHTML_TEMPLATE = '{http://www.w3.org/1999/xhtml}%s'
 SITES_PARENT_LINK_REL = SITES_NAMESPACE + '#parent'
 SITES_REVISION_LINK_REL = SITES_NAMESPACE + '#revision'
 SITES_SOURCE_LINK_REL = SITES_NAMESPACE + '#source'
+SITES_TEMPLATE_LINK_REL = SITES_NAMESPACE + '#template'
 
 SITES_KIND_SCHEME = 'http://schemas.google.com/g/2005#kind'
 ANNOUNCEMENT_KIND_TERM = SITES_NAMESPACE + '#announcement'
@@ -49,10 +50,11 @@ LISTPAGE_KIND_TERM = SITES_NAMESPACE + '#listpage'
 WEBPAGE_KIND_TERM = SITES_NAMESPACE + '#webpage'
 WEBATTACHMENT_KIND_TERM = SITES_NAMESPACE + '#webattachment'
 FOLDER_KIND_TERM = SITES_NAMESPACE + '#folder'
+TAG_KIND_TERM = SITES_NAMESPACE + '#tag'
 
 SUPPORT_KINDS = [
     'announcement', 'announcementspage', 'attachment', 'comment', 'filecabinet',
-    'listitem', 'listpage', 'webpage', 'webattachment'
+    'listitem', 'listpage', 'webpage', 'webattachment', 'tag'
     ]
 
 
