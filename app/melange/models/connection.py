@@ -134,15 +134,21 @@ class Connection(db.Model):
     return '/'.join([self.parent_key().name(), str(self.key().id())])
 
   def getRole(self):
-    """Returns the assigned role from the org admin's perspective because it
-    offers more information than the user's role.
+    """Returns the role currently assigned to the user for the connected
+    organization.
+
+    Returns:
+      Role type of the user for the connected organization. One of NO_ROLE,
+      MENTOR_ROLE or ORG_ADMIN_ROLE.
     """
-    if self.org_role == MENTOR_ROLE:
-      return 'Mentor'
-    elif self.org_role == ORG_ADMIN_ROLE:
-      return 'Org Admin'
+    if self.user_role == NO_ROLE:
+      return NO_ROLE
+    elif self.org_role == NO_ROLE:
+      return NO_ROLE
+    elif self.org_role == MENTOR_ROLE:
+      return MENTOR_ROLE
     else:
-      return 'No Role'
+      return ORG_ADMIN_ROLE
 
 
 class AnonymousConnection(db.Model):
