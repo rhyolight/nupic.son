@@ -21,6 +21,7 @@ from melange.models import connection as connection_model
 
 from soc.modules.gci.models import organization as org_model
 
+from tests import profile_utils
 from tests import test_utils
 from tests import survey_utils
 
@@ -77,8 +78,14 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     """
     self.timeline_helper.orgSignup()
     self.profile_helper.createProfile()
+
+    # create backup admin for the application
+    profile_helper = profile_utils.GCIProfileHelper(self.program, False)
+    profile_helper.createOtherUser('other@example.com')
+    backup_admin = profile_helper.createProfile()
+
     self.record.createOrgAppRecord(
-        'new_org', self.profile_helper.user, self.profile_helper.user)
+        'new_org', self.profile_helper.user, backup_admin.parent())
 
     url = '/gci/profile/organization/' + self.gci.key().name()
     create_url = url + '?org_id=new_org'
@@ -105,9 +112,16 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(1, len(profile.org_admin_for))
     self.assertSameEntity(self.gci, profile.program)
 
-    # check that a connection is created
+    # check that a connection is created for the main admin
     connection = connection_model.Connection.all().ancestor(
         profile.key()).filter('organization', organization).get()
+    self.assertIsNotNone(connection)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+
+    # check that a connection is created for the backup admin
+    connection = connection_model.Connection.all().ancestor(
+        backup_admin.key()).filter('organization', organization).get()
     self.assertIsNotNone(connection)
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertEqual(connection.user_role, connection_model.ROLE)
