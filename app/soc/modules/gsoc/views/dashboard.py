@@ -23,7 +23,7 @@ from django import http
 from django.utils.translation import ugettext
 
 from melange.logic import connection as connection_logic
-from melange.models.connection import Connection
+from melange.models import connection as connection_model
 from melange.request import exception
 from melange.request import links
 
@@ -1224,7 +1224,8 @@ class OrgConnectionComponent(Component):
     list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.parent().name())
     list_config.addPlainTextColumn('role', 'Role',
-        lambda e, *args: e.getRole(), options=CONNECTION_ROLES)
+        lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()],
+            options=CONNECTION_ROLES)
 
     list_config.setRowAction(
         lambda e, *args: data.redirect.show_org_connection(connection=e).url())
@@ -1248,11 +1249,12 @@ class OrgConnectionComponent(Component):
     if lists.getListIndex(self.data.request) != self.IDX:
       return None
 
-    q = Connection.all()
+    q = connection_model.Connection.all()
     q.filter('organization IN', [org.key() for org in self.data.org_admin_for])
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(Connection, ['organization'])
+    prefetcher = lists.ModelPrefetcher(
+        connection_model.Connection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
       self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
@@ -1293,7 +1295,8 @@ class UserConnectionComponent(Component):
     list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.parent().name())
     list_config.addPlainTextColumn('role', 'Role',
-        lambda e, *args: e.getRole(), options=CONNECTION_ROLES)
+        lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()],
+            options=CONNECTION_ROLES)
 
     list_config.setRowAction(
         lambda e, *args: data.redirect.show_user_connection(
@@ -1320,7 +1323,8 @@ class UserConnectionComponent(Component):
     q = connection_logic.queryForAncestor(self.data.profile)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(Connection, ['organization'])
+    prefetcher = lists.ModelPrefetcher(
+        connection_model.Connection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,

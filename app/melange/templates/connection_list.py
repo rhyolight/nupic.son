@@ -17,6 +17,7 @@
 from django.utils import translation
 
 from melange.logic import connection as connection_logic
+from melange.models import connection as connection_model
 from melange.request import links
 
 from soc.views import template
@@ -111,7 +112,7 @@ class UserConnectionList(ConnectionList):
     list_config.addPlainTextColumn('organization', 'Organization',
         lambda e, *args: e.organization.name)
     list_config.addPlainTextColumn('role', 'Role',
-        lambda e, *args: e.getRole())
+        lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()])
     list_config.addDateColumn('last_modified', 'Last Modified On',
         lambda e, *args: e.last_modified)
 
@@ -152,7 +153,7 @@ class OrgAdminConnectionList(ConnectionList):
           lambda e, *args: e.organization.name)
 
     list_config.addPlainTextColumn('role', 'Role',
-        lambda e, *args: e.getRole())
+        lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()])
     list_config.addDateColumn('last_modified', 'Last Modified On',
         lambda e, *args: e.last_modified)
 
