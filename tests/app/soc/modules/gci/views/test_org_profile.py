@@ -83,9 +83,7 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     self.profile_helper.createProfile()
 
     # create backup admin for the application
-    profile_helper = profile_utils.GCIProfileHelper(self.program, False)
-    profile_helper.createOtherUser('other@example.com')
-    backup_admin = profile_helper.createProfile()
+    backup_admin = profile_utils.seedGCIProfile(self.program)
 
     self.record.createOrgAppRecord(
         'new_org', self.profile_helper.user, backup_admin.parent())
