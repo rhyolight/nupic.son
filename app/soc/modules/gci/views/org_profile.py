@@ -14,6 +14,11 @@
 
 """Module for the GCI organization profile page."""
 
+from google.appengine.ext import db
+
+from melange.models import connection as connection_model
+from melange.views import connection as connection_view
+
 from soc.views.helper import url_patterns
 from soc.views import org_profile
 
@@ -22,6 +27,7 @@ from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
+
 
 PROFILE_EXCLUDE = org_profile.PROFILE_EXCLUDE + [
     'task_quota_limit', 'backup_winner', 'proposed_winners'
@@ -137,13 +143,29 @@ class OrgProfilePage(GCIRequestHandler):
       form.cleaned_data['program'] = data.program
       form.cleaned_data['link_id'] = org_id
       key_name = '%s/%s' % (data.program.key().name(), org_id)
-      entity = form.create(key_name=key_name)
-      data.profile.org_admin_for.append(entity.key())
-      data.profile.mentor_for.append(entity.key())
-      data.profile.is_mentor = True
-      data.profile.is_org_admin = True
-      data.profile.put()
+      entity = createOrganizationTxn(data, data.profile.key(), form, key_name)
     else:
       entity = form.save()
 
     return entity
+
+
+@db.transactional(xg=True)
+def createOrganizationTxn(data, profile_key, form, key_name):
+  """Creates a new organization in a transaction.
+
+  Args:
+    data: request_data.RequestData for the current request.
+    profile_key: Profile key of an admin for the new organization.
+    form: Form with organization data.
+    key_name: Key name of the organization to create.
+
+  Returns:
+    Newly created organization entity.
+  """
+  organization = form.create(key_name=key_name)
+  connection_view.createConnectionTxn(
+      data, profile_key, organization,
+      org_role=connection_model.ORG_ADMIN_ROLE,
+      user_role=connection_model.ROLE)
+  return organization
