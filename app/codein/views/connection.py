@@ -854,8 +854,8 @@ class UserActionsFormHandler(form_handler.FormHandler):
     if is_eligible:
       # TODO(daniel): eliminate these calls by removing data from
       # the call below. without these now XG transactions may be needed
-      data.program
-      data.site
+      data.program  # pylint: disable=pointless-statement
+      data.site  # pylint: disable=pointless-statement
       connection_view.handleUserRoleSelectionTxn(data, data.url_connection)
 
     return is_eligible
