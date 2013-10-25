@@ -20,7 +20,7 @@ module.exports = function(grunt) {
         test_all: '<%= meta.src.tests_dir %>/**/*.js'
       },
       reports: {
-        reports_dir: 'js_reports',
+        reports_dir: 'reports/js_reports',
         documentation: '<%= meta.reports.reports_dir %>/documentation',
         coverage: '<%= meta.reports.reports_dir %>/coverage',
         plato_source: '<%= meta.reports.reports_dir %>/plato',
