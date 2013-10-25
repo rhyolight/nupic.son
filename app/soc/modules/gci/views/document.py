@@ -19,7 +19,6 @@ from melange.request import exception
 from soc.models import document as document_model
 from soc.views import document
 from soc.views.helper import url_patterns
-from soc.views.helper.access_checker import isSet
 
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views import forms
