@@ -152,6 +152,101 @@ class UrlProfilePropertyTest(unittest.TestCase):
     self.assertEqual(profile.key(), url_profile.key())
 
 
+class UrlStudentInfoPropertyTest(unittest.TestCase):
+  """Unit tests for url_student_info property of RequestData class."""
+
+  def testNoStudentInfoData(self):
+    """Tests that error is raised if there is no enough data in kwargs."""
+    # no data at all
+    data = request_data.RequestData(None, None, {})
+    with self.assertRaises(exception.UserError) as context:
+      data.url_student_info
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
+    
+    # program data but no user identifier
+    kwargs = {
+        'sponsor': 'sponsor_id',
+        'program': 'program_id'
+        }
+    data = request_data.RequestData(None, None, kwargs)
+    with self.assertRaises(exception.UserError) as context:
+      data.url_student_info
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
+
+    # user identifier present but no program data
+    data = request_data.RequestData(None, None, {'user': 'user_id'})
+    with self.assertRaises(exception.UserError) as context:
+      data.url_student_info
+    self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
+
+  def testProfileDoesNotExist(self):
+    """Tests that error is raised if even profile does not exist."""
+    kwargs = {
+        'sponsor': 'sponsor_id',
+        'program': 'program_id',
+        'user': 'user_id'
+        }
+    data = request_data.RequestData(None, None, kwargs)
+    with self.assertRaises(exception.UserError) as context:
+      data.url_student_info
+    self.assertEqual(context.exception.status, httplib.NOT_FOUND)
+
+  def testProfileNotStudentExists(self):
+    """Tests that error is raised if the requested profile is not a student."""
+    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+    program = seeder_logic.seed(program_model.Program)
+    user = profile_utils.seedUser()
+    profile_properties = {
+        'key_name': '%s/%s/%s' % 
+            (sponsor.link_id, program.program_id, user.link_id),
+        'parent': user,
+        'link_id': user.link_id,
+        'is_student': False,
+        'student_info': None,
+        }
+    profile = seeder_logic.seed(profile_model.Profile, profile_properties)
+
+    kwargs = {
+        'sponsor': sponsor.link_id,
+        'program': program.program_id,
+        'user': profile.link_id
+        }
+
+    data = request_data.RequestData(None, None, kwargs)
+    with self.assertRaises(exception.UserError) as context:
+      data.url_student_info
+    self.assertEqual(context.exception.status, httplib.NOT_FOUND)
+
+  def testProfileIsStudent(self):
+    """Tests that student info is returned correctly if exists."""
+    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+    program = seeder_logic.seed(program_model.Program)
+    user = profile_utils.seedUser()
+    profile_properties = {
+        'key_name': '%s/%s/%s' % 
+            (sponsor.link_id, program.program_id, user.link_id),
+        'parent': user,
+        'link_id': user.link_id,
+        'is_student': True,
+        }
+    profile = seeder_logic.seed(profile_model.Profile, profile_properties)
+
+    student_info_properties = {'parent': profile}
+    student_info = seeder_logic.seed(
+        profile_model.StudentInfo, properties=student_info_properties)
+    profile.student_info = student_info
+    profile.put()
+
+    kwargs = {
+        'sponsor': sponsor.link_id,
+        'program': program.program_id,
+        'user': profile.link_id
+        }
+    data = request_data.RequestData(None, None, kwargs)
+    url_student_info = data.url_student_info
+    self.assertEqual(student_info.key(), url_student_info.key())
+
+
 class UrlOrgPropertyTest(unittest.TestCase):
   """Unit tests for url_org property of RequestData class."""
 

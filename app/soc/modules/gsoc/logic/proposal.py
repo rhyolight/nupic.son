@@ -16,6 +16,8 @@
 
 from google.appengine.ext import db
 
+from melange.utils import time as time_utils
+
 from soc.logic import timeline as timeline_logic
 
 from soc.views.helper import request_data
@@ -185,12 +187,17 @@ def canProposalBeResubmitted(proposal, student_info, program, timeline):
         'not related to program (key_name: %s).' % (
             timeline.key().name(), program.key().name()))
 
-  # only withdrawn proposals can be resubmitted
-  if proposal.status != proposal_model.STATUS_WITHDRAWN:
+  if time_utils.isAfter(timeline.accepted_students_announced_deadline):
+    # students have been accepted / rejected
     return False
-
-  # resubmitting a proposal is just like submitting a new one
-  return canSubmitProposal(student_info, program, timeline)
+  elif proposal.status != proposal_model.STATUS_WITHDRAWN:
+    # only withdrawn proposals can be resubmitted
+    return False
+  elif student_info.number_of_proposals >= program.apps_tasks_limit:
+    # student has not reached the limit of proposals per program
+    return False
+  else:
+    return True
 
 
 def withdrawProposal(proposal, student_info):

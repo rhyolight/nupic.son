@@ -224,83 +224,6 @@ class Mutator(object):
 
   def __init__(self, data):
     self.data = data
-    self.unsetAll()
-
-  def unsetAll(self):
-    self.data.action = unset
-    self.data.document = unset
-    self.data.key_name = unset
-    self.data.scope_key_name = unset
-    self.data.url_student_info = unset
-
-  def documentKeyNameFromKwargs(self):
-    """Returns the document key fields from kwargs.
-
-    Returns False if not all fields were supplied/consumed.
-    """
-    fields = []
-    kwargs = self.data.kwargs.copy()
-
-    prefix = kwargs.pop('prefix', None)
-    fields.append(prefix)
-
-    if prefix in ['gsoc_program', 'gsoc_org', 'gci_program', 'gci_org']:
-      fields.append(kwargs.pop('sponsor', None))
-      fields.append(kwargs.pop('program', None))
-
-    if prefix in ['gsoc_org', 'gci_org']:
-      fields.append(kwargs.pop('organization', None))
-
-    fields.append(kwargs.pop('document', None))
-
-    if any(kwargs.values()):
-      raise exception.BadRequest(message="Unexpected value for document url")
-
-    if not all(fields):
-      raise exception.BadRequest(message="Missing value for document url")
-
-    self.data.scope_key_name = '/'.join(fields[1:-1])
-    self.data.key_name = '/'.join(fields)
-    self.data.document = document.Document.get_by_key_name(self.data.key_name)
-
-  def studentFromKwargs(self):
-    self.data.url_student_info = self.data.url_profile.student_info
-
-    if not self.data.url_student_info:
-      raise exception.NotFound(message='Requested user is not a student')
-
-  def commentVisible(self, organization):
-    """Determines whether or not a comment is visible to a user.
-
-    Args:
-      organization: The organization for which a mentor or org admin may be
-          attemtping to view a connection.
-    """
-    assert isSet(self.data.url_user)
-
-    self.data.public_comments_visible = False
-    self.data.private_comments_visible = False
-
-    # if the user is not logged in, no comments can be made
-    if not self.data.user:
-      return
-
-    # if the current user is the proposer, he or she may access public comments
-    if self.data.user.key() == self.data.url_user.key():
-      self.data.public_comments_visible = True
-      return
-
-    # All the mentors and org admins from the organization may access public
-    # and private comments.
-    if self.data.mentorFor(organization):
-      self.data.public_comments_visible = True
-      self.data.private_comments_visible = True
-
-  def host(self):
-    assert isSet(self.data.user)
-
-    if self.data.user.host_for:
-      self.data.is_host = True
 
   def orgAppRecordIfIdInKwargs(self):
     """Sets the organization application in RequestData object."""
@@ -316,33 +239,6 @@ class Mutator(object):
       if not self.data.org_app_record:
         raise exception.NotFound(
             message=DEF_NO_ORG_APP % self.data.program.name)
-
-
-class DeveloperMutator(Mutator):
-
-  def commentVisible(self, organization):
-    self.data.public_comments_visible = True
-    self.data.private_comments_visible = True
-
-  def hostFromKwargs(self):
-    """Set the host entity for the given user in the kwargs.
-    """
-    self.data.host_user_key = None
-
-    key_name = self.data.kwargs.get('link_id', '')
-    if not key_name:
-      self.host()
-      if self.data.is_host:
-        return
-      else:
-        raise exception.NotFound(message=DEF_NO_USERNAME)
-
-    user_key = db.Key.from_path('User', key_name)
-
-    if not user_key:
-      raise exception.NotFound(message=DEF_NO_USER % key_name)
-
-    self.data.host_user_key = user_key
 
 
 class BaseAccessChecker(object):

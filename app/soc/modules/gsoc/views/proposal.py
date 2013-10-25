@@ -27,15 +27,18 @@ from soc.views.helper import url_patterns
 from soc.tasks import mailer
 
 from soc.modules.gsoc.logic import profile as profile_logic
-from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.logic.helper import notifications
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views import base
+from soc.modules.gsoc.views import proposal_review as proposal_review_view
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+
+# Key of an item in POST dictionary defining action taken on a proposal.
+ACTION_POST_KEY = 'action'
 
 class ProposalForm(GSoCModelForm):
   """Django form for the proposal page.
@@ -168,7 +171,7 @@ class UpdateProposal(base.GSoCRequestHandler):
     check.canStudentUpdateProposal()
 
     if data.POST:
-      action = data.POST['action']
+      action = data.POST[ACTION_POST_KEY]
 
       status = data.url_proposal.status
       if status == 'pending' and action == self.ACTIONS['resubmit']:
@@ -180,7 +183,6 @@ class UpdateProposal(base.GSoCRequestHandler):
       if status == 'withdrawn' and action == self.ACTIONS['update']:
         error_msg = ugettext('This proposal has been withdrawn')
         raise exception.Forbidden(message=error_msg)
-      data.action = action
 
   def templatePath(self):
     return 'modules/gsoc/proposal/base.html'
@@ -238,40 +240,21 @@ class UpdateProposal(base.GSoCRequestHandler):
 
     return db.run_in_transaction(update_proposal_txn)
 
-  def _withdraw(self, data):
-    """Withdraws a proposal."""
-
-    def withdraw_proposal_txn():
-      proposal = db.get(data.url_proposal.key())
-      student_info = db.get(data.student_info.key())
-
-      proposal_logic.withdrawProposal(proposal, student_info)
-
-    db.run_in_transaction(withdraw_proposal_txn)
-
-  def _resubmit(self, data):
-    """Resubmits a proposal."""
-
-    def resubmit_proposal_txn():
-      proposal = db.get(data.url_proposal.key())
-      student_info = db.get(data.student_info.key())
-      proposal_logic.resubmitProposal(
-          proposal, student_info, data.program, data.program_timeline)
-
-    db.run_in_transaction(resubmit_proposal_txn)
-
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    if data.action == self.ACTIONS['update']:
+    url = links.LINKER.userId(
+        data.profile, data.url_proposal.key().id(), url_names.PROPOSAL_REVIEW)
+
+    if data.POST[ACTION_POST_KEY] == self.ACTIONS['update']:
       proposal = self._updateFromForm(data)
       if not proposal:
         # TODO(nathaniel): problematic self-use.
         return self.get(data, check, mutator)
-    elif data.action == self.ACTIONS['withdraw']:
-      self._withdraw(data)
-    elif data.action == self.ACTIONS['resubmit']:
-      self._resubmit(data)
-
-    url = links.LINKER.userId(
-        data.profile, data.url_proposal.key().id(), url_names.PROPOSAL_REVIEW)
-    return http.HttpResponseRedirect(url)
+      else:
+        return http.HttpResponseRedirect(url)
+    elif data.POST[ACTION_POST_KEY] == self.ACTIONS['withdraw']:
+      handler = proposal_review_view.WithdrawProposalHandler(None, url=url)
+      return handler.handle(data, check, mutator)
+    elif data.POST[ACTION_POST_KEY] == self.ACTIONS['resubmit']:
+      handler = proposal_review_view.ResubmitProposalHandler(None, url=url)
+      return handler.handle(data, check, mutator)

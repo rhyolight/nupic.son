@@ -125,13 +125,8 @@ class Mutator(access_checker.Mutator):
   """Mutator for the GSoC module.
   """
 
-  def unsetAll(self):
-    """Clear the fields of the data object.
-    """
-    self.data.private_comments_visible = access_checker.unset
-    self.data.public_comments_visible = access_checker.unset
-    self.data.public_only = access_checker.unset
-    super(Mutator, self).unsetAll()
+  def __init__(self, data):
+    super(Mutator, self).__init__(data)
 
   def projectFromKwargs(self):
     """Sets the project entity in RequestData object.
@@ -286,10 +281,6 @@ class Mutator(access_checker.Mutator):
     self.data.slot_transfer_entities = \
         slot_transfer_logic.getSlotTransferEntitiesForOrg(
             self.data.organization)
-
-
-class DeveloperMutator(access_checker.DeveloperMutator, Mutator):
-  pass
 
 
 class AccessChecker(access_checker.AccessChecker):

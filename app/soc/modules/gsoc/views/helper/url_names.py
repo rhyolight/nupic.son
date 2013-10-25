@@ -36,7 +36,7 @@ GSOC_PROJECT_CODE_SAMPLE_DELETE = 'gsoc_project_code_sample_delete'
 
 PROPOSAL_IGNORE = 'proposal_ignore'
 PROPOSAL_REVIEW = 'proposal_review'
-PROPOSAL_WITHDRAW = 'proposal_withdraw'
+PROPOSAL_STATUS = 'proposal_status'
 
 GSOC_ORG_BAN = 'gsoc_org_ban'
 

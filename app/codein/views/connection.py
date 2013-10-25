@@ -32,6 +32,7 @@ from melange.request import links
 from melange.templates import connection_list
 from melange.utils import rich_bool
 from melange.views import connection as connection_view
+from melange.views.helper import form_handler
 
 from soc.logic import cleaning
 from soc.logic import user as user_logic
@@ -739,36 +740,7 @@ class MarkConnectionAsSeenByUser(base.GCIRequestHandler):
     return http.HttpResponse()
 
 
-class FormHandler(object):
-  """Simplified version of request handler that is able to take care of
-  the received data.
-  """
-
-  def __init__(self, view):
-    """Initializes new instance of form handler.
-
-    Args:
-      view: callback to implementation of base.RequestHandler
-        that creates this object.
-    """
-    self._view = view
-
-  def handle(self, data, check, mutator):
-    """Handles the data that was received in the current request and returns
-    an appropriate HTTP response.
-
-    Args:
-      data: A soc.views.helper.request_data.RequestData.
-      check: A soc.views.helper.access_checker.AccessChecker.
-      mutator: A soc.views.helper.access_checker.Mutator.
-
-    Returns:
-      An http.HttpResponse appropriate for the given request parameters.
-    """
-    raise NotImplementedError
-
-
-class MessageFormHandler(FormHandler):
+class MessageFormHandler(form_handler.FormHandler):
   """Form handler implementation to handle incoming data that is supposed to
   create a new connection message.
   """
@@ -791,7 +763,7 @@ class MessageFormHandler(FormHandler):
     """Creates and persists a new connection message based on the data
     that was sent in the current request.
 
-    See FormHandler.handle for specification.
+    See form_handler.FormHandler.handle for specification.
     """
     message_form = MessageForm(data=data.request.POST)
     if message_form.is_valid():
@@ -807,7 +779,7 @@ class MessageFormHandler(FormHandler):
       return self._view.get(data, check, mutator)
 
 
-class UserActionsFormHandler(FormHandler):
+class UserActionsFormHandler(form_handler.FormHandler):
   """Form handler implementation to handle incoming data that is supposed to
   take an action on the existing connection by users.
   """
@@ -816,7 +788,7 @@ class UserActionsFormHandler(FormHandler):
     """Takes an action on the connection based on the data that was sent
     in the current request.
 
-    See FormHandler.handle for specification.
+    See form_handler.FormHandler.handle for specification.
     """
     actions_form = _formToManageConnectionAsUser(data=data.POST)
     if actions_form.is_valid():
@@ -889,7 +861,7 @@ class UserActionsFormHandler(FormHandler):
     return is_eligible
 
 
-class OrgActionsFormHandler(FormHandler):
+class OrgActionsFormHandler(form_handler.FormHandler):
   """Form handler implementation to handle incoming data that is supposed to
   take an action on the existing connection by organization administrators.
   """
@@ -898,7 +870,7 @@ class OrgActionsFormHandler(FormHandler):
     """Takes an action on the connection based on the data that was sent
     in the current request.
 
-    See FormHandler.handle for specification.
+    See form_handler.FormHandler.handle for specification.
     """
     actions_form = _formToManageConnectionAsOrg(
         data=data.POST, instance=data.url_connection)

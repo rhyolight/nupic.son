@@ -62,15 +62,14 @@ class EditDocumentPage(GCIRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.documentKeyNameFromKwargs()
-
-    assert isSet(data.key_name)
-
     check.canEditDocument()
 
   def context(self, data, check, mutator):
     form = GCIDocumentForm(data=data.POST or None, instance=data.document)
 
+    # TODO(daniel): split that view into two different views (one for creation
+    # and another one for editing documents) than make data.document raise
+    # not found when document is not found
     if data.document:
       page_name = 'Edit %s' % data.document.title
     else:
@@ -110,7 +109,6 @@ class DocumentPage(GCIRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.documentKeyNameFromKwargs()
     check.canViewDocument()
 
   def context(self, data, check, mutator):
