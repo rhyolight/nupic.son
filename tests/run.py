@@ -370,7 +370,7 @@ def run_pyunit_tests():
             '--cover-package=soc.,melange.,summerofcode.,codein.',
             '--cover-erase',
             '--cover-html',
-            '--cover-html-dir=coverageResults']
+            '--cover-html-dir=reports/py_coverage']
 
     sys.argv.remove('--coverage')
     sys.argv += args
