@@ -17,10 +17,13 @@
 
 from google.appengine.ext import db
 
+from melange.models import connection as connection_model
+
+from soc.modules.gci.models import organization as org_model
+
 from tests import test_utils
 from tests import survey_utils
 
-from soc.modules.gci.models import organization as org_model
 
 
 class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
@@ -92,11 +95,19 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
                                  postdata)
     self.assertResponseRedirect(response, url + '/new_org?validated')
 
-    profile = db.get(self.profile_helper.profile.key())
-    self.assertEqual(1, len(profile.org_admin_for))
-    self.assertSameEntity(self.gci, profile.program)
-
     # check that a organization is created
     key_name = '%s/%s' % (self.program.key().name(), 'new_org')
     organization = org_model.GCIOrganization.get_by_key_name(key_name)
     self.assertIsNotNone(organization)
+
+    # check that the profile is organization administrator
+    profile = db.get(self.profile_helper.profile.key())
+    self.assertEqual(1, len(profile.org_admin_for))
+    self.assertSameEntity(self.gci, profile.program)
+
+    # check that a connection is created
+    connection = connection_model.Connection.all().ancestor(
+        profile.key()).filter('organization', organization).get()
+    self.assertIsNotNone(connection)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertEqual(connection.user_role, connection_model.ROLE)
