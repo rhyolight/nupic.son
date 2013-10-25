@@ -75,6 +75,12 @@ def createConnectionTxn(
         profile=profile, org=organization,
         org_role=org_role, user_role=user_role)
 
+    # handle possible role assignment
+    if connection.getRole() == connection_model.MENTOR_ROLE:
+      profile_logic.assignMentorRoleForOrg(profile, organization.key())
+    elif connection.getRole() == connection_model.ORG_ADMIN_ROLE:
+      profile_logic.assignOrgAdminRoleForOrg(profile, organization.key())
+
     # auto-generate a message indicated that the connection has been started
     if org_admin:
       # connection has been initialized by organization
