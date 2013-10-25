@@ -88,6 +88,11 @@ easy.options(
 DISABLED_INSPECTIONS = (
     'no-member',
     'maybe-no-member',
+
+    # TODO(nathaniel): Re-enable this after the fix of
+    # https://bitbucket.org/logilab/pylint/issue/24. This appears to have
+    # affected us following our move from Django 1.4 to 1.5.
+    'super-on-old-class',
 )
 
 # Warnings, style issues, and other inspections as a matter of policy must not

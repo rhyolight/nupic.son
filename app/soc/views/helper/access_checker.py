@@ -20,12 +20,9 @@ import urllib
 
 from django.utils.translation import ugettext
 
-from google.appengine.ext import db
-
 from melange.request import exception
 from melange.request import links
 
-from soc.models import document
 from soc.models import org_app_record
 from soc.models import program as program_model
 from soc.views.helper.gdata_apis import oauth as oauth_helper

@@ -29,7 +29,7 @@ class FormHandler(object):
       url: URL that should be used for redirect after the request is
         handled successfully. If it is not specified, the handler should
         return response with status of 200 or construct a URL to redirect to
-        on its own.  
+        on its own.
     """
     self._view = view
     self._url = url
