@@ -362,7 +362,7 @@ class OrgConnectionPage(base.GSoCRequestHandler):
       connection_form.instance = None
       profile = GSoCProfile.all().ancestor(user).get()
       connection_view.createConnectionTxn(
-          data, profile, data.organization,
+          data, profile.key(), data.organization,
           connection_form.cleaned_data['message'],
           notification_context_provider, [profile.email],
           org_role=connection_form.cleaned_data['org_role'])
@@ -483,7 +483,7 @@ class UserConnectionPage(base.GSoCRequestHandler):
         notifications.StartConnectionByUserContextProvider(
             links.ABSOLUTE_LINKER, urls.UrlNames))
     connection_view.createConnectionTxn(
-        data, data.profile, data.organization,
+        data, data.profile.key(), data.organization,
         connection_form.cleaned_data['message'],
         notification_context_provider, recipients,
         user_role=connection.ROLE)

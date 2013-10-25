@@ -430,7 +430,7 @@ class StartConnectionAsUser(base.GCIRequestHandler):
       emails = [org_admin.email for org_admin in org_admins]
 
       connection = connection_view.createConnectionTxn(
-          data, data.profile, data.organization,
+          data, data.profile.key(), data.organization,
           form.cleaned_data['message'],
           START_CONNECTION_BY_USER_CONTEXT_PROVIDER, emails,
           user_role=connection_model.ROLE)
@@ -491,7 +491,8 @@ class StartConnectionAsOrg(base.GCIRequestHandler):
       connections = []
       for profile in profiles:
         connections.append(connection_view.createConnectionTxn(
-            data, profile, data.organization, form.cleaned_data['message'],
+            data, profile.key(), data.organization,
+            form.cleaned_data['message'],
             START_CONNECTION_BY_ORG_CONTEXT_PROVIDER, [profile.email],
             org_role=form.cleaned_data['role'], org_admin=data.profile))
 

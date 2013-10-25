@@ -41,7 +41,7 @@ def sendMentorWelcomeMail(data, profile, message):
 
 @db.transactional
 def createConnectionTxn(
-    data, profile, organization, message, notification_context_provider,
+    data, profile_key, organization, message, notification_context_provider,
     recipients, org_role=connection_model.NO_ROLE,
     user_role=connection_model.NO_ROLE, org_admin=None):
   """Creates a new Connection entity, attach any messages provided by the
@@ -49,7 +49,7 @@ def createConnectionTxn(
 
   Args:
     data: RequestData object for the current request.
-    profile: Profile with which to connect.
+    profile_key: Profile key with which to connect.
     organization: Organization with which to connect.
     message: User-provided message for the connection.
     context: The notification context method.
@@ -65,6 +65,7 @@ def createConnectionTxn(
   Returns:
     The newly created Connection entity.
   """
+  profile = db.get(profile_key)
   can_create = connection_logic.canCreateConnection(profile, organization.key())
   if not can_create:
     raise exception.BadRequest(message=can_create.extra)
