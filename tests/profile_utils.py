@@ -23,7 +23,11 @@ from datetime import timedelta
 
 from melange.models import connection as connection_model
 
+from soc.models import profile as profile_model
 from soc.models import user as user_model
+
+from soc.modules.gci.models import profile as gci_profile_model
+from soc.modules.gsoc.models import profile as gsoc_profile_model
 from soc.modules.seeder.logic.providers import user as user_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
@@ -76,6 +80,9 @@ def seedUser(email=None, **kwargs):
   Args:
     email: email address specifying
     kwargs: initial values for instance's properties, as keyword arguments.
+
+  Returns:
+    A newly seeded User entity.
   """
   properties = {'status': 'valid', 'is_developer': False}
 
@@ -94,6 +101,67 @@ def seedUser(email=None, **kwargs):
   user.put()
 
   return user
+
+
+def seedProfile(program, model=profile_model.Profile, user=None, **kwargs):
+  """Seeds a new profile.
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    model: Model class of which a new profile should be seeded.
+    user: User entity corresponding to the profile.
+
+  Returns:
+    A newly seeded Profile entity.
+  """
+  user = user or seedUser()
+
+  properties = {
+      'program': program,
+      'scope': program,
+      'parent': user,
+      'status': 'active',
+      'link_id': user.key().name(),
+      'key_name': '%s/%s' % (program.key().name(), user.key().name()),
+      'mentor_for': [],
+      'is_mentor': False,
+      'org_admin_for': [],
+      'is_org_admin': False,
+      'is_student': False,
+      'student_info': None,
+      'email': user.account.email(),
+      'user': user,
+      }
+  properties.update(**kwargs)
+  return seeder_logic.seed(model, properties=properties)
+
+
+def seedGCIProfile(program, user=None, **kwargs):
+  """Seeds a new profile for GCI.
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    user: User entity corresponding to the profile.
+
+  Returns:
+    A newly seeded GCIProfile entity.
+  """
+  return seedProfile(
+      program, model=gci_profile_model.GCIProfile, user=user, **kwargs)
+
+
+def seedGSoCIProfile(program, user=None, **kwargs):
+  """Seeds a new profile for GSoC.
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    user: User entity corresponding to the profile.
+
+  Returns:
+    A newly seeded GSoCProfile entity.
+  """
+  return seedProfile(
+      program, model=gsoc_profile_model.GSoCProfile, user=user, **kwargs)
 
 
 class ProfileHelper(object):
