@@ -16,9 +16,12 @@
 
 from google.appengine.ext import db
 
+from codein.logic import profile as profile_logic
+
 from melange.models import connection as connection_model
 from melange.views import connection as connection_view
 
+from soc.models import org_app_record as org_app_record_model
 from soc.views.helper import url_patterns
 from soc.views import org_profile
 
@@ -143,7 +146,26 @@ class OrgProfilePage(GCIRequestHandler):
       form.cleaned_data['program'] = data.program
       form.cleaned_data['link_id'] = org_id
       key_name = '%s/%s' % (data.program.key().name(), org_id)
-      entity = createOrganizationTxn(data, data.profile.key(), form, key_name)
+
+      # find profile of users who should be set as organization administrators
+      profile_keys = []
+      main_admin_key = (org_app_record_model.OrgAppRecord
+          .main_admin.get_value_for_datastore(data.org_app_record))
+      if main_admin_key:
+        profile = profile_logic.getProfileForUsername(
+            main_admin_key.name(), data.program.key())
+        if profile:
+          profile_keys.append(profile.key())
+
+      backup_admin_key = (org_app_record_model.OrgAppRecord
+          .backup_admin.get_value_for_datastore(data.org_app_record))
+      if backup_admin_key:
+        profile = profile_logic.getProfileForUsername(
+            backup_admin_key.name(), data.program.key())
+        if profile:
+          profile_keys.append(profile.key())
+
+      entity = createOrganizationTxn(data, profile_keys, form, key_name)
     else:
       entity = form.save()
 
@@ -151,12 +173,12 @@ class OrgProfilePage(GCIRequestHandler):
 
 
 @db.transactional(xg=True)
-def createOrganizationTxn(data, profile_key, form, key_name):
+def createOrganizationTxn(data, profile_keys, form, key_name):
   """Creates a new organization in a transaction.
 
   Args:
     data: request_data.RequestData for the current request.
-    profile_key: Profile key of an admin for the new organization.
+    profile_keys: List of profile keys of an admins for the new organization.
     form: Form with organization data.
     key_name: Key name of the organization to create.
 
@@ -164,8 +186,11 @@ def createOrganizationTxn(data, profile_key, form, key_name):
     Newly created organization entity.
   """
   organization = form.create(key_name=key_name)
-  connection_view.createConnectionTxn(
-      data, profile_key, organization,
-      org_role=connection_model.ORG_ADMIN_ROLE,
-      user_role=connection_model.ROLE)
+
+  for profile_key in profile_keys:
+    connection_view.createConnectionTxn(
+        data, profile_key, organization,
+        org_role=connection_model.ORG_ADMIN_ROLE,
+        user_role=connection_model.ROLE)
+
   return organization
