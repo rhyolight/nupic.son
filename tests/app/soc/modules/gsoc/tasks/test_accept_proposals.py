@@ -52,17 +52,15 @@ class AcceptProposalsTest(
 
   def _createMentor(self):
     """Creates a mentor for default organization."""
-    self.mentor = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
-    self.mentor.createOtherUser('mentor@example.com')
-    self.mentor.createMentor(self.org)
-    self.mentor.notificationSettings()
+    self.mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
 
   def _createStudent(self, email, n_proposals):
     """Creates a student with proposals."""
     student = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
     student.createOtherUser(email)
     student.createStudentWithProposals(
-        self.org, self.mentor.profile, n=n_proposals)
+        self.org, self.mentor, n=n_proposals)
     student.notificationSettings()
     return student
 

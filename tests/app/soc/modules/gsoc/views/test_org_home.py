@@ -16,7 +16,7 @@
 """Tests for Organization homepage related views.
 """
 
-
+from tests import profile_utils
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 
@@ -29,14 +29,13 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
     self.init()
 
   def createStudentProjects(self):
-    """Creates two student projects.
-    """
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor.createOtherUser('mentor@example.com').createMentor(self.org)
+    """Creates two student projects."""
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
 
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
     student.createOtherUser('student@example.com')
-    student.createStudentWithProjects(self.org, mentor.profile, 2)
+    student.createStudentWithProjects(self.org, mentor, 2)
 
   def assertOrgHomeTemplatesUsed(self, response, show_project_list):
     """Asserts that all the org home templates were used.

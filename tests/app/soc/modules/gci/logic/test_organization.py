@@ -12,20 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for GCI logic for organizations.
-"""
-
-
-import unittest
+"""Tests for GCI logic for organizations."""
 
 from google.appengine.api import memcache
 
 from soc.modules.gci.logic import organization as organization_logic
-from soc.modules.gci.models.task import GCITask
 
 from tests import profile_utils
 from tests.gci_task_utils import GCITaskHelper
-from tests.profile_utils import GCIProfileHelper
 from tests.program_utils import GCIProgramHelper
 from tests.test_utils import SoCTestCase
 
@@ -49,8 +43,7 @@ class OrganizationTest(SoCTestCase):
     org.task_quota_limit = 5
     org.put()
 
-    mentor = GCIProfileHelper(self.program, False).createOtherUser(
-        'mentor@gmail.com').createMentor(org)
+    mentor = profile_utils.seedGCIProfile(self.program, mentor_for=[org.key()])
 
     student = profile_utils.seedGCIStudent(self.program)
 

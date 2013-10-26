@@ -115,10 +115,8 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
   def getOrgAppTakePostData(self):
     """Returns the post data dictionary for applying as an organization.
     """
-    backup_admin = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
-    backup_admin.createOtherUser('backupadmin@example.com')
-    backup_admin_profile = backup_admin.createOrgAdmin(self.org)
-    backup_admin.notificationSettings()
+    backup_admin = profile_utils.seedGSoCProfile(
+        self.program, org_admin_for=[self.org.key()])
 
     return {
         'org_id': 'testorg',
@@ -128,7 +126,7 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
         'license': 'GNU General Public License (GPL)',
         'new_org': 'New',
         'agreed_to_admin_agreement': True,
-        'backup_admin_id': backup_admin_profile.link_id,
+        'backup_admin_id': backup_admin.link_id,
         }
 
   def testOrgAppCreateOrEditByProgramAdmin(self):

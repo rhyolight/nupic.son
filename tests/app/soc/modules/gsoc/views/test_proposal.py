@@ -15,7 +15,7 @@
 """Tests for proposal view."""
 
 
-from tests.profile_utils import GSoCProfileHelper
+from tests import profile_utils
 from tests.test_utils import GSoCDjangoTestCase
 
 from soc.modules.gsoc.models import profile as profile_model
@@ -38,16 +38,12 @@ class ProposalTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
 
   def testSubmitProposal(self):
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor.createOtherUser('mentor@example.com')
-    mentor.createMentor(self.org)
-    mentor.notificationSettings(
-        new_proposals=True, public_comments=True, private_comments=True)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()],
+        notify_new_proposals=True, notify_public_comments=True,
+        notify_private_comments=True)
 
-    other_mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    other_mentor.createOtherUser('other_mentor@example.com')
-    other_mentor.createMentor(self.org)
-    other_mentor.notificationSettings()
+    profile_utils.seedGSoCProfile(self.program, mentor_for=[self.org.key()])
 
     self.profile_helper.createStudent()
     self.profile_helper.notificationSettings()
@@ -67,7 +63,7 @@ class ProposalTest(GSoCDjangoTestCase):
         url, proposal_model.GSoCProposal, override)
     self.assertResponseRedirect(response)
 
-    self.assertEmailSent(to=mentor.profile.email)
+    self.assertEmailSent(to=mentor.email)
     # TODO(daniel): add assertEmailNotSent to DjangoTestCase
     #self.assertEmailNotSent(to=other_mentor.profile.email)
 
@@ -78,16 +74,12 @@ class ProposalTest(GSoCDjangoTestCase):
     self.gsoc.apps_tasks_limit = 5
     self.gsoc.put()
 
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor.createOtherUser('mentor@example.com')
-    mentor.createMentor(self.org)
-    mentor.notificationSettings(
-        new_proposals=True, public_comments=True, private_comments=True)
+    profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()],
+        notify_new_proposals=True, notify_public_comments=True,
+        notify_private_comments=True)
 
-    other_mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    other_mentor.createOtherUser('other_mentor@example.com')
-    other_mentor.createMentor(self.org)
-    other_mentor.notificationSettings()
+    profile_utils.seedGSoCProfile(self.program, mentor_for=[self.org.key()])
 
     self.profile_helper.createStudent()
     self.profile_helper.notificationSettings()
@@ -144,12 +136,11 @@ class ProposalTest(GSoCDjangoTestCase):
 
   def testUpdateProposal(self):
     """Test update proposals."""
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor.createOtherUser('mentor@example.com')
-    mentor.createMentor(self.org)
-    mentor.notificationSettings(proposal_updates=True)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()],
+        notify_proposal_updates=True)
 
-    self.profile_helper.createStudentWithProposal(self.org, mentor.profile)
+    self.profile_helper.createStudentWithProposal(self.org, mentor)
     self.profile_helper.notificationSettings()
     self.timeline_helper.studentSignup()
 
@@ -164,7 +155,7 @@ class ProposalTest(GSoCDjangoTestCase):
 
     override = {
         'program': self.gsoc, 'score': 0, 'nr_scores': 0, 'has_mentor': True,
-        'mentor': mentor.profile, 'org': self.org, 'status': 'pending',
+        'mentor': mentor, 'org': self.org, 'status': 'pending',
         'action': 'Update', 'is_publicly_visible': False, 'extra': None,
         'accept_as_project': False, 'is_editable_post_deadline': False
     }
@@ -181,15 +172,14 @@ class ProposalTest(GSoCDjangoTestCase):
     # to created_on
     self.assertNotEqual(proposal.created_on, proposal.last_modified_on)
 
-    self.assertEmailSent(to=mentor.profile.email)
+    self.assertEmailSent(to=mentor.email)
 
   def testUpdateProposalAfterDeadline(self):
     """Tests attempting to update a proposal after the deadline has passed."""
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor.createOtherUser('mentor@example.com')
-    mentor.createMentor(self.org)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
 
-    self.profile_helper.createStudentWithProposal(self.org, mentor.profile)
+    self.profile_helper.createStudentWithProposal(self.org, mentor)
     self.timeline_helper.studentsAnnounced()
 
     proposal = proposal_model.GSoCProposal.all().get()
@@ -209,12 +199,11 @@ class ProposalTest(GSoCDjangoTestCase):
     self.assertResponseNotFound(response)
 
   def testWithdrawProposal(self):
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor.createOtherUser('mentor@example.com')
-    mentor.createMentor(self.org)
-    mentor.notificationSettings(proposal_updates=True)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()],
+        notify_proposal_updates=True)
 
-    self.profile_helper.createStudentWithProposal(self.org, mentor.profile)
+    self.profile_helper.createStudentWithProposal(self.org, mentor)
     self.profile_helper.notificationSettings()
     self.timeline_helper.studentSignup()
 
@@ -240,12 +229,11 @@ class ProposalTest(GSoCDjangoTestCase):
     self.assertEqual(0, student_info.number_of_proposals)
 
   def testResubmitProposal(self):
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor.createOtherUser('mentor@example.com')
-    mentor.createMentor(self.org)
-    mentor.notificationSettings(proposal_updates=True)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()],
+        notify_proposal_updates=True)
 
-    self.profile_helper.createStudentWithProposal(self.org, mentor.profile)
+    self.profile_helper.createStudentWithProposal(self.org, mentor)
     self.profile_helper.notificationSettings()
     self.timeline_helper.studentSignup()
 

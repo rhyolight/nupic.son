@@ -17,6 +17,7 @@
 import httplib
 import urllib
 
+from tests import profile_utils
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import TaskQueueTestCase
@@ -42,11 +43,9 @@ class ProposalDuplicatesTest(GSoCDjangoTestCase, TaskQueueTestCase):
     self.timeline_helper.studentSignup()
 
   def createMentor(self):
-    """Creates a new mentor.
-    """
-    profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
-    profile_helper.createOtherUser('mentor@example.com')
-    self.mentor = profile_helper.createMentor(self.org)
+    """Creates a new mentor."""
+    self.mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
 
   def createStudent(self):
     """Creates two new students the first one has a duplicate the second one has

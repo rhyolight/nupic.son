@@ -64,9 +64,7 @@ def _createProjectForMentor(program, org, dev_test, mentor=None):
     the newly created GSoCProject instance
   """
   if not mentor:
-    mentor_helper = profile_utils.GSoCProfileHelper(program, dev_test)
-    mentor_helper.createOtherUser('mentor@example.com')
-    mentor = mentor_helper.createMentor(org)
+    mentor = profile_utils.seedGSoCProfile(program, mentor_for=[org.key()])
 
   student_helper = profile_utils.GSoCProfileHelper(program, dev_test)
   student_helper.createOtherUser('student@example.com')
@@ -94,9 +92,8 @@ class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
         response, 'modules/gsoc/project_details/base.html')
 
   def createProject(self):
-    mentor_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor_helper.createOtherUser('mentor@example.com')
-    mentor = mentor_helper.createMentor(self.org)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
     student_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
     student_helper.createOtherUser('student@example.com')
     student_helper.createStudentWithProject(self.org, mentor)

@@ -29,6 +29,7 @@ from soc.modules.gsoc.models.program import GSoCProgram
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import profile_utils
 from tests.profile_utils import GSoCProfileHelper
 
 
@@ -39,10 +40,9 @@ class ProfileTest(unittest.TestCase):
   def createMentor(self, email, organization):
     """Creates a mentor for the given organization.
     """
-    profile_helper = GSoCProfileHelper(self.program, dev_test=False)
-    profile_helper.createOtherUser(email)
-    mentor = profile_helper.createMentor(organization)
-    return mentor
+    user = profile_utils.seedUser(email=email)
+    return profile_utils.seedGSoCProfile(
+        self.program, user=user, mentor_for=[organization.key()])
 
   def createOrgAdmin(self, email, organization):
     """Creates an organization admin for the given organization.

@@ -20,8 +20,8 @@ import urllib
 from google.appengine.ext import ndb
 
 from django import forms as django_forms
-from django.utils.html import escape
 
+from tests import profile_utils
 from tests import timeline_utils
 from tests.profile_utils import GSoCProfileHelper
 from tests.survey_utils import SurveyHelper
@@ -117,9 +117,8 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
   def getStudentEvalRecordProperties(self, show=False):
     eval = self.evaluation.createStudentEvaluation()
 
-    mentor_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor_profile.createOtherUser('mentor@example.com')
-    mentor = mentor_profile.createMentor(self.org)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
 
     student_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
     student_profile.createOtherUser('student_with_proj@example.com')
@@ -173,9 +172,8 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     link_id = LinkIDProvider(ProjectSurvey).getValue()
     suffix = "%s/%s" % (self.gsoc.key().name(), link_id)
 
-    mentor_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor_profile.createOtherUser('mentor@example.com')
-    mentor = mentor_profile.createMentor(self.org)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
 
     self.profile_helper.createStudentWithProject(self.org, mentor)
     # test review GET
@@ -375,9 +373,8 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
   def testTakeEvalForStudentProjectWithAnotherMentor(self):
     url, eval, _ = self.getStudentEvalRecordProperties()
 
-    mentor_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor_profile.createOtherUser('mentor_another@example.com')
-    mentor = mentor_profile.createMentor(self.org)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
 
     self.profile_helper.createStudentWithProject(self.org, mentor)
     # test student evaluation show GET for a for a student who
@@ -403,9 +400,8 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     url, eval, _ = self.getStudentEvalRecordProperties()
     other_org = self.createOrg()
 
-    mentor_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor_profile.createOtherUser('mentor_other_org@example.com')
-    mentor = mentor_profile.createMentor(other_org)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[other_org.key()])
 
     self.profile_helper.createStudentWithProject(other_org, mentor)
     # test student evaluation show GET for a for a student who
@@ -431,9 +427,8 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     evaluation = self.evaluation.createStudentEvaluation()
     self.setEvaluationPeriodToFuture(evaluation)
 
-    mentor_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor_profile.createOtherUser('mentor@example.com')
-    mentor = mentor_profile.createMentor(self.org)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
 
     self.profile_helper.createStudentWithProject(self.org, mentor)
 
@@ -468,9 +463,8 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
   def testTakeEvalForStudent(self):
     eval = self.evaluation.createStudentEvaluation()
 
-    mentor_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor_profile.createOtherUser('mentor@example.com')
-    mentor = mentor_profile.createMentor(self.org)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
 
     self.profile_helper.createStudentWithProject(self.org, mentor)
 
@@ -557,9 +551,8 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
   def testShowEvalForStudentProjectWithAnotherMentor(self):
     url, eval, _ = self.getStudentEvalRecordProperties(show=True)
 
-    mentor_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor_profile.createOtherUser('mentor_another@example.com')
-    mentor = mentor_profile.createMentor(self.org)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
 
     self.profile_helper.createStudentWithProject(self.org, mentor)
     # test student evaluation show GET for a for a student who
@@ -576,9 +569,8 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     url, eval, _ = self.getStudentEvalRecordProperties(show=True)
     other_org = self.createOrg()
 
-    mentor_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor_profile.createOtherUser('mentor_other_org@example.com')
-    mentor = mentor_profile.createMentor(other_org)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[other_org.key()])
 
     self.profile_helper.createStudentWithProject(other_org, mentor)
     # test student evaluation show GET for a for a student who
@@ -593,9 +585,8 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
   def testShowEvalForStudent(self):
     eval = self.evaluation.createStudentEvaluation()
 
-    mentor_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor_profile.createOtherUser('mentor@example.com')
-    mentor = mentor_profile.createMentor(self.org)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
 
     self.profile_helper.createStudentWithProject(self.org, mentor)
 

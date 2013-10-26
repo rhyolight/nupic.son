@@ -39,11 +39,9 @@ class SurveyRemindersTest(
     self.createSurveys()
 
   def createMentor(self):
-    """Creates a new mentor.
-    """
-    profile_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
-    profile_helper.createOtherUser('mentor@example.com')
-    self.mentor = profile_helper.createMentor(self.org)
+    """Creates a new mentor."""
+    self.mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
 
   def createStudent(self):
     """Creates a Student with a project.
@@ -81,10 +79,8 @@ class SurveyRemindersTest(
     """Creates a project that is withdrawn.
     """
     # list response with projects
-    mentor_profile_helper = profile_utils.GSoCProfileHelper(
-        self.gsoc, self.dev_test)
-    mentor_profile_helper.createOtherUser('mentor@example.com')
-    mentor = mentor_profile_helper.createMentor(self.org)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
 
     # Create a student with the project.
     student_profile_helper = profile_utils.GSoCProfileHelper(

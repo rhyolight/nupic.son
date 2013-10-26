@@ -41,12 +41,10 @@ class TaskCreateViewTest(GCIDjangoTestCase):
 
   def createTask(self, status=None, org=None, mentor=None, student=None):
     if not mentor:
-      profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-      mentor = profile_helper.createOtherUser(
-          'mentor@example.com').createMentor(self.org)
+      mentor = profile_utils.seedGCIProfile(
+          self.program, mentor_for=[self.org.key()])
 
     if not student:
-      profile_helper = GCIProfileHelper(self.gci, self.dev_test)
       student = profile_utils.seedGCIStudent(self.program)
 
     if not org:

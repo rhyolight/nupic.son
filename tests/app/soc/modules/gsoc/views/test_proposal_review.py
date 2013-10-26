@@ -50,11 +50,10 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gsoc/proposal/_comment_form.html')
 
   def createMentorWithSettings(self, email, notification_settings={}):
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor.createOtherUser(email)
-    mentor.createMentor(self.org)
-    mentor.notificationSettings(**notification_settings)
-    return mentor
+    user = profile_utils.seedUser(email=email)
+    return profile_utils.seedGSoCProfile(
+        self.program, user=user, mentor_for=[self.org.key()],
+        **notification_settings)
 
   def createProposal(self, override_properties={}):
     properties = {
@@ -68,8 +67,8 @@ class ProposalReviewTest(GSoCDjangoTestCase):
 
   def testReviewProposal(self):
     mentor = self.createMentorWithSettings('mentor@example.com',
-        {'new_proposals' :True, 'public_comments': True,
-         'private_comments' :True})
+        {'notify_new_proposals' :True, 'notify_public_comments': True,
+         'notify_private_comments' :True})
 
     self.profile_helper.createStudent()
     self.profile_helper.notificationSettings()
@@ -103,7 +102,7 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     comment = GSoCComment.all().ancestor(proposal).get()
     self.assertPropertiesEqual(properties, comment)
 
-    self.assertEmailSent(to=mentor.profile.email)
+    self.assertEmailSent(to=mentor.email)
 
     # TODO(daniel): add assertEmailNotSent to DjangoTestCase
     # self.assertEmailNotSent(to=self.profile_helper.profile.email)
@@ -266,17 +265,17 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertNotIn(
         self.profile_helper.profile.key(), proposal.possible_mentors)
 
-    other_mentor.profile.mentor_for = []
-    other_mentor.profile.put()
+    other_mentor.mentor_for = []
+    other_mentor.put()
 
-    proposal.possible_mentors.append(other_mentor.profile.key())
+    proposal.possible_mentors.append(other_mentor.key())
     proposal.put()
 
     url = '/gsoc/proposal/review/' + suffix
     response = self.get(url)
 
     proposal = GSoCProposal.get(proposal.key())
-    self.assertNotIn(other_mentor.profile.key(), proposal.possible_mentors)
+    self.assertNotIn(other_mentor.key(), proposal.possible_mentors)
 
   def testPubliclyVisibleButton(self):
     self.profile_helper.createStudent()

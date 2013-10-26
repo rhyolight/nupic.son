@@ -66,9 +66,8 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardAsStudentWithProposal(self):
-    mentor = GSoCProfileHelper(
-        self.gsoc, self.dev_test).createOtherUser(
-        'mentor@example.com').createMentor(self.org)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
     self.profile_helper.createStudentWithProject(self.org, mentor)
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
@@ -78,9 +77,9 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardAsStudentWithProject(self):
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor.createOtherUser('mentor@example.com').createMentor(self.org)
-    self.profile_helper.createStudentWithProject(self.org, mentor.profile)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
+    self.profile_helper.createStudentWithProject(self.org, mentor)
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
@@ -89,9 +88,9 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardAsStudentWithEval(self):
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor.createOtherUser('mentor@example.com').createMentor(self.org)
-    self.profile_helper.createStudentWithProject(self.org, mentor.profile)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
+    self.profile_helper.createStudentWithProject(self.org, mentor)
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
