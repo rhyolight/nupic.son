@@ -123,6 +123,9 @@ def seedProfile(program, model=profile_model.Profile, user=None,
   """
   user = user or seedUser()
 
+  mentor_for = mentor_for or []
+  org_admin_for = org_admin_for or []
+
   properties = {
       'program': program,
       'scope': program,
@@ -138,6 +141,8 @@ def seedProfile(program, model=profile_model.Profile, user=None,
       'student_info': None,
       'email': user.account.email(),
       'user': user,
+      'notify_new_requests': False,
+      'notify_request_handled': False,
       }
   properties.update(**kwargs)
   profile = seeder_logic.seed(model, properties=properties)
@@ -182,8 +187,15 @@ def seedGSoCProfile(program, user=None, **kwargs):
   Returns:
     A newly seeded GSoCProfile entity.
   """
+  properties = {
+      'notify_new_proposals': False,
+      'notify_proposal_updates': False,
+      'notify_public_comments': False,
+      'notify_private_comments': False,
+      }
+  properties.update(**kwargs)
   return seedProfile(
-      program, model=gsoc_profile_model.GSoCProfile, user=user, **kwargs)
+      program, model=gsoc_profile_model.GSoCProfile, user=user, **properties)
 
 
 def seedStudent(program, model=profile_model.Profile,
