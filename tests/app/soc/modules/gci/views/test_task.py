@@ -25,9 +25,9 @@ from soc.modules.gci.logic.helper.notifications import (
 from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.profile import GCIProfile
 
+from tests import gci_task_utils
 from tests import profile_utils
 from tests.gci_task_utils import GCITaskHelper
-from tests.profile_utils import GCIProfileHelper
 from tests.test_utils import GCIDjangoTestCase
 from tests.test_utils import TaskQueueTestCase
 
@@ -43,10 +43,11 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.init()
     self.timeline_helper.tasksPubliclyVisible()
 
-    # Create a task, status published
-    profile = GCIProfileHelper(self.gci, self.dev_test)
-    self.task = profile.createOtherUser('mentor@example.com').\
-        createMentorWithTask(task_model.OPEN, self.org)
+    # Create a task, status open
+    mentor = profile_utils.seedGCIProfile(
+        self.program, mentor_for=[self.org.key()])
+    self.task = gci_task_utils.seedTask(
+        self.program, self.org, mentors=[mentor.key()])
     self.createSubscribersForTask()
 
   #TODO(orc.avs): move notification tests to logic
@@ -629,10 +630,11 @@ class WorkSubmissionDownloadTest(GCIDjangoTestCase):
     self.init()
     self.timeline_helper.tasksPubliclyVisible()
 
-    # Create a status-published task.
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOtherUser('mentor@example.com')
-    self.task = profile_helper.createMentorWithTask(task_model.OPEN, self.org)
+    # Create an open task.
+    mentor = profile_utils.seedGCIProfile(
+        self.program, mentor_for=[self.org.key()])
+    self.task = gci_task_utils.seedTask(
+        self.program, self.org, mentors=[mentor.key()])
 
   def testXSS(self):
     xss_payload = '><img src=http://www.google.com/images/srpr/logo4w.png>'
