@@ -133,7 +133,37 @@ def seedProfile(program, model=profile_model.Profile, user=None, **kwargs):
       'user': user,
       }
   properties.update(**kwargs)
-  return seeder_logic.seed(model, properties=properties)
+  profile = seeder_logic.seed(model, properties=properties)
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    model: Model class of which a new profile should be seeded.
+    user: User entity corresponding to the profile.
+  Returns:
+    A newly seeded Profile entity.
+  """
+  profile = seedProfile(program, model=model, user=user, **kwargs)
+
+  properties = {
+      'key_name': '%s/%s' % (program.key().name(), user.key().name()),
+      'parent': profile,
+      'school': None,
+      'tax_form': None,
+      'enrollment_form': None,
+      'number_of_projects': 0,
+      'number_of_proposals': 0,
+      'passed_evaluations': 0,
+      'failed_evaluations': 0,
+      'program': program,
+      'birth_date': generate_eligible_student_birth_date(program)
+      }
+  properties.update(**kwargs)
+  student_info = seeder_logic.seed(student_info_model, properties=properties)
+  
+  profile.student_info = student_info
+  profile.put()
+
+  return profile
 
 
 def seedGCIProfile(program, user=None, **kwargs):
@@ -162,6 +192,85 @@ def seedGSoCProfile(program, user=None, **kwargs):
   """
   return seedProfile(
       program, model=gsoc_profile_model.GSoCProfile, user=user, **kwargs)
+
+
+def seedStudent(program, model=profile_model.Profile,
+    student_info_model=profile_model.StudentInfo, user=None, **kwargs):
+  """Seeds a new profile who is registered as a student.
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    model: Model class of which a new profile should be seeded.
+    user: User entity corresponding to the profile.
+
+  Returns:
+    A newly seeded Profile entity.
+  """
+  profile = seedProfile(program, model=model, user=user, **kwargs)
+  user = profile.parent()
+
+  properties = {
+      'key_name': '%s/%s' % (program.key().name(), user.key().name()),
+      'parent': profile,
+      'school': None,
+      'program': program,
+      'birth_date': generate_eligible_student_birth_date(program)
+      }
+  properties.update(**kwargs)
+  student_info = seeder_logic.seed(student_info_model, properties=properties)
+
+  profile.is_student = True
+  profile.student_info = student_info
+  profile.put()
+
+  return profile
+
+
+def seedGCIStudent(program, user=None, **kwargs):
+  """Seeds a new profile who is registered as a student for GCI.
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    model: Model class of which a new profile should be seeded.
+    user: User entity corresponding to the profile.
+
+  Returns:
+    A newly seeded GCIProfile entity.
+  """
+  properties = {
+      'number_of_completed_tasks': 0,
+      'is_winner': False,
+      'winner_for': None,
+      }
+  properties.update(**kwargs)
+  return seedStudent(program, model=gci_profile_model.GCIProfile,
+      student_info_model=gci_profile_model.GCIStudentInfo,
+      user=user, **properties)
+
+
+def seedGSoCStudent(program, user=None, **kwargs):
+  """Seeds a new profile who is registered as a student for GSoC.
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    model: Model class of which a new profile should be seeded.
+    user: User entity corresponding to the profile.
+
+  Returns:
+    A newly seeded GSoCProfile entity.
+  """
+  properties = {
+      'tax_form': None,
+      'enrollment_form': None,
+      'number_of_projects': 0,
+      'number_of_proposals': 0,
+      'passed_evaluations': 0,
+      'failed_evaluations': 0,
+      }
+  properties.update(**kwargs)
+  return seedStudent(program, model=gsoc_profile_model.GSoCProfile,
+      student_info_model=gsoc_profile_model.GSoCStudentInfo,
+      user=user, **properties)
 
 
 class ProfileHelper(object):
