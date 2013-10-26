@@ -33,10 +33,12 @@ class ProfileTest(unittest.TestCase):
   """Tests the logic for GCI profiles."""
 
   def setUp(self):
-    program = seeder_logic.seed(program_model.GCIProgram)
+    program_properties = {'task_types': ['Any']}
+    self.program = seeder_logic.seed(
+        program_model.GCIProgram, properties=program_properties)
 
     org_properties = {
-        'program': program
+        'program': self.program
         }
     self.foo_org = seeder_logic.seed(GCIOrganization, org_properties)
     self.bar_org = seeder_logic.seed(GCIOrganization, org_properties)
@@ -113,9 +115,7 @@ class ProfileTest(unittest.TestCase):
                          'is_mentor': True}
     foo_mentor = seeder_logic.seed(GCIProfile, mentor_properties)
 
-    program = program_utils.GCIProgramHelper().createProgram()
-
-    task = gci_task_utils.GCITaskHelper(program).createTask(
+    task = gci_task_utils.GCITaskHelper(self.program).createTask(
         task_model.CLAIMED, self.foo_org, foo_mentor, student)
 
     # Student has been assigned one task.
