@@ -35,6 +35,8 @@ CLAIMED = 'Claimed'
 REOPENED = 'Reopened'
 # state that the task has not been approved by org admin
 UNAPPROVED = 'Unapproved'
+# state that task has been successfully closed
+CLOSED = 'Closed'
 
 # TODO(piyush.devel): Define constants for the rest of the statuses.
 
@@ -151,7 +153,7 @@ class GCITask(db.Model):
       required=True, verbose_name=ugettext('Status'),
       choices=[UNAPPROVED, 'Unpublished', OPEN, REOPENED,
                'ClaimRequested', CLAIMED, 'ActionNeeded',
-               'Closed', 'NeedsWork', 'NeedsReview', 'Invalid'],
+               CLOSED, 'NeedsWork', 'NeedsReview', 'Invalid'],
       default=UNAPPROVED)
 
   #: Indicates when the Task was closed. Its value is None before it is
