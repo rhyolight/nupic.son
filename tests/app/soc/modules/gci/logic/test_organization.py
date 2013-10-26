@@ -17,9 +17,10 @@
 from google.appengine.api import memcache
 
 from soc.modules.gci.logic import organization as organization_logic
+from soc.modules.gci.models import task as task_model
 
+from tests import gci_task_utils
 from tests import profile_utils
-from tests.gci_task_utils import GCITaskHelper
 from tests.program_utils import GCIProgramHelper
 from tests.test_utils import SoCTestCase
 
@@ -32,7 +33,6 @@ class OrganizationTest(SoCTestCase):
     self.init()
     self.gci_program_helper = GCIProgramHelper()
     self.program = self.gci_program_helper.createProgram()
-    self.task_helper = GCITaskHelper(self.program)
 
   def testGetRemainingTaskQuota(self):
     """Tests if the remaining task quota that can be published by a given
@@ -44,14 +44,17 @@ class OrganizationTest(SoCTestCase):
     org.put()
 
     mentor = profile_utils.seedGCIProfile(self.program, mentor_for=[org.key()])
-
     student = profile_utils.seedGCIStudent(self.program)
 
     #valid tasks.
     for _ in xrange(3):
-      self.task_helper.createTask('Closed', org, mentor, student)
+      gci_task_utils.seedTask(
+          self.program, org, [mentor.key()], student=student,
+          status=task_model.CLOSED)
     #invalid tasks.
-    self.task_helper.createTask('Unpublished', org, mentor, student)
+      gci_task_utils.seedTask(
+          self.program, org, [mentor.key()], student=student,
+          status='Unpublished')
     expected_quota = org.task_quota_limit - 3
     actual_quota = organization_logic.getRemainingTaskQuota(org)
 

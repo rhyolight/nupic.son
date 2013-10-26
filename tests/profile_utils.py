@@ -33,6 +33,7 @@ from soc.modules.gsoc.models import profile as gsoc_profile_model
 from soc.modules.seeder.logic.providers import user as user_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import gci_task_utils
 from tests.utils import connection_utils
 
 
@@ -680,14 +681,13 @@ class GCIProfileHelper(ProfileHelper):
     """Sets the current user to be a student with specified number of 
     tasks for the current program.
     """
-    from tests.gci_task_utils import GCITaskHelper
     student = self.createStudent()
     student.student_info.put()
-    gci_task_helper = GCITaskHelper(self.program)
     tasks = []
     for _ in xrange(n):
-        task = gci_task_helper.createTask(status, org, mentor, student)
-        tasks.append(task)
+      task = gci_task_utils.seedTask(
+          self.program, org, [mentor.key()], student=student, status=status)
+      tasks.append(task)
     return tasks
 
   def createStudentWithConsentForms(self, status='active', consent_form=False,
@@ -714,11 +714,10 @@ class GCIProfileHelper(ProfileHelper):
   def createMentorWithTasks(self, status, org, n=1):
     """Creates an mentor profile with a task for the current user.
     """
-    from tests.gci_task_utils import GCITaskHelper
-    self.createMentor(org)
-    gci_task_helper = GCITaskHelper(self.program)
+    mentor = self.createMentor(org)
     tasks = []
     for _ in xrange(n):
-        task = gci_task_helper.createTask(status, org, self.profile)
-        tasks.append(task)
+      task = gci_task_utils.seedTask(
+          self.program, org, [mentor.key()], status=status)
+      tasks.append(task)
     return tasks

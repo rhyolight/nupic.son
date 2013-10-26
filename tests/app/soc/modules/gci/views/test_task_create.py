@@ -12,19 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""Tests for GCITask create/edit view.
-"""
-
-
-import datetime
+"""Tests for GCITask create/edit view."""
 
 from soc.modules.gci.logic.helper.notifications import (
     DEF_NEW_TASK_COMMENT_SUBJECT)
 from soc.modules.gci.models import task as task_model
 
+from tests import gci_task_utils
 from tests import profile_utils
-from tests.gci_task_utils import GCITaskHelper
 from tests.profile_utils import GCIProfileHelper
 from tests.test_utils import GCIDjangoTestCase
 
@@ -53,8 +48,8 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     if not status:
       status = 'Open'
 
-    gci_task_helper = GCITaskHelper(self.program)
-    return gci_task_helper.createTask(status, org, mentor, student)
+    return gci_task_utils.seedTask(
+        self.program, org, [mentor.key()], student=student, status=status)
 
   def assertFullEditTemplatesUsed(self, response):
     """Asserts that all the task creation base templates along with full edit

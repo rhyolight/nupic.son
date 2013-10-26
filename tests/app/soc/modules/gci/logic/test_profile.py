@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for GCI logic for profiles.
-"""
-
+"""Tests for GCI logic for profiles."""
 
 import unittest
 
@@ -26,7 +24,6 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from soc.modules.gci.models import task as task_model
 
 from tests import gci_task_utils
-from tests import program_utils
 
 
 class ProfileTest(unittest.TestCase):
@@ -115,48 +112,51 @@ class ProfileTest(unittest.TestCase):
                          'is_mentor': True}
     foo_mentor = seeder_logic.seed(GCIProfile, mentor_properties)
 
-    task = gci_task_utils.GCITaskHelper(self.program).createTask(
-        task_model.CLAIMED, self.foo_org, foo_mentor, student)
+    gci_task_utils.seedTask(
+        self.program, self.foo_org, [foo_mentor.key()], student=student,
+        status=task_model.CLAIMED)
 
     # Student has been assigned one task.
     self.assertTrue(profile_logic.hasTasks(student))
 
   def testHasCreatedOrModifiedTask(self):
     """Tests profile_logic.hasCreatedOrModifiedTask."""
-    program = program_utils.GCIProgramHelper().createProgram()
-
-    student_properties = {'is_student': True, 'scope': program}
+    student_properties = {'is_student': True, 'scope': self.program}
     student = seeder_logic.seed(GCIProfile, student_properties)
 
-    mentor_properties = {'mentor_for': [self.foo_org.key()],
-                         'is_mentor': True}
+    mentor_properties = {
+        'mentor_for': [self.foo_org.key()],
+        'is_mentor': True,
+        'scope': self.program
+        }
     foo_mentor = seeder_logic.seed(GCIProfile, mentor_properties)
     bar_mentor = seeder_logic.seed(GCIProfile, mentor_properties)
 
     # Task is modified and created by another mentor.
-    task_properties = {'modified_by': bar_mentor, 'created_by':bar_mentor}
-    task = gci_task_utils.GCITaskHelper(student.scope).createTask(
-        task_model.CLAIMED, self.foo_org, bar_mentor,
-        student, task_properties)
+    gci_task_utils.seedTask(
+        self.program, self.foo_org, [bar_mentor.key()], student=student,
+        status=task_model.CLAIMED, modified_by=bar_mentor,
+        created_by=bar_mentor)
     self.assertFalse(profile_logic.hasCreatedOrModifiedTask(foo_mentor))
 
     # Task is created by another mentor, but modified by given mentor.
-    task_properties = {'modified_by': foo_mentor, 'created_by': bar_mentor}
-    task = gci_task_utils.GCITaskHelper(student.scope).createTask(
-        task_model.CLAIMED, self.foo_org, bar_mentor,
-	student, task_properties)
+    gci_task_utils.seedTask(
+        self.program, self.foo_org, [bar_mentor.key()], student=student,
+        status=task_model.CLAIMED, modified_by=foo_mentor,
+        created_by=bar_mentor)
     self.assertTrue(profile_logic.hasCreatedOrModifiedTask(foo_mentor))
 
     # Task is created by the given mentor, but modified by another mentor.
-    task_properties = {'modified_by': bar_mentor, 'created_by': foo_mentor}
-    task = gci_task_utils.GCITaskHelper(student.scope).createTask(
-        task_model.CLAIMED, self.foo_org, bar_mentor,
-	student, task_properties)
+    gci_task_utils.seedTask(
+        self.program, self.foo_org, [bar_mentor.key()], student=student,
+        status=task_model.CLAIMED, modified_by=bar_mentor,
+        created_by=foo_mentor)
     self.assertTrue(profile_logic.hasCreatedOrModifiedTask(foo_mentor))
 
     # Task is modified and created by the given mentor.
-    task_properties = {'modified_by': foo_mentor, 'created_by': foo_mentor}
-    task = gci_task_utils.GCITaskHelper(student.scope).createTask(
-        task_model.CLAIMED, self.foo_org, foo_mentor,
-	student, task_properties)
+    gci_task_utils.seedTask(
+        self.program, self.foo_org, [bar_mentor.key()], student=student,
+        status=task_model.CLAIMED, modified_by=foo_mentor,
+        created_by=foo_mentor)
+
     self.assertTrue(profile_logic.hasCreatedOrModifiedTask(foo_mentor))
