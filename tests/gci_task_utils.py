@@ -19,11 +19,40 @@
 
 import datetime
 
-from soc.modules.gci.models.task import DIFFICULTIES
-from soc.modules.gci.models.task import GCITask
+from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+
+def seedTask(program, org, mentors, student=None, **kwargs):
+  """Seeds a new task.
+
+  Args:
+    program: Program to which the task belongs.
+    org: Organization to which the task belongs.
+    mentors: List of mentor profile keys assigned to the task.
+    student: Profile entity of the student assigned to the task.
+
+  Returns:
+    A newly seeded task entity.
+  """
+  properties = {
+      'program': program,
+      'org': org,
+      'status': task_model.OPEN,
+      'task_type': program.task_types[0],
+      'mentors': mentors,
+      'student': student,
+      'user': student.parent_key() if student else None,
+      'created_by': mentors[0] if mentors else None,
+      'modified_by': mentors[0] if mentors else None,
+      'created_on': datetime.datetime.now() - datetime.timedelta(20),
+      'modified_on': datetime.datetime.now() - datetime.timedelta(10)
+      }
+  properties.update(**kwargs)
+  return seeder_logic.seed(task_model.GCITask, properties,
+      auto_seed_optional_properties=False)
 
 
 class GCITaskHelper(object):
@@ -63,17 +92,9 @@ class GCITaskHelper(object):
       mentors: mentors for the task
       student: student who claimed the task
     """
-    properties = {'program': self.program, 'org': org, 'status': status,
-        'difficulty': DIFFICULTIES[0],
-        'task_type': self.program.task_types[0],
-        'mentors': [mentor.key() for mentor in mentors], 'student': student,
-        'user': student.user if student else None,
-        'created_by': mentors[0], 'modified_by': mentors[0],
-        'created_on': datetime.datetime.now() - datetime.timedelta(20),
-        'modified_on': datetime.datetime.now() - datetime.timedelta(10)
-    }
-    properties.update(override)
-    return self.seed(GCITask, properties)
+    return seedTask(
+        self.program, org, mentors=[mentor.key() for mentor in mentors],
+        student=student, status=status, **override)
 
   def createWorkSubmission(self, task, student, url='http://www.example.com/'):
     """Creates a GCIWorkSubmission.
