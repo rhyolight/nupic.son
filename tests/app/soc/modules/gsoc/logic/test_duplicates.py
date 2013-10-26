@@ -26,6 +26,7 @@ from soc.modules.gsoc.models.program import GSoCProgram
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import profile_utils
 from tests.profile_utils import GSoCProfileHelper
 
 
@@ -42,10 +43,8 @@ class DuplicatesTest(unittest.TestCase):
     return proposal_duplicate
 
   def createStudent(self, email, program):
-    profile_helper = GSoCProfileHelper(program, dev_test=False)
-    profile_helper.createOtherUser(email)
-    student = profile_helper.createStudent()
-    return student
+    user = profile_utils.seedUser(email=email)
+    return profile_utils.seedGSoCStudent(program, user=user)
 
   def setUp(self):
     """Setup required to test the functions.

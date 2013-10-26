@@ -291,9 +291,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     """
     self.profile_helper.createMentor(self.org)
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOtherUser('student@example.com').createStudent()
-    student = profile_helper.profile
+    student = profile_utils.seedGCIStudent(self.program)
 
     self.task.status = 'ClaimRequested'
     self.task.student = student
@@ -324,9 +322,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     """
     self.profile_helper.createMentor(self.org)
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOtherUser('student@example.com').createStudent()
-    student = profile_helper.profile
+    student = profile_utils.seedGCIStudent(self.program)
 
     self.task.status = 'Claimed'
     self.task.student = student
@@ -352,9 +348,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     """
     self.profile_helper.createMentor(self.org)
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOtherUser('student@example.com').createStudent()
-    student = profile_helper.profile
+    student = profile_utils.seedGCIStudent(self.program)
 
     self.task.status = 'NeedsReview'
     self.task.student = student
@@ -393,9 +387,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     """
     self.profile_helper.createMentor(self.org)
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOtherUser('student@example.com').createStudent()
-    student = profile_helper.profile
+    student = profile_utils.seedGCIStudent(self.program)
 
     self.task.status = 'NeedsReview'
     self.task.student = student
@@ -421,9 +413,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     """
     self.profile_helper.createMentor(self.org)
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOtherUser('student@example.com').createStudent()
-    student = profile_helper.profile
+    student = profile_utils.seedGCIStudent(self.program)
 
     # set it in the future so that the auto state transfer doesn't trigger
     deadline = datetime.datetime.utcnow() + datetime.timedelta(hours=24)

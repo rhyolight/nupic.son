@@ -364,10 +364,7 @@ class StartConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     """Tests that connection is not created for a student."""
     self.profile_helper.createOrgAdmin(self.org)
 
-    profile_helper = profile_utils.GCIProfileHelper(
-       self.program, False)
-    profile_helper.createOtherUser('first@example.com')
-    profile = profile_helper.createStudent()
+    profile = profile_utils.seedGCIStudent(self.program)
 
     post_data = {
         'role': connection_model.MENTOR_ROLE,

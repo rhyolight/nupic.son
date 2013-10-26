@@ -29,6 +29,7 @@ from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.views import proposal_review as proposal_review_view
 from soc.modules.gsoc.views.helper import request_data
 
+from tests import profile_utils
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 
@@ -144,13 +145,13 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertEqual(0, proposal.nr_scores)
 
   def testReviewProposalPublicView(self):
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com')
-    student.createStudent()
+    student = profile_utils.seedGSoCStudent(self.program)
 
-    proposal = self.createProposal({'is_publicly_visible': True,
-                                    'scope': student.profile,
-                                    'parent': student.profile})
+    proposal = self.createProposal({
+        'is_publicly_visible': True,
+        'scope': student,
+        'parent': student
+        })
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
@@ -165,12 +166,9 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gsoc/proposal/review.html')
 
   def testIgnoreProposalButton(self):
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com')
-    student.createStudent()
+    student = profile_utils.seedGSoCStudent(self.program)
 
-    proposal = self.createProposal({'scope': student.profile,
-                                    'parent': student.profile})
+    proposal = self.createProposal({'scope': student, 'parent': student})
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
@@ -189,12 +187,9 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertNotEqual(proposal.status, 'ignored')
 
   def testAcceptProposalButton(self):
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com')
-    student.createStudent()
+    student = profile_utils.seedGSoCStudent(self.program)
 
-    proposal = self.createProposal({'scope': student.profile,
-                                    'parent': student.profile})
+    proposal = self.createProposal({'scope': student, 'parent': student})
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
@@ -223,12 +218,9 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertTrue(proposal.accept_as_project)
 
   def testProposalModificationButton(self):
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com')
-    student.createStudent()
+    student = profile_utils.seedGSoCStudent(self.program)
 
-    proposal = self.createProposal({'scope': student.profile,
-                                    'parent': student.profile})
+    proposal = self.createProposal({'scope': student, 'parent': student})
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
@@ -247,16 +239,13 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertTrue(proposal.is_editable_post_deadline)
 
   def testWishToMentorButton(self):
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com')
-    student.createStudent()
+    student = profile_utils.seedGSoCStudent(self.program)
 
     self.profile_helper.createMentor(self.org)
 
     other_mentor = self.createMentorWithSettings('other_mentor@example.com')
 
-    proposal = self.createProposal({'scope': student.profile,
-                                    'parent': student.profile})
+    proposal = self.createProposal({'scope': student, 'parent': student})
 
     suffix = "%s/%s/%d" % (
     self.gsoc.key().name(),
@@ -371,12 +360,9 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertEqual(number_of_proposals, student_info.number_of_proposals)
 
   def testAssignMentor(self):
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com')
-    student.createStudent()
+    student = profile_utils.seedGSoCStudent(self.program)
 
-    proposal = self.createProposal({'scope': student.profile,
-                                    'parent': student.profile})
+    proposal = self.createProposal({'scope': student, 'parent': student})
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),

@@ -23,6 +23,7 @@ from google.appengine.api import memcache
 from soc.modules.gci.logic import organization as organization_logic
 from soc.modules.gci.models.task import GCITask
 
+from tests import profile_utils
 from tests.gci_task_utils import GCITaskHelper
 from tests.profile_utils import GCIProfileHelper
 from tests.program_utils import GCIProgramHelper
@@ -51,8 +52,8 @@ class OrganizationTest(SoCTestCase):
     mentor = GCIProfileHelper(self.program, False).createOtherUser(
         'mentor@gmail.com').createMentor(org)
 
-    student = GCIProfileHelper(self.program, False).createOtherUser(
-        'student@gmail.com').createStudent()
+    student = profile_utils.seedGCIStudent(self.program)
+
     #valid tasks.
     for _ in xrange(3):
       self.task_helper.createTask('Closed', org, mentor, student)

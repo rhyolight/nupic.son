@@ -36,9 +36,7 @@ def _createProjectForStudent(program, org, dev_test, student=None):
     the newly created GSoCProject instance
   """
   if not student:
-    student_helper = profile_utils.GSoCProfileHelper(program, dev_test)
-    student_helper.createOtherUser('student@example.com')
-    student = student_helper.createStudent()
+    student = profile_utils.seedGSoCStudent(program)
 
   mentor_helper = profile_utils.GSoCProfileHelper(program, dev_test)
   mentor_helper.createOtherUser('mentor@example.com')

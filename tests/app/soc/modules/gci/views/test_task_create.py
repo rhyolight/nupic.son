@@ -23,6 +23,7 @@ from soc.modules.gci.logic.helper.notifications import (
     DEF_NEW_TASK_COMMENT_SUBJECT)
 from soc.modules.gci.models import task as task_model
 
+from tests import profile_utils
 from tests.gci_task_utils import GCITaskHelper
 from tests.profile_utils import GCIProfileHelper
 from tests.test_utils import GCIDjangoTestCase
@@ -46,8 +47,7 @@ class TaskCreateViewTest(GCIDjangoTestCase):
 
     if not student:
       profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-      student = profile_helper.createOtherUser(
-          'student@example.com').createStudent()
+      student = profile_utils.seedGCIStudent(self.program)
 
     if not org:
       org = self.org

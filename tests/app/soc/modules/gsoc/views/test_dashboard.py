@@ -16,6 +16,7 @@
 
 import json
 
+from tests import profile_utils
 from tests.profile_utils import GSoCProfileHelper
 from tests.survey_utils import SurveyHelper
 from tests.test_utils import GSoCDjangoTestCase
@@ -135,9 +136,8 @@ class DashboardTest(GSoCDjangoTestCase):
 
   def testDashboardAsMentorWithProject(self):
     self.timeline_helper.studentsAnnounced()
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com').createStudent()
-    self.profile_helper.createMentorWithProject(self.org, student.profile)
+    student = profile_utils.seedGSoCStudent(self.program)
+    self.profile_helper.createMentorWithProject(self.org, student)
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
