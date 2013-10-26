@@ -18,6 +18,8 @@
 
 import os
 
+from google.appengine.ext import db
+
 from datetime import datetime
 from datetime import timedelta
 
@@ -103,13 +105,18 @@ def seedUser(email=None, **kwargs):
   return user
 
 
-def seedProfile(program, model=profile_model.Profile, user=None, **kwargs):
+def seedProfile(program, model=profile_model.Profile, user=None,
+    mentor_for=None, org_admin_for=None, **kwargs):
   """Seeds a new profile.
 
   Args:
     program: Program entity for which the profile is seeded.
     model: Model class of which a new profile should be seeded.
     user: User entity corresponding to the profile.
+    mentor_for: List of organizations for which the profile should be
+      registered as a mentor.
+    org_admin_for: List of organizations for which the profile should be
+      registered as organization administrator.
 
   Returns:
     A newly seeded Profile entity.
@@ -123,10 +130,10 @@ def seedProfile(program, model=profile_model.Profile, user=None, **kwargs):
       'status': 'active',
       'link_id': user.key().name(),
       'key_name': '%s/%s' % (program.key().name(), user.key().name()),
-      'mentor_for': [],
-      'is_mentor': False,
-      'org_admin_for': [],
-      'is_org_admin': False,
+      'mentor_for': list(set(mentor_for + org_admin_for)),
+      'is_mentor': bool(mentor_for + org_admin_for),
+      'org_admin_for': org_admin_for,
+      'is_org_admin': bool(org_admin_for),
       'is_student': False,
       'student_info': None,
       'email': user.account.email(),
@@ -135,33 +142,18 @@ def seedProfile(program, model=profile_model.Profile, user=None, **kwargs):
   properties.update(**kwargs)
   profile = seeder_logic.seed(model, properties=properties)
 
-  Args:
-    program: Program entity for which the profile is seeded.
-    model: Model class of which a new profile should be seeded.
-    user: User entity corresponding to the profile.
-  Returns:
-    A newly seeded Profile entity.
-  """
-  profile = seedProfile(program, model=model, user=user, **kwargs)
+  orgs = db.get(list(set(mentor_for + org_admin_for)))
+  for org in orgs:
+    if org.key() in org_admin_for:
+      org_role = connection_model.ORG_ADMIN_ROLE
+    else:
+      org_role = connection_model.MENTOR_ROLE
 
-  properties = {
-      'key_name': '%s/%s' % (program.key().name(), user.key().name()),
-      'parent': profile,
-      'school': None,
-      'tax_form': None,
-      'enrollment_form': None,
-      'number_of_projects': 0,
-      'number_of_proposals': 0,
-      'passed_evaluations': 0,
-      'failed_evaluations': 0,
-      'program': program,
-      'birth_date': generate_eligible_student_birth_date(program)
-      }
-  properties.update(**kwargs)
-  student_info = seeder_logic.seed(student_info_model, properties=properties)
-  
-  profile.student_info = student_info
-  profile.put()
+    connection_properties = {
+        'user_role': connection_model.ROLE,
+        'org_role': org_role
+        }
+    connection_utils.seed_new_connection(profile, org, **connection_properties)
 
   return profile
 
