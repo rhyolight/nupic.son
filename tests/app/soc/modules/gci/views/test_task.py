@@ -25,6 +25,7 @@ from soc.modules.gci.logic.helper.notifications import (
 from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.profile import GCIProfile
 
+from tests import profile_utils
 from tests.gci_task_utils import GCITaskHelper
 from tests.profile_utils import GCIProfileHelper
 from tests.test_utils import GCIDjangoTestCase
@@ -53,11 +54,9 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     """Creates subscribers for the task.
     """
     for i in range(4):
-      email = 'subscriber%s@example.com' % str(i)
-      subscriber = GCIProfileHelper(self.gci, self.dev_test)
-      subscriber.createOtherUser(email)
-      subscriber.createProfile()
-      self.task.subscribers.append(subscriber.profile.key())
+      user = profile_utils.seedUser(email='subscriber%s@example.com' % str(i))
+      subscriber = profile_utils.seedGCIProfile(self.program, user=user)
+      self.task.subscribers.append(subscriber.key())
     self.task.put()
 
   def assertMailSentToSubscribers(self, comment):

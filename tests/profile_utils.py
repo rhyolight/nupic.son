@@ -150,7 +150,7 @@ def seedGCIProfile(program, user=None, **kwargs):
       program, model=gci_profile_model.GCIProfile, user=user, **kwargs)
 
 
-def seedGSoCIProfile(program, user=None, **kwargs):
+def seedGSoCProfile(program, user=None, **kwargs):
   """Seeds a new profile for GSoC.
 
   Args:

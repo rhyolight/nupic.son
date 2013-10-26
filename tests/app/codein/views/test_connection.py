@@ -319,15 +319,8 @@ class StartConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     """Tests that connection is created successfully for non-students."""
     org_admin = self.profile_helper.createOrgAdmin(self.org)
 
-    profile_helper = profile_utils.GCIProfileHelper(
-       self.program, False)
-    profile_helper.createOtherUser('first@example.com')
-    first_profile = profile_helper.createProfile()
-
-    profile_helper = profile_utils.GCIProfileHelper(
-       self.program, False)
-    profile_helper.createOtherUser('second@example.com')
-    second_profile = profile_helper.createProfile()
+    first_profile = profile_utils.seedGCIProfile(self.program)
+    second_profile = profile_utils.seedGCIProfile(self.program)
 
     post_data = {
         'role': connection_model.MENTOR_ROLE,
@@ -512,10 +505,7 @@ class ManageConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     self.init()
 
     # seed another profile for a connected user
-    profile_helper = profile_utils.GCIProfileHelper(
-       self.program, False)
-    profile_helper.createOtherUser('other@example.com')
-    other_profile = profile_helper.createProfile()
+    other_profile = profile_utils.seedGCIProfile(self.program)
 
     self.connection = connection_utils.seed_new_connection(
         other_profile, self.org)
@@ -2177,10 +2167,7 @@ class MarkConnectionAsSeenByOrgTest(test_utils.GCIDjangoTestCase):
     self.init()
 
     # seed another profile for a connected user
-    profile_helper = profile_utils.GCIProfileHelper(
-       self.program, False)
-    profile_helper.createOtherUser('other@example.com')
-    other_profile = profile_helper.createProfile()
+    other_profile = profile_utils.seedGCIProfile(self.program)
 
     self.connection = connection_utils.seed_new_connection(
         other_profile, self.org, seen_by_org=False)
