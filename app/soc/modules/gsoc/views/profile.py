@@ -288,7 +288,7 @@ class GSoCProfilePage(profile.ProfilePage, base.GSoCRequestHandler):
     return url_names.GSOC_PROFILE_EDIT
 
   def _getCreateProfileURLName(self):
-    return 'create_gsoc_profile'
+    return url_names.GSOC_PROFILE_CREATE
 
   def _getCreateConnectedProfileURLName(self):
     return url_names.GSOC_ANONYMOUS_CONNECTION
