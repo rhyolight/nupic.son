@@ -76,21 +76,3 @@ def seedWorkSubmission(task, url_to_work=None):
       url_to_work=url_to_work)
   work.put()
   return work
-
-
-class GCITaskHelper(object):
-  """Helper class to aid in manipulating GCI task data.
-  """
-
-  def __init__(self, program):
-    """Initializes the GCITaskHelper.
-
-    Args:
-      program: a GCI program
-    """
-    self.program = program
-
-  def seed(self, model, properties,
-           auto_seed_optional_properties=False):
-    return seeder_logic.seed(model, properties, recurse=False,
-        auto_seed_optional_properties=auto_seed_optional_properties)

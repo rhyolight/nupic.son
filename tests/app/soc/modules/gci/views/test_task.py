@@ -27,7 +27,6 @@ from soc.modules.gci.models.profile import GCIProfile
 
 from tests import gci_task_utils
 from tests import profile_utils
-from tests.gci_task_utils import GCITaskHelper
 from tests.test_utils import GCIDjangoTestCase
 from tests.test_utils import TaskQueueTestCase
 
