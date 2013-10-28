@@ -33,7 +33,7 @@ from soc.modules.gsoc.models import profile as gsoc_profile_model
 from soc.modules.seeder.logic.providers import user as user_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
-from tests import gci_task_utils
+from tests import task_utils
 from tests.utils import connection_utils
 
 
@@ -685,7 +685,7 @@ class GCIProfileHelper(ProfileHelper):
     student.student_info.put()
     tasks = []
     for _ in xrange(n):
-      task = gci_task_utils.seedTask(
+      task = task_utils.seedTask(
           self.program, org, [mentor.key()], student=student, status=status)
       tasks.append(task)
     return tasks
@@ -717,7 +717,7 @@ class GCIProfileHelper(ProfileHelper):
     mentor = self.createMentor(org)
     tasks = []
     for _ in xrange(n):
-      task = gci_task_utils.seedTask(
+      task = task_utils.seedTask(
           self.program, org, [mentor.key()], status=status)
       tasks.append(task)
     return tasks

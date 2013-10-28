@@ -25,8 +25,8 @@ from soc.modules.gci.logic.helper.notifications import (
 from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.profile import GCIProfile
 
-from tests import gci_task_utils
 from tests import profile_utils
+from tests import task_utils
 from tests.test_utils import GCIDjangoTestCase
 from tests.test_utils import TaskQueueTestCase
 
@@ -45,7 +45,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     # Create a task, status open
     mentor = profile_utils.seedGCIProfile(
         self.program, mentor_for=[self.org.key()])
-    self.task = gci_task_utils.seedTask(
+    self.task = task_utils.seedTask(
         self.program, self.org, mentors=[mentor.key()])
     self.createSubscribersForTask()
 
@@ -556,7 +556,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
         datetime.timedelta(days=1)
     self.task.put()
 
-    gci_task_utils.seedWorkSubmission(self.task)
+    task_utils.seedWorkSubmission(self.task)
 
     url = '%s?send_for_review' % self._taskPageUrl(self.task)
     response = self.post(url)
@@ -577,7 +577,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
         datetime.timedelta(days=1)
     self.task.put()
 
-    gci_task_utils.seedWorkSubmission(self.task)
+    task_utils.seedWorkSubmission(self.task)
 
     url = '%s?send_for_review' % self._taskPageUrl(self.task)
     response = self.post(url)
@@ -596,7 +596,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.task.student = self.profile_helper.profile
     self.task.put()
 
-    work = gci_task_utils.seedWorkSubmission(self.task)
+    work = task_utils.seedWorkSubmission(self.task)
 
     self.assertEqual(len(self.task.workSubmissions()), 1)
 
@@ -629,7 +629,7 @@ class WorkSubmissionDownloadTest(GCIDjangoTestCase):
     # Create an open task.
     mentor = profile_utils.seedGCIProfile(
         self.program, mentor_for=[self.org.key()])
-    self.task = gci_task_utils.seedTask(
+    self.task = task_utils.seedTask(
         self.program, self.org, mentors=[mentor.key()])
 
   def testXSS(self):

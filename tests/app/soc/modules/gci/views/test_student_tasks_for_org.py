@@ -15,7 +15,7 @@
 """Tests for StudentTasksForOrganizationPage view."""
 
 from tests import profile_utils
-from tests import gci_task_utils
+from tests import task_utils
 from tests import test_utils
 
 
@@ -33,7 +33,7 @@ class TestStudentTasksForOrganizationPage(test_utils.GCIDjangoTestCase):
     # Create a task, status published
     mentor = profile_utils.seedGCIProfile(
         self.program, mentor_for=[self.org.key()])
-    self.task = gci_task_utils.seedTask(
+    self.task = task_utils.seedTask(
         self.program, self.org, mentors=[mentor.key()])
 
     self.student = profile_utils.seedGCIStudent(self.program)

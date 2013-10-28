@@ -19,7 +19,7 @@ from google.appengine.api import memcache
 from soc.modules.gci.logic import organization as organization_logic
 from soc.modules.gci.models import task as task_model
 
-from tests import gci_task_utils
+from tests import task_utils
 from tests import profile_utils
 from tests.program_utils import GCIProgramHelper
 from tests.test_utils import SoCTestCase
@@ -48,11 +48,11 @@ class OrganizationTest(SoCTestCase):
 
     #valid tasks.
     for _ in xrange(3):
-      gci_task_utils.seedTask(
+      task_utils.seedTask(
           self.program, org, [mentor.key()], student=student,
           status=task_model.CLOSED)
     #invalid tasks.
-      gci_task_utils.seedTask(
+      task_utils.seedTask(
           self.program, org, [mentor.key()], student=student,
           status='Unpublished')
     expected_quota = org.task_quota_limit - 3

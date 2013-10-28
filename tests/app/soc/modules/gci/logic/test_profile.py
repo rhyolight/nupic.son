@@ -23,7 +23,7 @@ from soc.modules.gci.models import program as program_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from soc.modules.gci.models import task as task_model
 
-from tests import gci_task_utils
+from tests import task_utils
 
 
 class ProfileTest(unittest.TestCase):
@@ -112,7 +112,7 @@ class ProfileTest(unittest.TestCase):
                          'is_mentor': True}
     foo_mentor = seeder_logic.seed(GCIProfile, mentor_properties)
 
-    gci_task_utils.seedTask(
+    task_utils.seedTask(
         self.program, self.foo_org, [foo_mentor.key()], student=student,
         status=task_model.CLAIMED)
 
@@ -133,28 +133,28 @@ class ProfileTest(unittest.TestCase):
     bar_mentor = seeder_logic.seed(GCIProfile, mentor_properties)
 
     # Task is modified and created by another mentor.
-    gci_task_utils.seedTask(
+    task_utils.seedTask(
         self.program, self.foo_org, [bar_mentor.key()], student=student,
         status=task_model.CLAIMED, modified_by=bar_mentor,
         created_by=bar_mentor)
     self.assertFalse(profile_logic.hasCreatedOrModifiedTask(foo_mentor))
 
     # Task is created by another mentor, but modified by given mentor.
-    gci_task_utils.seedTask(
+    task_utils.seedTask(
         self.program, self.foo_org, [bar_mentor.key()], student=student,
         status=task_model.CLAIMED, modified_by=foo_mentor,
         created_by=bar_mentor)
     self.assertTrue(profile_logic.hasCreatedOrModifiedTask(foo_mentor))
 
     # Task is created by the given mentor, but modified by another mentor.
-    gci_task_utils.seedTask(
+    task_utils.seedTask(
         self.program, self.foo_org, [bar_mentor.key()], student=student,
         status=task_model.CLAIMED, modified_by=bar_mentor,
         created_by=foo_mentor)
     self.assertTrue(profile_logic.hasCreatedOrModifiedTask(foo_mentor))
 
     # Task is modified and created by the given mentor.
-    gci_task_utils.seedTask(
+    task_utils.seedTask(
         self.program, self.foo_org, [bar_mentor.key()], student=student,
         status=task_model.CLAIMED, modified_by=foo_mentor,
         created_by=foo_mentor)

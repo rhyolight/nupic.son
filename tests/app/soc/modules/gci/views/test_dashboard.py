@@ -19,7 +19,7 @@ import json
 from soc.modules.gci.models import task as task_model
 from soc.modules.gci.views import dashboard as dashboard_view
 
-from tests import gci_task_utils
+from tests import task_utils
 from tests import test_utils
 
 
@@ -107,7 +107,7 @@ class DashboardTest(test_utils.GCIDjangoTestCase):
       fianl_status: final status which the task should have after POST action
       action: 'publish' if the task should be published or 'unpublish'
     """
-    task = gci_task_utils.seedTask(
+    task = task_utils.seedTask(
         self.program, self.org, [self.profile_helper.profile.key()],
         status=initial_status)
 
@@ -134,9 +134,9 @@ class DashboardTest(test_utils.GCIDjangoTestCase):
     self.profile_helper.createMentor(self.org)
 
     # create a couple of tasks
-    gci_task_utils.seedTask(
+    task_utils.seedTask(
         self.program, self.org, [self.profile_helper.profile.key()])
-    gci_task_utils.seedTask(
+    task_utils.seedTask(
         self.program, self.org, [self.profile_helper.profile.key()],
         status=task_model.REOPENED)
 
