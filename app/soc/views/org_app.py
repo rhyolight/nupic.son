@@ -111,7 +111,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
       raise django_forms.ValidationError(
           DEF_BACKUP_ADMIN_NO_PROFILE % (
               self.request_data.program.short_name,
-              redirector.urlOf('create_gsoc_profile', full=True, secure=True)))
+              self._getCreateProfileURL(redirector)))
 
   def clean_org_id(self):
     org_id = cleaning.clean_link_id('org_id')(self)
@@ -160,6 +160,10 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
       cleaned_data.pop('backup_admin_id')
 
     return cleaned_data
+
+  def _getCreateProfileURL(self, redirector):
+    """Returns the full secure URL of the create profile page."""
+    raise NotImplementedError
 
 
 class OrgAppRecordsList(object):
