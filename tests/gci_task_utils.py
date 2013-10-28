@@ -12,15 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""Utils for manipulating GCI task data.
-"""
-
+"""Utils for manipulating Code-In task data."""
 
 import datetime
 
 from soc.modules.gci.models import task as task_model
-from soc.modules.gci.models.work_submission import GCIWorkSubmission
+from soc.modules.gci.models import work_submission
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
@@ -68,7 +65,7 @@ def seedWorkSubmission(task, url_to_work=None):
   """
   url_to_work = url_to_work or 'http://www.example.com/'
 
-  work = GCIWorkSubmission(
+  work = work_submission.GCIWorkSubmission(
       parent=task,
       program=task.program,
       org=task.org,
