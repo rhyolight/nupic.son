@@ -55,6 +55,29 @@ def seedTask(program, org, mentors, student=None, **kwargs):
       auto_seed_optional_properties=False)
 
 
+def seedWorkSubmission(task, url_to_work=None):
+  """Seeds a work submission for the specified task.
+
+  Args:
+    task: task entity.
+    url_to_work: optional URL at which work submission is
+      available for download.
+
+  Returns:
+    A newly seeded work submission entity.
+  """
+  url_to_work = url_to_work or 'http://www.example.com/'
+
+  work = GCIWorkSubmission(
+      parent=task,
+      program=task.program,
+      org=task.org,
+      user=task.student.parent(),
+      url_to_work=url_to_work)
+  work.put()
+  return work
+
+
 class GCITaskHelper(object):
   """Helper class to aid in manipulating GCI task data.
   """
@@ -71,17 +94,3 @@ class GCITaskHelper(object):
            auto_seed_optional_properties=False):
     return seeder_logic.seed(model, properties, recurse=False,
         auto_seed_optional_properties=auto_seed_optional_properties)
-
-  def createWorkSubmission(self, task, student, url='http://www.example.com/'):
-    """Creates a GCIWorkSubmission.
-
-    Args:
-      task: The task to create a worksubmission for.
-      student: The student whose work it is.
-      url: The url to the work.
-    """
-    work = GCIWorkSubmission(
-        parent=task, program=task.program, org=task.org, user=student.user,
-        url_to_work=url)
-    work.put()
-    return work

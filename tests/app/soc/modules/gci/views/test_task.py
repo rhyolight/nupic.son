@@ -557,8 +557,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
         datetime.timedelta(days=1)
     self.task.put()
 
-    GCITaskHelper(self.program).createWorkSubmission(
-        self.task, self.profile_helper.profile)
+    gci_task_utils.seedWorkSubmission(self.task)
 
     url = '%s?send_for_review' % self._taskPageUrl(self.task)
     response = self.post(url)
@@ -579,8 +578,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
         datetime.timedelta(days=1)
     self.task.put()
 
-    GCITaskHelper(self.program).createWorkSubmission(
-        self.task, self.profile_helper.profile)
+    gci_task_utils.seedWorkSubmission(self.task)
 
     url = '%s?send_for_review' % self._taskPageUrl(self.task)
     response = self.post(url)
@@ -599,8 +597,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.task.student = self.profile_helper.profile
     self.task.put()
 
-    work = GCITaskHelper(self.program).createWorkSubmission(
-        self.task, self.profile_helper.profile)
+    work = gci_task_utils.seedWorkSubmission(self.task)
 
     self.assertEqual(len(self.task.workSubmissions()), 1)
 
