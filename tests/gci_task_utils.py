@@ -72,19 +72,6 @@ class GCITaskHelper(object):
     return seeder_logic.seed(model, properties, recurse=False,
         auto_seed_optional_properties=auto_seed_optional_properties)
 
-  def createTaskWithMentors(self, status, org, mentors, student=None, override={}):
-    """Creates a GCI task with mentors.
-
-    Args:
-      status: the status of the task
-      org: the org under which the task is created
-      mentors: mentors for the task
-      student: student who claimed the task
-    """
-    return seedTask(
-        self.program, org, mentors=[mentor.key() for mentor in mentors],
-        student=student, status=status, **override)
-
   def createWorkSubmission(self, task, student, url='http://www.example.com/'):
     """Creates a GCIWorkSubmission.
 
