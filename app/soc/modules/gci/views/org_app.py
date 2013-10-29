@@ -35,7 +35,7 @@ from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
-TEMPLATE_PATH = 'modules/gci/_form.html'
+_BASE_FORM_TEMPLATE_PATH = 'modules/gci/_form.html'
 
 
 class OrgAppEditForm(org_app.OrgAppEditForm):
@@ -49,7 +49,7 @@ class OrgAppEditForm(org_app.OrgAppEditForm):
     super(OrgAppEditForm, self).__init__(forms.GCIBoundField, **kwargs)
 
   def templatePath(self):
-    return TEMPLATE_PATH
+    return _BASE_FORM_TEMPLATE_PATH
 
 
 class OrgAppTakeForm(org_app.OrgAppTakeForm):
@@ -75,7 +75,7 @@ class OrgAppTakeForm(org_app.OrgAppTakeForm):
     self.validateBackupAdminProfile(backup_admin, profile_model.GCIProfile)
 
   def templatePath(self):
-    return TEMPLATE_PATH
+    return _BASE_FORM_TEMPLATE_PATH
 
   def _getCreateProfileURL(self, redirector):
     """Returns the full secure URL of the GCI create profile page."""
