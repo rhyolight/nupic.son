@@ -31,8 +31,6 @@ from django.utils.formats import dateformat
 from soc.models import document as document_model
 from soc.views import forms
 
-from soc.modules.gci.models import profile as profile_model
-
 AVATAR_LOWER_BOUND = 1
 AVATAR_UPPER_BOUND = 26
 AVATAR_DEFAULT_COLOR = 'blue'

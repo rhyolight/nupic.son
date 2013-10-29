@@ -22,13 +22,15 @@ from django.utils.translation import ugettext
 
 from melange.request import access
 from melange.request import exception
+from soc.logic import org_app as org_app_logic
 from soc.mapreduce.helper import control as mapreduce_control
 from soc.models.org_app_record import OrgAppRecord
 from soc.views import org_app
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
 
-from soc.logic import org_app as org_app_logic
+from soc.modules.gci.models import profile as profile_model
+from soc.modules.gci.views import forms
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
@@ -44,7 +46,7 @@ class OrgAppEditForm(org_app.OrgAppEditForm):
     pass
 
   def __init__(self, **kwargs):
-    super(OrgAppEditForm, self).__init__(GCIBoundField, **kwargs)
+    super(OrgAppEditForm, self).__init__(forms.GCIBoundField, **kwargs)
 
   def templatePath(self):
     return TEMPLATE_PATH
@@ -54,16 +56,16 @@ class OrgAppTakeForm(org_app.OrgAppTakeForm):
   """Form for would-be organization admins to apply for a GCI program.
   """
 
-  CHECKBOX_SELECT_MULTIPLE = CheckboxSelectMultiple
+  CHECKBOX_SELECT_MULTIPLE = forms.CheckboxSelectMultiple
 
-  RADIO_FIELD_RENDERER = RadioFieldRenderer
+  RADIO_FIELD_RENDERER = forms.RadioFieldRenderer
 
   class Meta(org_app.OrgAppTakeForm.Meta):
     pass
 
   def __init__(self, request_data=None, **kwargs):
     super(OrgAppTakeForm, self).__init__(
-        GCIBoundField, request_data=request_data, **kwargs)
+        forms.GCIBoundField, request_data=request_data, **kwargs)
 
   def clean_backup_admin_id(self):
     """Extends the backup admin cleaner to check if the backup admin has a
@@ -77,7 +79,7 @@ class OrgAppTakeForm(org_app.OrgAppTakeForm):
 
   def _getCreateProfileURL(self, redirector):
     """Returns the full secure URL of the GCI create profile page."""
-    redirector.urlOf(url_names.GCI_PROFILE_CREATE, full=True, secure=True)
+    return redirector.urlOf(url_names.GCI_PROFILE_CREATE, full=True, secure=True)
 
 
 class GCIOrgAppEditPage(GCIRequestHandler):

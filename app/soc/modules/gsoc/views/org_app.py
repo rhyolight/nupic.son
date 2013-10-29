@@ -79,7 +79,7 @@ class GSoCOrgAppTakeForm(org_app.OrgAppTakeForm):
 
   def _getCreateProfileURL(self, redirector):
     """Returns the full secure URL of the GSoC create profile page."""
-    redirector.urlOf(url_names.GSOC_PROFILE_CREATE, full=True, secure=True)
+    return redirector.urlOf(url_names.GSOC_PROFILE_CREATE, full=True, secure=True)
 
 
 class GSoCOrgAppEditPage(base.GSoCRequestHandler):
