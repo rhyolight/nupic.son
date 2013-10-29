@@ -39,8 +39,7 @@ _BASE_FORM_TEMPLATE_PATH = 'modules/gci/_form.html'
 
 
 class OrgAppEditForm(org_app.OrgAppEditForm):
-  """Form to create/edit GCI organization application survey.
-  """
+  """Form to create/edit GCI organization application survey."""
 
   class Meta(org_app.OrgAppEditForm.Meta):
     pass
@@ -53,8 +52,7 @@ class OrgAppEditForm(org_app.OrgAppEditForm):
 
 
 class OrgAppTakeForm(org_app.OrgAppTakeForm):
-  """Form for would-be organization admins to apply for a GCI program.
-  """
+  """Form for would-be organization admins to apply for a GCI program."""
 
   CHECKBOX_SELECT_MULTIPLE = forms.CheckboxSelectMultiple
 
