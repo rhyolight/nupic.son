@@ -18,6 +18,8 @@ from google.appengine.ext import ndb
 
 from django.utils import translation
 
+from melange.models import survey as survey_model
+
 
 # TODO(daniel): complete this class
 class Organization(ndb.Model):
@@ -36,3 +38,13 @@ class Organization(ndb.Model):
   #: Field storing a reference to the program in which 
   #: the organization participates.
   program = ndb.KeyProperty(required=True)
+
+
+# TODO(daniel): complete this class
+class ApplicationResponse(survey_model.SurveyResponse):
+  """Model that represents a single response to organization application.
+
+  Parent:
+    Organization
+  """
+  pass
