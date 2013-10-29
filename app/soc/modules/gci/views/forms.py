@@ -30,9 +30,6 @@ from django.utils.formats import dateformat
 
 from soc.models import document as document_model
 from soc.views import forms
-from soc.views import org_app
-
-from soc.modules.gci.models import profile as profile_model
 
 AVATAR_LOWER_BOUND = 1
 AVATAR_UPPER_BOUND = 26
@@ -253,46 +250,6 @@ class GCIModelForm(forms.ModelForm):
 
   def __init__(self, **kwargs):
     super(GCIModelForm, self).__init__(GCIBoundField, **kwargs)
-
-  def templatePath(self):
-    return TEMPLATE_PATH
-
-
-class OrgAppEditForm(org_app.OrgAppEditForm):
-  """Form to create/edit GCI organization application survey.
-  """
-
-  class Meta(org_app.OrgAppEditForm.Meta):
-    pass
-
-  def __init__(self, **kwargs):
-    super(OrgAppEditForm, self).__init__(GCIBoundField, **kwargs)
-
-  def templatePath(self):
-    return TEMPLATE_PATH
-
-
-class OrgAppTakeForm(org_app.OrgAppTakeForm):
-  """Form for would-be organization admins to apply for a GCI program.
-  """
-
-  CHECKBOX_SELECT_MULTIPLE = CheckboxSelectMultiple
-
-  RADIO_FIELD_RENDERER = RadioFieldRenderer
-
-  class Meta(org_app.OrgAppTakeForm.Meta):
-    pass
-
-  def __init__(self, request_data=None, **kwargs):
-    super(OrgAppTakeForm, self).__init__(
-        GCIBoundField, request_data=request_data, **kwargs)
-
-  def clean_backup_admin_id(self):
-    """Extends the backup admin cleaner to check if the backup admin has a
-    valid profile in the program.
-    """
-    backup_admin = super(OrgAppTakeForm, self).clean_backup_admin_id()
-    self.validateBackupAdminProfile(backup_admin, profile_model.GCIProfile)
 
   def templatePath(self):
     return TEMPLATE_PATH

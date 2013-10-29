@@ -77,6 +77,10 @@ class GSoCOrgAppTakeForm(org_app.OrgAppTakeForm):
   def templatePath(self):
     return 'modules/gsoc/_form.html'
 
+  def _getCreateProfileURL(self, redirector):
+    """Returns the full secure URL of the GSoC create profile page."""
+    return redirector.urlOf(url_names.GSOC_PROFILE_CREATE, full=True, secure=True)
+
 
 class GSoCOrgAppEditPage(base.GSoCRequestHandler):
   """View for creating/editing organization application."""
