@@ -41,8 +41,7 @@ _BASE_FORM_TEMPLATE_PATH = 'modules/gci/_form.html'
 class OrgAppEditForm(org_app.OrgAppEditForm):
   """Form to create/edit GCI organization application survey."""
 
-  class Meta(org_app.OrgAppEditForm.Meta):
-    pass
+  Meta = org_app.OrgAppEditForm.Meta
 
   def __init__(self, **kwargs):
     super(OrgAppEditForm, self).__init__(forms.GCIBoundField, **kwargs)
@@ -58,8 +57,7 @@ class OrgAppTakeForm(org_app.OrgAppTakeForm):
 
   RADIO_FIELD_RENDERER = forms.RadioFieldRenderer
 
-  class Meta(org_app.OrgAppTakeForm.Meta):
-    pass
+  Meta = org_app.OrgAppTakeForm.Meta
 
   def __init__(self, request_data=None, **kwargs):
     super(OrgAppTakeForm, self).__init__(
