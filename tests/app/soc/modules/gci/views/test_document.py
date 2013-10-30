@@ -98,29 +98,3 @@ class EditProgramTest(GCIDjangoTestCase):
     key_name = properties['key_name']
     document = Document.get_by_key_name(key_name)
     self.assertPropertiesEqual(properties, document)
-
-  def testCreateDocumentWithDashboardVisibility(self):
-    self.profile_helper.createHost()
-    url = '/gci/document/edit/gci_program/%s/doc' % self.gci.key().name()
-    response = self.get(url)
-    self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'modules/gci/document/base.html')
-    self.assertTemplateUsed(response, 'modules/gci/_form.html')
-
-    # test POST
-    override = {
-        'prefix': 'gci_program', 'scope': self.gci, 'link_id': 'doc',
-        'key_name': DocumentKeyNameProvider(),
-        'modified_by': self.profile_helper.user,
-        'home_for': None,
-        'author': self.profile_helper.user, 'is_featured': None,
-        'write_access': 'admin', 'read_access': 'public',
-        'dashboard_visibility': [],
-    }
-    properties = seeder_logic.seed_properties(Document, properties=override)
-    response = self.post(url, properties)
-    self.assertResponseRedirect(response, url)
-
-    key_name = properties['key_name']
-    document = Document.get_by_key_name(key_name)
-    self.assertPropertiesEqual(properties, document)
