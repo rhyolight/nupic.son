@@ -131,8 +131,11 @@ class EventsPage(GCIRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    data.document = data.program.events_page
-    check.canViewDocument()
+    check.isProgramVisible()
+
+    if not data.program.events_page:
+      raise exception.NotFound(
+           message='No events document is defined for program.')
 
   def context(self, data, check, mutator):
     return {
