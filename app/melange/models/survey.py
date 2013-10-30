@@ -21,7 +21,7 @@ class SurveyResponse(ndb.Expando):
   """Model that records response of a single taker to a particular survey.""" 
 
   #: The survey for which this entity is a record.
-  survey = ndb.KeyProperty(kind='Survey')
+  survey = ndb.KeyProperty()
 
   #: Date when this record was created.
   created_on = ndb.DateTimeProperty(auto_now_add=True)
