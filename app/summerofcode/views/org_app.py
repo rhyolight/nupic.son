@@ -124,7 +124,7 @@ class OrgAppTakePage(base.GSoCRequestHandler):
     return [
         soc_url_patterns.url(
             r'org/application/take/%s$' % url_patterns.PROGRAM,
-            self, name='gsoc_take_org_app')]
+            self, name=urls.UrlNames.ORG_APP_TAKE)]
 
   # TODO(daniel): replace it with a new style access checker
   def checkAccess(self, data, check, mutator):

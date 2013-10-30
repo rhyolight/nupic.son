@@ -18,4 +18,5 @@
 class UrlNames(object):
   """URL names for Summer Of Code views."""
 
+  ORG_APP_TAKE = 'soc_org_app_take'
   PROJECT_MANAGE_ADMIN = 'project_manage_admin'
