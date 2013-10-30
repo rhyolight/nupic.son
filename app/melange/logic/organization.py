@@ -20,8 +20,6 @@ from melange import types
 from melange.models import organization as org_model
 from melange.utils import rich_bool
 
-from summerofcode.models import organization as soc_org_model
-
 
 ORG_ID_IN_USE = 'Organization ID %s is already in use for this program.'
 
@@ -65,3 +63,43 @@ def createOrganizationWithApplication(
   ndb.put_multi([organization, application_record])
 
   return rich_bool.TRUE
+
+
+def updateOrganizationWithApplication(
+    org, org_properties, app_response_properties):
+  """Updates properties of the specified organization as well as application
+  response for that organization.
+
+  This function simply calls organization logic's function to do actual job
+  but ensures that the entire operation is executed within a transaction.
+
+  Args:
+    org: Organization entity.
+    org_properties: A dict containing properties to be updated.
+    app_response_properties: A dict containing organization application
+      questions to be updated.
+  """
+  if 'org_id' in org_properties and org_properties['org_id'] != org.org_id:
+    raise ValueError('org_id property is immutable.')
+
+  if 'program' in org_properties and org_properties['program'] != org.program:
+    raise ValueError('program property is immutable.')
+
+  org.populate(**org_properties)
+
+  app_response = getApplicationResponse(org.key)
+  app_response.populate(**app_response_properties)
+
+  ndb.put_multi([org, app_response])
+
+
+def getApplicationResponse(org_key):
+  """Returns application response for the specified organization.
+
+  Args:
+    org: Organization key.
+
+  Returns:
+    Application response entity for the specified organization.
+  """
+  return org_model.ApplicationResponse.query(ancestor=org_key).get()

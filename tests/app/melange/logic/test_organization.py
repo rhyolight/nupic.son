@@ -25,6 +25,8 @@ from soc.models import program as program_model
 from soc.models import survey as survey_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import program_utils
+
 
 TEST_ORG_ID = 'test_org_id'
 TEST_ORG_NAME = 'Test Org Name'
@@ -95,3 +97,56 @@ class CreateOrganizationWithApplicationTest(unittest.TestCase):
         TEST_ORG_ID, other_program.key(), self.survey.key(),
         org_properties, {})
     self.assertTrue(result)
+
+
+class UpdateOrganizationWithApplicationTest(unittest.TestCase):
+  """Unit tests for updateOrganizationWithApplication function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.program = seeder_logic.seed(program_model.Program)
+    self.org = program_utils.seedOrganization(
+        TEST_ORG_ID, self.program.key(), name=TEST_ORG_NAME)
+    self.app_response = org_model.ApplicationResponse(parent=self.org.key)
+    self.app_response.put()
+
+  def testOrgIdInOrgProperties(self):
+    """Tests that org id cannot be updated."""
+    org_properties = {'org_id': TEST_ORG_ID}
+    org_logic.updateOrganizationWithApplication(self.org, org_properties, {})
+
+    # check that identifier has not changed
+    org = ndb.Key(
+        org_model.Organization._get_kind(),
+        '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
+    self.assertEqual(org.org_id, TEST_ORG_ID)
+
+    org_properties = {'org_id': 'different_org_id'}
+    with self.assertRaises(ValueError):
+      org_logic.updateOrganizationWithApplication(self.org, org_properties, {})
+
+  def testProgramInOrgProperties(self):
+    """Tests that program cannot be updated."""
+    org_properties = {'program': ndb.Key.from_old_key(self.program.key())}
+    org_logic.updateOrganizationWithApplication(self.org, org_properties, {})
+
+    # check that program has not changed
+    org = ndb.Key(
+        org_model.Organization._get_kind(),
+        '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
+    self.assertEqual(org.program, ndb.Key.from_old_key(self.program.key()))
+
+    org_properties = {'program': ndb.Key('Program', 'other_program')}
+    with self.assertRaises(ValueError):
+      org_logic.updateOrganizationWithApplication(self.org, org_properties, {})
+
+  def testOrgPropertiesUpdated(self):
+    """Tests that organization properties are updated properly."""
+    org_properties = {'name': 'Other Program Name'}
+    org_logic.updateOrganizationWithApplication(self.org, org_properties, {})
+
+    # check that properties are updated
+    org = ndb.Key(
+        org_model.Organization._get_kind(),
+        '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
+    self.assertEqual(org.name, 'Other Program Name')
