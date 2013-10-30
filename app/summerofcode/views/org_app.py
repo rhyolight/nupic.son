@@ -196,7 +196,10 @@ def createOrganizationWithApplicationTxn(
     models: 
 
   Returns:
-    TODO(daniel): Add this part
+    RichBool whose value is set to True if organization and application
+    response have been successfully created. Otherwise, RichBool whose value is
+    set to False and extra part is a string that represents the reason why
+    the action could not be completed.
   """
   return org_logic.createOrganizationWithApplication(
       org_id, program_key, app_key, org_properties, app_properties, models)
