@@ -51,6 +51,8 @@ ORG_APP_TAKE_PAGE_NAME = translation.ugettext(
 NO_ORG_APP = translation.ugettext(
     'The organization application for the program %s does not exist.')
 
+OTHER_OPTION_FIELD_ID = '%s-other'
+
 
 def cleanOrgId(org_id):
   """Cleans org_id field.
@@ -112,6 +114,12 @@ class OrgAppTakeForm(gsoc_forms.SurveyTakeForm):
     for field_id, value in self.cleaned_data.iteritems():
       if field_id in field_ids:
         properties[field_id] = value
+
+        # add possible value of 'other' option
+        other_option_field_id = OTHER_OPTION_FIELD_ID % field_id
+        if other_option_field_id in self.cleaned_data:
+          properties[other_option_field_id] = self.cleaned_data[
+              other_option_field_id]
 
     return properties
 
