@@ -25,7 +25,7 @@ from soc.models import program as program_model
 from soc.models import survey as survey_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
-from tests import program_utils
+from tests import org_utils
 
 
 TEST_ORG_ID = 'test_org_id'
@@ -105,7 +105,7 @@ class UpdateOrganizationWithApplicationTest(unittest.TestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.program = seeder_logic.seed(program_model.Program)
-    self.org = program_utils.seedOrganization(
+    self.org = org_utils.seedOrganization(
         TEST_ORG_ID, self.program.key(), name=TEST_ORG_NAME)
     self.app_response = org_model.ApplicationResponse(parent=self.org.key)
     self.app_response.put()
