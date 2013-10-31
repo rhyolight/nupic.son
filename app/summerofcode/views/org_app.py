@@ -74,7 +74,7 @@ def cleanOrgId(org_id):
   return org_id
 
 
-class OrgAppTakeForm(gsoc_forms.SurveyTakeForm):
+class OrgAppForm(gsoc_forms.SurveyTakeForm):
   """Form to submit organization application by prospective organization
   administrators.
   """
@@ -124,6 +124,15 @@ class OrgAppTakeForm(gsoc_forms.SurveyTakeForm):
     return properties
 
 
+def _formToTakeOrgApp(**kwargs):
+  """Returns a Django form to submit a new organization application.
+
+  Returns:
+    OrgAppForm adjusted to submit a new organization application.
+  """
+  return OrgAppForm(**kwargs)
+
+
 class OrgAppTakePage(base.GSoCRequestHandler):
   """View to take organization application."""
 
@@ -149,7 +158,7 @@ class OrgAppTakePage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.RequestHandler.context for specification."""
-    form = OrgAppTakeForm(survey=data.org_app, data=data.POST or None)
+    form = _formToTakeOrgApp(survey=data.org_app, data=data.POST or None)
 
     return {
         'page_name': ORG_APP_TAKE_PAGE_NAME,
@@ -160,7 +169,7 @@ class OrgAppTakePage(base.GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """See base.RequestHandler.post for specification."""
-    form = OrgAppTakeForm(survey=data.org_app, data=data.POST)
+    form = _formToTakeOrgApp(survey=data.org_app, data=data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-use.
