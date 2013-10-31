@@ -155,6 +155,25 @@ class ModelReadOnlyTemplate(object):
     return rendered
 
 
+class Group(object):
+  """Class that forms different fields together into a group.
+
+  Attributes:
+    title: Title of the group.
+    fields: Fields that belong to the group.
+  """
+
+  def __init__(self, title, fields):
+    """Initializes a new group for the specified attributes.
+
+    Args:
+      title: Title of the group.
+      fields: A dict containing label-value pairs that belong to the group.
+    """
+    self.title = title
+    self.fields = fields
+
+
 class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
   """A base class that constructs the readonly template for given survey record.
 
