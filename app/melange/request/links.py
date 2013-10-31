@@ -15,6 +15,8 @@
 """Module for managing URL generation."""
 
 from google.appengine.api import users
+from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django.core import urlresolvers
 
@@ -206,12 +208,22 @@ class Linker(object):
     Returns:
       The URL of the page matching the given name for the given organization.
     """
-    program = org.program
-    kwargs = {
-        'sponsor': program_logic.getSponsorKey(program).name(),
-        'program': program.program_id,
-        'organization': org.link_id
-        }
+    # TODO(daniel): make this part default when all orgs are updated to NDB
+    if isinstance(org, ndb.Model):
+      # TODO(daniel): add unit tests for this branch
+      program = db.get(org.program.to_old_key())
+      kwargs = {
+          'sponsor': program_logic.getSponsorKey(program).name(),
+          'program': program.program_id,
+          'organization': org.org_id
+          }
+    else:
+      program = org.program
+      kwargs = {
+          'sponsor': program_logic.getSponsorKey(program).name(),
+          'program': program.program_id,
+          'organization': org.link_id
+          }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
 
 # Since Linker is stateless, there might as well be just one of it.
