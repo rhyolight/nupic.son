@@ -628,6 +628,14 @@ class DjangoTestCase(SoCTestCase, testcases.TestCase):
 
     self.assertResponseCode(response, httplib.NOT_FOUND)
 
+  def assertResponseMethodNotAllowed(self, response):
+    """Asserts that the response status is NOT_FOUND.
+
+    Args:
+      response: Django's http.HttpResponse object.
+    """
+    self.assertResponseCode(response, httplib.METHOD_NOT_ALLOWED)
+
   def assertIsJsonResponse(self, response):
     """Asserts that all the templates from the base view were used.
 
