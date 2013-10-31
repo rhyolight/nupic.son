@@ -21,10 +21,13 @@ import collections
 import re
 
 from django.template import loader
+from django.utils import translation
 from django.utils.datastructures import SortedDict
 
-from soc.views.helper.surveys import SurveySchema
+from soc.views.helper import surveys
 
+
+NOT_ANSWERED_VALUE = translation.ugettext('-')
 
 class ModelReadOnlyTemplateOptions(object):
   """Class holding options specified in the Meta class of the model template.
@@ -169,7 +172,7 @@ class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
     self.instance = instance
     self.schema = None
     if self.instance:
-      self.schema = SurveySchema(self.instance.survey)
+      self.schema = surveys.SurveySchema(self.instance.survey)
 
   def fieldsIterator(self):
     """Iterates through the fields that were declared for this template.
@@ -197,7 +200,7 @@ class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
       for field in self.schema:
         field_id = field.getFieldName()
         label = field.getLabel()
-        value = getattr(self.instance, field_id, '-')
+        value = getattr(self.instance, field_id, NOT_ANSWERED_VALUE)
         if isinstance(value, list):
           value = ', '.join(value)
 
@@ -219,3 +222,52 @@ class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
     rendered = loader.render_to_string(self.template_path,
                                        dictionary=context)
     return rendered
+
+
+class SurveyResponseReadOnlyTemplate(object):
+  """Readonly template to display survey response."""
+
+  def __init__(self, template_path, fields, survey, survey_response):
+    """Initializes new instance of the template.
+
+    Args:
+      template_path: Path to the HTML to be rendered.
+      fields: A dict containing label-value pairs to display.
+      survey: Survey entity.
+      survey_response: Survey response entity.
+    """
+    self._fields = fields
+    self._schema = surveys.SurveySchema(survey) if survey else None
+    self._survey_response = survey_response
+    self._template_path = template_path
+
+  @property
+  def _survey_fields(self):
+    """Iterates through the survey schema questions.
+
+    Yields:
+      A pair whose first element is a label for a question belonging to
+      the survey schema and the other element is the answer for that question.
+    """
+    if self._schema:
+      for question in self._schema:
+        label = question.getLabel()
+        property_name = question.getPropertyName()
+        value = getattr(
+            self._survey_response, property_name, NOT_ANSWERED_VALUE)
+        if isinstance(value, list):
+          value = ', '.join(value)
+        yield label, value
+
+  def render(self):
+    """Renders the template as HTML.
+
+    Returns:
+      A string containing HTML form of the template. 
+    """
+    context = {
+        'fields': self._fields,
+        'survey_fields': self._survey_fields
+        }
+
+    return loader.render_to_string(self._template_path, dictionary=context)
