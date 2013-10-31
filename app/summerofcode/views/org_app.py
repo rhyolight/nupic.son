@@ -275,7 +275,7 @@ class OrgAppUpdatePage(base.GSoCRequestHandler):
       org_properties = form.getOrgProperties()
       app_response_properties = form.getApplicationResponseProperties()
       updateOrganizationWithApplicationTxn(
-          data.url_ndb_org, org_properties, app_response_properties)
+          data.url_ndb_org.key, org_properties, app_response_properties)
 
       url = links.LINKER.organization(
           data.url_ndb_org, urls.UrlNames.ORG_APP_UPDATE)
@@ -367,6 +367,6 @@ def updateOrganizationWithApplicationTxn(
     app_response_properties: A dict containing organization application
       questions to be updated.
   """
-  org = org_key.key.get()
+  org = org_key.get()
   org_logic.updateOrganizationWithApplication(
       org, org_properties, app_response_properties)
