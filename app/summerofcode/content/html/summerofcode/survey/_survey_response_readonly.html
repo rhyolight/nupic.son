@@ -3,22 +3,12 @@
     <div id="survey-response-show-group" class="block block-org-app-group">
       {% for group in groups %}
         <h4 id="title-section-org-app-show-group">{{ group.title }}</h4>
-        {% for label, value in group.fields.items %}
+        {% for label, value in group.fields %}
           <div class="{% if forloop.counter|divisibleby:2 %}row-odd{% else %}row-even{% endif %}">
             <label>{{ label }}</label>
             <span class="readonly-row-content">{{ value }}</span>
           </div>
         {% endfor %}
-      {% endfor %}
-
-      <h4 id="title-section-org-app-show-group">Application</h4>
-      {% for label, value in survey_fields %}
-        <div id="{{ css_prefix }}-{{ name|slugify }}" class="{% if forloop.counter|divisibleby:2 %}row-odd{% else %}row-even{% endif %}">
-          <label>{{ label }}</label>
-          <span class="readonly-row-content">
-            {{ value }}
-          </span>
-        </div>
       {% endfor %}
     </div>
   </div>

@@ -174,6 +174,33 @@ class Group(object):
     self.fields = fields
 
 
+SURVEY_RESPONSE_GROUP_TITLE = translation.ugettext('Survey Response')
+
+class SurveyResponseGroup(Group):
+  """Class that groups all responses to the specified survey into a group."""
+
+  def __init__(self, survey, survey_response):
+    """Initializes a new group for the specified survey and response.
+
+    Args:
+      survey: Survey entity.
+      survey_response: Survey response entity.
+    """
+    def fields():
+      schema = surveys.SurveySchema(survey) if survey else None
+      if schema:
+        for question in schema:
+          label = question.getLabel()
+          property_name = question.getPropertyName()
+          value = getattr(survey_response, property_name, NOT_ANSWERED_VALUE)
+          if isinstance(value, list):
+            value = ', '.join(value)
+          yield label, value
+
+    super(SurveyResponseGroup, self).__init__(
+        SURVEY_RESPONSE_GROUP_TITLE, fields)
+
+
 class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
   """A base class that constructs the readonly template for given survey record.
 
@@ -255,28 +282,10 @@ class SurveyResponseReadOnlyTemplate(object):
       survey: Survey entity.
       survey_response: Survey response entity.
     """
-    self._groups = [Group('General Info', fields)]
-    self._schema = surveys.SurveySchema(survey) if survey else None
-    self._survey_response = survey_response
+    self._groups = [
+        Group('General Info', fields.iteritems()),
+        SurveyResponseGroup(survey, survey_response)]
     self._template_path = template_path
-
-  @property
-  def _survey_fields(self):
-    """Iterates through the survey schema questions.
-
-    Yields:
-      A pair whose first element is a label for a question belonging to
-      the survey schema and the other element is the answer for that question.
-    """
-    if self._schema:
-      for question in self._schema:
-        label = question.getLabel()
-        property_name = question.getPropertyName()
-        value = getattr(
-            self._survey_response, property_name, NOT_ANSWERED_VALUE)
-        if isinstance(value, list):
-          value = ', '.join(value)
-        yield label, value
 
   def render(self):
     """Renders the template as HTML.
@@ -286,7 +295,6 @@ class SurveyResponseReadOnlyTemplate(object):
     """
     context = {
         'groups': self._groups,
-        'survey_fields': self._survey_fields
         }
 
     return loader.render_to_string(self._template_path, dictionary=context)
