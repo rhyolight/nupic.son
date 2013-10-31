@@ -211,3 +211,23 @@ def createOrganizationWithApplicationTxn(
   """
   return org_logic.createOrganizationWithApplication(
       org_id, program_key, app_key, org_properties, app_properties, models)
+
+
+@ndb.transactional
+def updateOrganizationWithApplicationTxn(
+    org_key, org_properties, app_response_properties):
+  """Updates properties of the specified organization as well as application
+  response for that organization.
+
+  This function simply calls organization logic's function to do actual job
+  but ensures that the entire operation is executed within a transaction.
+
+  Args:
+    org_key: Organization key.
+    org_properties: A dict containing properties to be updated.
+    app_response_properties: A dict containing organization application
+      questions to be updated.
+  """
+  org = org_key.key.get()
+  org_logic.updateOrganizationWithApplication(
+      org, org_properties, app_response_properties)
