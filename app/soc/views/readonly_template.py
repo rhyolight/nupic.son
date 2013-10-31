@@ -273,18 +273,14 @@ class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
 class SurveyResponseReadOnlyTemplate(object):
   """Readonly template to display survey response."""
 
-  def __init__(self, template_path, fields, survey, survey_response):
+  def __init__(self, template_path, groups):
     """Initializes new instance of the template.
 
     Args:
       template_path: Path to the HTML to be rendered.
-      fields: A dict containing label-value pairs to display.
-      survey: Survey entity.
-      survey_response: Survey response entity.
+      groups: List of groups to include in the template.
     """
-    self._groups = [
-        Group('General Info', fields.iteritems()),
-        SurveyResponseGroup(survey, survey_response)]
+    self._groups = groups
     self._template_path = template_path
 
   def render(self):
@@ -293,8 +289,6 @@ class SurveyResponseReadOnlyTemplate(object):
     Returns:
       A string containing HTML form of the template. 
     """
-    context = {
-        'groups': self._groups,
-        }
+    context = {'groups': self._groups}
 
     return loader.render_to_string(self._template_path, dictionary=context)

@@ -62,6 +62,8 @@ ORG_APP_UPDATE_PAGE_NAME = translation.ugettext(
 NO_ORG_APP = translation.ugettext(
     'The organization application for the program %s does not exist.')
 
+GENERAL_INFO_GROUP_TITLE = translation.ugettext('General Info')
+
 OTHER_OPTION_FIELD_ID = '%s-other'
 
 
@@ -300,18 +302,22 @@ class OrgAppShowPage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.RequestHandler.context for specification."""
+    groups = []
 
     fields = collections.OrderedDict()
     fields[data.models.ndb_org_model.org_id._verbose_name] = (
         data.url_ndb_org.org_id)
     fields[data.models.ndb_org_model.name._verbose_name] = (
         data.url_ndb_org.name)
+    groups.append(
+        readonly_template.Group(GENERAL_INFO_GROUP_TITLE, fields.items()))
 
     app_response = org_logic.getApplicationResponse(data.url_ndb_org.key)
+    groups.append(
+        readonly_template.SurveyResponseGroup(data.org_app, app_response))
 
     response_template = readonly_template.SurveyResponseReadOnlyTemplate(
-        'summerofcode/survey/_survey_response_readonly.html',
-        fields, data.org_app, app_response)
+        'summerofcode/survey/_survey_response_readonly.html', groups)
 
     return {'record': response_template}
 
