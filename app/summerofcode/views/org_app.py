@@ -317,7 +317,7 @@ class OrgAppShowPage(base.GSoCRequestHandler):
         readonly_template.SurveyResponseGroup(data.org_app, app_response))
 
     response_template = readonly_template.SurveyResponseReadOnlyTemplate(
-        'summerofcode/survey/_survey_response_readonly.html', groups)
+        'summerofcode/_readonly_template.html', groups)
 
     return {'record': response_template}
 
