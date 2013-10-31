@@ -255,7 +255,7 @@ class SurveyResponseReadOnlyTemplate(object):
       survey: Survey entity.
       survey_response: Survey response entity.
     """
-    self._fields = fields
+    self._groups = [Group('General Info', fields)]
     self._schema = surveys.SurveySchema(survey) if survey else None
     self._survey_response = survey_response
     self._template_path = template_path
@@ -285,7 +285,7 @@ class SurveyResponseReadOnlyTemplate(object):
       A string containing HTML form of the template. 
     """
     context = {
-        'fields': self._fields,
+        'groups': self._groups,
         'survey_fields': self._survey_fields
         }
 
