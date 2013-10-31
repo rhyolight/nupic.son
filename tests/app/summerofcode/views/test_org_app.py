@@ -71,13 +71,16 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
         'org_id': TEST_ORG_ID,
         'name': TEST_ORG_NAME,
         }
-    self.post(_getOrgAppTakeUrl(self.program), postdata=postdata)
+    response = self.post(_getOrgAppTakeUrl(self.program), postdata=postdata)
 
     # check that organization entity has been created
     org = ndb.Key(
         soc_org_model.SOCOrganization._get_kind(),
         '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
     self.assertIsNotNone(org)
+
+    # check that the client is redirected to update page
+    self.assertResponseRedirect(response, url=_getOrgAppUpdateUrl(org))
 
     # check that survey response is created and persisted
     app_response = melange_org_model.ApplicationResponse.query(

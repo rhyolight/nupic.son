@@ -223,8 +223,9 @@ class OrgAppTakePage(base.GSoCRequestHandler):
         # message so that it is printed to the user.
         return self.get(data, check, mutator)
       else:
-        raise exception.BadRequest(
-            message='TODO(daniel): redirect to edit page')
+        url = links.LINKER.organization(
+          result.extra, urls.UrlNames.ORG_APP_UPDATE)
+        return http.HttpResponseRedirect(url)
 
 
 class OrgAppUpdatePage(base.GSoCRequestHandler):
@@ -297,7 +298,8 @@ def createOrganizationWithApplicationTxn(
 
   Returns:
     RichBool whose value is set to True if organization and application
-    response have been successfully created. Otherwise, RichBool whose value is
+    response have been successfully created. In that case, extra part points to
+    the newly created organization entity. Otherwise, RichBool whose value is
     set to False and extra part is a string that represents the reason why
     the action could not be completed.
   """

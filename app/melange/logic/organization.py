@@ -41,7 +41,8 @@ def createOrganizationWithApplication(
 
   Returns:
     RichBool whose value is set to True if organization and application
-    response have been successfully created. Otherwise, RichBool whose value is
+    response have been successfully created. In that case, extra part points to
+    the newly created organization entity. Otherwise, RichBool whose value is
     set to False and extra part is a string that represents the reason why
     the action could not be completed.
   """
@@ -62,7 +63,7 @@ def createOrganizationWithApplication(
 
   ndb.put_multi([organization, application_record])
 
-  return rich_bool.TRUE
+  return rich_bool.RichBool(True, extra=organization)
 
 
 def updateOrganizationWithApplication(
