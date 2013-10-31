@@ -50,6 +50,18 @@ def _getOrgAppUpdateUrl(org):
   return '/gsoc/org/application/update/%s' % org.key.id()
 
 
+def _getOrgAppShowUrl(org):
+  """Returns URL to Organization Application Show page.
+
+  Args:
+    org: Organization entity.
+
+  Returns:
+    A string containing the URL to Organization Application Show page.
+  """
+  return '/gsoc/org/application/show2/%s' % org.key.id()
+
+
 class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for OrgAppTakePage class."""
 
@@ -134,3 +146,28 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
         soc_org_model.SOCOrganization._get_kind(),
         '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
     self.assertEqual(org.org_id, TEST_ORG_ID)
+
+
+class OrgAppShowPageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for OrgAppShowPage class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+    self.org = org_utils.seedSOCOrganization(
+        TEST_ORG_ID, self.program.key(), name=TEST_ORG_NAME)
+    self.app_response = melange_org_model.ApplicationResponse(
+        parent=self.org.key)
+    self.app_response.put()
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    self.profile_helper.createProfile()
+    response = self.get(_getOrgAppShowUrl(self.org))
+    self.assertResponseOK(response)
+
+  def testPostMethodNotAllowed(self):
+    """Tests that POST method is not permitted."""
+    self.profile_helper.createProfile()
+    response = self.post(_getOrgAppShowUrl(self.org))
+    self.assertResponseMethodNotAllowed(response)

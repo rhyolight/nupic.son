@@ -1,0 +1,25 @@
+<div class="block block-form">
+  <div class="model-readonly">
+    <div id="survey-response-show-group" class="block block-org-app-group">
+      <h4 id="title-section-org-app-show-group">General Info</h4>
+      {% for label, value in fields.items %}
+        <div class="{% if forloop.counter|divisibleby:2 %}row-odd{% else %}row-even{% endif %}">
+          <label>{{ label }}</label>
+          <span class="readonly-row-content">
+            {{ value }}
+          </span>
+        </div>
+      {% endfor %}
+
+      <h4 id="title-section-org-app-show-group">Application</h4>
+      {% for label, value in survey_fields %}
+        <div id="{{ css_prefix }}-{{ name|slugify }}" class="{% if forloop.counter|divisibleby:2 %}row-odd{% else %}row-even{% endif %}">
+          <label>{{ label }}</label>
+          <span class="readonly-row-content">
+            {{ value }}
+          </span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>

@@ -14,6 +14,8 @@
 
 """Module containing the views for Summer Of Code organization application."""
 
+import collections
+
 from google.appengine.ext import ndb
 
 from django import forms as django_forms
@@ -27,6 +29,7 @@ from melange.request import links
 
 from soc.logic import cleaning
 
+from soc.views import readonly_template
 from soc.views.helper import url_patterns
 from soc.views.helper import surveys
 
@@ -275,6 +278,42 @@ class OrgAppUpdatePage(base.GSoCRequestHandler):
       url = links.LINKER.organization(
           data.url_ndb_org, urls.UrlNames.ORG_APP_UPDATE)
       return http.HttpResponseRedirect(url)
+
+
+class OrgAppShowPage(base.GSoCRequestHandler):
+  """Page to display organization application response."""
+
+  # TODO(daniel): implement actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.djangoURLPatterns for specification."""
+    # TODO(daniel): remove 2 when the old view is removed.
+    return [
+        soc_url_patterns.url(
+            r'org/application/show2/%s$' % url_patterns.ORG,
+            self, name=urls.UrlNames.ORG_APP_SHOW)]
+
+  def templatePath(self):
+    """See base.RequestHandler.templatePath for specification."""
+    return 'modules/gsoc/org_app/show.html'
+
+  def context(self, data, check, mutator):
+    """See base.RequestHandler.context for specification."""
+
+    fields = collections.OrderedDict()
+    fields[data.models.ndb_org_model.org_id._verbose_name] = (
+        data.url_ndb_org.org_id)
+    fields[data.models.ndb_org_model.name._verbose_name] = (
+        data.url_ndb_org.name)
+
+    app_response = org_logic.getApplicationResponse(data.url_ndb_org.key)
+
+    response_template = readonly_template.SurveyResponseReadOnlyTemplate(
+        'summerofcode/survey/_survey_response_readonly.html',
+        fields, data.org_app, app_response)
+
+    return {'record': response_template}
 
 
 @ndb.transactional
