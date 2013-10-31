@@ -19,6 +19,7 @@ from google.appengine.ext import ndb
 from melange.models import organization as melange_org_model
 from summerofcode.models import organization as soc_org_model
 
+from tests import org_utils
 from tests import test_utils
 
 
@@ -35,6 +36,18 @@ def _getOrgAppTakeUrl(program):
     A string containing the URL to Organization Application Take page.
   """
   return '/gsoc/org/application/take/%s' % program.key().name()
+
+
+def _getOrgAppUpdateUrl(org):
+  """Returns URL to Organization Application Update page.
+
+  Args:
+    org: Organization entity.
+
+  Returns:
+    A string containing the URL to Organization Application Update page.
+  """
+  return '/gsoc/org/application/update/%s' % org.key.id()
 
 
 class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
@@ -70,3 +83,51 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
     app_response = melange_org_model.ApplicationResponse.query(
         ancestor=org.key).get()
     self.assertIsNotNone(app_response)
+
+
+class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for OrgAppUpdatePage class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+    self.org = org_utils.seedSOCOrganization(
+        TEST_ORG_ID, self.program.key(), name=TEST_ORG_NAME)
+    self.app_response = melange_org_model.ApplicationResponse(
+        parent=self.org.key)
+    self.app_response.put()
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    self.profile_helper.createProfile()
+    response = self.get(_getOrgAppUpdateUrl(self.org))
+    self.assertResponseOK(response)
+
+  def testOrganizationUpdated(self):
+    """Tests that org entity is updated correctly."""
+    self.profile_helper.createProfile()
+
+    # check that mutable properties are updated
+    postdata = {'name': 'Other Org Name'}
+    response = self.post(_getOrgAppUpdateUrl(self.org), postdata=postdata)
+    self.assertResponseRedirect(response, url=_getOrgAppUpdateUrl(self.org))
+
+    # check that organization entity has been updated
+    org = ndb.Key(
+        soc_org_model.SOCOrganization._get_kind(),
+        '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
+    self.assertEqual(org.name, 'Other Org Name')
+
+    # check that organization ID is not updated even if it is in POST data
+    postdata = {
+        'org_id': 'other_org_id',
+        'name': TEST_ORG_NAME
+        }
+    response = self.post(_getOrgAppUpdateUrl(self.org), postdata=postdata)
+    self.assertResponseRedirect(response, url=_getOrgAppUpdateUrl(self.org))
+
+    # check that organization entity has been updated
+    org = ndb.Key(
+        soc_org_model.SOCOrganization._get_kind(),
+        '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
+    self.assertEqual(org.org_id, TEST_ORG_ID)

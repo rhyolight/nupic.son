@@ -17,10 +17,13 @@
 from google.appengine.ext import ndb
 
 from django import forms as django_forms
+from django import http
 from django.utils import translation
 
 from melange.logic import organization as org_logic
+from melange.request import access
 from melange.request import exception
+from melange.request import links
 
 from soc.logic import cleaning
 
@@ -30,6 +33,8 @@ from soc.views.helper import surveys
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_patterns as soc_url_patterns
+
+from summerofcode.views.helper import urls
 
 
 ORG_ID_HELP_TEXT = translation.ugettext(
@@ -47,6 +52,9 @@ ORG_NAME_LABEL = translation.ugettext('Organization name')
 
 ORG_APP_TAKE_PAGE_NAME = translation.ugettext(
     'Take organization application')
+
+ORG_APP_UPDATE_PAGE_NAME = translation.ugettext(
+    'Update organization application')
 
 NO_ORG_APP = translation.ugettext(
     'The organization application for the program %s does not exist.')
@@ -85,8 +93,7 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
   name = django_forms.CharField(
       required=True, label=ORG_NAME_LABEL, help_text=ORG_NAME_HELP_TEXT)
 
-  class Meta(object):
-    pass
+  Meta = object
 
   def clean_org_id(self):
     """Cleans org_id field.
@@ -144,6 +151,20 @@ def _formToTakeOrgApp(**kwargs):
     OrgAppForm adjusted to submit a new organization application.
   """
   return OrgAppForm(**kwargs)
+
+
+def _formToEditOrgApp(**kwargs):
+  """Returns a django form to update an existing organization application.
+
+  Returns:
+    OrgAppForm adjusted to update an existing organization application.
+  """
+  form = OrgAppForm(**kwargs)
+
+  # organization ID property is not editable
+  del form.fields['org_id']
+
+  return form
 
 
 class OrgAppTakePage(base.GSoCRequestHandler):
@@ -204,6 +225,55 @@ class OrgAppTakePage(base.GSoCRequestHandler):
       else:
         raise exception.BadRequest(
             message='TODO(daniel): redirect to edit page')
+
+
+class OrgAppUpdatePage(base.GSoCRequestHandler):
+  """View to update organization application response."""
+
+  # TODO(daniel): implement actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def templatePath(self):
+    """See base.RequestHandler.templatePath for specification."""
+    return 'modules/gsoc/org_app/take.html'
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.djangoURLPatterns for specification."""
+    return [
+        soc_url_patterns.url(
+            r'org/application/update/%s$' % url_patterns.ORG,
+            self, name=urls.UrlNames.ORG_APP_UPDATE)]
+
+  def context(self, data, check, mutator):
+    """See base.RequestHandler.context for specification."""
+    form_data = data.url_ndb_org.to_dict()
+    form_data.update(
+        org_logic.getApplicationResponse(data.url_ndb_org.key).to_dict())
+
+    form = _formToEditOrgApp(survey=data.org_app, data=data.POST or form_data)
+
+    return {
+        'page_name': ORG_APP_UPDATE_PAGE_NAME,
+        'description': data.org_app.content,
+        'forms': [form],
+        'error': bool(form.errors)
+        }
+
+  def post(self, data, check, mutator):
+    """See base.RequestHandler.post for specification."""
+    form = _formToEditOrgApp(survey=data.org_app, data=data.POST)
+    if not form.is_valid():
+      # TODO(nathaniel): problematic self-use.
+      return self.get(data, check, mutator)
+    else:
+      org_properties = form.getOrgProperties()
+      app_response_properties = form.getApplicationResponseProperties()
+      updateOrganizationWithApplicationTxn(
+          data.url_ndb_org, org_properties, app_response_properties)
+
+      url = links.LINKER.organization(
+          data.url_ndb_org, urls.UrlNames.ORG_APP_UPDATE)
+      return http.HttpResponseRedirect(url)
 
 
 @ndb.transactional
