@@ -511,7 +511,7 @@ class RequestData(object):
             message='Requested organization does not exist.')
     return self._url_org
 
-  # TODO(daniel): rename this to url_org when Organization
+  # TODO(daniel): rename this to url_org when Organization is converted to NDB
   @property
   def url_ndb_org(self):
     """Returns url_org property.
