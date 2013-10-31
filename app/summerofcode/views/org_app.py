@@ -99,6 +99,19 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
     """
     return cleanOrgId(self.cleaned_data['org_id'])
 
+  def getOrgProperties(self):
+    """Returns properties of the organization that were submitted in this form.
+
+    Returns:
+      A dict mapping organization properties to the corresponding values.
+    """
+    properties = {}
+    if 'name' in self.cleaned_data:
+      properties['name'] = self.cleaned_data['name']
+    if 'org_id' in self.cleaned_data:
+      properties['org_id'] = self.cleaned_data['name']
+    return properties
+
   def getApplicationResponseProperties(self):
     """Returns answers to the application response that were submitted
     in this form.
