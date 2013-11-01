@@ -208,7 +208,6 @@ class StartConnectionByOrgContextProvider(object):
 
     message_properties = {
         'connection_url': connection_url,
-        'name': profile.name(),
         'org_name': org.name,
         'message': message,
         }
