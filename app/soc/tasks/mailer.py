@@ -26,6 +26,8 @@ from google.appengine.runtime.apiproxy_errors import DeadlineExceededError
 from django.conf.urls import url as django_url
 
 from melange.appengine import system
+from melange.models import email as email_model
+
 from soc.models import email
 from soc.tasks import responses
 from soc.tasks.helper import error_handler
@@ -63,14 +65,24 @@ def getSpawnMailTaskTxn(context, parent=None, transactional=True):
     # no-one cares :(
     return lambda: None
 
-  mail_entity = email.Email(context=json.dumps(context), parent=parent)
+  # TODO(daniel): drop this when DB models are not used anymore
+  if not parent or isinstance(parent, db.Model):
+    mail_entity = email.Email(context=json.dumps(context), parent=parent)
+  else:
+    mail_entity = email_model.Email(
+        parent=parent.key, context=json.dumps(context))
 
   def txn():
     """Transaction to ensure that a task get enqueued for each mail stored.
     """
     mail_entity.put()
 
-    task_params = {'mail_key': str(mail_entity.key())}
+    if isinstance(mail_entity, db.Model):
+      mail_entity_key = mail_entity.key()
+    else:
+      mail_entity_key = mail_entity.key.urlsafe()
+
+    task_params = {'mail_key': str(mail_entity_key)}
     # Setting a countdown because the mail_entity might not be stored to
     # all the replicas yet.
     new_task = taskqueue.Task(params=task_params, url=SEND_MAIL_URL,
