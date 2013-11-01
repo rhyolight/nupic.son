@@ -14,12 +14,15 @@
 
 """Unit tests for organization application view."""
 
+from google.appengine.ext import db
 from google.appengine.ext import ndb
 
+from melange.models import connection as connection_model
 from melange.models import organization as melange_org_model
 from summerofcode.models import organization as soc_org_model
 
 from tests import org_utils
+from tests import profile_utils
 from tests import test_utils
 
 
@@ -79,9 +82,12 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
     """Tests that org entity as well as application are created properly."""
     self.profile_helper.createProfile()
 
+    backup_admin = profile_utils.seedGSoCProfile(self.program)
+
     postdata = {
         'org_id': TEST_ORG_ID,
         'name': TEST_ORG_NAME,
+        'backup_admin': backup_admin.link_id
         }
     response = self.post(_getOrgAppTakeUrl(self.program), postdata=postdata)
 
@@ -98,6 +104,24 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
     app_response = melange_org_model.ApplicationResponse.query(
         ancestor=org.key).get()
     self.assertIsNotNone(app_response)
+
+    # check that a connection with the current user has been started
+    profile = db.get(self.profile_helper.profile.key())
+    self.assertIn(org.key.to_old_key(), profile.org_admin_for)
+    connection = connection_model.Connection.all().ancestor(
+        profile.key()).filter('organization', org.key.to_old_key()).get()
+    self.assertIsNotNone(connection)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+
+    # check that a connection with backup admin has been started
+    backup_admin = db.get(backup_admin.key())
+    self.assertIn(org.key.to_old_key(), backup_admin.org_admin_for)
+    connection = connection_model.Connection.all().ancestor(
+        backup_admin.key()).filter('organization', org.key.to_old_key()).get()
+    self.assertIsNotNone(connection)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertEqual(connection.user_role, connection_model.ROLE)
 
 
 class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):

@@ -23,9 +23,12 @@ from django import http
 from django.utils import translation
 
 from melange.logic import organization as org_logic
+from melange.logic import profile as profile_logic
+from melange.models import connection as connection_model
 from melange.request import access
 from melange.request import exception
 from melange.request import links
+from melange.views import connection as connection_view
 
 from soc.logic import cleaning
 
@@ -49,9 +52,18 @@ ORG_ID_HELP_TEXT = translation.ugettext(
 ORG_NAME_HELP_TEXT = translation.ugettext(
     'Complete, formal name of the organization.')
 
+BACKUP_ADMIN_HELP_TEXT = translation.ugettext(
+    'Username of the user who will also serve as administrator for this '
+    'organization. Please note that the user must have created '
+    'a profile for the current program in order to be eligible. '
+    'The organization will be allowed to assign more administrators upon '
+    'acceptance into the program.')
+
 ORG_ID_LABEL = translation.ugettext('Organization ID')
 
 ORG_NAME_LABEL = translation.ugettext('Organization name')
+
+BACKUP_ADMIN_LABEL = translation.ugettext('Backup administrator')
 
 ORG_APP_TAKE_PAGE_NAME = translation.ugettext(
     'Take organization application')
@@ -61,6 +73,13 @@ ORG_APP_UPDATE_PAGE_NAME = translation.ugettext(
 
 NO_ORG_APP = translation.ugettext(
     'The organization application for the program %s does not exist.')
+
+PROFILE_DOES_NOT_EXIST = translation.ugettext(
+    'No profile exists for username %s.')
+
+OTHER_PROFILE_IS_THE_CURRENT_PROFILE = translation.ugettext(
+    'The currently logged in profile cannot be specified as '
+    'the other organization administrator.')
 
 GENERAL_INFO_GROUP_TITLE = translation.ugettext('General Info')
 
@@ -87,6 +106,28 @@ def cleanOrgId(org_id):
   return org_id
 
 
+def cleanBackupAdmin(username, request_data):
+  """Cleans backup_admin field.
+
+  Args:
+    username: Username of the user to assign as the backup administrator.
+    request_data: request_data.RequestData for the current request.
+
+  Raises:
+    django_forms.ValidationError if no profile exists for at least one
+    of the submitted usernames.
+  """
+  username = username.strip()
+  profile = profile_logic.getProfileForUsername(
+      username, request_data.program.key(), models=request_data.models)
+  if not profile:
+    raise django_forms.ValidationError(PROFILE_DOES_NOT_EXIST % username)
+  elif profile.key() == request_data.profile.key():
+    raise django_forms.ValidationError(OTHER_PROFILE_IS_THE_CURRENT_PROFILE)
+  else:
+    return profile
+
+
 class OrgAppForm(gsoc_forms.SurveyTakeForm):
   """Form to submit organization application by prospective organization
   administrators.
@@ -98,7 +139,20 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
   name = django_forms.CharField(
       required=True, label=ORG_NAME_LABEL, help_text=ORG_NAME_HELP_TEXT)
 
+  backup_admin = django_forms.CharField(
+      required=True, label=BACKUP_ADMIN_LABEL,
+      help_text=BACKUP_ADMIN_HELP_TEXT)
+
   Meta = object
+
+  def __init__(self, request_data=None, **kwargs):
+    """Initializes a new form.
+
+    Args:
+      request_data: request_data.RequestData for the current request.
+    """
+    super(OrgAppForm, self).__init__(**kwargs)
+    self.request_data = request_data
 
   def clean_org_id(self):
     """Cleans org_id field.
@@ -110,6 +164,18 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
       django_forms.ValidationError if the submitted value is not valid.
     """
     return cleanOrgId(self.cleaned_data['org_id'])
+
+  def clean_backup_admin(self):
+    """Cleans backup_admin field.
+
+    Returns:
+      Profile entity corresponding to the backup administrator.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleanBackupAdmin(
+        self.cleaned_data['backup_admin'], self.request_data)
 
   def getOrgProperties(self):
     """Returns properties of the organization that were submitted in this form.
@@ -169,6 +235,9 @@ def _formToEditOrgApp(**kwargs):
   # organization ID property is not editable
   del form.fields['org_id']
 
+  # other organization admins are set only when app response is created
+  del form.fields['backup_admin']
+
   return form
 
 
@@ -197,7 +266,8 @@ class OrgAppTakePage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.RequestHandler.context for specification."""
-    form = _formToTakeOrgApp(survey=data.org_app, data=data.POST or None)
+    form = _formToTakeOrgApp(
+        request_data=data, survey=data.org_app, data=data.POST or None)
 
     return {
         'page_name': ORG_APP_TAKE_PAGE_NAME,
@@ -208,7 +278,8 @@ class OrgAppTakePage(base.GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """See base.RequestHandler.post for specification."""
-    form = _formToTakeOrgApp(survey=data.org_app, data=data.POST)
+    form = _formToTakeOrgApp(
+        request_data=data, survey=data.org_app, data=data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-use.
@@ -217,10 +288,10 @@ class OrgAppTakePage(base.GSoCRequestHandler):
       org_id = form.cleaned_data['org_id']
       org_properties = {'name': form.cleaned_data['name']}
       app_properties = form.getApplicationResponseProperties()
-      
+
       result = createOrganizationWithApplicationTxn(
-          org_id, data.program.key(), data.org_app.key(), org_properties,
-          app_properties, data.models)
+          org_id, data.program.key(), data.org_app.key(),
+          org_properties, app_properties, data.models)
 
       if not result:
         # TODO(nathaniel): problematic self-use.
@@ -228,6 +299,18 @@ class OrgAppTakePage(base.GSoCRequestHandler):
         # message so that it is printed to the user.
         return self.get(data, check, mutator)
       else:
+        # NOTE: this should rather be done within a transaction along with
+        # creating the organization. At least one admin is required for
+        # each organization: what if the code above fails and there are none?
+        # However, it should not be a practical problem.
+        admin_keys = [
+            data.profile.key(), form.cleaned_data['backup_admin'].key()]
+        for admin_key in admin_keys:
+          connection_view.createConnectionTxn(
+              data, admin_key, result.extra,
+              org_role=connection_model.ORG_ADMIN_ROLE,
+              user_role=connection_model.ROLE)
+
         url = links.LINKER.organization(
           result.extra, urls.UrlNames.ORG_APP_UPDATE)
         return http.HttpResponseRedirect(url)
