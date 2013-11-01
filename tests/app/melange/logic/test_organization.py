@@ -18,18 +18,23 @@ import unittest
 
 from google.appengine.ext import ndb
 
+from django import http
+
 from melange.logic import organization as org_logic
 from melange.models import organization as org_model
 
 from soc.models import program as program_model
 from soc.models import survey as survey_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+from soc.views.helper import request_data
 
 from tests import org_utils
+from tests import test_utils
 
 
 TEST_ORG_ID = 'test_org_id'
 TEST_ORG_NAME = 'Test Org Name'
+TEST_EMAIL = 'test@example.com'
 
 class CreateOrganizationWithApplicationTest(unittest.TestCase):
   """Unit tests for createOrganizationWithApplication function."""
@@ -151,3 +156,72 @@ class UpdateOrganizationWithApplicationTest(unittest.TestCase):
         org_model.Organization._get_kind(),
         '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
     self.assertEqual(org.name, 'Other Program Name')
+
+
+class SetStatusTest(test_utils.DjangoTestCase):
+  """Unit tests for setStatus function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+    self.program = seeder_logic.seed(program_model.Program)
+
+    properties = {'parent': self.program}
+    seeder_logic.seed(program_model.ProgramMessages, properties=properties)
+
+    self.org = org_utils.seedOrganization(TEST_ORG_ID, self.program.key())
+
+  def testAcceptOrganization(self):
+    """Tests that organization is successfully accepted."""
+    request = http.HttpRequest()
+    data = request_data.RequestData(request, None, None)
+    data._program = self.program
+
+    org = org_logic.setStatus(
+        data, self.org, self.program, org_model.Status.ACCEPTED,
+        recipients=[TEST_EMAIL])
+
+    self.assertEqual(org.status, org_model.Status.ACCEPTED)
+    self.assertEmailSent()
+
+  def testRejectOrganization(self):
+    """Tests that organization is successfully rejected."""
+    request = http.HttpRequest()
+    data = request_data.RequestData(request, None, None)
+    data._program = self.program
+
+    org = org_logic.setStatus(
+        data, self.org, self.program, org_model.Status.REJECTED,
+        recipients=[TEST_EMAIL])
+
+    self.assertEqual(org.status, org_model.Status.REJECTED)
+    self.assertEmailSent()
+
+  def testPreAcceptOrganization(self):
+    """Tests that organization is successfully pre-accepted."""
+    request = http.HttpRequest()
+    data = request_data.RequestData(request, None, None)
+    data._program = self.program
+
+    org = org_logic.setStatus(
+        data, self.org, self.program, org_model.Status.PRE_ACCEPTED,
+        recipients=[TEST_EMAIL])
+
+    self.assertEqual(org.status, org_model.Status.PRE_ACCEPTED)
+
+    # TODO(daniel): make sure that email is not sent
+
+  def testPreRejectOrganization(self):
+    """Tests that organization is successfully pre-accepted."""
+    request = http.HttpRequest()
+    data = request_data.RequestData(request, None, None)
+    data._program = self.program
+
+    org = org_logic.setStatus(
+        data, self.org, self.program, org_model.Status.PRE_REJECTED,
+        recipients=[TEST_EMAIL])
+
+    self.assertEqual(org.status, org_model.Status.PRE_REJECTED)
+
+    # TODO(daniel): make sure that email is not sent

@@ -20,6 +20,9 @@ from melange import types
 from melange.models import organization as org_model
 from melange.utils import rich_bool
 
+from soc.logic.helper import notifications
+from soc.tasks import mailer
+
 
 ORG_ID_IN_USE = 'Organization ID %s is already in use for this program.'
 
@@ -104,3 +107,39 @@ def getApplicationResponse(org_key):
     Application response entity for the specified organization.
   """
   return org_model.ApplicationResponse.query(ancestor=org_key).get()
+
+
+def setStatus(data, organization, program, new_status, recipients=None):
+  """Sets status of the specified organization.
+
+  Args:
+    data: request_data.RequestData for the current request.
+    organization: Organization entity.
+    program: Program entity to which organization is assigned.
+    new_status: New status of the organization. Must be one of
+      org_model.Status constants.
+    recipients: List of one or more recipients for the notification email.
+
+  Returns:
+    The updated organization entity.
+  """
+  if organization.status != new_status:
+    organization.status = new_status
+    organization.put()
+
+    if (recipients and
+        new_status in [org_model.Status.ACCEPTED, org_model.Status.REJECTED]):
+      if new_status == org_model.Status.ACCEPTED:
+        notification_context = (
+            notifications.OrganizationAcceptedContextProvider()
+                .getContext(recipients, data, organization, program))
+      elif new_status == org_model.Status.REJECTED:
+        notification_context = (
+            notifications.OrganizationRejectedContextProvider()
+                .getContext(recipients, data, organization, program))
+
+      sub_txn = mailer.getSpawnMailTaskTxn(
+          notification_context, parent=organization)
+      sub_txn()
+
+  return organization
