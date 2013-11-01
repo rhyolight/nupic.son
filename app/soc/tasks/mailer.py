@@ -17,6 +17,7 @@
 import json
 import logging
 
+from google.appengine.api import datastore_errors
 from google.appengine.api import mail
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
@@ -121,7 +122,11 @@ class MailerTask(object):
     if not mail_key:
       return error_handler.logErrorAndReturnOK('No email key specified')
 
-    mail_entity = db.get(mail_key)
+    # TODO(daniel): so ugly...
+    try:
+      mail_entity = db.get(mail_key)
+    except datastore_errors.BadKeyError:
+      mail_entity = ndb.Key(urlsafe=mail_key).get()
 
     if not mail_entity:
       return error_handler.logErrorAndReturnOK(
