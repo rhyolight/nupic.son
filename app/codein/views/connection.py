@@ -132,7 +132,7 @@ class NoConnectionExistsAccessChecker(access.AccessChecker):
   def checkAccess(self, data, check):
     """See access.AccessChecker.checkAccess for specification."""
     connection = connection_logic.queryForAncestorAndOrganization(
-        data.profile, data.url_org).get()
+        data.profile, data.url_org.key()).get()
     if connection:
       url = links.LINKER.userId(
           data.profile, connection.key().id(),

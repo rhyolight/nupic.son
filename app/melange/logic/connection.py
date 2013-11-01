@@ -91,13 +91,13 @@ def queryForAncestor(ancestor, keys_only=False):
   """
   return connection_model.Connection.all(keys_only=keys_only).ancestor(ancestor)
 
-def queryForAncestorAndOrganization(ancestor, organization, keys_only=False):
+def queryForAncestorAndOrganization(ancestor, org_key, keys_only=False):
   """Returns a Query object for Connections with the specified ancestor and
   Organization.
   """
   query = connection_model.Connection.all(
       keys_only=keys_only).ancestor(ancestor)
-  query.filter('organization', organization)
+  query.filter('organization', org_key)
   return query
 
 
@@ -128,7 +128,7 @@ def connectionExists(profile, organization):
     True if a Connection object exists for the given User and
     Organization, else False.
   """
-  query = queryForAncestorAndOrganization(profile, organization, True)
+  query = queryForAncestorAndOrganization(profile, organization.key(), True)
   return query.count(limit=1) > 0
 
 
