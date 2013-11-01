@@ -55,6 +55,7 @@ class CreateOrganizationWithApplicationTest(unittest.TestCase):
     self.assertIsNotNone(org)
     self.assertEqual(org.org_id, TEST_ORG_ID)
     self.assertEqual(org.name, TEST_ORG_NAME)
+    self.assertEqual(org.status, org_model.Status.APPLYING)
 
     # check that organization application response is created and persisted
     app_response = org_model.ApplicationResponse.query(ancestor=org.key).get()
