@@ -309,7 +309,7 @@ class GSoCTestCase(SoCTestCase):
     self.program_helper = program_utils.GSoCProgramHelper()
     self.sponsor = self.program_helper.createSponsor()
     self.gsoc = self.program = self.program_helper.createProgram()
-    self.site = self.program_helper.createSite()
+    self.site = program_utils.seedSite(active_program=self.program)
     self.org = self.program_helper.createOrg()
     self.org_app = self.program_helper.createOrgApp()
     self.timeline_helper = timeline_utils.GSoCTimelineHelper(
@@ -346,7 +346,7 @@ class GCITestCase(SoCTestCase):
     self.program_helper = program_utils.GCIProgramHelper()
     self.sponsor = self.program_helper.createSponsor()
     self.gci = self.program = self.program_helper.createProgram()
-    self.site = self.program_helper.createSite()
+    self.site = program_utils.seedSite(active_program=self.program)
     self.org = self.program_helper.createOrg()
     self.org_app = self.program_helper.createOrgApp()
     self.timeline_helper = timeline_utils.GCITimelineHelper(
