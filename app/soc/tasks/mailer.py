@@ -20,6 +20,7 @@ import logging
 from google.appengine.api import mail
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 from google.appengine.runtime.apiproxy_errors import OverQuotaError
 from google.appengine.runtime.apiproxy_errors import DeadlineExceededError
 
@@ -57,6 +58,7 @@ def getMailContext(to, subject, html, sender=None, bcc=None):
   return context
 
 
+# TODO(daniel): remove transactional argument
 def getSpawnMailTaskTxn(context, parent=None, transactional=True):
   """Spawns a new Task that sends out an email with the given dictionary."""
   if not (context.get('to') or context.get('bcc')):
@@ -68,9 +70,11 @@ def getSpawnMailTaskTxn(context, parent=None, transactional=True):
   # TODO(daniel): drop this when DB models are not used anymore
   if not parent or isinstance(parent, db.Model):
     mail_entity = email.Email(context=json.dumps(context), parent=parent)
+    transactional = ndb.in_transaction()
   else:
     mail_entity = email_model.Email(
         parent=parent.key, context=json.dumps(context))
+    transactional = db.is_in_transaction()
 
   def txn():
     """Transaction to ensure that a task get enqueued for each mail stored.
