@@ -21,6 +21,8 @@ from melange.models import organization as org_model
 from summerofcode.models import organization as soc_org_model
 
 
+TEST_ORG_NAME = 'Test Org'
+
 def seedOrganization(org_id, program_key,
     model=org_model.Organization, **kwargs):
   """Seeds a new organization.
@@ -34,7 +36,13 @@ def seedOrganization(org_id, program_key,
   """
   entity_id = '%s/%s' % (program_key.name(), org_id)
   program_key = ndb.Key.from_old_key(program_key)
-  org = model(id=entity_id, org_id=org_id, program=program_key, **kwargs)
+
+  properties = {
+      'org_id': org_id,
+      'name': TEST_ORG_NAME,
+      }
+  properties.update(kwargs)
+  org = model(id=entity_id, program=program_key, **properties)
   org.put()
 
   return org
