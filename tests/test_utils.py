@@ -217,6 +217,8 @@ class SoCTestCase(unittest.TestCase):
     self.testbed.init_mail_stub()
     self.testbed.init_taskqueue_stub(root_path=APP_ROOT_PATH)
 
+    self.site = program_utils.seedSite()
+
   @staticmethod
   def use_hr_schema(func):
     """Wrapper that makes the specified function to be called in HR datastore
