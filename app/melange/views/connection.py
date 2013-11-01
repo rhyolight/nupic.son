@@ -67,7 +67,14 @@ def createConnectionTxn(
     The newly created Connection entity.
   """
   profile = db.get(profile_key)
-  can_create = connection_logic.canCreateConnection(profile, organization.key())
+
+  # TODO(daniel): remove this part when organizations are converted to NDB
+  if isinstance(organization, db.Model):
+    org_key = organization.key()
+  else:
+    org_key = organization.key.to_old_key()
+
+  can_create = connection_logic.canCreateConnection(profile, org_key)
   if not can_create:
     raise exception.BadRequest(message=can_create.extra)
   else:
@@ -78,9 +85,9 @@ def createConnectionTxn(
 
     # handle possible role assignment
     if connection.getRole() == connection_model.MENTOR_ROLE:
-      profile_logic.assignMentorRoleForOrg(profile, organization.key())
+      profile_logic.assignMentorRoleForOrg(profile, org_key)
     elif connection.getRole() == connection_model.ORG_ADMIN_ROLE:
-      profile_logic.assignOrgAdminRoleForOrg(profile, organization.key())
+      profile_logic.assignOrgAdminRoleForOrg(profile, org_key)
 
     # auto-generate a message indicated that the connection has been started
     if org_admin:
