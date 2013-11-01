@@ -72,10 +72,10 @@ class ConnectionExistsTest(ConnectionTest):
     Organizations can be fetched with this helper.
     """
     self.assertTrue(
-      connection_logic.connectionExists(self.profile, self.org))
+      connection_logic.connectionExists(self.profile, self.org.key()))
     self.connection.delete()
     self.assertFalse(
-      connection_logic.connectionExists(self.profile, self.org))
+      connection_logic.connectionExists(self.profile, self.org.key()))
 
 class CreateConnectionTest(ConnectionTest):
   """Unit tests for the connection_logic.createConnection function."""
