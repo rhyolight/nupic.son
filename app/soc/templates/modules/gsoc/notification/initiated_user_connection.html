@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 {% block content %}
-{{ link_id }} has opened a new connection with {{ org_name }}, for which you are
+{{ name }} has started a new connection with {{ org_name }}, for which you are
 an Organization Administrator.
 
 {% if message %}
@@ -21,6 +21,6 @@ They provided the following message:
 	<p>{{ message }}</p>
 {% endif %}
 
-To respond to this connection, please visit the following url:
+To respond to this connection, please visit the following URL:
 <a href="{{ connection_url }}">{{ connection_url }}</a>
 {% endblock %}
