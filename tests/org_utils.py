@@ -30,6 +30,7 @@ def seedOrganization(org_id, program_key,
   Args:
     org_id: Identifier of the new organization.
     program_key: Program key.
+    model: Model class of which a new organization should be seeded.
 
   Returns:
     Newly seeded Organization entity.
