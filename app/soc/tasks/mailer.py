@@ -28,9 +28,12 @@ from google.appengine.runtime.apiproxy_errors import DeadlineExceededError
 from django.conf.urls import url as django_url
 
 from melange.appengine import system
-from melange.models import email as email_model
 
-from soc.models import email
+# new style NDB model for email
+from melange.models import email as ndb_email_model
+
+# old style DB model for email
+from soc.models import email as db_email_model
 from soc.tasks import responses
 from soc.tasks.helper import error_handler
 
@@ -70,10 +73,11 @@ def getSpawnMailTaskTxn(context, parent=None, transactional=True):
 
   # TODO(daniel): drop this when DB models are not used anymore
   if not parent or isinstance(parent, db.Model):
-    mail_entity = email.Email(context=json.dumps(context), parent=parent)
+    mail_entity = db_email_model.Email(
+        context=json.dumps(context), parent=parent)
     transactional = ndb.in_transaction()
   else:
-    mail_entity = email_model.Email(
+    mail_entity = ndb_email_model.Email(
         parent=parent.key, context=json.dumps(context))
     transactional = db.is_in_transaction()
 
