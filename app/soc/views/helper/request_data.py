@@ -231,6 +231,7 @@ class RequestData(object):
 
     self._url_connection = self._unset
     self._url_org = self._unset
+    self._url_ndb_org = self._unset
     self._url_profile = self._unset
     self._url_student_info = self._unset
     self._url_user = self._unset
@@ -509,6 +510,37 @@ class RequestData(object):
         raise exception.NotFound(
             message='Requested organization does not exist.')
     return self._url_org
+
+  # TODO(daniel): rename this to url_org when Organization is converted to NDB
+  @property
+  def url_ndb_org(self):
+    """Returns url_org property.
+
+    This property represents organization entity whose identifier is a part
+    of the URL of the processed request.
+
+    Returns:
+      Retrieved organization entity.
+
+    Raises:
+      exception.BadRequest: if the current request does not contain any
+        organization data.
+      exception.NotFound: if the organization is not found.
+    """
+    if not self._isSet(self._url_ndb_org):
+      try:
+        fields = ['sponsor', 'program', 'organization']
+        entity_id = '/'.join(self.kwargs[i] for i in fields)
+      except KeyError:
+        raise exception.BadRequest(
+            message='The request does not contain full organization data.')
+
+      self._url_ndb_org = self.models.ndb_org_model.get_by_id(entity_id)
+
+      if not self._url_ndb_org:
+        raise exception.NotFound(
+            message='Requested organization does not exist.')
+    return self._url_ndb_org
 
   @property
   def url_user(self):

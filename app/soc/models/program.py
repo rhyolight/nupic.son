@@ -40,9 +40,32 @@ PROGRAM_DOCUMENTS_GROUP = translation.ugettext(
     '4. Program Documents')
 
 
+class ProgramMessages(db.Model):
+  """The ProgramMessages model.
+
+  This model contains the specific messages whose content may be customized
+  by program administrators and which may be sent because of various reasons
+  throughout the program.
+  """
+
+  #: Message sent to the organizations that are accepted for the program.
+  accepted_orgs_msg = db.TextProperty(required=False,
+      verbose_name=translation.ugettext('Accepted Organizations Message'))
+
+  #: Message sent to the organizations that are rejected for the program.
+  rejected_orgs_msg = db.TextProperty(required=False,
+      verbose_name=translation.ugettext('Rejected Organizations Message'))
+
+  #: Message sent to a mentor/org admin the first time they join the program.
+  mentor_welcome_msg = db.TextProperty(required=False,
+      verbose_name=translation.ugettext('Mentor Welcome Message'))
+
+
 # TODO(daniel): drop inheritance from Linkable
 class Program(linkable_model.Linkable):
   """The Program model, representing a Program ran by a Sponsor."""
+
+  _messages_model = ProgramMessages
 
   #: string used as a prefix of various key names for other models
   #TODO(daniel): eliminate this
@@ -277,24 +300,3 @@ class Program(linkable_model.Linkable):
       return entity
 
     return db.run_in_transaction(get_or_create_txn)
-
-
-class ProgramMessages(db.Model):
-  """The ProgramMessages model.
-
-  This model contains the specific messages whose content may be customized
-  by program administrators and which may be sent because of various reasons
-  throughout the program.
-  """
-
-  #: Message sent to the organizations that are accepted for the program.
-  accepted_orgs_msg = db.TextProperty(required=False,
-      verbose_name=translation.ugettext('Accepted Organizations Message'))
-
-  #: Message sent to the organizations that are rejected for the program.
-  rejected_orgs_msg = db.TextProperty(required=False,
-      verbose_name=translation.ugettext('Rejected Organizations Message'))
-
-  #: Message sent to a mentor/org admin the first time they join the program.
-  mentor_welcome_msg = db.TextProperty(required=False,
-      verbose_name=translation.ugettext('Mentor Welcome Message'))

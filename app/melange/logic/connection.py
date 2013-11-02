@@ -18,6 +18,8 @@ from datetime import datetime
 from datetime import timedelta
 import uuid
 
+from google.appengine.ext import db
+
 from django.utils import translation
 
 from melange.logic import connection_message as connection_message_logic
@@ -91,13 +93,13 @@ def queryForAncestor(ancestor, keys_only=False):
   """
   return connection_model.Connection.all(keys_only=keys_only).ancestor(ancestor)
 
-def queryForAncestorAndOrganization(ancestor, organization, keys_only=False):
+def queryForAncestorAndOrganization(ancestor, org_key, keys_only=False):
   """Returns a Query object for Connections with the specified ancestor and
   Organization.
   """
   query = connection_model.Connection.all(
       keys_only=keys_only).ancestor(ancestor)
-  query.filter('organization', organization)
+  query.filter('organization', org_key)
   return query
 
 
@@ -116,19 +118,19 @@ def queryForOrganizationAdmin(profile):
   return query
 
 
-def connectionExists(profile, organization):
+def connectionExists(profile, org_key):
   """Check to see whether or not a Connection exists between a user and
   an organization.
 
   Args:
     profile: Profile instance (parent) for the connection.
-    organization: Organization for the connection.
+    org_key: Organization key.
 
   Returns:
     True if a Connection object exists for the given User and
     Organization, else False.
   """
-  query = queryForAncestorAndOrganization(profile, organization, True)
+  query = queryForAncestorAndOrganization(profile, org_key, True)
   return query.count(limit=1) > 0
 
 
@@ -172,10 +174,17 @@ def createConnection(profile, org, user_role, org_role):
   Raises:
       ValueError if a connection exists between the user and organization.
   """
-  if connectionExists(profile.parent_key(), org):
+  # TODO(daniel): remove this part when organizations are converted to NDB
+  if isinstance(org, db.Model):
+    org_key = org.key()
+  else:
+    org_key = org.key.to_old_key()
+
+  if connectionExists(profile.parent_key(), org_key):
     raise ValueError(_CONNECTION_EXISTS % (profile.name(), org.name))
 
-  connection = connection_model.Connection(parent=profile, organization=org)
+  connection = connection_model.Connection(
+      parent=profile, organization=org_key)
   connection.user_role = user_role
   connection.org_role = org_role
   connection.put()

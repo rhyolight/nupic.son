@@ -12,21 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Definitions of Summer Of Code-specific types."""
+"""Module containing survey related models."""
 
-from melange import types
-
-from soc.modules.gsoc.models import organization
-from soc.modules.gsoc.models import profile
-from soc.modules.gsoc.models import program
-from soc.modules.gsoc.models import timeline
-
-from summerofcode.models import organization as ndb_organization
+from google.appengine.ext import ndb
 
 
-SOC_MODELS = types.Models(
-    ndb_org_model=ndb_organization.SOCOrganization,
-    org_model=organization.GSoCOrganization,
-    profile_model=profile.GSoCProfile,
-    program_model=program.GSoCProgram,
-    timeline_model=timeline.GSoCTimeline)
+class SurveyResponse(ndb.Expando):
+  """Model that records response of a single taker to a particular survey.""" 
+
+  #: The survey for which this entity is a record.
+  survey = ndb.KeyProperty()
+
+  #: Date when this record was created.
+  created_on = ndb.DateTimeProperty(auto_now_add=True)
+
+  #: Date when this record was last modified, i.e. when at least one of
+  #: the answers changed.
+  modified_on = ndb.DateTimeProperty(auto_now=True)

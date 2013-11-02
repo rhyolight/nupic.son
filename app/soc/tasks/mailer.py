@@ -17,16 +17,23 @@
 import json
 import logging
 
+from google.appengine.api import datastore_errors
 from google.appengine.api import mail
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 from google.appengine.runtime.apiproxy_errors import OverQuotaError
 from google.appengine.runtime.apiproxy_errors import DeadlineExceededError
 
 from django.conf.urls import url as django_url
 
 from melange.appengine import system
-from soc.models import email
+
+# new style NDB model for email
+from melange.models import email as ndb_email_model
+
+# old style DB model for email
+from soc.models import email as db_email_model
 from soc.tasks import responses
 from soc.tasks.helper import error_handler
 
@@ -55,6 +62,7 @@ def getMailContext(to, subject, html, sender=None, bcc=None):
   return context
 
 
+# TODO(daniel): remove transactional argument
 def getSpawnMailTaskTxn(context, parent=None, transactional=True):
   """Spawns a new Task that sends out an email with the given dictionary."""
   if not (context.get('to') or context.get('bcc')):
@@ -63,14 +71,27 @@ def getSpawnMailTaskTxn(context, parent=None, transactional=True):
     # no-one cares :(
     return lambda: None
 
-  mail_entity = email.Email(context=json.dumps(context), parent=parent)
+  # TODO(daniel): drop this when DB models are not used anymore
+  if not parent or isinstance(parent, db.Model):
+    mail_entity = db_email_model.Email(
+        context=json.dumps(context), parent=parent)
+    transactional = ndb.in_transaction()
+  else:
+    mail_entity = ndb_email_model.Email(
+        parent=parent.key, context=json.dumps(context))
+    transactional = db.is_in_transaction()
 
   def txn():
     """Transaction to ensure that a task get enqueued for each mail stored.
     """
     mail_entity.put()
 
-    task_params = {'mail_key': str(mail_entity.key())}
+    if isinstance(mail_entity, db.Model):
+      mail_entity_key = mail_entity.key()
+    else:
+      mail_entity_key = mail_entity.key.urlsafe()
+
+    task_params = {'mail_key': str(mail_entity_key)}
     # Setting a countdown because the mail_entity might not be stored to
     # all the replicas yet.
     new_task = taskqueue.Task(params=task_params, url=SEND_MAIL_URL,
@@ -105,7 +126,11 @@ class MailerTask(object):
     if not mail_key:
       return error_handler.logErrorAndReturnOK('No email key specified')
 
-    mail_entity = db.get(mail_key)
+    # TODO(daniel): so ugly...
+    try:
+      mail_entity = db.get(mail_key)
+    except datastore_errors.BadKeyError:
+      mail_entity = ndb.Key(urlsafe=mail_key).get()
 
     if not mail_entity:
       return error_handler.logErrorAndReturnOK(

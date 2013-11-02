@@ -12,21 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Definitions of Summer Of Code-specific types."""
+"""This module contains model to store e-mails."""
 
-from melange import types
-
-from soc.modules.gsoc.models import organization
-from soc.modules.gsoc.models import profile
-from soc.modules.gsoc.models import program
-from soc.modules.gsoc.models import timeline
-
-from summerofcode.models import organization as ndb_organization
+from google.appengine.ext import ndb
 
 
-SOC_MODELS = types.Models(
-    ndb_org_model=ndb_organization.SOCOrganization,
-    org_model=organization.GSoCOrganization,
-    profile_model=profile.GSoCProfile,
-    program_model=program.GSoCProgram,
-    timeline_model=timeline.GSoCTimeline)
+class Email(ndb.Model):
+  """Model that represents an e-mail that needs to be sent."""
+
+  #: JSON content to be passed along the the Mail constructor
+  context = ndb.TextProperty(required=True)

@@ -35,10 +35,10 @@ DEF_NEW_ANONYMOUS_CONNECTION = ugettext(
     'New Google Summer of Code Connection')
 
 DEF_ACCEPTED_ORG = ugettext(
-    '[%(org)s] Your organization application has been accepted.')
+    '[%s] Your organization application has been accepted.')
 
 DEF_REJECTED_ORG = ugettext(
-    '[%(org)s] Your organization application has been rejected.')
+    '[%s] Your organization application has been rejected.')
 
 DEF_MENTOR_WELCOME_MAIL_SUBJECT = ugettext('Welcome to %s')
 
@@ -296,6 +296,60 @@ def getMentorWelcomeMailContext(profile, data, message):
   template = DEF_MENTOR_WELCOME_MAIL_TEMPLATE
 
   return getContext(data, [to], context, subject, template)
+
+
+class OrganizationAcceptedContextProvider(object):
+  """Provider of notification email content to be sent after an organization
+  is accepted into a program.
+  """
+
+  def getContext(self, emails, data, organization, program):
+    """Provides notification context of an email to send out when the specified
+    organization is accepted into the program.
+
+    Args:
+      emails: List of email addresses to which the notification should be sent.
+      data: request_data.RequestData for the current request.
+      organization: Organization entity.
+      program: Program entity.
+    """
+    # TODO(daniel): replace with a dynamic mail content
+    # program_messages = program.getProgramMessages()
+    # template = program_messages.accepted_orgs_msg
+    template = DEF_ACCEPTED_ORG_TEMPLATE
+    subject = DEF_ACCEPTED_ORG % organization.name
+
+    # TODO(daniel): consult what properties are needed.
+    message_properties = {}
+
+    return getContext(data, emails, message_properties, subject, template)
+
+
+class OrganizationRejectedContextProvider(object):
+  """Provider of notification email content to be sent after an organization
+  is rejected from a program.
+  """
+
+  def getContext(self, emails, data, organization, program):
+    """Provides notification context of an email to send out when the specified
+    organization is rejected from the program.
+
+    Args:
+      emails: List of email addresses to which the notification should be sent.
+      data: request_data.RequestData for the current request.
+      organization: Organization entity.
+      program: Program entity.
+    """
+    # TODO(daniel): replace with a dynamic mail content
+    # program_messages = program.getProgramMessages()
+    # template = program_messages.rejected_orgs_msg
+    template = DEF_REJECTED_ORG_TEMPLATE
+    subject = DEF_REJECTED_ORG % organization.name
+
+    # TODO(daniel): consult what properties are needed.
+    message_properties = {}
+
+    return getContext(data, emails, message_properties, subject, template)
 
 
 def orgAppContext(data, record, new_status, apply_url):

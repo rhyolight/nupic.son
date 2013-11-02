@@ -12,21 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Definitions of Summer Of Code-specific types."""
+"""This module contains the Summer Of Code-specific organization model."""
 
-from melange import types
-
-from soc.modules.gsoc.models import organization
-from soc.modules.gsoc.models import profile
-from soc.modules.gsoc.models import program
-from soc.modules.gsoc.models import timeline
-
-from summerofcode.models import organization as ndb_organization
+from melange.models import organization as org_model
 
 
-SOC_MODELS = types.Models(
-    ndb_org_model=ndb_organization.SOCOrganization,
-    org_model=organization.GSoCOrganization,
-    profile_model=profile.GSoCProfile,
-    program_model=program.GSoCProgram,
-    timeline_model=timeline.GSoCTimeline)
+class SOCOrganization(org_model.Organization):
+  """Model that represents a Summer Of Code-specific organization."""
+  # TODO(daniel): add all SoC specific fields, like slots, etc.
+  pass

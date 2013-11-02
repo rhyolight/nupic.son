@@ -21,10 +21,13 @@ import collections
 import re
 
 from django.template import loader
+from django.utils import translation
 from django.utils.datastructures import SortedDict
 
-from soc.views.helper.surveys import SurveySchema
+from soc.views.helper import surveys
 
+
+NOT_ANSWERED_VALUE = translation.ugettext('-')
 
 class ModelReadOnlyTemplateOptions(object):
   """Class holding options specified in the Meta class of the model template.
@@ -152,6 +155,52 @@ class ModelReadOnlyTemplate(object):
     return rendered
 
 
+class Group(object):
+  """Class that forms different fields together into a group.
+
+  Attributes:
+    title: Title of the group.
+    fields: Fields that belong to the group.
+  """
+
+  def __init__(self, title, fields):
+    """Initializes a new group for the specified attributes.
+
+    Args:
+      title: Title of the group.
+      fields: A dict containing label-value pairs that belong to the group.
+    """
+    self.title = title
+    self.fields = fields
+
+
+SURVEY_RESPONSE_GROUP_TITLE = translation.ugettext('Survey Response')
+
+class SurveyResponseGroup(Group):
+  """Class that groups all responses to the specified survey into a group."""
+
+  def __init__(self, survey, survey_response):
+    """Initializes a new group for the specified survey and response.
+
+    Args:
+      survey: Survey entity.
+      survey_response: Survey response entity.
+    """
+    def fields():
+      schema = surveys.SurveySchema(survey) if survey else None
+      if schema:
+        for question in schema:
+          label = question.getLabel()
+          property_name = question.getPropertyName()
+          value = getattr(survey_response, property_name, NOT_ANSWERED_VALUE)
+          if isinstance(value, list):
+            value = ', '.join(value)
+          yield label, value
+
+    super(SurveyResponseGroup, self).__init__(
+        SURVEY_RESPONSE_GROUP_TITLE, fields)
+
+
 class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
   """A base class that constructs the readonly template for given survey record.
 
@@ -169,7 +218,7 @@ class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
     self.instance = instance
     self.schema = None
     if self.instance:
-      self.schema = SurveySchema(self.instance.survey)
+      self.schema = surveys.SurveySchema(self.instance.survey)
 
   def fieldsIterator(self):
     """Iterates through the fields that were declared for this template.
@@ -197,7 +246,7 @@ class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
       for field in self.schema:
         field_id = field.getFieldName()
         label = field.getLabel()
-        value = getattr(self.instance, field_id, '-')
+        value = getattr(self.instance, field_id, NOT_ANSWERED_VALUE)
         if isinstance(value, list):
           value = ', '.join(value)
 
@@ -219,3 +268,27 @@ class SurveyRecordReadOnlyTemplate(ModelReadOnlyTemplate):
     rendered = loader.render_to_string(self.template_path,
                                        dictionary=context)
     return rendered
+
+
+class SurveyResponseReadOnlyTemplate(object):
+  """Readonly template to display survey response."""
+
+  def __init__(self, template_path, groups):
+    """Initializes new instance of the template.
+
+    Args:
+      template_path: Path to the HTML to be rendered.
+      groups: List of groups to include in the template.
+    """
+    self._groups = groups
+    self._template_path = template_path
+
+  def render(self):
+    """Renders the template as HTML.
+
+    Returns:
+      A string containing HTML form of the template. 
+    """
+    context = {'groups': self._groups}
+
+    return loader.render_to_string(self._template_path, dictionary=context)

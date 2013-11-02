@@ -14,6 +14,7 @@
 
 """Module containing the Summer Of Code callback."""
 
+from summerofcode.views import org_app
 from summerofcode.views import project_manage
 
 
@@ -32,6 +33,9 @@ class Callback(object):
 
   def registerViews(self):
     """Instantiates all view objects."""
+    self.views.append(org_app.OrgAppShowPage())
+    self.views.append(org_app.OrgAppTakePage())
+    self.views.append(org_app.OrgAppUpdatePage())
     self.views.append(project_manage.ManageProjectProgramAdminView())
 
   def registerWithSitemap(self):

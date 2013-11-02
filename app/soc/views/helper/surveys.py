@@ -46,6 +46,15 @@ class SurveyField(object):
     """
     return self.field_id
 
+  def getPropertyName(self):
+    """Returns the name of a dynamic property in SurveyResponse model by which
+    a value for this survey field is to be stored.
+
+    Returns:
+      A string containing the property name.
+    """
+    return self.field_id
+
   def getType(self):
     """Returns the type of the field to which it should be rendered.
 

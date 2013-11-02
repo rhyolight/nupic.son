@@ -75,11 +75,12 @@ def setup_gae_services():
 
 def clean_datastore():
   from google.appengine.api import apiproxy_stub_map
+  from google.appengine.ext import ndb
   datastore = apiproxy_stub_map.apiproxy.GetStub('datastore_v3')
-  # clear datastore iff one is available
   if datastore is not None:
     datastore.Clear()
 
+  ndb.get_context().clear_cache()
 
 def clear_memcache():
   """Clears all entries that exist in memcache."""
