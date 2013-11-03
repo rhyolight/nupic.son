@@ -56,7 +56,7 @@ class Organization(ndb.Model):
       verbose_name=translation.ugettext('Name'))
   name.group = translation.ugettext("1. Public Info")
 
-  #: Field storing a reference to the program in which 
+  #: Field storing a reference to the program in which
   #: the organization participates.
   program = ndb.KeyProperty(required=True)
 

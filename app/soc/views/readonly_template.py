@@ -287,7 +287,7 @@ class SurveyResponseReadOnlyTemplate(object):
     """Renders the template as HTML.
 
     Returns:
-      A string containing HTML form of the template. 
+      A string containing HTML form of the template.
     """
     context = {'groups': self._groups}
 

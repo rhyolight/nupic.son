@@ -18,7 +18,7 @@ from google.appengine.ext import ndb
 
 
 class SurveyResponse(ndb.Expando):
-  """Model that records response of a single taker to a particular survey.""" 
+  """Model that records response of a single taker to a particular survey."""
 
   #: The survey for which this entity is a record.
   survey = ndb.KeyProperty()

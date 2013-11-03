@@ -422,7 +422,7 @@ def createOrganizationWithApplicationTxn(
     org_properties: A dict mapping organization properties to their values.
     app_properties: A dict mapping organization application questions to
       corresponding responses.
-    models: 
+    models:
 
   Returns:
     RichBool whose value is set to True if organization and application
