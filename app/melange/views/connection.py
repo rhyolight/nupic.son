@@ -105,7 +105,8 @@ def createConnectionTxn(
     # dispatch an email to the users.
     if notification_context_provider and recipients:
       notification_context = notification_context_provider.getContext(
-          recipients, data, organization, profile, connection.key(), message)
+          recipients, organization, profile, data.program, data.site,
+          connection.key(), message)
       sub_txn = mailer.getSpawnMailTaskTxn(
           notification_context, parent=connection)
       sub_txn()

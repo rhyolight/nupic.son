@@ -109,16 +109,16 @@ def getApplicationResponse(org_key):
   return org_model.ApplicationResponse.query(ancestor=org_key).get()
 
 
-def setStatus(data, organization, program, new_status, recipients=None):
+def setStatus(organization, program, new_status, recipients=None, site=None):
   """Sets status of the specified organization.
 
   Args:
-    data: request_data.RequestData for the current request.
     organization: Organization entity.
     program: Program entity to which organization is assigned.
     new_status: New status of the organization. Must be one of
       org_model.Status constants.
     recipients: List of one or more recipients for the notification email.
+    site: Site entity.
 
   Returns:
     The updated organization entity.
@@ -132,11 +132,11 @@ def setStatus(data, organization, program, new_status, recipients=None):
       if new_status == org_model.Status.ACCEPTED:
         notification_context = (
             notifications.OrganizationAcceptedContextProvider()
-                .getContext(recipients, data, organization, program))
+                .getContext(recipients, organization, program, site))
       elif new_status == org_model.Status.REJECTED:
         notification_context = (
             notifications.OrganizationRejectedContextProvider()
-                .getContext(recipients, data, organization, program))
+                .getContext(recipients, organization, program, site))
 
       sub_txn = mailer.getSpawnMailTaskTxn(
           notification_context, parent=organization)

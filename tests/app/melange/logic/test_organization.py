@@ -29,6 +29,7 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from soc.views.helper import request_data
 
 from tests import org_utils
+from tests import program_utils
 from tests import test_utils
 
 
@@ -170,43 +171,33 @@ class SetStatusTest(test_utils.DjangoTestCase):
     properties = {'parent': self.program}
     seeder_logic.seed(program_model.ProgramMessages, properties=properties)
 
+    self.site = program_utils.seedSite()
+
     self.org = org_utils.seedOrganization(TEST_ORG_ID, self.program.key())
 
   def testAcceptOrganization(self):
     """Tests that organization is successfully accepted."""
-    request = http.HttpRequest()
-    data = request_data.RequestData(request, None, None)
-    data._program = self.program
-
     org = org_logic.setStatus(
-        data, self.org, self.program, org_model.Status.ACCEPTED,
-        recipients=[TEST_EMAIL])
+        self.org, self.program, org_model.Status.ACCEPTED,
+        recipients=[TEST_EMAIL], site=self.site)
 
     self.assertEqual(org.status, org_model.Status.ACCEPTED)
     self.assertEmailSent()
 
   def testRejectOrganization(self):
     """Tests that organization is successfully rejected."""
-    request = http.HttpRequest()
-    data = request_data.RequestData(request, None, None)
-    data._program = self.program
-
     org = org_logic.setStatus(
-        data, self.org, self.program, org_model.Status.REJECTED,
-        recipients=[TEST_EMAIL])
+        self.org, self.program, org_model.Status.REJECTED,
+        recipients=[TEST_EMAIL], site=self.site)
 
     self.assertEqual(org.status, org_model.Status.REJECTED)
     self.assertEmailSent()
 
   def testPreAcceptOrganization(self):
     """Tests that organization is successfully pre-accepted."""
-    request = http.HttpRequest()
-    data = request_data.RequestData(request, None, None)
-    data._program = self.program
-
     org = org_logic.setStatus(
-        data, self.org, self.program, org_model.Status.PRE_ACCEPTED,
-        recipients=[TEST_EMAIL])
+        self.org, self.program, org_model.Status.PRE_ACCEPTED,
+        recipients=[TEST_EMAIL], site=self.site)
 
     self.assertEqual(org.status, org_model.Status.PRE_ACCEPTED)
 
@@ -214,13 +205,9 @@ class SetStatusTest(test_utils.DjangoTestCase):
 
   def testPreRejectOrganization(self):
     """Tests that organization is successfully pre-accepted."""
-    request = http.HttpRequest()
-    data = request_data.RequestData(request, None, None)
-    data._program = self.program
-
     org = org_logic.setStatus(
-        data, self.org, self.program, org_model.Status.PRE_REJECTED,
-        recipients=[TEST_EMAIL])
+        self.org, self.program, org_model.Status.PRE_REJECTED,
+        recipients=[TEST_EMAIL], site=self.site)
 
     self.assertEqual(org.status, org_model.Status.PRE_REJECTED)
 

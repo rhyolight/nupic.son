@@ -80,7 +80,8 @@ def newProposalContext(data, proposal, to_emails):
 
   template = DEF_NEW_PROPOSAL_NOTIFICATION_TEMPLATE
 
-  return getContext(data, to_emails, message_properties, subject, template)
+  return getContext(
+      data.site, data.program, to_emails, message_properties, subject, template)
 
 
 def updatedProposalContext(data, proposal, to_emails):
@@ -110,7 +111,8 @@ def updatedProposalContext(data, proposal, to_emails):
 
   template = DEF_UPDATED_PROPOSAL_NOTIFICATION_TEMPLATE
 
-  return getContext(data, to_emails, message_properties, subject, template)
+  return getContext(
+      data.site, data.program, to_emails, message_properties, subject, template)
 
 
 def newReviewContext(data, comment, to_emails):
@@ -152,7 +154,8 @@ def newReviewContext(data, comment, to_emails):
       data.url_profile.notify_public_comments and not comment.is_private):
     to_emails.append(data.url_profile.email)
 
-  return getContext(data, to_emails, message_properties, subject, template)
+  return getContext(
+      data.site, data.program, to_emails, message_properties, subject, template)
 
 
 def createOrUpdateSlotTransferContext(data, slot_transfer,
@@ -187,4 +190,5 @@ def createOrUpdateSlotTransferContext(data, slot_transfer,
 
   template = DEF_SLOT_TRANSFER_NOTIFICATION_TEMPLATE
 
-  return getContext(data, to_emails, message_properties, subject, template)
+  return getContext(
+      data.site, data.program, to_emails, message_properties, subject, template)
