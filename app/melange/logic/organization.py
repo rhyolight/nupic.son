@@ -109,16 +109,16 @@ def getApplicationResponse(org_key):
   return org_model.ApplicationResponse.query(ancestor=org_key).get()
 
 
-def setStatus(organization, program, new_status, recipients=None, site=None):
+def setStatus(organization, program, site, new_status, recipients=None):
   """Sets status of the specified organization.
 
   Args:
     organization: Organization entity.
     program: Program entity to which organization is assigned.
+    site: Site entity.
     new_status: New status of the organization. Must be one of
       org_model.Status constants.
     recipients: List of one or more recipients for the notification email.
-    site: Site entity.
 
   Returns:
     The updated organization entity.

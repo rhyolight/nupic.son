@@ -23,6 +23,8 @@ from mapreduce import context as mapreduce_context
 from melange.logic import organization as org_logic
 from melange.models import organization as org_model
 
+from soc.logic import site as site_logic
+
 
 def process(org_key):
   """Processes a single organization. 
@@ -40,7 +42,8 @@ def process(org_key):
   program = db.get(program_key)
   organization = ndb.Key.from_old_key(org_key).get()
 
-  # TODO(daniel): add email recipients, i.e. organization admins 
+  # TODO(daniel): add email recipients, i.e. organization admins
+  site = site_logic.singleton()
 
   @ndb.transactional
   def updateOrganizationStatus():
@@ -48,8 +51,10 @@ def process(org_key):
     # only organizations defined for the specified program should be processed
     if organization.program.to_old_key() == program_key:
       if organization.status == org_model.Status.PRE_ACCEPTED:
-        org_logic.setStatus(organization, program, org_model.Status.ACCEPTED)
+        org_logic.setStatus(
+            organization, program, site, org_model.Status.ACCEPTED)
       elif organization.status == org_model.Status.PRE_REJECTED:
-        org_logic.setStatus(organization, program, org_model.Status.REJECTED)
+        org_logic.setStatus(
+            organization, program, site, org_model.Status.REJECTED)
 
   updateOrganizationStatus()

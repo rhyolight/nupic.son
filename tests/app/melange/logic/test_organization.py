@@ -178,8 +178,8 @@ class SetStatusTest(test_utils.DjangoTestCase):
   def testAcceptOrganization(self):
     """Tests that organization is successfully accepted."""
     org = org_logic.setStatus(
-        self.org, self.program, org_model.Status.ACCEPTED,
-        recipients=[TEST_EMAIL], site=self.site)
+        self.org, self.program, self.site, org_model.Status.ACCEPTED,
+        recipients=[TEST_EMAIL])
 
     self.assertEqual(org.status, org_model.Status.ACCEPTED)
     self.assertEmailSent()
@@ -187,8 +187,8 @@ class SetStatusTest(test_utils.DjangoTestCase):
   def testRejectOrganization(self):
     """Tests that organization is successfully rejected."""
     org = org_logic.setStatus(
-        self.org, self.program, org_model.Status.REJECTED,
-        recipients=[TEST_EMAIL], site=self.site)
+        self.org, self.program, self.site, org_model.Status.REJECTED,
+        recipients=[TEST_EMAIL])
 
     self.assertEqual(org.status, org_model.Status.REJECTED)
     self.assertEmailSent()
@@ -196,8 +196,8 @@ class SetStatusTest(test_utils.DjangoTestCase):
   def testPreAcceptOrganization(self):
     """Tests that organization is successfully pre-accepted."""
     org = org_logic.setStatus(
-        self.org, self.program, org_model.Status.PRE_ACCEPTED,
-        recipients=[TEST_EMAIL], site=self.site)
+        self.org, self.program, self.site, org_model.Status.PRE_ACCEPTED,
+        recipients=[TEST_EMAIL])
 
     self.assertEqual(org.status, org_model.Status.PRE_ACCEPTED)
 
@@ -206,8 +206,8 @@ class SetStatusTest(test_utils.DjangoTestCase):
   def testPreRejectOrganization(self):
     """Tests that organization is successfully pre-accepted."""
     org = org_logic.setStatus(
-        self.org, self.program, org_model.Status.PRE_REJECTED,
-        recipients=[TEST_EMAIL], site=self.site)
+        self.org, self.program, self.site, org_model.Status.PRE_REJECTED,
+        recipients=[TEST_EMAIL])
 
     self.assertEqual(org.status, org_model.Status.PRE_REJECTED)
 
