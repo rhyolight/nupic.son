@@ -22,6 +22,7 @@ import datetime
 from google.appengine.api import users
 from google.appengine.api import memcache
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 
@@ -53,6 +54,8 @@ from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.timeline import GSoCTimeline
+
+from summerofcode.models import organization as soc_org_model
 
 
 def seed(request, *args, **kwargs):
@@ -287,6 +290,15 @@ def seed(request, *args, **kwargs):
     entity = GSoCOrganization(**group_properties)
     orgs.append(entity)
     entity.put()
+
+    org_properties = {
+        'name': 'Organization %d' % i,
+        'org_id': 'org_%d' % i,
+        'program': ndb.Key.from_old_key(gsoc2014.key())
+        }
+    org = soc_org_model.SOCOrganization(
+        id='google/gsoc2014/org_%d' % i, **org_properties)
+    org.put()
 
     # Admin (and thus mentor) for the first org
     if i == 0:
