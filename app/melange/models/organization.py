@@ -42,6 +42,54 @@ class Status(messages.Enum):
   PRE_REJECTED = 102
 
 
+def getSponsorId(org_key):
+  """Returns sponsor ID based on the specified organization key.
+
+  Args:
+    org_key: Organization key.
+
+  Returns:
+    A string that represents sponsor ID.
+  """
+  if isinstance(org_key, ndb.Key):
+    key_name = org_key.id()
+  else:
+    key_name = org_key.name()
+  return key_name.split('/')[0]
+
+
+def getProgramId(org_key):
+  """Returns program ID based on the specified organization key.
+
+  Args:
+    org_key: Organization key.
+
+  Returns:
+    A string that represents program ID.
+  """
+  if isinstance(org_key, ndb.Key):
+    key_name = org_key.id()
+  else:
+    key_name = org_key.name()
+  return key_name.split('/')[1]
+
+
+def getOrgId(org_key):
+  """Returns organization ID based on the specified organization key.
+
+  Args:
+    org_key: Organization key.
+
+  Returns:
+    A string that represents organization ID.
+  """
+  if isinstance(org_key, ndb.Key):
+    key_name = org_key.id()
+  else:
+    key_name = org_key.name()
+  return key_name.split('/')[2]
+
+
 # TODO(daniel): complete this class
 class Organization(ndb.Model):
   """Model that represents an organization."""
