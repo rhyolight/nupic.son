@@ -481,15 +481,15 @@ class RedirectCustomRow(Row):
   The link that will be used to redirection is custom to each row.
   """
 
-  def __init__(self, new_window):
+  def __init__(self, new_window=None):
     """Initializes a RedirectCustomRow object.
 
     Args:
-      new_window: A bool indicating whether the redirected page should be
-        loaded in a new window, when a row is clicked.
+      new_window: If specified to True, the redirected page should be
+        loaded in a new window.
     """
     super(RedirectCustomRow, self).__init__('redirect_custom')
-    self.new_window = new_window
+    self.new_window = new_window or False
 
   def _getParameters(self):
     """See Row._getParameters for specification"""
