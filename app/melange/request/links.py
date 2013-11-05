@@ -21,6 +21,7 @@ from google.appengine.ext import ndb
 from django.core import urlresolvers
 
 from melange.appengine import system
+from melange.models import organization as org_model
 
 from soc.logic import program as program_logic
 from soc.logic import site as site_logic
@@ -198,32 +199,21 @@ class Linker(object):
         }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
 
-  def organization(self, org, url_name):
+  def organization(self, org_key, url_name):
     """Returns the URL of an organization's named page.
 
     Args:
-      org: organization entity.
-      url_name: the name with which a URL was registered with Django.
+      org_key: Organization key.
+      url_name: The name with which a URL was registered with Django.
 
     Returns:
       The URL of the page matching the given name for the given organization.
     """
-    # TODO(daniel): make this part default when all orgs are updated to NDB
-    if isinstance(org, ndb.Model):
-      # TODO(daniel): add unit tests for this branch
-      program = db.get(org.program.to_old_key())
-      kwargs = {
-          'sponsor': program_logic.getSponsorKey(program).name(),
-          'program': program.program_id,
-          'organization': org.org_id
-          }
-    else:
-      program = org.program
-      kwargs = {
-          'sponsor': program_logic.getSponsorKey(program).name(),
-          'program': program.program_id,
-          'organization': org.link_id
-          }
+    kwargs = {
+        'sponsor': org_model.getSponsorId(org_key),
+        'program': org_model.getProgramId(org_key),
+        'organization': org_model.getOrgId(org_key)
+        }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
 
 # Since Linker is stateless, there might as well be just one of it.

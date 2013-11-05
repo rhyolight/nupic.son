@@ -207,6 +207,6 @@ class TestLinker(unittest.TestCase):
         org_model.Organization, properties=org_properties)
 
     url = self.linker.organization(
-        organization, ci_urls.UrlNames.CONNECTION_START_AS_ORG)
+        organization.key(), ci_urls.UrlNames.CONNECTION_START_AS_ORG)
     self.assertEqual(
         '/gci/connection/start/org/%s' % organization.key().name(), url)
