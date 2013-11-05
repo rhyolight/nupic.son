@@ -696,6 +696,11 @@ def getList(list_id):
 # A list of list ids
 GSOC_PROJECTS_LIST_ID = 'gsoc_projects'
 
+ORGANIZATION_LIST_ID = 'organizations'
+
+
+# Organization list
+from summerofcode.models import organization as org_model
 
 # GSoCProjects list
 from soc.modules.gsoc.models import project
@@ -748,7 +753,22 @@ GSOC_PROJECTS_LIST = List(GSOC_PROJECTS_LIST_ID, 0, project.GSoCProject,
                           [key, student, title, org, status], datastore_reader,
                           cache_reader=cache_reader, valid_period=valid_period)
 
+# TODO(daniel): move this part to a separate module
+# TODO(daniel): replace this column with one that is more versatile
+class NdbKeyColumn(Column):
+  """Column object to represent the unique key of the entity."""
+
+  def getValue(self, entity):
+    """See Column.getValue for specification"""
+    return entity.key.id()
+
+key = NdbKeyColumn(key_column_id_const.KEY_COLUMN_ID, 'Key', hidden=True)
+name = SimpleColumn('name', 'Name')
+ORGANIZATION_LIST = List(
+    ORGANIZATION_LIST_ID, 0, org_model.SOCOrganization, [key, name],
+    datastore_reader)
 
 LISTS = {
-  GSOC_PROJECTS_LIST_ID: GSOC_PROJECTS_LIST
-}
+    GSOC_PROJECTS_LIST_ID: GSOC_PROJECTS_LIST,
+    ORGANIZATION_LIST_ID: ORGANIZATION_LIST,
+    }
