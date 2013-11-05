@@ -28,16 +28,20 @@ from melange.models import connection as connection_model
 from melange.request import access
 from melange.request import exception
 from melange.request import links
+from melange.utils import lists as melange_lists
 from melange.views import connection as connection_view
 
 from soc.logic import cleaning
 
 from soc.views import readonly_template
+from soc.views import template
 from soc.views.helper import url_patterns
 from soc.views.helper import surveys
+from soc.views.helper import lists
 
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper import url_patterns as soc_url_patterns
 
 from summerofcode.views.helper import urls
@@ -82,6 +86,8 @@ OTHER_PROFILE_IS_THE_CURRENT_PROFILE = translation.ugettext(
     'the other organization administrator.')
 
 GENERAL_INFO_GROUP_TITLE = translation.ugettext('General Info')
+
+ORGANIZATION_LIST_DESCRIPTION = 'List of organizations'
 
 OTHER_OPTION_FIELD_ID = '%s-other'
 
@@ -312,7 +318,7 @@ class OrgAppTakePage(base.GSoCRequestHandler):
               user_role=connection_model.ROLE)
 
         url = links.LINKER.organization(
-          result.extra, urls.UrlNames.ORG_APP_UPDATE)
+          result.extra.key, urls.UrlNames.ORG_APP_UPDATE)
         return http.HttpResponseRedirect(url)
 
 
@@ -361,7 +367,7 @@ class OrgAppUpdatePage(base.GSoCRequestHandler):
           data.url_ndb_org.key, org_properties, app_response_properties)
 
       url = links.LINKER.organization(
-          data.url_ndb_org, urls.UrlNames.ORG_APP_UPDATE)
+          data.url_ndb_org.key, urls.UrlNames.ORG_APP_UPDATE)
       return http.HttpResponseRedirect(url)
 
 
@@ -403,6 +409,90 @@ class OrgAppShowPage(base.GSoCRequestHandler):
         'summerofcode/_readonly_template.html', groups)
 
     return {'record': response_template}
+
+
+# TODO(daniel): replace this class with new style list
+class PublicOrganizationList(template.Template):
+  """Public list of organizations participating in a specified program."""
+
+  def __init__(self, data):
+    """See template.Template.__init__ for specification."""
+    super(PublicOrganizationList, self).__init__(data)
+    self._list_config = lists.ListConfiguration()
+    self._list_config.addPlainTextColumn(
+        'name', 'Name', lambda e, *args: e.name.strip())
+
+  def templatePath(self):
+    """See template.Template.templatePath for specification."""
+    return 'modules/gsoc/admin/_accepted_orgs_list.html'
+
+  def context(self):
+    """See template.Template.context for specification."""
+    description = ORGANIZATION_LIST_DESCRIPTION
+
+    list_configuration_response = lists.ListConfigurationResponse(
+        self.data, self._list_config, 0, description)
+
+    return {
+        'lists': [list_configuration_response],
+    }
+
+
+class PublicOrganizationListRowRedirect(melange_lists.RedirectCustomRow):
+  """Class which provides redirects for rows of public organization list."""
+
+  def __init__(self, data):
+    """Initializes a new instance of the row redirect.
+
+    See lists.RedirectCustomRow.__init__ for specification.
+
+    Args:
+      data: request_data.RequestData for the current request.
+    """
+    super(PublicOrganizationListRowRedirect, self).__init__()
+    self.data = data
+
+  def getLink(self, item):
+    """See lists.RedirectCustomRow.getLink for specification."""
+    org_key = ndb.Key(
+        self.data.models.ndb_org_model._get_kind(), item['columns']['key'])
+    return links.LINKER.organization(org_key, url_names.GSOC_ORG_HOME)
+
+
+class PublicOrganizationListPage(base.GSoCRequestHandler):
+  """View to list all participating organizations in the program."""
+
+  # TODO(daniel): the page should be accessible after orgs are announced
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def templatePath(self):
+    """See base.GSoCRequestHandler.templatePath for specification."""
+    return 'modules/gsoc/accepted_orgs/base.html'
+
+  def djangoURLPatterns(self):
+    """See base.GSoCRequestHandler.djangoURLPatterns for specification."""
+    return [
+        # TODO(daniel): remove "new", when the old view is not needed anymore
+        soc_url_patterns.url(
+            r'org/list/public/%s$' % url_patterns.PROGRAM, self,
+            name=urls.UrlNames.ORG_PUBLIC_LIST)]
+
+
+  def jsonContext(self, data, check, mutator):
+    """See base.GSoCRequestHandler.jsonContext for specification."""
+    query = data.models.ndb_org_model.query()
+
+    response = melange_lists.JqgridResponse(
+        melange_lists.ORGANIZATION_LIST_ID,
+        row=PublicOrganizationListRowRedirect(data))
+    return response.getData(query)
+
+  def context(self, data, check, mutator):
+    """See base.GSoCRequestHandler.context for specification."""
+    return {
+        'page_name': "Accepted organizations for %s" % data.program.name,
+        'accepted_orgs_list': PublicOrganizationList(data),
+    }
 
 
 @ndb.transactional

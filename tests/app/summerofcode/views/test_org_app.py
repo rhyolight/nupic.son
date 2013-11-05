@@ -65,6 +65,18 @@ def _getOrgAppShowUrl(org):
   return '/gsoc/org/application/show2/%s' % org.key.id()
 
 
+def _getPublicOrgListUrl(program):
+  """Returns URL to Public Organization List page.
+
+  Args:
+    program: Program entity.
+
+  Returns:
+    A string containing the URL to Public Organization List page.
+  """
+  return '/gsoc/org/list/public/%s' % program.key().name()
+
+
 class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for OrgAppTakePage class."""
 
@@ -195,3 +207,16 @@ class OrgAppShowPageTest(test_utils.GSoCDjangoTestCase):
     self.profile_helper.createProfile()
     response = self.post(_getOrgAppShowUrl(self.org))
     self.assertResponseMethodNotAllowed(response)
+
+
+class PublicOrganizationListPageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for PublicOrganizationListPage class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    response = self.get(_getPublicOrgListUrl(self.program))
+    self.assertResponseOK(response)
