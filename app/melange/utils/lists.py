@@ -320,7 +320,7 @@ class JqgridResponse(object):
       define custom row operations.
     """
     if self._row:
-      return self.row.getCustomParameters(item)
+      return self._row.getCustomParameters(item)
 
 def getDataId(query):
   """Get a unique 'data id' for a cached list related to a query.
