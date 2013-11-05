@@ -38,15 +38,16 @@ class TestApplyOrgAdmissionDecisions(
     # pre-accepted and some organizations on which no decisions have been taken;
     # the last group should not occur in production but this will check that
     # "undecided" organizations are not processed by the mapper
-    seeded_orgs = [[], [], []]
-    statuses = [
+    seeded_orgs = ([], [], [])
+    statuses = (
         org_model.Status.PRE_ACCEPTED,
         org_model.Status.PRE_REJECTED,
-        org_model.Status.APPLYING]
-    for i in range(12):
+        org_model.Status.APPLYING)
+    for i in range(4 * len(statuses)):
       org = org_utils.seedOrganization(
-          'org_id_%s' % i, self.program.key(), status=statuses[i % 3])
-      seeded_orgs[i % 3].append(org.key)
+          'org_id_%s' % i,
+          self.program.key(), status=statuses[i % len(statuses)])
+      seeded_orgs[i % len(statuses)].append(org.key)
 
     self.pre_accepted_orgs = seeded_orgs[0]
     self.pre_rejected_orgs = seeded_orgs[1]
