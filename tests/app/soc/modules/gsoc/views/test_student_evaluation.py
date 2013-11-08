@@ -20,6 +20,7 @@ import urllib
 from google.appengine.ext import ndb
 
 from django import forms as django_forms
+from django.utils import html
 
 from tests import profile_utils
 from tests import timeline_utils
@@ -219,10 +220,9 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
 
     self.assertContains(
         response, 'Create new student evaluation')
-    # TODO(nathaniel): This assertContains call needs an "html=True"
-    # argument (available in Django 1.4 or later).
-    # self.assertContains(
-    #     response, '<input name="schema" type="hidden" id="schema" value="" />')
+    self.assertContains(
+        response, '<input name="schema" type="hidden" id="schema" value="" />',
+        html=True)
 
     self.assertEqual(response.context['page_name'],
                      'Create new student evaluation')
@@ -255,12 +255,10 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
 
     self.assertContains(
         response, 'Edit - %s' % (eval.title,))
-    # TODO(nathaniel): This assertContains call needs an "html=True"
-    # argument (available in Django 1.4 or later).
-    # self.assertContains(
-    #     response,
-    #     '<input name="schema" type="hidden" id="schema" value=%s />'
-    #     % (json.dumps(escape(eval.schema)),))
+    self.assertContains(
+        response,
+        '<input name="schema" type="hidden" id="schema" value=%s />'
+            % (json.dumps(html.escape(eval.schema)),), html=True)
 
     self.assertEqual(response.context['page_name'],
                      'Edit - %s' % (eval.title,))
