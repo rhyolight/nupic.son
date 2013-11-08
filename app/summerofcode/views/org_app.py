@@ -56,6 +56,9 @@ ORG_ID_HELP_TEXT = translation.ugettext(
 ORG_NAME_HELP_TEXT = translation.ugettext(
     'Complete, formal name of the organization.')
 
+DESCRIPTION_HELP_TEXT = translation.ugettext(
+    'Description of the organization to be displayed on a public profile page.')
+
 IDEAS_PAGE_HELP_TEXT = translation.ugettext(
     'The URL to a page with list of ideas for projects for this organization.')
 
@@ -73,6 +76,8 @@ BACKUP_ADMIN_HELP_TEXT = translation.ugettext(
 ORG_ID_LABEL = translation.ugettext('Organization ID')
 
 ORG_NAME_LABEL = translation.ugettext('Organization name')
+
+DESCRIPTION_LABEL = translation.ugettext('Description')
 
 IDEAS_PAGE_LABEL = translation.ugettext('Ideas list')
 
@@ -156,6 +161,11 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
   name = django_forms.CharField(
       required=True, label=ORG_NAME_LABEL, help_text=ORG_NAME_HELP_TEXT)
 
+  # TODO(daniel): make sure this field is escaped properly
+  description = django_forms.CharField(
+      widget=django_forms.Textarea, required=True, label=DESCRIPTION_LABEL,
+      help_text=DESCRIPTION_HELP_TEXT)
+
   logo_url = django_forms.URLField(
       required=False, label=LOGO_URL_LABEL, help_text=LOGO_URL_HELP_TEXT)
 
@@ -207,6 +217,8 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
       A dict mapping organization properties to the corresponding values.
     """
     properties = {}
+    if 'description' in self.cleaned_data:
+      properties['description'] = self.cleaned_data['description']
     if 'ideas_page' in self.cleaned_data:
       properties['ideas_page'] = self.cleaned_data['ideas_page']
     if 'logo_url' in self.cleaned_data:
