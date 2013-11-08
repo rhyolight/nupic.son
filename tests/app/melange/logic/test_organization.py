@@ -18,15 +18,12 @@ import unittest
 
 from google.appengine.ext import ndb
 
-from django import http
-
 from melange.logic import organization as org_logic
 from melange.models import organization as org_model
 
 from soc.models import program as program_model
 from soc.models import survey as survey_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
-from soc.views.helper import request_data
 
 from tests import org_utils
 from tests import program_utils
