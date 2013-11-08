@@ -278,6 +278,7 @@ def seed(request, *args, **kwargs):
   role_properties.pop('parent')
 
   orgs = []
+  ndb_orgs = []
   for i in range(15):
     group_properties.update({
         'key_name': 'google/gsoc2014/org_%d' % i,
@@ -299,6 +300,7 @@ def seed(request, *args, **kwargs):
     org = soc_org_model.SOCOrganization(
         id='google/gsoc2014/org_%d' % i, **org_properties)
     org.put()
+    ndb_orgs.append(org)
 
     # Admin (and thus mentor) for the first org
     if i == 0:
@@ -448,7 +450,7 @@ def seed(request, *args, **kwargs):
       'parent': melange_student,
       'mentors': [profile.key()],
       'program':  gsoc2014,
-      'org': orgs[1].key(),
+      'org': ndb_orgs[1].key.to_old_key(),
        }
 
   melange_project = GSoCProject(**project_properties)
