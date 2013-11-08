@@ -33,6 +33,7 @@ from tests import test_utils
 TEST_ORG_ID = 'test_org_id'
 TEST_ORG_NAME = 'Test Org Name'
 TEST_EMAIL = 'test@example.com'
+TEST_LOGO_URL = 'http://www.test.logo.url.com'
 
 class CreateOrganizationWithApplicationTest(unittest.TestCase):
   """Unit tests for createOrganizationWithApplication function."""
@@ -46,7 +47,10 @@ class CreateOrganizationWithApplicationTest(unittest.TestCase):
 
   def testOrgAndApplicationCreated(self):
     """Tests that org entity and application are created successfully."""
-    org_properties = {'name': TEST_ORG_NAME}
+    org_properties = {
+        'logo_url': TEST_LOGO_URL,
+        'name': TEST_ORG_NAME
+        }
     result = org_logic.createOrganizationWithApplication(
         TEST_ORG_ID, self.program.key(), self.survey.key(), org_properties, {})
     self.assertTrue(result)
@@ -57,6 +61,7 @@ class CreateOrganizationWithApplicationTest(unittest.TestCase):
         '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
     self.assertIsNotNone(org)
     self.assertEqual(org.org_id, TEST_ORG_ID)
+    self.assertEqual(org.logo_url, TEST_LOGO_URL)
     self.assertEqual(org.name, TEST_ORG_NAME)
     self.assertEqual(org.status, org_model.Status.APPLYING)
 
@@ -102,6 +107,15 @@ class CreateOrganizationWithApplicationTest(unittest.TestCase):
         org_properties, {})
     self.assertTrue(result)
 
+  def testForInvalidLogoUrl(self):
+    """Tests that org is not created when a link property has invalid values."""
+    org_properties = {
+        'logo_url': 'http://invalid',
+        'name': TEST_ORG_NAME
+        }
+    result = org_logic.createOrganizationWithApplication(
+        TEST_ORG_ID, self.program.key(), self.survey.key(), org_properties, {})
+    self.assertFalse(result)
 
 class UpdateOrganizationWithApplicationTest(unittest.TestCase):
   """Unit tests for updateOrganizationWithApplication function."""

@@ -21,6 +21,7 @@ from django.utils import translation
 
 from protorpc import messages
 
+from melange.appengine import db
 from melange.models import survey as survey_model
 
 
@@ -103,6 +104,10 @@ class Organization(ndb.Model):
   name = ndb.StringProperty(required=True,
       verbose_name=translation.ugettext('Name'))
   name.group = translation.ugettext("1. Public Info")
+
+  #: URL to an image with organization logo.
+  logo_url = ndb.StringProperty(
+      indexed=False, validator=db.link_validator)
 
   #: Field storing a reference to the program in which
   #: the organization participates.
