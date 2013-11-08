@@ -28,7 +28,8 @@ from tests import test_utils
 
 TEST_ORG_ID = 'test_org_id'
 TEST_ORG_NAME = u'Test Org Name'
-TEST_IDEAS_PAGE = 'http://www.test.ideas.com'
+TEST_IDEAS_PAGE = 'http://www.test.ideas.com/'
+TEST_LOGO_URL = u'http://www.test.logo.url.com/'
 
 def _getOrgAppTakeUrl(program):
   """Returns URL to Organization Application Take page.
@@ -100,6 +101,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
     postdata = {
         'org_id': TEST_ORG_ID,
         'name': TEST_ORG_NAME,
+        'logo_url': TEST_LOGO_URL,
         'ideas_page': TEST_IDEAS_PAGE,
         'backup_admin': backup_admin.link_id
         }
@@ -111,6 +113,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
         '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
     self.assertIsNotNone(org)
     self.assertEqual(org.ideas_page, TEST_IDEAS_PAGE)
+    self.assertEqual(org.logo_url, TEST_LOGO_URL)
 
     # check that the client is redirected to update page
     self.assertResponseRedirect(response, url=_getOrgAppUpdateUrl(org))
@@ -140,7 +143,8 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
 
 
 OTHER_TEST_NAME = 'Other Org Name'
-OTHER_TEST_IDAES_PAGE = 'http://www.other-ideas.page.com'
+OTHER_TEST_IDAES_PAGE = 'http://www.other.ideas.page.com/'
+OTHER_TEST_LOGO_URL = 'http://www.other.test.logo.url.com/'
 
 class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for OrgAppUpdatePage class."""
@@ -168,6 +172,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     # check that mutable properties are updated
     postdata = {
         'ideas_page': OTHER_TEST_IDAES_PAGE,
+        'logo_url': OTHER_TEST_LOGO_URL,
         'name': OTHER_TEST_NAME,
         }
     response = self.post(_getOrgAppUpdateUrl(self.org), postdata=postdata)
@@ -178,11 +183,13 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
         soc_org_model.SOCOrganization._get_kind(),
         '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
     self.assertEqual(org.ideas_page, OTHER_TEST_IDAES_PAGE)
+    self.assertEqual(org.logo_url, OTHER_TEST_LOGO_URL)
     self.assertEqual(org.name, OTHER_TEST_NAME)
 
     # check that organization ID is not updated even if it is in POST data
     postdata = {
         'ideas_page': OTHER_TEST_IDAES_PAGE,
+        'logo_url': OTHER_TEST_LOGO_URL,
         'org_id': 'other_org_id',
         'name': TEST_ORG_NAME
         }

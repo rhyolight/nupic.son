@@ -59,6 +59,10 @@ ORG_NAME_HELP_TEXT = translation.ugettext(
 IDEAS_PAGE_HELP_TEXT = translation.ugettext(
     'The URL to a page with list of ideas for projects for this organization.')
 
+LOGO_URL_HELP_TEXT = translation.ugettext(
+    'URL to the logo of the organization. Please ensure that the provided '
+    'image is smaller than 65px65px.')
+
 BACKUP_ADMIN_HELP_TEXT = translation.ugettext(
     'Username of the user who will also serve as administrator for this '
     'organization. Please note that the user must have created '
@@ -71,6 +75,8 @@ ORG_ID_LABEL = translation.ugettext('Organization ID')
 ORG_NAME_LABEL = translation.ugettext('Organization name')
 
 IDEAS_PAGE_LABEL = translation.ugettext('Ideas list')
+
+LOGO_URL_LABEL = translation.ugettext('Logo URL')
 
 BACKUP_ADMIN_LABEL = translation.ugettext('Backup administrator')
 
@@ -150,6 +156,9 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
   name = django_forms.CharField(
       required=True, label=ORG_NAME_LABEL, help_text=ORG_NAME_HELP_TEXT)
 
+  logo_url = django_forms.URLField(
+      required=False, label=LOGO_URL_LABEL, help_text=LOGO_URL_HELP_TEXT)
+
   ideas_page = django_forms.URLField(
       required=True, label=IDEAS_PAGE_LABEL, help_text=IDEAS_PAGE_HELP_TEXT)
 
@@ -200,6 +209,8 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
     properties = {}
     if 'ideas_page' in self.cleaned_data:
       properties['ideas_page'] = self.cleaned_data['ideas_page']
+    if 'logo_url' in self.cleaned_data:
+      properties['logo_url'] = self.cleaned_data['logo_url']
     if 'name' in self.cleaned_data:
       properties['name'] = self.cleaned_data['name']
     if 'org_id' in self.cleaned_data:
