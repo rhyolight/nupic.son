@@ -57,12 +57,16 @@ def createOrganizationWithApplication(
     return rich_bool.RichBool(False, extra=ORG_ID_IN_USE % org_id)
 
   program_key = ndb.Key.from_old_key(program_key)
-  organization = models.ndb_org_model(
-      id=entity_id, org_id=org_id, program=program_key, **org_properties)
 
-  app_key = ndb.Key.from_old_key(app_key)
-  application_record = org_model.ApplicationResponse(
-      parent=organization.key, survey=app_key, **app_properties)
+  try:
+    organization = models.ndb_org_model(
+        id=entity_id, org_id=org_id, program=program_key, **org_properties)
+  
+    app_key = ndb.Key.from_old_key(app_key)
+    application_record = org_model.ApplicationResponse(
+        parent=organization.key, survey=app_key, **app_properties)
+  except ValueError as e:
+    return rich_bool.RichBool(False, extra=str(e))
 
   ndb.put_multi([organization, application_record])
 
