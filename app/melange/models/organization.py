@@ -105,6 +105,9 @@ class Organization(ndb.Model):
       verbose_name=translation.ugettext('Name'))
   name.group = translation.ugettext("1. Public Info")
 
+  #: Description of the organization.
+  description = ndb.TextProperty(required=True, indexed=False)
+
   #: URL to an image with organization logo.
   logo_url = ndb.StringProperty(
       indexed=False, validator=db.link_validator)

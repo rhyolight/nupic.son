@@ -30,6 +30,7 @@ from summerofcode.models import organization as org_model
 
 TEST_ORG_ID = 'test_org_id'
 TEST_ORG_NAME = 'Test Org Name'
+TEST_DESCRIPTION = u'Test Organization Description'
 TEST_IDEAS_PAGE = 'http://www.test.ideas.com'
 
 class CreateOrganizationWithApplicationTest(unittest.TestCase):
@@ -47,6 +48,7 @@ class CreateOrganizationWithApplicationTest(unittest.TestCase):
   def testPropertiesAreSet(self):
     """Tests that Summer Of Code-specific properties are set correctly."""
     org_properties = {
+       'description': TEST_DESCRIPTION,
        'ideas_page': TEST_IDEAS_PAGE,
        'name': TEST_ORG_NAME,
        }

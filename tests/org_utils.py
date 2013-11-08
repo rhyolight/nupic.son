@@ -22,6 +22,7 @@ from summerofcode.models import organization as soc_org_model
 
 
 TEST_ORG_NAME = 'Test Org'
+TEST_ORG_DESCRIPTION = 'Test Organization Description'
 
 def seedOrganization(org_id, program_key,
     model=org_model.Organization, **kwargs):
@@ -39,6 +40,7 @@ def seedOrganization(org_id, program_key,
   program_key = ndb.Key.from_old_key(program_key)
 
   properties = {
+      'description': TEST_ORG_DESCRIPTION,
       'org_id': org_id,
       'name': TEST_ORG_NAME,
       }
