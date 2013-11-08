@@ -14,6 +14,7 @@
 
 """Logic for organizations."""
 
+from google.appengine.api import datastore_errors
 from google.appengine.ext import ndb
 
 from melange import types
@@ -68,7 +69,10 @@ def createOrganizationWithApplication(
   except ValueError as e:
     return rich_bool.RichBool(False, extra=str(e))
 
-  ndb.put_multi([organization, application_record])
+  try:
+    ndb.put_multi([organization, application_record])
+  except datastore_errors.BadValueError as e:
+    return rich_bool.RichBool(False, extra=str(e))
 
   return rich_bool.RichBool(True, extra=organization)
 
