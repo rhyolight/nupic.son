@@ -193,7 +193,7 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
     if 'name' in self.cleaned_data:
       properties['name'] = self.cleaned_data['name']
     if 'org_id' in self.cleaned_data:
-      properties['org_id'] = self.cleaned_data['name']
+      properties['org_id'] = self.cleaned_data['org_id']
     return properties
 
   def getApplicationResponseProperties(self):
@@ -291,8 +291,12 @@ class OrgAppTakePage(base.GSoCRequestHandler):
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
     else:
-      org_id = form.cleaned_data['org_id']
-      org_properties = {'name': form.cleaned_data['name']}
+      org_properties = form.getOrgProperties()
+
+      # org_id is a special property
+      org_id = org_properties['org_id']
+      del org_properties['org_id']
+
       app_properties = form.getApplicationResponseProperties()
 
       result = createOrganizationWithApplicationTxn(
