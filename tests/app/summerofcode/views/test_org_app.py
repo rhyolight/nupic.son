@@ -28,6 +28,7 @@ from tests import test_utils
 
 TEST_ORG_ID = 'test_org_id'
 TEST_ORG_NAME = u'Test Org Name'
+TEST_IDEAS_PAGE = 'http://www.test.ideas.com'
 
 def _getOrgAppTakeUrl(program):
   """Returns URL to Organization Application Take page.
@@ -99,6 +100,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
     postdata = {
         'org_id': TEST_ORG_ID,
         'name': TEST_ORG_NAME,
+        'ideas_page': TEST_IDEAS_PAGE,
         'backup_admin': backup_admin.link_id
         }
     response = self.post(_getOrgAppTakeUrl(self.program), postdata=postdata)
@@ -108,6 +110,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
         soc_org_model.SOCOrganization._get_kind(),
         '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
     self.assertIsNotNone(org)
+    self.assertEqual(org.ideas_page, TEST_IDEAS_PAGE)
 
     # check that the client is redirected to update page
     self.assertResponseRedirect(response, url=_getOrgAppUpdateUrl(org))
@@ -136,6 +139,9 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(connection.user_role, connection_model.ROLE)
 
 
+OTHER_TEST_NAME = 'Other Org Name'
+OTHER_TEST_IDAES_PAGE = 'http://www.other-ideas.page.com'
+
 class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for OrgAppUpdatePage class."""
 
@@ -143,7 +149,8 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     """See unittest.TestCase.setUp for specification."""
     self.init()
     self.org = org_utils.seedSOCOrganization(
-        TEST_ORG_ID, self.program.key(), name=TEST_ORG_NAME)
+        TEST_ORG_ID, self.program.key(), name=TEST_ORG_NAME,
+        ideas_page=TEST_IDEAS_PAGE)
     self.app_response = melange_org_model.ApplicationResponse(
         parent=self.org.key)
     self.app_response.put()
@@ -159,7 +166,10 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     self.profile_helper.createProfile()
 
     # check that mutable properties are updated
-    postdata = {'name': 'Other Org Name'}
+    postdata = {
+        'ideas_page': OTHER_TEST_IDAES_PAGE,
+        'name': OTHER_TEST_NAME,
+        }
     response = self.post(_getOrgAppUpdateUrl(self.org), postdata=postdata)
     self.assertResponseRedirect(response, url=_getOrgAppUpdateUrl(self.org))
 
@@ -167,10 +177,12 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     org = ndb.Key(
         soc_org_model.SOCOrganization._get_kind(),
         '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
-    self.assertEqual(org.name, 'Other Org Name')
+    self.assertEqual(org.ideas_page, OTHER_TEST_IDAES_PAGE)
+    self.assertEqual(org.name, OTHER_TEST_NAME)
 
     # check that organization ID is not updated even if it is in POST data
     postdata = {
+        'ideas_page': OTHER_TEST_IDAES_PAGE,
         'org_id': 'other_org_id',
         'name': TEST_ORG_NAME
         }
