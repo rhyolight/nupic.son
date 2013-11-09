@@ -22,6 +22,7 @@ from django.utils import translation
 from protorpc import messages
 
 from melange.appengine import db
+from melange.models import contact as contact_model
 from melange.models import survey as survey_model
 
 
@@ -111,6 +112,9 @@ class Organization(ndb.Model):
   #: URL to an image with organization logo.
   logo_url = ndb.StringProperty(
       indexed=False, validator=db.link_validator)
+
+  #: Contact channels to the organization.
+  contact = ndb.LocalStructuredProperty(contact_model.Contact)
 
   #: Field storing a reference to the program in which
   #: the organization participates.
