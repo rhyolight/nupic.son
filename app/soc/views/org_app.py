@@ -110,7 +110,7 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
 
       raise django_forms.ValidationError(
           DEF_BACKUP_ADMIN_NO_PROFILE % (
-              self.request_data.program.short_name,
+              self.request_data.program.name,
               self._getCreateProfileURL(redirector)))
 
   def clean_org_id(self):
