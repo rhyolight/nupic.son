@@ -79,3 +79,5 @@ GCI_CONVERSATION_REPLY = 'gci_conversation_reply'
 GCI_CONVERSATIONS = 'gci_conversations'
 GCI_CONVERSATION_CREATE = 'gci_conversation_create'
 GCI_CONVERSATION_NOTIFICATION_TOGGLE = 'gci_conversation_notification_toggle'
+
+GCI_TASK_UPDATE_CONVERSATIONS = 'gci_update_conversations'
