@@ -114,7 +114,7 @@ class ConversationHelper(object):
       The created GCIConversationUser entity.
     """
     conv_user = self.conversation_user_model_class(
-        conversation=conversation, user=user,
+        parent=conversation, conversation=conversation, user=user,
         enable_notifications=enable_notifications)
     conv_user.put()
 

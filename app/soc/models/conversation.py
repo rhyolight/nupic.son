@@ -95,6 +95,9 @@ class ConversationUser(ndb.Model):
   In addition to being a record of a user's involvement in a conversation, it
   stores the time of the last message seen by the user, and it also store's the
   user's preferences for this conversation.
+  
+  Parent:
+    soc.models.conversation.Conversation
   """
 
   #: Conversation the preferences apply to

@@ -245,17 +245,24 @@ def addUserToConversation(conversation, user):
     The created (or existing) GCIConversationUser entity representing the
     user's involvement.
   """
-  conv_users = queryConversationUserForConversationAndUser(
-      conversation=conversation, user=user).fetch(1)
+  @ndb.transactional
+  def txn():
+    query = gciconversation_model.GCIConversationUser.query(
+        gciconversation_model.GCIConversationUser.user == user,
+        gciconversation_model.GCIConversationUser.conversation == conversation,
+        ancestor=conversation)
+    conv_user = query.get()
 
-  if conv_users:
-    return conv_users[0]
+    if conv_user:
+      return conv_user
 
-  conv_user = gciconversation_model.GCIConversationUser(
-      conversation=conversation, user=user)
-  conv_user.put()
+    conv_user = gciconversation_model.GCIConversationUser(
+        parent=conversation, conversation=conversation, user=user)
+    conv_user.put()
 
-  return conv_user
+    return conv_user
+
+  return txn()
 
 
 def removeUserFromConversation(conversation, user):
