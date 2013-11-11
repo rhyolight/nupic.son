@@ -151,7 +151,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
 
 OTHER_TEST_DESCRIPTION = u'Other Organization Description'
 OTHER_TEST_NAME = 'Other Org Name'
-OTHER_TEST_IDAES_PAGE = 'http://www.other.ideas.page.com/'
+OTHER_TEST_IDEAS_PAGE = 'http://www.other.ideas.page.com/'
 OTHER_TEST_LOGO_URL = 'http://www.other.test.logo.url.com/'
 OTHER_TEST_MAILING_LIST = 'othermailinglist@example.com'
 
@@ -182,7 +182,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     # check that mutable properties are updated
     postdata = {
         'description': OTHER_TEST_DESCRIPTION,
-        'ideas_page': OTHER_TEST_IDAES_PAGE,
+        'ideas_page': OTHER_TEST_IDEAS_PAGE,
         'logo_url': OTHER_TEST_LOGO_URL,
         'mailing_list': OTHER_TEST_MAILING_LIST,
         'name': OTHER_TEST_NAME,
@@ -196,14 +196,14 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
         '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
     self.assertEqual(org.contact.mailing_list, OTHER_TEST_MAILING_LIST)
     self.assertEqual(org.description, OTHER_TEST_DESCRIPTION)
-    self.assertEqual(org.ideas_page, OTHER_TEST_IDAES_PAGE)
+    self.assertEqual(org.ideas_page, OTHER_TEST_IDEAS_PAGE)
     self.assertEqual(org.logo_url, OTHER_TEST_LOGO_URL)
     self.assertEqual(org.name, OTHER_TEST_NAME)
 
     # check that organization ID is not updated even if it is in POST data
     postdata = {
         'description': OTHER_TEST_DESCRIPTION,
-        'ideas_page': OTHER_TEST_IDAES_PAGE,
+        'ideas_page': OTHER_TEST_IDEAS_PAGE,
         'logo_url': OTHER_TEST_LOGO_URL,
         'org_id': 'other_org_id',
         'name': TEST_ORG_NAME

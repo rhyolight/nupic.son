@@ -489,7 +489,7 @@ class RedirectCustomRow(Row):
         loaded in a new window.
     """
     super(RedirectCustomRow, self).__init__('redirect_custom')
-    self.new_window = new_window or False
+    self.new_window = bool(new_window)
 
   def _getParameters(self):
     """See Row._getParameters for specification"""
