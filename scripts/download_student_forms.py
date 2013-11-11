@@ -14,9 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Downloads student forms.
-"""
-
+"""Downloads student forms."""
 
 import optparse
 import os
@@ -28,6 +26,8 @@ import interactive
 parser = optparse.OptionParser(usage="usage: %prog [options] app_id")
 parser.add_option("-o", "--output", dest="outputdir", default="forms",
                   help="write files to target DIR", metavar="DIR")
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 
 def downloadStudentForms(options):
