@@ -22,6 +22,7 @@ from django import forms as django_forms
 from django import http
 from django.utils import translation
 
+from melange.logic import contact as contact_logic
 from melange.logic import organization as org_logic
 from melange.logic import profile as profile_logic
 from melange.models import connection as connection_model
@@ -66,6 +67,9 @@ LOGO_URL_HELP_TEXT = translation.ugettext(
     'URL to the logo of the organization. Please ensure that the provided '
     'image is smaller than 65px65px.')
 
+MAILING_LIST_HELP_TEXT = translation.ugettext(
+    'Mailing list email address, URL to sign-up page, etc.')
+
 BACKUP_ADMIN_HELP_TEXT = translation.ugettext(
     'Username of the user who will also serve as administrator for this '
     'organization. Please note that the user must have created '
@@ -82,6 +86,8 @@ DESCRIPTION_LABEL = translation.ugettext('Description')
 IDEAS_PAGE_LABEL = translation.ugettext('Ideas list')
 
 LOGO_URL_LABEL = translation.ugettext('Logo URL')
+
+MAILING_LIST_LABEL = translation.ugettext('Mailing list')
 
 BACKUP_ADMIN_LABEL = translation.ugettext('Backup administrator')
 
@@ -172,6 +178,10 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
   ideas_page = django_forms.URLField(
       required=True, label=IDEAS_PAGE_LABEL, help_text=IDEAS_PAGE_HELP_TEXT)
 
+  mailing_list = django_forms.CharField(
+      required=False, label=MAILING_LIST_LABEL,
+      help_text=MAILING_LIST_HELP_TEXT)
+
   backup_admin = django_forms.CharField(
       required=True, label=BACKUP_ADMIN_LABEL,
       help_text=BACKUP_ADMIN_HELP_TEXT)
@@ -209,6 +219,18 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
     """
     return cleanBackupAdmin(
         self.cleaned_data['backup_admin'], self.request_data)
+
+  def getContactProperties(self):
+    """Returns properties of the contact information that were submitted in
+    the form.
+
+    Returns:
+      A dict mapping contact properties to the corresponding values.
+    """
+    properties = {}
+    if 'mailing_list' in self.cleaned_data:
+      properties['mailing_list'] = self.cleaned_data['mailing_list']
+    return properties
 
   def getOrgProperties(self):
     """Returns properties of the organization that were submitted in this form.
@@ -324,39 +346,46 @@ class OrgAppTakePage(base.GSoCRequestHandler):
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
     else:
-      org_properties = form.getOrgProperties()
-
-      # org_id is a special property
-      org_id = org_properties['org_id']
-      del org_properties['org_id']
-
-      app_properties = form.getApplicationResponseProperties()
-
-      result = createOrganizationWithApplicationTxn(
-          org_id, data.program.key(), data.org_app.key(),
-          org_properties, app_properties, data.models)
+      contact_properties = form.getContactProperties()
+      result = contact_logic.createContact(**contact_properties)
 
       if not result:
-        # TODO(nathaniel): problematic self-use.
-        # TODO(daniel): I would like to be able to forward the error
-        # message so that it is printed to the user.
-        return self.get(data, check, mutator)
+        raise exception.BadRequest(message=result.extra)
       else:
-        # NOTE: this should rather be done within a transaction along with
-        # creating the organization. At least one admin is required for
-        # each organization: what if the code above fails and there are none?
-        # However, it should not be a practical problem.
-        admin_keys = [
-            data.profile.key(), form.cleaned_data['backup_admin'].key()]
-        for admin_key in admin_keys:
-          connection_view.createConnectionTxn(
-              data, admin_key, result.extra,
-              org_role=connection_model.ORG_ADMIN_ROLE,
-              user_role=connection_model.ROLE)
+        org_properties = form.getOrgProperties()
+        org_properties['contact'] = result.extra
 
-        url = links.LINKER.organization(
-          result.extra.key, urls.UrlNames.ORG_APP_UPDATE)
-        return http.HttpResponseRedirect(url)
+        # org_id is a special property
+        org_id = org_properties['org_id']
+        del org_properties['org_id']
+
+        app_properties = form.getApplicationResponseProperties()
+
+        result = createOrganizationWithApplicationTxn(
+            org_id, data.program.key(), data.org_app.key(),
+            org_properties, app_properties, data.models)
+
+        if not result:
+          # TODO(nathaniel): problematic self-use.
+          # TODO(daniel): I would like to be able to forward the error
+          # message so that it is printed to the user.
+          return self.get(data, check, mutator)
+        else:
+          # NOTE: this should rather be done within a transaction along with
+          # creating the organization. At least one admin is required for
+          # each organization: what if the code above fails and there are none?
+          # However, it should not be a practical problem.
+          admin_keys = [
+              data.profile.key(), form.cleaned_data['backup_admin'].key()]
+          for admin_key in admin_keys:
+            connection_view.createConnectionTxn(
+                data, admin_key, result.extra,
+                org_role=connection_model.ORG_ADMIN_ROLE,
+                user_role=connection_model.ROLE)
+  
+          url = links.LINKER.organization(
+            result.extra.key, urls.UrlNames.ORG_APP_UPDATE)
+          return http.HttpResponseRedirect(url)
 
 
 class OrgAppUpdatePage(base.GSoCRequestHandler):
@@ -382,6 +411,9 @@ class OrgAppUpdatePage(base.GSoCRequestHandler):
     form_data.update(
         org_logic.getApplicationResponse(data.url_ndb_org.key).to_dict())
 
+    if data.url_ndb_org.contact:
+      form_data.update(data.url_ndb_org.contact.to_dict())
+
     form = _formToEditOrgApp(survey=data.org_app, data=data.POST or form_data)
 
     return {
@@ -398,14 +430,23 @@ class OrgAppUpdatePage(base.GSoCRequestHandler):
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
     else:
-      org_properties = form.getOrgProperties()
-      app_response_properties = form.getApplicationResponseProperties()
-      updateOrganizationWithApplicationTxn(
-          data.url_ndb_org.key, org_properties, app_response_properties)
+      contact_properties = form.getContactProperties()
+      result = contact_logic.createContact(**contact_properties)
 
-      url = links.LINKER.organization(
-          data.url_ndb_org.key, urls.UrlNames.ORG_APP_UPDATE)
-      return http.HttpResponseRedirect(url)
+      if not result:
+        raise exception.BadRequest(message=result.extra)
+      else:
+        org_properties = form.getOrgProperties()
+        org_properties['contact'] = result.extra
+
+        app_response_properties = form.getApplicationResponseProperties()
+
+        updateOrganizationWithApplicationTxn(
+            data.url_ndb_org.key, org_properties, app_response_properties)
+
+        url = links.LINKER.organization(
+            data.url_ndb_org.key, urls.UrlNames.ORG_APP_UPDATE)
+        return http.HttpResponseRedirect(url)
 
 
 class OrgAppShowPage(base.GSoCRequestHandler):

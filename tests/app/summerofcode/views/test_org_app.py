@@ -18,6 +18,7 @@ from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from melange.models import connection as connection_model
+from melange.models import contact as contact_model
 from melange.models import organization as melange_org_model
 from summerofcode.models import organization as soc_org_model
 
@@ -31,6 +32,7 @@ TEST_ORG_NAME = u'Test Org Name'
 TEST_DESCRIPTION = u'Test Organization Description'
 TEST_IDEAS_PAGE = 'http://www.test.ideas.com/'
 TEST_LOGO_URL = u'http://www.test.logo.url.com/'
+TEST_MAILING_LIST = 'mailinglist@example.com'
 
 def _getOrgAppTakeUrl(program):
   """Returns URL to Organization Application Take page.
@@ -105,7 +107,8 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
         'description': TEST_DESCRIPTION,
         'logo_url': TEST_LOGO_URL,
         'ideas_page': TEST_IDEAS_PAGE,
-        'backup_admin': backup_admin.link_id
+        'backup_admin': backup_admin.link_id,
+        'mailing_list': TEST_MAILING_LIST,
         }
     response = self.post(_getOrgAppTakeUrl(self.program), postdata=postdata)
 
@@ -117,6 +120,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(org.description, TEST_DESCRIPTION)
     self.assertEqual(org.ideas_page, TEST_IDEAS_PAGE)
     self.assertEqual(org.logo_url, TEST_LOGO_URL)
+    self.assertEqual(org.contact.mailing_list, TEST_MAILING_LIST)
 
     # check that the client is redirected to update page
     self.assertResponseRedirect(response, url=_getOrgAppUpdateUrl(org))
@@ -149,6 +153,7 @@ OTHER_TEST_DESCRIPTION = u'Other Organization Description'
 OTHER_TEST_NAME = 'Other Org Name'
 OTHER_TEST_IDAES_PAGE = 'http://www.other.ideas.page.com/'
 OTHER_TEST_LOGO_URL = 'http://www.other.test.logo.url.com/'
+OTHER_TEST_MAILING_LIST = 'othermailinglist@example.com'
 
 class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for OrgAppUpdatePage class."""
@@ -156,9 +161,10 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.init()
+    contact = contact_model.Contact(mailing_list=TEST_MAILING_LIST)
     self.org = org_utils.seedSOCOrganization(
         TEST_ORG_ID, self.program.key(), name=TEST_ORG_NAME,
-        ideas_page=TEST_IDEAS_PAGE)
+        ideas_page=TEST_IDEAS_PAGE, contact=contact)
     self.app_response = melange_org_model.ApplicationResponse(
         parent=self.org.key)
     self.app_response.put()
@@ -178,6 +184,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
         'description': OTHER_TEST_DESCRIPTION,
         'ideas_page': OTHER_TEST_IDAES_PAGE,
         'logo_url': OTHER_TEST_LOGO_URL,
+        'mailing_list': OTHER_TEST_MAILING_LIST,
         'name': OTHER_TEST_NAME,
         }
     response = self.post(_getOrgAppUpdateUrl(self.org), postdata=postdata)
@@ -187,6 +194,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     org = ndb.Key(
         soc_org_model.SOCOrganization._get_kind(),
         '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
+    self.assertEqual(org.contact.mailing_list, OTHER_TEST_MAILING_LIST)
     self.assertEqual(org.description, OTHER_TEST_DESCRIPTION)
     self.assertEqual(org.ideas_page, OTHER_TEST_IDAES_PAGE)
     self.assertEqual(org.logo_url, OTHER_TEST_LOGO_URL)
