@@ -33,6 +33,7 @@ TEST_DESCRIPTION = u'Test Organization Description'
 TEST_IDEAS_PAGE = 'http://www.test.ideas.com/'
 TEST_LOGO_URL = u'http://www.test.logo.url.com/'
 TEST_MAILING_LIST = 'mailinglist@example.com'
+TEST_WEB_PAGE = u'http://www.web.page.com/'
 
 def _getOrgAppTakeUrl(program):
   """Returns URL to Organization Application Take page.
@@ -109,6 +110,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
         'ideas_page': TEST_IDEAS_PAGE,
         'backup_admin': backup_admin.link_id,
         'mailing_list': TEST_MAILING_LIST,
+        'web_page': TEST_WEB_PAGE,
         }
     response = self.post(_getOrgAppTakeUrl(self.program), postdata=postdata)
 
@@ -121,6 +123,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(org.ideas_page, TEST_IDEAS_PAGE)
     self.assertEqual(org.logo_url, TEST_LOGO_URL)
     self.assertEqual(org.contact.mailing_list, TEST_MAILING_LIST)
+    self.assertEqual(org.contact.web_page, TEST_WEB_PAGE)
 
     # check that the client is redirected to update page
     self.assertResponseRedirect(response, url=_getOrgAppUpdateUrl(org))
@@ -154,6 +157,7 @@ OTHER_TEST_NAME = 'Other Org Name'
 OTHER_TEST_IDEAS_PAGE = 'http://www.other.ideas.page.com/'
 OTHER_TEST_LOGO_URL = 'http://www.other.test.logo.url.com/'
 OTHER_TEST_MAILING_LIST = 'othermailinglist@example.com'
+OTHER_TEST_WEB_PAGE = u'http://www.other.web.page.com/'
 
 class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for OrgAppUpdatePage class."""
@@ -186,6 +190,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
         'logo_url': OTHER_TEST_LOGO_URL,
         'mailing_list': OTHER_TEST_MAILING_LIST,
         'name': OTHER_TEST_NAME,
+        'web_page': OTHER_TEST_WEB_PAGE,
         }
     response = self.post(_getOrgAppUpdateUrl(self.org), postdata=postdata)
     self.assertResponseRedirect(response, url=_getOrgAppUpdateUrl(self.org))
@@ -199,6 +204,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(org.ideas_page, OTHER_TEST_IDEAS_PAGE)
     self.assertEqual(org.logo_url, OTHER_TEST_LOGO_URL)
     self.assertEqual(org.name, OTHER_TEST_NAME)
+    self.assertEqual(org.contact.web_page, OTHER_TEST_WEB_PAGE)
 
     # check that organization ID is not updated even if it is in POST data
     postdata = {
@@ -206,7 +212,8 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
         'ideas_page': OTHER_TEST_IDEAS_PAGE,
         'logo_url': OTHER_TEST_LOGO_URL,
         'org_id': 'other_org_id',
-        'name': TEST_ORG_NAME
+        'name': TEST_ORG_NAME,
+        'web_page': OTHER_TEST_WEB_PAGE,
         }
     response = self.post(_getOrgAppUpdateUrl(self.org), postdata=postdata)
     self.assertResponseRedirect(response, url=_getOrgAppUpdateUrl(self.org))

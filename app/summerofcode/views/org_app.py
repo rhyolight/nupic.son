@@ -70,6 +70,9 @@ LOGO_URL_HELP_TEXT = translation.ugettext(
 MAILING_LIST_HELP_TEXT = translation.ugettext(
     'Mailing list email address, URL to sign-up page, etc.')
 
+WEB_PAGE_HELP_TEXT = translation.ugettext(
+    'Main website of the organization.')
+
 BACKUP_ADMIN_HELP_TEXT = translation.ugettext(
     'Username of the user who will also serve as administrator for this '
     'organization. Please note that the user must have created '
@@ -88,6 +91,8 @@ IDEAS_PAGE_LABEL = translation.ugettext('Ideas list')
 LOGO_URL_LABEL = translation.ugettext('Logo URL')
 
 MAILING_LIST_LABEL = translation.ugettext('Mailing list')
+
+WEB_PAGE_LABEL = translation.ugettext('Organization website')
 
 BACKUP_ADMIN_LABEL = translation.ugettext('Backup administrator')
 
@@ -182,6 +187,9 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
       required=False, label=MAILING_LIST_LABEL,
       help_text=MAILING_LIST_HELP_TEXT)
 
+  web_page = django_forms.URLField(
+      required=True, label=WEB_PAGE_LABEL, help_text=WEB_PAGE_HELP_TEXT)
+
   backup_admin = django_forms.CharField(
       required=True, label=BACKUP_ADMIN_LABEL,
       help_text=BACKUP_ADMIN_HELP_TEXT)
@@ -230,6 +238,8 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
     properties = {}
     if 'mailing_list' in self.cleaned_data:
       properties['mailing_list'] = self.cleaned_data['mailing_list']
+    if 'web_page' in self.cleaned_data:
+      properties['web_page'] = self.cleaned_data['web_page']
     return properties
 
   def getOrgProperties(self):
