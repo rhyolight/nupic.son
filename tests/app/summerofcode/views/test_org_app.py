@@ -36,6 +36,7 @@ TEST_IDEAS_PAGE = 'http://www.test.ideas.com/'
 TEST_IRC_CHANNEL = 'irc://irc.freenode.net/test'
 TEST_LOGO_URL = u'http://www.test.logo.url.com/'
 TEST_MAILING_LIST = 'mailinglist@example.com'
+TEST_TWITTER = u'http://www.test.twitter.com/'
 TEST_WEB_PAGE = u'http://www.web.page.com/'
 
 def _getOrgAppTakeUrl(program):
@@ -116,6 +117,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
         'irc_channel': TEST_IRC_CHANNEL,
         'backup_admin': backup_admin.link_id,
         'mailing_list': TEST_MAILING_LIST,
+        'twitter': TEST_TWITTER,
         'web_page': TEST_WEB_PAGE,
         }
     response = self.post(_getOrgAppTakeUrl(self.program), postdata=postdata)
@@ -131,6 +133,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(org.ideas_page, TEST_IDEAS_PAGE)
     self.assertEqual(org.logo_url, TEST_LOGO_URL)
     self.assertEqual(org.contact.mailing_list, TEST_MAILING_LIST)
+    self.assertEqual(org.contact.twitter, TEST_TWITTER)
     self.assertEqual(org.contact.web_page, TEST_WEB_PAGE)
     self.assertEqual(org.contact.irc_channel, TEST_IRC_CHANNEL)
 
@@ -169,6 +172,7 @@ OTHER_TEST_IDEAS_PAGE = 'http://www.other.ideas.page.com/'
 OTHER_TEST_IRC_CHANNEL = 'irc://irc.freenode.net/other'
 OTHER_TEST_LOGO_URL = 'http://www.other.test.logo.url.com/'
 OTHER_TEST_MAILING_LIST = 'othermailinglist@example.com'
+OTHER_TEST_TWITTER = u'http://www.other.test.twitter.com/'
 OTHER_TEST_WEB_PAGE = u'http://www.other.web.page.com/'
 
 class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
@@ -205,6 +209,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
         'logo_url': OTHER_TEST_LOGO_URL,
         'mailing_list': OTHER_TEST_MAILING_LIST,
         'name': OTHER_TEST_NAME,
+        'twitter': OTHER_TEST_TWITTER,
         'web_page': OTHER_TEST_WEB_PAGE,
         }
     response = self.post(_getOrgAppUpdateUrl(self.org), postdata=postdata)
@@ -221,6 +226,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(org.contact.irc_channel, OTHER_TEST_IRC_CHANNEL)
     self.assertEqual(org.logo_url, OTHER_TEST_LOGO_URL)
     self.assertEqual(org.name, OTHER_TEST_NAME)
+    self.assertEqual(org.contact.twitter, OTHER_TEST_TWITTER)
     self.assertEqual(org.contact.web_page, OTHER_TEST_WEB_PAGE)
 
     # check that organization ID is not updated even if it is in POST data
@@ -232,6 +238,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
         'logo_url': OTHER_TEST_LOGO_URL,
         'org_id': 'other_org_id',
         'name': TEST_ORG_NAME,
+        'twitter': OTHER_TEST_TWITTER,
         'web_page': OTHER_TEST_WEB_PAGE,
         }
     response = self.post(_getOrgAppUpdateUrl(self.org), postdata=postdata)

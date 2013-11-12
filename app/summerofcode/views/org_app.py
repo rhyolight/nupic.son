@@ -83,6 +83,9 @@ FEED_URL_HELP_TEXT = translation.ugettext(
 GOOGLE_PLUS_HELP_TEXT = translation.ugettext(
     'URL to the Google+ page of the organization.')
 
+TWITTER_HELP_TEXT = translation.ugettext(
+    'URL of the Twitter page of the organization.')
+
 BACKUP_ADMIN_HELP_TEXT = translation.ugettext(
     'Username of the user who will also serve as administrator for this '
     'organization. Please note that the user must have created '
@@ -109,6 +112,8 @@ IRC_CHANNEL_LABEL = translation.ugettext('IRC Channel')
 FEED_URL_LABEL = translation.ugettext('Feed URL')
 
 GOOGLE_PLUS_LABEL = translation.ugettext('Google+ URL')
+
+TWITTER_LABEL = translation.ugettext('Twitter URL')
 
 BACKUP_ADMIN_LABEL = translation.ugettext('Backup administrator')
 
@@ -215,6 +220,9 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
   google_plus = django_forms.URLField(
       required=False, label=GOOGLE_PLUS_LABEL, help_text=GOOGLE_PLUS_HELP_TEXT)
 
+  twitter = django_forms.URLField(
+      required=False, label=TWITTER_LABEL, help_text=TWITTER_HELP_TEXT)
+
   backup_admin = django_forms.CharField(
       required=True, label=BACKUP_ADMIN_LABEL,
       help_text=BACKUP_ADMIN_HELP_TEXT)
@@ -269,6 +277,8 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
       properties['irc_channel'] = self.cleaned_data['irc_channel']
     if 'mailing_list' in self.cleaned_data:
       properties['mailing_list'] = self.cleaned_data['mailing_list']
+    if 'twitter' in self.cleaned_data:
+      properties['twitter'] = self.cleaned_data['twitter']
     if 'web_page' in self.cleaned_data:
       properties['web_page'] = self.cleaned_data['web_page']
     return properties
