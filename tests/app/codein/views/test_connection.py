@@ -183,6 +183,28 @@ class UrlConnectionIsForCurrentUserAccessCheckerTest(unittest.TestCase):
       access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
 
+  def testUserWithNoProfileAccessDenied(self):
+    """Tests that access for a user with no profile is denied."""
+    # check for not logged-in user with no profile
+    self.data._profile = None
+
+    access_checker = (
+        connection_view.UrlConnectionIsForCurrentUserAccessChecker())
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+    # check for another user who is currently logged in but
+    # does not have a profile
+    other_user = profile_utils.seedUser()
+    profile_utils.login(other_user)
+
+    access_checker = (
+        connection_view.UrlConnectionIsForCurrentUserAccessChecker())
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
   def testOrgAdminAccessDenied(self):
     """Tests that org admin for connected organization is denied access."""
     # seed another user who is currently logged in
