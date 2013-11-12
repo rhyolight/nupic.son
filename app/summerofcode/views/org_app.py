@@ -86,6 +86,9 @@ GOOGLE_PLUS_HELP_TEXT = translation.ugettext(
 TWITTER_HELP_TEXT = translation.ugettext(
     'URL of the Twitter page of the organization.')
 
+BLOG_HELP_TEXT = translation.ugettext(
+    'URL to the blog page of the organization.')
+
 BACKUP_ADMIN_HELP_TEXT = translation.ugettext(
     'Username of the user who will also serve as administrator for this '
     'organization. Please note that the user must have created '
@@ -114,6 +117,8 @@ FEED_URL_LABEL = translation.ugettext('Feed URL')
 GOOGLE_PLUS_LABEL = translation.ugettext('Google+ URL')
 
 TWITTER_LABEL = translation.ugettext('Twitter URL')
+
+BLOG_LABEL = translation.ugettext('Blog page')
 
 BACKUP_ADMIN_LABEL = translation.ugettext('Backup administrator')
 
@@ -223,6 +228,9 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
   twitter = django_forms.URLField(
       required=False, label=TWITTER_LABEL, help_text=TWITTER_HELP_TEXT)
 
+  blog = django_forms.URLField(
+      required=False, label=BLOG_LABEL, help_text=BLOG_HELP_TEXT)
+
   backup_admin = django_forms.CharField(
       required=True, label=BACKUP_ADMIN_LABEL,
       help_text=BACKUP_ADMIN_HELP_TEXT)
@@ -269,6 +277,8 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
       A dict mapping contact properties to the corresponding values.
     """
     properties = {}
+    if 'blog' in self.cleaned_data:
+      properties['blog'] = self.cleaned_data['blog']
     if 'feed_url' in self.cleaned_data:
       properties['feed_url'] = self.cleaned_data['feed_url']
     if 'google_plus' in self.cleaned_data:

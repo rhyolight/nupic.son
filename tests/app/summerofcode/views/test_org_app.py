@@ -29,6 +29,7 @@ from tests import test_utils
 
 TEST_ORG_ID = 'test_org_id'
 TEST_ORG_NAME = u'Test Org Name'
+TEST_BLOG = 'http://www.test.blog.com/'
 TEST_DESCRIPTION = u'Test Organization Description'
 TEST_FEED_URL = u'http://www.test.feed.com/'
 TEST_GOOGLE_PLUS = u'http://www.test.google.plus.com/'
@@ -109,6 +110,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
     postdata = {
         'org_id': TEST_ORG_ID,
         'name': TEST_ORG_NAME,
+        'blog': TEST_BLOG,
         'description': TEST_DESCRIPTION,
         'feed_url': TEST_FEED_URL,
         'google_plus': TEST_GOOGLE_PLUS,
@@ -127,6 +129,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
         soc_org_model.SOCOrganization._get_kind(),
         '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
     self.assertIsNotNone(org)
+    self.assertEqual(org.contact.blog, TEST_BLOG)
     self.assertEqual(org.description, TEST_DESCRIPTION)
     self.assertEqual(org.contact.feed_url, TEST_FEED_URL)
     self.assertEqual(org.contact.google_plus, TEST_GOOGLE_PLUS)
@@ -164,6 +167,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(connection.user_role, connection_model.ROLE)
 
 
+OTHER_TEST_BLOG = 'http://www.other.test.blog.com/'
 OTHER_TEST_DESCRIPTION = u'Other Organization Description'
 OTHER_TEST_NAME = 'Other Org Name'
 OTHER_TEST_FEED_URL = u'http://www.other.test.feed.com/'
@@ -201,6 +205,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
 
     # check that mutable properties are updated
     postdata = {
+        'blog': OTHER_TEST_BLOG,
         'description': OTHER_TEST_DESCRIPTION,
         'feed_url': OTHER_TEST_FEED_URL,
         'google_plus': OTHER_TEST_GOOGLE_PLUS,
@@ -219,6 +224,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     org = ndb.Key(
         soc_org_model.SOCOrganization._get_kind(),
         '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
+    self.assertEqual(org.contact.blog, OTHER_TEST_BLOG)
     self.assertEqual(org.contact.mailing_list, OTHER_TEST_MAILING_LIST)
     self.assertEqual(org.description, OTHER_TEST_DESCRIPTION)
     self.assertEqual(org.contact.google_plus, OTHER_TEST_GOOGLE_PLUS)
@@ -231,6 +237,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
 
     # check that organization ID is not updated even if it is in POST data
     postdata = {
+        'blog': OTHER_TEST_BLOG,
         'description': OTHER_TEST_DESCRIPTION,
         'feed_url': OTHER_TEST_FEED_URL,
         'google_plus': OTHER_TEST_GOOGLE_PLUS,
