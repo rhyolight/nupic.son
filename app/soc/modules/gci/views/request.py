@@ -14,6 +14,7 @@
 
 """Module containing the view for GCI request page."""
 
+from google.appengine.ext import ndb
 from google.appengine.ext import db
 
 from melange.request import exception
@@ -28,6 +29,7 @@ from soc.tasks import mailer
 
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.request import GCIRequest
+from soc.modules.gci.tasks import update_conversations as update_conversation_task
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
@@ -282,6 +284,11 @@ class RespondRequestPage(GCIRequestHandler):
         context = notifications.handledRequestContext(data, request.status)
         sub_txn = mailer.getSpawnMailTaskTxn(context, parent=request)
         sub_txn()
+
+        # Update user's involved conversations
+        update_conversation_task.spawnUpdateConversationsTask(
+            ndb.Key.from_old_key(user_key),
+            ndb.Key.from_old_key(profile.program.key()))
 
       db.run_in_transaction_options(options, accept_request_txn)
 

@@ -14,10 +14,13 @@
 
 """Module for the GCI organization profile page."""
 
+from google.appengine.ext import ndb
+
 from soc.views.helper import url_patterns
 from soc.views import org_profile
 
 from soc.modules.gci.models.organization import GCIOrganization
+from soc.modules.gci.tasks import update_conversations as update_conversation_task
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_names
@@ -143,6 +146,12 @@ class OrgProfilePage(GCIRequestHandler):
       data.profile.is_mentor = True
       data.profile.is_org_admin = True
       data.profile.put()
+
+      # Update user's involved conversations
+      update_conversation_task.spawnUpdateConversationsTask(
+          ndb.Key.from_old_key(data.profile.user.key()),
+          ndb.Key.from_old_key(data.profile.program.key()))
+
     else:
       entity = form.save()
 

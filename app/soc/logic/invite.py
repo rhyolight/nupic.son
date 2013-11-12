@@ -17,10 +17,14 @@
 
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from soc.logic.helper import notifications
 
 from soc.tasks import mailer
+
+from soc.modules.gci.models import profile as gciprofile_model
+from soc.modules.gci.tasks import update_conversations as update_conversation_task
 
 
 def acceptInvite(request_data):
@@ -50,7 +54,14 @@ def acceptInvite(request_data):
     invite.put()
     profile.put()
 
-  db.run_in_transaction(accept_invitation_txn)
+    # Update user's involved conversations
+    if isinstance(profile, gciprofile_model.GCIProfile):
+      update_conversation_task.spawnUpdateConversationsTask(
+          ndb.Key.from_old_key(profile.user.key()),
+          ndb.Key.from_old_key(profile.program.key()))
+
+  options = db.create_transaction_options(xg=True)
+  db.run_in_transaction_options(options, accept_invitation_txn)
 
 
 def rejectInvite(request_data):
