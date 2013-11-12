@@ -80,6 +80,9 @@ FEED_URL_HELP_TEXT = translation.ugettext(
     'The URL should be a valid ATOM or RSS feed. Feed entries are shown on '
     'the organization home page in Melange.')
 
+GOOGLE_PLUS_HELP_TEXT = translation.ugettext(
+    'URL to the Google+ page of the organization.')
+
 BACKUP_ADMIN_HELP_TEXT = translation.ugettext(
     'Username of the user who will also serve as administrator for this '
     'organization. Please note that the user must have created '
@@ -104,6 +107,8 @@ WEB_PAGE_LABEL = translation.ugettext('Organization website')
 IRC_CHANNEL_LABEL = translation.ugettext('IRC Channel')
 
 FEED_URL_LABEL = translation.ugettext('Feed URL')
+
+GOOGLE_PLUS_LABEL = translation.ugettext('Google+ URL')
 
 BACKUP_ADMIN_LABEL = translation.ugettext('Backup administrator')
 
@@ -207,6 +212,9 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
   feed_url = django_forms.URLField(
       required=False, label=FEED_URL_LABEL, help_text=FEED_URL_HELP_TEXT)
 
+  google_plus = django_forms.URLField(
+      required=False, label=GOOGLE_PLUS_LABEL, help_text=GOOGLE_PLUS_HELP_TEXT)
+
   backup_admin = django_forms.CharField(
       required=True, label=BACKUP_ADMIN_LABEL,
       help_text=BACKUP_ADMIN_HELP_TEXT)
@@ -255,6 +263,8 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
     properties = {}
     if 'feed_url' in self.cleaned_data:
       properties['feed_url'] = self.cleaned_data['feed_url']
+    if 'google_plus' in self.cleaned_data:
+      properties['google_plus'] = self.cleaned_data['google_plus']
     if 'irc_channel' in self.cleaned_data:
       properties['irc_channel'] = self.cleaned_data['irc_channel']
     if 'mailing_list' in self.cleaned_data:
