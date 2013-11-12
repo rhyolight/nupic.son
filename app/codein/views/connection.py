@@ -514,7 +514,8 @@ class UrlConnectionIsForCurrentUserAccessChecker(access.AccessChecker):
 
   def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
-    if data.url_connection.parent_key() != data.profile.key():
+    if (not data.profile or
+        data.url_connection.parent_key() != data.profile.key()):
       raise exception.Forbidden(message=MESSAGE_CONNECTION_CANNOT_BE_ACCESSED)
 
 
