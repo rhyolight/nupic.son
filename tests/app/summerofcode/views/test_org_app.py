@@ -20,6 +20,8 @@ from google.appengine.ext import ndb
 from melange.models import connection as connection_model
 from melange.models import contact as contact_model
 from melange.models import organization as melange_org_model
+from melange.models import survey as survey_model
+
 from summerofcode.models import organization as soc_org_model
 
 from tests import org_utils
@@ -147,7 +149,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseRedirect(response, url=_getOrgAppUpdateUrl(org))
 
     # check that survey response is created and persisted
-    app_response = melange_org_model.ApplicationResponse.query(
+    app_response = survey_model.SurveyResponse.query(
         ancestor=org.key).get()
     self.assertIsNotNone(app_response)
 
@@ -193,8 +195,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     self.org = org_utils.seedSOCOrganization(
         TEST_ORG_ID, self.program.key(), name=TEST_ORG_NAME,
         ideas_page=TEST_IDEAS_PAGE, contact=contact)
-    self.app_response = melange_org_model.ApplicationResponse(
-        parent=self.org.key)
+    self.app_response = survey_model.SurveyResponse(parent=self.org.key)
     self.app_response.put()
 
   def testPageLoads(self):
@@ -273,8 +274,7 @@ class OrgAppShowPageTest(test_utils.GSoCDjangoTestCase):
     self.init()
     self.org = org_utils.seedSOCOrganization(
         TEST_ORG_ID, self.program.key(), name=TEST_ORG_NAME)
-    self.app_response = melange_org_model.ApplicationResponse(
-        parent=self.org.key)
+    self.app_response = survey_model.SurveyResponse(parent=self.org.key)
     self.app_response.put()
 
   def testPageLoads(self):

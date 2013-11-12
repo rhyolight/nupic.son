@@ -23,7 +23,6 @@ from protorpc import messages
 
 from melange.appengine import db
 from melange.models import contact as contact_model
-from melange.models import survey as survey_model
 
 
 class Status(messages.Enum):
@@ -123,13 +122,3 @@ class Organization(ndb.Model):
   #: Status of the organization
   status = msgprop.EnumProperty(
       Status, required=True, default=Status.APPLYING)
-
-
-# TODO(daniel): complete this class
-class ApplicationResponse(survey_model.SurveyResponse):
-  """Model that represents a single response to organization application.
-
-  Parent:
-    Organization
-  """
-  pass

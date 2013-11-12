@@ -20,9 +20,10 @@ from google.appengine.ext import ndb
 
 from melange.logic import organization as org_logic
 from melange.models import organization as org_model
+from melange.models import survey as survey_model
 
 from soc.models import program as program_model
-from soc.models import survey as survey_model
+from soc.models import survey as soc_survey_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import org_utils
@@ -44,7 +45,7 @@ class CreateOrganizationWithApplicationTest(unittest.TestCase):
     self.program = seeder_logic.seed(program_model.Program)
 
     # seed an organization application
-    self.survey = seeder_logic.seed(survey_model.Survey)
+    self.survey = seeder_logic.seed(soc_survey_model.Survey)
 
   def testOrgAndApplicationCreated(self):
     """Tests that org entity and application are created successfully."""
@@ -69,7 +70,7 @@ class CreateOrganizationWithApplicationTest(unittest.TestCase):
     self.assertEqual(org.status, org_model.Status.APPLYING)
 
     # check that organization application response is created and persisted
-    app_response = org_model.ApplicationResponse.query(ancestor=org.key).get()
+    app_response = survey_model.SurveyResponse.query(ancestor=org.key).get()
     self.assertIsNotNone(app_response)
     self.assertEqual(
         app_response.survey,
@@ -145,7 +146,7 @@ class UpdateOrganizationWithApplicationTest(unittest.TestCase):
     self.program = seeder_logic.seed(program_model.Program)
     self.org = org_utils.seedOrganization(
         TEST_ORG_ID, self.program.key(), name=TEST_ORG_NAME)
-    self.app_response = org_model.ApplicationResponse(parent=self.org.key)
+    self.app_response = survey_model.SurveyResponse(parent=self.org.key)
     self.app_response.put()
 
   def testOrgIdInOrgProperties(self):

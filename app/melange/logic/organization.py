@@ -19,6 +19,7 @@ from google.appengine.ext import ndb
 
 from melange import types
 from melange.models import organization as org_model
+from melange.models import survey as survey_model
 from melange.utils import rich_bool
 
 from soc.logic.helper import notifications
@@ -64,7 +65,7 @@ def createOrganizationWithApplication(
         id=entity_id, org_id=org_id, program=program_key, **org_properties)
   
     app_key = ndb.Key.from_old_key(app_key)
-    application_record = org_model.ApplicationResponse(
+    application_record = survey_model.SurveyResponse(
         parent=organization.key, survey=app_key, **app_properties)
   except ValueError as e:
     return rich_bool.RichBool(False, extra=str(e))
@@ -114,7 +115,7 @@ def getApplicationResponse(org_key):
   Returns:
     Application response entity for the specified organization.
   """
-  return org_model.ApplicationResponse.query(ancestor=org_key).get()
+  return survey_model.SurveyResponse.query(ancestor=org_key).get()
 
 
 def setStatus(organization, program, site, new_status, recipients=None):
