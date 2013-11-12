@@ -86,6 +86,9 @@ GOOGLE_PLUS_HELP_TEXT = translation.ugettext(
 TWITTER_HELP_TEXT = translation.ugettext(
     'URL of the Twitter page of the organization.')
 
+FACEBOOK_HELP_TEXT = translation.ugettext(
+    'URL to the Facebook page of the organization.')
+
 BLOG_HELP_TEXT = translation.ugettext(
     'URL to the blog page of the organization.')
 
@@ -119,6 +122,8 @@ GOOGLE_PLUS_LABEL = translation.ugettext('Google+ URL')
 TWITTER_LABEL = translation.ugettext('Twitter URL')
 
 BLOG_LABEL = translation.ugettext('Blog page')
+
+FACEBOOK_LABEL = translation.ugettext('Facebook URL')
 
 BACKUP_ADMIN_LABEL = translation.ugettext('Backup administrator')
 
@@ -231,6 +236,9 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
   blog = django_forms.URLField(
       required=False, label=BLOG_LABEL, help_text=BLOG_HELP_TEXT)
 
+  facebook = django_forms.URLField(
+      required=False, label=FACEBOOK_LABEL, help_text=FACEBOOK_HELP_TEXT)
+
   backup_admin = django_forms.CharField(
       required=True, label=BACKUP_ADMIN_LABEL,
       help_text=BACKUP_ADMIN_HELP_TEXT)
@@ -279,6 +287,8 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
     properties = {}
     if 'blog' in self.cleaned_data:
       properties['blog'] = self.cleaned_data['blog']
+    if 'facebook' in self.cleaned_data['facebook']:
+      properties['facebook'] = self.cleaned_data['facebook']
     if 'feed_url' in self.cleaned_data:
       properties['feed_url'] = self.cleaned_data['feed_url']
     if 'google_plus' in self.cleaned_data:

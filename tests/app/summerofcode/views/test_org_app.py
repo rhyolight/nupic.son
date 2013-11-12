@@ -31,6 +31,7 @@ TEST_ORG_ID = 'test_org_id'
 TEST_ORG_NAME = u'Test Org Name'
 TEST_BLOG = 'http://www.test.blog.com/'
 TEST_DESCRIPTION = u'Test Organization Description'
+TEST_FACEBOOK = u'http://www.test.facebook.com/'
 TEST_FEED_URL = u'http://www.test.feed.com/'
 TEST_GOOGLE_PLUS = u'http://www.test.google.plus.com/'
 TEST_IDEAS_PAGE = 'http://www.test.ideas.com/'
@@ -112,6 +113,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
         'name': TEST_ORG_NAME,
         'blog': TEST_BLOG,
         'description': TEST_DESCRIPTION,
+        'facebook': TEST_FACEBOOK,
         'feed_url': TEST_FEED_URL,
         'google_plus': TEST_GOOGLE_PLUS,
         'logo_url': TEST_LOGO_URL,
@@ -131,6 +133,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
     self.assertIsNotNone(org)
     self.assertEqual(org.contact.blog, TEST_BLOG)
     self.assertEqual(org.description, TEST_DESCRIPTION)
+    self.assertEqual(org.contact.facebook, TEST_FACEBOOK)
     self.assertEqual(org.contact.feed_url, TEST_FEED_URL)
     self.assertEqual(org.contact.google_plus, TEST_GOOGLE_PLUS)
     self.assertEqual(org.ideas_page, TEST_IDEAS_PAGE)
@@ -169,6 +172,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
 
 OTHER_TEST_BLOG = 'http://www.other.test.blog.com/'
 OTHER_TEST_DESCRIPTION = u'Other Organization Description'
+OTHER_TEST_FACEBOOK = u'http://www.other.test.facebook.com/'
 OTHER_TEST_NAME = 'Other Org Name'
 OTHER_TEST_FEED_URL = u'http://www.other.test.feed.com/'
 OTHER_TEST_GOOGLE_PLUS = 'http://www.other.test.google.plus.com/'
@@ -207,6 +211,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     postdata = {
         'blog': OTHER_TEST_BLOG,
         'description': OTHER_TEST_DESCRIPTION,
+        'facebook': OTHER_TEST_FACEBOOK,
         'feed_url': OTHER_TEST_FEED_URL,
         'google_plus': OTHER_TEST_GOOGLE_PLUS,
         'ideas_page': OTHER_TEST_IDEAS_PAGE,
@@ -227,6 +232,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(org.contact.blog, OTHER_TEST_BLOG)
     self.assertEqual(org.contact.mailing_list, OTHER_TEST_MAILING_LIST)
     self.assertEqual(org.description, OTHER_TEST_DESCRIPTION)
+    self.assertEqual(org.contact.facebook, OTHER_TEST_FACEBOOK)
     self.assertEqual(org.contact.google_plus, OTHER_TEST_GOOGLE_PLUS)
     self.assertEqual(org.ideas_page, OTHER_TEST_IDEAS_PAGE)
     self.assertEqual(org.contact.irc_channel, OTHER_TEST_IRC_CHANNEL)
@@ -239,6 +245,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     postdata = {
         'blog': OTHER_TEST_BLOG,
         'description': OTHER_TEST_DESCRIPTION,
+        'facebook': OTHER_TEST_FACEBOOK,
         'feed_url': OTHER_TEST_FEED_URL,
         'google_plus': OTHER_TEST_GOOGLE_PLUS,
         'ideas_page': OTHER_TEST_IDEAS_PAGE,
