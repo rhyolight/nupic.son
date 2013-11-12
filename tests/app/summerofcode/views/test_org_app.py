@@ -30,6 +30,7 @@ from tests import test_utils
 TEST_ORG_ID = 'test_org_id'
 TEST_ORG_NAME = u'Test Org Name'
 TEST_DESCRIPTION = u'Test Organization Description'
+TEST_FEED_URL = u'http://www.test.feed.com/'
 TEST_IDEAS_PAGE = 'http://www.test.ideas.com/'
 TEST_IRC_CHANNEL = 'irc://irc.freenode.net/test'
 TEST_LOGO_URL = u'http://www.test.logo.url.com/'
@@ -107,6 +108,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
         'org_id': TEST_ORG_ID,
         'name': TEST_ORG_NAME,
         'description': TEST_DESCRIPTION,
+        'feed_url': TEST_FEED_URL,
         'logo_url': TEST_LOGO_URL,
         'ideas_page': TEST_IDEAS_PAGE,
         'irc_channel': TEST_IRC_CHANNEL,
@@ -122,6 +124,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
         '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
     self.assertIsNotNone(org)
     self.assertEqual(org.description, TEST_DESCRIPTION)
+    self.assertEqual(org.contact.feed_url, TEST_FEED_URL)
     self.assertEqual(org.ideas_page, TEST_IDEAS_PAGE)
     self.assertEqual(org.logo_url, TEST_LOGO_URL)
     self.assertEqual(org.contact.mailing_list, TEST_MAILING_LIST)
@@ -157,6 +160,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
 
 OTHER_TEST_DESCRIPTION = u'Other Organization Description'
 OTHER_TEST_NAME = 'Other Org Name'
+OTHER_TEST_FEED_URL = u'http://www.other.test.feed.com/'
 OTHER_TEST_IDEAS_PAGE = 'http://www.other.ideas.page.com/'
 OTHER_TEST_IRC_CHANNEL = 'irc://irc.freenode.net/other'
 OTHER_TEST_LOGO_URL = 'http://www.other.test.logo.url.com/'
@@ -190,6 +194,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     # check that mutable properties are updated
     postdata = {
         'description': OTHER_TEST_DESCRIPTION,
+        'feed_url': OTHER_TEST_FEED_URL,
         'ideas_page': OTHER_TEST_IDEAS_PAGE,
         'irc_channel': OTHER_TEST_IRC_CHANNEL,
         'logo_url': OTHER_TEST_LOGO_URL,
@@ -215,6 +220,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     # check that organization ID is not updated even if it is in POST data
     postdata = {
         'description': OTHER_TEST_DESCRIPTION,
+        'feed_url': OTHER_TEST_FEED_URL,
         'ideas_page': OTHER_TEST_IDEAS_PAGE,
         'logo_url': OTHER_TEST_LOGO_URL,
         'org_id': 'other_org_id',

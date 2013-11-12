@@ -76,6 +76,10 @@ WEB_PAGE_HELP_TEXT = translation.ugettext(
 IRC_CHANNEL_HELP_TEXT = translation.ugettext(
     'Public IRC channel which may be used to get in touch with developers.')
 
+FEED_URL_HELP_TEXT = translation.ugettext(
+    'The URL should be a valid ATOM or RSS feed. Feed entries are shown on '
+    'the organization home page in Melange.')
+
 BACKUP_ADMIN_HELP_TEXT = translation.ugettext(
     'Username of the user who will also serve as administrator for this '
     'organization. Please note that the user must have created '
@@ -98,6 +102,8 @@ MAILING_LIST_LABEL = translation.ugettext('Mailing list')
 WEB_PAGE_LABEL = translation.ugettext('Organization website')
 
 IRC_CHANNEL_LABEL = translation.ugettext('IRC Channel')
+
+FEED_URL_LABEL = translation.ugettext('Feed URL')
 
 BACKUP_ADMIN_LABEL = translation.ugettext('Backup administrator')
 
@@ -198,6 +204,9 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
   irc_channel = django_forms.CharField(
       required=False, label=IRC_CHANNEL_LABEL, help_text=IRC_CHANNEL_HELP_TEXT)
 
+  feed_url = django_forms.URLField(
+      required=False, label=FEED_URL_LABEL, help_text=FEED_URL_HELP_TEXT)
+
   backup_admin = django_forms.CharField(
       required=True, label=BACKUP_ADMIN_LABEL,
       help_text=BACKUP_ADMIN_HELP_TEXT)
@@ -244,6 +253,8 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
       A dict mapping contact properties to the corresponding values.
     """
     properties = {}
+    if 'feed_url' in self.cleaned_data:
+      properties['feed_url'] = self.cleaned_data['feed_url']
     if 'irc_channel' in self.cleaned_data:
       properties['irc_channel'] = self.cleaned_data['irc_channel']
     if 'mailing_list' in self.cleaned_data:
