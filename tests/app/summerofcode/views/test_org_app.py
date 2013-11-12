@@ -31,6 +31,7 @@ TEST_ORG_ID = 'test_org_id'
 TEST_ORG_NAME = u'Test Org Name'
 TEST_DESCRIPTION = u'Test Organization Description'
 TEST_IDEAS_PAGE = 'http://www.test.ideas.com/'
+TEST_IRC_CHANNEL = 'irc://irc.freenode.net/test'
 TEST_LOGO_URL = u'http://www.test.logo.url.com/'
 TEST_MAILING_LIST = 'mailinglist@example.com'
 TEST_WEB_PAGE = u'http://www.web.page.com/'
@@ -108,6 +109,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
         'description': TEST_DESCRIPTION,
         'logo_url': TEST_LOGO_URL,
         'ideas_page': TEST_IDEAS_PAGE,
+        'irc_channel': TEST_IRC_CHANNEL,
         'backup_admin': backup_admin.link_id,
         'mailing_list': TEST_MAILING_LIST,
         'web_page': TEST_WEB_PAGE,
@@ -124,6 +126,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(org.logo_url, TEST_LOGO_URL)
     self.assertEqual(org.contact.mailing_list, TEST_MAILING_LIST)
     self.assertEqual(org.contact.web_page, TEST_WEB_PAGE)
+    self.assertEqual(org.contact.irc_channel, TEST_IRC_CHANNEL)
 
     # check that the client is redirected to update page
     self.assertResponseRedirect(response, url=_getOrgAppUpdateUrl(org))
@@ -155,6 +158,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
 OTHER_TEST_DESCRIPTION = u'Other Organization Description'
 OTHER_TEST_NAME = 'Other Org Name'
 OTHER_TEST_IDEAS_PAGE = 'http://www.other.ideas.page.com/'
+OTHER_TEST_IRC_CHANNEL = 'irc://irc.freenode.net/other'
 OTHER_TEST_LOGO_URL = 'http://www.other.test.logo.url.com/'
 OTHER_TEST_MAILING_LIST = 'othermailinglist@example.com'
 OTHER_TEST_WEB_PAGE = u'http://www.other.web.page.com/'
@@ -187,6 +191,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     postdata = {
         'description': OTHER_TEST_DESCRIPTION,
         'ideas_page': OTHER_TEST_IDEAS_PAGE,
+        'irc_channel': OTHER_TEST_IRC_CHANNEL,
         'logo_url': OTHER_TEST_LOGO_URL,
         'mailing_list': OTHER_TEST_MAILING_LIST,
         'name': OTHER_TEST_NAME,
@@ -202,6 +207,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(org.contact.mailing_list, OTHER_TEST_MAILING_LIST)
     self.assertEqual(org.description, OTHER_TEST_DESCRIPTION)
     self.assertEqual(org.ideas_page, OTHER_TEST_IDEAS_PAGE)
+    self.assertEqual(org.contact.irc_channel, OTHER_TEST_IRC_CHANNEL)
     self.assertEqual(org.logo_url, OTHER_TEST_LOGO_URL)
     self.assertEqual(org.name, OTHER_TEST_NAME)
     self.assertEqual(org.contact.web_page, OTHER_TEST_WEB_PAGE)

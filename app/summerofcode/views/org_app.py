@@ -73,6 +73,9 @@ MAILING_LIST_HELP_TEXT = translation.ugettext(
 WEB_PAGE_HELP_TEXT = translation.ugettext(
     'Main website of the organization.')
 
+IRC_CHANNEL_HELP_TEXT = translation.ugettext(
+    'Public IRC channel which may be used to get in touch with developers.')
+
 BACKUP_ADMIN_HELP_TEXT = translation.ugettext(
     'Username of the user who will also serve as administrator for this '
     'organization. Please note that the user must have created '
@@ -93,6 +96,8 @@ LOGO_URL_LABEL = translation.ugettext('Logo URL')
 MAILING_LIST_LABEL = translation.ugettext('Mailing list')
 
 WEB_PAGE_LABEL = translation.ugettext('Organization website')
+
+IRC_CHANNEL_LABEL = translation.ugettext('IRC Channel')
 
 BACKUP_ADMIN_LABEL = translation.ugettext('Backup administrator')
 
@@ -190,6 +195,9 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
   web_page = django_forms.URLField(
       required=True, label=WEB_PAGE_LABEL, help_text=WEB_PAGE_HELP_TEXT)
 
+  irc_channel = django_forms.CharField(
+      required=False, label=IRC_CHANNEL_LABEL, help_text=IRC_CHANNEL_HELP_TEXT)
+
   backup_admin = django_forms.CharField(
       required=True, label=BACKUP_ADMIN_LABEL,
       help_text=BACKUP_ADMIN_HELP_TEXT)
@@ -236,6 +244,8 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
       A dict mapping contact properties to the corresponding values.
     """
     properties = {}
+    if 'irc_channel' in self.cleaned_data:
+      properties['irc_channel'] = self.cleaned_data['irc_channel']
     if 'mailing_list' in self.cleaned_data:
       properties['mailing_list'] = self.cleaned_data['mailing_list']
     if 'web_page' in self.cleaned_data:
