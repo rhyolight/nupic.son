@@ -19,10 +19,10 @@ from google.appengine.ext import ndb
 
 from melange.models import connection as connection_model
 from melange.models import contact as contact_model
-from melange.models import organization as melange_org_model
 from melange.models import survey as survey_model
 
 from summerofcode.models import organization as soc_org_model
+from summerofcode.templates import tabs
 
 from tests import org_utils
 from tests import profile_utils
@@ -264,6 +264,17 @@ class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
         soc_org_model.SOCOrganization._get_kind(),
         '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
     self.assertEqual(org.org_id, TEST_ORG_ID)
+
+  def testOrgsTabs(self):
+    """Tests that correct organization related tabs are present in context."""
+    response = self.get(_getOrgProfileEditUrl(self.org))
+
+    # check that tabs are present in context
+    self.assertIn('tabs', response.context)
+
+    # check that tab to "Edit Profile" page is the selected one
+    self.assertEqual(response.context['tabs'].selected_tab_id,
+        tabs.ORG_PROFILE_TAB_ID)
 
 
 class OrgAppShowPageTest(test_utils.GSoCDjangoTestCase):

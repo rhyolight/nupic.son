@@ -45,6 +45,7 @@ from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper import url_patterns as soc_url_patterns
 
+from summerofcode.templates import tabs
 from summerofcode.views.helper import urls
 
 
@@ -488,7 +489,8 @@ class OrgProfileEditPage(base.GSoCRequestHandler):
     return {
         'page_name': ORG_PROFILE_EDIT_PAGE_NAME,
         'forms': [form],
-        'error': bool(form.errors)
+        'error': bool(form.errors),
+        'tabs': tabs.orgTabs(data, selected_tab_id=tabs.ORG_PROFILE_TAB_ID)
         }
 
   def post(self, data, check, mutator):
