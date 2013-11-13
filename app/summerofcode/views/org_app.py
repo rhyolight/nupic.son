@@ -130,8 +130,8 @@ BACKUP_ADMIN_LABEL = translation.ugettext('Backup administrator')
 ORG_APP_TAKE_PAGE_NAME = translation.ugettext(
     'Take organization application')
 
-ORG_APP_UPDATE_PAGE_NAME = translation.ugettext(
-    'Update organization application')
+ORG_PROFILE_EDIT_PAGE_NAME = translation.ugettext(
+    'Edit organization profile')
 
 NO_ORG_APP = translation.ugettext(
     'The organization application for the program %s does not exist.')
@@ -455,32 +455,30 @@ class OrgAppTakePage(base.GSoCRequestHandler):
                 user_role=connection_model.ROLE)
   
           url = links.LINKER.organization(
-            result.extra.key, urls.UrlNames.ORG_APP_UPDATE)
+            result.extra.key, urls.UrlNames.ORG_PROFILE_EDIT)
           return http.HttpResponseRedirect(url)
 
 
-class OrgAppUpdatePage(base.GSoCRequestHandler):
-  """View to update organization application response."""
+class OrgProfileEditPage(base.GSoCRequestHandler):
+  """View to edit organization profile."""
 
   # TODO(daniel): implement actual access checker
   access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""
-    return 'modules/gsoc/org_app/take.html'
+    return 'modules/gsoc/form_base.html'
 
   def djangoURLPatterns(self):
     """See base.RequestHandler.djangoURLPatterns for specification."""
     return [
         soc_url_patterns.url(
-            r'org/application/update/%s$' % url_patterns.ORG,
-            self, name=urls.UrlNames.ORG_APP_UPDATE)]
+            r'org/profile/edit/%s$' % url_patterns.ORG,
+            self, name=urls.UrlNames.ORG_PROFILE_EDIT)]
 
   def context(self, data, check, mutator):
     """See base.RequestHandler.context for specification."""
     form_data = data.url_ndb_org.to_dict()
-    form_data.update(
-        org_logic.getApplicationResponse(data.url_ndb_org.key).to_dict())
 
     if data.url_ndb_org.contact:
       form_data.update(data.url_ndb_org.contact.to_dict())
@@ -488,8 +486,7 @@ class OrgAppUpdatePage(base.GSoCRequestHandler):
     form = _formToEditOrgApp(survey=data.org_app, data=data.POST or form_data)
 
     return {
-        'page_name': ORG_APP_UPDATE_PAGE_NAME,
-        'description': data.org_app.content,
+        'page_name': ORG_PROFILE_EDIT_PAGE_NAME,
         'forms': [form],
         'error': bool(form.errors)
         }
@@ -516,7 +513,7 @@ class OrgAppUpdatePage(base.GSoCRequestHandler):
             data.url_ndb_org.key, org_properties, app_response_properties)
 
         url = links.LINKER.organization(
-            data.url_ndb_org.key, urls.UrlNames.ORG_APP_UPDATE)
+            data.url_ndb_org.key, urls.UrlNames.ORG_PROFILE_EDIT)
         return http.HttpResponseRedirect(url)
 
 

@@ -20,6 +20,6 @@ class UrlNames(object):
 
   ORG_APP_SHOW = 'soc_org_app_show'
   ORG_APP_TAKE = 'soc_org_app_take'
-  ORG_APP_UPDATE = 'soc_org_app_update'
+  ORG_PROFILE_EDIT = 'soc_org_profile_edit'
   ORG_PUBLIC_LIST = 'soc_org_public_list'
   PROJECT_MANAGE_ADMIN = 'project_manage_admin'

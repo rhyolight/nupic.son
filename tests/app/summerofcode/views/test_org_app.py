@@ -55,16 +55,16 @@ def _getOrgAppTakeUrl(program):
   return '/gsoc/org/application/take/%s' % program.key().name()
 
 
-def _getOrgAppUpdateUrl(org):
-  """Returns URL to Organization Application Update page.
+def _getOrgProfileEditUrl(org):
+  """Returns URL to Edit Organization Profile page.
 
   Args:
     org: Organization entity.
 
   Returns:
-    A string containing the URL to Organization Application Update page.
+    A string containing the URL to Edit Organization Profile page.
   """
-  return '/gsoc/org/application/update/%s' % org.key.id()
+  return '/gsoc/org/profile/edit/%s' % org.key.id()
 
 
 def _getOrgAppShowUrl(org):
@@ -146,7 +146,7 @@ class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(org.contact.irc_channel, TEST_IRC_CHANNEL)
 
     # check that the client is redirected to update page
-    self.assertResponseRedirect(response, url=_getOrgAppUpdateUrl(org))
+    self.assertResponseRedirect(response, url=_getOrgProfileEditUrl(org))
 
     # check that survey response is created and persisted
     app_response = survey_model.SurveyResponse.query(
@@ -185,8 +185,8 @@ OTHER_TEST_MAILING_LIST = 'othermailinglist@example.com'
 OTHER_TEST_TWITTER = u'http://www.other.test.twitter.com/'
 OTHER_TEST_WEB_PAGE = u'http://www.other.web.page.com/'
 
-class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
-  """Unit tests for OrgAppUpdatePage class."""
+class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for OrgProfileEditPage class."""
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
@@ -201,7 +201,7 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
   def testPageLoads(self):
     """Tests that page loads properly."""
     self.profile_helper.createProfile()
-    response = self.get(_getOrgAppUpdateUrl(self.org))
+    response = self.get(_getOrgProfileEditUrl(self.org))
     self.assertResponseOK(response)
 
   def testOrganizationUpdated(self):
@@ -223,8 +223,8 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
         'twitter': OTHER_TEST_TWITTER,
         'web_page': OTHER_TEST_WEB_PAGE,
         }
-    response = self.post(_getOrgAppUpdateUrl(self.org), postdata=postdata)
-    self.assertResponseRedirect(response, url=_getOrgAppUpdateUrl(self.org))
+    response = self.post(_getOrgProfileEditUrl(self.org), postdata=postdata)
+    self.assertResponseRedirect(response, url=_getOrgProfileEditUrl(self.org))
 
     # check that organization entity has been updated
     org = ndb.Key(
@@ -256,8 +256,8 @@ class OrgAppUpdatePageTest(test_utils.GSoCDjangoTestCase):
         'twitter': OTHER_TEST_TWITTER,
         'web_page': OTHER_TEST_WEB_PAGE,
         }
-    response = self.post(_getOrgAppUpdateUrl(self.org), postdata=postdata)
-    self.assertResponseRedirect(response, url=_getOrgAppUpdateUrl(self.org))
+    response = self.post(_getOrgProfileEditUrl(self.org), postdata=postdata)
+    self.assertResponseRedirect(response, url=_getOrgProfileEditUrl(self.org))
 
     # check that organization entity has been updated
     org = ndb.Key(
