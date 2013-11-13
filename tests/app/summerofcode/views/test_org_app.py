@@ -67,6 +67,18 @@ def _getOrgProfileEditUrl(org):
   return '/gsoc/org/profile/edit/%s' % org.key.id()
 
 
+def _getOrgApplicationSubmitUrl(org):
+  """Returns URL to Submit Organization Application page.
+
+  Args:
+    org: Organization entity.
+
+  Returns:
+    A string containing the URL to Submit Organization Application page.
+  """
+  return '/gsoc/org/application/submit/%s' % org.key.id()
+
+
 def _getOrgAppShowUrl(org):
   """Returns URL to Organization Application Show page.
 
@@ -277,6 +289,23 @@ class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
         tabs.ORG_PROFILE_TAB_ID)
 
 
+class OrgApplicationSubmitPageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for OrgApplicationSubmitPage class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    profile = profile_utils.seedGSoCProfile(
+        self.program, org_admin_for=[self.org.key.to_old_key()])
+    profile_utils.login(profile.parent())
+
+    response = self.get(_getOrgApplicationSubmitUrl(self.org))
+    self.assertResponseOK(response)
+
+
 class OrgAppShowPageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for OrgAppShowPage class."""
 
@@ -307,6 +336,7 @@ class PublicOrganizationListPageTest(test_utils.GSoCDjangoTestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.init()
+    self.org = org_utils.seedSOCOrganization(TEST_ORG_ID, self.program.key())
 
   def testPageLoads(self):
     """Tests that page loads properly."""

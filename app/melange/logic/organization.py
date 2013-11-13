@@ -110,12 +110,43 @@ def getApplicationResponse(org_key):
   """Returns application response for the specified organization.
 
   Args:
-    org: Organization key.
+    org_key: Organization key.
 
   Returns:
     Application response entity for the specified organization.
   """
   return survey_model.SurveyResponse.query(ancestor=org_key).get()
+
+
+def setApplicationResponse(org_key, survey_key, properties):
+  """Sets the specified properties for application of 
+  the specified organization.
+
+  If no application exists for the organization, a new entity is created and
+  persisted in datastore. In both cases, the existing or newly created entity
+  is populated with the specified properties.
+
+  Args:
+    org_key: Organization key.
+    properties: A dict mapping organization application questions to
+      corresponding responses.
+
+  Returns:
+    survey_model.SurveyResponse entity associated the application.
+  """
+  app_response = getApplicationResponse(org_key)
+  if not app_response:
+    app_response = survey_model.SurveyResponse(
+        parent=org_key, survey=ndb.Key.from_old_key(survey_key), **properties)
+  else:
+    # It just just for completeness, but first remove all dynamic properties.
+    for prop, value in app_response._properties.items():
+      if isinstance(value, ndb.GenericProperty):
+        delattr(app_response, prop)
+    app_response.populate(**properties)
+
+  app_response.put()
+  return app_response
 
 
 def setStatus(organization, program, site, new_status, recipients=None):

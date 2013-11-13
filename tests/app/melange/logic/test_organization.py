@@ -16,6 +16,7 @@
 
 import unittest
 
+from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from melange.logic import organization as org_logic
@@ -189,6 +190,83 @@ class UpdateOrganizationWithApplicationTest(unittest.TestCase):
         org_model.Organization._get_kind(),
         '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
     self.assertEqual(org.name, 'Other Program Name')
+
+
+FOO_ID = 'foo'
+BAR_ID = 'bar'
+
+TEST_FOO_ANSWER = 'Test foo answer'
+TEST_BAR_ANSWER = 'Test bar answer'
+
+OTHER_TEST_FOO_ANSWER = 'Other foo answer'
+OTHER_TEST_BAR_ANSWER = 'Other bar answer'
+
+TEST_APPLICATION_PROPERTIES = {
+    FOO_ID: TEST_FOO_ANSWER,
+    BAR_ID: TEST_BAR_ANSWER
+    }
+
+class SetApplicationResponseTest(unittest.TestCase):
+  """Unit tests for setApplicationResponse function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    program = seeder_logic.seed(program_model.Program)
+    self.org = org_utils.seedOrganization('test_org_id', program.key())
+
+    self.survey_key = db.Key.from_path('Survey', 'test_survey_name')
+
+  def testApplicationCreated(self):
+    """Tests that application is created when it does not exist."""
+    application = org_logic.setApplicationResponse(
+        self.org.key, self.survey_key, TEST_APPLICATION_PROPERTIES)
+
+    # check that application is persisted
+    self.assertIsNotNone(application.key.get())
+
+    # check that responses are stored in the entity
+    self.assertEqual(application.foo, TEST_APPLICATION_PROPERTIES[FOO_ID])
+    self.assertEqual(application.bar, TEST_APPLICATION_PROPERTIES[BAR_ID])
+
+  def testApplicationUpdated(self):
+    """Tests that application is updated if it has existed."""
+    # seed organization application
+    org_utils.seedApplication(
+        self.org.key, self.survey_key, **TEST_APPLICATION_PROPERTIES)
+
+    # set new answers to both questions
+    properties = {
+        FOO_ID: OTHER_TEST_FOO_ANSWER,
+        BAR_ID: OTHER_TEST_BAR_ANSWER
+        }
+    application = org_logic.setApplicationResponse(
+        self.org.key, self.survey_key, properties)
+
+    # check that responses are updated properly
+    self.assertEqual(application.foo, properties[FOO_ID])
+    self.assertEqual(application.bar, properties[BAR_ID])
+
+    # set answer to only one question
+    properties = {FOO_ID: TEST_FOO_ANSWER}
+    application = org_logic.setApplicationResponse(
+        self.org.key, self.survey_key, properties)
+
+    # check that the response for one question is updated and there is
+    # no response for the other question
+    self.assertEqual(application.foo, properties[FOO_ID])
+    self.assertNotIn(BAR_ID, application._properties.keys())
+
+    # set new answers to both questions again
+    properties = {
+        FOO_ID: OTHER_TEST_FOO_ANSWER,
+        BAR_ID: OTHER_TEST_BAR_ANSWER
+        }
+    application = org_logic.setApplicationResponse(
+        self.org.key, self.survey_key, properties)
+
+    # check that responses are present for both questions
+    self.assertEqual(application.foo, properties[FOO_ID])
+    self.assertEqual(application.bar, properties[BAR_ID])
 
 
 class SetStatusTest(test_utils.DjangoTestCase):
