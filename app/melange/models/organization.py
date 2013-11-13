@@ -122,3 +122,6 @@ class Organization(ndb.Model):
   #: Status of the organization
   status = msgprop.EnumProperty(
       Status, required=True, default=Status.APPLYING)
+
+  #: Specifies whether the organization has participated in the program before
+  is_veteran = ndb.BooleanProperty(required=True, default=False)
