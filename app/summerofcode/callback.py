@@ -33,6 +33,7 @@ class Callback(object):
 
   def registerViews(self):
     """Instantiates all view objects."""
+    self.views.append(org_app.OrgApplicationSubmitPage())
     self.views.append(org_app.OrgAppShowPage())
     self.views.append(org_app.OrgAppTakePage())
     self.views.append(org_app.OrgProfileEditPage())

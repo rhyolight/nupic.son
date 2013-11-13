@@ -1,4 +1,4 @@
-# Copyright 2011 the Melange authors.
+# Copyright 2013 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -128,8 +128,8 @@ FACEBOOK_LABEL = translation.ugettext('Facebook URL')
 
 BACKUP_ADMIN_LABEL = translation.ugettext('Backup administrator')
 
-ORG_APP_TAKE_PAGE_NAME = translation.ugettext(
-    'Take organization application')
+ORG_APPLICATION_SUBMIT_PAGE_NAME = translation.ugettext(
+    'Submit application')
 
 ORG_PROFILE_EDIT_PAGE_NAME = translation.ugettext(
     'Edit organization profile')
@@ -403,7 +403,7 @@ class OrgAppTakePage(base.GSoCRequestHandler):
         request_data=data, survey=data.org_app, data=data.POST or None)
 
     return {
-        'page_name': ORG_APP_TAKE_PAGE_NAME,
+        'page_name': ORG_APPLICATION_SUBMIT_PAGE_NAME,
         'description': data.org_app.content,
         'forms': [form],
         'error': bool(form.errors)
@@ -517,6 +517,54 @@ class OrgProfileEditPage(base.GSoCRequestHandler):
         url = links.LINKER.organization(
             data.url_ndb_org.key, urls.UrlNames.ORG_PROFILE_EDIT)
         return http.HttpResponseRedirect(url)
+
+
+class OrgApplicationSubmitPage(base.GSoCRequestHandler):
+  """View to submit application to a program by organization representatives."""
+
+  # TODO(daniel): implement actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.djangoURLPatterns for specification."""
+    return [
+        soc_url_patterns.url(
+            r'org/application/submit/%s$' % url_patterns.ORG,
+            self, name=urls.UrlNames.ORG_APPLICATION_SUBMIT)]
+
+  def templatePath(self):
+    """See base.RequestHandler.templatePath for specification."""
+    return 'modules/gsoc/org_app/take.html'
+
+  def context(self, data, check, mutator):
+    """See base.RequestHandler.context for specification."""
+    application = org_logic.getApplicationResponse(data.url_ndb_org.key)
+    form_data = application.to_dict() if application else None
+
+    form = gsoc_forms.SurveyTakeForm(
+        survey=data.org_app, data=data.POST or form_data)
+
+    return {
+        'page_name': ORG_APPLICATION_SUBMIT_PAGE_NAME,
+        'forms': [form],
+        'error': bool(form.errors),
+        'tabs': tabs.orgTabs(data, selected_tab_id=tabs.ORG_APP_RESPONSE_TAB_ID)
+        }
+
+  def post(self, data, check, mutator):
+    """See base.RequestHandler.post for specification."""
+    form = gsoc_forms.SurveyTakeForm(survey=data.org_app, data=data.POST)
+    if not form.is_valid():
+      # TODO(nathaniel): problematic self-use.
+      return self.get(data, check, mutator)
+    else:
+      properties = form.getSurveyResponseProperties()
+      setApplicationResponse(
+          data.url_ndb_org.key, data.org_app.key(), properties)
+
+      url = links.LINKER.organization(
+          data.url_ndb_org.key, urls.UrlNames.ORG_APPLICATION_SUBMIT)
+      return http.HttpResponseRedirect(url)
 
 
 class OrgAppShowPage(base.GSoCRequestHandler):
@@ -691,3 +739,19 @@ def updateOrganizationWithApplicationTxn(
   org = org_key.get()
   org_logic.updateOrganizationWithApplication(
       org, org_properties, app_response_properties)
+
+
+@ndb.transactional
+def setApplicationResponse(org_key, survey_key, properties):
+  """Sets the specified properties for application of 
+  the specified organization.
+
+  Args:
+    org_key: Organization key.
+    properties: A dict mapping organization application questions to
+      corresponding responses.
+
+  Returns:
+    survey_model.SurveyResponse entity associated the application.
+  """
+  return org_logic.setApplicationResponse(org_key, survey_key, properties)

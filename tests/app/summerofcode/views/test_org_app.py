@@ -295,15 +295,23 @@ class OrgApplicationSubmitPageTest(test_utils.GSoCDjangoTestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.init()
+    self.org = org_utils.seedSOCOrganization(TEST_ORG_ID, self.program.key())
 
   def testPageLoads(self):
     """Tests that page loads properly."""
-    profile = profile_utils.seedGSoCProfile(
-        self.program, org_admin_for=[self.org.key.to_old_key()])
-    profile_utils.login(profile.parent())
-
+    self.profile_helper.createProfile()
     response = self.get(_getOrgApplicationSubmitUrl(self.org))
     self.assertResponseOK(response)
+
+  def testApplicationCreated(self):
+    """Tests that organization application is created properly."""
+    # TODO(daniel): submit actual responses in POST data
+    response = self.post(_getOrgApplicationSubmitUrl(self.org))
+    self.assertResponseRedirect(response)
+
+    # check that application has been created
+    application = survey_model.SurveyResponse.query(ancestor=self.org.key).get()
+    self.assertIsNotNone(application)
 
 
 class OrgAppShowPageTest(test_utils.GSoCDjangoTestCase):
@@ -336,7 +344,6 @@ class PublicOrganizationListPageTest(test_utils.GSoCDjangoTestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.init()
-    self.org = org_utils.seedSOCOrganization(TEST_ORG_ID, self.program.key())
 
   def testPageLoads(self):
     """Tests that page loads properly."""
