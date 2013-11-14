@@ -790,12 +790,10 @@ class SurveyTakeForm(ModelForm):
           self.instance, field_name, None)
 
   def getSurveyResponseProperties(self):
-    """Returns answers to the application response that were submitted
-    in this form.
+    """Returns answers to the survey questions that were submitted in this form.
 
     Returns:
-      A dict mapping organization application questions to
-      corresponding responses.
+      A dict mapping question identifiers to corresponding responses.
     """
     # list of field IDs that belong to the organization application
     field_ids = [field.field_id for field in surveys.SurveySchema(self.survey)]
