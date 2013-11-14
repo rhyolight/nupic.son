@@ -38,8 +38,8 @@ TEST_DESCRIPTION = 'Test Org Description'
 TEST_EMAIL = 'test@example.com'
 TEST_LOGO_URL = 'http://www.test.logo.url.com'
 
-class CreateOrganizationWithApplicationTest(unittest.TestCase):
-  """Unit tests for createOrganizationWithApplication function."""
+class CreateOrganizationTest(unittest.TestCase):
+  """Unit tests for createOrganization function."""
 
   def setUp(self):
     # seed a program
@@ -55,8 +55,8 @@ class CreateOrganizationWithApplicationTest(unittest.TestCase):
         'logo_url': TEST_LOGO_URL,
         'name': TEST_ORG_NAME
         }
-    result = org_logic.createOrganizationWithApplication(
-        TEST_ORG_ID, self.program.key(), self.survey.key(), org_properties, {})
+    result = org_logic.createOrganization(
+        TEST_ORG_ID, self.program.key(), org_properties)
     self.assertTrue(result)
 
     # check that organization is created and persisted
@@ -70,13 +70,6 @@ class CreateOrganizationWithApplicationTest(unittest.TestCase):
     self.assertEqual(org.name, TEST_ORG_NAME)
     self.assertEqual(org.status, org_model.Status.APPLYING)
 
-    # check that organization application response is created and persisted
-    app_response = survey_model.SurveyResponse.query(ancestor=org.key).get()
-    self.assertIsNotNone(app_response)
-    self.assertEqual(
-        app_response.survey,
-        ndb.Key.from_old_key(self.survey.key()))
-
   def testForTheSameOrgIdAndProgram(self):
     """Tests that two orgs cannot have the same id for the same program."""
     # create one organization with the given org ID
@@ -84,8 +77,8 @@ class CreateOrganizationWithApplicationTest(unittest.TestCase):
         'description': TEST_DESCRIPTION,
         'name': TEST_ORG_NAME
         }
-    result = org_logic.createOrganizationWithApplication(
-        TEST_ORG_ID, self.program.key(), self.survey.key(), org_properties, {})
+    result = org_logic.createOrganization(
+        TEST_ORG_ID, self.program.key(), org_properties)
     self.assertTrue(result)
 
     # try creating another organization with the same org ID but different name
@@ -93,8 +86,8 @@ class CreateOrganizationWithApplicationTest(unittest.TestCase):
         'description': TEST_DESCRIPTION,
         'name': TEST_ORG_NAME[::-1]
         }
-    result = org_logic.createOrganizationWithApplication(
-        TEST_ORG_ID, self.program.key(), self.survey.key(), org_properties, {})
+    result = org_logic.createOrganization(
+        TEST_ORG_ID, self.program.key(), org_properties)
     self.assertFalse(result)
 
     # check that the organization has old name
@@ -110,23 +103,22 @@ class CreateOrganizationWithApplicationTest(unittest.TestCase):
         'description': TEST_DESCRIPTION,
         'name': TEST_ORG_NAME
         }
-    result = org_logic.createOrganizationWithApplication(
-        TEST_ORG_ID, self.program.key(), self.survey.key(), org_properties, {})
+    result = org_logic.createOrganization(
+        TEST_ORG_ID, self.program.key(), org_properties)
     self.assertTrue(result)
 
     # create another organization with the given org ID for different program
     other_program = seeder_logic.seed(program_model.Program)
-    result = org_logic.createOrganizationWithApplication(
-        TEST_ORG_ID, other_program.key(), self.survey.key(),
-        org_properties, {})
+    result = org_logic.createOrganization(
+        TEST_ORG_ID, other_program.key(), org_properties)
     self.assertTrue(result)
 
   def testForMissingProperty(self):
     """Tests that org is not created when a required property is missing."""
     # no description property
     org_properties = {'name': TEST_ORG_NAME}
-    result = org_logic.createOrganizationWithApplication(
-        TEST_ORG_ID, self.program.key(), self.survey.key(), org_properties, {})
+    result = org_logic.createOrganization(
+        TEST_ORG_ID, self.program.key(), org_properties)
     self.assertFalse(result)
 
   def testForInvalidLogoUrl(self):
@@ -135,9 +127,10 @@ class CreateOrganizationWithApplicationTest(unittest.TestCase):
         'logo_url': 'http://invalid',
         'name': TEST_ORG_NAME
         }
-    result = org_logic.createOrganizationWithApplication(
-        TEST_ORG_ID, self.program.key(), self.survey.key(), org_properties, {})
+    result = org_logic.createOrganization(
+        TEST_ORG_ID, self.program.key(), org_properties)
     self.assertFalse(result)
+
 
 class UpdateOrganizationWithApplicationTest(unittest.TestCase):
   """Unit tests for updateOrganizationWithApplication function."""

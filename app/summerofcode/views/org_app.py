@@ -401,9 +401,8 @@ class OrgProfileCreatePage(base.GSoCRequestHandler):
         org_id = org_properties['org_id']
         del org_properties['org_id']
 
-        result = createOrganizationWithApplicationTxn(
-            org_id, data.program.key(), data.org_app.key(),
-            org_properties, {}, data.models)
+        result = createOrganizationTxn(
+            org_id, data.program.key(), org_properties, data.models)
 
         if not result:
           raise exception.BadRequest(message=result.extra)
@@ -655,10 +654,9 @@ class PublicOrganizationListPage(base.GSoCRequestHandler):
 
 
 @ndb.transactional
-def createOrganizationWithApplicationTxn(
-    org_id, program_key, app_key, org_properties, app_properties, models):
-  """Creates a new organization and saves a corresponding survey response
-  for the specified data.
+def createOrganizationTxn(
+    org_id, program_key, org_properties, models):
+  """Creates a new organization profile based on the specified properties.
 
   This function simply calls organization logic's function to do actual job
   but ensures that the entire operation is executed within a transaction.
@@ -667,21 +665,17 @@ def createOrganizationWithApplicationTxn(
     org_id: Identifier of the new organization. Must be unique on
       'per program' basis.
     program_key: Program key.
-    app_key: Organization application key.
     org_properties: A dict mapping organization properties to their values.
-    app_properties: A dict mapping organization application questions to
-      corresponding responses.
-    models:
+    models: instance of types.Models that represent appropriate models.
 
   Returns:
-    RichBool whose value is set to True if organization and application
-    response have been successfully created. In that case, extra part points to
-    the newly created organization entity. Otherwise, RichBool whose value is
-    set to False and extra part is a string that represents the reason why
-    the action could not be completed.
+    RichBool whose value is set to True if organization has been successfully
+    created. In that case, extra part points to the newly created organization
+    entity. Otherwise, RichBool whose value is set to False and extra part is
+    a string that represents the reason why the action could not be completed.
   """
-  return org_logic.createOrganizationWithApplication(
-      org_id, program_key, app_key, org_properties, app_properties, models)
+  return org_logic.createOrganization(
+      org_id, program_key, org_properties, models)
 
 
 @ndb.transactional

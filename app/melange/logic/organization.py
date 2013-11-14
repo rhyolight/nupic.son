@@ -28,28 +28,22 @@ from soc.tasks import mailer
 
 ORG_ID_IN_USE = 'Organization ID %s is already in use for this program.'
 
-def createOrganizationWithApplication(
-    org_id, program_key, app_key, org_properties, app_properties,
-    models=types.MELANGE_MODELS):
-  """Creates a new organization and saves a corresponding survey response
-  for the specified data.
+def createOrganization(
+    org_id, program_key, org_properties, models=types.MELANGE_MODELS):
+  """Creates a new organization profile based on the specified properties.
 
   Args:
     org_id: Identifier of the new organization. Must be unique on
       'per program' basis.
     program_key: Program key.
-    app_key: Organization application key.
     org_properties: A dict mapping organization properties to their values.
-    app_properties: A dict mapping organization application questions to
-      corresponding responses.
-    models: models: instance of types.Models that represent appropriate models.
+    models: instance of types.Models that represent appropriate models.
 
   Returns:
-    RichBool whose value is set to True if organization and application
-    response have been successfully created. In that case, extra part points to
-    the newly created organization entity. Otherwise, RichBool whose value is
-    set to False and extra part is a string that represents the reason why
-    the action could not be completed.
+    RichBool whose value is set to True if organization has been successfully
+    created. In that case, extra part points to the newly created organization
+    entity. Otherwise, RichBool whose value is set to False and extra part is
+    a string that represents the reason why the action could not be completed.
   """
   # TODO(daniel): move it to a utility function
   entity_id = '%s/%s' % (program_key.name(), org_id)
@@ -63,15 +57,9 @@ def createOrganizationWithApplication(
   try:
     organization = models.ndb_org_model(
         id=entity_id, org_id=org_id, program=program_key, **org_properties)
-  
-    app_key = ndb.Key.from_old_key(app_key)
-    application_record = survey_model.SurveyResponse(
-        parent=organization.key, survey=app_key, **app_properties)
+    organization.put()
   except ValueError as e:
     return rich_bool.RichBool(False, extra=str(e))
-
-  try:
-    ndb.put_multi([organization, application_record])
   except datastore_errors.BadValueError as e:
     return rich_bool.RichBool(False, extra=str(e))
 

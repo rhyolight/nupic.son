@@ -33,9 +33,9 @@ TEST_ORG_NAME = 'Test Org Name'
 TEST_DESCRIPTION = u'Test Organization Description'
 TEST_IDEAS_PAGE = 'http://www.test.ideas.com'
 
-class CreateOrganizationWithApplicationTest(unittest.TestCase):
+class CreateOrganizationTest(unittest.TestCase):
   """Unit tests for Summer Of Code specific behavior of
-  createOrganizationWithApplication function.
+  createOrganization function.
   """
 
   def setUp(self):
@@ -52,8 +52,8 @@ class CreateOrganizationWithApplicationTest(unittest.TestCase):
        'ideas_page': TEST_IDEAS_PAGE,
        'name': TEST_ORG_NAME,
        }
-    result = org_logic.createOrganizationWithApplication(
-        TEST_ORG_ID, self.program.key(), self.survey.key(), org_properties, {},
+    result = org_logic.createOrganization(
+        TEST_ORG_ID, self.program.key(), org_properties,
         models=types.SOC_MODELS)
     self.assertTrue(result)
 
@@ -70,7 +70,7 @@ class CreateOrganizationWithApplicationTest(unittest.TestCase):
         'ideas_page': 'http://invalid',
         'name': TEST_ORG_NAME
         }
-    result = org_logic.createOrganizationWithApplication(
-        TEST_ORG_ID, self.program.key(), self.survey.key(), org_properties, {},
+    result = org_logic.createOrganization(
+        TEST_ORG_ID, self.program.key(), org_properties,
         models=types.SOC_MODELS)
     self.assertFalse(result)
