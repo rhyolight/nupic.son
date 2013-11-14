@@ -64,6 +64,7 @@ def convertOrg(org_key):
       'contact': contact,
       'description': organization.description,
       'ideas_page': organization.ideas,
+      'is_veteran': not organization.new_org,
       'logo_url': organization.logo_url,
       'name': organization.name,
       'org_id': organization.link_id,
