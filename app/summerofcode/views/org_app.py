@@ -287,21 +287,21 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
     """
     properties = {}
     if 'blog' in self.cleaned_data:
-      properties['blog'] = self.cleaned_data['blog']
+      properties['blog'] = self.cleaned_data['blog'] or None
     if 'facebook' in self.cleaned_data['facebook']:
-      properties['facebook'] = self.cleaned_data['facebook']
+      properties['facebook'] = self.cleaned_data['facebook'] or None
     if 'feed_url' in self.cleaned_data:
-      properties['feed_url'] = self.cleaned_data['feed_url']
+      properties['feed_url'] = self.cleaned_data['feed_url'] or None
     if 'google_plus' in self.cleaned_data:
-      properties['google_plus'] = self.cleaned_data['google_plus']
+      properties['google_plus'] = self.cleaned_data['google_plus'] or None
     if 'irc_channel' in self.cleaned_data:
-      properties['irc_channel'] = self.cleaned_data['irc_channel']
+      properties['irc_channel'] = self.cleaned_data['irc_channel'] or None
     if 'mailing_list' in self.cleaned_data:
-      properties['mailing_list'] = self.cleaned_data['mailing_list']
+      properties['mailing_list'] = self.cleaned_data['mailing_list'] or None
     if 'twitter' in self.cleaned_data:
-      properties['twitter'] = self.cleaned_data['twitter']
+      properties['twitter'] = self.cleaned_data['twitter'] or None
     if 'web_page' in self.cleaned_data:
-      properties['web_page'] = self.cleaned_data['web_page']
+      properties['web_page'] = self.cleaned_data['web_page'] or None
     return properties
 
   def getOrgProperties(self):
@@ -312,15 +312,15 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
     """
     properties = {}
     if 'description' in self.cleaned_data:
-      properties['description'] = self.cleaned_data['description']
+      properties['description'] = self.cleaned_data['description'] or None
     if 'ideas_page' in self.cleaned_data:
-      properties['ideas_page'] = self.cleaned_data['ideas_page']
+      properties['ideas_page'] = self.cleaned_data['ideas_page'] or None
     if 'logo_url' in self.cleaned_data:
-      properties['logo_url'] = self.cleaned_data['logo_url']
+      properties['logo_url'] = self.cleaned_data['logo_url'] or None
     if 'name' in self.cleaned_data:
-      properties['name'] = self.cleaned_data['name']
+      properties['name'] = self.cleaned_data['name'] or None
     if 'org_id' in self.cleaned_data:
-      properties['org_id'] = self.cleaned_data['org_id']
+      properties['org_id'] = self.cleaned_data['org_id'] or None
     return properties
 
   def getApplicationResponseProperties(self):
