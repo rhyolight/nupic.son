@@ -19,7 +19,6 @@ class UrlNames(object):
   """URL names for Summer Of Code views."""
 
   ORG_APP_SHOW = 'soc_org_app_show'
-  ORG_APP_TAKE = 'soc_org_app_take'
   ORG_APPLICATION_SUBMIT = 'soc_org_application_submit'
   ORG_PROFILE_CREATE = 'soc_org_profile_create'
   ORG_PROFILE_EDIT = 'soc_org_profile_edit'

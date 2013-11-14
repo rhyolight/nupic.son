@@ -43,17 +43,6 @@ TEST_MAILING_LIST = 'mailinglist@example.com'
 TEST_TWITTER = u'http://www.test.twitter.com/'
 TEST_WEB_PAGE = u'http://www.web.page.com/'
 
-def _getOrgAppTakeUrl(program):
-  """Returns URL to Organization Application Take page.
-
-  Args:
-    program: Program entity.
-
-  Returns:
-    A string containing the URL to Organization Application Take page.
-  """
-  return '/gsoc/org/application/take/%s' % program.key().name()
-
 
 def _getOrgProfileCreateUrl(program):
   """Returns URL to Create Organization Profile page.
@@ -113,87 +102,6 @@ def _getPublicOrgListUrl(program):
     A string containing the URL to Public Organization List page.
   """
   return '/gsoc/org/list/public/%s' % program.key().name()
-
-
-class OrgAppTakePageTest(test_utils.GSoCDjangoTestCase):
-  """Unit tests for OrgAppTakePage class."""
-
-  def setUp(self):
-    """See unittest.TestCase.setUp for specification."""
-    self.init()
-
-  def testPageLoads(self):
-    """Tests that page loads properly."""
-    self.profile_helper.createProfile()
-    response = self.get(_getOrgAppTakeUrl(self.program))
-    self.assertResponseOK(response)
-
-  def testOrganizationAndApplicationCreated(self):
-    """Tests that org entity as well as application are created properly."""
-    self.profile_helper.createProfile()
-
-    backup_admin = profile_utils.seedGSoCProfile(self.program)
-
-    postdata = {
-        'org_id': TEST_ORG_ID,
-        'name': TEST_ORG_NAME,
-        'blog': TEST_BLOG,
-        'description': TEST_DESCRIPTION,
-        'facebook': TEST_FACEBOOK,
-        'feed_url': TEST_FEED_URL,
-        'google_plus': TEST_GOOGLE_PLUS,
-        'logo_url': TEST_LOGO_URL,
-        'ideas_page': TEST_IDEAS_PAGE,
-        'irc_channel': TEST_IRC_CHANNEL,
-        'backup_admin': backup_admin.link_id,
-        'mailing_list': TEST_MAILING_LIST,
-        'twitter': TEST_TWITTER,
-        'web_page': TEST_WEB_PAGE,
-        }
-    response = self.post(_getOrgAppTakeUrl(self.program), postdata=postdata)
-
-    # check that organization entity has been created
-    org = ndb.Key(
-        soc_org_model.SOCOrganization._get_kind(),
-        '%s/%s' % (self.program.key().name(), TEST_ORG_ID)).get()
-    self.assertIsNotNone(org)
-    self.assertEqual(org.contact.blog, TEST_BLOG)
-    self.assertEqual(org.description, TEST_DESCRIPTION)
-    self.assertEqual(org.contact.facebook, TEST_FACEBOOK)
-    self.assertEqual(org.contact.feed_url, TEST_FEED_URL)
-    self.assertEqual(org.contact.google_plus, TEST_GOOGLE_PLUS)
-    self.assertEqual(org.ideas_page, TEST_IDEAS_PAGE)
-    self.assertEqual(org.logo_url, TEST_LOGO_URL)
-    self.assertEqual(org.contact.mailing_list, TEST_MAILING_LIST)
-    self.assertEqual(org.contact.twitter, TEST_TWITTER)
-    self.assertEqual(org.contact.web_page, TEST_WEB_PAGE)
-    self.assertEqual(org.contact.irc_channel, TEST_IRC_CHANNEL)
-
-    # check that the client is redirected to update page
-    self.assertResponseRedirect(response, url=_getOrgProfileEditUrl(org))
-
-    # check that survey response is created and persisted
-    app_response = survey_model.SurveyResponse.query(
-        ancestor=org.key).get()
-    self.assertIsNotNone(app_response)
-
-    # check that a connection with the current user has been started
-    profile = db.get(self.profile_helper.profile.key())
-    self.assertIn(org.key.to_old_key(), profile.org_admin_for)
-    connection = connection_model.Connection.all().ancestor(
-        profile.key()).filter('organization', org.key.to_old_key()).get()
-    self.assertIsNotNone(connection)
-    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
-    self.assertEqual(connection.user_role, connection_model.ROLE)
-
-    # check that a connection with backup admin has been started
-    backup_admin = db.get(backup_admin.key())
-    self.assertIn(org.key.to_old_key(), backup_admin.org_admin_for)
-    connection = connection_model.Connection.all().ancestor(
-        backup_admin.key()).filter('organization', org.key.to_old_key()).get()
-    self.assertIsNotNone(connection)
-    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
-    self.assertEqual(connection.user_role, connection_model.ROLE)
 
 
 class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
