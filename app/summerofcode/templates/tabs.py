@@ -85,7 +85,8 @@ def orgTabs(data, selected_tab_id=None):
   tabs_list.append(tabs.Tab(ORG_PROFILE_TAB_ID, ORG_PROFILE_NAME, url))
 
   # add Application Response tab
-  url = 'TODO(daniel): create URL'
+  url = links.LINKER.organization(
+      data.url_ndb_org.key, urls.UrlNames.ORG_APPLICATION_SUBMIT)
   tabs_list.append(
       tabs.Tab(ORG_APP_RESPONSE_TAB_ID, ORG_APP_RESPONSE_NAME, url))
 
