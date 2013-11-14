@@ -312,6 +312,17 @@ class OrgApplicationSubmitPageTest(test_utils.GSoCDjangoTestCase):
     application = survey_model.SurveyResponse.query(ancestor=self.org.key).get()
     self.assertIsNotNone(application)
 
+  def testOrgsTabs(self):
+    """Tests that correct organization related tabs are present in context."""
+    response = self.get(_getOrgApplicationSubmitUrl(self.org))
+
+    # check that tabs are present in context
+    self.assertIn('tabs', response.context)
+
+    # check that tab to "Edit Profile" page is the selected one
+    self.assertEqual(response.context['tabs'].selected_tab_id,
+        tabs.ORG_APP_RESPONSE_TAB_ID)
+
 
 class OrgAppShowPageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for OrgAppShowPage class."""
