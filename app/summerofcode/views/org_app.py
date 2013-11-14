@@ -473,8 +473,7 @@ class OrgProfileEditPage(base.GSoCRequestHandler):
         org_properties = form.getOrgProperties()
         org_properties['contact'] = result.extra
 
-        updateOrganizationWithApplicationTxn(
-            data.url_ndb_org.key, org_properties, {})
+        updateOrganizationTxn(data.url_ndb_org.key, org_properties)
 
         url = links.LINKER.organization(
             data.url_ndb_org.key, urls.UrlNames.ORG_PROFILE_EDIT)
@@ -679,23 +678,18 @@ def createOrganizationTxn(
 
 
 @ndb.transactional
-def updateOrganizationWithApplicationTxn(
-    org_key, org_properties, app_response_properties):
-  """Updates properties of the specified organization as well as application
-  response for that organization.
+def updateOrganizationTxn(org_key, org_properties):
+  """Updates the specified organization based on the specified properties.
 
   This function simply calls organization logic's function to do actual job
   but ensures that the entire operation is executed within a transaction.
 
   Args:
-    org_key: Organization key.
+    org: Organization entity.
     org_properties: A dict containing properties to be updated.
-    app_response_properties: A dict containing organization application
-      questions to be updated.
   """
   org = org_key.get()
-  org_logic.updateOrganizationWithApplication(
-      org, org_properties, app_response_properties)
+  org_logic.updateOrganization(org, org_properties)
 
 
 @ndb.transactional

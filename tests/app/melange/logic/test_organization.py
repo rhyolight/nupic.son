@@ -132,8 +132,8 @@ class CreateOrganizationTest(unittest.TestCase):
     self.assertFalse(result)
 
 
-class UpdateOrganizationWithApplicationTest(unittest.TestCase):
-  """Unit tests for updateOrganizationWithApplication function."""
+class UpdateOrganizationTest(unittest.TestCase):
+  """Unit tests for updateOrganization function."""
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
@@ -146,7 +146,7 @@ class UpdateOrganizationWithApplicationTest(unittest.TestCase):
   def testOrgIdInOrgProperties(self):
     """Tests that org id cannot be updated."""
     org_properties = {'org_id': TEST_ORG_ID}
-    org_logic.updateOrganizationWithApplication(self.org, org_properties, {})
+    org_logic.updateOrganization(self.org, org_properties)
 
     # check that identifier has not changed
     org = ndb.Key(
@@ -156,12 +156,12 @@ class UpdateOrganizationWithApplicationTest(unittest.TestCase):
 
     org_properties = {'org_id': 'different_org_id'}
     with self.assertRaises(ValueError):
-      org_logic.updateOrganizationWithApplication(self.org, org_properties, {})
+      org_logic.updateOrganization(self.org, org_properties)
 
   def testProgramInOrgProperties(self):
     """Tests that program cannot be updated."""
     org_properties = {'program': ndb.Key.from_old_key(self.program.key())}
-    org_logic.updateOrganizationWithApplication(self.org, org_properties, {})
+    org_logic.updateOrganization(self.org, org_properties)
 
     # check that program has not changed
     org = ndb.Key(
@@ -171,12 +171,12 @@ class UpdateOrganizationWithApplicationTest(unittest.TestCase):
 
     org_properties = {'program': ndb.Key('Program', 'other_program')}
     with self.assertRaises(ValueError):
-      org_logic.updateOrganizationWithApplication(self.org, org_properties, {})
+      org_logic.updateOrganization(self.org, org_properties)
 
   def testOrgPropertiesUpdated(self):
     """Tests that organization properties are updated properly."""
     org_properties = {'name': 'Other Program Name'}
-    org_logic.updateOrganizationWithApplication(self.org, org_properties, {})
+    org_logic.updateOrganization(self.org, org_properties)
 
     # check that properties are updated
     org = ndb.Key(
