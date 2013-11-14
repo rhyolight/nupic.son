@@ -193,8 +193,8 @@ def cleanBackupAdmin(username, request_data):
     return profile
 
 
-class OrgAppForm(gsoc_forms.SurveyTakeForm):
-  """Form to submit organization application by prospective organization
+class OrgProfileForm(gsoc_forms.GSoCModelForm):
+  """Form to set properties of organization profile by organization
   administrators.
   """
 
@@ -252,7 +252,7 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
     Args:
       request_data: request_data.RequestData for the current request.
     """
-    super(OrgAppForm, self).__init__(**kwargs)
+    super(OrgProfileForm, self).__init__(**kwargs)
     self.request_data = request_data
 
   def clean_org_id(self):
@@ -323,47 +323,23 @@ class OrgAppForm(gsoc_forms.SurveyTakeForm):
       properties['org_id'] = self.cleaned_data['org_id'] or None
     return properties
 
-  def getApplicationResponseProperties(self):
-    """Returns answers to the application response that were submitted
-    in this form.
 
-    Returns:
-      A dict mapping organization application questsions to
-      corresponding responses.
-    """
-    # list of field IDs that belong to the organization application
-    field_ids = [field.field_id for field in surveys.SurveySchema(self.survey)]
-
-    properties = {}
-    for field_id, value in self.cleaned_data.iteritems():
-      if field_id in field_ids:
-        properties[field_id] = value
-
-        # add possible value of 'other' option
-        other_option_field_id = OTHER_OPTION_FIELD_ID % field_id
-        if other_option_field_id in self.cleaned_data:
-          properties[other_option_field_id] = self.cleaned_data[
-              other_option_field_id]
-
-    return properties
-
-
-def _formToTakeOrgApp(**kwargs):
+def _formToCreateOrgProfile(**kwargs):
   """Returns a Django form to submit a new organization application.
 
   Returns:
     OrgAppForm adjusted to submit a new organization application.
   """
-  return OrgAppForm(**kwargs)
+  return OrgProfileForm(**kwargs)
 
 
-def _formToEditOrgApp(**kwargs):
+def _formToEditOrgProfile(**kwargs):
   """Returns a django form to update an existing organization application.
 
   Returns:
     OrgAppForm adjusted to update an existing organization application.
   """
-  form = OrgAppForm(**kwargs)
+  form = OrgProfileForm(**kwargs)
 
   # organization ID property is not editable
   del form.fields['org_id']
@@ -399,8 +375,7 @@ class OrgAppTakePage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.RequestHandler.context for specification."""
-    form = _formToTakeOrgApp(
-        request_data=data, survey=data.org_app, data=data.POST or None)
+    form = _formToCreateOrgProfile(request_data=data, data=data.POST or None)
 
     return {
         'page_name': ORG_APPLICATION_SUBMIT_PAGE_NAME,
@@ -411,8 +386,7 @@ class OrgAppTakePage(base.GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """See base.RequestHandler.post for specification."""
-    form = _formToTakeOrgApp(
-        request_data=data, survey=data.org_app, data=data.POST)
+    form = _formToCreateOrgProfile(request_data=data, data=data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-use.
@@ -431,11 +405,9 @@ class OrgAppTakePage(base.GSoCRequestHandler):
         org_id = org_properties['org_id']
         del org_properties['org_id']
 
-        app_properties = form.getApplicationResponseProperties()
-
         result = createOrganizationWithApplicationTxn(
             org_id, data.program.key(), data.org_app.key(),
-            org_properties, app_properties, data.models)
+            org_properties, {}, data.models)
 
         if not result:
           # TODO(nathaniel): problematic self-use.
@@ -484,7 +456,7 @@ class OrgProfileEditPage(base.GSoCRequestHandler):
     if data.url_ndb_org.contact:
       form_data.update(data.url_ndb_org.contact.to_dict())
 
-    form = _formToEditOrgApp(survey=data.org_app, data=data.POST or form_data)
+    form = _formToEditOrgProfile(data=data.POST or form_data)
 
     return {
         'page_name': ORG_PROFILE_EDIT_PAGE_NAME,
@@ -495,7 +467,7 @@ class OrgProfileEditPage(base.GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """See base.RequestHandler.post for specification."""
-    form = _formToEditOrgApp(survey=data.org_app, data=data.POST)
+    form = _formToEditOrgProfile(data=data.POST)
     if not form.is_valid():
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
@@ -509,10 +481,8 @@ class OrgProfileEditPage(base.GSoCRequestHandler):
         org_properties = form.getOrgProperties()
         org_properties['contact'] = result.extra
 
-        app_response_properties = form.getApplicationResponseProperties()
-
         updateOrganizationWithApplicationTxn(
-            data.url_ndb_org.key, org_properties, app_response_properties)
+            data.url_ndb_org.key, org_properties, {})
 
         url = links.LINKER.organization(
             data.url_ndb_org.key, urls.UrlNames.ORG_PROFILE_EDIT)
