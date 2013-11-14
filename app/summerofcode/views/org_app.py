@@ -30,6 +30,7 @@ from melange.request import access
 from melange.request import exception
 from melange.request import links
 from melange.utils import lists as melange_lists
+from melange.utils import time as time_utils
 from melange.views import connection as connection_view
 
 from soc.logic import cleaning
@@ -353,6 +354,22 @@ def _formToEditOrgProfile(**kwargs):
   return form
 
 
+class OrgApplicationReminder(object):
+  """Reminder to be included in context if organization application has
+  yet to be submitted.
+  """
+
+  def __init__(self, url, deadline):
+    """Initializes a new instance of this class.
+
+    Args:
+      url: URL to Submit Organization Application page.
+      deadline: a datetime by which the application has to be submitted.
+    """
+    self.url = url
+    self.deadline = deadline
+
+
 class OrgProfileCreatePage(base.GSoCRequestHandler):
   """View to create organization profile."""
 
@@ -432,7 +449,7 @@ class OrgProfileEditPage(base.GSoCRequestHandler):
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""
-    return 'modules/gsoc/form_base.html'
+    return 'summerofcode/organization/org_profile_edit.html'
 
   def djangoURLPatterns(self):
     """See base.RequestHandler.djangoURLPatterns for specification."""
@@ -450,11 +467,23 @@ class OrgProfileEditPage(base.GSoCRequestHandler):
 
     form = _formToEditOrgProfile(data=data.POST or form_data)
 
+    # add a reminder if no application has been submitted and it is still
+    # before the deadline
+    if (not org_logic.getApplicationResponse(data.url_ndb_org.key) and
+        time_utils.isBefore(data.org_app.survey_end)):
+      url = links.LINKER.organization(
+          data.url_ndb_org.key, urls.UrlNames.ORG_APPLICATION_SUBMIT)
+      deadline = data.org_app.survey_end
+      org_application_reminder = OrgApplicationReminder(url, deadline)
+    else:
+      org_application_reminder = None
+
     return {
         'page_name': ORG_PROFILE_EDIT_PAGE_NAME,
         'forms': [form],
         'error': bool(form.errors),
-        'tabs': tabs.orgTabs(data, selected_tab_id=tabs.ORG_PROFILE_TAB_ID)
+        'tabs': tabs.orgTabs(data, selected_tab_id=tabs.ORG_PROFILE_TAB_ID),
+        'org_application_reminder': org_application_reminder,
         }
 
   def post(self, data, check, mutator):
