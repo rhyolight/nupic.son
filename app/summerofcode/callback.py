@@ -36,6 +36,7 @@ class Callback(object):
     self.views.append(org_app.OrgApplicationSubmitPage())
     self.views.append(org_app.OrgAppShowPage())
     self.views.append(org_app.OrgAppTakePage())
+    self.views.append(org_app.OrgProfileCreatePage())
     self.views.append(org_app.OrgProfileEditPage())
     self.views.append(org_app.PublicOrganizationListPage())
     self.views.append(project_manage.ManageProjectProgramAdminView())

@@ -131,6 +131,9 @@ BACKUP_ADMIN_LABEL = translation.ugettext('Backup administrator')
 ORG_APPLICATION_SUBMIT_PAGE_NAME = translation.ugettext(
     'Submit application')
 
+ORG_PROFILE_CREATE_PAGE_NAME = translation.ugettext(
+    'Create organization profile')
+
 ORG_PROFILE_EDIT_PAGE_NAME = translation.ugettext(
     'Edit organization profile')
 
@@ -429,6 +432,78 @@ class OrgAppTakePage(base.GSoCRequestHandler):
   
           url = links.LINKER.organization(
             result.extra.key, urls.UrlNames.ORG_PROFILE_EDIT)
+          return http.HttpResponseRedirect(url)
+
+
+class OrgProfileCreatePage(base.GSoCRequestHandler):
+  """View to create organization profile."""
+
+  # TODO(daniel): implement actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def templatePath(self):
+    """See base.RequestHandler.templatePath for specification."""
+    return 'modules/gsoc/form_base.html'
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.djangoURLPatterns for specification."""
+    return [
+        soc_url_patterns.url(
+            r'org/profile/create/%s$' % url_patterns.PROGRAM,
+            self, name=urls.UrlNames.ORG_PROFILE_CREATE)]
+
+  def context(self, data, check, mutator):
+    """See base.RequestHandler.context for specification."""
+    form = _formToCreateOrgProfile(request_data=data, data=data.POST or None)
+
+    return {
+        'page_name': ORG_PROFILE_CREATE_PAGE_NAME,
+        'forms': [form],
+        'error': bool(form.errors)
+        }
+
+  def post(self, data, check, mutator):
+    """See base.RequestHandler.post for specification."""
+    form = _formToCreateOrgProfile(request_data=data, data=data.POST)
+
+    if not form.is_valid():
+      # TODO(nathaniel): problematic self-use.
+      return self.get(data, check, mutator)
+    else:
+      contact_properties = form.getContactProperties()
+      result = contact_logic.createContact(**contact_properties)
+
+      if not result:
+        raise exception.BadRequest(message=result.extra)
+      else:
+        org_properties = form.getOrgProperties()
+        org_properties['contact'] = result.extra
+
+        # org_id is a special property
+        org_id = org_properties['org_id']
+        del org_properties['org_id']
+
+        result = createOrganizationWithApplicationTxn(
+            org_id, data.program.key(), data.org_app.key(),
+            org_properties, {}, data.models)
+
+        if not result:
+          raise exception.BadRequest(message=result.extra)
+        else:
+          # NOTE: this should rather be done within a transaction along with
+          # creating the organization. At least one admin is required for
+          # each organization: what if the code above fails and there are none?
+          # However, it should not be a practical problem.
+          admin_keys = [
+              data.profile.key(), form.cleaned_data['backup_admin'].key()]
+          for admin_key in admin_keys:
+            connection_view.createConnectionTxn(
+                data, admin_key, result.extra,
+                org_role=connection_model.ORG_ADMIN_ROLE,
+                user_role=connection_model.ROLE)
+
+          url = links.LINKER.organization(
+              result.extra.key, urls.UrlNames.ORG_APPLICATION_SUBMIT)
           return http.HttpResponseRedirect(url)
 
 
