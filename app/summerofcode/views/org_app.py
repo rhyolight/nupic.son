@@ -152,7 +152,12 @@ GENERAL_INFO_GROUP_TITLE = translation.ugettext('General Info')
 
 ORGANIZATION_LIST_DESCRIPTION = 'List of organizations'
 
-OTHER_OPTION_FIELD_ID = '%s-other'
+_CONTACT_PROPERTIES_FORM_KEYS = [
+    'blog', 'facebook', 'feed_url', 'google_plus', 'irc_channel',
+    'mailing_list', 'twitter', 'web_page']
+
+_ORG_PROPERTIES_FORM_KEYS = [
+    'description', 'ideas_page', 'logo_url', 'name', 'org_id']
 
 
 def cleanOrgId(org_id):
@@ -282,6 +287,29 @@ class _OrgProfileForm(gsoc_forms.GSoCModelForm):
     return cleanBackupAdmin(
         self.cleaned_data['backup_admin'], self.request_data)
 
+  def _getPropertiesForFields(self, field_keys):
+    """Maps fields specified by their keys to the corresponding values
+    that were submitted in the form data.
+
+    Fields, for which the empty string was received as their value, will be
+    mapped to None. This is because an occurrence of the empty string is
+    regarded as if the user did not specify any actual value for the field.
+
+    Not only are explicit None values more straightforward, but also
+    there are more convenient to be persisted in AppEngine datastore.
+
+    Args:
+      field_keys: A collection of identifiers of the form fields.
+
+    Returns:
+      A dict mapping the specified keys to their values.
+    """
+    return {
+        field_key: field_value
+        for field_key, field_value in self.cleaned_data.iteritems()
+        if field_key in field_keys and field_value != ''
+    }
+
   def getContactProperties(self):
     """Returns properties of the contact information that were submitted in
     the form.
@@ -289,24 +317,7 @@ class _OrgProfileForm(gsoc_forms.GSoCModelForm):
     Returns:
       A dict mapping contact properties to the corresponding values.
     """
-    properties = {}
-    if 'blog' in self.cleaned_data:
-      properties['blog'] = self.cleaned_data['blog'] or None
-    if 'facebook' in self.cleaned_data['facebook']:
-      properties['facebook'] = self.cleaned_data['facebook'] or None
-    if 'feed_url' in self.cleaned_data:
-      properties['feed_url'] = self.cleaned_data['feed_url'] or None
-    if 'google_plus' in self.cleaned_data:
-      properties['google_plus'] = self.cleaned_data['google_plus'] or None
-    if 'irc_channel' in self.cleaned_data:
-      properties['irc_channel'] = self.cleaned_data['irc_channel'] or None
-    if 'mailing_list' in self.cleaned_data:
-      properties['mailing_list'] = self.cleaned_data['mailing_list'] or None
-    if 'twitter' in self.cleaned_data:
-      properties['twitter'] = self.cleaned_data['twitter'] or None
-    if 'web_page' in self.cleaned_data:
-      properties['web_page'] = self.cleaned_data['web_page'] or None
-    return properties
+    return self._getPropertiesForFields(_CONTACT_PROPERTIES_FORM_KEYS)
 
   def getOrgProperties(self):
     """Returns properties of the organization that were submitted in this form.
@@ -314,18 +325,7 @@ class _OrgProfileForm(gsoc_forms.GSoCModelForm):
     Returns:
       A dict mapping organization properties to the corresponding values.
     """
-    properties = {}
-    if 'description' in self.cleaned_data:
-      properties['description'] = self.cleaned_data['description'] or None
-    if 'ideas_page' in self.cleaned_data:
-      properties['ideas_page'] = self.cleaned_data['ideas_page'] or None
-    if 'logo_url' in self.cleaned_data:
-      properties['logo_url'] = self.cleaned_data['logo_url'] or None
-    if 'name' in self.cleaned_data:
-      properties['name'] = self.cleaned_data['name'] or None
-    if 'org_id' in self.cleaned_data:
-      properties['org_id'] = self.cleaned_data['org_id'] or None
-    return properties
+    return self._getPropertiesForFields(_ORG_PROPERTIES_FORM_KEYS)
 
 
 def _formToCreateOrgProfile(**kwargs):
