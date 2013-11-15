@@ -23,11 +23,19 @@ mapreduce:
     - name: program_key
     - name: program_type
 
-# GSoC specific mapreduce jobs
-- name: GSoCConvertOrgTags
+- name: ApplyOrgAdmissionDecisions
   mapper:
-    input_reader: mapreduce.input_readers.DatastoreInputReader
-    handler: soc.mapreduce.convert_gsoc_organizations.process_org_tags
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: melange.mapreduce.apply_org_admission_decisions.process
+    params:
+    - name: program_key
+    - name: program_type
+
+# GSoC specific mapreduce jobs
+- name: GSoCConvertOrganizations
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.convert_gsoc_organizations.convertOrg
     params:
     - name: entity_kind
       value: soc.modules.gsoc.models.organization.GSoCOrganization

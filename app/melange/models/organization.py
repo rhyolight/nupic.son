@@ -21,7 +21,8 @@ from django.utils import translation
 
 from protorpc import messages
 
-from melange.models import survey as survey_model
+from melange.appengine import db
+from melange.models import contact as contact_model
 
 
 class Status(messages.Enum):
@@ -42,6 +43,54 @@ class Status(messages.Enum):
   PRE_REJECTED = 102
 
 
+def getSponsorId(org_key):
+  """Returns sponsor ID based on the specified organization key.
+
+  Args:
+    org_key: Organization key.
+
+  Returns:
+    A string that represents sponsor ID.
+  """
+  if isinstance(org_key, ndb.Key):
+    key_name = org_key.id()
+  else:
+    key_name = org_key.name()
+  return key_name.split('/')[0]
+
+
+def getProgramId(org_key):
+  """Returns program ID based on the specified organization key.
+
+  Args:
+    org_key: Organization key.
+
+  Returns:
+    A string that represents program ID.
+  """
+  if isinstance(org_key, ndb.Key):
+    key_name = org_key.id()
+  else:
+    key_name = org_key.name()
+  return key_name.split('/')[1]
+
+
+def getOrgId(org_key):
+  """Returns organization ID based on the specified organization key.
+
+  Args:
+    org_key: Organization key.
+
+  Returns:
+    A string that represents organization ID.
+  """
+  if isinstance(org_key, ndb.Key):
+    key_name = org_key.id()
+  else:
+    key_name = org_key.name()
+  return key_name.split('/')[2]
+
+
 # TODO(daniel): complete this class
 class Organization(ndb.Model):
   """Model that represents an organization."""
@@ -56,6 +105,16 @@ class Organization(ndb.Model):
       verbose_name=translation.ugettext('Name'))
   name.group = translation.ugettext("1. Public Info")
 
+  #: Description of the organization.
+  description = ndb.TextProperty(required=True, indexed=False)
+
+  #: URL to an image with organization logo.
+  logo_url = ndb.StringProperty(
+      indexed=False, validator=db.link_validator)
+
+  #: Contact channels to the organization.
+  contact = ndb.LocalStructuredProperty(contact_model.Contact)
+
   #: Field storing a reference to the program in which
   #: the organization participates.
   program = ndb.KeyProperty(required=True)
@@ -64,12 +123,5 @@ class Organization(ndb.Model):
   status = msgprop.EnumProperty(
       Status, required=True, default=Status.APPLYING)
 
-
-# TODO(daniel): complete this class
-class ApplicationResponse(survey_model.SurveyResponse):
-  """Model that represents a single response to organization application.
-
-  Parent:
-    Organization
-  """
-  pass
+  #: Specifies whether the organization has participated in the program before
+  is_veteran = ndb.BooleanProperty(required=True, default=False)

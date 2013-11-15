@@ -67,10 +67,12 @@ DEF_REJECTED_ORG_TEMPLATE = \
 DEF_MENTOR_WELCOME_MAIL_TEMPLATE = \
     'soc/notification/mentor_welcome_mail.html'
 
-def getContext(data, receivers, message_properties, subject, template):
+def getContext(site, program, receivers, message_properties, subject, template):
   """Sends out a notification to the specified user.
 
   Args:
+    site: Site entity.
+    program: Program entity to which the notification applies.
     receivers: Email addresses to which the notification should be sent.
     message_properties: Message properties.
     subject: Subject of notification email.
@@ -79,8 +81,8 @@ def getContext(data, receivers, message_properties, subject, template):
     A dictionary containing the context for a message to be sent to one
     or more recipients.
   """
-  message_properties['sender_name'] = 'The %s Team' % (data.site.site_name)
-  message_properties['program_name'] = data.program.name
+  message_properties['sender_name'] = 'The %s Team' % site.site_name
+  message_properties['program_name'] = program.name
 
   body = loader.render_to_string(template, dictionary=message_properties)
 
@@ -95,6 +97,7 @@ def getContext(data, receivers, message_properties, subject, template):
     bcc = receivers
 
   return mailer.getMailContext(to, subject, body, bcc=bcc)
+
 
 def getDefaultContext(request_data, emails, subject, extra_context=None):
   """Generate a dictionary with a default context.
@@ -140,15 +143,16 @@ class StartConnectionByUserContextProvider(object):
     self._url_names = url_names
 
   def getContext(
-      self, emails, data, org, profile, connection_key, message):
+      self, emails, org, profile, program, site, connection_key, message):
     """Provides notification context of an email to send out when a new
     connection is started by a user.
 
     Args:
       emails: List of email addresses to which the notification should be sent.
-      data: request_data.RequestData for the current request.
       org: Organization entity.
       profile: Profile entity.
+      program: Program entity.
+      site: Site entity.
       connection_id: Numerical identifier of the newly started connection.
       message: Optional message to be sent along with the connection.
 
@@ -167,7 +171,8 @@ class StartConnectionByUserContextProvider(object):
         }
 
     template = DEF_NEW_USER_CONNECTION_NOTIFICATION_TEMPLATE
-    return getContext(data, emails, message_properties, subject, template)
+    return getContext(
+        site, program, emails, message_properties, subject, template)
 
 
 class StartConnectionByOrgContextProvider(object):
@@ -186,15 +191,16 @@ class StartConnectionByOrgContextProvider(object):
     self._url_names = url_names
 
   def getContext(
-      self, emails, data, org, profile, connection_key, message):
+      self, emails, org, profile, program, site, connection_key, message):
     """Provides notification context of an email to send out when a new
     connection is started by an organization.
 
     Args:
       emails: List of email addresses to which the notification should be sent.
-      data: request_data.RequestData for the current request.
       org: Organization entity.
       profile: Profile entity.
+      program: Program entity.
+      site: Site entity.
       connection_id: Numerical identifier of the newly started connection.
       message: Optional message to be sent along with the connection.
 
@@ -213,7 +219,8 @@ class StartConnectionByOrgContextProvider(object):
         }
 
     template = DEF_NEW_ORG_CONNECTION_NOTIFICATION_TEMPLATE
-    return getContext(data, emails, message_properties, subject, template)
+    return getContext(
+        site, program, emails, message_properties, subject, template)
 
 
 def connectionMessageContext(data, emails, connection, message):
@@ -239,7 +246,8 @@ def connectionMessageContext(data, emails, connection, message):
       'message' : message
       }
   template = DEF_NEW_CONNECTION_MESSAGE_TEMPLATE
-  return getContext(data, emails, message_properties, subject, template)
+  return getContext(
+      data.site, data.program, emails, message_properties, subject, template)
 
 def anonymousConnectionContext(data, email, connection, message):
   """Sends out a notification email to users who have neither user nor
@@ -268,7 +276,8 @@ def anonymousConnectionContext(data, email, connection, message):
   subject = DEF_NEW_ANONYMOUS_CONNECTION
   template = DEF_NEW_ANONYMOUS_CONNECTION_NOTIFICATION_TEMPLATE
 
-  return getContext(data, email, message_properties, subject, template)
+  return getContext(
+      data.site, data.program, email, message_properties, subject, template)
 
 
 def getMentorWelcomeMailContext(profile, data, message):
@@ -295,7 +304,7 @@ def getMentorWelcomeMailContext(profile, data, message):
 
   template = DEF_MENTOR_WELCOME_MAIL_TEMPLATE
 
-  return getContext(data, [to], context, subject, template)
+  return getContext(data.site, data.program, [to], context, subject, template)
 
 
 class OrganizationAcceptedContextProvider(object):
@@ -303,15 +312,15 @@ class OrganizationAcceptedContextProvider(object):
   is accepted into a program.
   """
 
-  def getContext(self, emails, data, organization, program):
+  def getContext(self, emails, organization, program, site):
     """Provides notification context of an email to send out when the specified
     organization is accepted into the program.
 
     Args:
       emails: List of email addresses to which the notification should be sent.
-      data: request_data.RequestData for the current request.
       organization: Organization entity.
       program: Program entity.
+      site: Site entity.
     """
     # TODO(daniel): replace with a dynamic mail content
     # program_messages = program.getProgramMessages()
@@ -322,7 +331,8 @@ class OrganizationAcceptedContextProvider(object):
     # TODO(daniel): consult what properties are needed.
     message_properties = {}
 
-    return getContext(data, emails, message_properties, subject, template)
+    return getContext(
+        site, program, emails, message_properties, subject, template)
 
 
 class OrganizationRejectedContextProvider(object):
@@ -330,15 +340,15 @@ class OrganizationRejectedContextProvider(object):
   is rejected from a program.
   """
 
-  def getContext(self, emails, data, organization, program):
+  def getContext(self, emails, organization, program, site):
     """Provides notification context of an email to send out when the specified
     organization is rejected from the program.
 
     Args:
       emails: List of email addresses to which the notification should be sent.
-      data: request_data.RequestData for the current request.
       organization: Organization entity.
       program: Program entity.
+      site: Site entity.
     """
     # TODO(daniel): replace with a dynamic mail content
     # program_messages = program.getProgramMessages()
@@ -349,7 +359,8 @@ class OrganizationRejectedContextProvider(object):
     # TODO(daniel): consult what properties are needed.
     message_properties = {}
 
-    return getContext(data, emails, message_properties, subject, template)
+    return getContext(
+        site, program, emails, message_properties, subject, template)
 
 
 def orgAppContext(data, record, new_status, apply_url):

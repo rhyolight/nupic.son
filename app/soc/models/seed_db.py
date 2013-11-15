@@ -22,6 +22,7 @@ import datetime
 from google.appengine.api import users
 from google.appengine.api import memcache
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 
@@ -53,6 +54,8 @@ from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.timeline import GSoCTimeline
+
+from summerofcode.models import organization as soc_org_model
 
 
 def seed(request, *args, **kwargs):
@@ -275,6 +278,7 @@ def seed(request, *args, **kwargs):
   role_properties.pop('parent')
 
   orgs = []
+  ndb_orgs = []
   for i in range(15):
     group_properties.update({
         'key_name': 'google/gsoc2014/org_%d' % i,
@@ -287,6 +291,16 @@ def seed(request, *args, **kwargs):
     entity = GSoCOrganization(**group_properties)
     orgs.append(entity)
     entity.put()
+
+    org_properties = {
+        'name': 'Organization %d' % i,
+        'org_id': 'org_%d' % i,
+        'program': ndb.Key.from_old_key(gsoc2014.key())
+        }
+    org = soc_org_model.SOCOrganization(
+        id='google/gsoc2014/org_%d' % i, **org_properties)
+    org.put()
+    ndb_orgs.append(org)
 
     # Admin (and thus mentor) for the first org
     if i == 0:
@@ -436,7 +450,7 @@ def seed(request, *args, **kwargs):
       'parent': melange_student,
       'mentors': [profile.key()],
       'program':  gsoc2014,
-      'org': orgs[1].key(),
+      'org': ndb_orgs[1].key.to_old_key(),
        }
 
   melange_project = GSoCProject(**project_properties)

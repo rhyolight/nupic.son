@@ -209,11 +209,6 @@ class GSoCOrganization(soc.models.organization.Organization):
   nr_applications.help_text = ugettext(
       'The amount of applications received by this organization.')
 
-  nr_mentors = db.IntegerProperty(required=False, default=0,
-      verbose_name=ugettext('Amount of mentors assigned'))
-  nr_mentors.help_text = ugettext(
-      'The amount of mentors assigned to a proposal by this organization.')
-
   max_score = db.IntegerProperty(required=False, default=5,
       verbose_name=ugettext('Maximum score'))
   max_score.help_text = ugettext(

@@ -206,7 +206,7 @@ def _initConnectionDashboardSubpages(data):
               'organization.'),
           'title': ugettext('Connect users with %s' % org.name),
           'link': links.LINKER.organization(
-              org, urls.UrlNames.CONNECTION_START_AS_ORG)
+              org.key(), urls.UrlNames.CONNECTION_START_AS_ORG)
           })
 
   return subpages

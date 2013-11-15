@@ -320,7 +320,7 @@ class JqgridResponse(object):
       define custom row operations.
     """
     if self._row:
-      return self.row.getCustomParameters(item)
+      return self._row.getCustomParameters(item)
 
 def getDataId(query):
   """Get a unique 'data id' for a cached list related to a query.
@@ -481,15 +481,15 @@ class RedirectCustomRow(Row):
   The link that will be used to redirection is custom to each row.
   """
 
-  def __init__(self, new_window):
+  def __init__(self, new_window=None):
     """Initializes a RedirectCustomRow object.
 
     Args:
-      new_window: A bool indicating whether the redirected page should be
-        loaded in a new window, when a row is clicked.
+      new_window: If specified to True, the redirected page should be
+        loaded in a new window.
     """
     super(RedirectCustomRow, self).__init__('redirect_custom')
-    self.new_window = new_window
+    self.new_window = bool(new_window)
 
   def _getParameters(self):
     """See Row._getParameters for specification"""
@@ -696,6 +696,11 @@ def getList(list_id):
 # A list of list ids
 GSOC_PROJECTS_LIST_ID = 'gsoc_projects'
 
+ORGANIZATION_LIST_ID = 'organizations'
+
+
+# Organization list
+from summerofcode.models import organization as org_model
 
 # GSoCProjects list
 from soc.modules.gsoc.models import project
@@ -748,7 +753,22 @@ GSOC_PROJECTS_LIST = List(GSOC_PROJECTS_LIST_ID, 0, project.GSoCProject,
                           [key, student, title, org, status], datastore_reader,
                           cache_reader=cache_reader, valid_period=valid_period)
 
+# TODO(daniel): move this part to a separate module
+# TODO(daniel): replace this column with one that is more versatile
+class NdbKeyColumn(Column):
+  """Column object to represent the unique key of the entity."""
+
+  def getValue(self, entity):
+    """See Column.getValue for specification"""
+    return entity.key.id()
+
+key = NdbKeyColumn(key_column_id_const.KEY_COLUMN_ID, 'Key', hidden=True)
+name = SimpleColumn('name', 'Name')
+ORGANIZATION_LIST = List(
+    ORGANIZATION_LIST_ID, 0, org_model.SOCOrganization, [key, name],
+    datastore_reader)
 
 LISTS = {
-  GSOC_PROJECTS_LIST_ID: GSOC_PROJECTS_LIST
-}
+    GSOC_PROJECTS_LIST_ID: GSOC_PROJECTS_LIST,
+    ORGANIZATION_LIST_ID: ORGANIZATION_LIST,
+    }

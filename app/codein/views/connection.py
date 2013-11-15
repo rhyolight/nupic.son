@@ -500,7 +500,7 @@ class StartConnectionAsOrg(base.GCIRequestHandler):
 
       # TODO(daniel): add some message with whom connections are started
       url = links.LINKER.organization(
-          data.organization, urls.UrlNames.CONNECTION_START_AS_ORG)
+          data.organization.key(), urls.UrlNames.CONNECTION_START_AS_ORG)
       return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-call.
@@ -1068,7 +1068,7 @@ class _OrganizationsToStartConnectionList(org_list.BasicOrgList):
   def _getRedirect(self):
     """See org_list.OrgList._getRedirect for specification."""
     return lambda e, *args: links.LINKER.organization(
-        e, urls.UrlNames.CONNECTION_START_AS_USER)
+        e.key(), urls.UrlNames.CONNECTION_START_AS_USER)
 
   def _getDescription(self):
     """See org_list.OrgList._getDescription for specification."""

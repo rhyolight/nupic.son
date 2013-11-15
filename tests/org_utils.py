@@ -17,11 +17,13 @@
 from google.appengine.ext import ndb
 
 from melange.models import organization as org_model
+from melange.models import survey as survey_model
 
 from summerofcode.models import organization as soc_org_model
 
 
 TEST_ORG_NAME = 'Test Org'
+TEST_ORG_DESCRIPTION = 'Test Organization Description'
 
 def seedOrganization(org_id, program_key,
     model=org_model.Organization, **kwargs):
@@ -39,6 +41,7 @@ def seedOrganization(org_id, program_key,
   program_key = ndb.Key.from_old_key(program_key)
 
   properties = {
+      'description': TEST_ORG_DESCRIPTION,
       'org_id': org_id,
       'name': TEST_ORG_NAME,
       }
@@ -61,3 +64,22 @@ def seedSOCOrganization(org_id, program_key, **kwargs):
   """
   return seedOrganization(
       org_id, program_key, model=soc_org_model.SOCOrganization, **kwargs)
+
+
+def seedApplication(org_key, survey_key, **kwargs):
+  """Seeds a new organization application for the specified organization.
+
+  Args:
+    org_key: Organization key.
+    survey_key: Survey key.
+
+  Returns:
+    Newly seeded SurveyResponse entity.
+  """
+  properties = {'survey': ndb.Key.from_old_key(survey_key)}
+  properties.update(kwargs)
+
+  survey_response = survey_model.SurveyResponse(parent=org_key, **properties)
+  survey_response.put()
+
+  return survey_response

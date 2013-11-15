@@ -14,10 +14,16 @@
 
 """This module contains the Summer Of Code-specific organization model."""
 
+from google.appengine.ext import ndb
+
+from melange.appengine import db
 from melange.models import organization as org_model
 
 
 class SOCOrganization(org_model.Organization):
   """Model that represents a Summer Of Code-specific organization."""
   # TODO(daniel): add all SoC specific fields, like slots, etc.
-  pass
+
+  #: URL to a page with a list of project ideas for the organization.
+  ideas_page = ndb.StringProperty(
+      indexed=False, validator=db.link_validator)
