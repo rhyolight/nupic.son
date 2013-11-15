@@ -329,26 +329,26 @@ class _OrgProfileForm(gsoc_forms.GSoCModelForm):
 
 
 def _formToCreateOrgProfile(**kwargs):
-  """Returns a Django form to submit a new organization application.
+  """Returns a Django form to create a new organization profile.
 
   Returns:
-    OrgAppForm adjusted to submit a new organization application.
+    _OrgProfileForm adjusted to create a new organization profile.
   """
   return _OrgProfileForm(**kwargs)
 
 
 def _formToEditOrgProfile(**kwargs):
-  """Returns a django form to update an existing organization application.
+  """Returns a Django form to edit an existing organization profile.
 
   Returns:
-    OrgAppForm adjusted to update an existing organization application.
+    _OrgProfileForm adjusted to edit an existing organization profile.
   """
   form = _OrgProfileForm(**kwargs)
 
   # organization ID property is not editable
   del form.fields['org_id']
 
-  # other organization admins are set only when app response is created
+  # other organization admins are set only when organization profile is created
   del form.fields['backup_admin']
 
   return form
