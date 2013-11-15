@@ -197,7 +197,7 @@ def cleanBackupAdmin(username, request_data):
     return profile
 
 
-class OrgProfileForm(gsoc_forms.GSoCModelForm):
+class _OrgProfileForm(gsoc_forms.GSoCModelForm):
   """Form to set properties of organization profile by organization
   administrators.
   """
@@ -256,7 +256,7 @@ class OrgProfileForm(gsoc_forms.GSoCModelForm):
     Args:
       request_data: request_data.RequestData for the current request.
     """
-    super(OrgProfileForm, self).__init__(**kwargs)
+    super(_OrgProfileForm, self).__init__(**kwargs)
     self.request_data = request_data
 
   def clean_org_id(self):
@@ -334,7 +334,7 @@ def _formToCreateOrgProfile(**kwargs):
   Returns:
     OrgAppForm adjusted to submit a new organization application.
   """
-  return OrgProfileForm(**kwargs)
+  return _OrgProfileForm(**kwargs)
 
 
 def _formToEditOrgProfile(**kwargs):
@@ -343,7 +343,7 @@ def _formToEditOrgProfile(**kwargs):
   Returns:
     OrgAppForm adjusted to update an existing organization application.
   """
-  form = OrgProfileForm(**kwargs)
+  form = _OrgProfileForm(**kwargs)
 
   # organization ID property is not editable
   del form.fields['org_id']
