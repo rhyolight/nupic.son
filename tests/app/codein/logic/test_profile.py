@@ -23,8 +23,11 @@ from melange.utils import rich_bool
 
 from soc.modules.gci.models import organization as org_model
 from soc.modules.gci.models import profile as profile_model
+from soc.modules.gci.models import program as program_model
 from soc.modules.gci.models import task as task_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+from tests import profile_utils
 
 
 class CanResignAsMentorForOrgTest(unittest.TestCase):
@@ -206,3 +209,70 @@ class IsMentorRoleEligibleForOrgTest(unittest.TestCase):
     result = profile_logic.isMentorRoleEligibleForOrg(
         self.profile, self.org.key())
     self.assertTrue(result)
+
+
+class IsFormVerificationAwaitingTest(unittest.TestCase):
+  """Unit tests isFormVerificationAwaiting function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    program = seeder_logic.seed(program_model.GCIProgram)
+    self.student_info = profile_utils.seedGCIStudent(program)
+
+  def testForNoFormsSubmitted(self):
+    """Tests the behavior when no forms have been submitted."""
+    self.student_info.consent_form = None
+    self.student_info.student_id_form = None
+    self.assertFalse(
+        profile_logic.isFormVerificationAwaiting(self.student_info))
+
+  def testForOneFormSubmitted(self):
+    """Tests the behavior when one form has been submitted."""
+    # only student id form is submitted but not verified
+    self.student_info.consent_form = None
+    self.student_info.student_id_form = object()
+    self.student_info.student_id_form_verified = False
+    self.assertFalse(
+        profile_logic.isFormVerificationAwaiting(self.student_info))
+
+    # only student id form is submitted and verified
+    self.student_info.student_id_form_verified = True
+    self.assertFalse(
+        profile_logic.isFormVerificationAwaiting(self.student_info))
+
+    # only consent form is submitted but not verified
+    self.student_info.consent_form = object()
+    self.student_info.consent_form_verified = False
+    self.student_info.student_id_form = None
+    self.student_info.student_id_form_verified = None
+    self.assertFalse(
+        profile_logic.isFormVerificationAwaiting(self.student_info))
+
+    # only consent form is submitted and verified
+    self.student_info.consent_form_verified = True
+    self.assertFalse(
+        profile_logic.isFormVerificationAwaiting(self.student_info))
+
+  def testForTwoFormsSubmitted(self):
+    """Tests the behavior when two forms have been submitted."""
+    self.student_info.student_id_form = object()
+    self.student_info.consent_form = object()
+
+    # no forms have been verified
+    self.student_info.consent_form_verified = False
+    self.student_info.student_id_form_verified = False
+    self.assertTrue(profile_logic.isFormVerificationAwaiting(self.student_info))
+
+    # only student id form is verified
+    self.student_info.student_id_form_verified = True
+    self.assertTrue(profile_logic.isFormVerificationAwaiting(self.student_info))
+
+    # only consent form is verified
+    self.student_info.consent_form_verified = True
+    self.student_info.student_id_form_verified = False
+    self.assertTrue(profile_logic.isFormVerificationAwaiting(self.student_info))
+
+    # both forms are verified
+    self.student_info.student_id_form_verified = True
+    self.assertFalse(
+        profile_logic.isFormVerificationAwaiting(self.student_info))
