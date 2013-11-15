@@ -38,7 +38,6 @@ from soc.logic import cleaning
 from soc.views import readonly_template
 from soc.views import template
 from soc.views.helper import url_patterns
-from soc.views.helper import surveys
 from soc.views.helper import lists
 
 from soc.modules.gsoc.views import base
@@ -723,7 +722,7 @@ def updateOrganizationTxn(org_key, org_properties):
 
 @ndb.transactional
 def setApplicationResponse(org_key, survey_key, properties):
-  """Sets the specified properties for application of 
+  """Sets the specified properties for application of
   the specified organization.
 
   Args:

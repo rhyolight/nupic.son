@@ -96,7 +96,7 @@ def getApplicationResponse(org_key):
 
 
 def setApplicationResponse(org_key, survey_key, properties):
-  """Sets the specified properties for application of 
+  """Sets the specified properties for application of
   the specified organization.
 
   If no application exists for the organization, a new entity is created and
