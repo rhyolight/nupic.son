@@ -19,7 +19,10 @@ from google.appengine.ext import blobstore
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
+from codein.logic import profile as ci_profile_logic
+
 from melange.request import exception
+
 from soc.logic import dicts
 from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns
@@ -177,6 +180,8 @@ class StudentFormUpload(base.GCIRequestHandler):
         upload_form.errors[field_name] = upload_form.error_class([error])
 
     context['form'] = upload_form
+    context['form_verification_awaiting'] = (
+        ci_profile_logic.isFormVerificationAwaiting(data.student_info))
 
     return context
 

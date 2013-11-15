@@ -20,6 +20,12 @@ limitations under the License.
 {% endblock stylesheets %}
 
 {% block page_content %}
+{% if form_verification_awaiting %}
+  <div class="block block-user-message">
+    <p>Thank you for uploading your forms. You can now go claim and work on your
+    first task while your forms are being verified.</p>
+  </div>
+{% endif %}
 {% if posted %}
   <div class="block block-user-message">
     <p>Data saved successfully.</p>
