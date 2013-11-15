@@ -1,5 +1,5 @@
-"""Minimal setup script to appease buildout for Melange.
-"""
+"""Minimal setup script to appease buildout for Melange."""
+
 import os
 import re
 from setuptools import setup, find_packages
@@ -10,7 +10,6 @@ try:
     version = match_version.findall(appyaml.read())[0]
 except:
     version = "UNKNOWN"
-
 
 setup(
     name = 'melange',
@@ -35,7 +34,8 @@ setup(
         ],
     entry_points = {'console_scripts': ['run-tests = tests.run:main',
                                         'gen-app-yaml = scripts.gen_app_yaml:main',
-                                        'stats = scripts.stats:main'
+                                        'stats = scripts.stats:main',
+                                        'download-student-forms = scripts.download_student_forms:main',
                                         ],
                     },
     include_package_data = True,
