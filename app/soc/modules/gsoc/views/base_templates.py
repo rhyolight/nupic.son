@@ -98,6 +98,9 @@ class Header(template.Template):
       context['logout_link'] = links.LINKER.logout(self.data.request)
       context['user_email'] = self.data.gae_user.email()
 
+      if self.data.user:
+        context['username'] = self.data.user.link_id
+
     return context
 
 class MainMenu(template.Template):

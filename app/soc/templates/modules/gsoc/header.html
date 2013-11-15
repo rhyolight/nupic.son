@@ -3,7 +3,10 @@
     <div class="grid_12">
       {% if logout_link %}
       <div id="logged-in" class="top">
-        <span>You are logged in as <strong>{{ user_email }}</strong> <a href="{{ logout_link }}">(not you?)</a></span>
+        <span>
+          Logged in with account <strong>{{ user_email }}</strong> {% if username %} - username: <strong>{{ username }}</strong>{% endif %}
+          <a href="{{ logout_link }}">(not you?)</a>
+        </span>
       </div>
       {% endif %}
       <div id="gci" class="top">
