@@ -15,8 +15,6 @@
 """Module for managing URL generation."""
 
 from google.appengine.api import users
-from google.appengine.ext import db
-from google.appengine.ext import ndb
 
 from django.core import urlresolvers
 

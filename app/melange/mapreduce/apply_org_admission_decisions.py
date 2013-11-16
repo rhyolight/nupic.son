@@ -27,7 +27,7 @@ from soc.logic import site as site_logic
 
 
 def process(org_key):
-  """Processes a single organization. 
+  """Processes a single organization.
 
   Organization status is updated to ACCEPTED or REJECTED if the current
   status has been set to PRE_ACCEPTED or PRE_REJECTED, respectively,
@@ -47,7 +47,7 @@ def process(org_key):
 
   @ndb.transactional
   def updateOrganizationStatus():
-    """Transactionally updates organization status.""" 
+    """Transactionally updates organization status."""
     # only organizations defined for the specified program should be processed
     if organization.program.to_old_key() == program_key:
       if organization.status == org_model.Status.PRE_ACCEPTED:
