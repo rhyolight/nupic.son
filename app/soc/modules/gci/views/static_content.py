@@ -127,6 +127,9 @@ class StaticContentUpload(base.GCIRequestHandler):
     """Handles POST requests for uploading static content."""
     form = ContentUploadForm(data=data.POST, files=data.request.file_uploads)
 
+    # TODO(nathaniel): make this .program() call unnecessary.
+    data.redirect.program()
+
     if not form.is_valid():
       # we are not storing this form, remove the uploaded blobs from the cloud
       for f in data.request.file_uploads.itervalues():
