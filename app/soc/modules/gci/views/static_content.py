@@ -168,7 +168,7 @@ class StaticContentDownload(base.GCIRequestHandler):
   def djangoURLPatterns(self):
     """The URL pattern for the view."""
     return [
-        url(r'content/%s$' % url_patterns.STATIC_CONTENT, self,
+        url(r'content/download/%s$' % url_patterns.STATIC_CONTENT, self,
             name=url_names.GCI_CONTENT_DOWNLOAD)]
 
   def checkAccess(self, data, check, mutator):
