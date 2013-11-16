@@ -49,7 +49,7 @@ class ContentUploadForm(gci_forms.GCIModelForm):
     css_prefix = 'gci_static_content'
     fields = ['content_id', 'content']
 
-  content = gci_forms.FileField(required=False)
+  content = gci_forms.FileField(required=True)
 
   def addFileRequiredError(self):
     """Appends a form error message indicating that the file field is required.
