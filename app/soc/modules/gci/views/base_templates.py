@@ -53,6 +53,12 @@ def siteMenuContext(data):
       'help_link': redirect.document(help_page).url(),
   }
 
+  # TODO(nathaniel): make this .program() call unnecessary.
+  # For now the call to .program() is very important which is why it is explicitly
+  # put here outside the dictionary data initialization above.
+  redirect.program()
+  context['static_content_list_link'] = redirect.urlOf(url_names.GCI_CONTENT_LIST)
+
   if data.profile:
     context['dashboard_link'] = redirect.dashboard().url()
 
