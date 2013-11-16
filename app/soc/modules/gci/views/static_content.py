@@ -182,6 +182,7 @@ class StaticContentDownload(base.GCIRequestHandler):
       raise exception.NotFound(message=DEF_CONTENT_NOT_FOUND)
 
     q = static_content.StaticContent.all()
+    q.ancestor(data.program)
     q.filter('content_id', content_id)
     entity = q.get()
     if not entity:
