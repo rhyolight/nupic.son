@@ -159,10 +159,7 @@ class StaticContentUpload(base.GCIRequestHandler):
           'content_id': form.cleaned_data.get('content_id'),
         }, parent=data.program)
 
-    # TODO(nathaniel): make this .program() call unnecessary.
-    data.redirect.program()
-
-    return data.redirect.to(url_names.GCI_CONTENT_UPLOAD)
+    return data.redirect.to(url_names.GCI_CONTENT_UPLOAD, validated=True)
 
 
 class StaticContentDownload(base.GCIRequestHandler):
