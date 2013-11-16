@@ -17,8 +17,8 @@
 from django.utils import translation
 
 from melange.request import exception
+from melange.request import links
 
-from soc.logic import links
 from soc.models import program as program_model
 
 
@@ -79,13 +79,15 @@ def ensureLoggedOut(data):
 class AccessChecker(object):
   """Interface for page access checkers."""
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """Ensure that the user's request should be satisfied.
+
+    Implementations of this method must not effect mutations of the
+    passed parameters (or anything else).
 
     Args:
       data: A request_data.RequestData describing the current request.
       check: An access_checker.AccessChecker object.
-      mutator: An access_checker.Mutator object.
 
     Raises:
       exception.LoginRequired: Indicating that the user is not logged
@@ -104,7 +106,7 @@ class AccessChecker(object):
 class AllAllowedAccessChecker(AccessChecker):
   """AccessChecker that allows all requests for access."""
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     pass
 
@@ -118,7 +120,7 @@ ALL_ALLOWED_ACCESS_CHECKER = AllAllowedAccessChecker()
 class ProgramAdministratorAccessChecker(AccessChecker):
   """AccessChecker that ensures that the user is a program administrator."""
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     if data.is_developer:
       # NOTE(nathaniel): Developers are given all the powers of
@@ -138,7 +140,7 @@ PROGRAM_ADMINISTRATOR_ACCESS_CHECKER = ProgramAdministratorAccessChecker()
 class DeveloperAccessChecker(AccessChecker):
   """AccessChecker that ensures that the user is a developer."""
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     if not data.is_developer:
       raise exception.Forbidden(message=_MESSAGE_NOT_DEVELOPER)
@@ -159,16 +161,16 @@ class ConjuctionAccessChecker(AccessChecker):
     """
     self._checkers = checkers
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     for checker in self._checkers:
-      checker.checkAccess(data, check, mutator)
+      checker.checkAccess(data, check)
 
 
 class NonStudentUrlProfileAccessChecker(AccessChecker):
   """AccessChecker that ensures that the URL user has a non-student profile."""
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     if data.url_profile.status != 'active':
       raise exception.Forbidden(
@@ -180,6 +182,21 @@ class NonStudentUrlProfileAccessChecker(AccessChecker):
 NON_STUDENT_URL_PROFILE_ACCESS_CHECKER = NonStudentUrlProfileAccessChecker()
 
 
+class NonStudentProfileAccessChecker(AccessChecker):
+  """AccessChecker that ensures that the currently logged-in user
+  has a non-student profile."""
+
+  def checkAccess(self, data, check):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.profile or data.profile.status != 'active':
+      raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
+
+    if data.profile.is_student:
+      raise exception.Forbidden(message=_MESSAGE_STUDENTS_DENIED)
+
+NON_STUDENT_PROFILE_ACCESS_CHECKER = NonStudentProfileAccessChecker()
+
+
 class ProgramActiveAccessChecker(AccessChecker):
   """AccessChecker that ensures that the program is currently active.
 
@@ -188,12 +205,12 @@ class ProgramActiveAccessChecker(AccessChecker):
   be set to visible.
   """
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     if not data.program:
       raise exception.NotFound(message=_MESSAGE_PROGRAM_NOT_EXISTING)
 
-    if (data.program.status != program_model.STATUS_VISIBLE 
+    if (data.program.status != program_model.STATUS_VISIBLE
         or not data.timeline.programActive()):
       raise exception.Forbidden(message=_MESSAGE_PROGRAM_NOT_ACTIVE)
 
@@ -205,7 +222,7 @@ class IsUrlUserAccessChecker(AccessChecker):
   identifier is set in URL data.
   """
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     key_name = data.kwargs.get('user')
     if not key_name:
@@ -221,10 +238,10 @@ IS_URL_USER_ACCESS_CHECKER = IsUrlUserAccessChecker()
 
 class IsUserOrgAdminForUrlOrg(AccessChecker):
   """AccessChecker that ensures that the logged in user is organization
-  administrator for the organization whose identifier is uset in URL data.
+  administrator for the organization whose identifier is set in URL data.
   """
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     if not data.profile:
       raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
@@ -234,19 +251,3 @@ class IsUserOrgAdminForUrlOrg(AccessChecker):
           message=_MESSAGE_NOT_ORG_ADMIN_FOR_ORG % data.url_org.key().name())
 
 IS_USER_ORG_ADMIN_FOR_ORG = IsUserOrgAdminForUrlOrg()
-
-
-# TODO(daniel): Remove when not needed
-class HostOrDeveloperAccessChecker(AccessChecker):
-  """AccessChecker that ensures that the user is a program administrator."""
-
-  def checkAccess(self, data, check, mutator):
-    """See AccessChecker.checkAccess for specification."""
-    if data.is_developer:
-      # NOTE(nathaniel): Developers are given all the powers of
-      # program administrators.
-      return
-    elif not data.gae_user:
-      raise exception.LoginRequired()
-    elif not data.user.host_for:
-      raise exception.Forbidden(message=_MESSAGE_NOT_PROGRAM_ADMINISTRATOR)

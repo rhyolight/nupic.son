@@ -36,6 +36,8 @@ class Callback(object):
     self.views.append(connection.ListConnectionsForUser())
     self.views.append(connection.ManageConnectionAsOrg())
     self.views.append(connection.ManageConnectionAsUser())
+    self.views.append(connection.MarkConnectionAsSeenByOrg())
+    self.views.append(connection.MarkConnectionAsSeenByUser())
     self.views.append(connection.PickOrganizationToConnectPage())
     self.views.append(connection.StartConnectionAsOrg())
     self.views.append(connection.StartConnectionAsUser())

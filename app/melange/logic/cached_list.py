@@ -16,6 +16,7 @@
 
 from google.appengine.ext import ndb
 
+from melange import key_column_id_const
 from melange.models import cached_list as cached_list_model
 
 import datetime
@@ -24,7 +25,7 @@ import datetime
 def setCacheItems(data_id, items, valid_period=datetime.timedelta(1)):
   """Save a given list of dictionaries in a cached list.
 
-  If a list does not exists with the given data_id, creates a new CachedList. 
+  If a list does not exists with the given data_id, creates a new CachedList.
   This function should always be run in a transaction.
 
   Args:
@@ -33,14 +34,11 @@ def setCacheItems(data_id, items, valid_period=datetime.timedelta(1)):
     valid_through: A datetime.timedelta value indicating the time period the
       cached data should be considered valid. Defaults to one day.
   """
-  # TODO: (Aruna) Fix this import
-  from melange.utils import lists as cached_list_utils
-
   list_key = ndb.Key(cached_list_model.CachedList, data_id)
   cached_list = list_key.get()
   if not cached_list:
     cached_list = cached_list_model.CachedList(id=data_id)
-  items = _remove_duplicates(items, cached_list_utils.KEY_COLUMN_ID)
+  items = _remove_duplicates(items, key_column_id_const.KEY_COLUMN_ID)
   cached_list.list_data = items
   cached_list.valid_through = datetime.datetime.now() + valid_period
   cached_list.is_processing = False
@@ -58,9 +56,9 @@ def _remove_duplicates(items, key='key'):
   Args:
     items: A list of list items which possibly contains duplicates.
     key: Name of the field that should contain a unique value for the list item.
- 
+
   Returns:
-    A list of list items with duplicated items removed.   
+    A list of list items with duplicated items removed.
   """
   seen = set()
   result = []
@@ -106,7 +104,7 @@ def isCachedListExists(data_id):
     data_id: A string containing the unique id of the cached list data.
 
   Returns:
-    True if a list with the given data_id exists, False otherwise.  
+    True if a list with the given data_id exists, False otherwise.
   """
   list_key = ndb.Key(cached_list_model.CachedList, data_id)
   return bool(list_key.get())
@@ -122,7 +120,7 @@ def isValid(data_id):
     data_id: A string containing the unique id of the cached list data.
 
   Raises:
-    ValueError: if a cached list does not exist for the given list id.  
+    ValueError: if a cached list does not exist for the given list id.
 
   Returns:
     True if the data in the cache is updated with the datastore entities. False
@@ -143,12 +141,12 @@ def isValid(data_id):
 
 def isProcessing(data_id):
   """Checks whether a process collecting list data for this list is running.
-  
+
   Args:
     data_id: A string containing the unique id of the cached list data.
 
   Raises:
-    ValueError: if a cached list does not exist for the given list id.  
+    ValueError: if a cached list does not exist for the given list id.
 
   Returns:
     True if a caching process is running. False if not.

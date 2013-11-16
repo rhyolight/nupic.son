@@ -30,7 +30,7 @@ from google.appengine.api import taskqueue
 from google.appengine.runtime import DeadlineExceededError
 
 from django import http
-from django.conf.urls.defaults import url
+from django.conf.urls import url
 
 from soc.tasks.helper import error_handler
 from soc.tasks.helper.timekeeper import Timekeeper
@@ -205,7 +205,14 @@ class BulkCreateTask(object):
 
     # clean time to complete
     try:
-      task['time_to_complete'] = int(task['time_to_complete'])
+      hours_to_complete = int(task['time_to_complete'])
+
+      # Must be at least 2 days (48hrs)
+      if hours_to_complete < 2*24:
+        errors.append('Time to complete must be at least 48 hrs, given was: %s'
+                      % hours_to_complete)
+      else:
+        task['time_to_complete'] = hours_to_complete
     except (ValueError, TypeError) as e:
       errors.append('No valid time to completion found, given was: %s.'
                     % task['time_to_complete'])

@@ -12,21 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""Tests for program related views.
-"""
-
+"""Tests for program related views."""
 
 from soc.models.document import Document
 
-from tests.test_utils import GCIDjangoTestCase
+from tests import test_utils
 
 # TODO: perhaps we should move this out?
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
-from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
+from soc.modules.seeder.logic.providers import string as string_provider
 
 
-class ListDocumentTest(GCIDjangoTestCase):
+class ListDocumentTest(test_utils.GCIDjangoTestCase):
   """Test document list page.
   """
 
@@ -45,7 +42,7 @@ class ListDocumentTest(GCIDjangoTestCase):
     self.assertEqual(1, len(data))
 
 
-class EditProgramTest(GCIDjangoTestCase):
+class EditProgramTest(test_utils.GCIDjangoTestCase):
   """Tests program edit page.
   """
 
@@ -60,7 +57,7 @@ class EditProgramTest(GCIDjangoTestCase):
         'prefix': 'gci_program',
         'scope': self.program,
         'read_access': 'public',
-        'key_name': DocumentKeyNameProvider(),
+        'key_name': string_provider.DocumentKeyNameProvider(),
     }
     self.document = self.seed(Document, properties)
 
@@ -84,7 +81,7 @@ class EditProgramTest(GCIDjangoTestCase):
     # test POST
     override = {
         'prefix': 'gci_program', 'scope': self.gci, 'link_id': 'doc',
-        'key_name': DocumentKeyNameProvider(),
+        'key_name': string_provider.DocumentKeyNameProvider(),
         'modified_by': self.profile_helper.user,
         'home_for': None,
         'author': self.profile_helper.user, 'is_featured': None,
@@ -99,28 +96,18 @@ class EditProgramTest(GCIDjangoTestCase):
     document = Document.get_by_key_name(key_name)
     self.assertPropertiesEqual(properties, document)
 
-  def testCreateDocumentWithDashboardVisibility(self):
-    self.profile_helper.createHost()
-    url = '/gci/document/edit/gci_program/%s/doc' % self.gci.key().name()
-    response = self.get(url)
+
+class EventsPageTest(test_utils.GCIDjangoTestCase):
+  """Unit tests for EventsPage class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    response = self.get('/gci/events/%s' % self.gci.key().name())
+    self.assertResponseOK(response)
+    self.assertEqual(response.context['page_name'], 'Events and Timeline')
+    self.assertTemplateUsed(response, 'modules/gci/document/events.html')
     self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'modules/gci/document/base.html')
-    self.assertTemplateUsed(response, 'modules/gci/_form.html')
-
-    # test POST
-    override = {
-        'prefix': 'gci_program', 'scope': self.gci, 'link_id': 'doc',
-        'key_name': DocumentKeyNameProvider(),
-        'modified_by': self.profile_helper.user,
-        'home_for': None,
-        'author': self.profile_helper.user, 'is_featured': None,
-        'write_access': 'admin', 'read_access': 'public',
-        'dashboard_visibility': [],
-    }
-    properties = seeder_logic.seed_properties(Document, properties=override)
-    response = self.post(url, properties)
-    self.assertResponseRedirect(response, url)
-
-    key_name = properties['key_name']
-    document = Document.get_by_key_name(key_name)
-    self.assertPropertiesEqual(properties, document)

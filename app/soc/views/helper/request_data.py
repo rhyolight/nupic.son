@@ -22,17 +22,25 @@ from django.core import urlresolvers
 
 from melange import types
 from melange.appengine import system
+from melange.logic import settings as settings_logic
 from melange.models import connection as connection_model
 from melange.request import exception
+from melange.request import links
 from melange.utils import time
+from melange.views.helper import urls
 
 from soc.logic import program as program_logic
 from soc.logic import site as site_logic
-from soc.logic import user
+from soc.logic import user as user_logic
+from soc.models import document as document_model
+from soc.models import site as site_model
 from soc.models import sponsor as sponsor_model
 from soc.models import user as user_model
 from soc.views.helper import access_checker
 
+
+VIEW_AS_USER_DOES_NOT_EXIST = ('The requested user does not exist. Please go '
+    'to <a href="%s">User Settings</a> page and change the value.')
 
 class TimelineHelper(object):
   """Helper class for the determination of the currently active period.
@@ -115,7 +123,7 @@ class TimelineHelper(object):
     return time.isBetween(start, end)
 
   def beforeOrgSignupStart(self):
-    return self.org_app and time.isBefore(self.orgSignupStart())
+    return not self.org_app or time.isBefore(self.orgSignupStart())
 
   def afterOrgSignupStart(self):
     return self.org_app and time.isAfter(self.orgSignupStart())
@@ -223,8 +231,11 @@ class RequestData(object):
 
     self._url_connection = self._unset
     self._url_org = self._unset
+    self._url_ndb_org = self._unset
     self._url_profile = self._unset
+    self._url_student_info = self._unset
     self._url_user = self._unset
+    self._document = self._unset
 
     # explicitly copy POST and GET dictionaries so they can be modified
     # the default QueryDict objects used by Django are immutable, but their
@@ -339,7 +350,23 @@ class RequestData(object):
   def user(self):
     """Returns the user field."""
     if not self._isSet(self._user):
-      self._user = user.current()
+      self._user = user_logic.current()
+
+      # developer may view the page as another user
+      if self._user and user_logic.isDeveloper(user=self._user):
+        settings = settings_logic.getUserSettings(self._user.key())
+        if settings.view_as is not None:
+          user = user_model.User.get(settings.view_as.to_old_key())
+          if user:
+            self._user = user
+          else:
+            # TODO(daniel): use main LINKER object when merged
+            linker = links.Linker()
+            user_settings_url = linker.user(
+                self._user, urls.UrlNames.USER_SETTINGS)
+            raise exception.BadRequest(
+                message=VIEW_AS_USER_DOES_NOT_EXIST % user_settings_url)
+
     return self._user
 
   @property
@@ -447,6 +474,14 @@ class RequestData(object):
     return self._url_profile
 
   @property
+  def url_student_info(self):
+    if not self._isSet(self._url_student_info):
+      self._url_student_info = self.url_profile.student_info
+      if not self._url_student_info:
+        raise exception.NotFound(message='Requested profile is not a student.')
+    return self._url_student_info
+
+  @property
   def url_org(self):
     """Returns url_org property.
 
@@ -476,6 +511,37 @@ class RequestData(object):
             message='Requested organization does not exist.')
     return self._url_org
 
+  # TODO(daniel): rename this to url_org when Organization is converted to NDB
+  @property
+  def url_ndb_org(self):
+    """Returns url_org property.
+
+    This property represents organization entity whose identifier is a part
+    of the URL of the processed request.
+
+    Returns:
+      Retrieved organization entity.
+
+    Raises:
+      exception.BadRequest: if the current request does not contain any
+        organization data.
+      exception.NotFound: if the organization is not found.
+    """
+    if not self._isSet(self._url_ndb_org):
+      try:
+        fields = ['sponsor', 'program', 'organization']
+        entity_id = '/'.join(self.kwargs[i] for i in fields)
+      except KeyError:
+        raise exception.BadRequest(
+            message='The request does not contain full organization data.')
+
+      self._url_ndb_org = self.models.ndb_org_model.get_by_id(entity_id)
+
+      if not self._url_ndb_org:
+        raise exception.NotFound(
+            message='Requested organization does not exist.')
+    return self._url_ndb_org
+
   @property
   def url_user(self):
     """Returns url_user property.
@@ -503,6 +569,37 @@ class RequestData(object):
         raise exception.NotFound(message='Requested user does not exist.')
     return self._url_user
 
+  # TODO(daniel): rename it to url_document
+  @property
+  def document(self):
+    """Returns document property."""
+    if not self._isSet(self._document):
+      fields = []
+      kwargs = self.kwargs.copy()
+
+      prefix = kwargs.pop('prefix', None)
+      fields.append(prefix)
+
+      if prefix in ['gsoc_program', 'gsoc_org', 'gci_program', 'gci_org']:
+        fields.append(kwargs.pop('sponsor', None))
+        fields.append(kwargs.pop('program', None))
+
+      if prefix in ['gsoc_org', 'gci_org']:
+        fields.append(kwargs.pop('organization', None))
+
+      fields.append(kwargs.pop('document', None))
+
+      if any(kwargs.values()):
+        raise exception.BadRequest(message="Unexpected value for document url")
+
+      if not all(fields):
+        raise exception.BadRequest(message="Missing value for document url")
+
+      # TODO(daniel): remove key_name from it.
+      self.key_name = '/'.join(fields)
+      self._document = document_model.Document.get_by_key_name(self.key_name)
+    return self._document
+
   def _getUrlProfileKey(self):
     """Returns db.Key that represents profile for the data specified in
     the URL of the current request.
@@ -526,7 +623,35 @@ class RequestData(object):
 
   def _getProgramWideFields(self):
     """Fetches program wide fields in a single database round-trip."""
-    raise NotImplementedError
+    keys = []
+
+    # add program's key
+    if self.kwargs.get('sponsor') and self.kwargs.get('program'):
+      program_key_name = "%s/%s" % (
+          self.kwargs['sponsor'], self.kwargs['program'])
+      program_key = db.Key.from_path(
+          self.models.program_model.kind(), program_key_name)
+    else:
+      program_key = site_model.Site.active_program.get_value_for_datastore(
+          self.site)
+      program_key_name = program_key.name()
+    keys.append(program_key)
+
+    # add timeline's key
+    keys.append(db.Key.from_path(
+        self.models.timeline_model.kind(), program_key_name))
+
+    # add org_app's key
+    org_app_key_name = '%s/%s/orgapp' % (
+        self.models.program_model.prefix, program_key_name)
+    keys.append(db.Key.from_path('OrgAppSurvey', org_app_key_name))
+
+    self._program, self._program_timeline, self._org_app = db.get(keys)
+
+    # raise an exception if no program is found
+    if not self._program:
+      raise exception.NotFound(
+          message="There is no program for url '%s'" % program_key_name)
 
 
 # TODO(nathaniel): This should be immutable.
@@ -547,20 +672,15 @@ class RedirectHelper(object):
     self.args = []
     self.kwargs = {}
 
-  def sponsor(self, program=None):
-    """Sets kwargs for an url_patterns.SPONSOR redirect."""
-    if not program:
-      assert access_checker.isSet(self._data.program)
-      program = self._data.program
-    self._clear()
-    self.kwargs['sponsor'] = program_logic.getSponsorKey(program).name()
-
   def program(self, program=None):
     """Sets kwargs for an url_patterns.PROGRAM redirect."""
     if not program:
       assert access_checker.isSet(self._data.program)
       program = self._data.program
-    self.sponsor(program)
+
+    self._clear()
+
+    self.kwargs['sponsor'] = program_logic.getSponsorKey(program).name()
     self.kwargs['program'] = program.link_id
 
   def organization(self, organization=None):

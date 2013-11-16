@@ -30,8 +30,7 @@ extra_paths = [HERE,
                os.path.join(appengine_location, 'lib', 'antlr3'),
                appengine_location,
                os.path.join(HERE, 'app'),
-               os.path.join(HERE, 'tests'),
-               os.path.join(HERE, 'thirdparty', 'coverage'),
+               os.path.join(HERE, 'tests')
               ]
 
 import nose
@@ -76,10 +75,17 @@ def setup_gae_services():
 
 def clean_datastore():
   from google.appengine.api import apiproxy_stub_map
+  from google.appengine.ext import ndb
   datastore = apiproxy_stub_map.apiproxy.GetStub('datastore_v3')
-  # clear datastore iff one is available
   if datastore is not None:
     datastore.Clear()
+
+  ndb.get_context().clear_cache()
+
+def clear_memcache():
+  """Clears all entries that exist in memcache."""
+  from google.appengine.api import memcache
+  memcache.flush_all()
 
 
 def begin(self):
@@ -97,6 +103,7 @@ def begin(self):
   coverage.exclude('#pragma[: ]+[nN][oO] [cC][oO][vV][eE][rR]')
   coverage.start()
   load_melange()
+  self._orig_begin()
 
 
 def load_melange():
@@ -115,6 +122,7 @@ def load_melange():
 
   callback_module_names = [
       'codein.callback',
+      'melange.callback',
       'soc.modules.soc_core.callback',
       'soc.modules.gsoc.callback',
       'soc.modules.gci.callback',
@@ -164,6 +172,22 @@ class DefaultUserSignInPlugin(plugins.Plugin):
   def afterTest(self, test):
     os.environ['USER_EMAIL'] = 'test@example.com'
     os.environ['USER_ID'] = '42'
+
+
+class AppEngineMemcacheClearPlugin(plugins.Plugin):
+  """Nose plugin to clear the AppEngine memecache entries between the tests."""
+
+  name = 'AppEngineMemcacheClearPlugin'
+  enabled = True
+
+  def configure(self, parser, env):
+    """See plugins.Plugin.configure for specification."""
+    super(AppEngineMemcacheClearPlugin, self).configure(parser, env)
+    self.enabled = True
+
+  def afterTest(self, test):
+    """See plugins.Plugin.afterTest for specification."""
+    clear_memcache()
 
 
 def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
@@ -327,21 +351,27 @@ def run_pyunit_tests():
   import django.test.utils
   django.test.utils.setup_test_environment()
 
-  plugins = [AppEngineDatastoreClearPlugin(), DefaultUserSignInPlugin()]
+  plugins = [
+      AppEngineDatastoreClearPlugin(),
+      AppEngineMemcacheClearPlugin(),
+      DefaultUserSignInPlugin()
+      ]
+
   # For coverage
   if '--coverage' in sys.argv:
     from nose.plugins import cover
     plugin = cover.Coverage()
     from mox import stubout
+    plugin._orig_begin = plugin.begin
     stubout_obj = stubout.StubOutForTesting()
     stubout_obj.SmartSet(plugin, 'begin', begin)
     plugins.append(plugin)
 
     args = ['--with-coverage',
-            '--cover-package=soc.',
+            '--cover-package=soc.,melange.,summerofcode.,codein.',
             '--cover-erase',
             '--cover-html',
-            '--cover-html-dir=coverageResults']
+            '--cover-html-dir=reports/py_coverage']
 
     sys.argv.remove('--coverage')
     sys.argv += args

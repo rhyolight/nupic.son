@@ -20,8 +20,8 @@ from melange import types
 from melange.utils import rich_bool
 from melange.appengine import db as melange_db
 
-
 ONLY_ORG_ADMIN = 'only_org_admin'
+
 
 def canResignAsOrgAdminForOrg(profile, org_key, models=types.MELANGE_MODELS):
   """Tells whether the specified profile can resign from their organization
@@ -111,24 +111,24 @@ def assignMentorRoleForOrg(profile, org_key):
   """Assigns the specified profile to a mentor role for the specified
   organization. If a user is currently an organization administrator,
   they will be lowered to a mentor role.
-  
+
   Args:
     profile: profile entity.
     organization: organization key.
-  """ 
+  """
   if org_key in profile.org_admin_for:
     profile.org_admin_for.remove(org_key)
     profile.is_org_admin = bool(profile.org_admin_for)
-  
+
   profile.is_mentor = True
   profile.mentor_for = list(set(profile.mentor_for + [org_key]))
   profile.put()
 
 
 def assignOrgAdminRoleForOrg(profile, org_key):
-  """Assigns the specified profile to an organization administrator role 
+  """Assigns the specified profile to an organization administrator role
   for the specified organization.
-  
+
   Args:
     profile: profile entity.
     org_key: organization key.
@@ -137,7 +137,7 @@ def assignOrgAdminRoleForOrg(profile, org_key):
     if org_key not in profile.mentor_for:
       profile.is_mentor = True
       profile.mentor_for.append(org_key)
-    
+
     profile.is_org_admin = True
     profile.org_admin_for.append(org_key)
     profile.put()

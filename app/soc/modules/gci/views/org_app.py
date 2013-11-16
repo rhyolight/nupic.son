@@ -22,17 +22,60 @@ from django.utils.translation import ugettext
 
 from melange.request import access
 from melange.request import exception
+from soc.logic import org_app as org_app_logic
 from soc.mapreduce.helper import control as mapreduce_control
 from soc.models.org_app_record import OrgAppRecord
 from soc.views import org_app
 from soc.views.helper import access_checker
 from soc.views.helper import url_patterns
 
-from soc.logic import org_app as org_app_logic
-from soc.modules.gci.views import forms as gci_forms
+from soc.modules.gci.models import profile as profile_model
+from soc.modules.gci.views import forms
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
+
+_BASE_FORM_TEMPLATE_PATH = 'modules/gci/_form.html'
+
+
+class OrgAppEditForm(org_app.OrgAppEditForm):
+  """Form to create/edit GCI organization application survey."""
+
+  Meta = org_app.OrgAppEditForm.Meta
+
+  def __init__(self, **kwargs):
+    super(OrgAppEditForm, self).__init__(forms.GCIBoundField, **kwargs)
+
+  def templatePath(self):
+    return _BASE_FORM_TEMPLATE_PATH
+
+
+class OrgAppTakeForm(org_app.OrgAppTakeForm):
+  """Form for would-be organization admins to apply for a GCI program."""
+
+  CHECKBOX_SELECT_MULTIPLE = forms.CheckboxSelectMultiple
+
+  RADIO_FIELD_RENDERER = forms.RadioFieldRenderer
+
+  Meta = org_app.OrgAppTakeForm.Meta
+
+  def __init__(self, request_data=None, **kwargs):
+    super(OrgAppTakeForm, self).__init__(
+        forms.GCIBoundField, request_data=request_data, **kwargs)
+
+  def clean_backup_admin_id(self):
+    """Extends the backup admin cleaner to check if the backup admin has a
+    valid profile in the program.
+    """
+    backup_admin = super(OrgAppTakeForm, self).clean_backup_admin_id()
+    self.validateBackupAdminProfile(backup_admin, profile_model.GCIProfile)
+
+  def templatePath(self):
+    return _BASE_FORM_TEMPLATE_PATH
+
+  def _getCreateProfileURL(self, redirector):
+    """Returns the full secure URL of the GCI create profile page."""
+    return redirector.urlOf(url_names.GCI_PROFILE_CREATE, full=True, secure=True)
 
 
 class GCIOrgAppEditPage(GCIRequestHandler):
@@ -51,10 +94,9 @@ class GCIOrgAppEditPage(GCIRequestHandler):
 
   def context(self, data, check, mutator):
     if data.org_app:
-      form = gci_forms.OrgAppEditForm(
-          data=data.POST or None, instance=data.org_app)
+      form = OrgAppEditForm(data=data.POST or None, instance=data.org_app)
     else:
-      form = gci_forms.OrgAppEditForm(data=data.POST or None)
+      form = OrgAppEditForm(data=data.POST or None)
 
     if data.org_app:
       page_name = ugettext('Edit - %s' % data.org_app.title)
@@ -80,9 +122,9 @@ class GCIOrgAppEditPage(GCIRequestHandler):
       a newly created or updated organization application entity or None.
     """
     if data.org_app:
-      form = gci_forms.OrgAppEditForm(data=data.POST, instance=data.org_app)
+      form = OrgAppEditForm(data=data.POST, instance=data.org_app)
     else:
-      form = gci_forms.OrgAppEditForm(data=data.POST)
+      form = OrgAppEditForm(data=data.POST)
 
     if not form.is_valid():
       return None
@@ -130,7 +172,7 @@ class GCIOrgAppPreviewPage(GCIRequestHandler):
     return 'modules/gci/org_app/take.html'
 
   def context(self, data, check, mutator):
-    form = gci_forms.OrgAppTakeForm(request_data=data)
+    form = OrgAppTakeForm(request_data=data)
 
     context = {
         'page_name': '%s' % data.org_app.title,
@@ -182,12 +224,10 @@ class GCIOrgAppTakePage(GCIRequestHandler):
 
   def context(self, data, check, mutator):
     if data.org_app_record:
-      form = gci_forms.OrgAppTakeForm(
-          request_data=data, data=data.POST or None,
-          instance=data.org_app_record)
+      form = OrgAppTakeForm(request_data=data, data=data.POST or None,
+                            instance=data.org_app_record)
     else:
-      form = gci_forms.OrgAppTakeForm(
-          request_data=data, data=data.POST or None)
+      form = OrgAppTakeForm(request_data=data, data=data.POST or None)
 
     context = {
         'page_name': '%s' % data.org_app.title,
@@ -208,10 +248,10 @@ class GCIOrgAppTakePage(GCIRequestHandler):
       a newly created or updated evaluation record entity or None
     """
     if data.org_app_record:
-      form = gci_forms.OrgAppTakeForm(
-          request_data=data, data=data.POST, instance=data.org_app_record)
+      form = OrgAppTakeForm(request_data=data, data=data.POST,
+                            instance=data.org_app_record)
     else:
-      form = gci_forms.OrgAppTakeForm(request_data=data, data=data.POST)
+      form = OrgAppTakeForm(request_data=data, data=data.POST)
 
     if not form.is_valid():
       return None

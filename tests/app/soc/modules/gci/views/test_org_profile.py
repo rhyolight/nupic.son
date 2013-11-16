@@ -17,10 +17,17 @@
 
 from google.appengine.ext import db
 
+from melange.models import connection as connection_model
+
+from soc.modules.gci.models import organization as org_model
+
+from tests import profile_utils
 from tests import test_utils
 from tests import survey_utils
 
-from soc.modules.gci.models import organization
+
+TEST_IRC_CHANNEL = 'irc://example.com'
+TEST_MAILING_LIST = 'http://example.com'
 
 
 class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
@@ -74,8 +81,12 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     """
     self.timeline_helper.orgSignup()
     self.profile_helper.createProfile()
+
+    # create backup admin for the application
+    backup_admin = profile_utils.seedGCIProfile(self.program)
+
     self.record.createOrgAppRecord(
-        'new_org', self.profile_helper.user, self.profile_helper.user)
+        'new_org', self.profile_helper.user, backup_admin.parent())
 
     url = '/gci/profile/organization/' + self.gci.key().name()
     create_url = url + '?org_id=new_org'
@@ -84,13 +95,36 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     self.assertOrgProfilePageTemplatesUsed(response)
 
     postdata = {
-        'home': self.createDocument().key(), 'program': self.gci,
-        'scope': self.gci, 'irc_channel': 'irc://example.com',
-        'pub_mailing_list': 'http://example.com', 'backup_winner': None,
+        'home': self.createDocument().key(), 'program': self.program,
+        'scope': self.program, 'irc_channel': TEST_IRC_CHANNEL,
+        'pub_mailing_list': TEST_MAILING_LIST, 'backup_winner': None,
     }
-    response, _ = self.modelPost(create_url, organization.GCIOrganization,
+    response, _ = self.modelPost(create_url, org_model.GCIOrganization,
                                  postdata)
     self.assertResponseRedirect(response, url + '/new_org?validated')
+
+    # check that a organization is created
+    key_name = '%s/%s' % (self.program.key().name(), 'new_org')
+    organization = org_model.GCIOrganization.get_by_key_name(key_name)
+    self.assertIsNotNone(organization)
+    self.assertEqual(organization.irc_channel, TEST_IRC_CHANNEL)
+    self.assertEqual(organization.pub_mailing_list, TEST_MAILING_LIST)
+
+    # check that the profile is organization administrator
     profile = db.get(self.profile_helper.profile.key())
     self.assertEqual(1, len(profile.org_admin_for))
     self.assertSameEntity(self.gci, profile.program)
+
+    # check that a connection is created for the main admin
+    connection = connection_model.Connection.all().ancestor(
+        profile.key()).filter('organization', organization).get()
+    self.assertIsNotNone(connection)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+
+    # check that a connection is created for the backup admin
+    connection = connection_model.Connection.all().ancestor(
+        backup_admin.key()).filter('organization', organization).get()
+    self.assertIsNotNone(connection)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertEqual(connection.user_role, connection_model.ROLE)

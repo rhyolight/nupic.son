@@ -25,14 +25,13 @@ from soc.modules.gci.logic.helper.notifications import (
 from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.profile import GCIProfile
 
-from tests.gci_task_utils import GCITaskHelper
-from tests.profile_utils import GCIProfileHelper
+from tests import profile_utils
+from tests import task_utils
 from tests.test_utils import GCIDjangoTestCase
-from tests.test_utils import MailTestCase
 from tests.test_utils import TaskQueueTestCase
 
 
-class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
+class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
   """Tests GCITask public view.
   """
 
@@ -43,10 +42,11 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.init()
     self.timeline_helper.tasksPubliclyVisible()
 
-    # Create a task, status published
-    profile = GCIProfileHelper(self.gci, self.dev_test)
-    self.task = profile.createOtherUser('mentor@example.com').\
-        createMentorWithTask(task_model.OPEN, self.org)
+    # Create a task, status open
+    mentor = profile_utils.seedGCIProfile(
+        self.program, mentor_for=[self.org.key()])
+    self.task = task_utils.seedTask(
+        self.program, self.org, mentors=[mentor.key()])
     self.createSubscribersForTask()
 
   #TODO(orc.avs): move notification tests to logic
@@ -54,11 +54,9 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """Creates subscribers for the task.
     """
     for i in range(4):
-      email = 'subscriber%s@example.com' % str(i)
-      subscriber = GCIProfileHelper(self.gci, self.dev_test)
-      subscriber.createOtherUser(email)
-      subscriber.createProfile()
-      self.task.subscribers.append(subscriber.profile.key())
+      user = profile_utils.seedUser(email='subscriber%s@example.com' % str(i))
+      subscriber = profile_utils.seedGCIProfile(self.program, user=user)
+      self.task.subscribers.append(subscriber.key())
     self.task.put()
 
   def assertMailSentToSubscribers(self, comment):
@@ -93,7 +91,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.profile_helper.createMentor(self.org)
 
     no_comments = self.task.comments()
-    self.assertLength(no_comments, 0)
+    self.assertEqual(len(no_comments), 0)
 
     comment_title = 'Test Comment Title'
     comment_content = 'Test Comment Content'
@@ -109,7 +107,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertResponseRedirect(response)
 
     one_comment = self.task.comments()
-    self.assertLength(one_comment, 1)
+    self.assertEqual(len(one_comment), 1)
 
     comment = one_comment[0]
     self.assertEqual(comment_title, comment.title)
@@ -124,7 +122,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """Tests leaving a comment with an empty title."""
     self.profile_helper.createMentor(self.org)
 
-    self.assertLength(self.task.comments(), 0)
+    self.assertEqual(len(self.task.comments()), 0)
 
     comment_content = 'Test Comment Content'
 
@@ -139,7 +137,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertResponseRedirect(response)
 
     comments = self.task.comments()
-    self.assertLength(comments, 1)
+    self.assertEqual(len(comments), 1)
 
     comment = comments[0]
     self.assertIsNone(comment.title)
@@ -293,9 +291,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """
     self.profile_helper.createMentor(self.org)
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOtherUser('student@example.com').createStudent()
-    student = profile_helper.profile
+    student = profile_utils.seedGCIStudent(self.program)
 
     self.task.status = 'ClaimRequested'
     self.task.student = student
@@ -313,7 +309,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     # check if a comment has been created
     comments = self.task.comments()
-    self.assertLength(comments, 1)
+    self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
     # check if the update task has been enqueued
@@ -326,9 +322,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """
     self.profile_helper.createMentor(self.org)
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOtherUser('student@example.com').createStudent()
-    student = profile_helper.profile
+    student = profile_utils.seedGCIStudent(self.program)
 
     self.task.status = 'Claimed'
     self.task.student = student
@@ -346,7 +340,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     # check if a comment has been created
     comments = self.task.comments()
-    self.assertLength(comments, 1)
+    self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonClose(self):
@@ -354,9 +348,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """
     self.profile_helper.createMentor(self.org)
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOtherUser('student@example.com').createStudent()
-    student = profile_helper.profile
+    student = profile_utils.seedGCIStudent(self.program)
 
     self.task.status = 'NeedsReview'
     self.task.student = student
@@ -374,7 +366,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     # check if a comment has been created
     comments = self.task.comments()
-    self.assertLength(comments, 1)
+    self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
     # check if OrgScore has been updated
@@ -395,9 +387,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """
     self.profile_helper.createMentor(self.org)
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOtherUser('student@example.com').createStudent()
-    student = profile_helper.profile
+    student = profile_utils.seedGCIStudent(self.program)
 
     self.task.status = 'NeedsReview'
     self.task.student = student
@@ -415,7 +405,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     # check if a comment has been created
     comments = self.task.comments()
-    self.assertLength(comments, 1)
+    self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonExtendDeadline(self):
@@ -423,9 +413,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     """
     self.profile_helper.createMentor(self.org)
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOtherUser('student@example.com').createStudent()
-    student = profile_helper.profile
+    student = profile_utils.seedGCIStudent(self.program)
 
     # set it in the future so that the auto state transfer doesn't trigger
     deadline = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
@@ -447,7 +435,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     # check if a comment has been created
     comments = self.task.comments()
-    self.assertLength(comments, 1)
+    self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonClaim(self):
@@ -467,7 +455,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     # check if a comment has been created
     comments = self.task.comments()
-    self.assertLength(comments, 1)
+    self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonUnclaim(self):
@@ -491,7 +479,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
 
     # check if a comment has been created
     comments = self.task.comments()
-    self.assertLength(comments, 1)
+    self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonSubscribe(self):
@@ -538,7 +526,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.task.put()
 
     no_work = self.task.workSubmissions()
-    self.assertLength(no_work, 0)
+    self.assertEqual(len(no_work), 0)
 
     work_url = 'http://www.example.com/'
     work_data = {
@@ -551,7 +539,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.assertResponseRedirect(response)
 
     one_work = self.task.workSubmissions()
-    self.assertLength(one_work, 1)
+    self.assertEqual(len(one_work), 1)
 
     work = one_work[0]
     self.assertEqual(work_url, work.url_to_work)
@@ -568,8 +556,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
         datetime.timedelta(days=1)
     self.task.put()
 
-    GCITaskHelper(self.program).createWorkSubmission(
-        self.task, self.profile_helper.profile)
+    task_utils.seedWorkSubmission(self.task)
 
     url = '%s?send_for_review' % self._taskPageUrl(self.task)
     response = self.post(url)
@@ -590,8 +577,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
         datetime.timedelta(days=1)
     self.task.put()
 
-    GCITaskHelper(self.program).createWorkSubmission(
-        self.task, self.profile_helper.profile)
+    task_utils.seedWorkSubmission(self.task)
 
     url = '%s?send_for_review' % self._taskPageUrl(self.task)
     response = self.post(url)
@@ -610,16 +596,15 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase, MailTestCase):
     self.task.student = self.profile_helper.profile
     self.task.put()
 
-    work = GCITaskHelper(self.program).createWorkSubmission(
-        self.task, self.profile_helper.profile)
+    work = task_utils.seedWorkSubmission(self.task)
 
-    self.assertLength(self.task.workSubmissions(), 1)
+    self.assertEqual(len(self.task.workSubmissions()), 1)
 
     url = '%s?delete_submission' %self._taskPageUrl(self.task)
     response = self.post(url, {work.key().id(): ''})
 
     self.assertResponseRedirect(response)
-    self.assertLength(self.task.workSubmissions(), 0)
+    self.assertEqual(len(self.task.workSubmissions()), 0)
 
   def _taskPageUrl(self, task):
     """Returns the url of the task page.
@@ -641,10 +626,11 @@ class WorkSubmissionDownloadTest(GCIDjangoTestCase):
     self.init()
     self.timeline_helper.tasksPubliclyVisible()
 
-    # Create a status-published task.
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOtherUser('mentor@example.com')
-    self.task = profile_helper.createMentorWithTask(task_model.OPEN, self.org)
+    # Create an open task.
+    mentor = profile_utils.seedGCIProfile(
+        self.program, mentor_for=[self.org.key()])
+    self.task = task_utils.seedTask(
+        self.program, self.org, mentors=[mentor.key()])
 
   def testXSS(self):
     xss_payload = '><img src=http://www.google.com/images/srpr/logo4w.png>'

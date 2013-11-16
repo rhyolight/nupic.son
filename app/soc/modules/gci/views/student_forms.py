@@ -226,7 +226,6 @@ class StudentFormDownload(base.GCIRequestHandler):
   def checkAccess(self, data, check, mutator):
     """Denies access if you are not a host."""
     check.isHost()
-    mutator.studentFromKwargs()
 
   def get(self, data, check, mutator):
     """Allows hosts to download the student forms."""

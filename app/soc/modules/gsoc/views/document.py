@@ -14,14 +14,13 @@
 
 """Module containing the views for GSoC documents page."""
 
-from django.conf.urls.defaults import url as django_url
+from django.conf.urls import url as django_url
 
 from melange.request import access
 from melange.request import exception
 from soc.views import document
 from soc.views.base_templates import ProgramSelect
 from soc.views.helper import url_patterns
-from soc.views.helper.access_checker import isSet
 
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms
@@ -57,15 +56,14 @@ class EditDocumentPage(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.documentKeyNameFromKwargs()
-
-    assert isSet(data.key_name)
-
     check.canEditDocument()
 
   def context(self, data, check, mutator):
     form = GSoCDocumentForm(data=data.POST or None, instance=data.document)
 
+    # TODO(daniel): split that view into two different views (one for creation
+    # and another one for editing documents) than make data.document raise
+    # not found when document is not found
     if data.document:
       page_name = 'Edit %s' % data.document.title
     else:
@@ -108,8 +106,7 @@ class DocumentPage(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.documentKeyNameFromKwargs()
-
+    # TODO(daniel): remove this when data.document throws not found on its own
     if not data.document:
       raise exception.NotFound(
           message="No such document: '%s'" % data.key_name)
@@ -136,8 +133,11 @@ class EventsPage(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    data.document = data.program.events_page
-    check.canViewDocument()
+    check.isProgramVisible()
+
+    if not data.program.events_page:
+      raise exception.NotFound(
+          message='No events document is defined for program.')
 
   def context(self, data, check, mutator):
     return {

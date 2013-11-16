@@ -28,7 +28,6 @@ from soc.modules.gci.views import dashboard
 from soc.modules.gci.views import delete_account
 from soc.modules.gci.views import document
 from soc.modules.gci.views import homepage
-from soc.modules.gci.views import invite
 from soc.modules.gci.views import leaderboard
 from soc.modules.gci.views import moderate_delete_account
 from soc.modules.gci.views import org_app
@@ -40,7 +39,6 @@ from soc.modules.gci.views import profile
 from soc.modules.gci.views import profile_show
 from soc.modules.gci.views import program
 from soc.modules.gci.views import propose_winners
-from soc.modules.gci.views import request
 from soc.modules.gci.views import static_content
 from soc.modules.gci.views import student_forms
 from soc.modules.gci.views import students_info
@@ -82,10 +80,6 @@ class Callback(object):
     self.views.append(document.EventsPage())
     self.views.append(document.DocumentListPage())
     self.views.append(homepage.Homepage())
-    self.views.append(invite.InvitePage())
-    self.views.append(invite.ManageInvite())
-    self.views.append(invite.RespondInvite())
-    self.views.append(invite.ListUserInvitesPage())
     self.views.append(leaderboard.LeaderboardPage())
     self.views.append(leaderboard.StudentTasksPage())
     self.views.append(subscribed_tasks.SubscribedTasksPage())
@@ -112,10 +106,7 @@ class Callback(object):
     self.views.append(
         propose_winners.ChooseOrganizationForProposeWinnersPage())
     self.views.append(propose_winners.ViewProposedWinnersPage())
-    self.views.append(request.ListUserRequestsPage())
-    self.views.append(request.SendRequestPage())
-    self.views.append(request.ManageRequestPage())
-    self.views.append(request.RespondRequestPage())
+    self.views.append(static_content.StaticContentUpload())
     self.views.append(static_content.StaticContentDownload())
     self.views.append(static_content.StaticContentListPage())
     self.views.append(static_content.StaticContentUpload())

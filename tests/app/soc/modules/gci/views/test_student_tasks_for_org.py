@@ -12,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for StudentTasksForOrganizationPage view.
-"""
+"""Tests for StudentTasksForOrganizationPage view."""
+
+from tests import profile_utils
+from tests import task_utils
+from tests import test_utils
 
 
-from tests.profile_utils import GCIProfileHelper
-from tests.test_utils import GCIDjangoTestCase
-
-
-class TestStudentTasksForOrganizationPage(GCIDjangoTestCase):
+class TestStudentTasksForOrganizationPage(test_utils.GCIDjangoTestCase):
   """Tests GCITask public view.
   """
 
@@ -32,11 +31,12 @@ class TestStudentTasksForOrganizationPage(GCIDjangoTestCase):
     self.timeline_helper.tasksPubliclyVisible()
 
     # Create a task, status published
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    self.task = profile_helper.createOtherUser('mentor@example.com').\
-        createMentorWithTask('Open', self.org)
+    mentor = profile_utils.seedGCIProfile(
+        self.program, mentor_for=[self.org.key()])
+    self.task = task_utils.seedTask(
+        self.program, self.org, mentors=[mentor.key()])
 
-    self.student = profile_helper.createStudent()
+    self.student = profile_utils.seedGCIStudent(self.program)
 
   def testTemplateUsed(self):
     url = self._taskPageUrl()

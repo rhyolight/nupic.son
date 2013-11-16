@@ -19,6 +19,7 @@ token to any <form> sent to the browser, and any (non-AppEngine) POST requests
 will be rejected if the provided token is invalid.
 """
 
+import httplib
 import itertools
 import logging
 import os
@@ -73,18 +74,17 @@ class XsrfMiddleware(object):
 
     if not post_token:
       logging.warn('Missing XSRF token for post data %s', request.POST)
-      return http.HttpResponse('Missing XSRF token.', status=403)
+      return http.HttpResponse('Missing XSRF token.', status=httplib.FORBIDDEN)
 
-    token_validity = xsrfutil.isTokenValid(_GetSecretKey(request), post_token)
-
-    if token_validity:
-      return None
-    else:
+    try:
+      xsrfutil.isTokenValid(_GetSecretKey(request), post_token)
+    except xsrfutil.InvalidTokenException as e:
       logging.warn('Invalid XSRF token for post data %s', request.POST)
-      # TODO(nathaniel): xsrfutil.isTokenValid always returns a boolean value,
-      # not the-token-itself-if-the-token-is-not-valid.
       return http.HttpResponse(
-          'Invalid XSRF token: %s' % token_validity, status=403)
+          'Invalid XSRF token, %s' % e.reason, status=httplib.FORBIDDEN)
+
+    # token valid, return None and continue processing the request.
+    return None
 
   def process_response(self, request, response):
     """Alters HTML responses containing <form> tags to embed the XSRF token."""

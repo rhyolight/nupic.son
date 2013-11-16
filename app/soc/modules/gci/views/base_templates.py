@@ -21,8 +21,9 @@ from google.appengine.ext import ndb
 from django.core.urlresolvers import reverse
 from django.utils import translation
 
+from melange.request import links
+
 from soc.logic import accounts
-from soc.logic import links
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic.program import getMostRecentProgram
@@ -76,7 +77,7 @@ def siteMenuContext(data):
     context['tasks_link'] = redirect.urlOf('gci_list_tasks')
     if not data.user:
       context['register_as_student_link'] = redirect.createProfile(
-          'student').urlOf('create_gci_profile', secure=True)
+          'student').urlOf(url_names.GCI_PROFILE_CREATE, secure=True)
 
   return context
 

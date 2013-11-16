@@ -17,8 +17,9 @@
 from django.utils import translation
 
 from melange.logic import connection as connection_logic
+from melange.models import connection as connection_model
+from melange.request import links
 
-from soc.logic import links
 from soc.views import template
 from soc.views.helper import lists
 
@@ -111,8 +112,9 @@ class UserConnectionList(ConnectionList):
     list_config.addPlainTextColumn('organization', 'Organization',
         lambda e, *args: e.organization.name)
     list_config.addPlainTextColumn('role', 'Role',
-        lambda e, *args: e.getRole())
-    list_config.addSimpleColumn('last_modified', 'Last Modified On')
+        lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()])
+    list_config.addDateColumn('last_modified', 'Last Modified On',
+        lambda e, *args: e.last_modified)
 
     list_config.setRowAction(
         lambda e, *args: links.LINKER.userId(
@@ -151,8 +153,9 @@ class OrgAdminConnectionList(ConnectionList):
           lambda e, *args: e.organization.name)
 
     list_config.addPlainTextColumn('role', 'Role',
-        lambda e, *args: e.getRole())
-    list_config.addSimpleColumn('last_modified', 'Last Modified On')
+        lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()])
+    list_config.addDateColumn('last_modified', 'Last Modified On',
+        lambda e, *args: e.last_modified)
 
     list_config.setRowAction(
         lambda e, *args: links.LINKER.userId(

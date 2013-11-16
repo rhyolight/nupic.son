@@ -23,8 +23,10 @@ from django import http
 from django.utils.translation import ugettext
 
 from melange.logic import connection as connection_logic
-from melange.models.connection import Connection
+from melange.models import connection as connection_model
 from melange.request import exception
+from melange.request import links
+
 from soc.logic import cleaning
 from soc.logic import document as document_logic
 from soc.logic import org_app as org_app_logic
@@ -33,7 +35,6 @@ from soc.models.universities import UNIVERSITIES
 from soc.views.base_templates import ProgramSelect
 from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
-from soc.views.helper import addresses
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.helper.surveys import dictForSurveyModel
@@ -46,7 +47,6 @@ from soc.modules.gsoc.logic.survey_record import getEvalRecord
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
-from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
@@ -231,7 +231,7 @@ class DashboardPage(base.GSoCRequestHandler):
       evals = dictForSurveyModel(
           ProjectSurvey, data.program, ['midterm', 'final'])
       any_survey_active = any(
-          survey_logic.isSurveyActive(evaluation, data.profile.key()) 
+          survey_logic.isSurveyActive(evaluation, data.profile.key())
               for evaluation in evals.values())
       if any_survey_active:
         components.append(MyEvaluationsComponent(data, evals))
@@ -431,8 +431,8 @@ class MyProposalsComponent(Component):
     list_config.addPlainTextColumn('org', 'Organization',
                           lambda ent, *args: ent.org.name)
     list_config.setRowAction(lambda e, *args:
-        data.redirect.review(e.key().id_or_name(), e.parent().link_id).
-        urlOf('review_gsoc_proposal'))
+        links.LINKER.userId(
+            e.parent(), e.key().id(), url_names.PROPOSAL_REVIEW))
     self._list_config = list_config
 
     super(MyProposalsComponent, self).__init__(data)
@@ -795,12 +795,9 @@ class SubmittedProposalsComponent(Component):
         'possible_mentors', 'Possible mentor usernames',
         mentor_keys, hidden=True)
 
-    # organization column
-    if not data.is_host:
-      orgs = data.mentor_for
-      options = [("^%s$" % i.short_name, i.short_name) for i in orgs]
-    else:
-      options = None
+    orgs = data.mentor_for
+    options = [("^%s$" % i.short_name, i.short_name) for i in orgs]
+
 
     if options and len(options) > 1:
       options = [('', 'All')] + options
@@ -820,8 +817,8 @@ class SubmittedProposalsComponent(Component):
 
     # row action
     list_config.setRowAction(lambda e, *args:
-        data.redirect.review(e.key().id_or_name(), e.parent().link_id).
-        urlOf('review_gsoc_proposal'))
+        links.LINKER.userId(
+            e.parent(), e.key().id(), url_names.PROPOSAL_REVIEW))
     list_config.setDefaultSort('last_modified_on', 'desc')
 
     # additional columns
@@ -999,17 +996,14 @@ class SubmittedProposalsComponent(Component):
     dupQ.filter('is_duplicate', True)
 
     q = GSoCProposal.all()
-    if not self.data.is_host:
-      q.filter('org IN', self.data.mentor_for)
-      dupQ.filter('orgs IN', self.data.mentor_for)
+    q.filter('org IN', self.data.mentor_for)
+    dupQ.filter('orgs IN', self.data.mentor_for)
 
-      # Only fetch the data if we will display it
-      if self.data.program.duplicates_visible:
-        for org in self.data.mentor_for:
-          accepted.extend([p.key() for p in getProposalsToBeAcceptedForOrg(org)])
-    else:
-      q.filter('program', self.data.program)
-      dupQ.filter('program', self.data.program)
+    # Only fetch the data if we will display it
+    if self.data.program.duplicates_visible:
+      for org in self.data.mentor_for:
+        accepted.extend([p.key() for p in getProposalsToBeAcceptedForOrg(org)])
+
 
     # Only fetch the data if it is going to be displayed
     if self.data.program.duplicates_visible:
@@ -1158,11 +1152,7 @@ class OrganizationsIParticipateInComponent(Component):
 
     pos = int(response.start) if response.start else 0
 
-    if self.data.is_host:
-      q = GSoCOrganization.all().filter('scope', self.data.program)
-      orgs = q.fetch(1000)
-    else:
-      orgs = self.data.mentor_for
+    orgs = self.data.mentor_for
 
     if pos < len(orgs):
       org = orgs[pos]
@@ -1234,7 +1224,8 @@ class OrgConnectionComponent(Component):
     list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.parent().name())
     list_config.addPlainTextColumn('role', 'Role',
-        lambda e, *args: e.getRole(), options=CONNECTION_ROLES)
+        lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()],
+            options=CONNECTION_ROLES)
 
     list_config.setRowAction(
         lambda e, *args: data.redirect.show_org_connection(connection=e).url())
@@ -1258,11 +1249,12 @@ class OrgConnectionComponent(Component):
     if lists.getListIndex(self.data.request) != self.IDX:
       return None
 
-    q = Connection.all()
+    q = connection_model.Connection.all()
     q.filter('organization IN', [org.key() for org in self.data.org_admin_for])
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(Connection, ['organization'])
+    prefetcher = lists.ModelPrefetcher(
+        connection_model.Connection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
       self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
@@ -1303,7 +1295,8 @@ class UserConnectionComponent(Component):
     list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.parent().name())
     list_config.addPlainTextColumn('role', 'Role',
-        lambda e, *args: e.getRole(), options=CONNECTION_ROLES)
+        lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()],
+            options=CONNECTION_ROLES)
 
     list_config.setRowAction(
         lambda e, *args: data.redirect.show_user_connection(
@@ -1330,7 +1323,8 @@ class UserConnectionComponent(Component):
     q = connection_logic.queryForAncestor(self.data.profile)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(Connection, ['organization'])
+    prefetcher = lists.ModelPrefetcher(
+        connection_model.Connection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
@@ -1405,10 +1399,7 @@ class ParticipantsComponent(Component):
         'name', 'Name', lambda ent, *args: ent.name())
     list_config.addSimpleColumn('email', "Email")
 
-    if self.data.is_host:
-      get = lambda i, orgs: orgs[i].link_id
-    else:
-      get = lambda i, orgs: orgs[i].name
+    get = lambda i, orgs: orgs[i].name
 
     list_config.addPlainTextColumn(
         'mentor_for', 'Mentor for',
@@ -1418,11 +1409,6 @@ class ParticipantsComponent(Component):
         'admin_for', 'Organization admin for',
         lambda ent, orgs, *args: ', '.join(
             [get(i, orgs) for i in ent.org_admin_for if data.orgAdminFor(i)]))
-
-    if self.data.is_host:
-      list_config.addSimpleColumn(
-          'created_on', 'Created On', column_type=lists.DATE)
-      addresses.addAddressColumns(list_config)
 
     self._list_config = list_config
 
@@ -1439,15 +1425,8 @@ class ParticipantsComponent(Component):
       return None
 
     q = GSoCProfile.all()
-
-    if self.data.is_host:
-      q.filter('scope', self.data.program)
-      q.filter('is_mentor', True)
-      prefetcher = lists.ListFieldPrefetcher(
-          GSoCProfile, ['mentor_for', 'org_admin_for'])
-    else:
-      q.filter('mentor_for IN', self.data.profile.org_admin_for)
-      prefetcher = ParticipantsComponent.AdministeredOrgsPrefetcher(self.data)
+    q.filter('mentor_for IN', self.data.profile.org_admin_for)
+    prefetcher = ParticipantsComponent.AdministeredOrgsPrefetcher(self.data)
 
     starter = lists.keyStarter
 

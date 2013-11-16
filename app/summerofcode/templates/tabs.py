@@ -16,10 +16,12 @@
 
 from django.utils import translation
 
+from melange.request import links
 from melange.templates import tabs
 
-from soc.logic import links
 from soc.modules.gsoc.views.helper import url_names
+
+from summerofcode.views.helper import urls
 
 
 TEMPLATE_PATH = 'summerofcode/_tabs.html'
@@ -29,7 +31,6 @@ VIEW_PROFILE_TAB_ID = 'view_profile_tab'
 
 EDIT_PROFILE_NAME = translation.ugettext('Edit Profile')
 VIEW_PROFILE_NAME = translation.ugettext('View Profile')
-
 
 def profileTabs(data, selected_tab_id=None):
   """Returns tabs that join together profile related items.
@@ -55,6 +56,39 @@ def profileTabs(data, selected_tab_id=None):
       tab.tab_id for tab in tabs_list]:
     raise ValueError('Selected Tab ID %s does not belong to any tabs.' %
         selected_tab_id)
+
+  return tabs.Tabs(
+      data, TEMPLATE_PATH, tabs_list, selected_tab_id=selected_tab_id)
+
+
+ORG_PROFILE_TAB_ID = 'org_profile_tab'
+ORG_APP_RESPONSE_TAB_ID = 'app_response_tab'
+
+ORG_PROFILE_NAME = translation.ugettext('Profile')
+ORG_APP_RESPONSE_NAME = translation.ugettext('Questionnaire')
+
+def orgTabs(data, selected_tab_id=None):
+  """Returns tabs that join together organization related items.
+
+  Args:
+    data: request_data.RequestData object for the current request.
+    selected_tab_id: identifier of the tab that should be initially selected.
+
+  Returns:
+    Tabs object with organization related tabs.
+  """
+  tabs_list = []
+
+  # add Organization Profile tab
+  url = links.LINKER.organization(
+      data.url_ndb_org.key, urls.UrlNames.ORG_PROFILE_EDIT)
+  tabs_list.append(tabs.Tab(ORG_PROFILE_TAB_ID, ORG_PROFILE_NAME, url))
+
+  # add Application Response tab
+  url = links.LINKER.organization(
+      data.url_ndb_org.key, urls.UrlNames.ORG_APPLICATION_SUBMIT)
+  tabs_list.append(
+      tabs.Tab(ORG_APP_RESPONSE_TAB_ID, ORG_APP_RESPONSE_NAME, url))
 
   return tabs.Tabs(
       data, TEMPLATE_PATH, tabs_list, selected_tab_id=selected_tab_id)

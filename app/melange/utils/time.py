@@ -25,7 +25,7 @@ def isBefore(date):
 
   Returns:
     True if it is before the specified date; False otherwise, or
-      when the date is not given. 
+      when the date is not given.
   """
   return date and datetime.datetime.utcnow() < date
 
@@ -38,7 +38,7 @@ def isAfter(date):
 
   Returns:
     True if it is after the specified date; False otherwise, or
-      when the date is not given. 
+      when the date is not given.
   """
   return date and date < datetime.datetime.utcnow()
 
@@ -60,4 +60,3 @@ def isBetween(start_date, end_date):
       one of the dates is not given.
   """
   return isAfter(start_date) and isBefore(end_date)
-

@@ -157,7 +157,10 @@ class StudentTasksPage(GCIRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.studentFromKwargs()
+    # check if the profile in URL is a really student
+    if not data.url_profile.is_student:
+      raise exception.NotFound(message='The requested user is not a student.')
+
     try:
       check.isHost()
     except exception.UserError:

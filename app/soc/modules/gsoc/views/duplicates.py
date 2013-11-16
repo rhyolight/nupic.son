@@ -20,6 +20,8 @@ from google.appengine.ext import db
 from django import http
 
 from melange.request import access
+from melange.request import links
+
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
@@ -132,9 +134,9 @@ class Duplicate(Template):
           orgs_details[org.key().id_or_name()]['proposals'].append({
               'key': proposal.key().id_or_name(),
               'title': proposal.title,
-              'link': self.data.redirect.review(
-                  proposal.key().id_or_name(),
-                  proposal.parent().link_id).urlOf('review_gsoc_proposal'),
+              'link': links.LINKER.userId(
+                  proposal.parent(), proposal.key().id(),
+                  url_names.PROPOSAL_REVIEW),
               })
 
     context['orgs'] = orgs_details

@@ -245,6 +245,5 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
 
   def _createNewMentor(self):
     """Returns a newly created mentor."""
-    profile_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
-    profile_helper.createOtherUser('mentor@example.com')
-    return profile_helper.createMentor(self.org)
+    return profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])

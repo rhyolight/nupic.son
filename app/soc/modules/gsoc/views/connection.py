@@ -23,11 +23,14 @@ from django.forms.fields import ChoiceField
 from django.utils.translation import ugettext
 
 from melange.logic import connection as connection_logic
+from melange.logic import connection_message as message_logic
 from melange.logic import profile as profile_logic
 from melange.models import connection
 from melange.request import exception
+from melange.request import links
 from melange.utils import rich_bool
 from melange.views import connection as connection_view
+
 from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic.helper import notifications
@@ -41,8 +44,13 @@ from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
+from soc.tasks import mailer
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
+
+# TODO(daniel): important - this is just temporary, as new connection views
+# are not supported by summerofcode. It should be replaced.
+from codein.views.helper import urls
 
 
 DEF_INVALID_LINK_ID = '%s is not a valid link id.'
@@ -100,6 +108,52 @@ def clean_email(email):
   else:
     # The User entity does not exist or they do not have a profile.
     return None
+
+
+def getEmailsForConnection(data, entity):
+  """Get the emails for org admins and user who are involved in the
+  connection.
+
+  Args:
+    data: RequestData object for the current request.
+    entity: Connection object for which to get emails.
+
+  Returns:
+    List of emails for all users in the Connection excluding the
+    current user.
+  """
+  query = GSoCProfile.all().filter('org_admin_for', entity.organization)
+  query.filter('status', 'active')
+  query.filter('notify_public_comments', True)
+  emails = [profile.email for profile in query if \
+      profile.key() != data.profile.key()]
+  # Notify the user if they are not the ones who created the message.
+  profile = entity.parent()
+  if profile.key() != data.profile.key():
+    emails.append(profile.email)
+
+  return emails
+
+@db.transactional
+def sendConnectionMessageNotification(data, emails, message):
+  """Dispatches a notification to users involved in a Connection when
+  a new message is added.
+
+  Args:
+    data: RequestData object for the current request.
+    emails: List of emails to which to send the notification.
+    message: String contents of the ConnectionMessage.
+  """
+  notification_context = notifications.connectionMessageContext(
+      data=data,
+      emails=emails,
+      connection=data.url_connection,
+      message=message
+      )
+  sub_txn = mailer.getSpawnMailTaskTxn(
+      notification_context, parent=data.url_connection)
+  sub_txn()
+
 
 # TODO(drew): Feasible to make this txn safe?
 def canUserResignRoleForOrg(profile_key, org_key):
@@ -207,9 +261,7 @@ class OrgConnectionForm(ConnectionForm):
         if user:
           self.request_data.valid_users.append(user)
         else:
-          #self.request_data.anonymous_users.append(user_id)
-          raise gsoc_forms.ValidationError(
-              '%s does not correspond to a profile.' % user_id)
+          self.request_data.anonymous_users.append(user_id)
       else:
         user = clean_link_id(user_id)
         self.request_data.valid_users.append(user)
@@ -303,32 +355,39 @@ class OrgConnectionPage(base.GSoCRequestHandler):
 
     # The valid_users field should contain a list of User instances populated
     # by the form's cleaning methods.
+    notification_context_provider = (
+        notifications.StartConnectionByOrgContextProvider(
+            links.ABSOLUTE_LINKER, urls.UrlNames))
     for user in data.valid_users:
       connection_form.instance = None
       profile = GSoCProfile.all().ancestor(user).get()
       connection_view.createConnectionTxn(
-          data=data, profile=profile, organization=data.organization,
-          org_role=connection_form.cleaned_data['org_role'],
+          data, profile.key(), data.organization,
           message=connection_form.cleaned_data['message'],
-          context=notifications.orgConnectionContext,
-          recipients=[profile.email])
+          notification_context_provider=notification_context_provider,
+          recipients=[profile.email],
+          org_role=connection_form.cleaned_data['org_role'])
 
-    # TODO(drew):Re-implement anonymous connection.
-
-    #q = connection.AnonymousConnection.all()
-    #data.sent_email_to = []
-    #data.duplicate_email = []
-    #for email in data.anonymous_users:
-    #  new_q = q.filter('email', email).get()
-    #  if new_q:
-    #    data.duplicate_email.append(email)
-    #  else:
-    #    data.sent_email_to.append(email)
-    #    db.run_in_transaction(create_anonymous_connection_txn, email)
+    # anonymous_connections should contain the emails of unregistered users
+    # from the form.
+    data.unregistered = []
+    for user in data.anonymous_users:
+      connection_view.createAnonymousConnectionTxn(
+          data=data,
+          organization=data.organization,
+          org_role=connection_form.cleaned_data['org_role'],
+          email=user,
+          message=connection_form.cleaned_data['message']
+          )
+      data.unregistered.append(user)
 
     return True
 
   def checkAccess(self, data, check, mutator):
+    # TODO(nathaniel): Drop special privileges for developers.
+    if data.is_developer:
+      return
+
     assert isSet(data.organization)
     check.isProgramVisible()
     check.isOrganizationInURLActive()
@@ -344,19 +403,18 @@ class OrgConnectionPage(base.GSoCRequestHandler):
         message=data.organization.role_request_message,
         data=data.POST or None)
 
-    emailed = dupes = None
-    if 'emailed' in data.request.GET:
-      emailed = data.request.GET['emailed'].split(',')
-    if 'dupes' in data.request.GET:
-      dupes = data.request.GET['dupes'].split(',')
+    unregistered = None
+    if 'unregistered' in data.request.GET:
+      unregistered = data.request.GET['unregistered'].split(',')
+
+    page_title = 'Connection for %s' % data.organization.name
 
     return {
-      'page_name': 'Open a connection',
+      'page_name': page_title,
       'program': data.program,
       'connection_form': connection_form,
       'error': bool(connection_form.errors),
-      'sent_email_to' : emailed,
-      'dupes' : dupes
+      'unregistered' : unregistered,
     }
 
   def post(self, data, check, mutator):
@@ -370,12 +428,9 @@ class OrgConnectionPage(base.GSoCRequestHandler):
     if self._generate(data):
       data.redirect.organization()
       extra = []
-      #if len(data.sent_email_to) > 0:
-      #  emailed = ','.join(data.sent_email_to)
-      #  extra = ['emailed=%s' % emailed, ]
-      #if len(data.duplicate_email) > 0:
-      #  dupes = ','.join(data.duplicate_email)
-      #  extra.append('dupes=%s' % dupes)
+      if len(data.unregistered) > 0:
+        unregistered = ','.join(data.unregistered)
+        extra = ['unregistered=%s' % unregistered, ]
       return data.redirect.to(url_names.GSOC_ORG_CONNECTION, validated=True,
           extra=extra)
     else:
@@ -398,6 +453,10 @@ class UserConnectionPage(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
+    # TODO(nathaniel): Drop special privileges for developers.
+    if data.is_developer:
+      return
+
     check.isProgramVisible()
     check.isOrganizationInURLActive()
     check.hasProfile()
@@ -421,11 +480,14 @@ class UserConnectionPage(base.GSoCRequestHandler):
     admins = q.fetch(50)
     recipients = [i.email for i in admins]
 
+    notification_context_provider = (
+        notifications.StartConnectionByUserContextProvider(
+            links.ABSOLUTE_LINKER, urls.UrlNames))
     connection_view.createConnectionTxn(
-        data=data, profile=data.profile, organization=data.organization,
-        user_role=connection.ROLE, recipients=recipients,
+        data, data.profile.key(), data.organization,
         message=connection_form.cleaned_data['message'],
-        context=notifications.userConnectionContext)
+        notification_context_provider=notification_context_provider,
+        recipients=recipients, user_role=connection.ROLE)
 
     return True
 
@@ -436,9 +498,11 @@ class UserConnectionPage(base.GSoCRequestHandler):
         message=data.organization.role_request_message,
         data=data.POST or None)
 
+    page_title = 'Connection with %s' % data.organization.name
+
     return {
         'profile_created': data.GET.get('profile') == 'created',
-        'page_name': 'Open a connection',
+        'page_name': page_title,
         'program': data.program,
         'connection_form': connection_form,
         }
@@ -468,6 +532,10 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
         ]
 
   def checkAccess(self, data, check, mutator):
+    # TODO(nathaniel): Drop special privileges for developers.
+    if data.is_developer:
+      return
+
     check.isProgramVisible()
     check.hasProfile()
     check.notStudent()
@@ -485,15 +553,20 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
             kwargs=message_kwargs)
         }
 
+    messages_builder = message_logic.QueryBuilder()
+    messages_builder.addAncestor(data.url_connection)
+    query = messages_builder.build()
+
     return {
         'page_name' : 'Viewing Connection',
         'header_name' : data.url_profile.name(),
         'connection' : data.url_connection,
         'response_form' : response_form,
-        'message_box' : message_box
+        'message_box' : message_box,
+        'messages' : query.fetch(100)
         }
 
-  def _handleMentorSelection(self, data):
+  def _handleMentorSelection(self, data, emails):
 
     message = data.program.getProgramMessages().mentor_welcome_msg
 
@@ -501,7 +574,6 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
     def org_selected_mentor_txn():
       connection_entity = db.get(data.url_connection.key())
       connection_entity.org_role = connection.MENTOR_ROLE
-      connection_entity.put()
 
       profile = db.get(data.url_connection.parent_key())
       if connection_entity.userRequestedRole():
@@ -519,12 +591,18 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
         profile_logic.assignMentorRoleForOrg(
             profile, data.url_connection.organization.key())
 
-        connection_logic.createConnectionMessage(
+        generated_message = connection_logic.createConnectionMessage(
             connection_entity, USER_ASSIGNED_MENTOR % profile.name())
+        sendConnectionMessageNotification(
+            data, emails, generated_message.content)
+
+        db.put([connection_entity, generated_message])
+      else:
+        connection_entity.put()
 
     org_selected_mentor_txn()
 
-  def _handleOrgAdminSelection(self, data):
+  def _handleOrgAdminSelection(self, data, emails):
 
     message = data.program.getProgramMessages().mentor_welcome_msg
 
@@ -532,7 +610,6 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
     def org_selected_orgadmin_txn():
       connection_entity = db.get(data.url_connection.key())
       connection_entity.org_role = connection.ORG_ADMIN_ROLE
-      connection_entity.put()
 
       if connection_entity.userRequestedRole():
         profile = db.get(data.url_connection.parent_key())
@@ -542,25 +619,36 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
         profile_logic.assignOrgAdminRoleForOrg(
             profile, data.url_connection.organization.key())
 
-        connection_logic.createConnectionMessage(
+        generated_message = connection_logic.createConnectionMessage(
             connection_entity, USER_ASSIGNED_ORG_ADMIN % profile.name())
+        sendConnectionMessageNotification(
+            data, emails, generated_message.content)
+
+        db.put([connection_entity, generated_message])
+      else:
+        connection_entity.put()
 
     org_selected_orgadmin_txn()
 
-  def _handleNoRoleSelection(self, data):
+  def _handleNoRoleSelection(self, data, emails):
     @db.transactional(xg=True)
     def org_selected_norole_txn():
       connection_entity = db.get(data.url_connection.key())
       connection_entity.org_role = connection.NO_ROLE
-      connection_entity.put()
 
       profile = db.get(data.url_connection.parent_key())
       org_key = data.url_connection.organization.key()
       if org_key in profile.mentor_for:
         profile_logic.assignNoRoleForOrg(profile, org_key)
 
-        connection_logic.createConnectionMessage(
+        generated_message = connection_logic.createConnectionMessage(
             connection_entity, USER_ASSIGNED_NO_ROLE % profile.name())
+        sendConnectionMessageNotification(
+            data, emails, generated_message.content)
+
+        db.put([connection_entity, generated_message])
+      else:
+        connection_entity.put()
 
     can_resign = canUserResignRoleForOrg(
       data.url_connection.parent_key(), data.url_connection.organization.key())
@@ -573,12 +661,14 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
     """Handle org selection."""
     response = data.POST['role_response']
 
+    emails = getEmailsForConnection(data, data.url_connection)
+
     if response == connection.MENTOR_ROLE:
-      self._handleMentorSelection(data)
+      self._handleMentorSelection(data, emails)
     elif response == connection.ORG_ADMIN_ROLE:
-      self._handleOrgAdminSelection(data)
+      self._handleOrgAdminSelection(data, emails)
     elif response == connection.NO_ROLE:
-      self._handleNoRoleSelection(data)
+      self._handleNoRoleSelection(data, emails)
 
     return data.redirect.dashboard().to()
 
@@ -595,10 +685,13 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
     return 'modules/gsoc/connection/show_connection.html'
 
   def checkAccess(self, data, check, mutator):
+    # TODO(nathaniel): Drop special privileges for developers.
+    if data.is_developer:
+      return
+
     check.isProgramVisible()
     check.hasProfile()
 
-    check.notOrgAdmin()
     check.canUserAccessConnection()
 
   def context(self, data, check, mutator):
@@ -613,15 +706,20 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
         kwargs=message_kwargs)
       }
 
+    messages_builder = message_logic.QueryBuilder()
+    messages_builder.addAncestor(data.url_connection)
+    query = messages_builder.build()
+
     return {
       'page_name' : 'Viewing Connection',
       'header_name' : data.url_connection.organization.name,
       'connection' : data.url_connection,
       'response_form' : response_form,
-      'message_box' : message_box
+      'message_box' : message_box,
+      'messages' : query.fetch(1000)
       }
 
-  def _handleRoleSelection(self, data):
+  def _handleRoleSelection(self, data, emails):
 
     message = data.program.getProgramMessages().mentor_welcome_msg
 
@@ -629,7 +727,6 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
     def user_selected_role_txn():
       connection_entity = db.get(data.url_connection.key())
       connection_entity.user_role = connection.ROLE
-      connection_entity.put()
 
       profile = db.get(data.profile.key())
 
@@ -639,35 +736,42 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
         profile_logic.assignMentorRoleForOrg(profile,
              data.url_connection.organization.key())
         # Generate a message on the connection to indicate the new role.
-        connection_logic.createConnectionMessage(
+        generated_message = connection_logic.createConnectionMessage(
             connection_entity, USER_ASSIGNED_MENTOR % profile.name())
+        db.put([connection_entity, generated_message])
       elif connection_entity.orgOfferedOrgAdminRole():
         promoted = not profile.is_mentor
         profile_logic.assignOrgAdminRoleForOrg(
             profile, data.url_connection.organization.key())
         # Generate a message on the connection to indicate the new role.
-        connection_logic.createConnectionMessage(
+        generated_message = connection_logic.createConnectionMessage(
             connection_entity, USER_ASSIGNED_ORG_ADMIN % profile.name())
+        sendConnectionMessageNotification(
+            data, emails, generated_message.content)
+        db.put([connection_entity, generated_message])
 
       if promoted:
         connection_view.sendMentorWelcomeMail(data, profile, message)
 
     user_selected_role_txn()
 
-  def _handleNoRoleSelection(self, data):
+  def _handleNoRoleSelection(self, data, emails):
     @db.transactional(xg=True)
     def user_selected_norole_txn():
       connection_entity = db.get(data.url_connection.key())
       connection_entity.user_role = connection.NO_ROLE
-      connection_entity.put()
 
       profile = db.get(data.profile.key())
 
       profile_logic.assignNoRoleForOrg(
           profile, data.url_connection.organization.key())
       # Generate a message on the connection to indicate the removed role.
-      connection_logic.createConnectionMessage(
+      generated_message = connection_logic.createConnectionMessage(
           connection_entity, USER_ASSIGNED_NO_ROLE % profile.name())
+      sendConnectionMessageNotification(
+          data, emails, generated_message.content)
+
+      db.put([connection_entity, generated_message])
 
     can_resign = canUserResignRoleForOrg(
       data.profile.key(), data.url_connection.organization.key())
@@ -681,10 +785,12 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
     """Handle user selection."""
     response = data.POST['role_response']
 
+    emails = getEmailsForConnection(data, data.url_connection)
+
     if response == connection.ROLE:
-      self._handleRoleSelection(data)
+      self._handleRoleSelection(data, emails)
     elif response == connection.NO_ROLE:
-      self._handleNoRoleSelection(data)
+      self._handleNoRoleSelection(data, emails)
 
     return data.redirect.dashboard().to()
 
@@ -694,7 +800,7 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'connection/message/%s$' % url_patterns.MESSAGE, self,
+         url(r'connection_message/%s$' % url_patterns.MESSAGE, self,
              name=url_names.GSOC_CONNECTION_MESSAGE),
     ]
 
@@ -702,7 +808,6 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
     check.isProgramVisible()
     check.isProfileActive()
     data.organization = data.url_connection.organization
-    mutator.commentVisible(data.organization)
 
   def createMessageFromForm(self, data):
     """Creates a new message based on the data inserted in the form.
@@ -720,28 +825,25 @@ class SubmitConnectionMessagePost(base.GSoCRequestHandler):
 
     message_form.cleaned_data['author'] = data.profile
 
-    q = GSoCProfile.all().filter('mentor_for', data.organization)
-    q.filter('status', 'active')
-    q.filter('notify_public_comments', True)
-    to_emails = [i.email for i in q if i.key() != data.profile.key()]
-
+    emails = getEmailsForConnection(data, data.url_connection)
     def create_message_txn():
       message = message_form.create(commit=True, parent=data.url_connection)
-
-      # TODO(drew): add notifications
-
+      sendConnectionMessageNotification(data, emails, message.content)
       return message
-
     return db.run_in_transaction(create_message_txn)
 
   def post(self, data, check, mutator):
+    # Redirect to relevant Show Connection page depending on whether
+    # the user is an org admin or the user in the connection.
+    if data.profile.key() == data.url_connection.parent().key():
+      data.redirect.show_user_connection(data.url_connection)
+    else:
+      data.redirect.show_org_connection(data.url_connection)
+
     message = self.createMessageFromForm(data)
     if message:
-      data.redirect.show_connection(data.url_user, data.url_connection)
       return data.redirect.to(validated=True)
     else:
-      data.redirect.show_connection(data.url_user, data.url_connection)
-
       # TODO(nathaniel): calling GET logic from a POST handling path.
       # a bit hacky :-( may be changed when possible
       data.request.method = 'GET'

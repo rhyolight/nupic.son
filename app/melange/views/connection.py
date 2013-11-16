@@ -41,7 +41,8 @@ def sendMentorWelcomeMail(data, profile, message):
 
 @db.transactional
 def createConnectionTxn(
-    data, profile, organization, message, context, recipients,
+    data, profile_key, organization, message=None,
+    notification_context_provider=None, recipients=None,
     org_role=connection_model.NO_ROLE, user_role=connection_model.NO_ROLE,
     org_admin=None):
   """Creates a new Connection entity, attach any messages provided by the
@@ -49,13 +50,15 @@ def createConnectionTxn(
 
   Args:
     data: RequestData object for the current request.
-    profile: Profile with which to connect.
+    profile_key: Profile key with which to connect.
     organization: Organization with which to connect.
     message: User-provided message for the connection.
     context: The notification context method.
+    notification_context_provider: A provider to obtain context of the
+      notification email.
     recipients: List of one or more recipients for the notification email.
-    org_state: Org state for the connection.
-    user_state: User state for the connection.
+    org_role: Org role for the connection.
+    user_role: User role for the connection.
     org_admin: profile entity of organization administrator who started
       the connection. Should be supplied only if the connection was initialized
       by organization.
@@ -63,7 +66,15 @@ def createConnectionTxn(
   Returns:
     The newly created Connection entity.
   """
-  can_create = connection_logic.canCreateConnection(profile, organization.key())
+  profile = db.get(profile_key)
+
+  # TODO(daniel): remove this part when organizations are converted to NDB
+  if isinstance(organization, db.Model):
+    org_key = organization.key()
+  else:
+    org_key = organization.key.to_old_key()
+
+  can_create = connection_logic.canCreateConnection(profile, org_key)
   if not can_create:
     raise exception.BadRequest(message=can_create.extra)
   else:
@@ -71,6 +82,12 @@ def createConnectionTxn(
     connection = connection_logic.createConnection(
         profile=profile, org=organization,
         org_role=org_role, user_role=user_role)
+
+    # handle possible role assignment
+    if connection.getRole() == connection_model.MENTOR_ROLE:
+      profile_logic.assignMentorRoleForOrg(profile, org_key)
+    elif connection.getRole() == connection_model.ORG_ADMIN_ROLE:
+      profile_logic.assignOrgAdminRoleForOrg(profile, org_key)
 
     # auto-generate a message indicated that the connection has been started
     if org_admin:
@@ -83,15 +100,44 @@ def createConnectionTxn(
     # attach any user-provided messages to the connection.
     if message:
       connection_logic.createConnectionMessage(
-          connection.key(), message, author_key=profile.key())
-    # dispatch an email to the user.
-    notification = context(data=data, connection=connection,
-        recipients=recipients, message=message)
-    sub_txn = mailer.getSpawnMailTaskTxn(notification, parent=connection)
-    sub_txn()
-  
+          connection.key(), message, author_key=profile.key()).put()
+
+    # dispatch an email to the users.
+    if notification_context_provider and recipients:
+      notification_context = notification_context_provider.getContext(
+          recipients, organization, profile, data.program, data.site,
+          connection.key(), message)
+      sub_txn = mailer.getSpawnMailTaskTxn(
+          notification_context, parent=connection)
+      sub_txn()
+
     return connection
 
+@db.transactional
+def createAnonymousConnectionTxn(data, organization, org_role, email, message):
+  """Create an AnonymousConnection so that an unregistered user can join
+  an organization and dispatch an email to the newly Connected user.
+
+  Args:
+    data: RequestData for the current request.
+    organization: Organization with which to connect.
+    org_role: Role offered to the user.
+    email: Email address of the user to which to send the notification.
+    message: Any message provided by the organization to the user(s).
+
+  Returns:
+    Newly created AnonymousConnection entity.
+  """
+  anonymous_connection = connection_logic.createAnonymousConnection(
+      org=organization, org_role=org_role, email=email)
+
+  notification = notifications.anonymousConnectionContext(
+      data=data, connection=anonymous_connection, email=email, message=message)
+  sub_txn = mailer.getSpawnMailTaskTxn(
+      notification, parent=anonymous_connection)
+  sub_txn()
+
+  return anonymous_connection
 
 @db.transactional
 def createConnectionMessageTxn(connection_key, profile_key, content):
@@ -106,8 +152,14 @@ def createConnectionMessageTxn(connection_key, profile_key, content):
   Returns:
     a newly created ConnectionMessage entity.
   """
+  # connection is retrieved and stored in datastore so that its last_modified
+  # property is automatically updated by AppEngine
+  connection = db.get(connection_key)
+
   message = connection_logic.createConnectionMessage(
       connection_key, content, author_key=profile_key)
+
+  db.put([connection, message])
 
   # TODO(daniel): emails should be enqueued
   return message
@@ -132,10 +184,12 @@ def handleUserNoRoleSelectionTxn(connection):
     connection.user_role = connection_model.NO_ROLE
     connection = connection_logic._updateSeenByProperties(
         connection, connection_logic.USER_ACTION_ORIGIN)
-    connection.put()
 
-    connection_logic.generateMessageOnUpdateByUser(connection, old_user_role)
-  
+    message = connection_logic.generateMessageOnUpdateByUser(
+        connection, old_user_role)
+
+    db.put([connection, message])
+
     profile = db.get(connection.parent_key())
     org_key = connection_model.Connection.organization.get_value_for_datastore(
         connection)
@@ -162,9 +216,11 @@ def handleUserRoleSelectionTxn(data, connection):
     connection.user_role = connection_model.ROLE
     connection = connection_logic._updateSeenByProperties(
         connection, connection_logic.USER_ACTION_ORIGIN)
-    connection.put()
 
-    connection_logic.generateMessageOnUpdateByUser(connection, old_user_role)
+    message = connection_logic.generateMessageOnUpdateByUser(
+        connection, old_user_role)
+
+    db.put([connection, message])
 
     profile = db.get(connection.parent_key())
     org_key = connection_model.Connection.organization.get_value_for_datastore(
@@ -208,10 +264,11 @@ def handleOrgNoRoleSelection(connection, org_admin):
     connection.org_role = connection_model.NO_ROLE
     connection = connection_logic._updateSeenByProperties(
         connection, connection_logic.ORG_ACTION_ORIGIN)
-    connection.put()
 
-    connection_logic.generateMessageOnUpdateByOrg(
+    message = connection_logic.generateMessageOnUpdateByOrg(
         connection, org_admin, old_org_role)
+
+    db.put([connection, message])
 
     profile = db.get(connection.parent_key())
     org_key = connection_model.Connection.organization.get_value_for_datastore(
@@ -242,10 +299,11 @@ def handleMentorRoleSelection(connection, org_admin):
     connection.org_role = connection_model.MENTOR_ROLE
     connection = connection_logic._updateSeenByProperties(
         connection, connection_logic.ORG_ACTION_ORIGIN)
-    connection.put()
 
-    connection_logic.generateMessageOnUpdateByOrg(
+    message = connection_logic.generateMessageOnUpdateByOrg(
         connection, org_admin, old_org_role)
+
+    db.put([connection, message])
 
     if connection.userRequestedRole():
       profile = db.get(connection.parent_key())
@@ -282,10 +340,11 @@ def handleOrgAdminRoleSelection(connection, org_admin):
     connection.org_role = connection_model.ORG_ADMIN_ROLE
     connection = connection_logic._updateSeenByProperties(
         connection, connection_logic.ORG_ACTION_ORIGIN)
-    connection.put()
 
-    connection_logic.generateMessageOnUpdateByOrg(
+    message = connection_logic.generateMessageOnUpdateByOrg(
         connection, org_admin, old_org_role)
+
+    db.put([connection, message])
 
     if connection.userRequestedRole():
       profile = db.get(connection.parent_key())
@@ -299,3 +358,27 @@ def handleOrgAdminRoleSelection(connection, org_admin):
       if send_email:
         pass
         # TODO(daniel): send actual welcome email
+
+
+@db.transactional
+def markConnectionAsSeenByOrg(connection_key):
+  """Marks the specified connection as seen by organization.
+
+  Args:
+    connection: Connection key.
+  """
+  connection = db.get(connection_key)
+  connection.seen_by_org = True
+  connection.put()
+
+
+@db.transactional
+def markConnectionAsSeenByUser(connection_key):
+  """Marks the specified connection as seen by organization.
+
+  Args:
+    connection: Connection key.
+  """
+  connection = db.get(connection_key)
+  connection.seen_by_user = True
+  connection.put()

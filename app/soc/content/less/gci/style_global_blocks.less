@@ -64,11 +64,40 @@
     line-height: 15px;
     padding: 4px 0 4px 25px;
 
+    span {
+      display: inline-block;
+
+      &.left-side {
+        text-align: left;
+      }
+
+      &.right-side {
+        text-align: right;
+        width: 50%;
+      }
+    }
+
     a {
       background: url(@image_arrow_white_sm) right center no-repeat;
       color: #fff;
       padding-right: 9px;
     }
+  }
+}
+
+.block-red {
+  background: @color_light_red;
+
+  .block-title {
+    background: @color_red;
+  }
+
+  .block-content {
+    color: #000000;
+  }
+
+  .block-footer {
+    background: @color_dark_red;
   }
 }
 

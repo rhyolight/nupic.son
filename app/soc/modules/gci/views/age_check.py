@@ -22,6 +22,7 @@ from soc.views.helper import url_patterns
 
 from soc.modules.gci.views import base as gci_base
 from soc.modules.gci.views import forms as gci_forms
+from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper import url_patterns as gci_url_patterns
 
 
@@ -71,7 +72,7 @@ class AgeCheck(gci_base.GCIRequestHandler):
       # TODO(nathaniel): Can this be cleaned up at all? Creating and
       # discarding a response feels weird.
       response = data.redirect.createProfile('student').to(
-          'create_gci_profile', secure=True)
+          url_names.GCI_PROFILE_CREATE, secure=True)
       raise exception.Redirect(response['Location'])
 
     if data.POST:

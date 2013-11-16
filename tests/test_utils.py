@@ -19,7 +19,9 @@ import hashlib
 import os
 import datetime
 import httplib
+import re
 import StringIO
+import urlparse
 import unittest
 
 # TODO(daniel): gaetestbed is deprecated; it should not be used.
@@ -33,11 +35,12 @@ from google.appengine.ext import db
 from google.appengine.ext import testbed
 
 from django.test import client
-from django.test import TestCase
+from django.test import testcases
 
 from soc.logic.helper import xsrfutil
 from soc.middleware import xsrf as xsrf_middleware
 from soc.modules import callback
+from soc.tasks import mailer
 from soc.views import template
 
 from tests import profile_utils
@@ -47,6 +50,11 @@ from tests import timeline_utils
 
 # key of request argument associated with testbed object
 TESTBED_ARG_KEY = 'TESTBED'
+
+# root directory of the application source tree
+APP_ROOT_PATH = os.path.normpath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), '../app'))
+
 
 class MockRequest(object):
   """Shared dummy request object to mock common aspects of a request.
@@ -168,6 +176,10 @@ class NonFailingFakePayload(object):
   def readline(self, length=None):
     return self.__content.readline(length)
 
+# monkey patch FakePayload class
+# TODO(daniel): figure out why standard FakePayload does not work
+client.FakePayload = NonFailingFakePayload
+
 
 class SoCTestCase(unittest.TestCase):
   """Base test case to be subclassed.
@@ -202,6 +214,10 @@ class SoCTestCase(unittest.TestCase):
     self.testbed.init_datastore_v3_stub(consistency_policy=self.policy)
 
     self.testbed.init_blobstore_stub()
+    self.testbed.init_mail_stub()
+    self.testbed.init_taskqueue_stub(root_path=APP_ROOT_PATH)
+
+    self.site = program_utils.seedSite()
 
   @staticmethod
   def use_hr_schema(func):
@@ -295,7 +311,7 @@ class GSoCTestCase(SoCTestCase):
     self.program_helper = program_utils.GSoCProgramHelper()
     self.sponsor = self.program_helper.createSponsor()
     self.gsoc = self.program = self.program_helper.createProgram()
-    self.site = self.program_helper.createSite()
+    self.site = program_utils.seedSite(active_program=self.program)
     self.org = self.program_helper.createOrg()
     self.org_app = self.program_helper.createOrgApp()
     self.timeline_helper = timeline_utils.GSoCTimelineHelper(
@@ -332,7 +348,7 @@ class GCITestCase(SoCTestCase):
     self.program_helper = program_utils.GCIProgramHelper()
     self.sponsor = self.program_helper.createSponsor()
     self.gci = self.program = self.program_helper.createProgram()
-    self.site = self.program_helper.createSite()
+    self.site = program_utils.seedSite(active_program=self.program)
     self.org = self.program_helper.createOrg()
     self.org_app = self.program_helper.createOrgApp()
     self.timeline_helper = timeline_utils.GCITimelineHelper(
@@ -341,7 +357,7 @@ class GCITestCase(SoCTestCase):
         self.gci, self.dev_test)
 
 
-class DjangoTestCase(TestCase):
+class DjangoTestCase(SoCTestCase, testcases.TestCase):
   """Class extending Django TestCase in order to extend its functions.
 
   As well as remove the functions which are not supported by Google App Engine,
@@ -352,9 +368,12 @@ class DjangoTestCase(TestCase):
   _request_id = 0
 
   def _pre_setup(self):
-    """Performs any pre-test setup.
-    """
-    client.FakePayload = NonFailingFakePayload
+    """Performs any pre-test setup."""
+    # NOTE: super is not called, as TestCase class performs initialization
+    # that is not suitable for Melange tests, because no real Django datastore
+    # backend is used.
+    self.client = client.Client()
+    self.dev_test = False
 
   def _post_teardown(self):
     """ Performs any post-test cleanup."""
@@ -496,8 +515,8 @@ class DjangoTestCase(TestCase):
     while start != 'done':
       i += 1
       response = self.getListResponse(url, idx, start, 1000)
-      data = response.context['data'][start]
       self.assertIsJsonResponse(response)
+      data = response.context['data'][start]
       result += data
       start = response.context['next']
 
@@ -611,6 +630,14 @@ class DjangoTestCase(TestCase):
 
     self.assertResponseCode(response, httplib.NOT_FOUND)
 
+  def assertResponseMethodNotAllowed(self, response):
+    """Asserts that the response status is NOT_FOUND.
+
+    Args:
+      response: Django's http.HttpResponse object.
+    """
+    self.assertResponseCode(response, httplib.METHOD_NOT_ALLOWED)
+
   def assertIsJsonResponse(self, response):
     """Asserts that all the templates from the base view were used.
 
@@ -653,6 +680,89 @@ class DjangoTestCase(TestCase):
 
     if errors:
       self.fail("\n".join(errors))
+
+  def assertEmailSent(
+      self, to=None, cc=None, bcc=None, sender=None, subject=None,
+      body=None, html=None):
+    """Tests that an email with the specified attributes has been sent.
+
+    Args:
+      to: Recipient of the emial.
+      cc: CC recipient of the email.
+      bcc: BCC recipients of the email.
+      sender: Sender of the email.
+      subject: Subject of the email.
+      body: Body required to be included in the email.
+      html: HTML (body) required to be included in the email.
+    """
+    # some tasks might have been sent via 'mail' task queue
+    # so let us execute all pending tasks to make sure they are not waiting
+    self.executeTasks(mailer.SEND_MAIL_URL, 'mail')
+
+    # get_sent_messages function treats subject as regex pattern
+    subject = subject and re.escape(subject)
+
+    mail_stub = self.testbed.get_stub(testbed.MAIL_SERVICE_NAME)
+    messages = mail_stub.get_sent_messages(
+        to=to, sender=sender, subject=subject, body=body, html=html)
+
+    # unfortunately, the returned by get_sent_messages EmailMessage objects
+    # does not offer an option to easily filter messages by CC or BCC
+    # the workaround is to transform messages back to PB
+    if cc is not None:
+      messages = [m for m in messages if filter(
+          lambda cc_recipient: re.search(cc, cc_recipient),
+          m.ToProto().cc_list())]
+
+    if bcc is not None:
+      messages = [m for m in messages if filter(
+          lambda bcc_recipient: re.search(bcc, bcc_recipient),
+          m.ToProto().bcc_list())]
+
+    if not messages:
+      failure_message = 'Expected e-mail message sent.'
+
+      details = []
+      if to is not None:
+        details.append('To: %s' % to)
+      if sender is not None:
+        details.append('From: %s' % sender)
+      if cc is not None:
+        details.append('CC: %s' % cc)
+      if bcc is not None:
+        details.append('BCC: %s' % bcc)
+      if subject is not None:
+        details.append('Subject: %s' % subject)
+      if body is not None:
+        details.append('Body (contains): %s' % body)
+      if html is not None:
+        details.append('HTML (appends): %s' % html)
+
+      if details:
+        failure_message += ' Expected arguments: %s' % ', '.join(details)
+
+      self.fail(failure_message)
+
+  def executeTasks(self, url, queue_names=None):
+    """Executes tasks with specified URL in specified task queues.
+
+    Args:
+      url: URL associated with the task to run.
+      queue_names: Names of the task queues by which the tasks should be
+        executed.
+    """
+    taskqueue_stub = self.testbed.get_stub(testbed.TASKQUEUE_SERVICE_NAME)
+
+    tasks = taskqueue_stub.get_filtered_tasks(queue_names=queue_names)
+
+    for queue_name in queue_names:
+      taskqueue_stub.FlushQueue(queue_name)
+
+    for task in tasks:
+      postdata = urlparse.parse_qs(task.payload)
+      postdata.update(xsrf_token=self.getXsrfToken(path=url, data=postdata))
+      # Run the task with Django test client
+      self.post(url, postdata)
 
 
 class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
@@ -722,109 +832,6 @@ class GCIDjangoTestCase(DjangoTestCase, GCITestCase):
 
   def createDocument(self, override={}):
     return self.createDocumentForPrefix('gci_program', override)
-
-
-class MailTestCase(gaetestbed.mail.MailTestCase, SoCTestCase):
-  """Class extending gaetestbed.mail.MailTestCase to extend its functions.
-
-  Difference:
-  * Subclass unittest.TestCase so that all its subclasses need not subclass
-  unittest.TestCase in their code.
-  * Override assertEmailSent method.
-  """
-
-  def get_sent_messages(self, to=None, cc=None, bcc=None, sender=None,
-                        subject=None, body=None, html=None):
-    """Override gaetestbed.mail.MailTestCase.get_sent_messages method.
-
-    Difference:
-    * It checks cc and bcc as well.
-    """
-    messages = super(MailTestCase, self).get_sent_messages(to, sender, subject,
-                                                           body, html)
-    if cc:
-      messages = [m for m in messages if cc in m.cc_list()]
-    if bcc:
-      messages = [m for m in messages if bcc in m.bcc_list()]
-    return messages
-
-  def assertEmailSent(self, to=None, cc=None, bcc=None, sender=None,
-      subject=None, body=None, html=None, n=None, fullbody=False):
-    """Override gaetestbed.mail.MailTestCase.assertEmailSent method.
-
-    Difference:
-    * It runs all mail tasks first.
-    * It prints out all sent messages to facilitate debug in case of failure.
-    * It accepts an optional argument n which is used to assert exactly n
-    messages satisfying the criteria are sent out.
-    * Clips textbody to the first 50 characters, unless fullbody is True.
-    """
-
-    # Run all mail tasks first so that all mails will be sent out
-    self.runTasks(url = '/tasks/mail/send_mail', queue_names = ['mail'])
-    messages = self.get_sent_messages(
-        to = to,
-        cc = cc,
-        bcc = bcc,
-        sender = sender,
-        subject = subject,
-        body = body,
-        html = html,
-    )
-    failed = False
-    if not messages:
-      failed = True
-      failure_message = "Expected e-mail message sent. No messages sent"
-      details = self._get_email_detail_string(to, sender, subject, body, html)
-      if details:
-        failure_message += ' with %s.' % details
-      else:
-        failure_message += '.'
-    elif n:
-      actual_n = len(messages)
-      if n != actual_n:
-        failed = True
-        failure_message = ("Expected e-mail message sent."
-                           "Expected %d messages sent" % n)
-        details = self._get_email_detail_string(to, sender, subject, body, html)
-        if details:
-          failure_message += ' with %s;' % details
-        else:
-          failure_message += ';'
-        failure_message += ' but actually %d.' % actual_n
-    # If failed, raise error and display all messages sent
-    if failed:
-      all_messages = self.get_sent_messages()
-      failure_message += '\nAll messages sent: '
-      if all_messages:
-        failure_message += '\n'
-        for message in all_messages:
-          if not fullbody:
-            message.set_textbody(message.textbody()[:50])
-            message.set_htmlbody(message.htmlbody()[:50])
-          failure_message += str(message)
-      else:
-        failure_message += 'None'
-      self.fail(failure_message)
-
-  def runTasks(self, url=None, name=None, queue_names=None):
-    """Run tasks with specified URL and name in specified task queues.
-
-    Args:
-      url: URL associated with the task to run.
-      name: name of the task.
-      queue_names: names of task queues in which the tasks should be executed.
-    """
-    task_queue_test_case = gaetestbed.taskqueue.TaskQueueTestCase()
-    # Get all tasks with specified url and name in specified task queues
-    tasks = task_queue_test_case.get_tasks(
-        url=url, name=name, queue_names=queue_names)
-    for task in tasks:
-      postdata = task['params']
-      xsrf_token = GSoCDjangoTestCase.getXsrfToken(url, data=postdata)
-      postdata.update(xsrf_token=xsrf_token)
-      # Run the task with Django test client
-      self.post(url, postdata)
 
 
 class TaskQueueTestCase(gaetestbed.taskqueue.TaskQueueTestCase,

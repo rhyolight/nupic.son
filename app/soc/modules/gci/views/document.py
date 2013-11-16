@@ -19,7 +19,6 @@ from melange.request import exception
 from soc.models import document as document_model
 from soc.views import document
 from soc.views.helper import url_patterns
-from soc.views.helper.access_checker import isSet
 
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views import forms
@@ -62,15 +61,14 @@ class EditDocumentPage(GCIRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.documentKeyNameFromKwargs()
-
-    assert isSet(data.key_name)
-
     check.canEditDocument()
 
   def context(self, data, check, mutator):
     form = GCIDocumentForm(data=data.POST or None, instance=data.document)
 
+    # TODO(daniel): split that view into two different views (one for creation
+    # and another one for editing documents) than make data.document raise
+    # not found when document is not found
     if data.document:
       page_name = 'Edit %s' % data.document.title
     else:
@@ -110,7 +108,6 @@ class DocumentPage(GCIRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.documentKeyNameFromKwargs()
     check.canViewDocument()
 
   def context(self, data, check, mutator):
@@ -134,8 +131,11 @@ class EventsPage(GCIRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    data.document = data.program.events_page
-    check.canViewDocument()
+    check.isProgramVisible()
+
+    if not data.program.events_page:
+      raise exception.NotFound(
+           message='No events document is defined for program.')
 
   def context(self, data, check, mutator):
     return {

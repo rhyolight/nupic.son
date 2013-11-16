@@ -14,20 +14,20 @@
 
 """Module for the site global pages."""
 
-import httplib
 import os
 
 from google.appengine.api import users
 
 from django import http
-from django.conf.urls.defaults import url as django_url
+from django.conf.urls import url as django_url
 from django.forms import widgets as django_widgets
 from django.utils.translation import ugettext
 
 from melange.request import access
 from melange.request import exception
+from melange.request import links
+
 from soc.logic import cleaning
-from soc.logic import links
 from soc.logic import site as site_logic
 from soc.models import document
 from soc.models import site
@@ -59,6 +59,10 @@ def getProgramMap():
 
 class SiteForm(views_forms.ModelForm):
   """Django form for the site settings."""
+
+  def __init__(self, bound_field_class, request_data=None, **kwargs):
+    super(SiteForm, self).__init__(bound_field_class, **kwargs)
+    self.request_data = request_data
 
   class Meta:
     model = site.Site
@@ -108,7 +112,8 @@ class EditSitePage(base.RequestHandler):
     # TODO: suboptimal
     from soc.modules.gsoc.views.forms import GSoCBoundField
     site_form = SiteForm(
-        GSoCBoundField, data=data.POST or None, instance=data.site)
+        GSoCBoundField, request_data=data,
+        data=data.POST or None, instance=data.site)
 
     # NOTE(nathaniel): This is an unfortunate workaround for the fact
     # that in its current form the SiteForm class will only ever present
@@ -139,9 +144,11 @@ class EditSitePage(base.RequestHandler):
     context = self.context(data, check, mutator)
     template_path = self.templatePath()
     response_content = self.renderer.render(data, template_path, context)
-    return http.HttpResponse(
-        status=httplib.OK if post_accepted else httplib.BAD_REQUEST,
-        content=response_content)
+
+    if post_accepted:
+      return http.HttpResponseRedirect('/site/edit')
+    else:
+      return http.HttpResponseBadRequest(content=response_content)
 
 
 class SiteHomepage(base.RequestHandler):
@@ -149,7 +156,6 @@ class SiteHomepage(base.RequestHandler):
 
   def djangoURLPatterns(self):
     return [
-        django_url(r'^$', self, name='site_home'),
         django_url(r'^(login)$', self, name='login'),
         django_url(r'^(logout)$', self, name='logout'),
     ]
@@ -253,13 +259,11 @@ class LandingPage(base.RequestHandler):
   """View with the landing page that is displayed when user visits
   the main URL for the application.
   """
-  # TODO(daniel): it should be changed to All Allowed Checker
-  access_checker = access.HostOrDeveloperAccessChecker()
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.RequestHandler.getDjangoURLPatterns for specification."""
-    # TODO(daniel): this should be changed to '/' when the page is public
-    return [django_url(r'^landing_page$', self, name='landing_page')]
+    return [django_url(r'^$', self, name='landing_page')]
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""

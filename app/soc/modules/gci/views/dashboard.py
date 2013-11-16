@@ -25,9 +25,9 @@ from django.utils.translation import ugettext
 from codein.views.helper import urls
 
 from melange.request import exception
+from melange.request import links
 
 from soc.logic import document as document_logic
-from soc.logic import links
 from soc.logic import org_app as org_app_logic
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.dashboard import Component
@@ -84,7 +84,7 @@ def _initMainDashboardSubpages(data):
   Returns:
     initial list of subpages to set for the main dashboard.
   """
-  if not data.profile.is_student:
+  if not data.profile.is_student and data.timeline.orgsAnnounced():
     connection_dashboard = ConnectionsDashboard(data)
 
     return [{
@@ -175,7 +175,7 @@ def _initConnectionDashboardSubpages(data):
           'title': ugettext('See your connections'),
           'link': links.LINKER.program(
               data.program, urls.UrlNames.CONNECTION_PICK_ORG)
-      },                     
+      },
       {
           'name': 'connect',
           'description': ugettext(
@@ -206,7 +206,7 @@ def _initConnectionDashboardSubpages(data):
               'organization.'),
           'title': ugettext('Connect users with %s' % org.name),
           'link': links.LINKER.organization(
-              org, urls.UrlNames.CONNECTION_START_AS_ORG)
+              org.key(), urls.UrlNames.CONNECTION_START_AS_ORG)
           })
 
   return subpages
@@ -339,6 +339,8 @@ class DashboardPage(GCIRequestHandler):
       components += self._getMentorComponents(data)
     elif data.is_mentor:
       components += self._getMentorComponents(data)
+    else: # non student profiles
+      components += self._getNonStudentProfileCompontents(data)
 
     return components
 
@@ -381,6 +383,13 @@ class DashboardPage(GCIRequestHandler):
     components.append(MyOrgsScoresList(data))
 
     return components
+
+  def _getNonStudentProfileCompontents(self, data):
+    """Get the dashboard components for a user with a non-student profile
+    who does not have any actual role for any organization.
+    """
+    oa_component = self._getMyOrgApplicationsComponent(data)
+    return [oa_component] if oa_component else []
 
   def _getMyOrgApplicationsComponent(self, data):
     """Returns MyOrgApplicationsComponent iff this user is main_admin or

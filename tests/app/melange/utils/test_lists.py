@@ -153,7 +153,7 @@ class TestRedirectCustomRow(unittest.TestCase):
   """Tests RedirectCustomRow class."""
 
   def setUp(self):
-    self.test_custom_row = TestCustomRow(True)
+    self.test_custom_row = TestCustomRow(new_window=True)
     self.test_list_item = {'key': '1', 'name': 'foo'}
 
   def testGetOperations(self):

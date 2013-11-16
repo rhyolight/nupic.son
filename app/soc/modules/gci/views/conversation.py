@@ -135,6 +135,6 @@ class ConversationPage(GCIRequestHandler):
         'conversation': data.conversation,
         'num_users': num_users,
         'messages': messages,
-        'reply_action': urlresolvers.reverse(url_names.GCI_CONVERSATION_REPLY, 
+        'reply_action': urlresolvers.reverse(url_names.GCI_CONVERSATION_REPLY,
             kwargs=data.kwargs)
     }

@@ -14,8 +14,12 @@
 
 """Definitions of Melange types."""
 
+from melange.models import organization as ndb_organization
+
 from soc.models import organization
 from soc.models import profile
+from soc.models import program
+from soc.models import timeline
 
 
 class Models(object):
@@ -24,17 +28,31 @@ class Models(object):
   Attributes:
     org_model: class that represents organization model.
     profile_model: class that represents profile model.
+    program_model: class that represents program model.
+    timeline_model: class that represents timeline model.
   """
 
-  def __init__(self, org_model=None, profile_model=None):
+  def __init__(
+      self, ndb_org_model=None, org_model=None, profile_model=None,
+      program_model=None, timeline_model=None):
     """Initializes new instance of Models class.
 
     Args:
       org_model: class that represents organization model.
       profile_model: class that represents profile model.
+      program_model: class that represents program model.
+      timeline_model: class that represents timeline model.
     """
+    # TODO(daniel): remove when not necessary
+    self.ndb_org_model = ndb_org_model
     self.org_model = org_model
     self.profile_model = profile_model
+    self.program_model = program_model
+    self.timeline_model = timeline_model
 
 MELANGE_MODELS = Models(
-    org_model=organization.Organization, profile_model=profile.Profile)
+    ndb_org_model=ndb_organization.Organization,
+    org_model=organization.Organization,
+    profile_model=profile.Profile,
+    program_model=program.Program,
+    timeline_model=timeline.Timeline)

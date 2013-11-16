@@ -13,6 +13,8 @@
 # limitations under the License.
 
 """Tests for connection views."""
+import httplib
+
 from nose.plugins import skip
 from google.appengine.ext import db
 
@@ -33,6 +35,9 @@ USER_CONNECTION_PAGE_URL = '/gsoc/connect/%s/%s'
 ORG_SHOW_CONNECTION_PAGE_URL = '/gsoc/connection/%s/%s/%s'
 # See comment for ORG_SHOW_CONNECTION_PAGE_URL.
 USER_SHOW_CONNECTION_PAGE_URL = '/gsoc/connection/user/%s/%s/%s'
+# connection.SubmitConnectionMessagePost url pattern. Order is sponosr,
+# program, user link id, connection id.
+CONNECTION_MESSAGE_URL = '/gsoc/connection_message/%s/%s/%s'
 
 class OrgConnectionPageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for OrgConnectionPage."""
@@ -109,10 +114,29 @@ class OrgConnectionPageTest(test_utils.GSoCDjangoTestCase):
 
     query = connection.Connection.all().ancestor(other_profile)
     connection_entity = query.get()
-    self.assertNotEqual(None, connection_entity)
+    self.assertIsNotNone(connection_entity)
     self.assertEquals(connection.MENTOR_ROLE, connection_entity.org_role)
     self.assertEquals(connection.NO_ROLE, connection_entity.user_role)
     self.assertEquals(self.org.key(), connection_entity.organization.key())
+
+  def testInitiateAnonymousConnection(self):
+    """Tests that given a valid email address that is not affiliated with any
+    existing profile will cause an AnonymousConnection to be created and will
+    receive an email with the url.
+    """
+    self.profile_helper.createOrgAdmin(self.org)
+    post_data = {
+      'users' : 'test@somethingelese.com',
+      'org_role' : connection.MENTOR_ROLE,
+      }
+    response = self.post(self._connectionPageURL(), post_data)
+
+    query = connection.AnonymousConnection.all().ancestor(self.org)
+    connection_entity = query.get()
+    self.assertIsNotNone(connection_entity)
+    self.assertEquals(connection.MENTOR_ROLE, connection_entity.org_role)
+    self.assertEquals(self.org.key(), connection_entity.parent().key())
+    self.assertEquals('test@somethingelese.com', connection_entity.email)
 
   def testGuarnateedOneOrgAdmin(self):
     """Test that the root org admin cannot establish a connection with him or
@@ -131,7 +155,7 @@ class OrgConnectionPageTest(test_utils.GSoCDjangoTestCase):
     self.assertIn(self.org.key(), profile.org_admin_for)
 
 
-class OrgConnectionPageEmailsTest(test_utils.MailTestCase, OrgConnectionPageTest):
+class OrgConnectionPageEmailsTest(OrgConnectionPageTest):
 
   def testConnectionNotificationEmailsSent(self):
     """Test that an email is sent to a user when an org admin initiates
@@ -147,6 +171,18 @@ class OrgConnectionPageEmailsTest(test_utils.MailTestCase, OrgConnectionPageTest
         }
     self.post(self._connectionPageURL(), post_data)
     self.assertEmailSent(to=other_profile.email)
+
+  def testAnonymousConnectionNotificationEmailsSent(self):
+    """Tests that an email is sent to an unregistered email address when
+    an org admin initiates a new connection.
+    """
+    self.profile_helper.createOrgAdmin(self.org)
+    post_data = {
+        'org_role' : connection.MENTOR_ROLE,
+        'users' : 'test@something.com'
+        }
+    self.post(self._connectionPageURL(), post_data)
+    self.assertEmailSent(bcc='test@something.com')
 
 class UserConnectionPageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for UserConnectionPage."""
@@ -187,22 +223,19 @@ class UserConnectionPageTest(test_utils.GSoCDjangoTestCase):
     self.assertEquals(connection.NO_ROLE, connection_entity.org_role)
     self.assertEquals(self.org.key(), connection_entity.organization.key())
 
-class UserConnectionPageEmailsTest(test_utils.MailTestCase, UserConnectionPageTest):
-
   def testConnectionNotificationEmailsSent(self):
     """Test that an email is sent to all org admins when a user initiates
     a connection.
     """
-    # TODO(dcrodman): Make this test pass, skipping for now because this
-    # seems to be working on local development instances.
-    raise skip.SkipTest()
-  
-    #self.profile_helper.createProfile()
-    #helper = profile_utils.GSoCProfileHelper(self.gsoc, dev_test=False)
-    #elper.createOrgAdmin(self.org)
+    self.profile_helper.createProfile()
+    helper = profile_utils.GSoCProfileHelper(self.gsoc, dev_test=False)
+    helper.createOrgAdmin(self.org)
+    helper.profile.notify_new_requests = True
+    helper.profile.put()
 
-    #self.post(self._connectionPageURL())
-    #self.assertEmailSent(to=self.profile_helper.profile.email)
+    self.post(self._connectionPageURL())
+    self.assertEmailSent(to=helper.profile.email)
+
 
 class ShowConnectionForOrgMemberPageTest(test_utils.GSoCDjangoTestCase):
 
@@ -272,6 +305,7 @@ class ShowConnectionForOrgMemberPageTest(test_utils.GSoCDjangoTestCase):
     query = connection.ConnectionMessage.all().ancestor(connection_entity)
     expected = connection_view.USER_ASSIGNED_MENTOR % profile.name()
     self.assertIn(expected, query.get().content)
+    self.assertEmailSent(to=self.other_data.profile.email)
 
   def testAssignUserOrgAdminRole(self):
     """Test that a user will be assigned an org admin role."""
@@ -323,7 +357,7 @@ class ShowConnectionForUserPageTest(test_utils.GSoCDjangoTestCase):
   def _connectionPageURL(self):
     if not self.connection_url:
       self.connection_url = USER_SHOW_CONNECTION_PAGE_URL % (
-          self.org.key().name(), self.profile_helper.profile.parent().link_id,
+          self.org.key().name(), self.profile_helper.user.link_id,
           self.profile_helper.connection.key().id())
     return self.connection_url
 
@@ -334,10 +368,27 @@ class ShowConnectionForUserPageTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(self.get(url))
 
   def testOrgAdminForbiddenAccess(self):
-    """Test that an org admin for this org cannot access the view."""
+    """Test that an org admin for this org cannot access the view if they
+    are not the user for whom the Connection was created.
+    """
+    other_helper = profile_utils.GSoCProfileHelper(self.gsoc, False)
+    other_helper.createProfile()
+    other_helper.createConnection(self.org)
+
+    self.profile_helper.createOrgAdmin(self.org)
+    connection_url = USER_SHOW_CONNECTION_PAGE_URL % (
+          self.org.key().name(), other_helper.user.link_id,
+          other_helper.connection.key().id())
+
+    response = self.get(connection_url)
+    self.assertResponseForbidden(response)
+
+  def testIncludedOrgAdminAllowedAccess(self):
+    """Test that if a user is an org admin but is the one with whom the org
+    is connecting, they can view the page."""
     self.profile_helper.createOrgAdmin(self.org)
     response = self.get(self._connectionPageURL())
-    self.assertResponseForbidden(response)
+    self.assertResponseOK(response)
 
   def testTemplatesUsed(self):
     """Test that someone with a mentor profile can access this view."""
@@ -407,3 +458,63 @@ class ShowConnectionForUserPageTest(test_utils.GSoCDjangoTestCase):
     query = connection.ConnectionMessage.all().ancestor(connection_entity)
     expected = connection_view.USER_ASSIGNED_NO_ROLE % profile.name()
     self.assertIn(expected, query.get().content)
+
+class SubmitConnectionMessagePostTest(test_utils.GSoCDjangoTestCase):
+
+  def setUp(self):
+    self.init()
+
+  def testConnectionMessageCreatedForAdmin(self):
+    """Test that given valid input, a new ConnectionMessage is generated
+    with the org admin's desired message and a notification email is
+    sent to the user.
+    """
+    self.profile_helper.createOrgAdmin(self.org)
+    self.profile_helper.profile.notify_new_requests = True
+    self.profile_helper.profile.put()
+
+    other_helper = profile_utils.GSoCProfileHelper(self.gsoc, False)
+    other_helper.createConnection(self.org)
+    other_helper.profile.email = 'test@something.com'
+    other_helper.profile.put()
+
+    post_data = { 'content' : 'Test message' }
+    url = CONNECTION_MESSAGE_URL % (
+        self.gsoc.key().name(),
+        other_helper.user.link_id,
+        other_helper.connection.key().id()
+        )
+    response = self.post(url, post_data)
+    self.assertResponseCode(response, httplib.FOUND)
+
+    message = connection.ConnectionMessage.all().get()
+    self.assertIsNotNone(message)
+    self.assertEquals('Test message', message.content)
+    self.assertEquals(self.profile_helper.profile.key().id(),
+        message.author.key().id())
+    self.assertEmailSent(to=other_helper.profile.email)
+
+  def testConnectionMessageCreatedForUser(self):
+    """Test that given valid input, a new ConnectionMessage is generated
+    with the involved user's desired message and a notification email is
+    sent to all org admins.
+    """
+    other_helper = profile_utils.GSoCProfileHelper(self.gsoc, False)
+    other_helper.createOrgAdmin(self.org)
+    self.profile_helper.createConnection(self.org)
+
+    post_data = { 'content' : 'Test message' }
+    url = CONNECTION_MESSAGE_URL % (
+        self.gsoc.key().name(),
+        self.profile_helper.user.link_id,
+        self.profile_helper.connection.key().id()
+        )
+    response = self.post(url, post_data)
+    self.assertResponseCode(response, httplib.FOUND)
+
+    message = connection.ConnectionMessage.all().get()
+    self.assertIsNotNone(message)
+    self.assertEquals('Test message', message.content)
+    self.assertEquals(self.profile_helper.profile.key().id(),
+        message.author.key().id())
+    self.assertEmailSent(to=other_helper.profile.email)

@@ -77,6 +77,10 @@ class GSoCOrgAppTakeForm(org_app.OrgAppTakeForm):
   def templatePath(self):
     return 'modules/gsoc/_form.html'
 
+  def _getCreateProfileURL(self, redirector):
+    """Returns the full secure URL of the GSoC create profile page."""
+    return redirector.urlOf(url_names.GSOC_PROFILE_CREATE, full=True, secure=True)
+
 
 class GSoCOrgAppEditPage(base.GSoCRequestHandler):
   """View for creating/editing organization application."""
@@ -315,7 +319,7 @@ class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList,
       raise exception.BadRequest(message='Missing data')
 
     parsed = json.loads(post_data)
-    url = data.redirect.urlOf('create_gsoc_org_profile', full=True)
+    url = data.redirect.urlOf(url_names.GSOC_ORG_PROFILE_CREATE, full=True)
 
     for oaid, properties in parsed.iteritems():
       record = OrgAppRecord.get_by_id(long(oaid))

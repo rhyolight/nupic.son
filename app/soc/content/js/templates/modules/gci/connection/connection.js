@@ -15,5 +15,14 @@
 melange.templates.inherit(
   function (_self, context) {
     jQuery("select").uniform();
+
+    jQuery(document).ready(function () {
+    	jQuery.post(
+    		context.mark_as_seen_url,
+    		{
+    			xsrf_token: window.xsrf_token
+    		}
+    	);
+    });
   }
 );

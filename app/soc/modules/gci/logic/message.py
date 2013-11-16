@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
- 
+
 """GCIMessage logic methods."""
- 
+
 from soc.modules.gci.models import message as gcimessage_model
 
 
@@ -28,11 +28,11 @@ def queryForConversation(conversation):
   """
   return gcimessage_model.GCIMessage.query(
       gcimessage_model.GCIMessage.conversation == conversation)
- 
- 
+
+
 def getLastMessageForConversation(conversation):
   """Gets the last message for the given GCIConversation.
- 
+
   Args:
     conversation: Key (ndb) of GCIConversation.
 

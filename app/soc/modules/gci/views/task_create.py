@@ -143,12 +143,10 @@ class TaskCreateForm(TaskEditPostClaimForm):
   """
 
   time_to_complete_days = django_forms.IntegerField(
-      label=ugettext('Time to complete'), min_value=0,
-      error_messages={'min_value': ugettext('Days cannot be negative.')})
-
-  time_to_complete_hours = django_forms.IntegerField(
-      label=ugettext('Time to complete'), min_value=0,
-      error_messages={'min_value': ugettext('Hours cannot be negative.')})
+      label=ugettext('Days to complete'), min_value=2,
+      error_messages={
+          'min_value': ugettext('Must be at least 2 days.')
+      })
 
   def __init__(self, request_data=None, **kwargs):
     super(TaskCreateForm, self).__init__(request_data=request_data, **kwargs)
@@ -166,7 +164,6 @@ class TaskCreateForm(TaskEditPostClaimForm):
       self.fields['types'].initial = [str(t) for t in self.instance.types]
       ttc = datetime.timedelta(hours=self.instance.time_to_complete)
       self.fields['time_to_complete_days'].initial = ttc.days
-      self.fields['time_to_complete_hours'].initial = ttc.seconds / 3600
 
     # Bind all the fields here to boundclass since we do not iterate
     # over the fields using iterator for this form.
@@ -207,17 +204,15 @@ class TaskCreateForm(TaskEditPostClaimForm):
 
     cleaned_data = self.cleaned_data
     ttc_days = cleaned_data.get("time_to_complete_days", 0)
-    ttc_hours = cleaned_data.get("time_to_complete_hours", 0)
 
-    if ttc_days or ttc_hours:
-      ttc_total = ttc_days * 24 + ttc_hours
+    if ttc_days:
       # We check if the time to complete is under 30 days because Google
       # Appengine task queue API doesn't let us to add a Appengine task
       # the queue with an ETA longer than 30 days. We use this ETA feature
       # for GCI tasks to automatically trigger the reminders for the task
       # after the deadline.
-      if ttc_total <= 720:
-        cleaned_data['time_to_complete'] = ttc_days * 24 + ttc_hours
+      if ttc_days <= 30:
+        cleaned_data['time_to_complete'] = ttc_days * 24
       else:
         errors = self._errors.setdefault('time_to_complete_days', ErrorList())
         errors.append(ugettext('Time to complete must be less than 30 days.'))

@@ -37,6 +37,7 @@ from paver import tasks
 # Paver comes with Jason Orendorff's 'path' module; this makes path
 # manipulation easy and far more readable.
 PROJECT_DIR = path.path(__file__).dirname().abspath()
+REPORTS_DIR = PROJECT_DIR / 'reports'
 JS_DIRS = ['soc/content/js']
 
 
@@ -77,7 +78,7 @@ easy.options(
     },
     zip_files = ['tiny_mce.zip'],
     docs_config = PROJECT_DIR / 'docs.config',
-    docs_output = PROJECT_DIR / 'docs',
+    docs_output = REPORTS_DIR / 'docs',
     skip_docs = False,
     skip_pylint = False,
     skip_closure = False,
@@ -88,6 +89,11 @@ easy.options(
 DISABLED_INSPECTIONS = (
     'no-member',
     'maybe-no-member',
+
+    # TODO(nathaniel): Re-enable this after the fix of
+    # https://bitbucket.org/logilab/pylint/issue/24. This appears to have
+    # affected us following our move from Django 1.4 to 1.5.
+    'super-on-old-class',
 )
 
 # Warnings, style issues, and other inspections as a matter of policy must not
@@ -100,6 +106,8 @@ FORBIDDEN_IN_MELANGE = (
     'dangerous-default-value',
     'logging-not-lazy',
     'no-space-before-operator',
+    'pointless-statement',
+    'trailing-whitespace',
     'unused-import',
 )
 
@@ -488,6 +496,10 @@ def build_docs(options):
   exclude_intorspect_modules = [
       'soc.modules.gci.models',
       ]
+
+  # Create reports directory if not existent
+  if not os.path.exists(REPORTS_DIR):
+    os.makedirs(REPORTS_DIR)
 
   easy.sh('bin/epydoc -o %s --config=%s --exclude-introspect=%s' %
       (options.docs_output, options.docs_config,

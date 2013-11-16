@@ -24,12 +24,13 @@ from google.appengine.ext import db
 # about the RequestData object raising exceptions generally.
 from melange.request import exception
 from melange.utils import time
-from soc.models import site as site_model
+
 from soc.views.helper.access_checker import isSet
 from soc.views.helper import request_data
 
 from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models import program as program_model
+from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.views.helper import url_names
 
@@ -65,6 +66,10 @@ class TimelineHelper(request_data.TimelineHelper):
       name of the current period on the timeline as described in this method's
       documentation
     """
+    # NOTE(daniel): this is a temporary fix to the timeline widget
+    # it should be replaced/fixed shortly
+    return 'offseason'
+
     if not self.programActive():
       return 'offseason'
 
@@ -219,6 +224,8 @@ class RequestData(request_data.RequestData):
     self._student_info = self._unset
     self._organization = self._unset
 
+    self._url_proposal = self._unset
+
     # _org_map contains only those organizations for which the current user
     # is a mentor or org admin.
     self._org_map = self._unset
@@ -356,6 +363,35 @@ class RequestData(request_data.RequestData):
       self._timeline = TimelineHelper(self.program_timeline, self.org_app)
     return self._timeline
 
+  @property
+  def url_proposal(self):
+    """Returns the url_proposal field.
+
+    This property represents a proposal entity corresponding to a profile whose
+    identifier is a part of the URL of the processed request. Numerical
+    identifier of the proposal is also a part of the URL.
+
+    Returns:
+      Retrieved proposal entity.
+
+    Raises:
+      exception.BadRequest: if some data is missing in the current request.
+      exception.NotFound: if no entity is found.
+    """
+    if not self._isSet(self._url_proposal):
+      if 'id' not in self.kwargs:
+        raise exception.BadRequest(
+            message='The request does not contain proposal id.')
+      else:
+        self._url_proposal = proposal_model.GSoCProposal.get_by_id(
+            int(self.kwargs['id']), self.url_profile)
+
+        if not self._url_proposal:
+          raise exception.NotFound(
+              message='Requested proposal does not exist.')
+
+    return self._url_proposal
+
   def _initOrgMap(self):
     """Initializes _org_map by inserting there all organizations for which
     the current user is either a mentor or org admin.
@@ -367,35 +403,6 @@ class RequestData(request_data.RequestData):
         self._org_map = dict((i.key(), i) for i in orgs)
       else:
         self._org_map = {}
-
-  def _getProgramWideFields(self):
-    """See request_data.RequestData._getProgramWideFields for specification."""
-    keys = []
-
-    # add program's key
-    if self.kwargs.get('sponsor') and self.kwargs.get('program'):
-      program_key_name = "%s/%s" % (
-          self.kwargs['sponsor'], self.kwargs['program'])
-      program_key = db.Key.from_path('GSoCProgram', program_key_name)
-    else:
-      program_key = site_model.Site.active_program.get_value_for_datastore(
-          self.site)
-      program_key_name = program_key.name()
-    keys.append(program_key)
-
-    # add timeline's key
-    keys.append(db.Key.from_path('GSoCTimeline', program_key_name))
-
-    # add org_app's key
-    org_app_key_name = 'gsoc_program/%s/orgapp' % program_key_name
-    keys.append(db.Key.from_path('OrgAppSurvey', org_app_key_name))
-
-    self._program, self._program_timeline, self._org_app = db.get(keys)
-
-    # raise an exception if no program is found
-    if not self._program:
-      raise exception.NotFound(
-          message="There is no program for url '%s'" % program_key_name)
 
   def getOrganization(self, org_key):
     """Retrieves the specified organization.
@@ -434,35 +441,14 @@ class RequestData(request_data.RequestData):
     """Checks if the user is a possible mentor for the proposal in the data.
     """
     assert isSet(self.profile)
-    assert isSet(self.proposal)
 
     profile = mentor_profile if mentor_profile else self.profile
 
-    return profile.key() in self.proposal.possible_mentors
+    return profile.key() in self.url_proposal.possible_mentors
 
 
 class RedirectHelper(request_data.RedirectHelper):
   """Helper for constructing redirects."""
-
-  # TODO(daniel): id built-in function should not be shadowed
-  def proposal(self, id=None, student=None):
-    """Sets the kwargs for an url_patterns.PROPOSAL redirect."""
-    if not student:
-      assert 'user' in self._data.kwargs
-      student = self._data.kwargs['user']
-    self.id(id)
-    self.kwargs['user'] = student
-    return self
-
-  # TODO(daniel): id built-in function should not be shadowed
-  def review(self, id=None, student=None):
-    """Sets the kwargs for an url_patterns.REVIEW redirect."""
-    if not student:
-      assert 'user' in self._data.kwargs
-      student = self._data.kwargs['user']
-    self.id(id)
-    self.kwargs['user'] = student
-    return self
 
   # (dcrodman) This method will become obsolete when the connection module
   # is commited to the main branch.
@@ -546,19 +532,6 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = 'gsoc_events'
     return self
 
-  # (dcrodman) This method will become obsolete when the connection module
-  # is commited to the main branch.
-  def request(self, request):
-    """Sets the _url_name for a request."""
-    assert request
-    self.id(request.key().id())
-    self.kwargs['user'] = request.parent_key().name()
-    if request.type == 'Request':
-      self._url_name = 'show_gsoc_request'
-    else:
-      self._url_name = 'gsoc_invitation'
-    return self
-
   def connect_user(self, user=None, organization=None):
     """Sets the _url_name for a gsoc_user_connection redirect.
 
@@ -607,14 +580,14 @@ class RedirectHelper(request_data.RedirectHelper):
       connection: The Connection instance to view.
     """
     self.connect_org(connection.organization)
-    
+
     self.kwargs['id'] = connection.key().id()
     # Need to make sure that when the view loads it can query for the
     # connection, and in order to do that it needs its parent entity.
     self.kwargs['user'] = connection.parent().parent().key().name()
     self._url_name = url_names.GSOC_SHOW_ORG_CONNECTION
     return self
-  
+
   def show_user_connection(self, connection):
     """ Sets up kwargs for a gsoc_show_org_connection redirect.
     Args:
@@ -624,31 +597,19 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = url_names.GSOC_SHOW_USER_CONNECTION
     return self
 
-  def profile_anonymous_connection(self, role, connection_hash):
+  def profile_anonymous_connection(self, role, token):
     """ Sets up kwargs for the gsoc_profile_anonymous_connection reirect.
 
     Args:
-      role: Role (org admin | mentor) to which the user will be promoted
+      role: Role (org_admin | mentor) to which the user will be promoted
           after their profile is created.
-      connection_hash: The hashed key of an AnonymousConnection object.
+      token: The UUID token (string representation) for an
+          AnonymousConnection object.
     """
     self.createProfile(role)
-    self.kwargs['key'] = connection_hash
+    self.kwargs['key'] = token
     self._url_name = url_names.GSOC_ANONYMOUS_CONNECTION
     return self
-
-  def comment(self, comment, full=False, secure=False):
-    """Creates a direct link to a comment."""
-    review = comment.parent()
-    self.review(review.key().id_or_name(), review.parent().link_id)
-    url = self.urlOf('review_gsoc_proposal', full=full, secure=secure)
-    return "%s#c%s" % (url, comment.key().id())
-
-  def connection_comment(self, comment, full=False, secure=False):
-    """Creates a direct link to a comment."""
-    self.show_connection(self._data.user, self._data.connection)
-    url = self.urlOf(url_names.GSOC_SHOW_CONNECTION, full=full, secure=secure)
-    return url
 
   # TODO(daniel): id built-in function should not be shadowed
   def project(self, id=None, student=None):
@@ -708,12 +669,5 @@ class RedirectHelper(request_data.RedirectHelper):
 
     self.kwargs['group'] = record.grading_survey_group.key().id_or_name()
     self.kwargs['record'] = record.key().id()
-
-    return self
-
-  def editProfile(self):
-    """Returns the URL for the edit profile page."""
-    self.program()
-    self._url_name = url_names.GSOC_PROFILE_EDIT
 
     return self

@@ -38,6 +38,24 @@ from tests import profile_utils
 from tests import timeline_utils
 
 
+# TODO(daniel): move this function to a separate module
+def seedSite(**kwargs):
+  """Seeds a new site entity.
+
+  Returns:
+    Newly seeded Site entity.
+  """
+  properties = {
+    'key_name': 'site',
+    'active_program': None,
+  }
+  properties.update(kwargs)
+
+  site = Site(**properties)
+  site.put()
+  return site
+
+
 class ProgramHelper(object):
   """Helper class to aid in manipulating program data.
   """
@@ -141,22 +159,6 @@ class ProgramHelper(object):
     """
     if self.program is None:
       self.createProgram()
-
-  def createSite(self, override={}):
-    """Creates a site for the defined properties.
-    """
-    if self.program is None:
-      self.createProgram()
-    properties = {
-        'key_name': 'site', 'link_id': 'site',
-        'active_program': self.program,
-        'latest_gsoc': 'google/gsoc',
-        'latest_gci': 'google/gci',
-    }
-    properties.update(override)
-    self.site = Site(**properties)
-    self.site.put()
-    return self.site
 
 
 class GSoCProgramHelper(ProgramHelper):

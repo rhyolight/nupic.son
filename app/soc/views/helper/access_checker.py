@@ -20,15 +20,11 @@ import urllib
 
 from django.utils.translation import ugettext
 
-from google.appengine.ext import db
-
 from melange.request import exception
-from soc.logic import links
-from soc.models import document
+from melange.request import links
+
 from soc.models import org_app_record
 from soc.models import program as program_model
-from soc.models.request import INVITATION_TYPE
-from soc.models.request import REQUEST_TYPE
 from soc.views.helper.gdata_apis import oauth as oauth_helper
 
 from summerofcode.logic import survey as survey_logic
@@ -39,7 +35,7 @@ DEF_AGREE_TO_TOS = ugettext(
     ' in order to view this page.')
 
 DEF_ALREADY_ADMIN = ugettext(
-    'You cannot be a organization administrator for %s to access this page.')
+    'You cannot be an organization administrator for %s to access this page.')
 
 DEF_ALREADY_MENTOR = ugettext(
     'You cannot be a mentor for %s to access this page.')
@@ -75,47 +71,11 @@ DEF_ID_BASED_ENTITY_INVALID = ugettext(
 DEF_ID_BASED_ENTITY_NOT_EXISTS = ugettext(
     '%(model)s entity, whose id is %(id)s, is does not exist.')
 
-DEF_INVITE_ACCEPTED = ugettext(
-    'This invite has been accepted.')
-
-DEF_INVITE_REJECTED = ugettext(
-    'This invite has been rejected.')
-
-DEF_INVITE_WITHDRAWN = ugettext(
-    'This invite has been withdrawn.')
-
-DEF_INVITE_DOES_NOT_EXIST = ugettext(
-    'There is no invite with id %s.')
-
-DEF_INVITE_CANNOT_BE_RESUBMITTED = ugettext(
-    'Only withdrawn invitations may be resubmitted.')
-
-DEF_INVITE_CANNOT_BE_ACCESSED = ugettext(
-    'This invite cannot be accessed from this account.')
-
-DEF_INVITE_CANNOT_BE_WITHDRAWN = ugettext(
-    'Only pending invitations may be withdrawn.')
-
 DEF_CONNECTION_CANNOT_BE_RESUBMITTED = ugettext(
     'Only withdrawn connections may be resubmitted.')
 
 DEF_CONNECTION_UNACCESSIBLE = ugettext(
     'This connection is not accessible from this profile.')
-
-DEF_REQUEST_DOES_NOT_EXIST = ugettext(
-    'There is no request with id %(id)s.')
-
-DEF_REQUEST_CANNOT_BE_ACCESSED = ugettext(
-    'This request cannot be accessed from this account.')
-
-DEF_ACCEPTED_REQUEST_CANNOT_BE_MANAGED = ugettext(
-    'This request cannot be managed because it is already been accepted.')
-
-DEF_REQUEST_CANNOT_BE_WITHDRAWN = ugettext(
-    'This %(status)s request cannot be withdrawn.')
-
-DEF_REQUEST_CANNOT_BE_RESUBMITTED = ugettext(
-    'This %(status)s request cannot be resubmitted.')
 
 DEF_IS_NOT_STUDENT = ugettext(
     'This page is inaccessible because you do not have a student role '
@@ -180,12 +140,6 @@ DEF_NOT_PROPOSER = ugettext(
 
 DEF_NOT_PUBLIC_DOCUMENT = ugettext(
     'This document is not publically readable.')
-
-DEF_NOT_VALID_INVITATION = ugettext(
-    'This is not a valid connection.')
-
-DEF_NOT_VALID_REQUEST = ugettext(
-    'This is not a valid request.')
 
 DEF_NOT_VALID_CONNECTION = ugettext(
     'This is not a valid connection.')
@@ -267,100 +221,6 @@ class Mutator(object):
 
   def __init__(self, data):
     self.data = data
-    self.unsetAll()
-
-  def unsetAll(self):
-    self.data.action = unset
-    self.data.can_respond = unset
-    self.data.document = unset
-    self.data.invited_user = unset
-    self.data.invited_profile = unset
-    self.data.invite = unset
-    self.data.key_name = unset
-    self.data.request_entity = unset
-    self.data.requester = unset
-    self.data.scope_key_name = unset
-    self.data.url_student_info = unset
-
-  def documentKeyNameFromKwargs(self):
-    """Returns the document key fields from kwargs.
-
-    Returns False if not all fields were supplied/consumed.
-    """
-    fields = []
-    kwargs = self.data.kwargs.copy()
-
-    prefix = kwargs.pop('prefix', None)
-    fields.append(prefix)
-
-    if prefix in ['gsoc_program', 'gsoc_org', 'gci_program', 'gci_org']:
-      fields.append(kwargs.pop('sponsor', None))
-      fields.append(kwargs.pop('program', None))
-
-    if prefix in ['gsoc_org', 'gci_org']:
-      fields.append(kwargs.pop('organization', None))
-
-    fields.append(kwargs.pop('document', None))
-
-    if any(kwargs.values()):
-      raise exception.BadRequest(message="Unexpected value for document url")
-
-    if not all(fields):
-      raise exception.BadRequest(message="Missing value for document url")
-
-    self.data.scope_key_name = '/'.join(fields[1:-1])
-    self.data.key_name = '/'.join(fields)
-    self.data.document = document.Document.get_by_key_name(self.data.key_name)
-
-  def studentFromKwargs(self):
-    self.data.url_student_info = self.data.url_profile.student_info
-
-    if not self.data.url_student_info:
-      raise exception.NotFound(message='Requested user is not a student')
-
-  def canRespondForUser(self):
-    assert isSet(self.data.invited_user)
-    assert isSet(self.data.invite)
-
-    if self.data.invited_user.key() != self.data.user.key():
-      # org admins may see the invitations and can respond to requests
-      self.data.can_respond = self.data.invite.type == 'Request'
-    else:
-      # user that the entity refers to may only respond if it is a Request
-      self.data.can_respond = self.data.invite.type == 'Invitation'
-
-  def commentVisible(self, organization):
-    """Determines whether or not a comment is visible to a user.
-
-    Args:
-      organization: The organization for which a mentor or org admin may be
-          attemtping to view a connection.
-    """
-    assert isSet(self.data.url_user)
-
-    self.data.public_comments_visible = False
-    self.data.private_comments_visible = False
-
-    # if the user is not logged in, no comments can be made
-    if not self.data.user:
-      return
-
-    # if the current user is the proposer, he or she may access public comments
-    if self.data.user.key() == self.data.url_user.key():
-      self.data.public_comments_visible = True
-      return
-
-    # All the mentors and org admins from the organization may access public
-    # and private comments.
-    if self.data.mentorFor(organization):
-      self.data.public_comments_visible = True
-      self.data.private_comments_visible = True
-
-  def host(self):
-    assert isSet(self.data.user)
-
-    if self.data.user.host_for:
-      self.data.is_host = True
 
   def orgAppRecordIfIdInKwargs(self):
     """Sets the organization application in RequestData object."""
@@ -376,35 +236,6 @@ class Mutator(object):
       if not self.data.org_app_record:
         raise exception.NotFound(
             message=DEF_NO_ORG_APP % self.data.program.name)
-
-
-class DeveloperMutator(Mutator):
-  def canRespondForUser(self):
-    self.data.can_respond = True
-
-  def commentVisible(self, organization):
-    self.data.public_comments_visible = True
-    self.data.private_comments_visible = True
-
-  def hostFromKwargs(self):
-    """Set the host entity for the given user in the kwargs.
-    """
-    self.data.host_user_key = None
-
-    key_name = self.data.kwargs.get('link_id', '')
-    if not key_name:
-      self.host()
-      if self.data.is_host:
-        return
-      else:
-        raise exception.NotFound(message=DEF_NO_USERNAME)
-
-    user_key = db.Key.from_path('User', key_name)
-
-    if not user_key:
-      raise exception.NotFound(message=DEF_NO_USER % key_name)
-
-    self.data.host_user_key = user_key
 
 
 class BaseAccessChecker(object):
@@ -481,19 +312,6 @@ class BaseAccessChecker(object):
       return
 
     raise exception.Forbidden(message=DEF_PROFILE_INACTIVE)
-
-  def isRequestPresent(self, request_id):
-    """Checks if the invite entity is not None.
-    """
-    assert isSet(self.data.request_entity)
-
-    if self.data.request_entity is None:
-      raise exception.Forbidden(
-          message=DEF_REQUEST_DOES_NOT_EXIST % request_id)
-
-    if self.data.request_entity.type != REQUEST_TYPE:
-      raise exception.Forbidden(
-          message=DEF_REQUEST_DOES_NOT_EXIST % request_id)
 
   def canAccessGoogleDocs(self):
     """Checks if user has a valid access token to access Google Documents."""
@@ -735,16 +553,14 @@ class AccessChecker(BaseAccessChecker):
   def isProposalInURLValid(self):
     """Checks if the proposal in URL exists.
     """
-    assert isSet(self.data.proposal)
-
-    if not self.data.proposal:
+    if not self.data.url_proposal:
       error_msg = DEF_ID_BASED_ENTITY_NOT_EXISTS % {
           'model': 'GSoCProposal',
           'id': self.data.kwargs['id']
           }
       raise exception.Forbidden(message=error_msg)
 
-    if self.data.proposal.status == 'invalid':
+    if self.data.url_proposal.status == 'invalid':
       error_msg = DEF_ID_BASED_ENTITY_INVALID % {
           'model': 'GSoCProposal',
           'id': self.data.kwargs['id'],
@@ -768,7 +584,7 @@ class AccessChecker(BaseAccessChecker):
     self.isProgramVisible()
 
     if (self.data.timeline.afterStudentSignupEnd() and
-        self.data.proposal.is_editable_post_deadline):
+        self.data.url_proposal.is_editable_post_deadline):
       return
 
     violation_message = '%s %s'% ((DEF_PAGE_INACTIVE_OUTSIDE %
@@ -779,7 +595,7 @@ class AccessChecker(BaseAccessChecker):
   def canStudentUpdateProposal(self):
     """Checks if the student is eligible to submit a proposal.
     """
-    assert isSet(self.data.proposal)
+    assert isSet(self.data.url_proposal)
 
     self.isActiveStudent()
     self.isProposalInURLValid()
@@ -792,7 +608,7 @@ class AccessChecker(BaseAccessChecker):
       self.canStudentUpdateProposalPostSignup()
 
     # check if the proposal belongs to the current user
-    expected_profile = self.data.proposal.parent()
+    expected_profile = self.data.url_proposal.parent()
     if expected_profile.key().name() != self.data.profile.key().name():
       error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'model': 'GSoCProposal',
@@ -801,7 +617,7 @@ class AccessChecker(BaseAccessChecker):
       raise exception.Forbidden(message=error_msg)
 
     # check if the status allows the proposal to be updated
-    status = self.data.proposal.status
+    status = self.data.url_proposal.status
     if status == 'ignored':
       raise exception.Forbidden(message=DEF_PROPOSAL_IGNORED_MESSAGE)
     elif status in ['invalid', 'accepted', 'rejected']:
@@ -815,229 +631,6 @@ class AccessChecker(BaseAccessChecker):
     elif status == 'withdrawn':
       self.data.is_pending = False
 
-  # (dcrodman) This method will be obsolete with the connection module.
-  def canRespondInvite(self):
-    """Checks if the current user may respond to invite entity.
-    """
-    assert isSet(self.data.invite)
-
-    # check if the entity represents an invitation
-    if self.data.invite.type != INVITATION_TYPE:
-      raise exception.Forbidden(message=DEF_INVITE_DOES_NOT_EXIST)
-
-    # only the invited user may respond to the invitation
-    if self.data.user.key() != self.data.invite.user.key():
-      raise exception.Forbidden(message=DEF_INVITE_CANNOT_BE_ACCESSED)
-
-  # (dcrodman) This method will be obsolete with the connection module.
-  def canViewInvite(self):
-    """Checks if the current user can see the invitation.
-    """
-    assert isSet(self.data.organization)
-    assert isSet(self.data.invite)
-    assert isSet(self.data.invited_user)
-
-    self._canAccessRequestEntity(
-        self.data.invite, self.data.invited_user, self.data.organization)
-
-  # (dcrodman) This method will be obsolete with the connection module.
-  def isInvitePresent(self, invite_id):
-    """Checks if the invite entity is not None."""
-    assert isSet(self.data.invite)
-
-    if self.data.invite is None:
-      raise exception.Forbidden(
-          message=DEF_INVITE_DOES_NOT_EXIST % invite_id)
-
-    if self.data.invite.type != INVITATION_TYPE:
-      raise exception.Forbidden(
-          message=DEF_INVITE_DOES_NOT_EXIST % invite_id)
-
-  # (dcrodman) This method will be obsolete with the connection module.
-  def isInviteRespondable(self):
-    """Checks if the invite may be responded at this moment.
-    """
-    assert isSet(self.data.invite)
-
-    # only pending invites may be responded
-    if self.data.invite.status == 'accepted':
-      raise exception.Forbidden(message=DEF_INVITE_ACCEPTED)
-    if self.data.invite.status == 'rejected':
-      raise exception.Forbidden(message=DEF_INVITE_REJECTED)
-    if self.data.invite.status == 'withdrawn':
-      raise exception.Forbidden(message=DEF_INVITE_WITHDRAWN)
-
-  # (dcrodman) This method will be obsolete with the connection module.
-  def canResubmitInvite(self):
-    """Checks if the current user can resubmit the invitation.
-    """
-
-    assert isSet(self.data.invite)
-
-    # check if the entity represents an invitation
-    if self.data.invite.type != INVITATION_TYPE:
-      raise exception.Forbidden(message=DEF_INVITE_DOES_NOT_EXIST)
-
-    # only withdrawn requests may be resubmitted
-    if self.data.invite.status != 'withdrawn':
-      raise exception.Forbidden(message=DEF_NOT_VALID_REQUEST)
-
-    # check if the user is an admin for the organization
-    self.isOrgAdmin()
-
-  # (dcrodman) This method will be obsolete with the connection module.
-  def canInviteBeResubmitted(self):
-    """Checks if the invitation may be resubmitted.
-    """
-
-    assert isSet(self.data.invite)
-
-    # check if the entity represents an invitation
-    if self.data.invite.type != INVITATION_TYPE:
-      raise exception.Forbidden(message=DEF_INVITE_DOES_NOT_EXIST)
-
-    # only withdrawn requests may be resubmitted
-    if self.data.invite.status != 'withdrawn':
-      raise exception.Forbidden(message=DEF_INVITE_CANNOT_BE_RESUBMITTED)
-
-    #TODO(dhans): actually it needs to be checked if the user has not accepted
-    # a request in the meantime.
-
-  # (dcrodman) This method will be obsolete with the connection module.
-  def canRespondToInvite(self):
-    """Checks if the current user can accept/reject the invitation.
-    """
-    assert isSet(self.data.invite)
-    assert isSet(self.data.invited_user)
-
-    # check if the entity represents an invitation
-    if self.data.invite.type != 'Invitation':
-      raise exception.Forbidden(message=DEF_NOT_VALID_INVITATION)
-
-    # check if the entity can be responded
-    if self.data.invite.status not in ['pending', 'rejected']:
-      raise exception.Forbidden(message=DEF_NOT_VALID_INVITATION)
-
-    # check if the entity is addressed to the current user
-    if self.data.invited_user.key() != self.data.user.key():
-      error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
-          'model': 'Request'
-          }
-      raise exception.Forbidden(message=error_msg)
-
-    # check if the user does not have this role
-    if self.data.invite.role == 'org_admin':
-      self.notOrgAdmin()
-    else:
-      self.notMentor()
-
-  # (dcrodman) This method will be obsolete with the connection module.
-  def canManageRequest(self):
-    """Checks if the current user may manage the specified request.
-    """
-    assert isSet(self.data.request_entity)
-
-    # only the author may manage their request
-    if self.data.user.key() != self.data.request_entity.user.key():
-      raise exception.Forbidden(message=DEF_REQUEST_CANNOT_BE_ACCESSED)
-
-    # accepted requests cannot be managed
-    if self.data.request_entity.status == 'accepted':
-      raise exception.Forbidden(message=DEF_ACCEPTED_REQUEST_CANNOT_BE_MANAGED)
-
-  # (dcrodman) This method will be obsolete with the connection module.
-  def isRequestManageable(self):
-    """Checks if the request may be managed with the specified action.
-    """
-    assert isSet(self.data.request_entity)
-    current_status = self.data.request_entity.status
-
-    if 'withdraw' in self.data.POST and current_status != 'pending':
-      raise exception.Forbidden(
-          message=DEF_REQUEST_CANNOT_BE_WITHDRAWN % current_status)
-
-    if 'resubmit' in self.data.POST and \
-        current_status not in ['rejected', 'withdrawn']:
-      raise exception.Forbidden(
-          message=DEF_REQUEST_CANNOT_BE_RESUBMITTED % current_status)
-
-  # (dcrodman) This method will be obsolete with the connection module.
-  def canRespondToRequest(self):
-    """Checks if the current user can accept/reject the request.
-    """
-    assert isSet(self.data.request_entity)
-    assert isSet(self.data.requester)
-
-    # check if the entity represents an invitation
-    if self.data.request_entity.type != 'Request':
-      raise exception.Forbidden(message=DEF_NOT_VALID_CONNECTION)
-
-    # check if the entity can be responded
-    if self.data.request_entity.status not in ['pending', 'rejected']:
-      raise exception.Forbidden(message=DEF_NOT_VALID_CONNECTION)
-
-    # check if the user is an admin for the organization
-    self.isOrgAdmin()
-
-  # (dcrodman) This method will be obsolete with the connection module.
-  def canResubmitRequest(self):
-    """Checks if the current user can resubmit the request.
-    """
-
-    assert isSet(self.data.request_entity)
-    assert isSet(self.data.requester)
-
-    # only withdrawn requests may be resubmitted
-    if self.data.request_entity.status != 'withdrawn':
-      raise exception.Forbidden(message=DEF_NOT_VALID_CONNECTION)
-
-    # check if the request belongs to the current user
-    if self.data.requester.key() != self.data.user.key():
-      error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
-          'name': 'request'
-          }
-      raise exception.Forbidden(message=error_msg)
-
-  # (dcrodman) This method will be obsolete with the connection module.
-  def canViewRequest(self):
-    """Checks if the current user can see the request.
-    """
-    assert isSet(self.data.organization)
-    assert isSet(self.data.request_entity)
-    assert isSet(self.data.requester)
-
-    self._canAccessRequestEntity(
-        self.data.request_entity, self.data.requester, self.data.organization)
-
-  # TODO(dhans) This method will be obsolete with the connection module.
-  def canInviteBeWithdrawn(self):
-    """Checks if the invitation may be withdrawn.
-    """
-
-    assert isSet(self.data.invite)
-
-    # check if the entity represents an invitation
-    if self.data.invite.type != INVITATION_TYPE:
-      raise exception.Forbidden(message=DEF_INVITE_DOES_NOT_EXIST)
-
-    # only pending requests may be withdrawn
-    if self.data.invite.status != 'pending':
-      raise exception.Forbidden(message=DEF_INVITE_CANNOT_BE_WITHDRAWN)
-
-  # (dcrodman) This method will be obsolete with the connection module.
-  def _canAccessRequestEntity(self, entity, user, org):
-    """Checks if the current user is allowed to access a Request entity.
-
-    Args:
-      entity: an entity which belongs to Request model
-      user: user entity that the Request refers to
-      org: organization entity that the Request refers to
-    """
-    # check if the entity is addressed to the current user
-    if user.key() != self.data.user.key():
-      # check if the current user is an org admin for the organization
-      self.isOrgAdmin()
-
   def canOrgMemberAccessConnection(self):
     """Checks if the current user is an org admin allowed to access a
     Connection entity.
@@ -1048,7 +641,7 @@ class AccessChecker(BaseAccessChecker):
     org_key = self.data.url_connection.organization.key()
     if org_key not in self.data.profile.org_admin_for:
       raise exception.Forbidden(message=DEF_CONNECTION_UNACCESSIBLE)
-  
+
   def canUserAccessConnection(self):
     """Checks if the current user is allowed to access a Connection entity.
     """
@@ -1056,17 +649,15 @@ class AccessChecker(BaseAccessChecker):
     # Only org admins and the user involved in the connection may view it.
     if self.data.url_connection.parent_key() != self.data.profile.key():
       raise exception.Forbidden(message=DEF_CONNECTION_UNACCESSIBLE)
-    
+
 
   def canAccessProposalEntity(self):
     """Checks if the current user is allowed to access a Proposal entity.
     """
-    assert isSet(self.data.proposal)
-    assert isSet(self.data.proposal_org)
     assert isSet(self.data.url_user)
 
     # if the proposal is public, everyone may access it
-    if self.data.proposal.is_publicly_visible:
+    if self.data.url_proposal.is_publicly_visible:
       return
 
     if not self.data.user:
@@ -1078,7 +669,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     # all the mentors and org admins from the organization may access it
-    if self.data.mentorFor(self.data.proposal_org):
+    if self.data.mentorFor(self.data.url_proposal.org):
       return
 
     raise exception.Forbidden(message=DEF_PROPOSAL_NOT_PUBLIC)
@@ -1107,9 +698,7 @@ class AccessChecker(BaseAccessChecker):
     self.isProgramVisible()
     self.isProfileActive()
 
-    assert isSet(self.data.proposer)
-
-    if self.data.proposer.key() == self.data.profile.key():
+    if self.data.url_profile.key() == self.data.profile.key():
       return
 
     raise exception.Forbidden(message=DEF_NOT_PROPOSER)

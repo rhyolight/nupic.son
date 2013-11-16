@@ -16,8 +16,12 @@
 
 from django.utils.translation import ugettext
 
+from melange.request import links
+
 from soc.logic.helper.notifications import getContext
 from soc.views.helper.access_checker import isSet
+from soc.modules.gsoc.views.helper import url_names
+
 
 DEF_NEW_PROPOSAL_SUBJECT = ugettext(
     '[%(org)s] New proposal by %(proposer_name)s: %(proposal_name)s')
@@ -49,14 +53,18 @@ DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE = \
 
 
 def newProposalContext(data, proposal, to_emails):
-  """Sends out a notification to alert the user of a new comment.
+  """Sends out a notification to alert users of a new proposal.
 
   Args:
-    data: a RequestData object
+    data: a RequestData object.
+    proposal: Newly created proposal entity.
+    to_emails: List of email addresses of users who should
+        receive notifications.
   """
-  data.redirect.review(proposal.key().id(), data.user.link_id)
-  proposal_notification_url = data.redirect.urlOf('review_gsoc_proposal', full=True)
-  edit_link = data.redirect.editProfile().url(full=True)
+  proposal_notification_url = links.ABSOLUTE_LINKER.userId(
+      data.profile, proposal.key().id(), url_names.PROPOSAL_REVIEW)
+  edit_profile_url = links.ABSOLUTE_LINKER.program(
+      data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
 
   message_properties = {
       'proposal_notification_url': proposal_notification_url,
@@ -64,7 +72,7 @@ def newProposalContext(data, proposal, to_emails):
       'proposal_name': proposal.title,
       'proposal_content': proposal.content,
       'org': proposal.org.name,
-      'profile_edit_link': edit_link,
+      'profile_edit_link': edit_profile_url,
   }
 
   # determine the subject
@@ -72,7 +80,8 @@ def newProposalContext(data, proposal, to_emails):
 
   template = DEF_NEW_PROPOSAL_NOTIFICATION_TEMPLATE
 
-  return getContext(data, to_emails, message_properties, subject, template)
+  return getContext(
+      data.site, data.program, to_emails, message_properties, subject, template)
 
 
 def updatedProposalContext(data, proposal, to_emails):
@@ -83,9 +92,10 @@ def updatedProposalContext(data, proposal, to_emails):
   """
   assert isSet(data.organization)
 
-  data.redirect.review(proposal.key().id(), data.user.link_id)
-  proposal_notification_url = data.redirect.urlOf('review_gsoc_proposal', full=True)
-  edit_link = data.redirect.editProfile().url(full=True)
+  proposal_notification_url = links.ABSOLUTE_LINKER.userId(
+      data.profile, proposal.key().id(), url_names.PROPOSAL_REVIEW)
+  edit_profile_url = links.ABSOLUTE_LINKER.program(
+      data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
 
   message_properties = {
       'proposal_notification_url': proposal_notification_url,
@@ -93,7 +103,7 @@ def updatedProposalContext(data, proposal, to_emails):
       'proposal_name': proposal.title,
       'proposal_content': proposal.content,
       'org': data.organization.name,
-      'profile_edit_link': edit_link,
+      'profile_edit_link': edit_profile_url,
   }
 
   # determine the subject
@@ -101,7 +111,8 @@ def updatedProposalContext(data, proposal, to_emails):
 
   template = DEF_UPDATED_PROPOSAL_NOTIFICATION_TEMPLATE
 
-  return getContext(data, to_emails, message_properties, subject, template)
+  return getContext(
+      data.site, data.program, to_emails, message_properties, subject, template)
 
 
 def newReviewContext(data, comment, to_emails):
@@ -110,14 +121,18 @@ def newReviewContext(data, comment, to_emails):
   Args:
     data: a RequestData object
   """
-  assert isSet(data.proposal)
-  assert isSet(data.proposer)
-
-  review_notification_url = data.redirect.comment(comment, full=True)
-  edit_link = data.redirect.editProfile().url(full=True)
+  # TODO(daniel): the second part of this URL should probably be added by
+  # a utility class
+  review_notification_url = '%s#c%s' % (
+      links.ABSOLUTE_LINKER.userId(
+          data.url_profile, data.url_proposal.key().id(),
+          url_names.PROPOSAL_REVIEW),
+      comment.key().id())
+  edit_profile_url = links.ABSOLUTE_LINKER.program(
+      data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
 
   review_type = 'private' if comment.is_private else 'public'
-  reviewed_name = data.proposal.title
+  reviewed_name = data.url_proposal.title
 
   message_properties = {
       'review_notification_url': review_notification_url,
@@ -125,9 +140,9 @@ def newReviewContext(data, comment, to_emails):
       'reviewed_name': reviewed_name,
       'review_content': comment.content,
       'review_visibility': review_type,
-      'proposer_name': data.proposer.name(),
-      'org': data.proposal.org.name,
-      'profile_edit_link': edit_link,
+      'proposer_name': data.url_profile.name(),
+      'org': data.url_proposal.org.name,
+      'profile_edit_link': edit_profile_url,
       }
 
   # determine the subject
@@ -135,11 +150,12 @@ def newReviewContext(data, comment, to_emails):
 
   template = DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE
 
-  if (data.proposer.key() != data.profile.key() and
-      data.proposer.notify_public_comments and not comment.is_private):
-    to_emails.append(data.proposer.email)
+  if (data.url_profile.key() != data.profile.key() and
+      data.url_profile.notify_public_comments and not comment.is_private):
+    to_emails.append(data.url_profile.email)
 
-  return getContext(data, to_emails, message_properties, subject, template)
+  return getContext(
+      data.site, data.program, to_emails, message_properties, subject, template)
 
 
 def createOrUpdateSlotTransferContext(data, slot_transfer,
@@ -174,4 +190,5 @@ def createOrUpdateSlotTransferContext(data, slot_transfer,
 
   template = DEF_SLOT_TRANSFER_NOTIFICATION_TEMPLATE
 
-  return getContext(data, to_emails, message_properties, subject, template)
+  return getContext(
+      data.site, data.program, to_emails, message_properties, subject, template)

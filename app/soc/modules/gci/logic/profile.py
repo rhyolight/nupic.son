@@ -299,9 +299,7 @@ def insertDummyData(student_info):
   profile.agreed_to_tos_on = datetime.datetime(1, 1, 1)
   profile.status = 'invalid'
   profile.notify_new_requests = None
-  profile.notify_invite_handled = None
   profile.notify_request_handled = None
-  profile.notify_new_invites = None
   profile.is_student = None
   profile.is_mentor = None
   profile.is_org_admin = None

@@ -42,11 +42,10 @@ class MelangeInitializer(Initializer):
   def initialize(self, request, args, kwargs):
     """See Initializer.initialize for specification."""
     data = request_data.RequestData(request, args, kwargs)
+    mutator = access_checker.Mutator(data)
     if data.is_developer:
-      mutator = access_checker.DeveloperMutator(data)
       check = access_checker.DeveloperAccessChecker(data)
     else:
-      mutator = access_checker.Mutator(data)
       check = access_checker.AccessChecker(data)
     return data, check, mutator
 

@@ -18,7 +18,7 @@ import datetime
 import logging
 
 from django import http
-from django.conf.urls.defaults import url as django_url
+from django.conf.urls import url as django_url
 
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
@@ -291,7 +291,6 @@ class ProposalAcceptanceTask(object):
         proposal, transactional=transactional)
 
     proposal_key = proposal.key()
-    proposal_org_key = proposal.org.key()
 
     # pass these data along params as POST to the new task
     task_params = {'program_key': proposal.program.key().id_or_name()}

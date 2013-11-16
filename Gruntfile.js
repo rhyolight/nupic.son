@@ -1,8 +1,8 @@
 module.exports = function(grunt) {
-	grunt.initConfig({
-		meta: {
-			package: grunt.file.readJSON('package.json'),
-			src: {
+  grunt.initConfig({
+    meta: {
+      package: grunt.file.readJSON('package.json'),
+      src: {
         css_dir: 'app/soc/content/css',
         css_soc_dir: '<%= meta.src.css_dir %>/soc',
         css_gsoc_dir: '<%= meta.src.css_dir %>/gsoc',
@@ -12,21 +12,21 @@ module.exports = function(grunt) {
         less_soc_dir: '<%= meta.src.less_dir %>/soc',
         less_gsoc_dir: '<%= meta.src.less_dir %>/gsoc',
         less_gci_dir: '<%= meta.src.less_dir %>/gci',
-				js_dir: './app/soc/content/js',
+        js_dir: './app/soc/content/js',
         tests_dir: './tests',
-				js_files: '<%= meta.src.js_dir %>/**/*.js',
+        js_files: '<%= meta.src.js_dir %>/**/*.js',
         js_thirdparty_files: '<%= meta.src.js_dir %>/thirdparty/**/*.*',
-				test_specs: '<%= meta.src.tests_dir %>/**/*_spec.js',
+        test_specs: '<%= meta.src.tests_dir %>/**/*_spec.js',
         test_all: '<%= meta.src.tests_dir %>/**/*.js'
-			},
-			reports: {
-        reports_dir: 'js_reports',
+      },
+      reports: {
+        reports_dir: 'reports/js_reports',
         documentation: '<%= meta.reports.reports_dir %>/documentation',
-				coverage: '<%= meta.reports.reports_dir %>/coverage',
-				plato_source: '<%= meta.reports.reports_dir %>/plato',
-				plato_tests: '<%= meta.reports.reports_dir %>/plato_tests',
+        coverage: '<%= meta.reports.reports_dir %>/coverage',
+        plato_source: '<%= meta.reports.reports_dir %>/plato',
+        plato_tests: '<%= meta.reports.reports_dir %>/plato_tests',
         yuidoc: '<%= meta.reports.documentation %>/yuidoc'
-			},
+      },
       build: {
         build_dir: './build',
         css_dir: '<%= meta.build.build_dir %>/soc/content/css',
@@ -34,35 +34,35 @@ module.exports = function(grunt) {
         css_soc_dir: '<%= meta.build.css_dir %>/soc',
         css_gci_dir: '<%= meta.build.css_dir %>/gci'
       }
-		},
-		jasmine: {
-			coverage: {
-				src: [
+    },
+    jasmine: {
+      coverage: {
+        src: [
           '<%= meta.src.js_dir %>/melange.js',
           '<%= meta.src.js_dir %>/melange.action.js',
           '<%= meta.src.js_dir %>/melange.list.js'
         ],
-				options: {
-					specs: '<%= meta.src.test_all %>',
-					template: require('grunt-template-jasmine-istanbul'),
-					templateOptions: {
-						coverage: '<%= meta.reports.coverage %>/coverage.json',
-						report: [
-							{
-								type: 'html',
-								options: {
-									dir: '<%= meta.reports.coverage %>/html'
-								}
-							}
-						]
-					},
+        options: {
+          specs: '<%= meta.src.test_all %>',
+          template: require('grunt-template-jasmine-istanbul'),
+          templateOptions: {
+            coverage: '<%= meta.reports.coverage %>/coverage.json',
+            report: [
+              {
+                type: 'html',
+                options: {
+                  dir: '<%= meta.reports.coverage %>/html'
+                }
+              }
+            ]
+          },
           helpers: [
             './app/soc/content/js/thirdparty/jquery/jquery-1.6.4.js',
             './app/soc/content/js/thirdparty/jlinq/jLinq-2.2.1.js'
           ]
-				}
-			}
-		},
+        }
+      }
+    },
     less: {
       development: {
         options: {
@@ -242,7 +242,7 @@ module.exports = function(grunt) {
         }
       }
     }
-	});
+  });
 
   grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-contrib-jshint');

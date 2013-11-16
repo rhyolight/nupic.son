@@ -33,7 +33,7 @@ from django.utils.translation import ugettext
 
 from djangoforms import djangoforms
 
-from soc.views.helper.surveys import SurveySchema
+from soc.views.helper import surveys
 
 
 def choiceWidget(field):
@@ -630,6 +630,8 @@ class SurveyEditForm(ModelForm):
   schema = forms.CharField(widget=forms.HiddenInput())
 
 
+OTHER_OPTION_FIELD_ID = '%s-other'
+
 class SurveyTakeForm(ModelForm):
   """Django form for taking a survey.
   """
@@ -730,7 +732,7 @@ class SurveyTakeForm(ModelForm):
     """
     # insert dynamic survey fields
     if self.survey:
-      survey_schema = SurveySchema(self.survey)
+      survey_schema = surveys.SurveySchema(self.survey)
       for field in survey_schema:
         self.constructField(field)
 
@@ -786,6 +788,28 @@ class SurveyTakeForm(ModelForm):
     if self.instance:
       self.fields[field_name].initial = getattr(
           self.instance, field_name, None)
+
+  def getSurveyResponseProperties(self):
+    """Returns answers to the survey questions that were submitted in this form.
+
+    Returns:
+      A dict mapping question identifiers to corresponding responses.
+    """
+    # list of field IDs that belong to the organization application
+    field_ids = [field.field_id for field in surveys.SurveySchema(self.survey)]
+
+    properties = {}
+    for field_id, value in self.cleaned_data.iteritems():
+      if field_id in field_ids:
+        properties[field_id] = value
+
+        # add possible value of 'other' option
+        other_option_field_id = OTHER_OPTION_FIELD_ID % field_id
+        if other_option_field_id in self.cleaned_data:
+          properties[other_option_field_id] = self.cleaned_data[
+              other_option_field_id]
+
+    return properties
 
 
 class BoundField(forms.forms.BoundField):

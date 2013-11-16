@@ -22,6 +22,7 @@ from google.appengine.api import users as appengine_users
 from django import forms
 from django.core import validators
 from django.utils import translation
+from django.utils import safestring
 
 import html5lib
 from html5lib import sanitizer
@@ -328,7 +329,8 @@ def clean_valid_shipping_chars(field_name):
     value = self.cleaned_data.get(field_name)
 
     if value and not DEF_VALID_SHIPPING_CHARS.match(value):
-      raise forms.ValidationError(DEF_INVALID_SHIPPING_CHARS)
+      raise forms.ValidationError(
+          safestring.mark_safe(DEF_INVALID_SHIPPING_CHARS))
 
     return value
   return wrapper

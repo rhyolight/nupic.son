@@ -19,7 +19,7 @@ import logging
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
-from django.conf.urls.defaults import url
+from django.conf.urls import url
 
 from soc.tasks import responses
 from soc.views.helper import url_patterns

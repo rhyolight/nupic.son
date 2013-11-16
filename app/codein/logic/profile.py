@@ -21,9 +21,9 @@ from melange.utils import rich_bool
 
 from soc.modules.gci.models import task as task_model
 
-
 MENTOR_HAS_TASK_ASSIGNED = 'mentor_has_task_assigned'
 NOT_MENTOR_FOR_ORG = 'not_mentor_for_org'
+
 
 def canResignAsMentorForOrg(profile, org_key):
   """Tells whether the specified profile can resign from their mentor role
@@ -47,7 +47,7 @@ def canResignAsMentorForOrg(profile, org_key):
   if org_key not in profile.mentor_for:
     return rich_bool.RichBool(False, extra=NOT_MENTOR_FOR_ORG)
 
-  # TODO(daniel): if all work is already completed/reviewed, 
+  # TODO(daniel): if all work is already completed/reviewed,
   # the mentor can always resign?
 
   # the mentor cannot have any non-closed tasks assigned
@@ -153,4 +153,28 @@ def getProfileForUsername(username, program_key):
     does not have a profile for this program.
   """
   return profile_logic.getProfileForUsername(username, program_key,
+      models=types.CI_MODELS)
+
+
+def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
+  """Returns organization administrators for the specified organization.
+
+  Additional constraints on administrators may be specified by passing a custom
+  extra_attrs dictionary. Each element of the dictionary maps a property
+  with a requested value. The value must be a sequence.
+
+  Please note that this function executes a non-ancestor query, so it cannot
+  be safely used within transactions.
+
+  Args:
+    org_key: organization key
+    keys_only: If true, return only keys instead of complete entities
+    extra_args: a dictionary containing additional constraints on
+        organization administrators to retrieve
+
+  Returns:
+    list of profiles entities or keys of organization administrators
+  """
+  return profile_logic.getOrgAdmins(
+      org_key, keys_only=keys_only, extra_attrs=extra_attrs,
       models=types.CI_MODELS)

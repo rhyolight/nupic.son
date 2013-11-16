@@ -16,7 +16,8 @@
 
 from django.core.urlresolvers import reverse
 
-from soc.logic import links
+from melange.request import links
+
 from soc.views import template
 
 from soc.modules.gci.logic.program import getMostRecentProgram

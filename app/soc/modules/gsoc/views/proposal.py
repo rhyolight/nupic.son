@@ -16,23 +16,29 @@
 
 from google.appengine.ext import db
 
+from django import http
 from django.utils.translation import ugettext
 
 from melange.request import exception
+from melange.request import links
+
 from soc.logic import cleaning
 from soc.views.helper import url_patterns
 from soc.tasks import mailer
 
 from soc.modules.gsoc.logic import profile as profile_logic
-from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.logic.helper import notifications
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views import base
+from soc.modules.gsoc.views import proposal_review as proposal_review_view
 from soc.modules.gsoc.views.forms import GSoCModelForm
-from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+
+# Key of an item in POST dictionary defining action taken on a proposal.
+ACTION_POST_KEY = 'action'
 
 class ProposalForm(GSoCModelForm):
   """Django form for the proposal page.
@@ -132,8 +138,9 @@ class ProposalPage(base.GSoCRequestHandler):
     """Handler for HTTP POST request."""
     proposal = self.createFromForm(data)
     if proposal:
-      data.redirect.review(proposal.key().id(), data.user.link_id)
-      return data.redirect.to('review_gsoc_proposal')
+      url = links.LINKER.userId(
+          data.profile, proposal.key().id(), url_names.PROPOSAL_REVIEW)
+      return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
@@ -151,7 +158,7 @@ class UpdateProposal(base.GSoCRequestHandler):
 
   def djangoURLPatterns(self):
     return [
-         url(r'proposal/update/%s$' % gsoc_url_patterns.PROPOSAL,
+         url(r'proposal/update/%s$' % url_patterns.USER_ID,
          self, name='update_gsoc_proposal'),
     ]
 
@@ -159,15 +166,14 @@ class UpdateProposal(base.GSoCRequestHandler):
     check.isLoggedIn()
     check.isActiveStudent()
 
-    mutator.proposalFromKwargs()
-    data.organization = data.proposal.org
+    data.organization = data.url_proposal.org
 
     check.canStudentUpdateProposal()
 
     if data.POST:
-      action = data.POST['action']
+      action = data.POST[ACTION_POST_KEY]
 
-      status = data.proposal.status
+      status = data.url_proposal.status
       if status == 'pending' and action == self.ACTIONS['resubmit']:
         error_msg = ugettext('You cannot resubmit a pending proposal')
         raise exception.Forbidden(message=error_msg)
@@ -177,7 +183,6 @@ class UpdateProposal(base.GSoCRequestHandler):
       if status == 'withdrawn' and action == self.ACTIONS['update']:
         error_msg = ugettext('This proposal has been withdrawn')
         raise exception.Forbidden(message=error_msg)
-      data.action = action
 
   def templatePath(self):
     return 'modules/gsoc/proposal/base.html'
@@ -186,13 +191,13 @@ class UpdateProposal(base.GSoCRequestHandler):
     return 'modules/gsoc/proposal/_buttons_update.html'
 
   def context(self, data, check, mutator):
-    proposal = data.proposal
-
-    proposal_form = ProposalForm(data=data.POST or None, instance=proposal)
+    proposal_form = ProposalForm(
+        data=data.POST or None, instance=data.url_proposal)
 
     return {
         'page_name': 'Update proposal',
-        'form_header_message': 'Update proposal to %s' % (proposal.org.name),
+        'form_header_message': 'Update proposal to %s' % (
+            data.url_proposal.org.name),
         'proposal_form': proposal_form,
         'is_pending': data.is_pending,
         'buttons_template': self.buttonsTemplate(),
@@ -207,12 +212,12 @@ class UpdateProposal(base.GSoCRequestHandler):
     Returns:
       an updated proposal entity or None
     """
-    proposal_form = ProposalForm(data=data.POST, instance=data.proposal)
+    proposal_form = ProposalForm(data=data.POST, instance=data.url_proposal)
 
     if not proposal_form.is_valid():
       return None
 
-    org_key = GSoCProposal.org.get_value_for_datastore(data.proposal)
+    org_key = GSoCProposal.org.get_value_for_datastore(data.url_proposal)
     extra_attrs = {
         GSoCProfile.notify_proposal_updates: [True]
         }
@@ -220,7 +225,7 @@ class UpdateProposal(base.GSoCRequestHandler):
 
     to_emails = [i.email for i in mentors]
 
-    proposal_key = data.proposal.key()
+    proposal_key = data.url_proposal.key()
 
     def update_proposal_txn():
       proposal = db.get(proposal_key)
@@ -235,39 +240,21 @@ class UpdateProposal(base.GSoCRequestHandler):
 
     return db.run_in_transaction(update_proposal_txn)
 
-  def _withdraw(self, data):
-    """Withdraws a proposal."""
-
-    def withdraw_proposal_txn():
-      proposal = db.get(data.proposal.key())
-      student_info = db.get(data.student_info.key())
-
-      proposal_logic.withdrawProposal(proposal, student_info)
-
-    db.run_in_transaction(withdraw_proposal_txn)
-
-  def _resubmit(self, data):
-    """Resubmits a proposal."""
-
-    def resubmit_proposal_txn():
-      proposal = db.get(data.proposal.key())
-      student_info = db.get(data.student_info.key())
-      proposal_logic.resubmitProposal(
-          proposal, student_info, data.program, data.program_timeline)
-
-    db.run_in_transaction(resubmit_proposal_txn)
-
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
-    if data.action == self.ACTIONS['update']:
+    url = links.LINKER.userId(
+        data.profile, data.url_proposal.key().id(), url_names.PROPOSAL_REVIEW)
+
+    if data.POST[ACTION_POST_KEY] == self.ACTIONS['update']:
       proposal = self._updateFromForm(data)
       if not proposal:
         # TODO(nathaniel): problematic self-use.
         return self.get(data, check, mutator)
-    elif data.action == self.ACTIONS['withdraw']:
-      self._withdraw(data)
-    elif data.action == self.ACTIONS['resubmit']:
-      self._resubmit(data)
-
-    data.redirect.review(data.proposal.key().id(), data.user.link_id)
-    return data.redirect.to('review_gsoc_proposal')
+      else:
+        return http.HttpResponseRedirect(url)
+    elif data.POST[ACTION_POST_KEY] == self.ACTIONS['withdraw']:
+      handler = proposal_review_view.WithdrawProposalHandler(None, url=url)
+      return handler.handle(data, check, mutator)
+    elif data.POST[ACTION_POST_KEY] == self.ACTIONS['resubmit']:
+      handler = proposal_review_view.ResubmitProposalHandler(None, url=url)
+      return handler.handle(data, check, mutator)

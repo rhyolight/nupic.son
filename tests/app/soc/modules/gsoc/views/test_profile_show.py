@@ -16,6 +16,7 @@
 
 from summerofcode.templates import tabs
 
+from tests import profile_utils
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 
@@ -126,14 +127,12 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     """Tests that a user who is not logged in and trying to access its profile
     is redirected to a login page.
     """
-    profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
-    profile_helper.createOtherUser('notloggedinuser@example.com')
-    profile_helper.createProfile()
+    profile = profile_utils.seedGSoCProfile(self.program)
     import os
     current_logged_in_account = os.environ.get('USER_EMAIL', None)
     try:
       os.environ['USER_EMAIL'] = ''
-      url = '/gsoc/profile/admin/' + profile_helper.profile.key().name()
+      url = '/gsoc/profile/admin/' + profile.key().name()
       response = self.get(url)
       self.assertResponseRedirect(response)
       expected_redirect_url = 'https://www.google.com/accounts/Login?' + \
@@ -163,13 +162,12 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testOnlyAHostCanAccessTheAdminProfilePage(self):
-    """Tests that only the host is allowed to access profile pages.
-    """
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor.createOtherUser('mentor@example.com').createMentor(self.org)
+    """Tests that only the host is allowed to access profile pages."""
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
     student.createOtherUser('student@example.com')
-    student.createStudentWithProject(self.org, mentor.profile)
+    student.createStudentWithProject(self.org, mentor)
 
     url = '/gsoc/profile/admin/' + student.profile.key().name()
 

@@ -48,6 +48,10 @@ class GSoCProgram(program.Program):
 
   _messages_model = GSoCProgramMessages
 
+  #: string used as a prefix of various key names for other models
+  #TODO(daniel): eliminate this
+  prefix = 'gsoc_program'
+
   homepage_url_name = "gsoc_homepage"
 
   #: Required field storing application limit of the program.

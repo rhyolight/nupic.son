@@ -14,6 +14,7 @@
 
 """Unit tests for connection related views."""
 
+import httplib
 import mock
 import unittest
 
@@ -71,6 +72,47 @@ def _getManageAsOrgUrl(connection):
       connection.parent_key().name(), connection.key().id())
 
 
+def _getListConnectionsForOrgAdminUrl(profile):
+  """Returns URL to 'List Connections For Org Admin' page for the specified
+  profile entity.
+
+  Args:
+    profile: profile entity.
+
+  Returns:
+    The URL to 'List Connection For Org Admin' for the specified profile.
+  """
+  return '/gci/connection/list/org/%s' % profile.key().name()
+
+
+def _getMarkAsSeenByOrgUrl(connection):
+  """Returns URL to 'Mark Connection As Seen By Org' handler for the specified
+  connection entity.
+
+  Args:
+    connection: connection entity.
+
+  Returns:
+    The URL to 'Mark Connection As Seen By Org' for the specified connection.
+  """
+  return '/gci/connection/mark_as_seen/org/%s/%s' % (
+      connection.parent_key().name(), connection.key().id())
+
+
+def _getMarkAsSeenByUserUrl(connection):
+  """Returns URL to 'Mark Connection As Seen By User' handler for the specified
+  connection entity.
+
+  Args:
+    connection: connection entity.
+
+  Returns:
+    The URL to 'Mark Connection As Seen By User' for the specified connection.
+  """
+  return '/gci/connection/mark_as_seen/user/%s/%s' % (
+      connection.parent_key().name(), connection.key().id())
+
+
 class NoConnectionExistsAccessCheckerTest(unittest.TestCase):
   """Unit tests for NoConnectionExistsAccessChecker class."""
 
@@ -79,25 +121,188 @@ class NoConnectionExistsAccessCheckerTest(unittest.TestCase):
     self.data = request_data.RequestData(None, None, None)
 
     user = profile_utils.seedUser()
-    self.data._url_profile = seeder_logic.seed(profile_model.Profile,
+    self.data._profile = seeder_logic.seed(profile_model.Profile,
         {'parent': user})
     self.data._url_org = seeder_logic.seed(org_model.Organization)
 
   def testNoConnectionExists(self):
     """Tests that access is granted if no connection exists."""
     access_checker = connection_view.NoConnectionExistsAccessChecker()
-    access_checker.checkAccess(self.data, None, None)
+    access_checker.checkAccess(self.data, None)
 
   def testConnectionExists(self):
     """Tests that access is denied if connection already exists."""
     connection_properties = {
-        'parent': self.data._url_profile,
+        'parent': self.data._profile,
         'organization': self.data._url_org
         }
     seeder_logic.seed(connection_model.Connection, connection_properties)
     access_checker = connection_view.NoConnectionExistsAccessChecker()
     with self.assertRaises(exception.Redirect):
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
+
+
+class UrlConnectionIsForCurrentUserAccessCheckerTest(unittest.TestCase):
+  """Unit tests for UrlConnectionIsForCurrentUserAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.data = request_data.RequestData(None, None, None)
+
+    self.user = profile_utils.seedUser()
+    self.data._profile = seeder_logic.seed(profile_model.Profile,
+        properties={'parent': self.user})
+    self.data._url_org = seeder_logic.seed(org_model.Organization)
+
+    properties={
+        'parent': self.data._profile,
+        'organization': self.data._url_org
+        }
+    self.data._url_connection = seeder_logic.seed(
+        connection_model.Connection, properties=properties)
+
+  def testConnectedUserAccessGranted(self):
+    """Tests that access is granted for the connected user."""
+    profile_utils.login(self.user)
+    access_checker = (
+        connection_view.UrlConnectionIsForCurrentUserAccessChecker())
+    access_checker.checkAccess(self.data, None)
+
+  def testAnotherUserAccessDenied(self):
+    """Tests that another (not connected) user is denied access."""
+    # seed another user who is currently logged in
+    other_user = profile_utils.seedUser()
+    profile_utils.login(other_user)
+
+    self.data._profile = seeder_logic.seed(
+        profile_model.Profile, properties={'parent': other_user})
+
+    access_checker = (
+        connection_view.UrlConnectionIsForCurrentUserAccessChecker())
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testUserWithNoProfileAccessDenied(self):
+    """Tests that access for a user with no profile is denied."""
+    # check for not logged-in user with no profile
+    self.data._profile = None
+
+    access_checker = (
+        connection_view.UrlConnectionIsForCurrentUserAccessChecker())
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+    # check for another user who is currently logged in but
+    # does not have a profile
+    other_user = profile_utils.seedUser()
+    profile_utils.login(other_user)
+
+    access_checker = (
+        connection_view.UrlConnectionIsForCurrentUserAccessChecker())
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testOrgAdminAccessDenied(self):
+    """Tests that org admin for connected organization is denied access."""
+    # seed another user who is currently logged in
+    other_user = profile_utils.seedUser()
+    profile_utils.login(other_user)
+
+    profile_properties = {
+        'parent': other_user,
+        'is_mentor': True,
+        'mentor_for': [self.data._url_org.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.data._url_org.key()]
+        }
+    self.data._profile = seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
+
+    access_checker = (
+        connection_view.UrlConnectionIsForCurrentUserAccessChecker())
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+
+class IsUserOrgAdminForUrlConnectionTest(unittest.TestCase):
+  """Unit tests for IsUserOrgAdminForUrlConnection class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.data = request_data.RequestData(None, None, None)
+
+    self.connected_user = profile_utils.seedUser()
+    self.data._profile = seeder_logic.seed(profile_model.Profile,
+        properties={'parent': self.connected_user})
+    self.data._url_org = seeder_logic.seed(org_model.Organization)
+
+    properties={
+        'parent': self.data._profile,
+        'organization': self.data._url_org
+        }
+    self.data._url_connection = seeder_logic.seed(
+        connection_model.Connection, properties=properties)
+
+  def testOrgAdminAccessGranted(self):
+    """Tests that access is granted for org admin for the connected org."""
+    # seed a user who is currently logged in
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+
+    profile_properties = {
+        'parent': user,
+        'is_mentor': True,
+        'mentor_for': [self.data._url_org.key()],
+        'is_org_admin': True,
+        'org_admin_for': [self.data._url_org.key()]
+        }
+    self.data._profile = seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
+
+    access_checker = connection_view.IsUserOrgAdminForUrlConnection()
+    access_checker.checkAccess(self.data, None)
+
+  def testConnectedUserAccessDenied(self):
+    """Tests that access is denied for connected user."""
+    profile_utils.login(self.connected_user)
+
+    # make sure that connected user is not org admin for organization
+    self.data._profile.is_org_admin = False
+    self.data._profile.org_admin_for = []
+
+    access_checker = connection_view.IsUserOrgAdminForUrlConnection()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testOtherOrgAdminAccessDenied(self):
+    """Tests that access is denied for org admin for another org."""
+    # seed another organization
+    other_org = seeder_logic.seed(org_model.Organization)
+
+    # seed a user who is currently logged in
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+
+    # seed a profile and make it org admin for the other org.
+    profile_properties = {
+        'parent': user,
+        'is_mentor': True,
+        'mentor_for': [other_org.key()],
+        'is_org_admin': True,
+        'org_admin_for': [other_org.key()]
+        }
+    self.data._profile = seeder_logic.seed(
+        profile_model.Profile, properties=profile_properties)
+
+    access_checker = connection_view.IsUserOrgAdminForUrlConnection()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
 
 
 class StartConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
@@ -136,15 +341,8 @@ class StartConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     """Tests that connection is created successfully for non-students."""
     org_admin = self.profile_helper.createOrgAdmin(self.org)
 
-    profile_helper = profile_utils.GCIProfileHelper(
-       self.program, False)
-    profile_helper.createOtherUser('first@example.com')
-    first_profile = profile_helper.createProfile()
-
-    profile_helper = profile_utils.GCIProfileHelper(
-       self.program, False)
-    profile_helper.createOtherUser('second@example.com')
-    second_profile = profile_helper.createProfile()
+    first_profile = profile_utils.seedGCIProfile(self.program)
+    second_profile = profile_utils.seedGCIProfile(self.program)
 
     post_data = {
         'role': connection_model.MENTOR_ROLE,
@@ -171,6 +369,9 @@ class StartConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
             org_admin.name(),
             connection_model.VERBOSE_ROLE_NAMES[connection_model.MENTOR_ROLE]))
 
+    # check that an email to the user has been sent
+    self.assertEmailSent(to=first_profile.email)
+
     # check that connection with the second profile is created
     connection = connection_model.Connection.all().ancestor(
         second_profile.key()).filter('organization', self.org).get()
@@ -178,14 +379,14 @@ class StartConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
     self.assertEqual(connection.user_role, connection_model.NO_ROLE)
 
+    # check that an email to the user has been sent
+    self.assertEmailSent(to=second_profile.email)
+
   def testConnectionNotStartedForStudent(self):
     """Tests that connection is not created for a student."""
     self.profile_helper.createOrgAdmin(self.org)
 
-    profile_helper = profile_utils.GCIProfileHelper(
-       self.program, False)
-    profile_helper.createOtherUser('first@example.com')
-    profile = profile_helper.createStudent()
+    profile = profile_utils.seedGCIStudent(self.program)
 
     post_data = {
         'role': connection_model.MENTOR_ROLE,
@@ -207,32 +408,31 @@ class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):
     """See unittest.TestCase.setUp for specification."""
     self.init()
 
-  def _getUrl(self, profile, org):
+  def _getUrl(self, org):
     """Returns URL to 'start connection as user' view for the specified
-    profile and organization.
+    organization and the currently logged-in user.
 
     Args:
-      profile: profile entity.
       org: organization entity.
 
     Returns:
       URL to 'start connection as user' view.
     """
-    return '/gci/connection/start/user/%s/%s' % (
-        profile.key().name(), org.link_id)
+    return '/gci/connection/start/user/%s' % org.key().name()
 
   def testStudentAccessDenied(self):
     """Tests that students cannot access the site."""
-    profile = self.profile_helper.createStudent()
-    url = self._getUrl(profile, self.org)
+    self.profile_helper.createStudent()
+
+    url = self._getUrl(self.org)
     response = self.get(url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testNonStudentAccessGranted(self):
     """Tests that a user with non-student profile can access the site."""
-    profile = self.profile_helper.createProfile()
-    url = self._getUrl(profile, self.org)
+    self.profile_helper.createProfile()
+    url = self._getUrl(self.org)
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertTemplateUsed(
@@ -250,7 +450,7 @@ class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):
     connection = seeder_logic.seed(
         connection_model.Connection, properties=connection_properties)
 
-    url = self._getUrl(profile, self.org)
+    url = self._getUrl(self.org)
 
     # check that user is redirected when a connection exists
     response = self.get(url)
@@ -266,9 +466,9 @@ class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):
 
   def testStudentProfile(self):
     """Tests that exception is raised when user profile starts connection."""
-    profile = self.profile_helper.createStudent()
+    self.profile_helper.createStudent()
 
-    url = self._getUrl(profile, self.org)
+    url = self._getUrl(self.org)
 
     # check that user is forbidden to access the page
     response = self.get(url)
@@ -282,6 +482,39 @@ class StartConnectionAsUserTest(test_utils.GCIDjangoTestCase):
       response = self.post(url)
       self.assertResponseBadRequest(response)
 
+  def testNonStudentProfile(self):
+    """Tests that connection is created for a non-student profile."""
+    profile = self.profile_helper.createProfile()
+
+    # seed an admin for the organization
+    other_helper = profile_utils.GCIProfileHelper(self.program, False)
+    org_admin = other_helper.createOrgAdmin(self.org)
+
+    post_data = {'role': connection_model.ROLE}
+    response = self.post(self._getUrl(self.org), post_data)
+
+    # check that a new connection is created
+    connection = connection_model.Connection.all().ancestor(
+        profile.key()).filter('organization', self.org).get()
+    self.assertIsNotNone(connection)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+
+    # check that auto-generated message is created
+    message = connection_model.ConnectionMessage.all().ancestor(
+        connection).get()
+    self.assertIsNotNone(message)
+    self.assertTrue(message.is_auto_generated)
+    self.assertEqual(
+        message.content,
+        connection_logic._USER_STARTED_CONNECTION)
+
+    # check that a message has been sent to the organization admin
+    self.assertEmailSent(to=org_admin.email)
+
+    # check that the user is redirected to 'Manage Connection' page
+    self.assertResponseRedirect(response, _getManageAsUserUrl(connection))
+
 
 class ManageConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
   """Unit tests for ManageConnectionAsOrg class."""
@@ -291,10 +524,7 @@ class ManageConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     self.init()
 
     # seed another profile for a connected user
-    profile_helper = profile_utils.GCIProfileHelper(
-       self.program, False)
-    profile_helper.createOtherUser('other@example.com')
-    other_profile = profile_helper.createProfile()
+    other_profile = profile_utils.seedGCIProfile(self.program)
 
     self.connection = connection_utils.seed_new_connection(
         other_profile, self.org)
@@ -309,6 +539,7 @@ class ManageConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
   def testSendNewMessage(self):
     """Tests that sending a new connection message works."""
     self.profile_helper.createOrgAdmin(self.org)
+    last_modified = self.connection.last_modified
 
     post_data = {
         connection_view.MESSAGE_FORM_NAME: '',
@@ -324,6 +555,10 @@ class ManageConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(message.content, _TEST_MESSAGE_CONTENT)
     self.assertFalse(message.is_auto_generated)
     self.assertEqual(message.author.key(), self.profile_helper.profile.key())
+
+    # check that last_modified property is updated
+    connection = db.get(self.connection.key())
+    self.assertGreater(connection.last_modified, last_modified)
 
 
 class ManageConnectionAsUserTest(test_utils.GCIDjangoTestCase):
@@ -343,6 +578,8 @@ class ManageConnectionAsUserTest(test_utils.GCIDjangoTestCase):
 
   def testSendNewMessage(self):
     """Tests that sending a new connection message works."""
+    last_modified = self.connection.last_modified
+
     post_data = {
         connection_view.MESSAGE_FORM_NAME: '',
         'content': _TEST_MESSAGE_CONTENT,
@@ -357,6 +594,10 @@ class ManageConnectionAsUserTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(message.content, _TEST_MESSAGE_CONTENT)
     self.assertFalse(message.is_auto_generated)
     self.assertEqual(message.author.key(), self.profile_helper.profile.key())
+
+    # check that last_modified property is updated
+    connection = db.get(self.connection.key())
+    self.assertGreater(connection.last_modified, last_modified)
 
 
 class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
@@ -799,12 +1040,13 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     request.POST = {'user_role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
-    handler = connection_view.UserActionsFormHandler(self.view)
-
     # assume that mentor is not eligible to quit
+    handler = connection_view.UserActionsFormHandler(self.view)
     with mock.patch.object(
         profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
-      handler.handle(data, None, None)
+      with self.assertRaises(exception.UserError) as context: 
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # check if all data is updated properly
     connection = db.get(connection.key())
@@ -875,12 +1117,13 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     request.POST = {'user_role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
-    handler = connection_view.UserActionsFormHandler(self.view)
-
     # assume that mentor is not eligible to quit
+    handler = connection_view.UserActionsFormHandler(self.view)
     with mock.patch.object(
         profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
-      handler.handle(data, None, None)
+      with self.assertRaises(exception.UserError) as context:
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # check if all data is updated properly
     connection = db.get(connection.key())
@@ -1267,10 +1510,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     data = request_data.RequestData(request, None, self.kwargs)
 
     # assume that mentor cannot be removed
+    handler = connection_view.OrgActionsFormHandler(self.view)
     with mock.patch.object(
         profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
-      handler = connection_view.OrgActionsFormHandler(self.view)
-      handler.handle(data, None, None)
+      with self.assertRaises(exception.UserError) as context:
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # check if all data is updated properly
     connection = db.get(connection.key())
@@ -1550,10 +1795,12 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     data = request_data.RequestData(request, None, self.kwargs)
 
     # assume that org admin cannot be removed
+    handler = connection_view.OrgActionsFormHandler(self.view)
     with mock.patch.object(
         profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
-      handler = connection_view.OrgActionsFormHandler(self.view)
-      handler.handle(data, None, None)
+      with self.assertRaises(exception.UserError) as context:
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # check if all data is updated properly
     connection = db.get(connection.key())
@@ -1667,11 +1914,13 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     data = request_data.RequestData(request, None, self.kwargs)
 
     # assume that org admin cannot be removed
+    handler = connection_view.OrgActionsFormHandler(self.view)
     with mock.patch.object(
         profile_logic, 'isMentorRoleEligibleForOrg',
         return_value=rich_bool.FALSE):
-      handler = connection_view.OrgActionsFormHandler(self.view)
-      handler.handle(data, None, None)
+      with self.assertRaises(exception.UserError) as context:
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # check if all data is updated properly
     connection = db.get(connection.key())
@@ -1698,10 +1947,10 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     data._profile = seeder_logic.seed(profile_model.Profile)
 
     # assume that org admin can be removed
+    handler = connection_view.OrgActionsFormHandler(self.view)
     with mock.patch.object(
         profile_logic, 'isMentorRoleEligibleForOrg',
         return_value=rich_bool.TRUE):
-      handler = connection_view.OrgActionsFormHandler(self.view)
       handler.handle(data, None, None)
 
     # check if all data is updated properly
@@ -1927,3 +2176,108 @@ class PickOrganizationToConnectPageTest(test_utils.GCIDjangoTestCase):
     response = self.get(self._getUrl(profile))
     self.assertResponseOK(response)
     self.assertGCITemplatesUsed(response)
+
+
+class MarkConnectionAsSeenByOrgTest(test_utils.GCIDjangoTestCase):
+  """Unit tests for MarkConnectionAsSeenByOrg class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+    # seed another profile for a connected user
+    other_profile = profile_utils.seedGCIProfile(self.program)
+
+    self.connection = connection_utils.seed_new_connection(
+        other_profile, self.org, seen_by_org=False)
+
+  @unittest.skip(
+      'This request should fail instead of raising NotImplementedError')
+  def testGetMethodForbidden(self):
+    """Tests that GET method is not permitted."""
+    self.profile_helper.createOrgAdmin(self.org)
+
+    response = self.get(_getMarkAsSeenByOrgUrl(self.connection))
+    self.assertResponseForbidden(response)
+
+  def testConnectionMarkedAsSeen(self):
+    """Tests that connection is successfully marked as seen by organization."""
+    self.profile_helper.createOrgAdmin(self.org)
+
+    response = self.post(_getMarkAsSeenByOrgUrl(self.connection))
+    self.assertResponseOK(response)
+
+    # check that connection is marked as seen by organization
+    connection = db.get(self.connection.key())
+    self.assertTrue(connection.seen_by_org)
+
+
+class MarkConnectionAsSeenByUserTest(test_utils.GCIDjangoTestCase):
+  """Unit tests for MarkConnectionAsSeenByUser class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+    profile = self.profile_helper.createProfile()
+
+    self.connection = connection_utils.seed_new_connection(
+        profile, self.org, seen_by_user=False)
+
+  @unittest.skip(
+      'This request should fail instead of raising NotImplementedError')
+  def testGetMethodForbidden(self):
+    """Tests that GET method is not permitted."""
+    response = self.get(_getMarkAsSeenByOrgUrl(self.connection))
+    self.assertResponseForbidden(response)
+
+  def testConnectionMarkedAsSeen(self):
+    """Tests that connection is successfully marked as seen by user."""
+    response = self.post(_getMarkAsSeenByUserUrl(self.connection))
+    self.assertResponseOK(response)
+
+    # check that connection is marked as seen by organization
+    connection = db.get(self.connection.key())
+    self.assertTrue(connection.seen_by_user)
+
+
+class OrgAdminConnectionListTest(test_utils.GCIDjangoTestCase):
+  """Unit tests for OrgAdminConnectionList class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    profile = self.profile_helper.createOrgAdmin(self.org)
+    url = _getListConnectionsForOrgAdminUrl(profile)
+
+    response = self.get(url)
+    self.assertResponseOK(response)
+
+  def testListData(self):
+    """Tests that all connections for orgs administrated by user are listed."""
+    self.profile_helper.createOrgAdmin(self.org)
+
+    # seed a few connections for organization
+    for _ in range(3):
+      user = profile_utils.seedUser()
+      profile = seeder_logic.seed(
+          profile_model.Profile, properties={'parent': user})
+      connection_utils.seed_new_connection(profile, self.org)
+
+    # seed another organization which is not administrated by the user
+    other_org = seeder_logic.seed(org_model.Organization)
+
+    # seed a few connections for the other organization
+    for _ in range(5):
+      profile = seeder_logic.seed(profile_model.Profile)
+      connection_utils.seed_new_connection(profile, other_org)
+
+    list_data = self.getListData(
+        _getListConnectionsForOrgAdminUrl(self.profile_helper.profile), 0)
+
+    # check that four connections are listed: the three ones created above
+    # plus one for the organization admin itself
+    self.assertEqual(len(list_data), 4)

@@ -29,16 +29,19 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-# 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_ENGINE = 'dummy'
-# None of the following are used with appengine
-DATABASE_NAME = ''             # Or path to database file if using sqlite3.
-DATABASE_USER = ''             # Not used with sqlite3.
-DATABASE_PASSWORD = ''         # Not used with sqlite3.
-# Set to empty string for localhost. Not used with sqlite3.
-DATABASE_HOST = ''
-# Set to empty string for default. Not used with sqlite3.
-DATABASE_PORT = ''
+# A dictionary containing the settings for all databases to be
+# used with Django.
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.dummy',
+        'NAME': 'dummy'
+    }
+}
+
+ALLOWED_HOSTS = (
+    '.google-melange.com',
+    '.google-melange.appspot.com',
+)
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -73,13 +76,23 @@ ADMIN_MEDIA_PREFIX = '/media/'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
-#     'django.template.loaders.eggs.load_template_source',
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
 )
+
+# Create a random SECRET_KEY, this key will be different for each instance of
+# Melange that AppEngine creates, guaranteeing that we cannot accidentally rely
+# on any Django feature that uses it. That is, if we would accidentally rely on
+# such a feature, it would fail safely (by, for example, rejecting a user
+# request).
+# We would prefer if there was a way to make any such request fail with a 50x
+# error, but Django does not provide such an option.
+SECRET_KEY_LENGTH = 50
+SECRET_KEY = os.urandom(SECRET_KEY_LENGTH).encode("hex")
 
 MIDDLEWARE_CLASSES = (
     'google.appengine.ext.appstats.recording.AppStatsDjangoMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'soc.middleware.blobstore.BlobStoreMiddleware',
     'soc.middleware.xsrf.XsrfMiddleware',
 )
@@ -110,6 +123,7 @@ GCI_TASK_QUOTA_LIMIT_ENABLED = False
 
 CALLBACK_MODULE_NAMES = [
     'codein.callback',
+    'melange.callback',
     'soc.modules.soc_core.callback',
     'soc.modules.gsoc.callback',
     'soc.modules.gci.callback',

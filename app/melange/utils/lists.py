@@ -20,6 +20,8 @@ import pickle
 from google.appengine.ext import ndb
 from google.appengine.ext import db
 
+from melange import key_column_id_const
+
 from soc.mapreduce import cache_list_items
 
 from melange.logic import cached_list
@@ -34,9 +36,6 @@ from soc.modules.gsoc.models.timeline import GSoCTimeline
 
 # string that is used as the next_key parameter in the final batch.
 FINAL_BATCH = 'done'
-
-# name of the column that has a unique value among all the rows.
-KEY_COLUMN_ID = 'key'
 
 
 class List(object):
@@ -295,7 +294,7 @@ class JqgridResponse(object):
       item: A dict representing a particular list item.
 
     Returns:
-      A dict containing button ids as keys and another dict containing each 
+      A dict containing button ids as keys and another dict containing each
       button's custom parameters as the value of each key. None if the list does
       not contain custom buttons.
     """
@@ -321,7 +320,7 @@ class JqgridResponse(object):
       define custom row operations.
     """
     if self._row:
-      return self.row.getCustomParameters(item)
+      return self._row.getCustomParameters(item)
 
 def getDataId(query):
   """Get a unique 'data id' for a cached list related to a query.
@@ -333,7 +332,7 @@ def getDataId(query):
     query: A query used to create a list.
 
   Returns:
-    A string containing an id that is unique for the given query. 
+    A string containing an id that is unique for the given query.
   """
   if isinstance(query, ndb.Query):
     return repr(query)
@@ -385,7 +384,7 @@ class Row(object):
     """Initializes a Row object.
 
     Args:
-      row_type: A string indicating the type of the row. Currently 
+      row_type: A string indicating the type of the row. Currently
         'redirect_custom' is the only supported type.
     """
     self.row_type = row_type
@@ -398,7 +397,7 @@ class Row(object):
     http://code.google.com/p/soc/wiki/Lists.
 
     Returns:
-      A dict containing data for operations/row/parameters sub object.    
+      A dict containing data for operations/row/parameters sub object.
     """
     return {
         'type': self.row_type,
@@ -414,7 +413,7 @@ class Row(object):
 
     This must be overridden by implementing subclasses.
 
-    Returns: 
+    Returns:
       A dict containing parameters that can be used in operations/row sub
       object.
     """
@@ -433,7 +432,7 @@ class Button(object):
     Args:
       button_id: A string indicating a unique id for this button.
       caption: A string defining what caption the button should show.
-      bounds: A sequence of size two with two integers or an integer and the 
+      bounds: A sequence of size two with two integers or an integer and the
         string 'all'. This indicates how many rows need to be selected for the
         button to be enabled.
       button_type: A string indicating the type of the button. Supported types
@@ -462,8 +461,8 @@ class Button(object):
     """Returns the operations regarding this row.
 
     This method can be used to create the 'operations/row' sub object of the
-    json object expected by jqgrid. Specification of the json object can be 
-    found at http://code.google.com/p/soc/wiki/Lists. 
+    json object expected by jqgrid. Specification of the json object can be
+    found at http://code.google.com/p/soc/wiki/Lists.
 
     Returns: A dict with data for operations/row sub object expected by jqgrid.
     """
@@ -482,15 +481,15 @@ class RedirectCustomRow(Row):
   The link that will be used to redirection is custom to each row.
   """
 
-  def __init__(self, new_window):
+  def __init__(self, new_window=None):
     """Initializes a RedirectCustomRow object.
 
     Args:
-      new_window: A bool indicating whether the redirected page should be
-        loaded in a new window, when a row is clicked.
+      new_window: If specified to True, the redirected page should be
+        loaded in a new window.
     """
     super(RedirectCustomRow, self).__init__('redirect_custom')
-    self.new_window = new_window
+    self.new_window = bool(new_window)
 
   def _getParameters(self):
     """See Row._getParameters for specification"""
@@ -656,7 +655,7 @@ class PostButton(Button):
   def _getParameters(self):
     """See Button._getParameters for specification"""
     return {
-      'url': self.url, 
+      'url': self.url,
       'keys': self.keys,
       'refresh': self.refresh,
       'redirect': self.redirect
@@ -697,6 +696,11 @@ def getList(list_id):
 # A list of list ids
 GSOC_PROJECTS_LIST_ID = 'gsoc_projects'
 
+ORGANIZATION_LIST_ID = 'organizations'
+
+
+# Organization list
+from summerofcode.models import organization as org_model
 
 # GSoCProjects list
 from soc.modules.gsoc.models import project
@@ -734,7 +738,7 @@ class OraganizationColumn(Column):
     return entity.org.name
 
 
-key = KeyColumn(KEY_COLUMN_ID, 'Key', hidden=True)
+key = KeyColumn(key_column_id_const.KEY_COLUMN_ID, 'Key', hidden=True)
 student = StudentColumn('student', 'Student')
 title = SimpleColumn('title', 'Title')
 org = OraganizationColumn('org', 'Organization')
@@ -749,7 +753,22 @@ GSOC_PROJECTS_LIST = List(GSOC_PROJECTS_LIST_ID, 0, project.GSoCProject,
                           [key, student, title, org, status], datastore_reader,
                           cache_reader=cache_reader, valid_period=valid_period)
 
+# TODO(daniel): move this part to a separate module
+# TODO(daniel): replace this column with one that is more versatile
+class NdbKeyColumn(Column):
+  """Column object to represent the unique key of the entity."""
+
+  def getValue(self, entity):
+    """See Column.getValue for specification"""
+    return entity.key.id()
+
+key = NdbKeyColumn(key_column_id_const.KEY_COLUMN_ID, 'Key', hidden=True)
+name = SimpleColumn('name', 'Name')
+ORGANIZATION_LIST = List(
+    ORGANIZATION_LIST_ID, 0, org_model.SOCOrganization, [key, name],
+    datastore_reader)
 
 LISTS = {
-  GSOC_PROJECTS_LIST_ID: GSOC_PROJECTS_LIST
-}
+    GSOC_PROJECTS_LIST_ID: GSOC_PROJECTS_LIST,
+    ORGANIZATION_LIST_ID: ORGANIZATION_LIST,
+    }

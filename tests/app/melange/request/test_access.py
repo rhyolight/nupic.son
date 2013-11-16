@@ -54,7 +54,7 @@ class NoneAllowedAccessChecker(access.AccessChecker):
     """
     self._identifier = identifier
 
-  def checkAccess(self, data, check, mutator):
+  def checkAccess(self, data, check):
     """See access.AccessChecker.checkAccess for specification."""
     raise exception.Forbidden(message=self._identifier)
 
@@ -99,7 +99,7 @@ class AllAllowedAccessCheckerTest(unittest.TestCase):
   def testAccessAllowedWithPhonyInputs(self):
     """Tests that access is allowed without examining inputs."""
     access_checker = access.AllAllowedAccessChecker()
-    access_checker.checkAccess(Explosive(), Explosive(), Explosive())
+    access_checker.checkAccess(Explosive(), Explosive())
 
 
 class ProgramAdministratorAccessCheckerTest(unittest.TestCase):
@@ -133,7 +133,7 @@ class ProgramAdministratorAccessCheckerTest(unittest.TestCase):
     self.user.put()
 
     access_checker = access.ProgramAdministratorAccessChecker()
-    access_checker.checkAccess(self.data, None, None)
+    access_checker.checkAccess(self.data, None)
 
   def testOrganizationAdministratorsDeniedAccess(self):
     """Tests that an organization administrator is denied access."""
@@ -151,7 +151,7 @@ class ProgramAdministratorAccessCheckerTest(unittest.TestCase):
 
     access_checker = access.ProgramAdministratorAccessChecker()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.message,
         access._MESSAGE_NOT_PROGRAM_ADMINISTRATOR)
 
@@ -171,7 +171,7 @@ class ProgramAdministratorAccessCheckerTest(unittest.TestCase):
 
     access_checker = access.ProgramAdministratorAccessChecker()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.message,
         access._MESSAGE_NOT_PROGRAM_ADMINISTRATOR)
 
@@ -190,7 +190,7 @@ class ProgramAdministratorAccessCheckerTest(unittest.TestCase):
 
     access_checker = access.ProgramAdministratorAccessChecker()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.message,
         access._MESSAGE_NOT_PROGRAM_ADMINISTRATOR)
 
@@ -198,7 +198,7 @@ class ProgramAdministratorAccessCheckerTest(unittest.TestCase):
     """Tests that logged-out users are denied access."""
     access_checker = access.ProgramAdministratorAccessChecker()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.message,
         access._MESSAGE_NOT_PROGRAM_ADMINISTRATOR)
 
@@ -212,7 +212,7 @@ class DeveloperAccessCheckerTest(unittest.TestCase):
     data._is_developer = True
 
     access_checker = access.DeveloperAccessChecker()
-    access_checker.checkAccess(data, None, None)
+    access_checker.checkAccess(data, None)
 
   def testNonDeveloperAccessDenied(self):
     data = request_data.RequestData(None, None, None)
@@ -221,7 +221,7 @@ class DeveloperAccessCheckerTest(unittest.TestCase):
 
     access_checker = access.DeveloperAccessChecker()
     with self.assertRaises(exception.UserError):
-      access_checker.checkAccess(data, None, None)
+      access_checker.checkAccess(data, None)
 
 
 class ConjuctionAccessCheckerTest(unittest.TestCase):
@@ -231,7 +231,7 @@ class ConjuctionAccessCheckerTest(unittest.TestCase):
     """Tests that checker passes if all sub-checkers pass."""
     checkers = [access.AllAllowedAccessChecker() for _ in xrange(5)]
     access_checker = access.ConjuctionAccessChecker(checkers)
-    access_checker.checkAccess(None, None, None)
+    access_checker.checkAccess(None, None)
 
   def testFirstCheckerFails(self):
     """Tests that checker fails if the first sub-checker fails."""
@@ -239,7 +239,7 @@ class ConjuctionAccessCheckerTest(unittest.TestCase):
     checkers.extend([access.AllAllowedAccessChecker() for _ in xrange(4)])
     access_checker = access.ConjuctionAccessChecker(checkers)
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(None, None, None)
+      access_checker.checkAccess(None, None)
     self.assertEqual(context.exception.message, 'first')
 
   def testLastCheckerFails(self):
@@ -248,7 +248,7 @@ class ConjuctionAccessCheckerTest(unittest.TestCase):
     checkers.append(NoneAllowedAccessChecker('last'))
     access_checker = access.ConjuctionAccessChecker(checkers)
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(None, None, None)
+      access_checker.checkAccess(None, None)
     self.assertEqual(context.exception.message, 'last')
 
 
@@ -285,7 +285,7 @@ class NonStudentUrlProfileAccessCheckerTest(unittest.TestCase):
 
     access_checker = access.NonStudentUrlProfileAccessChecker()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.NOT_FOUND)
 
   def testStudentAccessDenied(self):
@@ -307,7 +307,7 @@ class NonStudentUrlProfileAccessCheckerTest(unittest.TestCase):
 
     access_checker = access.NonStudentUrlProfileAccessChecker()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(data, None, None)
+      access_checker.checkAccess(data, None)
     self.assertEqual(context.exception.message,
         access._MESSAGE_STUDENTS_DENIED)
 
@@ -319,7 +319,72 @@ class NonStudentUrlProfileAccessCheckerTest(unittest.TestCase):
     data._url_profile = self.url_profile
 
     access_checker = access.NonStudentUrlProfileAccessChecker()
-    access_checker.checkAccess(data, None, None)
+    access_checker.checkAccess(data, None)
+
+
+class NonStudentProfileAccessCheckerTest(unittest.TestCase):
+  """Tests for NonStudentProfileAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.setUp for specification."""
+    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+
+    program_properties = {
+        'sponsor': sponsor,
+        'scope': sponsor,
+        }
+    program = seeder_logic.seed(
+        program_model.Program, properties=program_properties)
+
+    kwargs = {
+        'sponsor': sponsor.key().name(),
+        'program': program.link_id,
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+  def testUserWithNoProfileAccessDenied(self):
+    """Tests that access is denied if current user has no profile"""
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+
+    access_checker = access.NON_STUDENT_PROFILE_ACCESS_CHECKER
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testUserWithStudentProfileAccessDenied(self):
+    """Tests that access is denied if current user has student profile."""
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+
+    profile_properties = {
+        'is_student': True,
+        'parent': user,
+        'status': 'active',
+        }
+    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+
+    access_checker = access.NON_STUDENT_PROFILE_ACCESS_CHECKER
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testUserWithNonStudentProfileAccessGranted(self):
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+
+    profile_properties = {
+        'is_student': False,
+        'parent': user,
+        'status': 'active',
+        'program': self.data.program,
+        'scope': self.data.program,
+        'link_id': user.link_id,
+        }
+    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+
+    access_checker = access.NON_STUDENT_PROFILE_ACCESS_CHECKER
+    access_checker.checkAccess(self.data, None)
 
 
 class ProgramActiveAccessCheckerTest(unittest.TestCase):
@@ -336,7 +401,7 @@ class ProgramActiveAccessCheckerTest(unittest.TestCase):
 
     access_checker = access.ProgramActiveAccessChecker()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(data, None, None)
+      access_checker.checkAccess(data, None)
     self.assertEqual(context.exception.message,
         access._MESSAGE_PROGRAM_NOT_EXISTING)
 
@@ -353,7 +418,7 @@ class ProgramActiveAccessCheckerTest(unittest.TestCase):
     data._program.timeline.program_start = timeline_utils.past()
     data._program.timeline.program_end = timeline_utils.future()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(data, None, None)
+      access_checker.checkAccess(data, None)
     self.assertEqual(context.exception.message,
         access._MESSAGE_PROGRAM_NOT_ACTIVE)
 
@@ -362,7 +427,7 @@ class ProgramActiveAccessCheckerTest(unittest.TestCase):
     data._program.timeline.program_start = timeline_utils.past(delta=100)
     data._program.timeline.program_end = timeline_utils.past(delta=50)
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(data, None, None)
+      access_checker.checkAccess(data, None)
     self.assertEqual(context.exception.message,
         access._MESSAGE_PROGRAM_NOT_ACTIVE)
 
@@ -379,7 +444,7 @@ class ProgramActiveAccessCheckerTest(unittest.TestCase):
     data._program.status = program_model.STATUS_VISIBLE
     data._program.timeline.program_start = timeline_utils.past()
     data._program.timeline.program_end = timeline_utils.future()
-    access_checker.checkAccess(data, None, None)
+    access_checker.checkAccess(data, None)
 
 
 class IsUrlUserAccessCheckerTest(unittest.TestCase):
@@ -394,7 +459,7 @@ class IsUrlUserAccessCheckerTest(unittest.TestCase):
     """Tests for URL data that does not contain any user data."""
     access_checker = access.IsUrlUserAccessChecker()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
   def testNonLoggedInUserAccessDenied(self):
@@ -404,7 +469,7 @@ class IsUrlUserAccessCheckerTest(unittest.TestCase):
     data.kwargs['user'] = 'some_username'
     access_checker = access.IsUrlUserAccessChecker()
     with self.assertRaises(exception.LoginRequired):
-      access_checker.checkAccess(data, None, None)
+      access_checker.checkAccess(data, None)
 
   def testNonUserAccessDenied(self):
     """Tests that access is denied for a user with no User entity."""
@@ -412,7 +477,7 @@ class IsUrlUserAccessCheckerTest(unittest.TestCase):
     self.data._user = None
     access_checker = access.IsUrlUserAccessChecker()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
 
   def testOtherUserAccessDenied(self):
@@ -420,14 +485,14 @@ class IsUrlUserAccessCheckerTest(unittest.TestCase):
     self.data.kwargs['user'] = 'other'
     access_checker = access.IsUrlUserAccessChecker()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
 
   def testSameUserAccessGranted(self):
     """Tests that access is granted for a user who is defined in URL."""
     self.data.kwargs['user'] = self.data._user.link_id
     access_checker = access.IsUrlUserAccessChecker()
-    access_checker.checkAccess(self.data, None, None)
+    access_checker.checkAccess(self.data, None)
 
 
 class IsUserOrgAdminForUrlOrgTest(unittest.TestCase):
@@ -464,7 +529,7 @@ class IsUserOrgAdminForUrlOrgTest(unittest.TestCase):
 
     access_checker = access.IsUserOrgAdminForUrlOrg()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
     self.assertEqual(context.exception.message, access._MESSAGE_NO_PROFILE)
 
@@ -484,7 +549,7 @@ class IsUserOrgAdminForUrlOrgTest(unittest.TestCase):
 
     access_checker = access.IsUserOrgAdminForUrlOrg()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.NOT_FOUND)
 
   def testMentorAccessDenied(self):
@@ -502,7 +567,7 @@ class IsUserOrgAdminForUrlOrgTest(unittest.TestCase):
 
     access_checker = access.IsUserOrgAdminForUrlOrg()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
 
   def testStudentAccessDenied(self):
@@ -520,7 +585,7 @@ class IsUserOrgAdminForUrlOrgTest(unittest.TestCase):
 
     access_checker = access.IsUserOrgAdminForUrlOrg()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None, None)
+      access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
 
   def testOrgAdminAccessGranted(self):
@@ -537,4 +602,4 @@ class IsUserOrgAdminForUrlOrgTest(unittest.TestCase):
     self.data._url_org = self.organization
 
     access_checker = access.IsUserOrgAdminForUrlOrg()
-    access_checker.checkAccess(self.data, None, None)
+    access_checker.checkAccess(self.data, None)

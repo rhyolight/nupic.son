@@ -14,10 +14,11 @@
 
 """Module containing the views for GSoC home page."""
 
-from django.conf.urls.defaults import url as django_url
+from django.conf.urls import url as django_url
 
 from melange.appengine import system
-from soc.logic import links
+from melange.request import links
+
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
@@ -100,28 +101,40 @@ class Apply(Template):
     context['student_signup'] = self.data.timeline.studentSignup()
     context['mentor_signup'] = self.data.timeline.mentorSignup()
 
-    signup = (
+    signup_active = (
         self.data.timeline.orgSignup() or
         self.data.timeline.studentSignup() or
         (self.data.timeline.mentorSignup() and not self.data.student_info)
     )
 
     # signup block
-    if signup and not self.data.gae_user:
+    if signup_active and not self.data.gae_user:
+      # Show a login link
       context['login_link'] = links.LINKER.login(self.data.request)
-    if signup and not self.data.profile:
-      if self.data.timeline.orgSignup():
-        redirector.createProfile('org_admin')
-      elif self.data.timeline.studentSignup():
-        redirector.createProfile('mentor')
-        context['mentor_profile_link'] = redirector.urlOf(
-            'create_gsoc_profile', secure=True)
-        redirector.createProfile('student')
-      elif self.data.timeline.mentorSignup():
-        redirector.createProfile('mentor')
 
-      context['profile_link'] = redirector.urlOf(
+    if signup_active and not self.data.profile:
+      # Show a registration link for a relevant profile type.
+      redirector.createProfile('mentor')
+      context['mentor_profile_link'] = redirector.urlOf(
           'create_gsoc_profile', secure=True)
+      redirector.createProfile('org_admin')
+      context['org_admin_profile_link'] = redirector.urlOf(
+          'create_gsoc_profile', secure=True)
+      redirector.createProfile('student')
+      context['student_profile_link'] = redirector.urlOf(
+          'create_gsoc_profile', secure=True)
+
+      context['show_profile_link'] = False
+      if self.data.timeline.orgSignup():
+        context['show_org_admin_link'] = True
+        context['show_profile_link'] = True
+      elif self.data.timeline.studentSignup():
+        context['show_student_link'] = True
+        context['show_profile_link'] = True
+      elif self.data.timeline.mentorSignup():
+        context['show_mentor_link'] = True
+        context['show_student_link'] = True
+        context['show_profile_link'] = True
 
     if self.data.timeline.orgSignup() and self.data.profile:
       context['org_apply_link'] = redirector.orgAppTake().urlOf(
@@ -138,7 +151,7 @@ class Apply(Template):
       else:
         context['profile_role'] = 'mentor'
 
-    context['apply_block'] = signup
+    context['signup_active'] = signup_active
 
     return context
 

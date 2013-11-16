@@ -33,6 +33,18 @@ DEFAULT_TIMEOUT_SECS = 4*24*60*60
 XSRF_SECRET_KEY_LENGTH = 16
 
 
+class InvalidTokenException(Exception):
+  """Indicates that the token is invalid."""
+
+  def __init__(self, reason):
+    """Constructs a new InvalidTokenException.
+
+    Args:
+      reason: A string describing why the token is invalid.
+    """
+    self.reason = reason
+
+
 def _generateToken(key, user_id, action_id="", when=None):
   """Generates a URL-safe token for the given user, action, time tuple.
 
@@ -75,35 +87,32 @@ def _validateToken(key, token, user_id, action_id=""):
     action_id: a string identifier of the action they requested
       authorization for.
 
-  Returns:
-    A boolean - True if the user is authorized for the action, False
-    otherwise.
+  Raises:
+    InvalidTokenException: If the token is invalid.
   """
   if not token:
-    return "Missing token"
+    raise InvalidTokenException("Missing token")
 
   try:
     decoded = base64.urlsafe_b64decode(str(token))
   except (TypeError, ValueError):
-    return "Could not base64 decode token"
+    raise InvalidTokenException("Could not base64 decode token")
 
   try:
     token_time = long(decoded.split(DELIMITER)[-1])
   except (TypeError, ValueError):
-    return "Could not split token"
+    raise InvalidTokenException("Could not split token")
 
   current_time = time.time()
 
   # If the token is too old it's not valid.
   if current_time - token_time > DEFAULT_TIMEOUT_SECS:
-    return "Token too old"
+    raise InvalidTokenException("Token too old")
 
   # The given token should match the generated one with the same time.
   expected_token = _generateToken(key, user_id, action_id, when=token_time)
   if token != expected_token:
-    return "Token mismatch for user_id '%s'" % user_id
-
-  return True
+    raise InvalidTokenException("Token mismatch for user_id '%s'" % user_id)
 
 
 def _getCurrentUserId():

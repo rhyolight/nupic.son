@@ -21,6 +21,7 @@ from google.appengine.ext import db
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
 
+from tests import profile_utils
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 
@@ -62,9 +63,8 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
     self.assertEqual(0, len(data))
 
     # list response with projects
-    mentor_profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor_profile_helper.createOtherUser('mentor@example.com')
-    mentor = mentor_profile_helper.createMentor(self.org)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
     self.profile_helper.createStudentWithProposal(self.org, mentor)
     self.profile_helper.createStudentWithProject(self.org, mentor)
 
@@ -79,9 +79,8 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
     self.timeline_helper.studentsAnnounced()
 
     # list response with projects
-    mentor_profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor_profile_helper.createOtherUser('mentor@example.com')
-    mentor = mentor_profile_helper.createMentor(self.org)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
     self.profile_helper.createStudentWithProposal(self.org, mentor)
     student = self.profile_helper.createStudentWithProject(self.org, mentor)
     student_key = student.key()

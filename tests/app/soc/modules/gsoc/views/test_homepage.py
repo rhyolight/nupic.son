@@ -16,7 +16,9 @@
 """Tests for program homepage related views.
 """
 
+import unittest
 
+from tests import profile_utils
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 
@@ -72,6 +74,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     self.assertResponseOK(response)
     self.assertHomepageTemplatesUsed(response)
 
+  @unittest.skip('timeline widget is currently disabled')
   def testHomepageDuringSignup(self):
     """Tests the student homepage during the signup period.
     """
@@ -86,16 +89,14 @@ class HomepageViewTest(GSoCDjangoTestCase):
     self.assertIn('profile_link', apply_context)
 
     # Show featured_project
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com')
-    student_entity = student.createStudent()
+    student = profile_utils.seedGSoCStudent(self.program)
 
     mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
     mentor.createOtherUser('mentor@example.com')
-    mentor.createMentorWithProject(self.org, student_entity)
+    mentor.createMentorWithProject(self.org, student)
 
     from soc.modules.gsoc.models.project import GSoCProject
-    project = GSoCProject.all().ancestor(student_entity).get()
+    project = GSoCProject.all().ancestor(student).get()
     project.is_featured = True
     project.put()
     response = self.get(url)
@@ -108,6 +109,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     self.assertEqual(featured_project_tmpl.featured_project.key(),
                      project.key())
 
+  @unittest.skip('timeline widget is currently disabled')
   def testHomepageAfterStudentsAnnounced(self):
     """Tests the student homepage after the student's have been announced.
     """

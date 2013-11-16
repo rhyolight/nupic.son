@@ -21,9 +21,10 @@ from django import http
 from django.utils.translation import ugettext
 
 from melange.request import access
+from melange.request import links
+
 from soc.logic import accounts
 from soc.logic import cleaning
-from soc.logic import links
 from soc.models.user import User
 from soc.views.dashboard import Dashboard
 from soc.views.helper import url_patterns

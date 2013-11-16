@@ -38,7 +38,7 @@ class Tabs(template.Template):
 
   It can be used to form additional dynamic menu that consists of tabs.
   Each tab represents a single element of that list and has its own
-  displayable name as well as URL address to which it links. 
+  displayable name as well as URL address to which it links.
   """
 
   def __init__(self, data, template_path, tabs, selected_tab_id):

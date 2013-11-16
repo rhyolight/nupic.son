@@ -15,7 +15,7 @@
 # TODO(proto): uncomment and supply a Google App Engine application instance
 # application: FIXME
 # TODO(release): see the instructions in README about the "version:" field
-version: 2-1-20131003
+version: 2-1-20131107
 runtime: python27
 api_version: 1
 threadsafe: false
@@ -83,4 +83,4 @@ inbound_services:
 
 libraries:
 - name: django
-  version: "1.2"
+  version: "1.5"

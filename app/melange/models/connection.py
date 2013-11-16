@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" This module contains the object used to represent invitations and
-requests between a user and an organization
+""" This module contains a model used to represent a connection between
+a user and an organization.
 """
 from django.utils.translation import ugettext
 from google.appengine.ext import db
@@ -22,7 +22,7 @@ from soc.models.profile import Profile
 
 
 # Constants to represent the different states that users and org admins
-# may select for a connection. Users may select either ROLE or NO_ROLE, 
+# may select for a connection. Users may select either ROLE or NO_ROLE,
 # meaning that they will accept whatever role the org admin assigns them.
 # Org Admins may choose the first three, either declining to accept a
 # role or selecting one. It is up to the org admins to leave messages
@@ -44,8 +44,8 @@ VERBOSE_ROLE_NAMES = {
 # admins may respond with in their respective ShowConnection views.
 USER_RESPONSES = ((NO_ROLE, 'No Role'), (ROLE, 'Role'))
 ORG_RESPONSES = (
-  (NO_ROLE, 'No Role'), 
-  (MENTOR_ROLE, 'Mentor'), 
+  (NO_ROLE, 'No Role'),
+  (MENTOR_ROLE, 'Mentor'),
   (ORG_ADMIN_ROLE, 'Org Admin')
   )
 
@@ -53,12 +53,14 @@ ORG_RESPONSES = (
 class Connection(db.Model):
   """Connection model.
 
-  This model is intended to be used to represent either an invitation or
-  request between a User and an Organization. The type of role to be granted
-  to the user is determined by the role field and promotion is handled
-  depending on the states of user and org acceptance. The methods below
-  are simply convenience to clean up a lot of the logic in the connection
-  module for determining valid actions.
+  This model is intended to be used to represent a connection between a user
+  and an organization. Each initiated connection specifies a role which
+  the organization has granted to the user and a role which the user requests
+  from the organization. These two properties put together determine what
+  type of role the user has for the organization at this moment.
+
+  The class also defines a number of convenience methods to clean up
+  a lot of the logic in the connection module for determining valid actions.
 
   Parent: soc.models.profile.Profile
   """
@@ -82,7 +84,7 @@ class Connection(db.Model):
 
   #: Property for the ShowConnection pages to keep a record of the last time
   #: that either the org or user modified the connection.
-  last_modified = db.DateTimeProperty(auto_now_add=True)
+  last_modified = db.DateTimeProperty(auto_now=True)
 
   #: Property indicating that a member of the organization has seen
   #: the latest changes made by the user.
@@ -93,7 +95,7 @@ class Connection(db.Model):
   seen_by_user = db.BooleanProperty()
 
   def userRequestedRole(self):
-    """Indicate whether or not a user has requested to be promoted to a 
+    """Indicate whether or not a user has requested to be promoted to a
     role for an organization.
 
     Returns:
@@ -123,7 +125,8 @@ class Connection(db.Model):
   def allFields():
     """Returns a list of all names of fields in this model.
     """
-    return ['user_role', 'org_role', 'organization', 'created_on']
+    return ['user_role', 'org_role', 'organization', 'created_on',
+        'seen_by_org', 'seen_by_user']
 
   def keyName(self):
     """Returns a string which uniquely represents the entity.
@@ -131,15 +134,21 @@ class Connection(db.Model):
     return '/'.join([self.parent_key().name(), str(self.key().id())])
 
   def getRole(self):
-    """Returns the assigned role from the org admin's perspective because it
-    offers more information than the user's role.
+    """Returns the role currently assigned to the user for the connected
+    organization.
+
+    Returns:
+      Role type of the user for the connected organization. One of NO_ROLE,
+      MENTOR_ROLE or ORG_ADMIN_ROLE.
     """
-    if self.org_role == MENTOR_ROLE:
-      return 'Mentor'
-    elif self.org_role == ORG_ADMIN_ROLE:
-      return 'Org Admin'
+    if self.user_role == NO_ROLE:
+      return NO_ROLE
+    elif self.org_role == NO_ROLE:
+      return NO_ROLE
+    elif self.org_role == MENTOR_ROLE:
+      return MENTOR_ROLE
     else:
-      return 'No Role' 
+      return ORG_ADMIN_ROLE
 
 
 class AnonymousConnection(db.Model):
@@ -154,15 +163,28 @@ class AnonymousConnection(db.Model):
 
   #: A string to designate the role that will be recreated for the actual
   #: connection object.
-  role = db.StringProperty(choices=[MENTOR_ROLE, ORG_ADMIN_ROLE])
+  org_role = db.StringProperty(choices=(MENTOR_ROLE, ORG_ADMIN_ROLE))
 
-  #: Hash hexdigest() of this object's key to save time when validating
-  #: when the user registers.
-  hash_id = db.StringProperty()
+  #: UUID for the object to be included in a url.
+  token = db.StringProperty()
 
-  #: The email to which the anonymous connection was sent; this should be
-  #: queried against to prevent duplicate anonymous connections.
-  email = db.StringProperty()
+  #: Date until which this object is considered "valid" and can be used to
+  #: enroll as a mentor/admin for an organization. This will likely be a
+  #: week, based on the implementation in melange.logic.connection.
+  expiration_date = db.DateTimeProperty()
+
+  #: Email address representing the user for which the AnonymousConnection
+  #: was created.
+  email = db.EmailProperty()
+
+  def getRole(self):
+    """Returns the assigned role as a more meaningful string."""
+    if self.org_role == MENTOR_ROLE:
+      return 'Mentor'
+    elif self.org_role == ORG_ADMIN_ROLE:
+      return 'Org Admin'
+    else:
+      return 'No Role'
 
 
 class ConnectionMessage(db.Model):

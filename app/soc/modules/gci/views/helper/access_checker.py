@@ -35,6 +35,7 @@ from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.models.task import UNPUBLISHED
 from soc.modules.gci.models import conversation as gciconversation_model
 from soc.modules.gci.logic import conversation as gciconversation_logic
+from soc.modules.gci.views.helper import url_names
 
 
 DEF_ALREADY_PARTICIPATING_AS_NON_STUDENT = ugettext(
@@ -55,8 +56,10 @@ DEF_NO_TASK_EDIT_PRIV = ugettext(
     'You do not have sufficient privileges to edit a new task for %s.' )
 
 DEF_NO_PREV_ORG_MEMBER = ugettext(
-    'To apply as an organization for GCI you must have been a member of an '
-    'organization in Google Summer of Code or Google Code In.')
+    'To apply as an organization for GCI you must have you must have '
+    'participated as a member of an organization in a prior instance '
+    'of Google Summer of Code or Google Code-in and have a profile '
+    'registered in Melange')
 
 DEF_NOT_ORG_ADMIN_FOR_ORG_APP = ugettext(
     "You should be listed as one of the administrators on %(org_name)s's "
@@ -85,6 +88,10 @@ class Mutator(access_checker.Mutator):
   Mutates the data object as requested.
   """
 
+  def __init__(self, data):
+    super(Mutator, self).__init__(data)
+    self.unsetAll()
+
   def unsetAll(self):
     self.data.task = access_checker.unset
     self.data.comments = access_checker.unset
@@ -92,7 +99,6 @@ class Mutator(access_checker.Mutator):
     self.data.is_visible = access_checker.unset
     self.data.full_edit = access_checker.unset
     self.data.conversation = access_checker.unset
-    super(Mutator, self).unsetAll()
 
   def taskFromKwargs(self, comments=False, work_submissions=True):
     """Sets the GCITask entity in RequestData object.
@@ -173,11 +179,6 @@ class Mutator(access_checker.Mutator):
     """Sets full_edit to True/False depending on the status of the task.
     """
     self.data.full_edit = full_edit
-
-
-class DeveloperMutator(access_checker.DeveloperMutator,
-                       Mutator):
-  pass
 
 
 class AccessChecker(access_checker.AccessChecker):
@@ -332,7 +333,7 @@ class AccessChecker(access_checker.AccessChecker):
     if not self.data.profile:
       get_params = get_params or {}
       profile_url = self.data.redirect.createProfile('org_admin').urlOf(
-          'create_gci_profile', secure=True)
+          url_names.GCI_PROFILE_CREATE, secure=True)
 
       if get_params:
         profile_url += '?' + urllib.urlencode(get_params)

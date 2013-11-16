@@ -30,8 +30,7 @@ from tests import timeline_utils
 
 
 class GradingSurveyGroupTest(
-    test_utils.MailTestCase, test_utils.GSoCDjangoTestCase,
-    test_utils.TaskQueueTestCase):
+    test_utils.GSoCDjangoTestCase, test_utils.TaskQueueTestCase):
   """Tests for accept_proposals task.
   """
 
@@ -47,11 +46,9 @@ class GradingSurveyGroupTest(
     self.createSurveys()
 
   def createMentor(self):
-    """Creates a new mentor.
-    """
-    profile_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
-    profile_helper.createOtherUser('mentor@example.com')
-    self.mentor = profile_helper.createMentor(self.org)
+    """Creates a new mentor."""
+    self.mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
 
   def createStudent(self):
     """Creates a Student with a project.
@@ -143,10 +140,8 @@ class GradingSurveyGroupTest(
 
   def testDoesNotCreateGradingRecordForWithdrawnProject(self):
     # list response with projects
-    mentor_profile_helper = profile_utils.GSoCProfileHelper(
-        self.gsoc, self.dev_test)
-    mentor_profile_helper.createOtherUser('mentor@example.com')
-    mentor = mentor_profile_helper.createMentor(self.org)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key()])
 
     # create another project and mark it withdrawn
     student_profile_helper = profile_utils.GSoCProfileHelper(

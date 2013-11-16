@@ -15,7 +15,7 @@
 """Appengine Tasks related to GCI Task handling."""
 
 from django import http
-from django.conf.urls.defaults import url
+from django.conf.urls import url
 from django.utils.translation import ugettext
 
 from soc.tasks.helper import error_handler

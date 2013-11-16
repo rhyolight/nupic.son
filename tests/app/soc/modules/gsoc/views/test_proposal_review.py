@@ -15,16 +15,26 @@
 """Tests for proposal_review views.
 """
 
+import httplib
+import mock
 
+from django import http
+
+from melange.request import exception
+
+from soc.modules.gsoc.logic import proposal as proposal_logic
+from soc.modules.gsoc.models import profile as profile_model
+from soc.modules.gsoc.models import proposal as proposal_model
+from soc.modules.gsoc.models.proposal import GSoCProposal
+from soc.modules.gsoc.views import proposal_review as proposal_review_view
+from soc.modules.gsoc.views.helper import request_data
+
+from tests import profile_utils
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
-from tests.test_utils import MailTestCase
-
-from soc.modules.gsoc.models import profile as profile_model
-from soc.modules.gsoc.models.proposal import GSoCProposal
 
 
-class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
+class ProposalReviewTest(GSoCDjangoTestCase):
   """Tests proposal review page.
   """
 
@@ -40,11 +50,10 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gsoc/proposal/_comment_form.html')
 
   def createMentorWithSettings(self, email, notification_settings={}):
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor.createOtherUser(email)
-    mentor.createMentor(self.org)
-    mentor.notificationSettings(**notification_settings)
-    return mentor
+    user = profile_utils.seedUser(email=email)
+    return profile_utils.seedGSoCProfile(
+        self.program, user=user, mentor_for=[self.org.key()],
+        **notification_settings)
 
   def createProposal(self, override_properties={}):
     properties = {
@@ -58,8 +67,8 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
   def testReviewProposal(self):
     mentor = self.createMentorWithSettings('mentor@example.com',
-        {'new_proposals' :True, 'public_comments': True,
-         'private_comments' :True})
+        {'notify_new_proposals' :True, 'notify_public_comments': True,
+         'notify_private_comments' :True})
 
     self.profile_helper.createStudent()
     self.profile_helper.notificationSettings()
@@ -93,8 +102,10 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     comment = GSoCComment.all().ancestor(proposal).get()
     self.assertPropertiesEqual(properties, comment)
 
-    self.assertEmailSent(to=mentor.profile.email, n=1)
-    self.assertEmailNotSent(to=self.profile_helper.profile.email)
+    self.assertEmailSent(to=mentor.email)
+
+    # TODO(daniel): add assertEmailNotSent to DjangoTestCase
+    # self.assertEmailNotSent(to=self.profile_helper.profile.email)
 
     self.profile_helper.deleteProfile()
     self.profile_helper.createMentor(self.org)
@@ -133,13 +144,13 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     self.assertEqual(0, proposal.nr_scores)
 
   def testReviewProposalPublicView(self):
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com')
-    student.createStudent()
+    student = profile_utils.seedGSoCStudent(self.program)
 
-    proposal = self.createProposal({'is_publicly_visible': True,
-                                    'scope': student.profile,
-                                    'parent': student.profile})
+    proposal = self.createProposal({
+        'is_publicly_visible': True,
+        'scope': student,
+        'parent': student
+        })
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
@@ -154,12 +165,9 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gsoc/proposal/review.html')
 
   def testIgnoreProposalButton(self):
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com')
-    student.createStudent()
+    student = profile_utils.seedGSoCStudent(self.program)
 
-    proposal = self.createProposal({'scope': student.profile,
-                                    'parent': student.profile})
+    proposal = self.createProposal({'scope': student, 'parent': student})
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
@@ -178,12 +186,9 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     self.assertNotEqual(proposal.status, 'ignored')
 
   def testAcceptProposalButton(self):
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com')
-    student.createStudent()
+    student = profile_utils.seedGSoCStudent(self.program)
 
-    proposal = self.createProposal({'scope': student.profile,
-                                    'parent': student.profile})
+    proposal = self.createProposal({'scope': student, 'parent': student})
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
@@ -212,12 +217,9 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     self.assertTrue(proposal.accept_as_project)
 
   def testProposalModificationButton(self):
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com')
-    student.createStudent()
+    student = profile_utils.seedGSoCStudent(self.program)
 
-    proposal = self.createProposal({'scope': student.profile,
-                                    'parent': student.profile})
+    proposal = self.createProposal({'scope': student, 'parent': student})
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
@@ -236,16 +238,13 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     self.assertTrue(proposal.is_editable_post_deadline)
 
   def testWishToMentorButton(self):
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com')
-    student.createStudent()
+    student = profile_utils.seedGSoCStudent(self.program)
 
     self.profile_helper.createMentor(self.org)
 
     other_mentor = self.createMentorWithSettings('other_mentor@example.com')
 
-    proposal = self.createProposal({'scope': student.profile,
-                                    'parent': student.profile})
+    proposal = self.createProposal({'scope': student, 'parent': student})
 
     suffix = "%s/%s/%d" % (
     self.gsoc.key().name(),
@@ -266,17 +265,17 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     self.assertNotIn(
         self.profile_helper.profile.key(), proposal.possible_mentors)
 
-    other_mentor.profile.mentor_for = []
-    other_mentor.profile.put()
+    other_mentor.mentor_for = []
+    other_mentor.put()
 
-    proposal.possible_mentors.append(other_mentor.profile.key())
+    proposal.possible_mentors.append(other_mentor.key())
     proposal.put()
 
     url = '/gsoc/proposal/review/' + suffix
     response = self.get(url)
 
     proposal = GSoCProposal.get(proposal.key())
-    self.assertNotIn(other_mentor.profile.key(), proposal.possible_mentors)
+    self.assertNotIn(other_mentor.key(), proposal.possible_mentors)
 
   def testPubliclyVisibleButton(self):
     self.profile_helper.createStudent()
@@ -311,8 +310,9 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
         self.profile_helper.user.key().name(),
         proposal.key().id())
 
-    url = '/gsoc/proposal/withdraw/' + suffix
-    postdata = {'value': 'unchecked'}
+    # withdraw the proposal
+    url = '/gsoc/proposal/status/' + suffix
+    postdata = {'value': proposal_review_view.TOGGLE_BUTTON_IS_WITHDRAWN}
     response = self.post(url, postdata)
 
     self.assertResponseOK(response)
@@ -326,11 +326,12 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
         self.profile_helper.profile.student_info.key())
     self.assertEqual(number_of_proposals - 1, student_info.number_of_proposals)
 
-    url = '/gsoc/proposal/withdraw/' + suffix
-    postdata = {'value': 'unchecked'}
+    # try withdrawing the proposal once more time
+    url = '/gsoc/proposal/status/' + suffix
+    postdata = {'value': proposal_review_view.TOGGLE_BUTTON_IS_WITHDRAWN}
     response = self.post(url, postdata)
 
-    self.assertResponseBadRequest(response)
+    self.assertResponseOK(response)
 
     # check that the student proposal is still withdrawn
     proposal = GSoCProposal.get(proposal.key())
@@ -341,8 +342,9 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
         self.profile_helper.profile.student_info.key())
     self.assertEqual(number_of_proposals - 1, student_info.number_of_proposals)
 
-    url = '/gsoc/proposal/withdraw/' + suffix
-    postdata = {'value': 'checked'}
+    # resubmit the proposal
+    url = '/gsoc/proposal/status/' + suffix
+    postdata = {'value': proposal_review_view.TOGGLE_BUTTON_NOT_WITHDRAWN}
     response = self.post(url, postdata)
 
     self.assertResponseOK(response)
@@ -357,12 +359,9 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
     self.assertEqual(number_of_proposals, student_info.number_of_proposals)
 
   def testAssignMentor(self):
-    student = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com')
-    student.createStudent()
+    student = profile_utils.seedGSoCStudent(self.program)
 
-    proposal = self.createProposal({'scope': student.profile,
-                                    'parent': student.profile})
+    proposal = self.createProposal({'scope': student, 'parent': student})
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
@@ -379,3 +378,132 @@ class ProposalReviewTest(MailTestCase, GSoCDjangoTestCase):
 
     proposal = GSoCProposal.all().get()
     self.assertIsNone(proposal.mentor)
+
+
+class WithdrawProposalHandlerTest(GSoCDjangoTestCase):
+  """Unit tests for WithdrawProposalHandler class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+    self.profile = self.profile_helper.createStudentWithProposal(
+        self.org, None)
+    self.proposal = GSoCProposal.all().get()
+
+    # view used as a callback for handler
+    self.view = proposal_review_view.ProposalStatusSetter()
+
+  def testCannotWithdrawProposal(self):
+    """Tests that an error occurs when proposal cannot be withdrawn."""
+    # proposal cannot be withdrawn, because it is rejected
+    self.proposal.status = proposal_model.STATUS_REJECTED
+    self.proposal.put()
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': self.profile.link_id,
+        'id': self.proposal.key().id()
+        }
+
+    request = http.HttpRequest()
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = proposal_review_view.WithdrawProposalHandler(self.view)
+    with mock.patch.object(
+        proposal_logic, 'canProposalBeWithdrawn', return_value=False):
+      with self.assertRaises(exception.UserError) as context:
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testWithdrawProposal(self):
+    """Tests that a proposal is successfully withdrawn if possible."""
+    old_number_of_proposals = self.profile.student_info.number_of_proposals
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': self.profile.link_id,
+        'id': self.proposal.key().id()
+        }
+
+    request = http.HttpRequest()
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = proposal_review_view.WithdrawProposalHandler(None)
+    with mock.patch.object(
+        proposal_logic, 'canProposalBeWithdrawn', return_value=True):
+      response = handler.handle(data, None, None)
+    self.assertEqual(response.status_code, httplib.OK)
+
+    # check that the proposal is withdrawn
+    proposal = GSoCProposal.all().get()
+    self.assertEqual(proposal.status, proposal_model.STATUS_WITHDRAWN)
+
+    # check that number of proposals is updated
+    student_info = profile_model.GSoCStudentInfo.all(
+        ).ancestor(self.profile).get()
+    self.assertEqual(
+        old_number_of_proposals, student_info.number_of_proposals + 1)
+
+
+class ResubmitProposalHandlerTest(GSoCDjangoTestCase):
+  """Unit tests for ResubmitProposalHandler class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+    self.profile = self.profile_helper.createStudentWithProposal(
+        self.org, None)
+    self.proposal = GSoCProposal.all().get()
+
+  def testCannotResubmitProposal(self):
+    """Tests that an error occurs when proposal cannot be withdrawn."""
+    # proposal cannot be resubmitted, because it is rejected
+    self.proposal.status = proposal_model.STATUS_REJECTED
+    self.proposal.put()
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': self.profile.link_id,
+        'id': self.proposal.key().id()
+        }
+
+    request = http.HttpRequest()
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = proposal_review_view.ResubmitProposalHandler(None)
+    with mock.patch.object(
+        proposal_logic, 'canProposalBeResubmitted', return_value=False):
+      with self.assertRaises(exception.UserError) as context:
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testResubmitProposal(self):
+    """Tests that a proposal is successfully resubmitted if possible."""
+    old_number_of_proposals = self.profile.student_info.number_of_proposals
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': self.profile.link_id,
+        'id': self.proposal.key().id()
+        }
+
+    request = http.HttpRequest()
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = proposal_review_view.ResubmitProposalHandler(None)
+    with mock.patch.object(
+        proposal_logic, 'canProposalBeResubmitted', return_value=True):
+      response = handler.handle(data, None, None)
+    self.assertEqual(response.status_code, httplib.OK)
+
+    # check that the proposal is withdrawn
+    proposal = GSoCProposal.all().get()
+    self.assertEqual(proposal.status, proposal_model.STATUS_PENDING)
+
+    # check that number of proposals is updated
+    student_info = profile_model.GSoCStudentInfo.all(
+        ).ancestor(self.profile).get()
+    self.assertEqual(
+        old_number_of_proposals, student_info.number_of_proposals - 1)

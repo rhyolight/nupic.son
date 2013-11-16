@@ -18,15 +18,22 @@
 
 import os
 
+from google.appengine.ext import db
+
 from datetime import datetime
 from datetime import timedelta
 
 from melange.models import connection as connection_model
 
+from soc.models import profile as profile_model
 from soc.models import user as user_model
+
+from soc.modules.gci.models import profile as gci_profile_model
+from soc.modules.gsoc.models import profile as gsoc_profile_model
 from soc.modules.seeder.logic.providers import user as user_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import task_utils
 from tests.utils import connection_utils
 
 
@@ -76,6 +83,9 @@ def seedUser(email=None, **kwargs):
   Args:
     email: email address specifying
     kwargs: initial values for instance's properties, as keyword arguments.
+
+  Returns:
+    A newly seeded User entity.
   """
   properties = {'status': 'valid', 'is_developer': False}
 
@@ -94,6 +104,178 @@ def seedUser(email=None, **kwargs):
   user.put()
 
   return user
+
+
+def seedProfile(program, model=profile_model.Profile, user=None,
+    mentor_for=None, org_admin_for=None, **kwargs):
+  """Seeds a new profile.
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    model: Model class of which a new profile should be seeded.
+    user: User entity corresponding to the profile.
+    mentor_for: List of organizations for which the profile should be
+      registered as a mentor.
+    org_admin_for: List of organizations for which the profile should be
+      registered as organization administrator.
+
+  Returns:
+    A newly seeded Profile entity.
+  """
+  user = user or seedUser()
+
+  mentor_for = mentor_for or []
+  org_admin_for = org_admin_for or []
+
+  properties = {
+      'program': program,
+      'scope': program,
+      'parent': user,
+      'status': 'active',
+      'link_id': user.key().name(),
+      'key_name': '%s/%s' % (program.key().name(), user.key().name()),
+      'mentor_for': list(set(mentor_for + org_admin_for)),
+      'is_mentor': bool(mentor_for + org_admin_for),
+      'org_admin_for': org_admin_for,
+      'is_org_admin': bool(org_admin_for),
+      'is_student': False,
+      'student_info': None,
+      'email': user.account.email(),
+      'user': user,
+      'notify_new_requests': False,
+      'notify_request_handled': False,
+      }
+  properties.update(**kwargs)
+  profile = seeder_logic.seed(model, properties=properties)
+
+  orgs = db.get(list(set(mentor_for + org_admin_for)))
+  for org in orgs:
+    if org.key() in org_admin_for:
+      org_role = connection_model.ORG_ADMIN_ROLE
+    else:
+      org_role = connection_model.MENTOR_ROLE
+
+    connection_properties = {
+        'user_role': connection_model.ROLE,
+        'org_role': org_role
+        }
+    connection_utils.seed_new_connection(profile, org, **connection_properties)
+
+  return profile
+
+
+def seedGCIProfile(program, user=None, **kwargs):
+  """Seeds a new profile for GCI.
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    user: User entity corresponding to the profile.
+
+  Returns:
+    A newly seeded GCIProfile entity.
+  """
+  return seedProfile(
+      program, model=gci_profile_model.GCIProfile, user=user, **kwargs)
+
+
+def seedGSoCProfile(program, user=None, **kwargs):
+  """Seeds a new profile for GSoC.
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    user: User entity corresponding to the profile.
+
+  Returns:
+    A newly seeded GSoCProfile entity.
+  """
+  properties = {
+      'notify_new_proposals': False,
+      'notify_proposal_updates': False,
+      'notify_public_comments': False,
+      'notify_private_comments': False,
+      }
+  properties.update(**kwargs)
+  return seedProfile(
+      program, model=gsoc_profile_model.GSoCProfile, user=user, **properties)
+
+
+def seedStudent(program, model=profile_model.Profile,
+    student_info_model=profile_model.StudentInfo, user=None, **kwargs):
+  """Seeds a new profile who is registered as a student.
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    model: Model class of which a new profile should be seeded.
+    user: User entity corresponding to the profile.
+
+  Returns:
+    A newly seeded Profile entity.
+  """
+  profile = seedProfile(program, model=model, user=user, **kwargs)
+  user = profile.parent()
+
+  properties = {
+      'key_name': '%s/%s' % (program.key().name(), user.key().name()),
+      'parent': profile,
+      'school': None,
+      'program': program,
+      'birth_date': generate_eligible_student_birth_date(program)
+      }
+  properties.update(**kwargs)
+  student_info = seeder_logic.seed(student_info_model, properties=properties)
+
+  profile.is_student = True
+  profile.student_info = student_info
+  profile.put()
+
+  return profile
+
+
+def seedGCIStudent(program, user=None, **kwargs):
+  """Seeds a new profile who is registered as a student for GCI.
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    model: Model class of which a new profile should be seeded.
+    user: User entity corresponding to the profile.
+
+  Returns:
+    A newly seeded GCIProfile entity.
+  """
+  properties = {
+      'number_of_completed_tasks': 0,
+      'is_winner': False,
+      'winner_for': None,
+      }
+  properties.update(**kwargs)
+  return seedStudent(program, model=gci_profile_model.GCIProfile,
+      student_info_model=gci_profile_model.GCIStudentInfo,
+      user=user, **properties)
+
+
+def seedGSoCStudent(program, user=None, **kwargs):
+  """Seeds a new profile who is registered as a student for GSoC.
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    model: Model class of which a new profile should be seeded.
+    user: User entity corresponding to the profile.
+
+  Returns:
+    A newly seeded GSoCProfile entity.
+  """
+  properties = {
+      'tax_form': None,
+      'enrollment_form': None,
+      'number_of_projects': 0,
+      'number_of_proposals': 0,
+      'passed_evaluations': 0,
+      'failed_evaluations': 0,
+      }
+  properties.update(**kwargs)
+  return seedStudent(program, model=gsoc_profile_model.GSoCProfile,
+      student_info_model=gsoc_profile_model.GSoCStudentInfo,
+      user=user, **properties)
 
 
 class ProfileHelper(object):
@@ -322,14 +504,11 @@ class GSoCProfileHelper(ProfileHelper):
     return self.profile
 
   def notificationSettings(
-      self, new_requests=False, new_invites=False,
-      invite_handled=False, request_handled=False,
+      self, new_requests=False, request_handled=False,
       new_proposals=False, proposal_updates=False,
       public_comments=False, private_comments=False):
     self.createProfile()
     self.profile.notify_new_requests = new_requests
-    self.profile.notify_new_invites = new_invites
-    self.profile.notify_invite_handled = invite_handled
     self.profile.notify_request_handled = request_handled
     self.profile.notify_new_proposals = new_proposals
     self.profile.notify_proposal_updates = proposal_updates
@@ -426,6 +605,7 @@ class GSoCProfileHelper(ProfileHelper):
     return self.profile
   
   def createConnection(self, org):
+    self.createProfile()
     self.connection = connection_utils.seed_new_connection(self.profile, org)
     return self.connection
 
@@ -461,13 +641,9 @@ class GCIProfileHelper(ProfileHelper):
     return self.profile
 
   def notificationSettings(
-      self, new_requests=False, new_invites=False,
-      invite_handled=False, request_handled=False,
-      comments=False):
+      self, new_requests=False, request_handled=False, comments=False):
     self.createProfile()
     self.profile.notify_new_requests = new_requests
-    self.profile.notify_new_invites = new_invites
-    self.profile.notify_invite_handled = invite_handled
     self.profile.notify_request_handled = request_handled
     self.profile.notify_comments = comments
     self.profile.put()
@@ -505,14 +681,13 @@ class GCIProfileHelper(ProfileHelper):
     """Sets the current user to be a student with specified number of 
     tasks for the current program.
     """
-    from tests.gci_task_utils import GCITaskHelper
     student = self.createStudent()
     student.student_info.put()
-    gci_task_helper = GCITaskHelper(self.program)
     tasks = []
     for _ in xrange(n):
-        task = gci_task_helper.createTask(status, org, mentor, student)
-        tasks.append(task)
+      task = task_utils.seedTask(
+          self.program, org, [mentor.key()], student=student, status=status)
+      tasks.append(task)
     return tasks
 
   def createStudentWithConsentForms(self, status='active', consent_form=False,
@@ -539,11 +714,10 @@ class GCIProfileHelper(ProfileHelper):
   def createMentorWithTasks(self, status, org, n=1):
     """Creates an mentor profile with a task for the current user.
     """
-    from tests.gci_task_utils import GCITaskHelper
-    self.createMentor(org)
-    gci_task_helper = GCITaskHelper(self.program)
+    mentor = self.createMentor(org)
     tasks = []
     for _ in xrange(n):
-        task = gci_task_helper.createTask(status, org, self.profile)
-        tasks.append(task)
+      task = task_utils.seedTask(
+          self.program, org, [mentor.key()], status=status)
+      tasks.append(task)
     return tasks

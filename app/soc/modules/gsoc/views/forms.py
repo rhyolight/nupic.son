@@ -282,7 +282,6 @@ class GSoCBoundField(forms.BoundField):
         Uploaded on: %(uploaded)s UTC
         <p>
     """
-
     current_file = current_file_fmt % {
         'name': self.field._file.filename,
         'link': self.field._link,
@@ -332,8 +331,8 @@ class GSoCBoundField(forms.BoundField):
   def _render_error(self):
     if self.errors:
       # TODO(nathaniel): HTML in Python.
-      return '<div class="error-message">%s</div>' % html.escape(
-          self.errors[0])
+      return html.format_html(
+          u'<div class="error-message">{0}</div>', self.errors[0])
     else:
       return ''
 
@@ -348,7 +347,11 @@ class GSoCBoundField(forms.BoundField):
         note if note else self.help_text)
 
   def div_class(self):
-    prefix = getattr(self.form.Meta, 'css_prefix', None)
+    if hasattr(self.form, 'Meta'):
+      prefix = getattr(self.form.Meta, 'css_prefix', None)
+    else:
+      prefix = None
+
     name = prefix + '_' + self.name if prefix else self.name
 
     widget_div_class = self.field.widget.attrs.get('div_class', None)

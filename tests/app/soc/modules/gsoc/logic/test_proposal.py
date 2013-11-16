@@ -410,7 +410,8 @@ class CanProposalBeResubmittedTest(unittest.TestCase):
     timeline_properties = {
         'key_name': 'test_keyname',
         'student_signup_start': timeline_utils.past(),
-        'student_signup_end': timeline_utils.future(),
+        'student_signup_end': timeline_utils.future(delta=50),
+        'accepted_students_announced_deadline': timeline_utils.future()
         }
     self.timeline = seeder_logic.seed(
         timeline_model.GSoCTimeline, timeline_properties)
@@ -492,6 +493,18 @@ class CanProposalBeResubmittedTest(unittest.TestCase):
     self.timeline.student_signup_end = timeline_utils.past()
     self.timeline.put()
 
+    # it should still be possible to resubmit this proposal
+    can_resubmit = proposal_logic.canProposalBeResubmitted(
+        self.proposal, self.student_info, self.program, self.timeline)
+    self.assertTrue(can_resubmit)
+
+  def testAfterAcceptedStudentsAnnounced(self):
+    """Tests that proposal cannot be resubmitted after announcing students."""
+    # move the student app period to the future
+    self.timeline.student_signup_end = timeline_utils.past()
+    self.timeline.accepted_students_announced_deadline = timeline_utils.past()
+    self.timeline.put()
+
     # it should not be possible to resubmit this proposal
     can_resubmit = proposal_logic.canProposalBeResubmitted(
         self.proposal, self.student_info, self.program, self.timeline)
@@ -526,7 +539,8 @@ class ResubmitProposalTest(unittest.TestCase):
     timeline_properties = {
         'key_name': 'test_keyname',
         'student_signup_start': timeline_utils.past(),
-        'student_signup_end': timeline_utils.future(),
+        'student_signup_end': timeline_utils.future(delta=50),
+        'accepted_students_announced_deadline': timeline_utils.future(),
         }
     self.timeline = seeder_logic.seed(
         timeline_model.GSoCTimeline, timeline_properties)

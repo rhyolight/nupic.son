@@ -93,6 +93,10 @@
     tpjs + "json/json2.js"
   ];
 
+  s.raphael = [
+    tpjs + "raphael/raphael.js"
+  ];
+
   s.tinymce = [
     "/tiny_mce/tiny_mce.js"
   ];
@@ -362,6 +366,12 @@
     s.jquery.svg,
     null,
     mpjs + "melange.clock.js"
+  ];
+
+  s.melange.timeline = [
+    s.raphael,
+    null,
+    mpjs + "melange.timeline.js"
   ];
 
   $m.s = s;

@@ -23,9 +23,10 @@ from django.utils import translation
 from melange.request import access
 from melange.request import exception
 
+from soc.views.helper import url_patterns
 from soc.modules.gsoc.models import project_survey as project_survey_model
 from soc.modules.gsoc.views import base
-from soc.modules.gsoc.views.helper import url_patterns
+from soc.modules.gsoc.views.helper import url_patterns as soc_url_patterns
 
 from summerofcode.logic import project_survey as project_survey_logic
 from summerofcode.logic import survey as survey_logic
@@ -107,7 +108,7 @@ def _getInitialValues(extension):
 def _setPersonalExtension(profile_key, survey_key, form):
   """Sets personal extension evaluation for the specified profile and
   the specified survey based on the data sent in the specified form.
-  The extension is not set if 
+  The extension is not set if
 
   Args:
     profile_key: profile key.
@@ -166,7 +167,8 @@ class ManageProjectProgramAdminView(base.GSoCRequestHandler):
   def djangoURLPatterns(self):
     """See base.djangoURLPatterns for specification."""
     return [
-        url_patterns.url(r'project/manage/admin/%s$' % url_patterns.PROJECT,
+        soc_url_patterns.url(
+            r'project/manage/admin/%s$' % url_patterns.USER_ID,
             self, name=urls.UrlNames.PROJECT_MANAGE_ADMIN)
     ]
 

@@ -27,8 +27,8 @@ from django.template import loader
 from melange.request import error
 from melange.request import exception
 from melange.request import initialize
+from melange.request import links
 from melange.request import render
-from soc.logic import links
 
 
 class RequestHandler(object):
@@ -387,7 +387,7 @@ class RequestHandler(object):
     """
     # TODO(nathaniel): Eliminate this method entirely after eliminating
     # all overriding implementations.
-    return self.access_checker.checkAccess(data, check, mutator)
+    self.access_checker.checkAccess(data, check)
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().

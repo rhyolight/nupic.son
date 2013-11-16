@@ -14,7 +14,6 @@
 
 """Module containing the template for documents."""
 
-
 from soc.models import document as document_model
 from soc.logic.helper import prefixes
 from soc.views import forms
@@ -74,8 +73,16 @@ def validateForm(data, document_form):
     cleaned_data['link_id'] = data.kwargs['document']
     cleaned_data['author'] = data.user
     cleaned_data['prefix'] = prefix
-    cleaned_data['scope'] = prefixes.getScopeForPrefix(
-        prefix, data.scope_key_name)
+
+    if prefix in ['gsoc_program', 'gci_program']:
+      scope_key_name = '%s/%s' % (
+          data.kwargs['sponsor'], data.kwargs['program'])
+    else:
+      scope_key_name = '%s/%s/%s' % (
+          data.kwargs['sponsor'], data.kwargs['program'],
+          data.kwargs['organization'])
+
+    cleaned_data['scope'] = prefixes.getScopeForPrefix(prefix, scope_key_name)
     document = document_form.create(key_name=data.key_name)
 
   return document

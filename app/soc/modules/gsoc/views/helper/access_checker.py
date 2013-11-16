@@ -25,7 +25,7 @@ from soc.logic import validate
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 
-from melange.models.connection import AnonymousConnection
+from melange.logic import connection as connection_logic
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
 from soc.modules.gsoc.models import proposal as proposal_model
@@ -40,6 +40,7 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
 from soc.modules.gsoc.models.organization import GSoCOrganization
+from soc.modules.gsoc.views.helper import url_names
 
 
 DEF_FAILED_PREVIOUS_EVAL = ugettext(
@@ -124,39 +125,8 @@ class Mutator(access_checker.Mutator):
   """Mutator for the GSoC module.
   """
 
-  def unsetAll(self):
-    """Clear the fields of the data object.
-    """
-    self.data.private_comments_visible = access_checker.unset
-    self.data.proposal = access_checker.unset
-    self.data.proposer = access_checker.unset
-    self.data.public_comments_visible = access_checker.unset
-    self.data.public_only = access_checker.unset
-    super(Mutator, self).unsetAll()
-
-  def proposalFromKwargs(self):
-    # can safely call int, since regexp guarnatees a number
-    proposal_id = int(self.data.kwargs['id'])
-
-    if not proposal_id:
-      raise exception.NotFound(message='Proposal id must be a positive number')
-
-    self.data.proposal = proposal_model.GSoCProposal.get_by_id(
-        proposal_id, parent=self.data.url_profile)
-
-    if not self.data.proposal:
-      raise exception.NotFound(message='Requested proposal does not exist')
-
-    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-        self.data.proposal)
-
-    self.data.proposal_org = self.data.getOrganization(org_key)
-
-    parent_key = self.data.proposal.parent_key()
-    if self.data.profile and parent_key == self.data.profile.key():
-      self.data.proposer = self.data.profile
-    else:
-      self.data.proposer = self.data.proposal.parent()
+  def __init__(self, data):
+    super(Mutator, self).__init__(data)
 
   def projectFromKwargs(self):
     """Sets the project entity in RequestData object.
@@ -183,9 +153,11 @@ class Mutator(access_checker.Mutator):
   def anonymousConnectionFromKwargs(self):
     """Set the anonymous_connection entity in the RequestData object.
     """
-    q = AnonymousConnection.all().filter('hash_id =', self.data.kwargs['key'])
-    self.data.anonymous_connection = q.get()
-    if not self.data.anonymous_connection:
+    token = self.data.kwargs['key']
+    connection = connection_logic.queryAnonymousConnectionForToken(token)
+    if connection:
+      self.data.anonymous_connection = connection
+    else:
       raise exception.Forbidden(
           message='Invalid key in url; unable to establish connection.')
 
@@ -309,10 +281,6 @@ class Mutator(access_checker.Mutator):
     self.data.slot_transfer_entities = \
         slot_transfer_logic.getSlotTransferEntitiesForOrg(
             self.data.organization)
-
-
-class DeveloperMutator(access_checker.DeveloperMutator, Mutator):
-  pass
 
 
 class AccessChecker(access_checker.AccessChecker):
@@ -485,7 +453,7 @@ class AccessChecker(access_checker.AccessChecker):
       # TODO(nathaniel): make this .organization call unnecessary.
       self.data.redirect.organization(organization=gsoc_org)
 
-      edit_url = self.data.redirect.urlOf('edit_gsoc_org_profile')
+      edit_url = self.data.redirect.urlOf(url_names.GSOC_ORG_PROFILE_EDIT)
 
       raise exception.Forbidden(message=DEF_ORG_EXISTS % (org_id, edit_url))
 
@@ -517,8 +485,6 @@ class AccessChecker(access_checker.AccessChecker):
   def canStudentUpdateProposal(self):
     """Checks if the student is eligible to submit a proposal.
     """
-    assert access_checker.isSet(self.data.proposal)
-
     self.isActiveStudent()
     self.isProposalInURLValid()
 
@@ -530,7 +496,7 @@ class AccessChecker(access_checker.AccessChecker):
       self.canStudentUpdateProposalPostSignup()
 
     # check if the proposal belongs to the current user
-    expected_profile = self.data.proposal.parent()
+    expected_profile = self.data.url_proposal.parent()
     if expected_profile.key().name() != self.data.profile.key().name():
       error_msg = access_checker.DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'name': 'proposal'
@@ -538,7 +504,7 @@ class AccessChecker(access_checker.AccessChecker):
       raise exception.Forbidden(message=error_msg)
 
     # check if the status allows the proposal to be updated
-    status = self.data.proposal.status
+    status = self.data.url_proposal.status
     if status == 'ignored':
       raise exception.Forbidden(message=DEF_PROPOSAL_IGNORED_MESSAGE)
     elif status in ['invalid', proposal_model.STATUS_ACCEPTED, 'rejected']:

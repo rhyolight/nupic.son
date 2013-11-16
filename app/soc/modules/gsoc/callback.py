@@ -33,6 +33,7 @@ from soc.modules.gsoc.views import mentor_evaluation
 from soc.modules.gsoc.views import org_app
 from soc.modules.gsoc.views import org_home
 from soc.modules.gsoc.views import org_profile
+from soc.modules.gsoc.views import participants
 from soc.modules.gsoc.views import profile
 from soc.modules.gsoc.views import profile_show
 from soc.modules.gsoc.views import program
@@ -104,6 +105,7 @@ class Callback(object):
     self.views.append(org_home.OrgHome())
     self.views.append(org_home.GSoCBanOrgPost())
     self.views.append(org_profile.OrgProfilePage())
+    self.views.append(participants.MentorsListAdminPage())
     self.views.append(profile.GSoCProfilePage())
     self.views.append(profile_show.GSoCBanProfilePost())
     self.views.append(profile_show.GSoCProfileAdminPage())
@@ -112,7 +114,8 @@ class Callback(object):
     self.views.append(program.GSoCEditProgramPage())
     self.views.append(program.GSoCProgramMessagesPage())
     self.views.append(program.TimelinePage())
-    self.views.append(program.UploadUniversitiesPage())
+    self.views.append(program.DownloadSchoolsHandler())
+    self.views.append(program.UploadSchoolsPage())
     self.views.append(project_details.AssignMentors())
     self.views.append(project_details.CodeSampleDeleteFilePost())
     self.views.append(project_details.CodeSampleDownloadFileGet())
@@ -131,7 +134,7 @@ class Callback(object):
     self.views.append(proposal_review.ProposalPubliclyVisible())
     self.views.append(proposal_review.ReviewProposal())
     self.views.append(proposal_review.WishToMentor())
-    self.views.append(proposal_review.WithdrawProposal())
+    self.views.append(proposal_review.ProposalStatusSetter())
     self.views.append(proposal.UpdateProposal())
     self.views.append(search.SearchGsocPage())
     self.views.append(slot_allocation.SlotsPage())
