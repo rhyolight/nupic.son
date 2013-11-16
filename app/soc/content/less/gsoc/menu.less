@@ -5,8 +5,8 @@
 
 ////////////////*/
 
-// Images locations
-@image_nav_bg: "@{images_gsoc_location}/nav-bg.gif";
+// Color definitions
+@orange: #eeab4c;
 
 #menu-container {
   /* New menu container */
@@ -14,7 +14,7 @@
 }
 
 #main-menu {
-  background: url(@image_nav_bg) 0 0 repeat;
+  background-color: @orange;
   float: left;
   margin-right: 0;
   width: 220px;
@@ -76,7 +76,7 @@
 
         ul {
           /*submenu under an active top level*/
-          background: url(@image_nav_bg) 0 0 repeat;
+          background-color: @orange;
         }
       }
 
