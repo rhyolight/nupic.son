@@ -80,4 +80,5 @@ GCI_CONVERSATIONS = 'gci_conversations'
 GCI_CONVERSATION_CREATE = 'gci_conversation_create'
 
 GCI_CONTENT_DOWNLOAD = 'gci_content_download'
+GCI_CONTENT_LIST = 'gci_content_list'
 GCI_CONTENT_UPLOAD = 'gci_content_upload'
