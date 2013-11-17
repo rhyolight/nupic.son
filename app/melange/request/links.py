@@ -214,6 +214,22 @@ class Linker(object):
         }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
 
+  def staticContent(self, program, content_id, url_name):
+    """Returns the download URL for the given static content.
+
+    Args:
+      program: Program entity for which the requested static
+          content belongs.
+      content_id: The ID of the static content to be downloaded.
+      url_name: The name with which a URL was registered with Django.
+    """
+    kwargs = {
+        'sponsor': program_logic.getSponsorKey(program).name(),
+        'program': program.link_id
+        'content_id': content_id
+        }
+    return urlresolvers.reverse(url_name, kwargs=kwargs)
+
 # Since Linker is stateless, there might as well be just one of it.
 LINKER = Linker()
 
