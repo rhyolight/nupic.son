@@ -17,7 +17,7 @@
 from google.appengine.ext import blobstore
 
 from django.forms import util
-from django.template.defaultfilters import filesizeformat
+from django.template import defaultfilters
 from django.utils import translation
 
 from melange.request import access
@@ -143,7 +143,6 @@ class StaticContentUpload(base.GCIRequestHandler):
 
     # delete existing data
     cleaned_data = form.cleaned_data
-    r = data.request.file_uploads
     for field_name in data.request.file_uploads.keys():
       if field_name in cleaned_data and form.instance:
         existing = getattr(form.instance, field_name)
@@ -199,7 +198,7 @@ class StaticContentList(template.Template):
     """Initializes a new object.
 
     Args:
-      data: RequestData object associated with the request
+      data: RequestData object associated with the request.
     """
     self.data = data
 
@@ -207,7 +206,8 @@ class StaticContentList(template.Template):
     list_config.addPlainTextColumn('name', 'Name',
         lambda entity, *args: entity.content.filename)
     list_config.addPlainTextColumn('size', 'Size',
-        lambda entity, *args: filesizeformat(entity.content.size))
+        lambda entity, *args: defaultfilters.filesizeformat(
+            entity.content.size))
     list_config.setDefaultSort('name')
 
     list_config.setRowAction(lambda e, *args: links.LINKER.staticContent(
@@ -218,8 +218,7 @@ class StaticContentList(template.Template):
   def context(self):
     list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=self.IDX,
-        description='Downloads - %s' % (
-            self.data.program.name))
+        description='Downloads - %s' % (self.data.program.name))
 
     return {
         'lists': [list_configuration_response],
@@ -265,7 +264,7 @@ class StaticContentListPage(base.GCIRequestHandler):
     if list_content:
       return list_content.content()
     else:
-      raise exception.Forbidden(message='You do not have access to this data')
+      raise exception.BadRequest(message='Invalid list request.')
 
   def context(self, data, check, mutator):
     return {
