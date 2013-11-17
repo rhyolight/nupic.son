@@ -22,6 +22,7 @@ from django.utils import translation
 
 from melange.request import access
 from melange.request import exception
+from melange.request import links
 from soc.models import static_content
 from soc.views import template
 from soc.views import base_templates
@@ -94,10 +95,8 @@ class StaticContentUpload(base.GCIRequestHandler):
 
   def jsonContext(self, data, check, mutator):
     """Returns the blobstore upload URL on an XHR."""
-    # TODO(nathaniel): make this .program() call unnecessary.
-    data.redirect.program()
-
-    url = data.redirect.urlOf(url_names.GCI_CONTENT_UPLOAD, secure=True)
+    url = links.ABSOLUTE_LINKER.program(
+        data.program, url_names.GCI_CONTENT_UPLOAD, secure=True)
     return {
         'upload_link': blobstore.create_upload_url(url),
         }
@@ -203,7 +202,6 @@ class StaticContentList(template.Template):
       data: RequestData object associated with the request
     """
     self.data = data
-    self.data.redirect.program()
 
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('name', 'Name',
@@ -212,8 +210,8 @@ class StaticContentList(template.Template):
         lambda entity, *args: filesizeformat(entity.content.size))
     list_config.setDefaultSort('name')
 
-    list_config.setRowAction(lambda e, *args: self.data.redirect.staticContent(
-        e.content_id).urlOf(url_names.GCI_CONTENT_DOWNLOAD))
+    list_config.setRowAction(lambda e, *args: links.LINKER.staticContent(
+        e.parent(), e.content_id, url_names.GCI_CONTENT_DOWNLOAD))
 
     self._list_config = list_config
 

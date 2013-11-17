@@ -225,7 +225,7 @@ class Linker(object):
     """
     kwargs = {
         'sponsor': program_logic.getSponsorKey(program).name(),
-        'program': program.link_id
+        'program': program.link_id,
         'content_id': content_id
         }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
