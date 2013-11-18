@@ -230,10 +230,14 @@ class UserActions(Template):
             'unchecked': 'No'})
     self.toggle_buttons.append(wish_to_mentor)
 
+    proposal_modifications_url = links.LINKER.userId(
+        self.data.url_profile, self.data.kwargs['id'],
+        'gsoc_proposal_modification')
+
     if self.data.timeline.afterStudentSignupEnd():
       proposal_modification_button = ToggleButtonTemplate(
           self.data, 'long', 'Proposal Modifications', 'proposal-modification',
-          self.data.redirect.urlOf('gsoc_proposal_modification'),
+          proposal_modifications_url,
           checked=self.data.url_proposal.is_editable_post_deadline,
           help_text=self.DEF_PROPOSAL_MODIFICATION_HELP,
           labels = {
