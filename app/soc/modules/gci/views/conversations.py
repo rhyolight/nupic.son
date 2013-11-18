@@ -14,9 +14,13 @@
 
 """Module containing the conversations list view."""
 
+from django.utils import translation
+
 from google.appengine.ext import ndb
 
 from melange.request import exception
+
+from soc.views import template
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 
@@ -72,6 +76,25 @@ class ConversationsList(conversation_list.ConversationList):
         ndb.Key.from_old_key(self.data.user.key()))
 
 
+class UserActions(template.Template):
+  """User action template containing link to conversation creation form."""
+
+  def __init__(self, data):
+    self.data = data
+
+  def context(self):
+    """See soc.views.template.Template.context for full specification."""
+    return {
+      'title': translation.ugettext('Actions'),
+      'url_create': self.data.redirect.urlOf(url_names.GCI_CONVERSATION_CREATE),
+      'text_create': translation.ugettext('Compose Message'),
+    }
+
+  def templatePath(self):
+    """See soc.views.template.Template.templatePath for full specification."""
+    return 'modules/gci/conversations/_user_action.html'
+
+
 class ConversationsPage(GCIRequestHandler):
   """View for the conversations page."""
 
@@ -105,5 +128,6 @@ class ConversationsPage(GCIRequestHandler):
     """See soc.views.base.RequestHandler.context for full specification."""
     return {
         'page_name': 'Conversations',
-        'conversations_list': ConversationsList(data)
+        'conversations_list': ConversationsList(data),
+        'user_actions': UserActions(data),
     }

@@ -253,6 +253,10 @@ form {
     -webkit-box-shadow: inset 2px 2px 5px rgba(255, 0, 0, .16);
     -moz-box-shadow: inset 2px 2px 5px rgba(255, 0, 0, .16);
   }
+
+  .text-core .text-wrap .text-tags .text-tag .text-button {
+    background: #c8c8c8;
+  }
 }
 
 .form-row-buttons {
@@ -341,6 +345,28 @@ div.tos {
     background: lighten(@formBlockBackground, 10%);
     border: none;
     margin: 5px auto;
+  }
+}
+
+.form-row-message_content {
+  &.error {
+    .mceLayout {
+      border: solid 1px #ff0000;
+    }
+  }
+
+  .form-row-error-msg {
+    margin-left: 0;
+
+    .errorlist {
+      margin-bottom: 2px;
+      padding-left: 0;
+
+      li {
+        list-style: none;
+        margin-left: 0;
+      }
+    }
   }
 }
 

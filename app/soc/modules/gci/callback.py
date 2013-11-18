@@ -19,6 +19,7 @@ from soc.modules.gci.tasks import bulk_create as bulk_create_tasks
 from soc.modules.gci.tasks import ranking_update as ranking_update_tasks
 from soc.modules.gci.tasks import score_update as score_update_tasks
 from soc.modules.gci.tasks import task_update as task_update_tasks
+from soc.modules.gci.tasks import update_conversations as task_update_conversations
 from soc.modules.gci.views import accepted_orgs
 from soc.modules.gci.views import admin
 from soc.modules.gci.views import age_check
@@ -122,6 +123,7 @@ class Callback(object):
     self.views.append(task_create.TaskCreatePage())
     self.views.append(conversations.ConversationsPage())
     self.views.append(conversation.ConversationPage())
+    self.views.append(conversation.NotificationsEnabled())
     self.views.append(conversation.PostReply())
     self.views.append(conversation_create.ConversationCreatePage())
 
@@ -130,6 +132,7 @@ class Callback(object):
     self.views.append(ranking_update_tasks.RankingUpdater())
     self.views.append(task_update_tasks.TaskUpdate())
     self.views.append(score_update_tasks.ScoreUpdate())
+    self.views.append(task_update_conversations.UpdateConversationsTask())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered."""

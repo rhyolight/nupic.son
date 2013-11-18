@@ -14,15 +14,29 @@
  */
 melange.templates.inherit(
   function (_self, context) {
-    // Show alert for unimplemented placeholders
-    jQuery("a.notimplemented").click(function() {
-      alert("Not yet implemented.");
-    });
-
     // Set up TinyMCE reply editor
     tinyMceSettings = melange.tinyMceConfig(context.tinymce_inputs, "basic");
     tinyMceSettings["height"] = 240;
     tinyMceSettings["width"] = 640;
     tinyMCE.init(tinyMceSettings);
+
+    // Make tooltips visible only on hover
+    melange.action.createCluetip();
+
+    // Create conversation toggle buttons
+    if (typeof context.toggle_buttons !== "undefined") {
+      jQuery.each(context.toggle_buttons, function(index, button) {
+        melange.action.toggleButton(
+          button.id,
+          button.type,
+          button.post_url,
+          button.state,
+          {
+            checked: button.checked_label,
+            unchecked: button.unchecked_label
+          }
+        );
+      });
+    }
   }
 );

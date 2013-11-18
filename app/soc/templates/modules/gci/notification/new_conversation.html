@@ -1,0 +1,45 @@
+{% extends "soc/notification/base.html" %}
+{% comment %}
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+{% endcomment %}
+
+{% block greeting %}{% endblock %}
+
+{% block content %}
+  <p>
+    {{ author_name }} has created a conversation with the subject:<br />
+    <b>{{ conversation_subject|safe }}</b>
+  </p>
+  <p>
+    To view or reply to this message, visit:<br />
+    <a href="{{ conversation_url }}">{{ conversation_url }}</a>
+  </p>
+  ---
+  <div id="review">
+    <p>
+      {{ message_content|safe }}
+    </p>
+  </div>
+{% endblock %}
+
+{% block unsubscribe %}
+  <div id="unsubscribe">
+    ---
+    <p>
+    You are receiving this message because you are subscribed to "{{ conversation_subject }}".<br/>
+    To stop receiving these messages, go to: <a href="{{ conversation_url }}">{{ conversation_url }}</a>.
+    </p>
+  </div>
+{% endblock unsubscribe %}
+
+{% block signature %}{% endblock %}

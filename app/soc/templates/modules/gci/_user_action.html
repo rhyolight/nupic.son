@@ -12,9 +12,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
-<div id="conversation-list-component" class="block block-text">
-  <p class="block-title">{{ title }}</p>
+
+<div id="user-menu-container" class="block">
+  <div class="block-title">{{ title }}</div>
   <div class="block-content">
-    {% include "soc/list/lists.html" %}
+    <div id="floatMenu">
+      <ul id="user-menu-list">
+        {% for button in toggle_buttons %}
+          {{ button.render }}
+        {% endfor %}
+        {% block extras %}
+          {% comment %}
+            Place holder for non-button type of actions
+          {% endcomment %}
+        {% endblock extras %}
+      </ul>
+    </div>
   </div>
 </div>

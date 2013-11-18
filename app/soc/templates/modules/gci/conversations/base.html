@@ -18,6 +18,10 @@ limitations under the License.
   <link rel="stylesheet" type="text/css" media="screen" href="/{{ css_path }}/messaging.css" />
 {% endblock stylesheets %}
 
+{% block usermenu %}
+  {{ user_actions.render }}
+{% endblock usermenu %}
+
 {% block page_content %}
 {{ conversations_list.render }}
 {% endblock page_content %}

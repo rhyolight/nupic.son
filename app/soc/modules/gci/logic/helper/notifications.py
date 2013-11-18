@@ -15,6 +15,8 @@
 """Notifications for the GCI module.
 """
 
+from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django.template import loader
 from django.core.urlresolvers import reverse
@@ -27,6 +29,8 @@ from soc.logic import mail_dispatcher
 from soc.logic import program as program_logic
 from soc.logic import site
 from soc.tasks import mailer
+
+from soc.modules.gci.views.helper import url_names
 
 
 DEF_BULK_CREATE_COMPLETE_SUBJECT = ugettext(
@@ -48,6 +52,20 @@ DEF_NEW_TASK_COMMENT_SUBJECT = ugettext(
 
 DEF_NEW_TASK_COMMENT_NOTIFICATION_TEMPLATE = \
     'modules/gci/notification/new_task_comment.html'
+
+DEF_NEW_MESSAGE_SUBJECT = ugettext(
+    '[%(program_name)s] New reply from %(author_name)s: '
+    'Re: %(conversation_subject)s')
+
+DEF_NEW_CONVERSATION_SUBJECT = ugettext(
+    '[%(program_name)s] New message from %(author_name)s: '
+    '%(conversation_subject)s')
+
+DEF_NEW_MESSAGE_NOTIFICATION_TEMPLATE = \
+    'modules/gci/notification/new_message.html'
+
+DEF_NEW_CONVERSATION_NOTIFICATION_TEMPLATE = \
+    'modules/gci/notification/new_conversation.html'
 
 
 def sendMail(to_user, subject, message_properties, template):
@@ -208,6 +226,63 @@ def getTaskCommentContext(task, comment, to_emails):
 
   subject = DEF_NEW_TASK_COMMENT_SUBJECT % message_properties
   template = DEF_NEW_TASK_COMMENT_NOTIFICATION_TEMPLATE
+  body = loader.render_to_string(template, dictionary=message_properties)
+
+  return mailer.getMailContext(to=[], subject=subject, html=body, bcc=to_emails)
+
+
+def getTaskConversationMessageContext(message, to_emails, is_reply):
+  """Sends out notifications to the conversation's participants.
+
+  Args:
+    message: Key (ndb) of GCIMessage to send.
+    to_emails: List of recipients for the notification.
+    is_reply: Whether this message is a reply to an existing conversation.
+
+  Returns:
+    Context dictionary for a mailer task.
+  """
+  message_ent = message.get()
+  conversation_ent = message_ent.conversation.get()
+  program_ent = db.get(ndb.Key.to_old_key(conversation_ent.program))
+  author_ent = db.get(ndb.Key.to_old_key(message_ent.author))
+
+  url_kwargs = {
+    'sponsor': program_logic.getSponsorKey(program_ent).name(),
+    'program': program_ent.link_id,
+    'id': conversation_ent.key.integer_id(),
+  }
+
+  conversation_url = 'http://%(host)s%(conversation)s' % {
+      'host': site.getHostname(),
+      'conversation': reverse(url_names.GCI_CONVERSATION, kwargs=url_kwargs)}
+
+  message_url = 'http://%(host)s%(conversation)s#m%(message_id)s' % {
+      'host': site.getHostname(),
+      'conversation': reverse(url_names.GCI_CONVERSATION, kwargs=url_kwargs),
+      'message_id': message.integer_id()}
+
+  message_by = author_ent.name if author_ent else 'Melange'
+
+  message_properties = {
+      'author_name': message_by,
+      'conversation_subject': conversation_ent.subject,
+      'message_content': message_ent.content,
+      'sender_name': 'The %s Team' % site.singleton().site_name,
+      'conversation_url': conversation_url,
+      'message_url': message_url,
+      'program_name': program_ent.name,
+      'is_reply': is_reply,
+  }
+
+  subject = ((
+      DEF_NEW_MESSAGE_SUBJECT if is_reply else DEF_NEW_CONVERSATION_SUBJECT)
+         % message_properties)
+
+  template = (
+      DEF_NEW_MESSAGE_NOTIFICATION_TEMPLATE if is_reply
+      else DEF_NEW_CONVERSATION_NOTIFICATION_TEMPLATE)
+
   body = loader.render_to_string(template, dictionary=message_properties)
 
   return mailer.getMailContext(to=[], subject=subject, html=body, bcc=to_emails)

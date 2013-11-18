@@ -16,13 +16,18 @@ limitations under the License.
 {% block stylesheets %}
   {{ block.super }}
   <link rel="stylesheet" type="text/css" media="screen" href="/{{ css_path }}/messaging.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/soc/content/{{ app_version }}/css/gsoc/buttons.css" />
 {% endblock stylesheets %}
+
+{% block usermenu %}
+  {{ user_actions.render }}
+{% endblock usermenu %}
 
 {% block page_content %}
 <div class="block block-text">
   <div class="block-title">
       <div class="controls">
-        <a class="notimplemented" title="{{ num_users }} user{{ num_users|pluralize:" is,s are" }} involved in this conversation.">{{ num_users }} user{{ num_users|pluralize:",s" }}</a>
+        <a href="#users-list" title="{{ num_users }} user{{ num_users|pluralize:" is,s are" }} involved in this conversation.">{{ num_users }} user{{ num_users|pluralize:",s" }}</a>
       </div>
       {{ conversation.subject }}
   </div>
@@ -56,6 +61,10 @@ limitations under the License.
     </div>
   </div>
 </div>
+
+<div id="users-list">
+  {{ user_list.render }}
+</div>
 {% endblock page_content %}
 
 {% block synchronous_scripts %}
@@ -65,9 +74,27 @@ limitations under the License.
 
 {% block dependencies %}
   [
+    dep.melange.list,
+    dep.uniform,
+    dep.melange.action,
+    null,
     tc(
       "/soc/content/{{ app_version }}/js/templates/modules/gci/conversation/base.js",
       {
+        {% if user_actions.toggle_buttons %}
+        toggle_buttons: [
+          {% for button in user_actions.toggle_buttons %}
+          {
+            id: "{{ button.id }}",
+            type: "{{ button.type }}",
+            post_url: "{{ button.post_url }}",
+            state: "{{ button.state }}",
+            checked_label: "{{ button.labels.checked }}",
+            unchecked_label: "{{ button.labels.unchecked }}"
+          },
+          {% endfor %}
+        ],
+        {% endif %}
         tinymce_inputs: ["melange-content-textarea"]
       }
     )

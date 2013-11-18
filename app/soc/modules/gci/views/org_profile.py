@@ -15,6 +15,7 @@
 """Module for the GCI organization profile page."""
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from codein.logic import profile as profile_logic
 
@@ -22,10 +23,12 @@ from melange.models import connection as connection_model
 from melange.views import connection as connection_view
 
 from soc.models import org_app_record as org_app_record_model
+
 from soc.views.helper import url_patterns
 from soc.views import org_profile
 
 from soc.modules.gci.models.organization import GCIOrganization
+from soc.modules.gci.tasks import update_conversations as update_conversation_task
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_names
@@ -166,6 +169,11 @@ class OrgProfilePage(GCIRequestHandler):
           profile_keys.append(profile.key())
 
       entity = createOrganizationTxn(data, profile_keys, form, key_name)
+
+      # Update user's involved conversations
+      update_conversation_task.spawnUpdateConversationsTask(
+          ndb.Key.from_old_key(data.profile.user.key()),
+          ndb.Key.from_old_key(data.profile.program.key()))
     else:
       entity = form.save()
 

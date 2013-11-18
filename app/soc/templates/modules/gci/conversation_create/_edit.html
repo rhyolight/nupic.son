@@ -29,23 +29,33 @@ limitations under the License.
       </span>
 
       <span id="organization-container">
+        <label class="form-label">Organization<em>*</em></label>
         {{ form.bound_fields.organization.render }}
       </span>
     </div>
 
-    <span id="users-container">
+    <span id="users-container" class="form-row
+        {% if form.bound_fields.users.errors %}
+          error
+        {% endif %}">
       {% if form.bound_fields.users %}
         {{ form.bound_fields.users.render }}
       {% endif %}
     </span>
 
-    <span id="program-roles-container">
+    <span id="program-roles-container" class="form-row
+        {% if form.bound_fields.program_roles.errors %}
+          error
+        {% endif %}">
       {% if form.bound_fields.program_roles %}
         {{ form.bound_fields.program_roles.render }}
       {% endif %}
     </span>
 
-    <span id="organization-roles-container">
+    <span id="organization-roles-container" class="form-row
+        {% if form.bound_fields.organization_roles.errors %}
+          error
+        {% endif %}">
       {% if form.bound_fields.organization_roles %}
         {{ form.bound_fields.organization_roles.render }}
       {% endif %}
@@ -57,11 +67,22 @@ limitations under the License.
     </div>
   </div>
 
-  <div class="form-row">
+  <div class="form-row form-row-subject
+      {% if form.bound_fields.subject.errors %}
+        error
+      {% endif %}">
     {{ form.bound_fields.subject.render }}
   </div>
 
-  <div class="form-row">
+  <div class="form-row form-row-message_content
+      {% if form.bound_fields.message_content.errors %}
+        error
+      {% endif %}">
+    <div class="form-row-error-msg">
+      {% if form.bound_fields.message_content.errors %}
+        {{ form.bound_fields.message_content.errors }}
+      {% endif %}
+    </div>
     {{ form.bound_fields.message_content.render }}
   </div>
 

@@ -19,12 +19,15 @@ from google.appengine.ext import ndb
 
 from datetime import timedelta
 
+from soc.tasks import mailer
+
 from soc.modules.gci.models import conversation as gciconversation_model
 from soc.modules.gci.models import message as gcimessage_model
 from soc.modules.gci.models import profile as gciprofile_model
 
 from soc.modules.gci.logic import message as gcimessage_logic
 from soc.modules.gci.logic import profile as gciprofile_logic
+from soc.modules.gci.logic.helper import notifications
 
 from soc.models import conversation as conversation_model
 
@@ -242,17 +245,24 @@ def addUserToConversation(conversation, user):
     The created (or existing) GCIConversationUser entity representing the
     user's involvement.
   """
-  conv_users = queryConversationUserForConversationAndUser(
-      conversation=conversation, user=user).fetch(1)
+  @ndb.transactional
+  def txn():
+    query = gciconversation_model.GCIConversationUser.query(
+        gciconversation_model.GCIConversationUser.user == user,
+        gciconversation_model.GCIConversationUser.conversation == conversation,
+        ancestor=conversation)
+    conv_user = query.get()
 
-  if conv_users:
-    return conv_users[0]
+    if conv_user:
+      return conv_user
 
-  conv_user = gciconversation_model.GCIConversationUser(
-      conversation=conversation, user=user)
-  conv_user.put()
+    conv_user = gciconversation_model.GCIConversationUser(
+        parent=conversation, conversation=conversation, user=user)
+    conv_user.put()
 
-  return conv_user
+    return conv_user
+
+  return txn()
 
 
 def removeUserFromConversation(conversation, user):
@@ -332,12 +342,19 @@ def doesUserBelongInConversation(
 
   profile = profile_results[0]
 
+  student_info_query = gciprofile_logic.queryStudentInfoForParent(profile)
+  student_info_results = student_info_query.fetch(1)
+  student_info = student_info_results[0] if student_info_results else None
+
   if conversation_ent.recipients_type == conversation_model.PROGRAM:
     if conversation_ent.include_admins and profile.is_org_admin:
       return True
     elif conversation_ent.include_mentors and profile.is_mentor:
       return True
     elif conversation_ent.include_students and profile.is_student:
+      return True
+    elif (student_info and conversation_ent.include_winners
+        and student_info.is_winner):
       return True
     else:
       return False
@@ -349,6 +366,11 @@ def doesUserBelongInConversation(
     elif (conversation_ent.include_mentors and profile.is_mentor and
         ndb.Key.to_old_key(conversation_ent.organization) in
             profile.mentor_for):
+      return True
+    elif (student_info and conversation_ent.include_winners
+        and student_info.is_winner and
+        ndb.Key.to_old_key(conversation_ent.organization) ==
+            student_info.winner_for.key()):
       return True
     else:
       return False
@@ -406,6 +428,12 @@ def refreshConversationParticipants(conversation):
       query.filter('is_student =', True)
       map(addProfile, query.run(batch_size=1000))
 
+    if conv.include_winners:
+      query = gciprofile_model.GCIStudentInfo.all()
+      query.filter('program =', ndb.Key.to_old_key(conv.program))
+      query.filter('is_winner =', True)
+      map(lambda e: addProfile(e.parent()), query.run(batch_size=1000))
+
   elif conv.recipients_type == conversation_model.ORGANIZATION:
     org_db_key = ndb.Key.to_old_key(conv.organization)
 
@@ -422,6 +450,13 @@ def refreshConversationParticipants(conversation):
       query.filter('is_mentor =', True)
       query.filter('mentor_for =', org_db_key)
       map(addProfile, query.run(batch_size=1000))
+
+    if conv.include_winners:
+      query = gciprofile_model.GCIStudentInfo.all()
+      query.filter('program =', ndb.Key.to_old_key(conv.program))
+      query.filter('is_winner =', True)
+      query.filter('winner_for =', org_db_key)
+      map(lambda e: addProfile(e.parent()), query.run(batch_size=1000))
 
   # Make sure conversation's creator is included
   if conv.creator is not None:
@@ -459,6 +494,10 @@ def refreshConversationsForUserAndProgram(user, program):
     raise Exception('Could not find GCIProfile for user and program.')
 
   profile = profile_results[0]
+
+  student_info_query = gciprofile_logic.queryStudentInfoForParent(profile)
+  student_info_results = student_info_query.fetch(1)
+  student_info = student_info_results[0] if student_info_results else None
 
   def deleteConvUserIfDoesntBelong(conv_user):
     if not doesConversationUserBelong(
@@ -507,6 +546,16 @@ def refreshConversationsForUserAndProgram(user, program):
         .filter(gciconversation_model.GCIConversation.include_admins == True))
     map(addToConversation, query)
 
+  # Make sure user is added to program conversations they belong in as a
+  # winner
+  if student_info and student_info.is_winner:
+    query = (queryConversationsForProgram(program)
+        .filter(gciconversation_model.GCIConversation.recipients_type ==
+            conversation_model.PROGRAM)
+        .filter(gciconversation_model.GCIConversation.auto_update_users == True)
+        .filter(gciconversation_model.GCIConversation.include_winners == True))
+    map(addToConversation, query)
+
   # Make sure user is added to org conversations they belong in as an org
   # mentor
   if profile.is_mentor and mentor_org_keys:
@@ -530,3 +579,69 @@ def refreshConversationsForUserAndProgram(user, program):
         .filter(gciconversation_model.GCIConversation.organization.IN(
             admin_org_keys)))
     map(addToConversation, query)
+
+  # Make sure user is added to org conversations they belong in as an org
+  # winner
+  if student_info and student_info.is_winner and student_info.winner_for:
+    query = (queryConversationsForProgram(program)
+        .filter(gciconversation_model.GCIConversation.recipients_type ==
+            conversation_model.ORGANIZATION)
+        .filter(gciconversation_model.GCIConversation.auto_update_users == True)
+        .filter(gciconversation_model.GCIConversation.include_winners == True)
+        .filter(gciconversation_model.GCIConversation.organization ==
+            ndb.Key.from_old_key(student_info.winner_for.key())))
+    map(addToConversation, query)
+
+
+def getSubscribedEmails(conversation, exclude=None):
+  """Gets the list of email addresses for all users subscribed to a
+  conversation.
+
+  Args:
+    conversation: Key (ndb) of GCIConversation.
+    exclude: Keys (ndb) of Users that, if given, will not be in the set of
+             emails.
+
+  Returns:
+    Set of email addresses.
+  """
+  conversation_ent = conversation.get()
+  conv_users = queryConversationUserForConversation(conversation)
+  program_key = ndb.Key.to_old_key(conversation_ent.program)
+  addresses = set()
+
+  for conv_user in conv_users:
+    if conv_user.enable_notifications and (
+        not exclude or conv_user.user not in exclude):
+      user_key = ndb.Key.to_old_key(conv_user.user)
+      profile_results = gciprofile_logic.queryProfileForUserAndProgram(
+          user=user_key, program=program_key).fetch(1)
+
+      if len(profile_results) == 0:
+        raise Exception('Could not find GCIProfile for user %s and program. %s'
+            % (conv_user.name, program_key.name()))
+
+      profile = profile_results[0]
+      addresses.add(profile.email)
+
+  return addresses
+
+
+def notifyParticipantsOfMessage(message, is_reply):
+  """Notifies participants in a conversation's participants of a new message.
+
+  Args:
+    message: Key (ndb) of GCIMessage of which to notify participants.
+    is_reply: Whether this message is a reply to an existing conversation.
+  """
+  message_ent = message.get()
+  conversation_ent = message_ent.conversation.get()
+
+  to_emails = getSubscribedEmails(
+      message_ent.conversation, exclude=[message_ent.author])
+
+  context = notifications.getTaskConversationMessageContext(
+      message, list(to_emails), is_reply)
+
+  txn = mailer.getSpawnMailTaskTxn(context, parent=None)
+  db.run_in_transaction(txn)
