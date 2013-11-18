@@ -155,6 +155,12 @@ indexes:
   - name: student
   - name: status
 
+# Used to obtain all tasks for the specified mentor and status.
+- kind: GCITask
+  properties:
+  - name: mentors
+  - name: status
+
 # Used to obtain all messages for the specified connection (ancestor) ordered
 # by creation date
 - kind: ConnectionMessage
