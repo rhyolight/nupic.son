@@ -50,5 +50,8 @@
     {% if help_link %}
     <li id="menu-help"><a href="{{ help_link }}">FAQ</a></li>
     {% endif %}
+    {% if static_content_list_link %}
+    <li id="menu-help"><a href="{{ static_content_list_link }}">Downloads</a></li>
+    {% endif %}
   </ul>
 {% endblock site_menu %}

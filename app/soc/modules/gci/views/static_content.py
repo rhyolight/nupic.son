@@ -17,12 +17,17 @@
 from google.appengine.ext import blobstore
 
 from django.forms import util
+from django.template import defaultfilters
 from django.utils import translation
 
 from melange.request import access
 from melange.request import exception
+from melange.request import links
 from soc.models import static_content
+from soc.views import template
+from soc.views import base_templates
 from soc.views.helper import blobstore as bs_helper
+from soc.views.helper import lists
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.views import base
@@ -45,7 +50,7 @@ class ContentUploadForm(gci_forms.GCIModelForm):
     css_prefix = 'gci_static_content'
     fields = ['content_id', 'content']
 
-  content = gci_forms.FileField(required=False)
+  content = gci_forms.FileField(required=True)
 
   def addFileRequiredError(self):
     """Appends a form error message indicating that the file field is required.
@@ -90,10 +95,8 @@ class StaticContentUpload(base.GCIRequestHandler):
 
   def jsonContext(self, data, check, mutator):
     """Returns the blobstore upload URL on an XHR."""
-    # TODO(nathaniel): make this .program() call unnecessary.
-    data.redirect.program()
-
-    url = data.redirect.urlOf(url_names.GCI_CONTENT_UPLOAD, secure=True)
+    url = links.ABSOLUTE_LINKER.program(
+        data.program, url_names.GCI_CONTENT_UPLOAD, secure=True)
     return {
         'upload_link': blobstore.create_upload_url(url),
         }
@@ -123,6 +126,9 @@ class StaticContentUpload(base.GCIRequestHandler):
     """Handles POST requests for uploading static content."""
     form = ContentUploadForm(data=data.POST, files=data.request.file_uploads)
 
+    # TODO(nathaniel): make this .program() call unnecessary.
+    data.redirect.program()
+
     if not form.is_valid():
       # we are not storing this form, remove the uploaded blobs from the cloud
       for f in data.request.file_uploads.itervalues():
@@ -137,7 +143,6 @@ class StaticContentUpload(base.GCIRequestHandler):
 
     # delete existing data
     cleaned_data = form.cleaned_data
-    r = data.request.file_uploads
     for field_name in data.request.file_uploads.keys():
       if field_name in cleaned_data and form.instance:
         existing = getattr(form.instance, field_name)
@@ -152,10 +157,7 @@ class StaticContentUpload(base.GCIRequestHandler):
           'content_id': form.cleaned_data.get('content_id'),
         }, parent=data.program)
 
-    # TODO(nathaniel): make this .program() call unnecessary.
-    data.redirect.program()
-
-    return data.redirect.to(url_names.GCI_CONTENT_UPLOAD)
+    return data.redirect.to(url_names.GCI_CONTENT_UPLOAD, validated=True)
 
 
 class StaticContentDownload(base.GCIRequestHandler):
@@ -164,7 +166,7 @@ class StaticContentDownload(base.GCIRequestHandler):
   def djangoURLPatterns(self):
     """The URL pattern for the view."""
     return [
-        url(r'content/%s$' % url_patterns.STATIC_CONTENT, self,
+        url(r'content/download/%s$' % url_patterns.STATIC_CONTENT, self,
             name=url_names.GCI_CONTENT_DOWNLOAD)]
 
   def checkAccess(self, data, check, mutator):
@@ -178,9 +180,99 @@ class StaticContentDownload(base.GCIRequestHandler):
       raise exception.NotFound(message=DEF_CONTENT_NOT_FOUND)
 
     q = static_content.StaticContent.all()
+    q.ancestor(data.program)
     q.filter('content_id', content_id)
     entity = q.get()
     if not entity:
       raise exception.NotFound(message=DEF_CONTENT_NOT_FOUND)
 
     return bs_helper.sendBlob(entity.content)
+
+
+class StaticContentList(template.Template):
+  """List that displays all the publicly anonymously downloadable content."""
+
+  IDX = 0
+
+  def __init__(self, data):
+    """Initializes a new object.
+
+    Args:
+      data: RequestData object associated with the request.
+    """
+    self.data = data
+
+    list_config = lists.ListConfiguration()
+    list_config.addPlainTextColumn('name', 'Name',
+        lambda entity, *args: entity.content.filename)
+    list_config.addPlainTextColumn('size', 'Size',
+        lambda entity, *args: defaultfilters.filesizeformat(
+            entity.content.size))
+    list_config.setDefaultSort('name')
+
+    list_config.setRowAction(lambda e, *args: links.LINKER.staticContent(
+        e.parent(), e.content_id, url_names.GCI_CONTENT_DOWNLOAD))
+
+    self._list_config = list_config
+
+  def context(self):
+    list_configuration_response = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=self.IDX,
+        description='Downloads - %s' % (self.data.program.name))
+
+    return {
+        'lists': [list_configuration_response],
+        }
+
+  def getListData(self):
+    """Returns the list data as requested by the current request.
+
+    If the lists as requested is not supported by this component None is
+    returned.
+    """
+    idx = lists.getListIndex(self.data.request)
+    if idx == self.IDX:
+      starter = lists.keyStarter
+      query = static_content.StaticContent.all()
+      query.ancestor(self.data.program)
+
+      response_builder = lists.RawQueryContentResponseBuilder(
+          self.data.request, self._list_config, query, starter)
+      return response_builder.build()
+    else:
+      return None
+
+  def templatePath(self):
+    return 'modules/gci/static_content/_list.html'
+
+
+class StaticContentListPage(base.GCIRequestHandler):
+  """View that lists all the static content uploaded for the program."""
+
+  def djangoURLPatterns(self):
+    """The URL pattern for the view."""
+    return [
+        url(r'content/list/%s$' % url_patterns.PROGRAM, self,
+            name=url_names.GCI_CONTENT_LIST)]
+
+  def checkAccess(self, data, check, mutator):
+    """Allows public anonymous access when program is visible."""
+    check.isProgramVisible()
+
+  def jsonContext(self, data, check, mutator):
+    list_content = StaticContentList(data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exception.BadRequest(message='Invalid list request.')
+
+  def context(self, data, check, mutator):
+    return {
+        'page_name': "Downloads - %s" % data.program.name,
+        'static_content_list': StaticContentList(data),
+        'program_select': base_templates.ProgramSelect(
+            data, url_names.GCI_CONTENT_LIST),
+    }
+
+  def templatePath(self):
+    return 'modules/gci/static_content/list_page.html'

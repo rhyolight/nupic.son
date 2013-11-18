@@ -108,6 +108,8 @@ class Callback(object):
     self.views.append(propose_winners.ViewProposedWinnersPage())
     self.views.append(static_content.StaticContentUpload())
     self.views.append(static_content.StaticContentDownload())
+    self.views.append(static_content.StaticContentListPage())
+    self.views.append(static_content.StaticContentUpload())
     self.views.append(student_forms.StudentFormUpload())
     self.views.append(student_forms.StudentFormDownload())
     self.views.append(students_info.StudentsInfoPage())

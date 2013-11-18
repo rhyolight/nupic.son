@@ -228,6 +228,13 @@ class ProgramSettingsDashboard(Dashboard):
             'link': links.LINKER.sponsor(
                 data.sponsor, url_names.GCI_PROGRAM_CREATE),
         },
+        {
+            'name': 'static_content_upload',
+            'description': ugettext(
+                'Upload a file that will be available for public downloads.'),
+            'title': 'File upload',
+            'link': data.redirect.urlOf(url_names.GCI_CONTENT_LIST),
+        },
     ]
 
     super(ProgramSettingsDashboard, self).__init__(data, subpages)

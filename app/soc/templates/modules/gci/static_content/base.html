@@ -22,7 +22,7 @@ limitations under the License.
 {% block page_content %}
 {% if posted %}
   <div class="block block-user-message">
-    <p>Data saved successfully.</p>
+    <p>Form was uploaded successfully.</p>
   </div>
 {% else %}
   {% if form.non_field_errors %}
@@ -32,7 +32,7 @@ limitations under the License.
   {% else %}
     {% if form.errors %}
       <div class="block block-user-message">
-        <p>Sorry, we could not save your data. Please fix the errors mentioned below.</p>
+        <p>Sorry, we could not upload the form. Please fix the errors mentioned below.</p>
       </div>
     {% endif %}
   {% endif %}
