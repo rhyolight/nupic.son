@@ -1,5 +1,11 @@
 <div class="block block-red block-logged-in-as">
   <div class="block-title">Logged-In As</div>
-  <div class="block-content clearfix">{{ logged_in_as }}</div>
+  <div class="block-content clearfix">
+    {{ logged_in_as }}
+    {% if username %}
+      <br/>
+      Username: {{ username }}
+    {% endif %}
+    </div>
   <div class="block-footer"><a href="{{ link_url }}">{{ link_label }}</a></div>
 </div>

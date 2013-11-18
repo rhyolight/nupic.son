@@ -235,6 +235,8 @@ class LoggedInAs(Template):
       context['logged_in_as'] = self.data.gae_user.email()
       context['link_url'] = links.LINKER.logout(self.data.request)
       context['link_label'] = LOGOUT_LINK_LABEL
+      if self.data.user:
+        context['username'] = self.data.user.link_id
     else:
       context['logged_in_as'] = NOT_LOGGED_IN
       context['link_url'] = links.LINKER.login(self.data.request)
