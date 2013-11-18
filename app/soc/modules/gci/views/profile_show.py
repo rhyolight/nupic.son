@@ -157,6 +157,8 @@ class GCIProfileShowAdminPage(GCIProfileShowPage):
       context['student_task_link'] = data.redirect.urlOf(
           url_names.GCI_STUDENT_TASKS)
 
+      context['user'] = self._getUserReadOnlyTemplate(data.url_user)
+
     return context
 
   def post(self, data, check, mutator):
