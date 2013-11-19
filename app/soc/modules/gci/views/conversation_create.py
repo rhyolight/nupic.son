@@ -16,8 +16,6 @@
 
 import json
 
-from datetime import datetime
-
 from django import forms as django_forms
 from django.utils import html
 from django.utils import translation
@@ -32,7 +30,6 @@ from soc.views import template
 from soc.views.helper import url_patterns
 
 from soc.models import conversation as conversation_model
-from soc.models import user as user_model
 
 from soc.modules.gci.views import base as base_views
 from soc.modules.gci.views import forms as gci_forms
@@ -40,7 +37,6 @@ from soc.modules.gci.views.helper import url_patterns as gciurl_patterns
 from soc.modules.gci.views.helper import url_names as gciurl_names
 
 from soc.modules.gci.logic import conversation as gciconversation_logic
-from soc.modules.gci.logic import message as gcimessage_logic
 from soc.modules.gci.logic import organization as gciorganization_logic
 
 from soc.modules.gci.models import conversation as gciconversation_model
@@ -219,7 +215,7 @@ class ConversationCreateForm(gci_forms.GCIModelForm):
     See soc.views.forms.ModelForm.create for original specification.
 
     Args:
-      commit: Optional bool, default True; If True, the conversation model  
+      commit: Optional bool, default True; If True, the conversation model
               is also saved to the datastore. A message model will only be
               created if the conversation is comitted.
       key_name: The key name of the new model instance; None by default.
@@ -301,11 +297,11 @@ class ConversationCreateForm(gci_forms.GCIModelForm):
         error = (translation.ugettext('%s is not a valid username.') %
             invalid_usernames[0])
       elif len(invalid_usernames) == 2:
-        error = (translation.ugettext('%s and %s are not valid usernames.') % 
+        error = (translation.ugettext('%s and %s are not valid usernames.') %
             (invalid_usernames[0], invalid_usernames[1]))
       else:
         last = invalid_usernames.pop()
-        error = (translation.ugettext('%s, and %s are not valid usernames.') % 
+        error = (translation.ugettext('%s, and %s are not valid usernames.') %
             (', '.join(invalid_usernames), last))
       raise django_forms.ValidationError(error)
 

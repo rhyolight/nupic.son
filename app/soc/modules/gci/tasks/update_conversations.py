@@ -24,7 +24,6 @@ from django.conf.urls import defaults
 
 from google.appengine.api import taskqueue
 
-from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from soc.tasks.helper import error_handler
@@ -72,7 +71,7 @@ class UpdateConversationsTask:
 
     gciconversation_logic.refreshConversationsForUserAndProgram(
         user_key, program_key)
-    
+
     return http.HttpResponse('OK')
 
 
@@ -93,7 +92,7 @@ def spawnUpdateConversationsTask(user_key, program_key):
 
   logging.info(
       'Enqueued update_conversations task for user key "%s" and program key '
-      '"%s"' % (task_params['user_key'], task_params['program_key']))
+      '"%s"', task_params['user_key'], task_params['program_key'])
 
   task = taskqueue.Task(params=task_params, url=UPDATE_CONVERSATIONS_URL)
   task.add()

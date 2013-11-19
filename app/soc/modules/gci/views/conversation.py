@@ -232,7 +232,7 @@ class ConversationPage(GCIRequestHandler):
         'messages': messages,
         'user_list': UserList(data),
         'user_actions': UserActions(data),
-        'reply_action': urlresolvers.reverse(url_names.GCI_CONVERSATION_REPLY, 
+        'reply_action': urlresolvers.reverse(url_names.GCI_CONVERSATION_REPLY,
             kwargs=data.kwargs)
     }
 
