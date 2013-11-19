@@ -46,6 +46,19 @@ def getLastMessageForConversation(conversation):
   return results[0] if results else None
 
 
+def queryForUser(user):
+  """Creates a query for GCIMessage entities for the given user.
+
+  Args:
+    user: Key (ndb) of message author.
+
+  Returns:
+    An ndb query for GCIMessages authored by the user.
+  """
+  return gcimessage_model.GCIMessage.query(
+      gcimessage_model.GCIMessage.author == user)
+
+
 def numMessagesInConversation(conversation):
   """Calculates the number of messages in a given GCIConversation.
 

@@ -49,15 +49,22 @@ class GCIMessage(unittest.TestCase):
         creator=self.user_keys[0],
         users=[self.user_keys[1]])
 
-    # Add three messages, each one minute apart
+    # Add two messages from each user, each one minute apart
     self.msg_keys = []
-    for x in range(3):
-      self.msg_keys.append(
+    self.user_1_msg_keys = []
+    self.user_2_msg_keys = []
+    for x in range(2):
+      self.user_1_msg_keys.append(
           self.conv_utils.addMessage(
-              conversation=self.conv.key,
-              time=(datetime.utcnow() + timedelta(minutes=x))))
-    self.msg_keys = map(
-        lambda message: message.key, self.msg_keys)
+              user=self.user_keys[0], conversation=self.conv.key,
+              time=(datetime.utcnow() + timedelta(minutes=x))).key)
+      self.msg_keys.append(self.user_1_msg_keys[-1])
+    for x in range(2, 4):
+      self.user_2_msg_keys.append(
+          self.conv_utils.addMessage(
+              user=self.user_keys[1], conversation=self.conv.key,
+              time=(datetime.utcnow() + timedelta(minutes=x))).key)
+      self.msg_keys.append(self.user_2_msg_keys[-1])
 
   def testQueryForConversation(self):
     """Tests that queryForConversation returns a query for all
@@ -92,6 +99,21 @@ class GCIMessage(unittest.TestCase):
     actual = gcimessage_logic.getLastMessageForConversation(
         conversation=self.conv.key)
     self.assertEqual(expected, actual)
+
+  def testQueryForUser(self):
+    """Tests that queryForUser returns a query for all GCIMessage entities from
+    a particular user.
+    """
+
+    expected_keys = set(self.user_1_msg_keys)
+    actual_keys = set(gcimessage_logic.queryForUser(
+        user=self.user_keys[0]).fetch(20, keys_only=True))
+    self.assertEqual(expected_keys, actual_keys)
+
+    expected_keys = set(self.user_2_msg_keys)
+    actual_keys = set(gcimessage_logic.queryForUser(
+        user=self.user_keys[1]).fetch(20, keys_only=True))
+    self.assertEqual(expected_keys, actual_keys)
 
   def testNumMessagesInConversation(self):
     """Tests that numMessagesInConversation returns the correct number of
