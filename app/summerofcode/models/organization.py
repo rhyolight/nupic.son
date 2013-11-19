@@ -27,3 +27,15 @@ class SOCOrganization(org_model.Organization):
   #: URL to a page with a list of project ideas for the organization.
   ideas_page = ndb.StringProperty(
       indexed=False, validator=db.link_validator)
+
+  #: Number of slots that have been allocated to this organization by
+  #: program administrators.
+  slot_allocation = ndb.IntegerProperty()
+
+  #: Number of slots that have been requested by organization administrators
+  #: based on how many proposals the organization is really willing to accept.
+  slot_request_min = ndb.IntegerProperty()
+
+  #: Number of slots that would have been desired by the organization,
+  #: if the total number of slots was unlimited.
+  slot_request_max = ndb.IntegerProperty()
