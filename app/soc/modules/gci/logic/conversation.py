@@ -32,6 +32,24 @@ from soc.modules.gci.logic.helper import notifications
 from soc.models import conversation as conversation_model
 
 
+def queryForProgramAndCreator(program, creator):
+  """Creates a query for GCIConversation entities for the given program and
+  creator.
+
+  Args:
+    program: Key (ndb) of GCIProgram.
+    creator: Key (ndb) of User who created the conversation.
+
+  Returns:
+    An ndb query for GCIConversations for the program and creator.
+  """
+  query = (gciconversation_model.GCIConversation.query()
+      .filter(gciconversation_model.GCIConversation.program == program)
+      .filter(gciconversation_model.GCIConversation.creator == creator))
+
+  return query
+
+
 def queryForProgramAndUser(program, user):
   """Creates a query for GCIConversationUser entities for the given program and
   user.

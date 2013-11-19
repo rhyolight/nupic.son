@@ -65,6 +65,27 @@ class GCIConversationTest(unittest.TestCase):
         creator=self.user_keys[1],
         users=[self.user_keys[2]])
 
+  def testQueryForProgramAndCreator(self):
+    """Tests that queryForProgramAndCreator returns a query for all
+    GCIConversation entities for a particular program and creator.
+    """
+
+    # User 0 should have created the first conversation
+    expected_keys = set([self.conv_a.key])
+    actual_keys = set(
+        gciconversation_logic.queryForProgramAndCreator(
+            program=self.program_key, creator=self.user_keys[0])
+        .fetch(keys_only=True))
+    self.assertEqual(expected_keys, actual_keys)
+
+    # User 1 should have created the second conversation
+    expected_keys = set([self.conv_b.key])
+    actual_keys = set(
+        gciconversation_logic.queryForProgramAndCreator(
+            program=self.program_key, creator=self.user_keys[1])
+        .fetch(keys_only=True))
+    self.assertEqual(expected_keys, actual_keys)
+
   def testQueryForProgramAndUser(self):
     """Tests that queryForProgramAndUser returns a query for all
     GCIConversationUser entities for a particular program and user.
