@@ -286,7 +286,10 @@ class NotificationsEnabled(GCIRequestHandler):
 
     conv_user_key = conv_user.key
 
-    @ndb.transactional(xg=True)
+    # TODO(nathaniel): Remove the suppression on the following line when
+    # https://bitbucket.org/logilab/pylint.org/issue/6/false-positive-no
+    # is fixed.
+    @ndb.transactional(xg=True)  # pylint: disable=no-value-for-parameter
     def set_notifications_enabled_txn():
       # transactionally get latest GCIConversationUser
       conv_user = conv_user_key.get()
