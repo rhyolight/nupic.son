@@ -219,9 +219,7 @@ class RequestData(request_data.RequestData):
   @property
   def css_path(self):
     """Returns the css_path property."""
-    if not self._isSet(self._css_path):
-      self._css_path = 'gci'
-    return self._css_path
+    return 'gci'
 
   @property
   def is_mentor(self):

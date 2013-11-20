@@ -225,7 +225,6 @@ class RequestData(object):
     self._is_developer = self._unset
     self._is_host = self._unset
     self._gae_user = self._unset
-    self._css_path = self._unset
     self._ds_write_disabled = self._unset
     self._timeline = self._unset
 
@@ -260,12 +259,10 @@ class RequestData(object):
   @property
   def css_path(self):
     """Returns the css_path property."""
-    if not self._isSet(self._css_path):
-      # TODO(daniel): this should not return gsoc in module
-      # I believe css_path is needed in the main module because of a few sites
-      # that are not specific to any module, like site or host
-      self._css_path = 'gsoc'
-    return self._css_path
+    # TODO(daniel): this should not return gsoc in module
+    # I believe css_path is needed in the main module because of a few sites
+    # that are not specific to any module, like site or host
+    return 'gsoc'
 
   @property
   def gae_user(self):
