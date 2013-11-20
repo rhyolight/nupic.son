@@ -47,11 +47,6 @@ def getRawHostname():
   return os.environ.get('HTTP_HOST', '')
 
 
-def getSecureHostname():
-  """Returns the hostname suitable for https requests."""
-  return "%s.appspot.com" % getApplicationId()
-
-
 def getAppVersion():
   """Returns the Google App Engine "version" of the running instance."""
   return os.environ.get('CURRENT_VERSION_ID')

@@ -109,18 +109,6 @@ class SystemTest(unittest.TestCase):
       else:
         os.environ['HTTP_HOST'] = self.default_host
 
-  def testGetSecureHostName(self):
-    """Tests that a hostname suitable for https requests is returned."""
-    try:
-      os.environ['APPLICATION_ID'] = 'test-app-run'
-      expected_host = 'test-app-run.appspot.com'
-      self.assertEqual(system.getSecureHostname(), expected_host)
-    finally:
-      if self.default_application_id is None:
-        del os.environ['APPLICATION_ID']
-      else:
-        os.environ['APPLICATION_ID'] = self.default_application_id
-
   def testGetAppVersion(self):
     """Tests if a google-app-version is returned."""
     try:

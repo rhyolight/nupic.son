@@ -811,12 +811,8 @@ class RedirectHelper(object):
       return url
 
     # TODO(nathaniel): consider using scheme-relative urls here?
-    if secure:
-      protocol = 'https'
-      hostname = system.getSecureHostname()
-    else:
-      protocol = 'http'
-      hostname = site_logic.getHostname(self._data)
+    protocol = 'https' if secure else 'http'
+    hostname = site_logic.getHostname(self._data)
 
     return '%s://%s%s' % (protocol, hostname, url)
 
