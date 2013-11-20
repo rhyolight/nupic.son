@@ -210,7 +210,6 @@ class RequestData(request_data.RequestData):
     self.models = types.SOC_MODELS
 
     # program wide fields
-    self._program = self._unset
     self._program_timeline = self._unset
     self._programs = self._unset
     self._org_app = self._unset
