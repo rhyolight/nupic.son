@@ -25,6 +25,8 @@ from soc.modules.gci.views import base_templates
 from tests import profile_utils
 
 
+# TODO(nathaniel): Eliminate this class or at least unify it with the two
+# other MockRequestData classes floating around tests/.
 class MockRequestData(object):
   """Class used to simulate request_data.RequestData gae_user and request
   properties."""
@@ -39,8 +41,10 @@ class MockRequestData(object):
       user = profile_utils.seedUser(email=user_email)
       profile_utils.login(user)
       self.gae_user = users.User()
+      self.user = user
     else:
       self.gae_user = None
+      self.user = None
     self.request = http.HttpRequest()
 
 
