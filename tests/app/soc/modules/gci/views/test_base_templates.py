@@ -16,45 +16,28 @@
 
 import unittest
 
-from django import http
-
-from google.appengine.api import users
+from django.test import client
 
 from soc.modules.gci.views import base_templates
+from soc.modules.gci.views.helper import request_data
 
 from tests import profile_utils
 
 
-# TODO(nathaniel): Eliminate this class or at least unify it with the two
-# other MockRequestData classes floating around tests/.
-class MockRequestData(object):
-  """Class used to simulate request_data.RequestData gae_user and request
-  properties."""
-
-  def __init__(self, user_email=None):
-    """Initializes instance of this class.
-
-    Args:
-      user_email: the user email as a string.
-    """
-    if user_email is not None:
-      user = profile_utils.seedUser(email=user_email)
-      profile_utils.login(user)
-      self.gae_user = users.User()
-      self.user = user
-    else:
-      self.gae_user = None
-      self.user = None
-    self.request = http.HttpRequest()
-
+TEST_EMAIL = 'test@example.com'
 
 class LoggedInAsTest(unittest.TestCase):
   """Unit tests for LoggedInAs template."""
 
   def testForLoggedInUser(self):
     """Tests context for a logged in user."""
-    request_data = MockRequestData(user_email='test@example.com')
-    context = base_templates.LoggedInAs(request_data).context()
+    user = profile_utils.seedUser(email=TEST_EMAIL)
+    profile_utils.login(user)
+
+    request = client.RequestFactory().get('http://some-unused.url.com/')
+
+    data = request_data.RequestData(request, None, None)
+    context = base_templates.LoggedInAs(data).context()
 
     # check that LOGOUT_LINK_LABEL is used as link label
     self.assertEqual(context['link_label'], base_templates.LOGOUT_LINK_LABEL)
@@ -64,8 +47,12 @@ class LoggedInAsTest(unittest.TestCase):
 
   def testForNotLoggedInUser(self):
     """Tests context for a not logged in user."""
-    request_data = MockRequestData()
-    context = base_templates.LoggedInAs(request_data).context()
+    profile_utils.logout()
+
+    request = client.RequestFactory().get('http://some-unused.url.com/')
+
+    data = request_data.RequestData(request, None, None)
+    context = base_templates.LoggedInAs(data).context()
 
     # check that LOGIN_LINK_LABEL is used as link label
     self.assertEqual(context['link_label'], base_templates.LOGIN_LINK_LABEL)

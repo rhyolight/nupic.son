@@ -255,7 +255,7 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
   def testForHost(self):
     request_data = TestIsUpdateLinkVisible.MockRequestData(is_host=True)
     result = project_details._isUpdateLinkVisible(request_data)
-    self.assertTrue(request_data)
+    self.assertTrue(result)
 
   def testForProjectStudent(self):
     student = self.profile_helper.createStudent()
