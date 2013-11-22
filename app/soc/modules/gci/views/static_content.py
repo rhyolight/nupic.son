@@ -270,7 +270,7 @@ class StaticContentListPage(base.GCIRequestHandler):
     return {
         'page_name': "Downloads - %s" % data.program.name,
         'static_content_list': StaticContentList(data),
-        'program_select': base_templates.ProgramSelect(
+        'program_select': base_templates.DefaultProgramSelect(
             data, url_names.GCI_CONTENT_LIST),
     }
 

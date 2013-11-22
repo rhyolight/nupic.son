@@ -18,7 +18,7 @@ or failed one of the evaluations.
 """
 
 from melange.request import exception
-from soc.views.base_templates import ProgramSelect
+from soc.views import base_templates
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.template import Template
@@ -179,5 +179,6 @@ class ListProjects(base.GSoCRequestHandler):
         'page_name': '%s - Accepted Projects' % program.short_name,
         'program_name': program.name,
         'project_list': ProjectList(data, list_query),
-        'program_select': ProgramSelect(data, 'gsoc_accepted_projects'),
+        'program_select': base_templates.DefaultProgramSelect(
+            data, 'gsoc_accepted_projects'),
     }

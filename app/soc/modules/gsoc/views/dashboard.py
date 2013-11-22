@@ -32,7 +32,7 @@ from soc.logic import document as document_logic
 from soc.logic import org_app as org_app_logic
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.universities import UNIVERSITIES
-from soc.views.base_templates import ProgramSelect
+from soc.views import base_templates
 from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
 from soc.views.helper import lists
@@ -197,7 +197,8 @@ class DashboardPage(base.GSoCRequestHandler):
     return {
         'page_name': data.program.name,
         'user_name': data.profile.name() if data.profile else None,
-        'program_select': ProgramSelect(data, 'gsoc_dashboard'),
+        'program_select': base_templates.DefaultProgramSelect(
+            data, 'gsoc_dashboard'),
     # TODO(ljvderijk): Implement code for setting dashboard messages.
     #   'alert_msg': 'Default <strong>alert</strong> goes here',
         'dashboards': dashboards,

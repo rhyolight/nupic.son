@@ -19,7 +19,7 @@ from django.utils import html as html_utils
 
 from melange.request import access
 from melange.request import exception
-from soc.views.base_templates import ProgramSelect
+from soc.views import base_templates
 from soc.views.helper import lists
 from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
@@ -162,7 +162,8 @@ class AcceptedOrgsPublicPage(base.GSoCRequestHandler):
     return {
         'page_name': "Accepted organizations for %s" % data.program.name,
         'accepted_orgs_list': AcceptedOrgsPublicList(data),
-        'program_select': ProgramSelect(data, 'gsoc_accepted_orgs'),
+        'program_select': base_templates.DefaultProgramSelect(
+            data, 'gsoc_accepted_orgs'),
     }
 
 

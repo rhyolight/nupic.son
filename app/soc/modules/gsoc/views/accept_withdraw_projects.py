@@ -25,7 +25,7 @@ from django import http
 
 from melange.request import access
 from melange.request import exception
-from soc.views.base_templates import ProgramSelect
+from soc.views import base_templates
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.template import Template
@@ -207,7 +207,8 @@ class AcceptProposals(base.GSoCRequestHandler):
         'page_name': '%s - Proposals' % program.short_name,
         'program_name': program.name,
         'list': ProposalList(data),
-        'program_select': ProgramSelect(data, 'gsoc_admin_accept_proposals'),
+        'program_select': base_templates.DefaultProgramSelect(
+            data, 'gsoc_admin_accept_proposals'),
     }
 
 
@@ -404,5 +405,6 @@ class WithdrawProjects(base.GSoCRequestHandler):
         'page_name': '%s - Projects' % data.program.short_name,
         'program_name': data.program.name,
         'list': ProjectList(data),
-        'program_select': ProgramSelect(data, 'gsoc_withdraw_projects'),
+        'program_select': base_templates.DefaultProgramSelect(
+            data, 'gsoc_withdraw_projects'),
     }

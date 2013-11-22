@@ -20,11 +20,14 @@ from soc.models.site import Site
 from soc.views.template import Template
 
 
+PROGRAM_SELECT_TEMPLATE_PATH = 'soc/_program_select.html'
+
 class ProgramSelect(Template):
   """Program select template."""
 
-  def __init__(self, data, url_name):
-    self.data = data
+  def __init__(self, template_path, data, url_name):
+    super(ProgramSelect, self).__init__(data)
+    self.template_path = template_path
     self.url_name = url_name
 
   def context(self):
@@ -57,5 +60,14 @@ class ProgramSelect(Template):
         'render': len(programs) > 1,
     }
 
-  def templatePath(self):
-    return "soc/_program_select.html"
+
+class DefaultProgramSelect(ProgramSelect):
+  """Subclass of ProgramSelect that always is always rendered using
+  PROGRAM_SELECT_TEMPLATE_PATH as its template path.
+  """
+
+  def __init__(self, data, url_name):
+    """See ProgramSelect.__init__ for specification."""
+    super(DefaultProgramSelect, self).__init__(
+        PROGRAM_SELECT_TEMPLATE_PATH, data, url_name)
+

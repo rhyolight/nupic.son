@@ -18,8 +18,9 @@ from django.conf.urls import url as django_url
 
 from melange.request import access
 from melange.request import exception
+
+from soc.views import base_templates
 from soc.views import document
-from soc.views.base_templates import ProgramSelect
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.views import base
@@ -182,5 +183,6 @@ class DocumentListPage(base.GSoCRequestHandler):
     return {
         'page_name': "Documents for %s" % data.program.name,
         'document_list': GSoCDocumentList(data),
-        'program_select': ProgramSelect(data, 'list_gsoc_documents'),
+        'program_select': base_templates.DefaultProgramSelect(
+            data, 'list_gsoc_documents'),
     }
