@@ -16,7 +16,6 @@
 
 import re
 
-from soc.views import base_templates
 from soc.views.template import Template
 
 from soc.modules.gci.logic import program as program_logic
@@ -85,14 +84,6 @@ class YourScore(Template):
 
   def templatePath(self):
     return 'modules/gci/common_templates/_your_score.html'
-
-
-class ProgramSelect(base_templates.ProgramSelect):
-  """Program select template.
-  """
-
-  def templatePath(self):
-    return 'modules/gci/common_templates/_program_select.html'
 
 
 class GlobalRankingWinners(Template):

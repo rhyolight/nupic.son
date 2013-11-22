@@ -16,6 +16,8 @@
 
 from melange.request import access
 from melange.request import exception
+
+from soc.views import base_templates
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.template import Template
@@ -30,6 +32,9 @@ from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
 
+
+PROGRAM_SELECT_TEMPLATE_PATH = (
+    'modules/gci/leaderboard/_program_select.html')
 
 class LeaderboardList(Template):
   """Template for the leaderboard list."""
@@ -134,8 +139,8 @@ class LeaderboardPage(GCIRequestHandler):
         'timeline': common_templates.Timeline(data),
         'complete_percentage': data.timeline.completePercentage(),
         'your_score': common_templates.YourScore(data),
-        'program_select': common_templates.ProgramSelect(
-            data, url_names.GCI_LEADERBOARD),
+        'program_select': base_templates.ProgramSelect(
+            PROGRAM_SELECT_TEMPLATE_PATH, data, url_names.GCI_LEADERBOARD),
         }
     if data.is_host or data.timeline.winnersAnnounced():
       context['winners'] = common_templates.GlobalRankingWinners(data)
