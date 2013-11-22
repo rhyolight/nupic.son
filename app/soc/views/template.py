@@ -44,7 +44,9 @@ class Template(object):
     try:
       context = context_helper.default(self.data)
       context.update(self.context())
-      rendered = loader.render_to_string(self.templatePath(), dictionary=context)
+      # TODO(daniel): remove the abstract method
+      template_path = getattr(self, 'template_path', '') or self.templatePath()
+      rendered = loader.render_to_string(template_path, dictionary=context)
     except Exception as e:
       logging.exception(e)
       raise e
