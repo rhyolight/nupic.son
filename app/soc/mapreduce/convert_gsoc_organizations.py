@@ -73,6 +73,7 @@ def convertOrg(org_key):
       'slot_request_min': organization.slots_desired,
       'slot_request_max': organization.max_slots_desired,
       'max_score': organization.max_score,
+      'list_all_mentors': organization.list_all_mentors,
       }
   new_organization = org_model.SOCOrganization(id=entity_id, **org_properties)
 

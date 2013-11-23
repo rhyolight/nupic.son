@@ -44,3 +44,9 @@ class SOCOrganization(org_model.Organization):
 
   #: Maximal number of points that can be given to a proposal by mentors.
   max_score = ndb.IntegerProperty(default=5)
+
+  #: Boolean property telling what mentors should be displayed to organization
+  #: administrators when they assign mentors to proposals. If the property is
+  #: set to False, only mentors who are willing to take up the project will
+  #: be presented. If the property is set to True, all mentors will be listed.
+  list_all_mentors = ndb.BooleanProperty(default=False)
