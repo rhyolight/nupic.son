@@ -20,6 +20,8 @@ from melange.appengine import db
 from melange.models import organization as org_model
 
 
+DEFAULT_MAX_SCORE = 5
+
 class SOCOrganization(org_model.Organization):
   """Model that represents a Summer Of Code-specific organization."""
   # TODO(daniel): add all SoC specific fields, like slots, etc.
@@ -39,3 +41,6 @@ class SOCOrganization(org_model.Organization):
   #: Number of slots that would have been desired by the organization,
   #: if the total number of slots was unlimited.
   slot_request_max = ndb.IntegerProperty()
+
+  #: Maximal number of points that can be given to a proposal by mentors.
+  max_score = ndb.IntegerProperty(default=5)
