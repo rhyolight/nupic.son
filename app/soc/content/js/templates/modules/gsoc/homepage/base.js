@@ -14,9 +14,15 @@
  */
 melange.templates.inherit(
   function (_self, context) {
+    jQuery("select").uniform();
+    melange.program_select.makeSelector("#program_select");
+
     function initialize() {
-      var blog = new BlogPreview(document.getElementById("blog-feed"));
-      blog.show(context.feed_url, 5, "Blog Feed");
+      var blogFeedContainer = document.getElementById("blog-feed");
+      if (blogFeedContainer !== null) {
+        var blog = new BlogPreview(document.getElementById("blog-feed"));
+        blog.show(context.feed_url, 5, "Blog Feed");
+      }
     }
 
     jQuery(

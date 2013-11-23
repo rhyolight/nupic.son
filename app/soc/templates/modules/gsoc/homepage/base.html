@@ -13,6 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 {% endcomment %}
 
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" media="screen" href="/{{ css_path }}/uniform.default.css" />
+{% endblock stylesheets %}
 
 {% block page_content %}
 <div id="how-it-works" class="block full home-block-1">
@@ -47,6 +51,9 @@ limitations under the License.
 
 <div class="content_column_2">
   <!-- begin block -->
+  <div class="block">
+    {{ program_select.render }}
+  </div>
   <div id="program-map" class="block block-project-timeline">
     {{ timeline.render }}
   </div>
@@ -64,8 +71,9 @@ limitations under the License.
 
 {% block dependencies %}
   [
-  {% if program.feed_url %}
+    dep.uniform,
     dep.melange.blog,
+    dep.melange.program_select,
     null,
     tc(
       "/soc/content/{{ app_version }}/js/templates/modules/gsoc/homepage/base.js",
@@ -73,6 +81,5 @@ limitations under the License.
         feed_url: "{{ program.feed_url|safe }}"
       }
     )
-  {% endif %}
   ]
 {% endblock dependencies %}

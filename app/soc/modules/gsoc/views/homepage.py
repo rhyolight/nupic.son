@@ -19,6 +19,7 @@ from django.conf.urls import url as django_url
 from melange.appengine import system
 from melange.request import links
 
+from soc.views import base_templates
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
@@ -239,6 +240,9 @@ class Homepage(base.GSoCRequestHandler):
         'connect_with_us': ConnectWithUs(data),
         'page_name': '%s - Home page' % (data.program.name),
         'program': data.program,
+        'program_select': base_templates.ProgramSelect(
+            'modules/gsoc/homepage/_program_select.html', data,
+            'gsoc_homepage'),
     }
 
     featured_project = project_logic.getFeaturedProject(
