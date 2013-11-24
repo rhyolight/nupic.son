@@ -16,7 +16,7 @@
 
 from google.appengine.ext import ndb
 
-from soc.models import countries
+from melange.utils import countries
 
 
 class Address(ndb.Model):
