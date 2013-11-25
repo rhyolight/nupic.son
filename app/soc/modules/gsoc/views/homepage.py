@@ -137,7 +137,7 @@ class Apply(Template):
         context['show_profile_link'] = True
 
     if self.data.timeline.orgSignup() and self.data.profile:
-      context['org_apply_link'] = redirector.orgAppTake().urlOf(
+      context['org_apply_link'] = redirector.program().urlOf(
           'gsoc_take_org_app')
       context['dashboard_link'] = redirector.dashboard().url()
 

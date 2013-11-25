@@ -447,11 +447,6 @@ class RequestData(request_data.RequestData):
 class RedirectHelper(request_data.RedirectHelper):
   """Helper for constructing redirects."""
 
-  def orgAppTake(self):
-    """Sets kwargs for an url_patterns.SURVEY redirect for org application."""
-    self.program()
-    return self
-
   def orgAppReTake(self, survey=None):
     """Sets kwargs for an url_patterns.SURVEY redirect for org application."""
     if not survey:
