@@ -39,7 +39,7 @@ DEF_BULK_CREATE_COMPLETE_SUBJECT = ugettext(
 DEF_BULK_CREATE_COMPLETE_TEMPLATE = 'modules/gci/reminder/bulk_create.html'
 
 DEF_FIRST_TASK_CONFIRMATION_SUBJECT = ugettext(
-    'You have completed your first task in Google Code In program')
+    'You have completed your first task in Google Code-in program')
 
 DEF_FIRST_TASK_CONFIRMATION_TEMPLATE = \
     'modules/gci/notification/first_task_confirmation.html'

@@ -144,7 +144,7 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testCodeInStudentAccessDenied(self):
-    """Tests that Code-In student cannot access the page."""
+    """Tests that Code-in student cannot access the page."""
     self.profile_helper.createStudent()
     response = self.get(self.take_url)
     self.assertResponseForbidden(response)
