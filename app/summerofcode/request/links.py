@@ -18,33 +18,26 @@ from django.core import urlresolvers
 
 from melange.request import links
 
-from soc.modules.gsoc.models import project_survey as project_survey_model
+from soc.models import survey as survey_model
 
 
 class SoCLinker(links.Linker):
   """URL creator for Summer Of Code."""
 
-  def survey(self, survey, url_name):
+  def survey(self, survey_key, url_name):
     """Returns the URL of a survey's named page.
 
     Args:
-      survey: Survey entity.
+      survey_key: Survey key.
       url_name: The name with which a URL was registered with Django.
 
     Returns:
       The URL of the page matching the given name for the given survey.
     """
-    program_key = (
-        project_survey_model.ProjectSurvey.program.get_value_for_datastore(
-            survey))
-
-    # TODO(daniel): this should go to an utility function
-    sponsor_id, program_id = program_key.name().split('/')
-
     kwargs = {
-        'sponsor': sponsor_id,
-        'program': program_id,
-        'survey': survey.survey_type,
+        'sponsor': survey_model.getSponsorId(survey_key),
+        'program': survey_model.getProgramId(survey_key),
+        'survey': survey_model.getSurveyId(survey_key),
         }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
 

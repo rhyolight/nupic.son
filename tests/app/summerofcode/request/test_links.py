@@ -18,10 +18,13 @@ import unittest
 
 from summerofcode.request import links
 
+from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models import project_survey as project_survey_model
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+
+TEST_SURVEY_ID = 'test_survey_id'
 
 class SoCLinkerTest(unittest.TestCase):
   """Tests the SoCLinker class."""
@@ -32,10 +35,19 @@ class SoCLinkerTest(unittest.TestCase):
 
   def testSurvey(self):
     """Tests survey function."""
+    # seed a program
+    program = seeder_logic.seed(program_model.GSoCProgram)
+
     # seed a survey
-    survey = seeder_logic.seed(project_survey_model.ProjectSurvey)
+    survey_properties = {
+        'program': program,
+        'link_id': TEST_SURVEY_ID,
+        'key_name': '%s/%s' % (program.key().name(), TEST_SURVEY_ID)
+        }
+    survey = seeder_logic.seed(
+        project_survey_model.ProjectSurvey, properties=survey_properties)
 
     self.assertEqual(
         '/gsoc/eval/mentor/edit/%s/%s' % (
             survey.program.key().name(), survey.survey_type),
-        self.linker.survey(survey, 'gsoc_edit_mentor_evaluation'))
+        self.linker.survey(survey.key(), 'gsoc_edit_mentor_evaluation'))
