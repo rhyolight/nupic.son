@@ -447,17 +447,6 @@ class RequestData(request_data.RequestData):
 class RedirectHelper(request_data.RedirectHelper):
   """Helper for constructing redirects."""
 
-  # (dcrodman) This method will become obsolete when the connection module
-  # is commited to the main branch.
-  def invite(self, role=None):
-    """Sets args for an url_patterns.INVITE redirect."""
-    if not role:
-      assert 'role' in self._data.kwargs
-      role = self._data.kwargs['role']
-    self.organization()
-    self.kwargs['role'] = role
-    return self
-
   def orgAppTake(self):
     """Sets kwargs for an url_patterns.SURVEY redirect for org application."""
     self.program()
