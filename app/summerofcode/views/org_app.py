@@ -576,6 +576,7 @@ class OrgPreferencesEditPage(base.GSoCRequestHandler):
         'error': bool(form.errors),
         'forms': [form],
         'page_name': ORG_PREFERENCES_EDIT_PAGE_NAME,
+        'tabs': tabs.orgTabs(data, selected_tab_id=tabs.ORG_PREFERENCES_TAB_ID)
         }
 
   def post(self, data, check, mutator):

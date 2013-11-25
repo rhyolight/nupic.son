@@ -405,3 +405,14 @@ class OrgPreferencesEditPageTest(test_utils.GSoCDjangoTestCase):
     org = self.org.key.get()
     self.assertEqual(org.slot_request_min, TEST_SLOT_REQUEST_MIN)
     self.assertEqual(org.slot_request_max, TEST_SLOT_REQUEST_MAX)
+
+  def testOrgsTabs(self):
+    """Tests that correct organization related tabs are present in context."""
+    response = self.get(_getOrgPreferencesEditUrl(self.org))
+
+    # check that tabs are present in context
+    self.assertIn('tabs', response.context)
+
+    # check that tab to "Edit Profile" page is the selected one
+    self.assertEqual(response.context['tabs'].selected_tab_id,
+        tabs.ORG_PREFERENCES_TAB_ID)
