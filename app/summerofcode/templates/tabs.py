@@ -63,9 +63,11 @@ def profileTabs(data, selected_tab_id=None):
 
 ORG_PROFILE_TAB_ID = 'org_profile_tab'
 ORG_APP_RESPONSE_TAB_ID = 'app_response_tab'
+ORG_PREFERENCES_TAB_ID = 'org_preferences_tab'
 
 ORG_PROFILE_NAME = translation.ugettext('Profile')
 ORG_APP_RESPONSE_NAME = translation.ugettext('Questionnaire')
+ORG_PREFERENCES_NAME = translation.ugettext('Preferences')
 
 def orgTabs(data, selected_tab_id=None):
   """Returns tabs that join together organization related items.
@@ -89,6 +91,12 @@ def orgTabs(data, selected_tab_id=None):
       data.url_ndb_org.key, urls.UrlNames.ORG_APPLICATION_SUBMIT)
   tabs_list.append(
       tabs.Tab(ORG_APP_RESPONSE_TAB_ID, ORG_APP_RESPONSE_NAME, url))
+
+  # add Organization Preferences tab
+  url = links.LINKER.organization(
+      data.url_ndb_org.key, urls.UrlNames.ORG_PREFERENCES_EDIT)
+  tabs_list.append(
+      tabs.Tab(ORG_PREFERENCES_TAB_ID, ORG_PREFERENCES_NAME, url))
 
   return tabs.Tabs(
       data, TEMPLATE_PATH, tabs_list, selected_tab_id=selected_tab_id)

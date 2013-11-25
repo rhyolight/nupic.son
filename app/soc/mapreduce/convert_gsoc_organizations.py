@@ -68,7 +68,12 @@ def convertOrg(org_key):
       'logo_url': organization.logo_url,
       'name': organization.name,
       'org_id': organization.link_id,
-      'program': ndb.Key.from_old_key(organization.program.key())
+      'program': ndb.Key.from_old_key(organization.program.key()),
+      'slot_allocation': organization.slots,
+      'slot_request_min': organization.slots_desired,
+      'slot_request_max': organization.max_slots_desired,
+      'max_score': organization.max_score,
+      'list_all_mentors': organization.list_all_mentors,
       }
   new_organization = org_model.SOCOrganization(id=entity_id, **org_properties)
 

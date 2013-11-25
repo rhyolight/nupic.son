@@ -21,8 +21,7 @@ from soc.views import forms
 
 PROFILE_EXCLUDE = [
     'status', 'scope', 'slots', 'note', 'new_org',
-    'slots_calculated', 'nr_applications', 'link_id',
-    'proposal_extra', 'program'
+    'link_id', 'proposal_extra', 'program'
     ]
 
 HOMEPAGE_INFO_GROUP = translation.ugettext(
