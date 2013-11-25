@@ -469,12 +469,6 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = 'gsoc_homepage'
     return self
 
-  def orgHomepage(self, link_id):
-    """Sets the _url_name for the specified org homepage."""
-    super(RedirectHelper, self).orgHomepage(link_id)
-    self._url_name = url_names.GSOC_ORG_HOME
-    return self
-
   def dashboard(self):
     """Sets the _url_name for dashboard page of the current GSOC program."""
     super(RedirectHelper, self).dashboard()

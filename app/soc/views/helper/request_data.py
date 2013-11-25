@@ -892,12 +892,6 @@ class RedirectHelper(object):
     self.program(program)
     return self
 
-  def orgHomepage(self, link_id):
-    """Sets the _url_name for the specified org homepage."""
-    self.program()
-    self.kwargs['organization'] = link_id
-    return self
-
   def dashboard(self):
     """Sets the _url_name for dashboard page of the current program."""
     self.program()
