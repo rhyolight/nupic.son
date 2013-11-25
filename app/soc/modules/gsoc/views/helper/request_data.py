@@ -447,13 +447,6 @@ class RequestData(request_data.RequestData):
 class RedirectHelper(request_data.RedirectHelper):
   """Helper for constructing redirects."""
 
-  def orgAppReTake(self, survey=None):
-    """Sets kwargs for an url_patterns.SURVEY redirect for org application."""
-    if not survey:
-      assert 'id' in self._data.kwargs
-      survey = self._data.kwargs['id']
-    return self.id(survey)
-
   def document(self, document):
     """Override this method to set GSoC specific _url_name."""
     super(RedirectHelper, self).document(document)
