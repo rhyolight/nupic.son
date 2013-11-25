@@ -44,6 +44,18 @@ TEST_TWITTER = u'http://www.test.twitter.com/'
 TEST_WEB_PAGE = u'http://www.web.page.com/'
 
 
+def _getOrgPreferencesEditUrl(org):
+  """Returns URL to Edit Organization Preferences page.
+
+  Args:
+    org: Organization entity.
+
+  Returns:
+    A string containing the URL to Edit Organization Preferences page.
+  """
+  return '/gsoc/org/preferences/edit/%s' % org.key.id()
+
+
 def _getOrgProfileCreateUrl(program):
   """Returns URL to Create Organization Profile page.
 
@@ -359,3 +371,35 @@ class PublicOrganizationListPageTest(test_utils.GSoCDjangoTestCase):
     """Tests that page loads properly."""
     response = self.get(_getPublicOrgListUrl(self.program))
     self.assertResponseOK(response)
+
+
+TEST_SLOT_REQUEST_MIN = 3
+TEST_SLOT_REQUEST_MAX = 10
+
+class OrgPreferencesEditPageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for OrgPreferencesEditPage class."""
+
+  def setUp(self):
+    """See unittest.TestCase.testUp for specification."""
+    self.init()
+    self.org = org_utils.seedSOCOrganization(
+        TEST_ORG_ID, self.program.key(), name=TEST_ORG_NAME)
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    response = self.get(_getOrgPreferencesEditUrl(self.org))
+    self.assertResponseOK(response)
+
+  def testOrgPreferencesUpdated(self):
+    """Tests that organization entity is updated correctly."""
+    self.profile_helper.createProfile()
+
+    postdata = {
+        'slot_request_min': unicode(TEST_SLOT_REQUEST_MIN),
+        'slot_request_max': unicode(TEST_SLOT_REQUEST_MAX)
+        }
+    response = self.post(_getOrgPreferencesEditUrl(self.org), postdata=postdata)
+    self.assertResponseRedirect(
+        response, url=_getOrgPreferencesEditUrl(self.org))
+
+    # TODO(daniel): check that properties are updated

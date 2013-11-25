@@ -20,6 +20,7 @@ class UrlNames(object):
 
   ORG_APP_SHOW = 'soc_org_app_show'
   ORG_APPLICATION_SUBMIT = 'soc_org_application_submit'
+  ORG_PREFERENCES_EDIT = 'soc_org_preferences_edit'
   ORG_PROFILE_CREATE = 'soc_org_profile_create'
   ORG_PROFILE_EDIT = 'soc_org_profile_edit'
   ORG_PUBLIC_LIST = 'soc_org_public_list'

@@ -35,6 +35,7 @@ class Callback(object):
     """Instantiates all view objects."""
     self.views.append(org_app.OrgApplicationSubmitPage())
     self.views.append(org_app.OrgAppShowPage())
+    self.views.append(org_app.OrgPreferencesEditPage())
     self.views.append(org_app.OrgProfileCreatePage())
     self.views.append(org_app.OrgProfileEditPage())
     self.views.append(org_app.PublicOrganizationListPage())

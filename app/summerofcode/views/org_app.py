@@ -100,6 +100,15 @@ BACKUP_ADMIN_HELP_TEXT = translation.ugettext(
     'The organization will be allowed to assign more administrators upon '
     'acceptance into the program.')
 
+SLOTS_REQUEST_MIN_HELP_TEXT = translation.ugettext(
+    'Number of amazing proposals submitted to this organization that '
+    'have a mentor assigned and the organization would <strong>really</strong> '
+    'like to have a slot for.')
+
+SLOTS_REQUEST_MAX_HELP_TEXT = translation.ugettext(
+    'Number of slots that this organization would like to be assigned if '
+    'there was an unlimited amount of slots available.')
+
 ORG_ID_LABEL = translation.ugettext('Organization ID')
 
 ORG_NAME_LABEL = translation.ugettext('Organization name')
@@ -128,8 +137,15 @@ FACEBOOK_LABEL = translation.ugettext('Facebook URL')
 
 BACKUP_ADMIN_LABEL = translation.ugettext('Backup administrator')
 
+SLOTS_REQUEST_MIN_LABEL = translation.ugettext('Min slots requested')
+
+SLOTS_REQUEST_MAX_LABEL = translation.ugettext('Max slots requested')
+
 ORG_APPLICATION_SUBMIT_PAGE_NAME = translation.ugettext(
     'Submit application')
+
+ORG_PREFERENCES_EDIT_PAGE_NAME = translation.ugettext(
+    'Edit organization preferences')
 
 ORG_PROFILE_CREATE_PAGE_NAME = translation.ugettext(
     'Create organization profile')
@@ -353,6 +369,20 @@ def _formToEditOrgProfile(**kwargs):
   return form
 
 
+class _OrgPreferencesForm(gsoc_forms.GSoCModelForm):
+  """Form to set preferences of organization by organization administrators."""
+
+  slot_request_min = django_forms.IntegerField(
+      label=SLOTS_REQUEST_MIN_LABEL, help_text=SLOTS_REQUEST_MIN_HELP_TEXT,
+      required=True)
+
+  slot_request_max = django_forms.IntegerField(
+      label=SLOTS_REQUEST_MAX_LABEL, help_text=SLOTS_REQUEST_MAX_HELP_TEXT,
+      required=True)
+
+  Meta = object
+
+
 class OrgApplicationReminder(object):
   """Reminder to be included in context if organization application has
   yet to be submitted.
@@ -506,6 +536,46 @@ class OrgProfileEditPage(base.GSoCRequestHandler):
         url = links.LINKER.organization(
             data.url_ndb_org.key, urls.UrlNames.ORG_PROFILE_EDIT)
         return http.HttpResponseRedirect(url)
+
+
+class OrgPreferencesEditPage(base.GSoCRequestHandler):
+  """View to edit organization preferences."""
+
+  # TODO(daniel): implement actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def templatePath(self):
+    """See base.RequestHandler.templatePath for specification."""
+    return 'modules/gsoc/form_base.html'
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.djangoURLPatterns for specification."""
+    return [
+        soc_url_patterns.url(
+            r'org/preferences/edit/%s$' % url_patterns.ORG,
+            self, name=urls.UrlNames.ORG_PREFERENCES_EDIT)]
+
+  def context(self, data, check, mutator):
+    """See base.RequestHandler.context for specification."""
+    form = _OrgPreferencesForm(data=data.POST or None)
+    return {
+        'error': bool(form.errors),
+        'forms': [form],
+        'page_name': ORG_PREFERENCES_EDIT_PAGE_NAME,
+        }
+
+  def post(self, data, check, mutator):
+    """See base.RequestHandler.post for specification."""
+    form = _OrgPreferencesForm(data=data.POST)
+    if not form.is_valid():
+      # TODO(nathaniel): problematic self-use.
+      return self.get(data, check, mutator)
+    else:
+      # TODO(daniel): update properties based on data in form.
+
+      url = links.LINKER.organization(
+          data.url_ndb_org.key, urls.UrlNames.ORG_PREFERENCES_EDIT)
+      return http.HttpResponseRedirect(url)
 
 
 class OrgApplicationSubmitPage(base.GSoCRequestHandler):
