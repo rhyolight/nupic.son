@@ -883,11 +883,6 @@ class RedirectHelper(object):
     url = self._fullUrl(url, full, secure)
     return http.HttpResponseRedirect(url)
 
-  def acceptedOrgs(self):
-    """Sets the _url_name to the list of all accepted orgs."""
-    self.program()
-    return self
-
   def homepage(self, program=None):
     """Sets the _url_name for the homepage of the current program.
 

@@ -45,7 +45,6 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
 
     self.assertMainMenuCommonLinks(mainmenu_context)
 
-    self.assertNotIn('accepted_orgs_link', mainmenu_context)
     self.assertNotIn('projects_link', mainmenu_context)
 
     # No profile.
@@ -80,7 +79,6 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
 
     self.assertMainMenuCommonLinks(mainmenu_context)
 
-    self.assertNotIn('accepted_orgs_link', mainmenu_context)
     self.assertNotIn('projects_link', mainmenu_context)
 
   def testMainMenuDuringOrgsAnnounced(self):
@@ -93,7 +91,6 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
 
     self.assertMainMenuCommonLinks(mainmenu_context)
 
-    self.assertIn('accepted_orgs_link', mainmenu_context)
     self.assertNotIn('projects_link', mainmenu_context)
 
   def testMainMenuDuringStudentSignup(self):
@@ -106,7 +103,6 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
 
     self.assertMainMenuCommonLinks(mainmenu_context)
 
-    self.assertIn('accepted_orgs_link', mainmenu_context)
     self.assertNotIn('projects_link', mainmenu_context)
 
   def testMainMenuPostStudentSignup(self):
@@ -120,7 +116,6 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
 
     self.assertMainMenuCommonLinks(mainmenu_context)
 
-    self.assertIn('accepted_orgs_link', mainmenu_context)
     self.assertNotIn('projects_link', mainmenu_context)
 
   def testMainMenuPostStudentsAnnounced(self):
@@ -132,5 +127,4 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     mainmenu_context = response.context['mainmenu'].context()
 
     self.assertMainMenuCommonLinks(mainmenu_context)
-    self.assertIn('accepted_orgs_link', mainmenu_context)
     self.assertIn('projects_link', mainmenu_context)

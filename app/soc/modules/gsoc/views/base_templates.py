@@ -50,9 +50,6 @@ def siteMenuContext(data):
   if data.profile:
     context['dashboard_link'] = redirect.dashboard().url()
 
-  if data.timeline.orgsAnnounced():
-    context['accepted_orgs_link'] = redirect.acceptedOrgs().url()
-
   if data.timeline.studentsAnnounced():
     context['projects_link'] = redirect.allProjects().url()
 
