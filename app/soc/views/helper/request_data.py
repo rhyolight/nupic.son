@@ -892,11 +892,6 @@ class RedirectHelper(object):
     self.program(program)
     return self
 
-  def searchpage(self):
-    """Sets the _url_name for the searchpage of the current program."""
-    self.program()
-    return self
-
   def orgHomepage(self, link_id):
     """Sets the _url_name for the specified org homepage."""
     self.program()

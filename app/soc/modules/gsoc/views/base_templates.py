@@ -109,9 +109,11 @@ class MainMenu(template.Template):
 
   def context(self):
     context = siteMenuContext(self.data)
+
+    search_link = links.LINKER.program(self.data.program, 'search_gsoc')
     context.update({
         'home_link': self.data.redirect.homepage().url(),
-        'search_link': self.data.redirect.searchpage().url(),
+        'search_link': search_link,
     })
 
     if self.data.profile and self.data.profile.status == 'active':
