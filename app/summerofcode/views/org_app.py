@@ -171,7 +171,10 @@ _CONTACT_PROPERTIES_FORM_KEYS = [
     'blog', 'facebook', 'feed_url', 'google_plus', 'irc_channel',
     'mailing_list', 'twitter', 'web_page']
 
-_ORG_PROPERTIES_FORM_KEYS = [
+_ORG_PREFERENCES_PROPERTIES_FORM_KEYS = [
+    'slot_request_max', 'slot_request_min']
+
+_ORG_PROFILE_PROPERTIES_FORM_KEYS = [
     'description', 'ideas_page', 'logo_url', 'name', 'org_id']
 
 
@@ -342,7 +345,7 @@ class _OrgProfileForm(gsoc_forms.GSoCModelForm):
     Returns:
       A dict mapping organization properties to the corresponding values.
     """
-    return _getPropertiesForFields(self, _ORG_PROPERTIES_FORM_KEYS)
+    return _getPropertiesForFields(self, _ORG_PROFILE_PROPERTIES_FORM_KEYS)
 
 
 def _formToCreateOrgProfile(**kwargs):
@@ -383,6 +386,15 @@ class _OrgPreferencesForm(gsoc_forms.GSoCModelForm):
       required=True)
 
   Meta = object
+
+  def getOrgProperties(self):
+    """Returns properties of the organization that were submitted in this form.
+
+    Returns:
+      A dict mapping organization preferences properties to
+      the corresponding values.
+    """
+    return _getPropertiesForFields(self, _ORG_PREFERENCES_PROPERTIES_FORM_KEYS)
 
 
 class OrgApplicationReminder(object):
@@ -573,7 +585,8 @@ class OrgPreferencesEditPage(base.GSoCRequestHandler):
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
     else:
-      # TODO(daniel): update properties based on data in form.
+      org_properties = form.getOrgProperties()
+      updateOrganizationTxn(data.url_ndb_org.key, org_properties)
 
       url = links.LINKER.organization(
           data.url_ndb_org.key, urls.UrlNames.ORG_PREFERENCES_EDIT)

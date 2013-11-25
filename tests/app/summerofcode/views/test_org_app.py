@@ -402,4 +402,6 @@ class OrgPreferencesEditPageTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseRedirect(
         response, url=_getOrgPreferencesEditUrl(self.org))
 
-    # TODO(daniel): check that properties are updated
+    org = self.org.key.get()
+    self.assertEqual(org.slot_request_min, TEST_SLOT_REQUEST_MIN)
+    self.assertEqual(org.slot_request_max, TEST_SLOT_REQUEST_MAX)
