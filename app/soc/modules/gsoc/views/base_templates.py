@@ -50,11 +50,9 @@ def siteMenuContext(data):
   if data.profile:
     context['dashboard_link'] = redirect.dashboard().url()
 
-  if data.timeline.orgsAnnounced():
-    context['accepted_orgs_link'] = redirect.acceptedOrgs().url()
-
-  if data.timeline.studentsAnnounced():
-    context['projects_link'] = redirect.allProjects().url()
+  if data.timeline.studentsAnnounced(): 
+    context['projects_link'] = links.LINKER.program(
+        data.program, 'gsoc_accepted_projects')
 
   return context
 
@@ -112,9 +110,11 @@ class MainMenu(template.Template):
 
   def context(self):
     context = siteMenuContext(self.data)
+
+    search_link = links.LINKER.program(self.data.program, 'search_gsoc')
     context.update({
         'home_link': self.data.redirect.homepage().url(),
-        'search_link': self.data.redirect.searchpage().url(),
+        'search_link': search_link,
     })
 
     if self.data.profile and self.data.profile.status == 'active':

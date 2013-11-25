@@ -26,6 +26,7 @@ from soc.views.template import Template
 from soc.modules.gsoc.logic import organization as org_logic
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.views import base
+from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 
@@ -91,8 +92,9 @@ class Apply(Template):
       participating_orgs = []
       current_orgs = org_logic.participating(self.data.program)
       for org in current_orgs:
+        link = links.LINKER.organization(org.key(), url_names.GSOC_ORG_HOME)
         participating_orgs.append({
-            'link': redirector.orgHomepage(org.link_id).url(),
+            'link': link,
             'logo': org.logo_url,
             'name': org.short_name,
             })
@@ -138,7 +140,7 @@ class Apply(Template):
         context['show_profile_link'] = True
 
     if self.data.timeline.orgSignup() and self.data.profile:
-      context['org_apply_link'] = redirector.orgAppTake().urlOf(
+      context['org_apply_link'] = redirector.program().urlOf(
           'gsoc_take_org_app')
       context['dashboard_link'] = redirector.dashboard().url()
 

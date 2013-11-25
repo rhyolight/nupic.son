@@ -447,45 +447,10 @@ class RequestData(request_data.RequestData):
 class RedirectHelper(request_data.RedirectHelper):
   """Helper for constructing redirects."""
 
-  # (dcrodman) This method will become obsolete when the connection module
-  # is commited to the main branch.
-  def invite(self, role=None):
-    """Sets args for an url_patterns.INVITE redirect."""
-    if not role:
-      assert 'role' in self._data.kwargs
-      role = self._data.kwargs['role']
-    self.organization()
-    self.kwargs['role'] = role
-    return self
-
-  def orgAppTake(self):
-    """Sets kwargs for an url_patterns.SURVEY redirect for org application."""
-    self.program()
-    return self
-
-  def orgAppReTake(self, survey=None):
-    """Sets kwargs for an url_patterns.SURVEY redirect for org application."""
-    if not survey:
-      assert 'id' in self._data.kwargs
-      survey = self._data.kwargs['id']
-    return self.id(survey)
-
   def document(self, document):
     """Override this method to set GSoC specific _url_name."""
     super(RedirectHelper, self).document(document)
     self._url_name = 'show_gsoc_document'
-    return self
-
-  def acceptedOrgs(self):
-    """Sets the _url_name to the list all the accepted orgs."""
-    super(RedirectHelper, self).acceptedOrgs()
-    self._url_name = 'gsoc_accepted_orgs'
-    return self
-
-  def allProjects(self):
-    """Sets the _url_name to list all GSoC projects."""
-    self.program()
-    self._url_name = 'gsoc_accepted_projects'
     return self
 
   def homepage(self, program=None):
@@ -496,18 +461,6 @@ class RedirectHelper(request_data.RedirectHelper):
     """
     super(RedirectHelper, self).homepage(program)
     self._url_name = 'gsoc_homepage'
-    return self
-
-  def searchpage(self):
-    """Sets the _url_name for the searchpage of the current GSOC program."""
-    super(RedirectHelper, self).searchpage()
-    self._url_name = 'search_gsoc'
-    return self
-
-  def orgHomepage(self, link_id):
-    """Sets the _url_name for the specified org homepage."""
-    super(RedirectHelper, self).orgHomepage(link_id)
-    self._url_name = url_names.GSOC_ORG_HOME
     return self
 
   def dashboard(self):

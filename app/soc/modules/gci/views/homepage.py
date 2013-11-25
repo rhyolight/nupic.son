@@ -17,6 +17,8 @@
 
 from django.utils import translation
 
+from melange.request import links
+
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
@@ -140,8 +142,9 @@ class ParticipatingOrgs(Template):
     current_orgs = org_logic.participating(
         self.data.program, org_count=self._ORG_COUNT)
     for org in current_orgs:
+      link = links.LINKER.organization(org.key(), url_names.GCI_ORG_HOME)
       participating_orgs.append({
-          'link': self.data.redirect.orgHomepage(org.link_id).url(),
+          'link': link,
           'logo': org.logo_url,
           'name': org.short_name,
           })

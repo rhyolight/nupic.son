@@ -883,11 +883,6 @@ class RedirectHelper(object):
     url = self._fullUrl(url, full, secure)
     return http.HttpResponseRedirect(url)
 
-  def acceptedOrgs(self):
-    """Sets the _url_name to the list of all accepted orgs."""
-    self.program()
-    return self
-
   def homepage(self, program=None):
     """Sets the _url_name for the homepage of the current program.
 
@@ -895,17 +890,6 @@ class RedirectHelper(object):
       program: the link_id of the program for which we need to get the homepage
     """
     self.program(program)
-    return self
-
-  def searchpage(self):
-    """Sets the _url_name for the searchpage of the current program."""
-    self.program()
-    return self
-
-  def orgHomepage(self, link_id):
-    """Sets the _url_name for the specified org homepage."""
-    self.program()
-    self.kwargs['organization'] = link_id
     return self
 
   def dashboard(self):

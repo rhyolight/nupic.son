@@ -27,6 +27,45 @@ from soc.models.program import Program
 from soc.models.user import User
 
 
+def getSponsorId(survey_key):
+  """Returns sponsor ID based on the specified survey key.
+
+  Args:
+    survey: Survey key.
+
+  Returns:
+    A string that represents sponsor ID.
+  """
+  key_name = survey_key.name()
+  return key_name.split('/')[0]
+
+
+def getProgramId(survey_key):
+  """Returns program ID based on the specified survey key.
+
+  Args:
+    survey_key: Survey key.
+
+  Returns:
+    A string that represents program ID.
+  """
+  key_name = survey_key.name()
+  return key_name.split('/')[1]
+
+
+def getSurveyId(survey_key):
+  """Returns survey ID based on the specified organization key.
+
+  Args:
+    org_key: Survey key.
+
+  Returns:
+    A string that represents survey ID.
+  """
+  key_name = survey_key.name()
+  return key_name.split('/')[2]
+
+
 class Survey(db.Model):
   """Model of a Survey.
 
