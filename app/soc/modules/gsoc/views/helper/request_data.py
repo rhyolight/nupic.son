@@ -453,12 +453,6 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = 'show_gsoc_document'
     return self
 
-  def allProjects(self):
-    """Sets the _url_name to list all GSoC projects."""
-    self.program()
-    self._url_name = 'gsoc_accepted_projects'
-    return self
-
   def homepage(self, program=None):
     """Sets the _url_name for the homepage of the current GSOC program.
 
