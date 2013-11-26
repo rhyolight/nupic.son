@@ -88,7 +88,7 @@ class Header(template.Template):
       gci_link = reverse('gci_homepage', kwargs=gci_kwargs)
 
     context = {
-        'home_link': self.data.redirect.homepage().url(),
+        'home_link': links.LINKER.program(self.data.program, 'gsoc_homepage'),
         'program_link_id': self.data.program.link_id,
         'gci_link': gci_link,
         }
@@ -112,10 +112,9 @@ class MainMenu(template.Template):
   def context(self):
     context = siteMenuContext(self.data)
 
-    search_link = links.LINKER.program(self.data.program, 'search_gsoc')
     context.update({
-        'home_link': self.data.redirect.homepage().url(),
-        'search_link': search_link,
+        'home_link': links.LINKER.program(self.data.program, 'gsoc_homepage'),
+        'search_link': links.LINKER.program(self.data.program, 'search_gsoc'),
     })
 
     if self.data.profile and self.data.profile.status == 'active':

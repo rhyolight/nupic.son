@@ -883,15 +883,6 @@ class RedirectHelper(object):
     url = self._fullUrl(url, full, secure)
     return http.HttpResponseRedirect(url)
 
-  def homepage(self, program=None):
-    """Sets the _url_name for the homepage of the current program.
-
-    Args:
-      program: the link_id of the program for which we need to get the homepage
-    """
-    self.program(program)
-    return self
-
   def events(self):
     """Sets the _url_name for the events page, if it is set."""
     self.program()

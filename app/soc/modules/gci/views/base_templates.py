@@ -114,7 +114,7 @@ class Header(Template):
       gsoc_link = reverse('gsoc_homepage', kwargs=gsoc_kwargs)
 
     return {
-        'home_link': self.data.redirect.homepage().url(),
+        'home_link': links.LINKER.program(self.data.program, 'gci_homepage'),
         'gsoc_link': gsoc_link,
         'program_id': self.data.program.link_id,
     }
@@ -129,7 +129,7 @@ class MainMenu(Template):
   def context(self):
     context = siteMenuContext(self.data)
     context.update({
-        'home_link': self.data.redirect.homepage().url(),
+        'home_link': links.LINKER.program(self.data.program, 'gci_homepage'),
     })
 
     if self.data.profile and self.data.profile.status == 'active':
