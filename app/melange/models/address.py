@@ -24,29 +24,33 @@ class Address(ndb.Model):
 
   #: Optional name information to link a specific person to this address.
   #: Can only be ASCII, not UTF-8 text, because it may be used as
-  #: a shipping address.
+  #: a shipping address and such characters may not be printable.
   name = ndb.StringProperty()
 
   #: Required field containing street information. Can only be ASCII,
-  #: not UTF-8 text, because it may be used as a shipping address.
+  #: not UTF-8 text, because it may be used as a shipping address
+  #: and such characters may not be printable.
   street = ndb.StringProperty(requred=True)
 
   #: Required field containing city information. Can only be ASCII,
-  #: not UTF-8 text, because it may be used as a shipping address.
+  #: not UTF-8 text, because it may be used as a shipping address and
+  #: such characters may not be printable.
   city = ndb.StringProperty(required=True)
 
   #: Optional field containing province or state information. It is used only
   #: for certain countries. Can only be ASCII, not UTF-8 text, because
-  #: it may be used as a shipping address.
+  #: it may be used as a shipping address and such characters
+  #: may not be printable.
   province = ndb.StringProperty()
 
   #: Required field containing residence country or territory information.
   #: Can only be ASCII, not UTF-8 text, because it may be used as 
-  #: a shipping address.
+  #: a shipping address and such characters may not be printable.
   country = ndb.StringProperty(
       required=True, choices=countries.COUNTRIES_AND_TERRITORIES)
 
   #: Required field containing residence postal code, also known as ZIP code
   #: in some countries, information.Can only be ASCII, not UTF-8 text, because
-  #: it may be used as a shipping address.
+  #: it may be used as a shipping address and
+  #: such characters may not be printable.
   postal_code = ndb.StringProperty(required=True)
