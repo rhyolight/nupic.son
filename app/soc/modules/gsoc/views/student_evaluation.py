@@ -14,10 +14,13 @@
 
 """Module for the GSoC project student survey."""
 
+from google.appengine.ext import db
+
+from django import http
+from django.utils.translation import ugettext
+
 from soc.views import survey
 from soc.views.helper import lists
-
-from django.utils.translation import ugettext
 
 from melange.request import access
 from melange.request import exception
@@ -31,6 +34,8 @@ from soc.modules.gsoc.models.project_survey_record import \
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_patterns
+
+from summerofcode.request import links
 
 
 DEF_CANNOT_ACCESS_EVALUATION = ugettext(
@@ -85,10 +90,14 @@ class GSoCStudentEvaluationEditPage(base.GSoCRequestHandler):
 
     page_name = ugettext('Edit - %s' % (data.student_evaluation.title)) \
         if data.student_evaluation else 'Create new student evaluation'
+
+    survey_key = db.Key.from_path(
+        ProjectSurvey.kind(), '%s/%s' % (
+            data.program.key().name(), data.kwargs['survey']))
     context = {
         'page_name': page_name,
-        'post_url': data.redirect.survey().urlOf(
-            'gsoc_edit_student_evaluation'),
+        'post_url': links.SOC_LINKER.survey(
+            survey_key, 'gsoc_edit_student_evaluation'),
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -136,8 +145,13 @@ class GSoCStudentEvaluationEditPage(base.GSoCRequestHandler):
     evaluation = self.evaluationFromForm(data)
     if evaluation:
       # TODO(nathaniel): Redirection to self?
-      return data.redirect.survey().to(
-          'gsoc_edit_student_evaluation', validated=True)
+      survey_key = db.Key.from_path(
+          ProjectSurvey.kind(), '%s/%s' % (
+              data.program.key().name(), data.kwargs['survey']))
+      url = links.SOC_LINKER.survey(survey_key, 'gsoc_edit_student_evaluation')
+
+      # TODO(daniel): append 'validated=True' to the URL in a more elegant way.
+      return http.HttpResponseRedirect(url + '?validated')
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)

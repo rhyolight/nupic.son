@@ -14,6 +14,9 @@
 
 """Module for the GSoC project evaluations."""
 
+from google.appengine.ext import db
+
+from django import http
 from django.utils.translation import ugettext
 
 import django
@@ -32,6 +35,9 @@ from soc.modules.gsoc.models.grading_project_survey_record import \
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_patterns
+
+from summerofcode.request import links
+
 
 EVALUATION_CHOICES = (
     (True, 'Pass'),
@@ -107,10 +113,14 @@ class GSoCMentorEvaluationEditPage(base.GSoCRequestHandler):
 
     page_name = ugettext('Edit - %s' % (data.mentor_evaluation.title)) \
         if data.mentor_evaluation else 'Create new mentor evaluation'
+
+    survey_key = db.Key.from_path(
+        GradingProjectSurvey.kind(), '%s/%s' % (
+            data.program.key().name(), data.kwargs['survey']))
     context = {
         'page_name': page_name,
-        'post_url': data.redirect.survey().urlOf(
-            'gsoc_edit_mentor_evaluation'),
+        'post_url': links.SOC_LINKER.survey(
+            survey_key, 'gsoc_edit_mentor_evaluation'),
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -157,8 +167,13 @@ class GSoCMentorEvaluationEditPage(base.GSoCRequestHandler):
   def post(self, data, check, mutator):
     evaluation = self.evaluationFromForm(data)
     if evaluation:
-      data.redirect.survey()
-      return data.redirect.to('gsoc_edit_mentor_evaluation', validated=True)
+      survey_key = db.Key.from_path(
+          GradingProjectSurvey.kind(), '%s/%s' % (
+              data.program.key().name(), data.kwargs['survey']))
+      url = links.SOC_LINKER.survey(survey_key, 'gsoc_edit_mentor_evaluation')
+
+      # TODO(daniel): append 'validated=True' to the URL in a more elegant way.
+      return http.HttpResponseRedirect(url + '?validated')
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)

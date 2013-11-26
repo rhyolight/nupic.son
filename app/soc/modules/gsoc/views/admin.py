@@ -24,7 +24,6 @@ from django.utils.translation import ugettext
 
 from melange.request import access
 from melange.request import exception
-from melange.request import links
 
 from soc.logic import accounts
 from soc.logic import cleaning
@@ -52,6 +51,7 @@ from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 from soc.modules.gsoc.views import projects_list
 
+from summerofcode.request import links
 from summerofcode.views.helper import urls
 
 
@@ -313,7 +313,7 @@ class ProgramSettingsDashboard(Dashboard):
             'description': ugettext(
                 'Create a new program.'),
             'title': 'Create a program',
-            'link': links.LINKER.sponsor(
+            'link': links.SOC_LINKER.sponsor(
                 data.sponsor, url_names.GSOC_PROGRAM_CREATE),
         },
     ]
@@ -478,54 +478,61 @@ class MentorEvaluationsDashboard(Dashboard):
     Args:
       data: The RequestData object
     """
-    # TODO(nathaniel): Eliminate this state-setting call.
-    data.redirect.survey('midterm')
-
+    survey_key = db.Key.from_path(
+        GradingProjectSurvey.kind(), '%s/%s' % (
+            data.program.key().name(), 'midterm'))
     subpages = [
         {
             'name': 'edit_mentor_evaluation',
             'description': ugettext('Create or edit midterm evaluation for '
                 'mentors in active program'),
             'title': 'Create or Edit Midterm',
-            'link': data.redirect.urlOf('gsoc_edit_mentor_evaluation')
+            'link': links.SOC_LINKER.survey(
+                survey_key, 'gsoc_edit_mentor_evaluation')
         },
         {
             'name': 'preview_mentor_evaluation',
             'description': ugettext('Preview midterm evaluation to be '
                 'administered mentors.'),
             'title': 'Preview Midterm Evaluation',
-            'link': data.redirect.urlOf('gsoc_preview_mentor_evaluation')
+            'link': links.SOC_LINKER.survey(
+                survey_key, 'gsoc_preview_mentor_evaluation')
         },
         {
             'name': 'view_mentor_evaluation',
             'description': ugettext('View midterm evaluation for mentors'),
             'title': 'View Midterm Records',
-            'link': data.redirect.urlOf('gsoc_list_mentor_eval_records')
+            'link': links.SOC_LINKER.survey(
+                survey_key, 'gsoc_list_mentor_eval_records')
         },
     ]
 
-    # TODO(nathaniel): Eliminate this state-setting call.
-    data.redirect.survey('final')
+    survey_key = db.Key.from_path(
+        GradingProjectSurvey.kind(), '%s/%s' % (
+            data.program.key().name(), 'final'))
     subpages += [
         {
             'name': 'edit_mentor_evaluation',
             'description': ugettext('Create or edit midterm evaluation for '
                 'mentors in active program'),
             'title': 'Create or Edit Final Evaluation',
-            'link': data.redirect.urlOf('gsoc_edit_mentor_evaluation')
+            'link': links.SOC_LINKER.survey(
+                survey_key, 'gsoc_edit_mentor_evaluation')
         },
         {
             'name': 'preview_mentor_evaluation',
             'description': ugettext('Preview final evaluation to be '
                 'administered mentors.'),
             'title': 'Preview Final Evaluation',
-            'link': data.redirect.urlOf('gsoc_preview_mentor_evaluation')
+            'link': links.SOC_LINKER.survey(
+                survey_key, 'gsoc_preview_mentor_evaluation')
         },
         {
             'name': 'view_mentor_evaluation',
             'description': ugettext('View final evaluation for mentors'),
             'title': 'View Final Evaluation Records',
-            'link': data.redirect.urlOf('gsoc_list_mentor_eval_records')
+            'link': links.SOC_LINKER.survey(
+                survey_key, 'gsoc_list_mentor_eval_records')
         },
     ]
 
@@ -562,54 +569,59 @@ class StudentEvaluationsDashboard(Dashboard):
     Args:
       data: The RequestData object
     """
-    # TODO(nathaniel): Eliminate this state-setting call.
-    data.redirect.survey('midterm')
-
+    survey_key = db.Key.from_path(
+        ProjectSurvey.kind(), '%s/%s' % (data.program.key().name(), 'midterm'))
     subpages = [
         {
             'name': 'edit_student_evaluation',
             'description': ugettext('Create or edit midterm evaluation for '
                 'students in active program'),
             'title': 'Create or Edit Midterm Evaluation',
-            'link': data.redirect.urlOf('gsoc_edit_student_evaluation')
+            'link': links.SOC_LINKER.survey(
+                survey_key, 'gsoc_edit_student_evaluation')
         },
         {
             'name': 'preview_student_evaluation',
             'description': ugettext('Preview midterm evaluation to be '
                 'administered to the students.'),
             'title': 'Preview Midterm Evaluation',
-            'link': data.redirect.urlOf('gsoc_preview_student_evaluation')
+            'link': links.SOC_LINKER.survey(
+                survey_key, 'gsoc_preview_student_evaluation')
         },
         {
             'name': 'view_student_evaluation',
             'description': ugettext('View midterm evaluation for students'),
             'title': 'View Midterm Evaluation Records',
-            'link': data.redirect.urlOf('gsoc_list_student_eval_records')
+            'link': links.SOC_LINKER.survey(
+                survey_key, 'gsoc_list_student_eval_records')
         },
     ]
 
-    # TODO(nathaniel): Eliminate this state-setting call.
-    data.redirect.survey('final')
+    survey_key = db.Key.from_path(
+        ProjectSurvey.kind(), '%s/%s' % (data.program.key().name(), 'final'))
     subpages += [
         {
             'name': 'edit_student_evaluation',
             'description': ugettext('Create or edit final evaluation for '
                 'students in active program'),
             'title': 'Create or Edit Final Evaluation',
-            'link': data.redirect.urlOf('gsoc_edit_student_evaluation')
+            'link': links.SOC_LINKER.survey(
+                survey_key, 'gsoc_edit_student_evaluation')
         },
         {
             'name': 'preview_student_evaluation',
             'description': ugettext('Preview final evaluation to be '
                 'administered to the students.'),
             'title': 'Preview Final Evaluation',
-            'link': data.redirect.urlOf('gsoc_preview_student_evaluation')
+            'link': links.SOC_LINKER.survey(
+                survey_key, 'gsoc_preview_student_evaluation')
         },
         {
             'name': 'view_student_evaluation',
             'description': ugettext('View final evaluation for students'),
             'title': 'View Final Evaluation Records',
-            'link': data.redirect.urlOf('gsoc_list_student_eval_records')
+            'link': links.SOC_LINKER.survey(
+                survey_key, 'gsoc_list_student_eval_records')
         },
     ]
 
