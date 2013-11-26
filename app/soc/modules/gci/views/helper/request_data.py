@@ -414,13 +414,6 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = 'gci_homepage'
     return self
 
-  def dashboard(self):
-    """Sets the _url_name for dashboard page of the current GCI program.
-    """
-    super(RedirectHelper, self).dashboard()
-    self._url_name = 'gci_dashboard'
-    return self
-
   def events(self):
     """Sets the _url_name for the events page, if it is set.
     """

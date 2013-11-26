@@ -892,11 +892,6 @@ class RedirectHelper(object):
     self.program(program)
     return self
 
-  def dashboard(self):
-    """Sets the _url_name for dashboard page of the current program."""
-    self.program()
-    return self
-
   def events(self):
     """Sets the _url_name for the events page, if it is set."""
     self.program()

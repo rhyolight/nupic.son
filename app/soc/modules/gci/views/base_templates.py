@@ -61,7 +61,8 @@ def siteMenuContext(data):
   context['static_content_list_link'] = redirect.urlOf(url_names.GCI_CONTENT_LIST)
 
   if data.profile:
-    context['dashboard_link'] = redirect.dashboard().url()
+    context['dashboard_link'] = links.LINKER.program(
+        data.program, 'gci_dashboard')
 
   if data.program.messaging_enabled and data.user:
     redirect.program()
@@ -199,7 +200,8 @@ class Status(Template):
         'user_email': accounts.denormalizeAccount(self.data.user.account).email(),
         'link_id': self.data.user.link_id,
         'logout_link': links.LINKER.logout(self.data.request),
-        'dashboard_link': self.data.redirect.dashboard().url(),
+        'dashboard_link': links.LINKER.program(
+            self.data.program, 'gci_dashboard')
     }
 
     if self.data.profile:

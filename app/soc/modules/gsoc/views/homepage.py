@@ -142,7 +142,8 @@ class Apply(Template):
     if self.data.timeline.orgSignup() and self.data.profile:
       context['org_apply_link'] = redirector.program().urlOf(
           'gsoc_take_org_app')
-      context['dashboard_link'] = redirector.dashboard().url()
+      context['dashboard_link'] = links.LINKER.program(
+          self.data.program, 'gsoc_dashboard')
 
     if ((self.data.timeline.studentSignup() or
         self.data.timeline.mentorSignup()) and self.data.profile):
