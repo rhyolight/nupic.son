@@ -403,11 +403,3 @@ class RedirectHelper(request_data.RedirectHelper):
     super(RedirectHelper, self).document(document)
     self._url_name = 'show_gci_document'
     return self
-
-  def events(self):
-    """Sets the _url_name for the events page, if it is set.
-    """
-    super(RedirectHelper, self).events()
-    self._url_name = 'gci_events'
-    return self
-

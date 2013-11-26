@@ -21,6 +21,7 @@ from melange.request import links
 from soc.views import template
 
 from soc.modules.gci.logic.program import getMostRecentProgram
+from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.views.helper import url_names
 
 
@@ -37,10 +38,16 @@ def siteMenuContext(data):
 
   context = {
       'about_link': redirect.document(about_page).url(),
-      'events_link': redirect.events().url(),
       'connect_link': redirect.document(connect).url(),
       'help_link': redirect.document(help_page).url(),
   }
+
+  events_page_key = (
+      program_model.GSoCProgram.events_page.get_value_for_datastore(
+          data.program))
+
+  if events_page_key:
+    context['events_link'] = links.LINKER.program(data.program, 'gsoc_events'),
 
   if data.gae_user:
     context['logout_link'] = links.LINKER.logout(data.request)

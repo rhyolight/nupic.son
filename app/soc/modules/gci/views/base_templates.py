@@ -49,7 +49,7 @@ def siteMenuContext(data):
   context = {
       'about_link': redirect.document(about_page).url(),
       'terms_link': redirect.document(terms).url(),
-      'events_link': redirect.events().url(),
+      'events_link': links.LINKER.program(data.program, 'gci_events'),
       'connect_link': redirect.document(connect).url(),
       'help_link': redirect.document(help_page).url(),
   }

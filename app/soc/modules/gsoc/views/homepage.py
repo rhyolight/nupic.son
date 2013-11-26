@@ -25,6 +25,7 @@ from soc.views.template import Template
 
 from soc.modules.gsoc.logic import organization as org_logic
 from soc.modules.gsoc.logic import project as project_logic
+from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
@@ -56,10 +57,14 @@ class Timeline(Template):
       img_url = ("/soc/content/%s/images/gsoc/image-map-off-season.png"
                  % system.getMelangeVersion())
 
-    context = {
-        'img_url': img_url,
-        'events_link': self.data.redirect.events().url(),
-        }
+    context = {'img_url': img_url}
+
+    events_page_key = (
+        program_model.GSoCProgram.events_page.get_value_for_datastore(
+            self.data.program))
+    if events_page_key:
+      context['events_link'] = links.LINKER.program(
+          self.data.program, 'gsoc_events')
 
     if self.next_deadline_msg and self.next_deadline_datetime:
       context['next_deadline_msg'] = self.next_deadline_msg

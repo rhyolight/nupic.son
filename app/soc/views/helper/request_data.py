@@ -883,11 +883,6 @@ class RedirectHelper(object):
     url = self._fullUrl(url, full, secure)
     return http.HttpResponseRedirect(url)
 
-  def events(self):
-    """Sets the _url_name for the events page, if it is set."""
-    self.program()
-    return self
-
   def staticContent(self, content_id):
     """Sets the args for url_patterns.STATIC_CONTENT redirect."""
     self.program()

@@ -453,19 +453,6 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = 'show_gsoc_document'
     return self
 
-  def events(self):
-    """Sets the _url_name for the events page, if it is set."""
-    from soc.modules.gsoc.models.program import GSoCProgram
-    key = GSoCProgram.events_page.get_value_for_datastore(self._data.program)
-
-    if not key:
-      self._clear()
-      self._no_url = True
-
-    self.program()
-    self._url_name = 'gsoc_events'
-    return self
-
   def connect_user(self, user=None, organization=None):
     """Sets the _url_name for a gsoc_user_connection redirect.
 
