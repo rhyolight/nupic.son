@@ -44,7 +44,7 @@ class Address(ndb.Model):
   province = ndb.StringProperty()
 
   #: Required field containing residence country or territory information.
-  #: Can only be ASCII, not UTF-8 text, because it may be used as 
+  #: Can only be ASCII, not UTF-8 text, because it may be used as
   #: a shipping address and such characters may not be printable.
   country = ndb.StringProperty(
       required=True, choices=countries.COUNTRIES_AND_TERRITORIES)
