@@ -50,7 +50,7 @@ def siteMenuContext(data):
   if data.profile:
     context['dashboard_link'] = redirect.dashboard().url()
 
-  if data.timeline.studentsAnnounced(): 
+  if data.timeline.studentsAnnounced():
     context['projects_link'] = links.LINKER.program(
         data.program, 'gsoc_accepted_projects')
 

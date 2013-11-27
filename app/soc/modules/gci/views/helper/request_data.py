@@ -33,8 +33,6 @@ from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models import profile as profile_model
 from soc.modules.gci.models import organization as org_model
 
-from soc.modules.gci.views.helper import url_names
-
 
 class TimelineHelper(request_data.TimelineHelper):
   """Helper class for the determination of the currently active period.
@@ -427,4 +425,3 @@ class RedirectHelper(request_data.RedirectHelper):
     super(RedirectHelper, self).events()
     self._url_name = 'gci_events'
     return self
-

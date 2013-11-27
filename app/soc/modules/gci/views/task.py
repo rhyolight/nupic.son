@@ -601,7 +601,7 @@ class WorkSubmissions(Template):
         # File form doesn't have any POST parameters so it should not be
         # passed while reconstructing the form. So only URL form is
         # constructed from POST data
-        context['work_url_form'] = WorkSubmissionURLForm(self.data.POST)
+        context['work_url_form'] = WorkSubmissionURLForm(data=self.data.POST)
       else:
         context['work_url_form'] = WorkSubmissionURLForm()
 
