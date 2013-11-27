@@ -487,8 +487,7 @@ class OrgProfileCreatePage(base.GSoCRequestHandler):
 class OrgProfileEditPage(base.GSoCRequestHandler):
   """View to edit organization profile."""
 
-  # TODO(daniel): implement actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = access.IS_USER_ORG_ADMIN_FOR_ORG
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""
@@ -556,7 +555,8 @@ class OrgPreferencesEditPage(base.GSoCRequestHandler):
   """View to edit organization preferences."""
 
   # TODO(daniel): implement actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  # this should be allowed only for accepted organizations
+  access_checker = access.IS_USER_ORG_ADMIN_FOR_ORG
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""
