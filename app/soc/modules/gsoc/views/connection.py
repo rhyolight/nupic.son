@@ -18,6 +18,7 @@ from google.appengine.ext import db
 from google.appengine.api import users
 
 from django import forms as django_forms
+from django import http
 from django.core.urlresolvers import reverse
 from django.forms.fields import ChoiceField
 from django.utils.translation import ugettext
@@ -670,7 +671,8 @@ class ShowConnectionForOrgMemberPage(base.GSoCRequestHandler):
     elif response == connection.NO_ROLE:
       self._handleNoRoleSelection(data, emails)
 
-    return data.redirect.dashboard().to()
+    url = links.LINKER.program(data.program, 'gsoc_dashboard')
+    return http.HttpResponseRedirect(url)
 
 class ShowConnectionForUserPage(base.GSoCRequestHandler):
   """A page to show a connection for the user."""
@@ -792,7 +794,8 @@ class ShowConnectionForUserPage(base.GSoCRequestHandler):
     elif response == connection.NO_ROLE:
       self._handleNoRoleSelection(data, emails)
 
-    return data.redirect.dashboard().to()
+    url = links.LINKER.program(data.program, 'gsoc_dashboard')
+    return http.HttpResponseRedirect(url)
 
 
 class SubmitConnectionMessagePost(base.GSoCRequestHandler):

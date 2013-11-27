@@ -21,10 +21,13 @@ from google.appengine.ext import blobstore
 from google.appengine.ext import db
 
 from django import forms as django_forms
+from django import http
 from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
 from melange.request import exception
+from melange.request import links
+
 from soc.logic import cleaning
 from soc.views.helper import blobstore as bs_helper
 from soc.views.template import Template
@@ -327,7 +330,8 @@ class TaskViewPage(GCIRequestHandler):
       return data.redirect.to('gci_edit_task')
     elif button_name == 'button_delete':
       task_logic.delete(task)
-      return data.redirect.homepage().to()
+      url = links.LINKER.program(data.program, 'gci_homepage')
+      return http.HttpResponseRedirect(url)
     elif button_name == 'button_assign':
       task_logic.assignTask(task, task.student, data.profile)
     elif button_name == 'button_unassign':

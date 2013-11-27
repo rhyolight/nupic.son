@@ -21,6 +21,7 @@ from melange.request import links
 from soc.views import template
 
 from soc.modules.gci.logic.program import getMostRecentProgram
+from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.views.helper import url_names
 
 
@@ -37,10 +38,16 @@ def siteMenuContext(data):
 
   context = {
       'about_link': redirect.document(about_page).url(),
-      'events_link': redirect.events().url(),
       'connect_link': redirect.document(connect).url(),
       'help_link': redirect.document(help_page).url(),
   }
+
+  events_page_key = (
+      program_model.GSoCProgram.events_page.get_value_for_datastore(
+          data.program))
+
+  if events_page_key:
+    context['events_link'] = links.LINKER.program(data.program, 'gsoc_events'),
 
   if data.gae_user:
     context['logout_link'] = links.LINKER.logout(data.request)
@@ -48,7 +55,8 @@ def siteMenuContext(data):
     context['login_link'] = links.LINKER.login(data.request)
 
   if data.profile:
-    context['dashboard_link'] = redirect.dashboard().url()
+    context['dashboard_link'] = links.LINKER.program(
+        data.program, 'gsoc_dashboard')
 
   if data.timeline.studentsAnnounced():
     context['projects_link'] = links.LINKER.program(
@@ -87,7 +95,7 @@ class Header(template.Template):
       gci_link = reverse('gci_homepage', kwargs=gci_kwargs)
 
     context = {
-        'home_link': self.data.redirect.homepage().url(),
+        'home_link': links.LINKER.program(self.data.program, 'gsoc_homepage'),
         'program_link_id': self.data.program.link_id,
         'gci_link': gci_link,
         }
@@ -111,10 +119,9 @@ class MainMenu(template.Template):
   def context(self):
     context = siteMenuContext(self.data)
 
-    search_link = links.LINKER.program(self.data.program, 'search_gsoc')
     context.update({
-        'home_link': self.data.redirect.homepage().url(),
-        'search_link': search_link,
+        'home_link': links.LINKER.program(self.data.program, 'gsoc_homepage'),
+        'search_link': links.LINKER.program(self.data.program, 'search_gsoc'),
     })
 
     if self.data.profile and self.data.profile.status == 'active':

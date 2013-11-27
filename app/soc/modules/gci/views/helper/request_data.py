@@ -401,27 +401,3 @@ class RedirectHelper(request_data.RedirectHelper):
     super(RedirectHelper, self).document(document)
     self._url_name = 'show_gci_document'
     return self
-
-  def homepage(self, program=None):
-    """Sets the _url_name for the homepage of the current GCI program.
-
-    Args:
-      program: the link_id of the program for which we need to get the homepage
-    """
-    super(RedirectHelper, self).homepage(program)
-    self._url_name = 'gci_homepage'
-    return self
-
-  def dashboard(self):
-    """Sets the _url_name for dashboard page of the current GCI program.
-    """
-    super(RedirectHelper, self).dashboard()
-    self._url_name = 'gci_dashboard'
-    return self
-
-  def events(self):
-    """Sets the _url_name for the events page, if it is set.
-    """
-    super(RedirectHelper, self).events()
-    self._url_name = 'gci_events'
-    return self

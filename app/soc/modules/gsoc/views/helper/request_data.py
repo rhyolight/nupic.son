@@ -453,35 +453,6 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = 'show_gsoc_document'
     return self
 
-  def homepage(self, program=None):
-    """Sets the _url_name for the homepage of the current GSOC program.
-
-    Args:
-      program: the link_id of the program for which we need to get the homepage
-    """
-    super(RedirectHelper, self).homepage(program)
-    self._url_name = 'gsoc_homepage'
-    return self
-
-  def dashboard(self):
-    """Sets the _url_name for dashboard page of the current GSOC program."""
-    super(RedirectHelper, self).dashboard()
-    self._url_name = 'gsoc_dashboard'
-    return self
-
-  def events(self):
-    """Sets the _url_name for the events page, if it is set."""
-    from soc.modules.gsoc.models.program import GSoCProgram
-    key = GSoCProgram.events_page.get_value_for_datastore(self._data.program)
-
-    if not key:
-      self._clear()
-      self._no_url = True
-
-    self.program()
-    self._url_name = 'gsoc_events'
-    return self
-
   def connect_user(self, user=None, organization=None):
     """Sets the _url_name for a gsoc_user_connection redirect.
 
@@ -573,21 +544,6 @@ class RedirectHelper(request_data.RedirectHelper):
       student = self._data.kwargs['user']
     self.id(id)
     self.kwargs['user'] = student
-    return self
-
-  def survey(self, survey=None):
-    """Sets kwargs for an url_patterns.SURVEY redirect.
-
-    Args:
-      survey: the survey's link_id
-    """
-    self.program()
-
-    if not survey:
-      assert 'survey' in self._data.kwargs
-      survey = self._data.kwargs['survey']
-    self.kwargs['survey'] = survey
-
     return self
 
   # TODO(daniel): id built-in function should not be shadowed

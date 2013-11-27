@@ -17,6 +17,8 @@
 from django.template import loader
 from django.utils.translation import ugettext
 
+from melange.request import links
+
 from soc.logic import mail_dispatcher
 from soc.logic.accounts import denormalizeAccount
 from soc.tasks import mailer
@@ -239,7 +241,8 @@ def connectionMessageContext(data, emails, connection, message):
     A dictionary containing the context for a message to be sent.
   """
   subject = DEF_NEW_CONNECTION_MESSAGE
-  dashboard_url = data.redirect.dashboard().url(full=True)
+  # TODO(daniel): 'gsoc' name should not be used on this level
+  dashboard_url = links.ABSOLUTE_LINKER.program(data.program, 'gsoc_dashboard')
 
   message_properties = {
       'dashboard_url' : dashboard_url,
