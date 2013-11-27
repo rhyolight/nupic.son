@@ -93,12 +93,15 @@ def convertOrg(org_key):
 
     survey_response = survey_model.SurveyResponse(
         parent=new_organization.key, survey=survey, **app_properties)
+  else:
+    survey_response = None
 
   @ndb.transactional
   def convertOrgTxn():
     """Creates new entities within a transaction."""
     new_organization.put()
-    survey_response.put()
+    if survey_response:
+      survey_response.put()
 
   convertOrgTxn()
   operation.counters.Increment('Organizations converted')
