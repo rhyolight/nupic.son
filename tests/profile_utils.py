@@ -19,6 +19,7 @@
 import os
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from datetime import datetime
 from datetime import timedelta
@@ -159,7 +160,8 @@ def seedProfile(program, model=profile_model.Profile, user=None,
         'user_role': connection_model.ROLE,
         'org_role': org_role
         }
-    connection_utils.seed_new_connection(profile, org, **connection_properties)
+    connection_utils.seed_new_connection(
+        profile, org.key(), **connection_properties)
 
   return profile
 
@@ -402,7 +404,7 @@ class ProfileHelper(object):
         'user_role': connection_model.ROLE,
         'org_role': connection_model.ORG_ADMIN_ROLE
         }
-    connection_utils.seed_new_connection(self.profile, org,
+    connection_utils.seed_new_connection(self.profile, org.key(),
         **connection_properties)
 
     return self.profile
@@ -437,8 +439,8 @@ class ProfileHelper(object):
         'user_role': connection_model.ROLE,
         'org_role': connection_model.MENTOR_ROLE
         }
-    connection_utils.seed_new_connection(self.profile, org,
-        **connection_properties)    
+    connection_utils.seed_new_connection(self.profile, org.key(),
+        **connection_properties)
 
     return self.profile
 
@@ -603,10 +605,11 @@ class GSoCProfileHelper(ProfileHelper):
                   'proposal': proposal}
     self.seed(GSoCProject, properties)
     return self.profile
-  
+
   def createConnection(self, org):
     self.createProfile()
-    self.connection = connection_utils.seed_new_connection(self.profile, org)
+    self.connection = connection_utils.seed_new_connection(
+        self.profile, org.key())
     return self.connection
 
 

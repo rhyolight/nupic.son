@@ -42,7 +42,7 @@ class ConnectionTest(unittest.TestCase):
   """
   def setUp(self):
     self.program = seeder_logic.seed(Program)
-    
+
     self.profile_helper = profile_utils.ProfileHelper(
         self.program, dev_test=False)
     user = profile_utils.seedUser()
@@ -54,7 +54,7 @@ class ConnectionTest(unittest.TestCase):
         }
     self.profile = self.profile_helper.seed(
         profile_model.Profile, profile_properties)
-    
+
     self.program_helper = ProgramHelper()
     org_properties = {
         'scope': self.program, 'status': 'active',
@@ -62,7 +62,9 @@ class ConnectionTest(unittest.TestCase):
         'home': None, 'program': self.program,
         }
     self.org = self.program_helper.seed(org_model.Organization, org_properties)
-    self.connection = connection_utils.seed_new_connection(self.profile, self.org)
+    self.connection = connection_utils.seed_new_connection(
+        self.profile, self.org.key())
+
 
 class ConnectionExistsTest(ConnectionTest): 
   """Unit tests for the connection_logic.connectionExists function."""
@@ -178,12 +180,11 @@ class QueryForOrganizationAdminTest(unittest.TestCase):
     second_profile = seeder_logic.seed(profile_model.Profile)
 
     self.first_connection = connection_utils.seed_new_connection(
-        first_profile, self.first_org)
+        first_profile, self.first_org.key())
     self.second_connection = connection_utils.seed_new_connection(
-        second_profile, self.first_org)
+        second_profile, self.first_org.key())
     self.third_connection = connection_utils.seed_new_connection(
         first_profile, self.second_org)
-    #connection_utils.seed_new_connection(third_profile, third_org)
 
   def testForMentor(self):
     """Tests that no connections are fetched for user who is a mentor only."""

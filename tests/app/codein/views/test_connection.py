@@ -527,7 +527,7 @@ class ManageConnectionAsOrgTest(test_utils.GCIDjangoTestCase):
     other_profile = profile_utils.seedGCIProfile(self.program)
 
     self.connection = connection_utils.seed_new_connection(
-        other_profile, self.org)
+        other_profile, self.org.key())
 
   def testPageLoads(self):
     """Tests that page loads properly."""
@@ -569,7 +569,8 @@ class ManageConnectionAsUserTest(test_utils.GCIDjangoTestCase):
     self.init()
 
     profile = self.profile_helper.createProfile()
-    self.connection = connection_utils.seed_new_connection(profile, self.org)
+    self.connection = connection_utils.seed_new_connection(
+        profile, self.org.key())
 
   def testPageLoads(self):
     """Tests that page loads properly."""
@@ -615,7 +616,7 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     profile = self.profile_helper.createProfile()
 
     # no role is offered to the user; the user does not request any role
-    connection = connection_utils.seed_new_connection(profile, self.org)
+    connection = connection_utils.seed_new_connection(profile, self.org.key())
     old_seen_by_org = connection.seen_by_org
     old_seen_by_user = connection.seen_by_user
 
@@ -657,7 +658,7 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # mentor role is offered to the user; the user does not request any role
     connection = connection_utils.seed_new_connection(
-        profile, self.org, org_role=connection_model.MENTOR_ROLE)
+        profile, self.org.key(), org_role=connection_model.MENTOR_ROLE)
     old_seen_by_org = connection.seen_by_org
     old_seen_by_user = connection.seen_by_user
 
@@ -699,7 +700,7 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # org admin role is offered to the user; the user does not request any role
     connection = connection_utils.seed_new_connection(
-    profile, self.org, org_role=connection_model.ORG_ADMIN_ROLE)
+        profile, self.org.key(), org_role=connection_model.ORG_ADMIN_ROLE)
     old_seen_by_org = connection.seen_by_org
     old_seen_by_user = connection.seen_by_user
 
@@ -740,7 +741,7 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     profile = self.profile_helper.createProfile()
 
     # no role is offered to the user; the user does not request any role
-    connection = connection_utils.seed_new_connection(profile, self.org)
+    connection = connection_utils.seed_new_connection(profile, self.org.key())
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -780,7 +781,7 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # mentor role is offered to the user; the user does not request any role
     connection = connection_utils.seed_new_connection(
-        profile, self.org, org_role=connection_model.MENTOR_ROLE)
+        profile, self.org.key(), org_role=connection_model.MENTOR_ROLE)
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -820,7 +821,7 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # org admin role is offered to the user; the user does not request any role
     connection = connection_utils.seed_new_connection(
-        profile, self.org, org_role=connection_model.ORG_ADMIN_ROLE)
+        profile, self.org.key(), org_role=connection_model.ORG_ADMIN_ROLE)
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -860,7 +861,7 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # no role is offered to the user; the user requests role
     connection = connection_utils.seed_new_connection(
-        profile, self.org, user_role=connection_model.ROLE)
+        profile, self.org.key(), user_role=connection_model.ROLE)
     old_seen_by_org = connection.seen_by_org
     old_seen_by_user = connection.seen_by_user
 
@@ -984,7 +985,7 @@ class UserActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # no role is offered to the user; the user requests role
     connection = connection_utils.seed_new_connection(
-        profile, self.org, user_role=connection_model.ROLE)
+        profile, self.org.key(), user_role=connection_model.ROLE)
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -1203,7 +1204,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     profile = self.profile_helper.createProfile()
 
     # user does not request any role from organization
-    connection = connection_utils.seed_new_connection(profile, self.org)
+    connection = connection_utils.seed_new_connection(profile, self.org.key())
     old_seen_by_org = connection.seen_by_org
     old_seen_by_user = connection.seen_by_user
 
@@ -1245,7 +1246,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # user requests role from organization
     connection = connection_utils.seed_new_connection(
-        profile, self.org, user_role=connection_model.ROLE)
+        profile, self.org.key(), user_role=connection_model.ROLE)
     old_seen_by_org = connection.seen_by_org
     old_seen_by_user = connection.seen_by_user
 
@@ -1286,7 +1287,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     profile = self.profile_helper.createProfile()
 
     # user does not request any role from organization
-    connection = connection_utils.seed_new_connection(profile, self.org)
+    connection = connection_utils.seed_new_connection(profile, self.org.key())
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -1327,7 +1328,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # user requests role from organization
     connection = connection_utils.seed_new_connection(
-        profile, self.org, user_role=connection_model.ROLE)
+        profile, self.org.key(), user_role=connection_model.ROLE)
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -1368,7 +1369,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
     profile = self.profile_helper.createProfile()
 
     # user does not request any role from organization
-    connection = connection_utils.seed_new_connection(profile, self.org)
+    connection = connection_utils.seed_new_connection(profile, self.org.key())
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -1410,7 +1411,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # user requests role from organization
     connection = connection_utils.seed_new_connection(
-        profile, self.org, user_role=connection_model.ROLE)
+        profile, self.org.key(), user_role=connection_model.ROLE)
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -1452,7 +1453,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # user does not request any role from organization
     connection = connection_utils.seed_new_connection(
-        profile, self.org, org_role=connection_model.MENTOR_ROLE)
+        profile, self.org.key(), org_role=connection_model.MENTOR_ROLE)
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -1571,7 +1572,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # user does not request any role from organization
     connection = connection_utils.seed_new_connection(
-        profile, self.org, org_role=connection_model.MENTOR_ROLE)
+        profile, self.org.key(), org_role=connection_model.MENTOR_ROLE)
     old_seen_by_org = connection.seen_by_org
     old_seen_by_user = connection.seen_by_user
 
@@ -1654,7 +1655,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # user does not request any role from organization
     connection = connection_utils.seed_new_connection(
-        profile, self.org, org_role=connection_model.MENTOR_ROLE)
+        profile, self.org.key(), org_role=connection_model.MENTOR_ROLE)
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -1737,7 +1738,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # user does not request any role from organization
     connection = connection_utils.seed_new_connection(
-        profile, self.org, org_role=connection_model.ORG_ADMIN_ROLE)
+        profile, self.org.key(), org_role=connection_model.ORG_ADMIN_ROLE)
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -1856,7 +1857,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # user does not request any role from organization
     connection = connection_utils.seed_new_connection(
-        profile, self.org, org_role=connection_model.ORG_ADMIN_ROLE)
+        profile, self.org.key(), org_role=connection_model.ORG_ADMIN_ROLE)
 
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
@@ -1977,7 +1978,7 @@ class OrgActionsFormHandlerTest(test_utils.GCIDjangoTestCase):
 
     # user does not request any role from organization
     connection = connection_utils.seed_new_connection(
-        profile, self.org, org_role=connection_model.ORG_ADMIN_ROLE)
+        profile, self.org.key(), org_role=connection_model.ORG_ADMIN_ROLE)
     old_seen_by_org = connection.seen_by_org
     old_seen_by_user = connection.seen_by_user
 
@@ -2093,10 +2094,10 @@ class ListConnectionsForUserTest(test_utils.GCIDjangoTestCase):
     profile = self.profile_helper.createMentor(self.org)
 
     second_org = self.program_helper.createNewOrg()
-    connection_utils.seed_new_connection(profile, second_org)
+    connection_utils.seed_new_connection(profile, second_org.key())
 
     third_org = self.program_helper.createNewOrg()
-    connection_utils.seed_new_connection(profile, third_org)
+    connection_utils.seed_new_connection(profile, third_org.key())
 
     list_data = self.getListData(self._getUrl(profile), 0)
 
@@ -2143,11 +2144,11 @@ class ListConnectionsForOrgAdminTest(test_utils.GCIDjangoTestCase):
 
     first_profile = profile_utils.GCIProfileHelper(
         self.program, False).createProfile()
-    connection_utils.seed_new_connection(first_profile, self.org)
+    connection_utils.seed_new_connection(first_profile, self.org.key())
 
     second_profile = profile_utils.GCIProfileHelper(
         self.program, False).createProfile()
-    connection_utils.seed_new_connection(second_profile, self.org)
+    connection_utils.seed_new_connection(second_profile, self.org.key())
 
     list_data = self.getListData(self._getUrl(profile), 0)
 
@@ -2189,7 +2190,7 @@ class MarkConnectionAsSeenByOrgTest(test_utils.GCIDjangoTestCase):
     other_profile = profile_utils.seedGCIProfile(self.program)
 
     self.connection = connection_utils.seed_new_connection(
-        other_profile, self.org, seen_by_org=False)
+        other_profile, self.org.key(), seen_by_org=False)
 
   @unittest.skip(
       'This request should fail instead of raising NotImplementedError')
@@ -2222,7 +2223,7 @@ class MarkConnectionAsSeenByUserTest(test_utils.GCIDjangoTestCase):
     profile = self.profile_helper.createProfile()
 
     self.connection = connection_utils.seed_new_connection(
-        profile, self.org, seen_by_user=False)
+        profile, self.org.key(), seen_by_user=False)
 
   @unittest.skip(
       'This request should fail instead of raising NotImplementedError')
@@ -2265,7 +2266,7 @@ class OrgAdminConnectionListTest(test_utils.GCIDjangoTestCase):
       user = profile_utils.seedUser()
       profile = seeder_logic.seed(
           profile_model.Profile, properties={'parent': user})
-      connection_utils.seed_new_connection(profile, self.org)
+      connection_utils.seed_new_connection(profile, self.org.key())
 
     # seed another organization which is not administrated by the user
     other_org = seeder_logic.seed(org_model.Organization)
@@ -2273,7 +2274,7 @@ class OrgAdminConnectionListTest(test_utils.GCIDjangoTestCase):
     # seed a few connections for the other organization
     for _ in range(5):
       profile = seeder_logic.seed(profile_model.Profile)
-      connection_utils.seed_new_connection(profile, other_org)
+      connection_utils.seed_new_connection(profile, other_org.key())
 
     list_data = self.getListData(
         _getListConnectionsForOrgAdminUrl(self.profile_helper.profile), 0)
