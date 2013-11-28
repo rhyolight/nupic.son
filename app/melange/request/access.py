@@ -241,13 +241,31 @@ class IsUserOrgAdminForUrlOrg(AccessChecker):
   administrator for the organization whose identifier is set in URL data.
   """
 
+  # TODO(daniel): remove this when all organizations moved to NDB
+  def __init__(self, is_ndb=False):
+    """Initializes a new instance of this access checker.
+
+    Args:
+      is_ndb: a bool used to specify if the access checker will be used
+        for old db organizations or newer ndb organizations.
+    """
+    self._is_ndb = is_ndb
+
   def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
     if not data.profile:
       raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
 
-    if data.url_org.key() not in data.profile.org_admin_for:
-      raise exception.Forbidden(
-          message=_MESSAGE_NOT_ORG_ADMIN_FOR_ORG % data.url_org.key().name())
+    if not self._is_ndb:
+      # good ol' db
+      if data.url_org.key() not in data.profile.org_admin_for:
+        raise exception.Forbidden(
+            message=_MESSAGE_NOT_ORG_ADMIN_FOR_ORG % data.url_org.key().name())
+    else:
+      if data.url_ndb_org.key.to_old_key() not in data.profile.org_admin_for:
+        raise exception.Forbidden(
+            message=_MESSAGE_NOT_ORG_ADMIN_FOR_ORG % data.url_org.key().name())
 
 IS_USER_ORG_ADMIN_FOR_ORG = IsUserOrgAdminForUrlOrg()
+IS_USER_ORG_ADMIN_FOR_NDB_ORG = IsUserOrgAdminForUrlOrg(is_ndb=True)
+
