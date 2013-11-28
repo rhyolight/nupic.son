@@ -125,3 +125,6 @@ class Organization(ndb.Model):
 
   #: Specifies whether the organization has participated in the program before
   is_veteran = ndb.BooleanProperty(required=True, default=False)
+
+  #: Collection of tags that describe the organization.
+  tags = ndb.StringProperty(repeated=True)
