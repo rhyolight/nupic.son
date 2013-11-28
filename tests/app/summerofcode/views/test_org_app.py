@@ -223,13 +223,20 @@ class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
 
   def testPageLoads(self):
     """Tests that page loads properly."""
-    self.profile_helper.createProfile()
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+
     response = self.get(_getOrgProfileEditUrl(self.org))
     self.assertResponseOK(response)
 
   def testOrgProfileUpdated(self):
     """Tests that organization entity is updated correctly."""
-    self.profile_helper.createProfile()
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
 
     # check that mutable properties are updated
     postdata = {
@@ -290,6 +297,11 @@ class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
 
   def testOrgsTabs(self):
     """Tests that correct organization related tabs are present in context."""
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+
     response = self.get(_getOrgProfileEditUrl(self.org))
 
     # check that tabs are present in context
@@ -310,12 +322,21 @@ class OrgApplicationSubmitPageTest(test_utils.GSoCDjangoTestCase):
 
   def testPageLoads(self):
     """Tests that page loads properly."""
-    self.profile_helper.createProfile()
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+
     response = self.get(_getOrgApplicationSubmitUrl(self.org))
     self.assertResponseOK(response)
 
   def testApplicationCreated(self):
     """Tests that organization application is created properly."""
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+
     # TODO(daniel): submit actual responses in POST data
     response = self.post(_getOrgApplicationSubmitUrl(self.org))
     self.assertResponseRedirect(response)
@@ -326,6 +347,11 @@ class OrgApplicationSubmitPageTest(test_utils.GSoCDjangoTestCase):
 
   def testOrgsTabs(self):
     """Tests that correct organization related tabs are present in context."""
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+
     response = self.get(_getOrgApplicationSubmitUrl(self.org))
 
     # check that tabs are present in context
@@ -387,12 +413,20 @@ class OrgPreferencesEditPageTest(test_utils.GSoCDjangoTestCase):
 
   def testPageLoads(self):
     """Tests that page loads properly."""
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+
     response = self.get(_getOrgPreferencesEditUrl(self.org))
     self.assertResponseOK(response)
 
   def testOrgPreferencesUpdated(self):
     """Tests that organization entity is updated correctly."""
-    self.profile_helper.createProfile()
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
 
     postdata = {
         'slot_request_min': unicode(TEST_SLOT_REQUEST_MIN),
@@ -408,6 +442,11 @@ class OrgPreferencesEditPageTest(test_utils.GSoCDjangoTestCase):
 
   def testOrgsTabs(self):
     """Tests that correct organization related tabs are present in context."""
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+
     response = self.get(_getOrgPreferencesEditUrl(self.org))
 
     # check that tabs are present in context
