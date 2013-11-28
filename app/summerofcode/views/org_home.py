@@ -18,6 +18,7 @@ from django.utils import translation
 
 from melange.request import access
 
+from soc.views import template
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.views import base
@@ -27,6 +28,32 @@ from summerofcode.views.helper import urls
 
 
 ORG_HOME_PAGE_TITLE = translation.ugettext('%s')
+
+CONTACT_TEMPLATE_PATH = 'modules/gsoc/_connect_with_us.html'
+
+class Contact(template.Template):
+  """Contact template."""
+
+  def __init__(self, template_path, data):
+    """Initializes a new instance of Contact template.
+
+    Args:
+      template_path: Path to the template that should be rendered.
+      data: request_data.RequestData for the current request.
+    """
+    super(Contact, self).__init__(data)
+    self.template_path = template_path
+
+  def context(self):
+    """See template.Template.context for specification."""
+    return {
+        'facebook_link': self.data.url_ndb_org.contact.facebook,
+        'twitter_link': self.data.url_ndb_org.contact.twitter,
+        'blogger_link': self.data.url_ndb_org.contact.blog,
+        'pub_mailing_list_link': self.data.url_ndb_org.contact.mailing_list,
+        'irc_channel_link': self.data.url_ndb_org.contact.irc_channel,
+        'google_plus_link': self.data.url_ndb_org.contact.google_plus
+    }
 
 
 class OrgHomePage(base.GSoCRequestHandler):
@@ -54,5 +81,6 @@ class OrgHomePage(base.GSoCRequestHandler):
     context = {
         'page_name': ORG_HOME_PAGE_TITLE % data.url_ndb_org.name,
         'organization': data.url_ndb_org,
+        'contact': Contact(CONTACT_TEMPLATE_PATH, data),
     }
     return context
