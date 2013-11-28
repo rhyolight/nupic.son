@@ -149,9 +149,9 @@ def seedProfile(program, model=profile_model.Profile, user=None,
   properties.update(**kwargs)
   profile = seeder_logic.seed(model, properties=properties)
 
-  orgs = db.get(list(set(mentor_for + org_admin_for)))
-  for org in orgs:
-    if org.key() in org_admin_for:
+  org_keys = list(set(mentor_for + org_admin_for))
+  for org_key in org_keys:
+    if org_key in org_admin_for:
       org_role = connection_model.ORG_ADMIN_ROLE
     else:
       org_role = connection_model.MENTOR_ROLE
@@ -160,8 +160,12 @@ def seedProfile(program, model=profile_model.Profile, user=None,
         'user_role': connection_model.ROLE,
         'org_role': org_role
         }
+
+    # TODO(daniel): remove when all organizations are converted
+    if isinstance(org_key, ndb.Key):
+      org_key = org_key.to_old_key()
     connection_utils.seed_new_connection(
-        profile, org.key(), **connection_properties)
+        profile, org_key, **connection_properties)
 
   return profile
 
