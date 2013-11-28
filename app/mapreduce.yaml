@@ -35,7 +35,7 @@ mapreduce:
 - name: GSoCConvertOrganizations
   mapper:
     input_reader: mapreduce.input_readers.DatastoreKeyInputReader
-    handler: soc.mapreduce.convert_gsoc_organizations.convertOrg
+    handler: soc.mapreduce.convert_gsoc_organizations.convertSOCOrganization
     params:
     - name: entity_kind
       value: soc.modules.gsoc.models.organization.GSoCOrganization
@@ -111,6 +111,15 @@ mapreduce:
 
 
 # GCI specific mapreduce jobs
+
+- name: GCIConvertOrganizations
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.convert_gsoc_organizations.convertCIOrganization
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.organization.GCIOrganization
+
 - name: GCIAddChangesToComments
   mapper:
     input_reader: mapreduce.input_readers.DatastoreInputReader
