@@ -724,6 +724,13 @@ class KeyColumn(Column):
     return '%s/%s' % (entity.parent_key().name(), entity.key().id())
 
 
+class EncodedKeyColumn(Column):
+  """Column object to represent the unique key as encoded key of the entity."""
+  def getValue(self, entity):
+    """See Column.getValue for specification."""
+    return str(entity.key())
+
+
 class StudentColumn(Column):
   """Column object to represent the student"""
   def getValue(self, entity):
@@ -738,7 +745,7 @@ class OraganizationColumn(Column):
     return entity.org.name
 
 
-key = KeyColumn(key_column_id_const.KEY_COLUMN_ID, 'Key', hidden=True)
+key = EncodedKeyColumn(key_column_id_const.KEY_COLUMN_ID, 'Key', hidden=True)
 student = StudentColumn('student', 'Student')
 title = SimpleColumn('title', 'Title')
 org = OraganizationColumn('org', 'Organization')
