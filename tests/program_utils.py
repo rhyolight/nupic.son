@@ -96,16 +96,13 @@ class ProgramHelper(object):
   """Helper class to aid in manipulating program data.
   """
 
-  def __init__(self):
+  def __init__(self, sponsor=None):
     """Initializes the ProgramHelper.
 
     Args:
-      program: a program
-      org_app: an organization application
-      org: an organization
-      site: a site
+      sponsor: Sponsor entity.
     """
-    self.sponsor = None
+    self.sponsor = sponsor
     self.program = None
     self.org_app = None
     self.org = None
@@ -201,10 +198,10 @@ class GSoCProgramHelper(ProgramHelper):
   """Helper class to aid in manipulating GSoC program data.
   """
 
-  def __init__(self):
+  def __init__(self, **kwargs):
     """Initializes the GSoCProgramHelper.
     """
-    super(GSoCProgramHelper, self).__init__()
+    super(GSoCProgramHelper, self).__init__(**kwargs)
 
   def createProgram(self, override={}):
     """Creates a program for the defined properties.
@@ -296,10 +293,10 @@ class GCIProgramHelper(ProgramHelper):
   """Helper class to aid in manipulating GCI program data.
   """
 
-  def __init__(self):
+  def __init__(self, **kwargs):
     """Initializes the GCIProgramHelper.
     """
-    super(GCIProgramHelper, self).__init__()
+    super(GCIProgramHelper, self).__init__(**kwargs)
 
   def createProgram(self, override={}):
     """Creates a program for the defined properties.
