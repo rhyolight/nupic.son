@@ -23,6 +23,8 @@ from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
 from melange.request import exception
+from melange.request import links
+
 from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
@@ -38,6 +40,8 @@ from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
+
+from summerofcode.views.helper import urls
 
 
 class ProjectDetailsForm(gsoc_forms.GSoCModelForm):
@@ -121,14 +125,17 @@ class ListCodeSamples(Template):
     return code_samples
 
   def context(self):
-    """Returns the context for the current template.
-    """
+    """See template.Template.context for specification."""
+    code_sample_download_url = links.LINKER.userId(
+        self.data.url_profile.key(), self.data.project.key().id(),
+        url_names.GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD)
+    code_sample_delete_file_action = links.LINKER.userId(
+        self.data.url_profile.key(), self.data.project.key().id(),
+        url_names.GSOC_PROJECT_CODE_SAMPLE_DELETE)
     return {
         'code_samples': self._buildContextForExistingCodeSamples(),
-        'code_sample_download_url': self.data.redirect.project().urlOf(
-              url_names.GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD),
-        'code_sample_delete_file_action': self.data.redirect.project().urlOf(
-              url_names.GSOC_PROJECT_CODE_SAMPLE_DELETE),
+        'code_sample_download_url': code_sample_download_url,
+        'code_sample_delete_file_action': code_sample_delete_file_action,
         'deleteable': self.deleteable
         }
 
@@ -143,16 +150,14 @@ class UploadCodeSamples(Template):
   """
 
   def context(self):
-    """Returns the context for the current template.
-    """
-
-    self.data.redirect.project()
+    """See template.Template.context for specification."""
+    code_sample_upload_file_action = links.LINKER.userId(
+        self.data.url_profile.key(), self.data.project.key().id(),
+        url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD)
 
     context = {
         'code_sample_upload_file_form': CodeSampleUploadFileForm(),
-        'code_sample_upload_file_action': blobstore.create_upload_url(
-            self.data.redirect.urlOf(
-                url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD))
+        'code_sample_upload_file_action': code_sample_upload_file_action,
         }
 
     if self.data.GET.get('file', None) == '0':
@@ -218,8 +223,10 @@ class ProjectDetailsUpdate(base.GSoCRequestHandler):
   def post(self, data, check, mutator):
     """Post handler for the project details update form."""
     if self.validate(data):
-      data.redirect.project()
-      return data.redirect.to('gsoc_project_details')
+      url = links.LINKER.userId(
+          data.url_profile.key(), data.project.key().id(),
+          url_names.GSOC_PROJECT_DETAILS)
+      return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
@@ -251,9 +258,12 @@ class CodeSampleUploadFilePost(base.GSoCRequestHandler):
       # we are not storing this form, remove the uploaded blob from the cloud
       for blob_info in data.request.file_uploads.itervalues():
         blob_info.delete()
-      # TODO(nathaniel): make this .project() call unnecessary.
-      return data.redirect.project().to(
-          url_names.GSOC_PROJECT_UPDATE, extra=['file=0'])
+      url = links.LINKER.userId(
+          data.url_profile.key(), data.project.key().id(),
+          url_names.GSOC_PROJECT_UPDATE)
+      # TODO(daniel): GET params should be handled automatically
+      url = url + '?file=0'
+      return http.HttpResponseRedirect(url)
 
     form.cleaned_data['user'] = data.user
     form.cleaned_data['org'] = data.project.org
@@ -272,10 +282,10 @@ class CodeSampleUploadFilePost(base.GSoCRequestHandler):
 
     db.run_in_transaction(txn)
 
-    # TODO(nathaniel): Make this .project() call unnecessary.
-    data.redirect.project()
-
-    return data.redirect.to(url_names.GSOC_PROJECT_DETAILS)
+    url = links.LINKER.userId(
+        data.url_profile.key(), data.project.key().id(),
+        url_names.GSOC_PROJECT_UPDATE)
+    return http.HttpResponseRedirect(url)
 
 
 class CodeSampleDownloadFileGet(base.GSoCRequestHandler):
@@ -352,8 +362,10 @@ class CodeSampleDeleteFilePost(base.GSoCRequestHandler):
 
       db.run_in_transaction(txn)
 
-      data.redirect.project()
-      return data.redirect.to(url_names.GSOC_PROJECT_UPDATE)
+      url = links.LINKER.userId(
+          data.url_profile.key(), data.project.key().id(),
+          url_names.GSOC_PROJECT_UPDATE)
+      return http.HttpResponseRedirect(url)
     except KeyError:
       raise exception.BadRequest(message='id argument missing in POST data')
     except ValueError:
@@ -374,15 +386,14 @@ class UserActions(Template):
     self.toggle_buttons = []
 
   def context(self):
-    assert isSet(self.data.project)
-
-    # TODO(nathaniel): Eliminate this state-setting call.
-    self.data.redirect.project()
+    """See template.Template.context for specification."""
+    featured_project_url = links.LINKER.userId(
+        self.data.url_profile.key(), self.data.project.key().id(),
+        'gsoc_featured_project')
 
     featured_project = ToggleButtonTemplate(
         self.data, 'on_off', 'Featured', 'project-featured',
-        self.data.redirect.urlOf('gsoc_featured_project'),
-        checked=self.data.project.is_featured,
+        featured_project_url, checked=self.data.project.is_featured,
         help_text=self.DEF_FEATURED_PROJECT_HELP,
         labels={
             'checked': 'Yes',
@@ -394,11 +405,13 @@ class UserActions(Template):
         'toggle_buttons': self.toggle_buttons,
         }
 
+    assign_mentor_url = links.LINKER.userId(
+        self.data.url_profile.key(), self.data.project.key().id(),
+        'gsoc_project_assign_mentors')
     all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(
         self.data.project.org)
     context['assign_mentor'] = assign_mentor.AssignMentorFields(
-        self.data, self.data.project.mentors,
-        self.data.redirect.project().urlOf('gsoc_project_assign_mentors'),
+        self.data, self.data.project.mentors, assign_mentor_url,
         all_mentors=all_mentors_keys, mentor_required=True,
         allow_multiple=True)
 
@@ -478,22 +491,24 @@ class ProjectDetails(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """Handler to for GSoC project details page HTTP get request."""
-    # TODO(nathaniel): make this .organization call unnecessary?
-    data.redirect.organization(organization=data.project.org)
 
+    org_home_link = links.LINKER.organization(
+        data.project.org.key(), urls.UrlNames.ORG_HOME)
     context = {
         'page_name': 'Project details',
         'project': data.project,
-        'org_home_link': data.redirect.urlOf(url_names.GSOC_ORG_HOME),
+        'org_home_link': org_home_link,
     }
 
     if data.orgAdminFor(data.project.org):
       context['user_actions'] = UserActions(data)
 
     if _isUpdateLinkVisible(data):
-      context['update_link_visible'] = True
-      context['update_link_url'] = data.redirect.project().urlOf(
+      update_link_url = links.LINKER.userId(
+          data.url_profile.key(), data.project.key().id(),
           url_names.GSOC_PROJECT_UPDATE)
+      context['update_link_visible'] = True
+      context['update_link_url'] = update_link_url
       context['update_link_text'] = _getUpdateLinkText(data)
     else:
       context['update_link_visible'] = False
@@ -565,10 +580,10 @@ class AssignMentors(base.GSoCRequestHandler):
     if mentor_keys:
       self.assignMentors(data, mentor_keys)
 
-    project_owner = data.project.parent()
-
-    data.redirect.project(data.project.key().id(), project_owner.link_id)
-    return data.redirect.to(url_names.GSOC_PROJECT_DETAILS)
+    url = links.LINKER.userId(
+        data.url_profile.key(), data.project.key().id(),
+        url_names.GSOC_PROJECT_UPDATE)
+    return http.HttpResponseRedirect(url)
 
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
