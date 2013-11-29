@@ -119,23 +119,11 @@ class ProgramHelper(object):
     return seeder_logic.seedn(model, n, properties, recurse=False,
         auto_seed_optional_properties=auto_seed_optional_properties)
 
-  def createSponsor(self, override={}):
-    """Creates a sponsor for the defined properties.
-    """
-    if self.sponsor:
-      return self.sponsor
-    properties = {
-        'home': None,
-        }
-    properties.update(override)
-    self.sponsor = self.seed(Sponsor, properties)
-    return self.sponsor
-
   def createProgram(self, override={}):
     """Creates a program for the defined properties.
     """
     if self.sponsor is None:
-      self.createSponsor()
+      self.sponsor = seedSponsor()
 
   def createOrgApp(self, override={}):
     """Creates an organization application for the defined properties.
