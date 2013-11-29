@@ -177,15 +177,10 @@ class FeaturedProject(Template):
     self.featured_project = featured_project
 
   def context(self):
-    project_id = self.featured_project.key().id_or_name()
-    student_link_id = self.featured_project.parent().link_id
-
-    redirect = self.data.redirect
-
-    featured_project_url = redirect.project(
-        id=project_id,
-        student=student_link_id).urlOf(url_names.GSOC_PROJECT_DETAILS)
-
+    """See template.Template.context for specification."""
+    featured_project_url = links.LINKER.userId(
+        self.featured_project.parent_key(), self.featured_project.key().id(),
+        url_names.GSOC_PROJECT_DETAILS)
     return {
       'featured_project': self.featured_project,
       'featured_project_url': featured_project_url,

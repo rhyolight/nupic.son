@@ -533,20 +533,6 @@ class RedirectHelper(request_data.RedirectHelper):
     return self
 
   # TODO(daniel): id built-in function should not be shadowed
-  def project(self, id=None, student=None):
-    """Returns the URL to the Student Project.
-
-    Args:
-      student: entity which represents the user for the student
-    """
-    if not student:
-      assert 'user' in self._data.kwargs
-      student = self._data.kwargs['user']
-    self.id(id)
-    self.kwargs['user'] = student
-    return self
-
-  # TODO(daniel): id built-in function should not be shadowed
   def survey_record(self, survey=None, id=None, student=None):
     """Returns the redirector object with the arguments for survey record
 
@@ -554,7 +540,13 @@ class RedirectHelper(request_data.RedirectHelper):
       survey: the survey's link_id
     """
     self.program()
-    self.project(id, student)
+    self.id(id=id)
+
+    if not student:
+      assert 'user' in self._data.kwargs
+      student = self._data.kwargs['user']
+    self.kwargs['user'] = student
+
     if not survey:
       assert 'survey' in self._data.kwargs
       survey = self._data.kwargs['survey']
@@ -568,11 +560,11 @@ class RedirectHelper(request_data.RedirectHelper):
     Args:
       record: the grading record entity
     """
-    self.program()
-
     project = record.parent()
-    self.project(project.key().id(), project.parent().link_id)
 
+    self.program()
+    self.id()
+    self.kwargs['user'] = project.parent().link_id
     self.kwargs['group'] = record.grading_survey_group.key().id_or_name()
     self.kwargs['record'] = record.key().id()
 

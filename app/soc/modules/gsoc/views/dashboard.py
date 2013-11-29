@@ -487,9 +487,9 @@ class MyProjectsComponent(Component):
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn('org', 'Organization Name',
         lambda ent, *args: ent.org.name)
-    list_config.setRowAction(lambda e, *args: data.redirect.project(
-        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
-        url_names.GSOC_PROJECT_DETAILS))
+    list_config.setRowAction(
+        lambda e, *args: links.LINKER.userId(
+            e.parent_key(), e.key().id(), url_names.GSOC_PROJECT_DETAILS))
     self._list_config = list_config
 
     super(MyProjectsComponent, self).__init__(data)
@@ -1033,9 +1033,9 @@ class ProjectsIMentorComponent(Component):
     list_config.addPlainTextColumn('org', 'Organization',
                           lambda ent, *args: ent.org.name)
     list_config.setDefaultSort('title')
-    list_config.setRowAction(lambda e, *args: data.redirect.project(
-        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
-        url_names.GSOC_PROJECT_DETAILS))
+    list_config.setRowAction(
+        lambda e, *args: links.LINKER.userId(
+            e.parent_key(), e.key().id(), url_names.GSOC_PROJECT_DETAILS))
     self._list_config = list_config
 
     super(ProjectsIMentorComponent, self).__init__(data)
@@ -1471,11 +1471,9 @@ class TodoComponent(Component):
         data.redirect.program()
         url = data.redirect.urlOf(url_names.GSOC_PROFILE_EDIT, secure=True)
         return url + '#form_row_school_name'
-      if key.isdigit():
-        project_id = int(key)
-        # TODO(nathaniel): Eliminate this state-setting call.
-        data.redirect.project(id=project_id, student=data.profile.link_id)
-        return data.redirect.urlOf(url_names.GSOC_PROJECT_UPDATE)
+      if key.isdigit(): # provided key represents a project ID
+        return links.LINKER.userId(
+            data.profile.key(), int(key), url_names.GSOC_PROJECT_UPDATE)
       return None
 
     list_config.setRowAction(rowAction)

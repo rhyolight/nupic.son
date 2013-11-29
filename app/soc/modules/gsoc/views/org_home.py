@@ -19,6 +19,8 @@ from django.utils.translation import ugettext
 
 from melange.request import access
 from melange.request import exception
+from melange.request import links
+
 from soc.logic import accounts
 from soc.logic.helper import timeline as timeline_helper
 from soc.views.helper import lists
@@ -138,9 +140,9 @@ class ProjectList(Template):
         lambda entity, m, *args: ", ".join(
             [m[i].name() for i in entity.mentors]))
     list_config.setDefaultSort('student')
-    list_config.setRowAction(lambda e, *args, **kwargs: data.redirect.project(
-        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
-        url_names.GSOC_PROJECT_DETAILS))
+    list_config.setRowAction(
+        lambda e, *args, **kwargs: links.LINKER.userId(
+            e.parent_key(), e.key().id(), url_names.GSOC_PROJECT_DETAILS))
     self._list_config = list_config
 
   def context(self):

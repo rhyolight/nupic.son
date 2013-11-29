@@ -18,10 +18,12 @@ from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from django import forms
+from django import http
 from django.utils import translation
 
 from melange.request import access
 from melange.request import exception
+from melange.request import links
 
 from soc.views.helper import url_patterns
 from soc.modules.gsoc.models import project_survey as project_survey_model
@@ -219,9 +221,12 @@ class ManageProjectProgramAdminView(base.GSoCRequestHandler):
 
     if result:
       # redirect to somewhere
-      data.redirect.project()
-      return data.redirect.to(
-          urls.UrlNames.PROJECT_MANAGE_ADMIN, validated=True)
+      url = links.LINKER.userId(
+          data.url_profile.key(), data.project.key().id(),
+          urls.UrlNames.PROJECT_MANAGE_ADMIN)
+      # TODO(daniel): append GET parameter in a better way
+      url = url + '?validated'
+      return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)

@@ -18,6 +18,8 @@ or failed one of the evaluations.
 """
 
 from melange.request import exception
+from melange.request import links
+
 from soc.views import base_templates
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
@@ -138,9 +140,9 @@ class ProjectList(Template):
       a lambda expression that takes a project entity as its first argument
         and returns URL to the page with details of that project.
     """
-    return lambda e, *args: self.data.redirect.project(
-        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
-        url_names.GSOC_PROJECT_DETAILS)
+    return lambda e, *args: links.LINKER.userId(
+        e.parent_key(), e.key().id(), url_names.GSOC_PROJECT_DETAILS)
+
 
 class ListProjects(base.GSoCRequestHandler):
   """View methods for listing all the projects accepted into a program."""

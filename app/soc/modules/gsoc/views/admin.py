@@ -1426,12 +1426,11 @@ def _getManageProjectRowAction(data):
   """Returns a row action that redirects to the manage project page.
 
   Args:
-    data: RequestData object for the current request.
+    data: request_data.RequestData object for the current request.
 
   Returns:
-    a lamba expression that takes a project entity as its first argument
-      and returns URL to the manage project page.
+    A function takes a project entity as its first argument and returns
+    URL to the manage project page.
   """
-  return lambda e, *args: data.redirect.project(
-      id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
-      urls.UrlNames.PROJECT_MANAGE_ADMIN)
+  return lambda e, *args: links.SOC_LINKER.userId(
+      e.parent_key(), e.key().id(), urls.UrlNames.PROJECT_MANAGE_ADMIN)
