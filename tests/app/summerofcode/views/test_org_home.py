@@ -72,3 +72,30 @@ class OrgHomePageTest(test_utils.GSoCDjangoTestCase):
     # check that not specified contact information are not set
     self.assertIsNone(context['facebook_link'])
     self.assertIsNone(context['google_plus_link'])
+
+  def testProjectListIsPresent(self):
+    """Tests that project list is present only after students are announced."""
+    # check that project list is not present at kickoff
+    self.timeline_helper.kickoff()
+    response = self.get(_getOrgHomeUrl(self.org))
+    self.assertNotIn('project_list', response.context)
+
+    # check that project list is not present at org signup
+    self.timeline_helper.orgSignup()
+    response = self.get(_getOrgHomeUrl(self.org))
+    self.assertNotIn('project_list', response.context)
+
+    # check that project list is not present at student signup
+    self.timeline_helper.studentSignup()
+    response = self.get(_getOrgHomeUrl(self.org))
+    self.assertNotIn('project_list', response.context)
+
+    # check that project list is not present just before students are announced
+    self.timeline_helper.postStudentSignup()
+    response = self.get(_getOrgHomeUrl(self.org))
+    self.assertNotIn('project_list', response.context)
+
+    # check that project list is present after students are announced
+    self.timeline_helper.studentsAnnounced()
+    response = self.get(_getOrgHomeUrl(self.org))
+    self.assertIn('project_list', response.context)

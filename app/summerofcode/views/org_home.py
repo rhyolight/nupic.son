@@ -14,13 +14,19 @@
 
 """Module containing views for the Summer Of Code organization homepage."""
 
+from google.appengine.ext import db
+
 from django.utils import translation
 
 from melange.request import access
+from melange.request import links
+from melange.utils import lists as melange_lists
 
 from soc.views import template
+from soc.views.helper import lists
 from soc.views.helper import url_patterns
 
+from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_patterns as soc_url_patterns
 
@@ -28,6 +34,9 @@ from summerofcode.views.helper import urls
 
 
 ORG_HOME_PAGE_TITLE = translation.ugettext('%s')
+
+PROJECT_LIST_DESCRIPTION = translation.ugettext(
+    'List of projects accepted into %s.')
 
 CONTACT_TEMPLATE_PATH = 'modules/gsoc/_connect_with_us.html'
 
@@ -54,6 +63,56 @@ class Contact(template.Template):
         'irc_channel_link': self.data.url_ndb_org.contact.irc_channel,
         'google_plus_link': self.data.url_ndb_org.contact.google_plus
     }
+
+
+class _ProjectDetailsRowRedirect(melange_lists.RedirectCustomRow):
+  """Class which provides redirects for rows of public organization list."""
+
+  def __init__(self, data):
+    """Initializes a new instance of the row redirect.
+
+    See lists.RedirectCustomRow.__init__ for specification.
+
+    Args:
+      data: request_data.RequestData for the current request.
+    """
+    super(_ProjectDetailsRowRedirect, self).__init__()
+    self.data = data
+
+  def getLink(self, item):
+    """See lists.RedirectCustomRow.getLink for specification."""
+    project_key = db.Key(item['columns']['key'])
+    return links.LINKER.userId(
+        project_key.parent(), project_key.id(), 'gsoc_project_details')
+
+
+# TODO(daniel): replace this class with new style list
+class ProjectList(template.Template):
+  """List of projects."""
+
+  def __init__(self, data, description):
+    """See template.Template.__init__ for specification."""
+    super(ProjectList, self).__init__(data)
+    self._list_config = lists.ListConfiguration()
+    self._list_config.addPlainTextColumn('student', 'Student',
+        lambda entity, *args: entity.parent().name())
+    self._list_config.addSimpleColumn('title', 'Title')
+    self._list_config.addPlainTextColumn(
+        'mentors', 'Mentor',
+        lambda entity, m, *args: ", ".join(
+            [m[i].name() for i in entity.mentors]))
+    self._list_config.setDefaultSort('student')
+    self._description = description
+
+  def templatePath(self):
+    """See template.Template.templatePath for specification."""
+    return 'modules/gsoc/admin/_accepted_orgs_list.html'
+
+  def context(self):
+    """See template.Template.context for specification."""
+    list_configuration_response = lists.ListConfigurationResponse(
+        self.data, self._list_config, 0, self._description)
+    return {'lists': [list_configuration_response]}
 
 
 class OrgHomePage(base.GSoCRequestHandler):
@@ -83,4 +142,20 @@ class OrgHomePage(base.GSoCRequestHandler):
         'organization': data.url_ndb_org,
         'contact': Contact(CONTACT_TEMPLATE_PATH, data),
     }
+
+    if data.timeline.studentsAnnounced():
+      context['students_announced'] = True
+      context['project_list'] = ProjectList(
+          data, PROJECT_LIST_DESCRIPTION % data.url_ndb_org.name)
+
     return context
+
+  def jsonContext(self, data, check, mutator):
+    """See base.RequestHandler.jsonContext for specification."""
+    query = project_logic.getAcceptedProjectsQuery(
+        program=data.program, org=data.url_ndb_org.key.to_old_key())
+
+    response = melange_lists.JqgridResponse(
+        melange_lists.GSOC_PROJECTS_LIST_ID,
+        row=_ProjectDetailsRowRedirect(data))
+    return response.getData(query)
