@@ -295,7 +295,8 @@ def seed(request, *args, **kwargs):
     org_properties = {
         'name': 'Organization %d' % i,
         'org_id': 'org_%d' % i,
-        'program': ndb.Key.from_old_key(gsoc2014.key())
+        'program': ndb.Key.from_old_key(gsoc2014.key()),
+        'description': 'Organization %d!' % i,
         }
     org = soc_org_model.SOCOrganization(
         id='google/gsoc2014/org_%d' % i, **org_properties)
