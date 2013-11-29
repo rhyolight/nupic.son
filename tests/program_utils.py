@@ -31,7 +31,7 @@ from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.program import GSoCProgramMessages
 from soc.modules.gsoc.models.timeline import GSoCTimeline
-from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
+from soc.modules.seeder.logic.providers import string as string_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import profile_utils
@@ -54,6 +54,42 @@ def seedSite(**kwargs):
   site = Site(**properties)
   site.put()
   return site
+
+
+TEST_SPONSOR_EMIAL = 'test.sponsor@example.com'
+TEST_SPONSOR_HOME_PAGE = 'http://test.sponsor.home.page.com'
+TEST_SPONSOR_NAME = 'Test Sponsor'
+TEST_SPONSOR_DESCRIPTION = 'Test Sponsor Description'
+TEST_SPONSOR_SHORT_NAME = 'Sponsor'
+
+# TODO(daniel): move this function to a separate module
+def seedSponsor(sponsor_id=None, **kwargs):
+  """Seeds a new sponsor entity.
+
+  Args:
+    sponsor_id: Identifier of the new sponsor.
+
+  Returns:
+    Newly seeded Sponsor entity.
+  """
+  sponsor_id = sponsor_id or string_provider.UniqueIDProvider().getValue()
+
+  properties = {
+      'description': TEST_SPONSOR_DESCRIPTION,
+      'email': TEST_SPONSOR_EMIAL,
+      'home_page': TEST_SPONSOR_HOME_PAGE,
+      'key_name': sponsor_id,
+      'link_id': sponsor_id,
+      'org_id': sponsor_id,
+      'name': TEST_SPONSOR_NAME,
+      'short_name': TEST_SPONSOR_SHORT_NAME,
+      'sponsor_id': sponsor_id,
+      }
+  properties.update(kwargs)
+  sponsor = Sponsor(**properties)
+  sponsor.put()
+
+  return sponsor
 
 
 class ProgramHelper(object):
@@ -202,7 +238,7 @@ class GSoCProgramHelper(ProgramHelper):
         'prefix': 'gsoc_program',
         'scope': self.program,
         'read_access': 'public',
-        'key_name': DocumentKeyNameProvider(),
+        'key_name': string_provider.DocumentKeyNameProvider(),
         'modified_by': user,
         'author': user,
         'home_for': None,
@@ -298,7 +334,8 @@ class GCIProgramHelper(ProgramHelper):
     user = profile_utils.seedUser()
     properties = {
         'prefix': 'gci_program', 'scope': self.program,
-        'read_access': 'public', 'key_name': DocumentKeyNameProvider(),
+        'read_access': 'public',
+        'key_name': string_provider.DocumentKeyNameProvider(),
         'modified_by': user, 'author': user,
         'home_for': None,
     }
