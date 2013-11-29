@@ -113,7 +113,8 @@ class Organization(ndb.Model):
       indexed=False, validator=db.link_validator)
 
   #: Contact channels to the organization.
-  contact = ndb.LocalStructuredProperty(contact_model.Contact)
+  contact = ndb.LocalStructuredProperty(
+      contact_model.Contact, default=contact_model.Contact())
 
   #: Field storing a reference to the program in which
   #: the organization participates.
