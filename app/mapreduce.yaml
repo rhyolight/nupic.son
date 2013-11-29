@@ -32,6 +32,13 @@ mapreduce:
     - name: program_type
 
 # GSoC specific mapreduce jobs
+- name: ConvertGSoCProfiles
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.convert_profile.convertGSoCProfileRolesTxn
+    params:
+    - name: entity_kind
+
 - name: GSoCConvertOrganizations
   mapper:
     input_reader: mapreduce.input_readers.DatastoreKeyInputReader
