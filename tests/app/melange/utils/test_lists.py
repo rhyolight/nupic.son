@@ -124,7 +124,7 @@ class TestGSoCProjectsColumns(unittest.TestCase):
 
   def testOrganizationColumn(self):
     """Tests OrganizationColumn class."""
-    org_column = lists.OraganizationColumn('organization', 'Organization')
+    org_column = lists.OrganizationColumn('organization', 'Organization')
     expected_value = self.organization.name
     self.assertEqual(expected_value, org_column.getValue(self.project))
 

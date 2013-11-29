@@ -23,6 +23,7 @@ from google.appengine.ext import db
 from melange import key_column_id_const
 
 from soc.mapreduce import cache_list_items
+from soc.modules.gsoc.models import project as project_model
 
 from melange.logic import cached_list
 
@@ -738,17 +739,20 @@ class StudentColumn(Column):
     return entity.parent_key().name()
 
 
-class OraganizationColumn(Column):
+class OrganizationColumn(Column):
   """Column object to represent the organization"""
   def getValue(self, entity):
     """See Column.getValue for specification"""
-    return entity.org.name
+    # TODO(daniel): this hack will not be needed, when project model is
+    # converted to NDB
+    org_key = project_model.GSoCProject.org.get_value_for_datastore(entity)
+    return ndb.Key.from_old_key(org_key).get().name
 
 
 key = EncodedKeyColumn(key_column_id_const.KEY_COLUMN_ID, 'Key', hidden=True)
 student = StudentColumn('student', 'Student')
 title = SimpleColumn('title', 'Title')
-org = OraganizationColumn('org', 'Organization')
+org = OrganizationColumn('org', 'Organization')
 status = SimpleColumn('status', 'Status')
 
 cache_reader = CacheReader()
