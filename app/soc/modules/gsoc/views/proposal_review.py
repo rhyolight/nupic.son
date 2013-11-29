@@ -218,7 +218,7 @@ class UserActions(Template):
     """
 
     wish_to_mentor_url = links.LINKER.userId(
-        self.data.url_profile, self.data.kwargs['id'],
+        self.data.url_profile.key(), self.data.kwargs['id'],
         'gsoc_proposal_wish_to_mentor')
 
     wish_to_mentor = ToggleButtonTemplate(
@@ -231,7 +231,7 @@ class UserActions(Template):
     self.toggle_buttons.append(wish_to_mentor)
 
     proposal_modifications_url = links.LINKER.userId(
-        self.data.url_profile, self.data.kwargs['id'],
+        self.data.url_profile.key(), self.data.kwargs['id'],
         'gsoc_proposal_modification')
 
     if self.data.timeline.afterStudentSignupEnd():
@@ -253,7 +253,7 @@ class UserActions(Template):
     context = {}
 
     ignore_proposal_url = links.LINKER.userId(
-        self.data.url_profile, self.data.kwargs['id'],
+        self.data.url_profile.key(), self.data.kwargs['id'],
         url_names.PROPOSAL_IGNORE)
 
     ignore_button_checked = False
@@ -293,7 +293,7 @@ class UserActions(Template):
         current_mentors.append(self.data.url_proposal.mentor.key())
 
       assign_mentor_url = links.LINKER.userId(
-          self.data.url_profile, self.data.kwargs['id'],
+          self.data.url_profile.key(), self.data.kwargs['id'],
           'gsoc_proposal_assign_mentor')
 
       context['assign_mentor'] = assign_mentor.AssignMentorFields(
@@ -306,7 +306,7 @@ class UserActions(Template):
     """Construct the context needed for proposer actions.
     """
     publicly_visible_url = links.LINKER.userId(
-        self.data.url_profile, self.data.kwargs['id'],
+        self.data.url_profile.key(), self.data.kwargs['id'],
         'gsoc_proposal_publicly_visible')
 
     publicly_visible = ToggleButtonTemplate(
@@ -326,7 +326,7 @@ class UserActions(Template):
         checked = False
 
       withdraw_proposal_url = links.LINKER.userId(
-          self.data.url_profile, self.data.kwargs['id'],
+          self.data.url_profile.key(), self.data.kwargs['id'],
           url_names.PROPOSAL_STATUS)
       withdraw_proposal = ToggleButtonTemplate(
           self.data, 'on_off', 'Withdraw Proposal', 'withdraw-proposal',
@@ -497,7 +497,7 @@ class ReviewProposal(base.GSoCRequestHandler):
           data.url_proposal.is_editable_post_deadline
       if data.timeline.studentSignup() or is_editable:
         context['update_link'] = links.LINKER.userId(
-            data.url_profile, data.url_proposal.key().id(),
+            data.url_profile.key(), data.url_proposal.key().id(),
             'update_gsoc_proposal')
 
     possible_mentors = db.get(data.url_proposal.possible_mentors)
@@ -625,7 +625,7 @@ class PostComment(base.GSoCRequestHandler):
       # in Melange.
       # TODO (Madhu): Replace this in favor of PJAX for loading comments.
       redirect_url = links.LINKER.userId(
-          data.url_profile, data.url_proposal.key().id(),
+          data.url_profile.key(), data.url_proposal.key().id(),
           url_names.PROPOSAL_REVIEW)
       proposal_match = resolve(redirect_url)
       proposal_view = proposal_match[0]
@@ -853,7 +853,7 @@ class AssignMentor(base.GSoCRequestHandler):
       self.unassignMentor(data)
 
     url = links.LINKER.userId(
-        data.url_profile, data.url_proposal.key().id(),
+        data.url_profile.key(), data.url_proposal.key().id(),
         url_names.PROPOSAL_REVIEW)
     return http.HttpResponseRedirect(url)
 

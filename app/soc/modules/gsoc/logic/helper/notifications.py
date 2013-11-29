@@ -62,7 +62,7 @@ def newProposalContext(data, proposal, to_emails):
         receive notifications.
   """
   proposal_notification_url = links.ABSOLUTE_LINKER.userId(
-      data.profile, proposal.key().id(), url_names.PROPOSAL_REVIEW)
+      data.profile.key(), proposal.key().id(), url_names.PROPOSAL_REVIEW)
   edit_profile_url = links.ABSOLUTE_LINKER.program(
       data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
 
@@ -93,7 +93,7 @@ def updatedProposalContext(data, proposal, to_emails):
   assert isSet(data.organization)
 
   proposal_notification_url = links.ABSOLUTE_LINKER.userId(
-      data.profile, proposal.key().id(), url_names.PROPOSAL_REVIEW)
+      data.profile.key(), proposal.key().id(), url_names.PROPOSAL_REVIEW)
   edit_profile_url = links.ABSOLUTE_LINKER.program(
       data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
 
@@ -125,7 +125,7 @@ def newReviewContext(data, comment, to_emails):
   # a utility class
   review_notification_url = '%s#c%s' % (
       links.ABSOLUTE_LINKER.userId(
-          data.url_profile, data.url_proposal.key().id(),
+          data.url_profile.key(), data.url_proposal.key().id(),
           url_names.PROPOSAL_REVIEW),
       comment.key().id())
   edit_profile_url = links.ABSOLUTE_LINKER.program(

@@ -139,7 +139,7 @@ class ProposalPage(base.GSoCRequestHandler):
     proposal = self.createFromForm(data)
     if proposal:
       url = links.LINKER.userId(
-          data.profile, proposal.key().id(), url_names.PROPOSAL_REVIEW)
+          data.profile.key(), proposal.key().id(), url_names.PROPOSAL_REVIEW)
       return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-use.
@@ -243,7 +243,8 @@ class UpdateProposal(base.GSoCRequestHandler):
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     url = links.LINKER.userId(
-        data.profile, data.url_proposal.key().id(), url_names.PROPOSAL_REVIEW)
+        data.profile.key(), data.url_proposal.key().id(),
+        url_names.PROPOSAL_REVIEW)
 
     if data.POST[ACTION_POST_KEY] == self.ACTIONS['update']:
       proposal = self._updateFromForm(data)

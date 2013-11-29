@@ -174,22 +174,13 @@ class TestLinker(unittest.TestCase):
     program.program_id = program.link_id
     program.sponsor = program.scope
 
-    # seed a user
-    user = profile_utils.seedUser()
-
-    # seed a profile
-    profile_properties = {
-        'program': program,
-        'scope': program,
-        'parent': user
-        }
-    profile = seeder_logic.seed(profile_model.Profile, profile_properties)
+    profile = profile_utils.seedProfile(program)
 
     self.assertEqual(
         '/gci/connection/manage/user/%s/%s/%s' % (profile.program.key().name(),
             profile.parent_key().name(), 42),
         self.linker.userId(
-            profile, 42, ci_urls.UrlNames.CONNECTION_MANAGE_AS_USER))
+            profile.key(), 42, ci_urls.UrlNames.CONNECTION_MANAGE_AS_USER))
 
   def testOrganization(self):
     """Tests organization function."""

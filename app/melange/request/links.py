@@ -165,12 +165,12 @@ class Linker(object):
         }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
 
-  def userId(self, profile, entity_id, url_name):
+  def userId(self, profile_key, entity_id, url_name):
     """Returns the URL of a page whose address contains parts associated
     with the specified profile and numeric identifier of some other entity.
 
     Args:
-      profile: Profile entity.
+      profile_key: Profile key.
       entity_id: Numeric ID of entity.
       url_name: The name with which a URL was registered with Django.
 
@@ -178,16 +178,10 @@ class Linker(object):
       The URL of the page matching the given names for the given profile
       and organization.
     """
-    # TODO(daniel): it should be moved to a utility function; maybe even
-    # in Profile model
-    program_key = profile_model.Profile.program.get_value_for_datastore(
-        profile)
-    sponsor_id, program_id = program_key.name().split('/')
-
     kwargs = {
-        'sponsor': sponsor_id,
-        'program': program_id,
-        'user': profile.parent_key().name(),
+        'sponsor': profile_model.getSponsorId(profile_key),
+        'program': profile_model.getProgramId(profile_key),
+        'user': profile_model.getUserId(profile_key),
         'id': entity_id,
         }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
@@ -258,13 +252,13 @@ class AbsoluteLinker(object):
     relative_url = self._linker.program(program, url_name)
     return getAbsoluteUrl(relative_url, self._hostname, secure=secure)
 
-  def userId(self, profile, entity_id, url_name, secure=False):
+  def userId(self, profile_key, entity_id, url_name, secure=False):
     """Returns the absolute URL of a page whose address contains parts
     associated with the specified profile and numeric identifier
     of some other entity.
 
     Args:
-      profile: Profile entity.
+      profile: Profile key.
       entity_id: Numeric ID of entity.
       url_name: The name with which a URL was registered with Django.
       secure: Whether the returned URL should support HTTPS or not.
@@ -273,7 +267,7 @@ class AbsoluteLinker(object):
       The URL of the page matching the given names for the given profile
       and organization.
     """
-    relative_url = self._linker.userId(profile, entity_id, url_name)
+    relative_url = self._linker.userId(profile_key, entity_id, url_name)
     return getAbsoluteUrl(relative_url, self._hostname, secure=secure)
 
 # TODO(daniel): hostname should not be obtained via interaction with database

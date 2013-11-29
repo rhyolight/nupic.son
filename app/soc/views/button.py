@@ -77,7 +77,7 @@ class ButtonTemplate(Template):
   def link(self):
     """Returns the post url for the button."""
     return links.LINKER.userId(
-        self.data.url_profile, self.data.kwargs['id'], self._url_name)
+        self.data.url_profile.key(), self.data.kwargs['id'], self._url_name)
 
   @property
   def id(self):

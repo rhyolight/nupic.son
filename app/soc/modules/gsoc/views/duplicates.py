@@ -135,7 +135,7 @@ class Duplicate(Template):
               'key': proposal.key().id_or_name(),
               'title': proposal.title,
               'link': links.LINKER.userId(
-                  proposal.parent(), proposal.key().id(),
+                  proposal.parent_key(), proposal.key().id(),
                   url_names.PROPOSAL_REVIEW),
               })
 

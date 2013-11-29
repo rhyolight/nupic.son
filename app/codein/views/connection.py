@@ -135,7 +135,7 @@ class NoConnectionExistsAccessChecker(access.AccessChecker):
         data.profile, data.url_org.key()).get()
     if connection:
       url = links.LINKER.userId(
-          data.profile, connection.key().id(),
+          data.profile.key(), connection.key().id(),
           urls.UrlNames.CONNECTION_MANAGE_AS_USER)
       raise exception.Redirect(url)
 
@@ -436,7 +436,7 @@ class StartConnectionAsUser(base.GCIRequestHandler):
           user_role=connection_model.ROLE)
 
       url = links.LINKER.userId(
-          data.profile, connection.key().id(),
+          data.profile.key(), connection.key().id(),
           urls.UrlNames.CONNECTION_MANAGE_AS_USER)
       return http.HttpResponseRedirect(url)
 
@@ -559,7 +559,7 @@ class ManageConnectionAsUser(base.GCIRequestHandler):
     messages = connection_logic.getConnectionMessages(data.url_connection)
 
     mark_as_seen_url = links.LINKER.userId(
-        data.url_profile, data.url_connection.key().id(),
+        data.url_profile.key(), data.url_connection.key().id(),
         urls.UrlNames.CONNECTION_MARK_AS_SEEN_BY_USER)
 
     return {
@@ -656,7 +656,7 @@ class ManageConnectionAsOrg(base.GCIRequestHandler):
     messages = connection_logic.getConnectionMessages(data.url_connection)
 
     mark_as_seen_url = links.LINKER.userId(
-        data.url_profile, data.url_connection.key().id(),
+        data.url_profile.key(), data.url_connection.key().id(),
         urls.UrlNames.CONNECTION_MARK_AS_SEEN_BY_ORG)
 
     return {
@@ -776,7 +776,8 @@ class MessageFormHandler(form_handler.FormHandler):
           data.url_connection.key(), self._author_key, content)
 
       url = links.LINKER.userId(
-          data.url_profile, data.url_connection.key().id(), self._url_name)
+          data.url_profile.key(), data.url_connection.key().id(),
+          self._url_name)
       return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-use.
@@ -804,7 +805,7 @@ class UserActionsFormHandler(form_handler.FormHandler):
 
       if success:
         url = links.LINKER.userId(
-            data.url_profile, data.url_connection.key().id(),
+            data.url_profile.key(), data.url_connection.key().id(),
             urls.UrlNames.CONNECTION_MANAGE_AS_USER)
         return http.HttpResponseRedirect(url)
       else:
@@ -889,7 +890,7 @@ class OrgActionsFormHandler(form_handler.FormHandler):
 
       if success:
         url = links.LINKER.userId(
-            data.url_profile, data.url_connection.key().id(),
+            data.url_profile.key(), data.url_connection.key().id(),
             urls.UrlNames.CONNECTION_MANAGE_AS_ORG)
         return http.HttpResponseRedirect(url)
       else:
