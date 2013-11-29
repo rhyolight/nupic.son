@@ -140,7 +140,7 @@ class ProjectList(Template):
     list_config.setDefaultSort('student')
     list_config.setRowAction(lambda e, *args, **kwargs: data.redirect.project(
         id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
-        'gsoc_project_details'))
+        url_names.GSOC_PROJECT_DETAILS))
     self._list_config = list_config
 
   def context(self):

@@ -29,6 +29,7 @@ from soc.views.helper import url_patterns
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_patterns as soc_url_patterns
+from soc.modules.gsoc.views.helper import url_names
 
 from summerofcode.views.helper import urls
 
@@ -83,7 +84,7 @@ class _ProjectDetailsRowRedirect(melange_lists.RedirectCustomRow):
     """See lists.RedirectCustomRow.getLink for specification."""
     project_key = db.Key(item['columns']['key'])
     return links.LINKER.userId(
-        project_key.parent(), project_key.id(), 'gsoc_project_details')
+        project_key.parent(), project_key.id(), url_names.GSOC_PROJECT_DETAILS)
 
 
 # TODO(daniel): replace this class with new style list

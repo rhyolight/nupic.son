@@ -152,7 +152,8 @@ class GSoCProfileAdminPage(base.GSoCRequestHandler):
 
       for project in GSoCProject.all().ancestor(profile):
         data.redirect.project(project.key().id())
-        links.append(data.redirect.urlOf('gsoc_project_details', full=True))
+        links.append(
+            data.redirect.urlOf(url_names.GSOC_PROJECT_DETAILS, full=True))
 
       # TODO(nathaniel): Eliminate this state-setting call.
       data.redirect.profile()

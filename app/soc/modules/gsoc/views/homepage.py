@@ -184,7 +184,7 @@ class FeaturedProject(Template):
 
     featured_project_url = redirect.project(
         id=project_id,
-        student=student_link_id).urlOf('gsoc_project_details')
+        student=student_link_id).urlOf(url_names.GSOC_PROJECT_DETAILS)
 
     return {
       'featured_project': self.featured_project,

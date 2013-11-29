@@ -27,6 +27,7 @@ from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper.url_patterns import url
+from soc.modules.gsoc.views.helper import url_names
 
 
 class ProjectList(Template):
@@ -139,7 +140,7 @@ class ProjectList(Template):
     """
     return lambda e, *args: self.data.redirect.project(
         id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
-        'gsoc_project_details')
+        url_names.GSOC_PROJECT_DETAILS)
 
 class ListProjects(base.GSoCRequestHandler):
   """View methods for listing all the projects accepted into a program."""

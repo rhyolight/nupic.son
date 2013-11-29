@@ -489,7 +489,7 @@ class MyProjectsComponent(Component):
         lambda ent, *args: ent.org.name)
     list_config.setRowAction(lambda e, *args: data.redirect.project(
         id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
-        'gsoc_project_details'))
+        url_names.GSOC_PROJECT_DETAILS))
     self._list_config = list_config
 
     super(MyProjectsComponent, self).__init__(data)
@@ -1035,7 +1035,7 @@ class ProjectsIMentorComponent(Component):
     list_config.setDefaultSort('title')
     list_config.setRowAction(lambda e, *args: data.redirect.project(
         id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
-        'gsoc_project_details'))
+        url_names.GSOC_PROJECT_DETAILS))
     self._list_config = list_config
 
     super(ProjectsIMentorComponent, self).__init__(data)

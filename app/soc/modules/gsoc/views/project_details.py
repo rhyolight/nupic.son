@@ -275,7 +275,7 @@ class CodeSampleUploadFilePost(base.GSoCRequestHandler):
     # TODO(nathaniel): Make this .project() call unnecessary.
     data.redirect.project()
 
-    return data.redirect.to('gsoc_project_details')
+    return data.redirect.to(url_names.GSOC_PROJECT_DETAILS)
 
 
 class CodeSampleDownloadFileGet(base.GSoCRequestHandler):
@@ -469,7 +469,7 @@ class ProjectDetails(base.GSoCRequestHandler):
 
     return [
         url(r'project/%s$' % url_patterns.USER_ID, self,
-            name='gsoc_project_details')
+            name=url_names.GSOC_PROJECT_DETAILS)
     ]
 
   def checkAccess(self, data, check, mutator):
@@ -568,7 +568,7 @@ class AssignMentors(base.GSoCRequestHandler):
     project_owner = data.project.parent()
 
     data.redirect.project(data.project.key().id(), project_owner.link_id)
-    return data.redirect.to('gsoc_project_details')
+    return data.redirect.to(url_names.GSOC_PROJECT_DETAILS)
 
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
