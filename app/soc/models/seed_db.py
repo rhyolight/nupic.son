@@ -305,8 +305,8 @@ def seed(request, *args, **kwargs):
 
     # Admin (and thus mentor) for the first org
     if i == 0:
-      profile.org_admin_for.append(entity.key())
-      profile.mentor_for.append(entity.key())
+      profile.org_admin_for.extend([entity.key(), org.key.to_old_key()])
+      profile.mentor_for.extend([entity.key(), org.key.to_old_key()])
       profile.is_mentor = True
       profile.is_org_admin = True
       profile.put()
