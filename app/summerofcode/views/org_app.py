@@ -563,6 +563,9 @@ class OrgProfileEditPage(base.GSoCRequestHandler):
     """See base.RequestHandler.context for specification."""
     form_data = data.url_ndb_org.to_dict()
 
+    # initialize list of tags as comma separated list of values
+    form_data['tags'] = ', '.join(form_data['tags'])
+
     if data.url_ndb_org.contact:
       form_data.update(data.url_ndb_org.contact.to_dict())
 
