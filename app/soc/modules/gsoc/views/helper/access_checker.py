@@ -144,12 +144,6 @@ class Mutator(access_checker.Mutator):
     if not self.data.project:
       raise exception.NotFound(message=DEF_NO_PROJECT)
 
-    parent_key = self.data.project.parent_key()
-    if self.data.profile and parent_key == self.data.profile.key():
-      self.data.project_owner = self.data.profile
-    else:
-      self.data.project_owner = self.data.project.parent()
-
   def anonymousConnectionFromKwargs(self):
     """Set the anonymous_connection entity in the RequestData object.
     """
@@ -524,7 +518,6 @@ class AccessChecker(access_checker.AccessChecker):
     assert access_checker.isSet(self.data.program)
     assert access_checker.isSet(self.data.timeline)
     assert access_checker.isSet(self.data.project)
-    assert access_checker.isSet(self.data.project_owner)
 
     self.isProjectInURLValid()
 
@@ -555,7 +548,6 @@ class AccessChecker(access_checker.AccessChecker):
     assert access_checker.isSet(self.data.program)
     assert access_checker.isSet(self.data.timeline)
     assert access_checker.isSet(self.data.project)
-    assert access_checker.isSet(self.data.project_owner)
 
     self.isProjectInURLValid()
 

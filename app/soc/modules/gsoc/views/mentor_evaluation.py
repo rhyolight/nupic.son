@@ -218,7 +218,7 @@ class GSoCMentorEvaluationTakePage(base.GSoCRequestHandler):
         'page_name': '%s' % (data.mentor_evaluation.title),
         'description': data.mentor_evaluation.content,
         'project': data.project.title,
-        'student': data.project_owner.name(),
+        'student': data.project.parent().name(),
         'forms': [form],
         'error': bool(form.errors),
         }

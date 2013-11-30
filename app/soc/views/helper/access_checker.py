@@ -741,7 +741,6 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.program)
     assert isSet(self.data.timeline)
     assert isSet(self.data.project)
-    assert isSet(self.data.project_owner)
 
     self.isProjectInURLValid()
 
