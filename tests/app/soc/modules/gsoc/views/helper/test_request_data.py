@@ -20,7 +20,6 @@ import unittest
 from melange.request import exception
 
 from soc.models import program as program_model
-from soc.models import sponsor as sponsor_model
 
 from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models import proposal as proposal_model
@@ -28,6 +27,7 @@ from soc.modules.gsoc.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import profile_utils
+from tests import program_utils
 
 
 class UrlProposalTest(unittest.TestCase):
@@ -88,7 +88,7 @@ class UrlProposalTest(unittest.TestCase):
 
   def testProposalExists(self):
     """Tests that proposal is returned correctly if exists."""
-    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+    sponsor = program_utils.seedSponsor()
     program = seeder_logic.seed(program_model.Program)
     user = profile_utils.seedUser()
     profile_properties = {
