@@ -33,6 +33,7 @@ TEST_ORG_ID = 'test_org_id'
 TEST_ORG_NAME = u'Test Org Name'
 TEST_BLOG = 'http://www.test.blog.com/'
 TEST_DESCRIPTION = u'Test Organization Description'
+TEST_TAGS = u'tag one,tag_two,tag 3'
 TEST_FACEBOOK = u'http://www.test.facebook.com/'
 TEST_FEED_URL = u'http://www.test.feed.com/'
 TEST_GOOGLE_PLUS = u'http://www.test.google.plus.com/'
@@ -148,6 +149,7 @@ class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
         'irc_channel': TEST_IRC_CHANNEL,
         'backup_admin': backup_admin.link_id,
         'mailing_list': TEST_MAILING_LIST,
+        'tags': TEST_TAGS,
         'twitter': TEST_TWITTER,
         'web_page': TEST_WEB_PAGE,
         }
@@ -172,6 +174,7 @@ class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(org.logo_url, TEST_LOGO_URL)
     self.assertEqual(org.name, TEST_ORG_NAME)
     self.assertEqual(org.org_id, TEST_ORG_ID)
+    self.assertEqual(org.tags, TEST_TAGS.split(','))
 
     # check that the client is redirected to update page
     self.assertResponseRedirect(response, url=_getOrgApplicationSubmitUrl(org))
@@ -206,6 +209,7 @@ OTHER_TEST_IRC_CHANNEL = 'irc://irc.freenode.net/other'
 OTHER_TEST_LOGO_URL = 'http://www.other.test.logo.url.com/'
 OTHER_TEST_MAILING_LIST = 'othermailinglist@example.com'
 OTHER_TEST_TWITTER = u'http://www.other.test.twitter.com/'
+OTHER_TEST_TAGS = u'other tag one,other_tag_two,other tag 3'
 OTHER_TEST_WEB_PAGE = u'http://www.other.web.page.com/'
 
 class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
@@ -217,7 +221,7 @@ class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
     contact = contact_model.Contact(mailing_list=TEST_MAILING_LIST)
     self.org = org_utils.seedSOCOrganization(
         TEST_ORG_ID, self.program.key(), name=TEST_ORG_NAME,
-        ideas_page=TEST_IDEAS_PAGE, contact=contact)
+        ideas_page=TEST_IDEAS_PAGE, tags=TEST_TAGS.split(','), contact=contact)
     self.app_response = survey_model.SurveyResponse(parent=self.org.key)
     self.app_response.put()
 
@@ -250,6 +254,7 @@ class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
         'logo_url': OTHER_TEST_LOGO_URL,
         'mailing_list': OTHER_TEST_MAILING_LIST,
         'name': OTHER_TEST_NAME,
+        'tags': OTHER_TEST_TAGS,
         'twitter': OTHER_TEST_TWITTER,
         'web_page': OTHER_TEST_WEB_PAGE,
         }
@@ -269,6 +274,7 @@ class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(org.contact.irc_channel, OTHER_TEST_IRC_CHANNEL)
     self.assertEqual(org.logo_url, OTHER_TEST_LOGO_URL)
     self.assertEqual(org.name, OTHER_TEST_NAME)
+    self.assertEqual(org.tags, OTHER_TEST_TAGS.split(','))
     self.assertEqual(org.contact.twitter, OTHER_TEST_TWITTER)
     self.assertEqual(org.contact.web_page, OTHER_TEST_WEB_PAGE)
 

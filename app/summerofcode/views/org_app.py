@@ -61,6 +61,10 @@ ORG_NAME_HELP_TEXT = translation.ugettext(
 DESCRIPTION_HELP_TEXT = translation.ugettext(
     'Description of the organization to be displayed on a public profile page.')
 
+TAGS_HELP_TEXT = translation.ugettext(
+    'Comma separated list of organization tags. Each tag must be shorter '
+    'than %s characters.')
+
 IDEAS_PAGE_HELP_TEXT = translation.ugettext(
     'The URL to a page with list of ideas for projects for this organization.')
 
@@ -115,6 +119,8 @@ ORG_NAME_LABEL = translation.ugettext('Organization name')
 
 DESCRIPTION_LABEL = translation.ugettext('Description')
 
+TAGS_LABEL = translation.ugettext('Tags')
+
 IDEAS_PAGE_LABEL = translation.ugettext('Ideas list')
 
 LOGO_URL_LABEL = translation.ugettext('Logo URL')
@@ -163,6 +169,8 @@ OTHER_PROFILE_IS_THE_CURRENT_PROFILE = translation.ugettext(
     'The currently logged in profile cannot be specified as '
     'the other organization administrator.')
 
+TAG_TOO_LONG = translation.ugettext('Tag %s is too long: %s')
+
 GENERAL_INFO_GROUP_TITLE = translation.ugettext('General Info')
 
 ORGANIZATION_LIST_DESCRIPTION = 'List of organizations'
@@ -175,7 +183,9 @@ _ORG_PREFERENCES_PROPERTIES_FORM_KEYS = [
     'slot_request_max', 'slot_request_min']
 
 _ORG_PROFILE_PROPERTIES_FORM_KEYS = [
-    'description', 'ideas_page', 'logo_url', 'name', 'org_id']
+    'description', 'ideas_page', 'logo_url', 'name', 'org_id', 'tags']
+
+TAG_MAX_LENGTH = 30
 
 
 def _getPropertiesForFields(form, field_keys):
@@ -245,6 +255,26 @@ def cleanBackupAdmin(username, request_data):
     return profile
 
 
+def cleanTags(tags):
+  """Cleans tags field.
+
+  Args:
+    tags: The submitted value, which is a comma separated string with tags.
+
+  Returns:
+    A list of submitted tags.
+
+  Raises:
+    django_forms.ValidationError if at least one of the tags is not valid.
+  """
+  tag_list = []
+  for tag in [tag for tag in tags.split(',') if tag]:
+    if len(tag) > TAG_MAX_LENGTH:
+      raise django_forms.ValidationError(TAG_TOO_LONG % (tag, len(tag)))
+    tag_list.append(tag.strip())
+  return tag_list
+
+
 class _OrgProfileForm(gsoc_forms.GSoCModelForm):
   """Form to set properties of organization profile by organization
   administrators.
@@ -260,6 +290,10 @@ class _OrgProfileForm(gsoc_forms.GSoCModelForm):
   description = django_forms.CharField(
       widget=django_forms.Textarea, required=True, label=DESCRIPTION_LABEL,
       help_text=DESCRIPTION_HELP_TEXT)
+
+  tags = django_forms.CharField(
+      required=False, label=TAGS_LABEL,
+      help_text=TAGS_HELP_TEXT % TAG_MAX_LENGTH)
 
   logo_url = django_forms.URLField(
       required=False, label=LOGO_URL_LABEL, help_text=LOGO_URL_HELP_TEXT)
@@ -329,6 +363,17 @@ class _OrgProfileForm(gsoc_forms.GSoCModelForm):
     """
     return cleanBackupAdmin(
         self.cleaned_data['backup_admin'], self.request_data)
+
+  def clean_tags(self):
+    """Cleans tags field.
+
+    Returns:
+      A list of submitted tags.
+
+    Raises:
+      django_forms.ValidationError if at least one of the tags is not valid.
+    """
+    return cleanTags(self.cleaned_data['tags'])
 
   def getContactProperties(self):
     """Returns properties of the contact information that were submitted in
