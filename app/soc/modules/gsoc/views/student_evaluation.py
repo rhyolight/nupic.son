@@ -167,7 +167,6 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.projectFromKwargs()
     mutator.studentEvaluationFromKwargs()
     mutator.studentEvaluationRecordFromKwargs()
 
@@ -183,7 +182,7 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
         data.student_evaluation, data.url_profile, show_url=show_url)
 
     check.isProfileActive()
-    if data.orgAdminFor(data.project.org):
+    if data.orgAdminFor(data.url_project.org):
       raise exception.Redirect(show_url)
 
     check.canUserTakeSurvey(data.student_evaluation, 'student')
@@ -204,7 +203,7 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
     context = {
         'page_name': '%s' % data.student_evaluation.title,
         'description': data.student_evaluation.content,
-        'project': data.project.title,
+        'project': data.url_project.title,
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -232,8 +231,8 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
       return None
 
     if not data.student_evaluation_record:
-      form.cleaned_data['project'] = data.project
-      form.cleaned_data['org'] = data.project.org
+      form.cleaned_data['project'] = data.url_project
+      form.cleaned_data['org'] = data.url_project.org
       form.cleaned_data['user'] = data.user
       form.cleaned_data['survey'] = data.student_evaluation
       entity = form.create(commit=True)
@@ -358,15 +357,13 @@ class GSoCStudentEvaluationShowPage(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.projectFromKwargs()
     mutator.studentEvaluationFromKwargs()
     mutator.studentEvaluationRecordFromKwargs()
 
-    assert isSet(data.project)
     assert isSet(data.student_evaluation)
 
     check.isProfileActive()
-    if data.orgAdminFor(data.project.org):
+    if data.orgAdminFor(data.url_project.org):
       data.role = 'org_admin'
       if data.timeline.afterSurveyEnd(data.student_evaluation):
         return
@@ -390,8 +387,8 @@ class GSoCStudentEvaluationShowPage(base.GSoCRequestHandler):
     context = {
         'page_name': 'Student evaluation - %s' % (student.name()),
         'student': student.name(),
-        'organization': data.project.org.name,
-        'project': data.project.title,
+        'organization': data.url_project.org.name,
+        'project': data.url_project.title,
         'css_prefix': GSoCStudentEvaluationReadOnlyTemplate.Meta.css_prefix,
         }
 

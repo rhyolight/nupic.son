@@ -176,8 +176,6 @@ class ManageProjectProgramAdminView(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.context for specification."""
-    mutator.projectFromKwargs()
-
     evaluations = project_survey_logic.getStudentEvaluations(
         data.program.key())
 
@@ -185,7 +183,7 @@ class ManageProjectProgramAdminView(base.GSoCRequestHandler):
     for evaluation in evaluations:
       # try getting existing extension for this evaluation
       extension = survey_logic.getPersonalExtension(
-          data.project.parent_key(), evaluation.key())
+          data.url_project.parent_key(), evaluation.key())
       initial = _getInitialValues(extension)
 
       name = _getPersonalExtensionFormName(evaluation.survey_type)
@@ -201,9 +199,7 @@ class ManageProjectProgramAdminView(base.GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """See base.post for specification."""
-    mutator.projectFromKwargs()
-
-    profile_key = data.project.parent_key()
+    profile_key = data.url_project.parent_key()
 
     # get type of survey based on submitted form name
     survey_type = _getSurveyType(data.POST)
@@ -222,7 +218,7 @@ class ManageProjectProgramAdminView(base.GSoCRequestHandler):
     if result:
       # redirect to somewhere
       url = links.LINKER.userId(
-          data.url_profile.key(), data.project.key().id(),
+          data.url_profile.key(), data.url_project.key().id(),
           urls.UrlNames.PROJECT_MANAGE_ADMIN)
       # TODO(daniel): append GET parameter in a better way
       url = url + '?validated'

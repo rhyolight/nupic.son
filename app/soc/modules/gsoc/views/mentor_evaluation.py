@@ -189,7 +189,6 @@ class GSoCMentorEvaluationTakePage(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.projectFromKwargs()
     mutator.mentorEvaluationFromKwargs()
     mutator.mentorEvaluationRecordFromKwargs()
 
@@ -217,8 +216,8 @@ class GSoCMentorEvaluationTakePage(base.GSoCRequestHandler):
     context = {
         'page_name': '%s' % (data.mentor_evaluation.title),
         'description': data.mentor_evaluation.content,
-        'project': data.project.title,
-        'student': data.project.parent().name(),
+        'project': data.url_project.title,
+        'student': data.url_project.parent().name(),
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -246,8 +245,8 @@ class GSoCMentorEvaluationTakePage(base.GSoCRequestHandler):
       return None
 
     if not data.mentor_evaluation_record:
-      form.cleaned_data['project'] = data.project
-      form.cleaned_data['org'] = data.project.org
+      form.cleaned_data['project'] = data.url_project
+      form.cleaned_data['org'] = data.url_project.org
       form.cleaned_data['user'] = data.user
       form.cleaned_data['survey'] = data.mentor_evaluation
       entity = form.create(commit=True)
@@ -376,11 +375,9 @@ class GSoCMentorEvaluationShowPage(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.projectFromKwargs()
     mutator.mentorEvaluationFromKwargs()
     mutator.mentorEvaluationRecordFromKwargs()
 
-    assert isSet(data.project)
     assert isSet(data.mentor_evaluation)
 
     check.isProfileActive()
@@ -398,8 +395,8 @@ class GSoCMentorEvaluationShowPage(base.GSoCRequestHandler):
     context = {
         'page_name': 'Student evaluation - %s' % (student.name()),
         'student': student.name(),
-        'organization': data.project.org.name,
-        'project': data.project.title,
+        'organization': data.url_project.org.name,
+        'project': data.url_project.title,
         'css_prefix': GSoCMentorEvaluationReadOnlyTemplate.Meta.css_prefix,
         }
 

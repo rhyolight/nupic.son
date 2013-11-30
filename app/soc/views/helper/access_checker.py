@@ -719,16 +719,14 @@ class AccessChecker(BaseAccessChecker):
   def isProjectInURLValid(self):
     """Checks if the project in URL exists.
     """
-    assert isSet(self.data.project)
-
-    if not self.data.project:
+    if not self.data.url_project:
       error_msg = DEF_ID_BASED_ENTITY_NOT_EXISTS % {
           'model': 'GSoCProject',
           'id': self.data.kwargs['id']
           }
       raise exception.Forbidden(message=error_msg)
 
-    if self.data.project.status == 'invalid':
+    if self.data.url_project.status == 'invalid':
       error_msg = DEF_ID_BASED_ENTITY_INVALID % {
           'model': 'GSoCProject',
           'id': self.data.kwargs['id'],
@@ -740,7 +738,6 @@ class AccessChecker(BaseAccessChecker):
     """
     assert isSet(self.data.program)
     assert isSet(self.data.timeline)
-    assert isSet(self.data.project)
 
     self.isProjectInURLValid()
 
@@ -749,7 +746,7 @@ class AccessChecker(BaseAccessChecker):
     self.acceptedStudentsAnnounced()
 
     # check if the project belongs to the current user
-    expected_profile_key = self.data.project.parent_key()
+    expected_profile_key = self.data.url_project.parent_key()
     if expected_profile_key != self.data.profile.key():
       error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'name': 'project'
@@ -757,7 +754,7 @@ class AccessChecker(BaseAccessChecker):
       raise exception.Forbidden(message=error_msg)
 
     # check if the status allows the project to be updated
-    if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
+    if self.data.url_project.status in ['invalid', 'withdrawn', 'failed']:
       raise exception.Forbidden(message=DEF_CANNOT_UPDATE_ENTITY % {
           'name': 'project'
           })
