@@ -113,6 +113,12 @@ SLOTS_REQUEST_MAX_HELP_TEXT = translation.ugettext(
     'Number of slots that this organization would like to be assigned if '
     'there was an unlimited amount of slots available.')
 
+MAX_SCORE_HELP_TEXT = translation.ugettext(
+    'The maximum number of points that can be given to a proposal by '
+    'one mentor. Please keep in mind changing this value does not have impact '
+    'on the existing scores. In particular, scores, which have been higher '
+    'than the updated maximum value, are still considered valid.')
+
 ORG_ID_LABEL = translation.ugettext('Organization ID')
 
 ORG_NAME_LABEL = translation.ugettext('Organization name')
@@ -147,6 +153,8 @@ SLOTS_REQUEST_MIN_LABEL = translation.ugettext('Min slots requested')
 
 SLOTS_REQUEST_MAX_LABEL = translation.ugettext('Max slots requested')
 
+MAX_SCORE_LABEL = translation.ugettext('Max score')
+
 ORG_APPLICATION_SUBMIT_PAGE_NAME = translation.ugettext(
     'Submit application')
 
@@ -180,12 +188,14 @@ _CONTACT_PROPERTIES_FORM_KEYS = [
     'mailing_list', 'twitter', 'web_page']
 
 _ORG_PREFERENCES_PROPERTIES_FORM_KEYS = [
-    'slot_request_max', 'slot_request_min']
+    'max_score', 'slot_request_max', 'slot_request_min']
 
 _ORG_PROFILE_PROPERTIES_FORM_KEYS = [
     'description', 'ideas_page', 'logo_url', 'name', 'org_id', 'tags']
 
 TAG_MAX_LENGTH = 30
+MAX_SCORE_MIN_VALUE = 1
+MAX_SCORE_MAX_VALUE = 12
 
 
 def _getPropertiesForFields(form, field_keys):
@@ -429,6 +439,10 @@ class _OrgPreferencesForm(gsoc_forms.GSoCModelForm):
   slot_request_max = django_forms.IntegerField(
       label=SLOTS_REQUEST_MAX_LABEL, help_text=SLOTS_REQUEST_MAX_HELP_TEXT,
       required=True)
+
+  max_score = django_forms.IntegerField(
+      label=MAX_SCORE_LABEL, help_text=MAX_SCORE_HELP_TEXT,
+      min_value=MAX_SCORE_MIN_VALUE, max_value=MAX_SCORE_MAX_VALUE)
 
   Meta = object
 

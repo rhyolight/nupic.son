@@ -405,6 +405,7 @@ class PublicOrganizationListPageTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseOK(response)
 
 
+TEST_MAX_SCORE = 7
 TEST_SLOT_REQUEST_MIN = 3
 TEST_SLOT_REQUEST_MAX = 10
 
@@ -436,13 +437,15 @@ class OrgPreferencesEditPageTest(test_utils.GSoCDjangoTestCase):
 
     postdata = {
         'slot_request_min': unicode(TEST_SLOT_REQUEST_MIN),
-        'slot_request_max': unicode(TEST_SLOT_REQUEST_MAX)
+        'slot_request_max': unicode(TEST_SLOT_REQUEST_MAX),
+        'max_score': unicode(TEST_MAX_SCORE)
         }
     response = self.post(_getOrgPreferencesEditUrl(self.org), postdata=postdata)
     self.assertResponseRedirect(
         response, url=_getOrgPreferencesEditUrl(self.org))
 
     org = self.org.key.get()
+    self.assertEqual(org.max_score, TEST_MAX_SCORE)
     self.assertEqual(org.slot_request_min, TEST_SLOT_REQUEST_MIN)
     self.assertEqual(org.slot_request_max, TEST_SLOT_REQUEST_MAX)
 
