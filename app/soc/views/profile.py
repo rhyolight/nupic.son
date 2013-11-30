@@ -48,7 +48,7 @@ PROFILE_EXCLUDE = [
     # role data fields
     'student_info', 'mentor_for', 'org_admin_for',
     'is_student', 'is_mentor', 'is_org_admin',
-]
+    'mentor_for_container', 'org_admin_for_container']
 
 PREFILL_PROFILE_EXCLUDE = PROFILE_EXCLUDE + ['agreed_to_tos']
 
