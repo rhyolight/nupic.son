@@ -20,6 +20,7 @@ from tests import test_utils
 
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.views import project_details
+from soc.modules.gsoc.views.helper import request_data
 
 
 def _createProjectForStudent(program, org, dev_test, student=None):
@@ -241,20 +242,10 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
     super(TestIsUpdateLinkVisible, self).setUp()
     self.init()
 
-  class MockRequestData(object):
-    """Mock class used to simulate RequestData which is passed as argument."""
-
-    def __init__(self, is_host=False, project=None, profile=None):
-      self.is_host = is_host
-      self.project = project
-      self.profile = profile
-
-    def orgAdminFor(self, org_key):
-      return org_key in self.profile.org_admin_for
-
   def testForHost(self):
-    request_data = TestIsUpdateLinkVisible.MockRequestData(is_host=True)
-    result = project_details._isUpdateLinkVisible(request_data)
+    data = request_data.RequestData(None, None, None)
+    data._is_host = True
+    result = project_details._isUpdateLinkVisible(data)
     self.assertTrue(result)
 
   def testForProjectStudent(self):
@@ -262,57 +253,105 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
     project = _createProjectForStudent(
         self.gsoc, self.org, self.dev_test, student=student)
 
-    request_data = TestIsUpdateLinkVisible.MockRequestData(
-        project=project, profile=student)
-    self.assertTrue(project_details._isUpdateLinkVisible(request_data))
+    sponsor_id, program_id, user_id = project.parent_key().name().split('/')
+    kwargs = {
+        'sponsor': sponsor_id,
+        'program': program_id,
+        'user': user_id,
+        'id': project.key().id(),
+        }
+    data = request_data.RequestData(None, None, kwargs)
+
+    self.assertTrue(project_details._isUpdateLinkVisible(data))
 
   def testForOtherStudent(self):
-    student = self.profile_helper.createStudent()
+    self.profile_helper.createStudent()
     project = _createProjectForStudent(self.gsoc, self.org, self.dev_test)
 
-    request_data = TestIsUpdateLinkVisible.MockRequestData(
-        project=project, profile=student)
-    self.assertFalse(project_details._isUpdateLinkVisible(request_data))
+    sponsor_id, program_id, user_id = project.parent_key().name().split('/')
+    kwargs = {
+        'sponsor': sponsor_id,
+        'program': program_id,
+        'user': user_id,
+        'id': project.key().id(),
+        }
+    data = request_data.RequestData(None, None, kwargs)
+
+    self.assertFalse(project_details._isUpdateLinkVisible(data))
 
   def testForProjectMentor(self):
     mentor = self.profile_helper.createMentor(self.org)
     project = _createProjectForMentor(
         self.gsoc, self.org, self.dev_test, mentor=mentor)
 
-    request_data = TestIsUpdateLinkVisible.MockRequestData(
-        project=project, profile=mentor)
-    self.assertFalse(project_details._isUpdateLinkVisible(request_data))
+    sponsor_id, program_id, user_id = project.parent_key().name().split('/')
+    kwargs = {
+        'sponsor': sponsor_id,
+        'program': program_id,
+        'user': user_id,
+        'id': project.key().id(),
+        }
+    data = request_data.RequestData(None, None, kwargs)
+
+    self.assertFalse(project_details._isUpdateLinkVisible(data))
 
   def testForOtherMentor(self):
-    mentor = self.profile_helper.createMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
-    request_data = TestIsUpdateLinkVisible.MockRequestData(
-        project=project, profile=mentor)
-    self.assertFalse(project_details._isUpdateLinkVisible(request_data))
+    sponsor_id, program_id, user_id = project.parent_key().name().split('/')
+    kwargs = {
+        'sponsor': sponsor_id,
+        'program': program_id,
+        'user': user_id,
+        'id': project.key().id(),
+        }
+    data = request_data.RequestData(None, None, kwargs)
+
+    self.assertFalse(project_details._isUpdateLinkVisible(data))
 
   def testForProjectOrgAdmin(self):
-    org_admin = self.profile_helper.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
-    request_data = TestIsUpdateLinkVisible.MockRequestData(
-        project=project, profile=org_admin)
-    self.assertTrue(project_details._isUpdateLinkVisible(request_data))
+    sponsor_id, program_id, user_id = project.parent_key().name().split('/')
+    kwargs = {
+        'sponsor': sponsor_id,
+        'program': program_id,
+        'user': user_id,
+        'id': project.key().id(),
+        }
+    data = request_data.RequestData(None, None, kwargs)
+
+    self.assertTrue(project_details._isUpdateLinkVisible(data))
 
   def testForOtherOrgAdmin(self):
     program_helper = program_utils.GSoCProgramHelper()
     another_org = program_helper.createOrg()
-    org_admin = self.profile_helper.createOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     project = _createProjectForMentor(self.gsoc, another_org, self.dev_test)
 
-    request_data = TestIsUpdateLinkVisible.MockRequestData(
-        project=project, profile=org_admin)
-    self.assertFalse(project_details._isUpdateLinkVisible(request_data))
+    sponsor_id, program_id, user_id = project.parent_key().name().split('/')
+    kwargs = {
+        'sponsor': sponsor_id,
+        'program': program_id,
+        'user': user_id,
+        'id': project.key().id(),
+        }
+    data = request_data.RequestData(None, None, kwargs)
+
+    self.assertFalse(project_details._isUpdateLinkVisible(data))
 
   def testForLoneUser(self):
-    self.profile_helper.createUser()
+    user = self.profile_helper.createUser()
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
-    request_data = TestIsUpdateLinkVisible.MockRequestData(
-        project=project)
-    self.assertFalse(project_details._isUpdateLinkVisible(request_data))
+    kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': user.link_id,
+        'id': project.key().id(),
+        }
+    data = request_data.RequestData(None, None, kwargs)
+
+    self.assertFalse(project_details._isUpdateLinkVisible(data))
