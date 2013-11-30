@@ -38,6 +38,8 @@ from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+from summerofcode.views.helper import urls
+
 
 class Apply(Template):
   """Apply template."""
@@ -266,8 +268,8 @@ class OrgHome(base.GSoCRequestHandler):
       # TODO(nathaniel): make this .organization call unnecessary.
       data.redirect.organization(organization=organization)
 
-      context['edit_link'] = data.redirect.urlOf(
-          url_names.GSOC_ORG_PROFILE_EDIT)
+      context['edit_link'] = links.LINKER.organization(
+          organization.key(), urls.UrlNames.ORG_PROFILE_EDIT)
       context['start_connection_link'] = data.redirect.connect_org().urlOf(
           url_names.GSOC_ORG_CONNECTION)
 

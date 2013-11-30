@@ -21,6 +21,8 @@ from google.appengine.ext import db
 from django.utils.translation import ugettext
 
 from melange.request import exception
+from melange.request import links
+
 from soc.logic import validate
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
@@ -40,7 +42,8 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
 from soc.modules.gsoc.models.organization import GSoCOrganization
-from soc.modules.gsoc.views.helper import url_names
+
+from summerofcode.views.helper import urls
 
 
 DEF_FAILED_PREVIOUS_EVAL = ugettext(
@@ -422,10 +425,8 @@ class AccessChecker(access_checker.AccessChecker):
     gsoc_org = q.get()
 
     if gsoc_org:
-      # TODO(nathaniel): make this .organization call unnecessary.
-      self.data.redirect.organization(organization=gsoc_org)
-
-      edit_url = self.data.redirect.urlOf(url_names.GSOC_ORG_PROFILE_EDIT)
+      edit_url = links.LINKER.organization(
+          gsoc_org.key(), urls.UrlNames.ORG_PROFILE_EDIT)
 
       raise exception.Forbidden(message=DEF_ORG_EXISTS % (org_id, edit_url))
 
