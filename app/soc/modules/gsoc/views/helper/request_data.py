@@ -29,6 +29,7 @@ from soc.views.helper.access_checker import isSet
 from soc.views.helper import request_data
 
 from soc.modules.gsoc.models import profile as profile_model
+from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.models import organization as org_model
@@ -223,6 +224,7 @@ class RequestData(request_data.RequestData):
     self._student_info = self._unset
     self._organization = self._unset
 
+    self._url_project = self._unset
     self._url_proposal = self._unset
 
     # _org_map contains only those organizations for which the current user
@@ -359,6 +361,35 @@ class RequestData(request_data.RequestData):
     if not self._isSet(self._timeline):
       self._timeline = TimelineHelper(self.program_timeline, self.org_app)
     return self._timeline
+
+  @property
+  def url_project(self):
+    """Returns the url_project field.
+
+    This property represents a project entity corresponding to a profile whose
+    identifier is a part of the URL of the processed request. Numerical
+    identifier of the project is also a part of the URL.
+
+    Returns:
+      Retrieved project entity.
+
+    Raises:
+      exception.BadRequest: if some data is missing in the current request.
+      exception.NotFound: if no entity is found.
+    """
+    if not self._isSet(self._url_project):
+      if 'id' not in self.kwargs:
+        raise exception.BadRequest(
+            message='The request does not contain project id.')
+      else:
+        self._url_project = project_model.GSoCProject.get_by_id(
+            int(self.kwargs['id']), self.url_profile)
+
+        if not self._url_project:
+          raise exception.NotFound(
+              message='Requested project does not exist.')
+
+    return self._url_project
 
   @property
   def url_proposal(self):
