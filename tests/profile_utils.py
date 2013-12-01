@@ -40,8 +40,13 @@ from tests.utils import connection_utils
 
 DEFAULT_EMAIL = 'test@example.com'
 
-def generate_eligible_student_birth_date(program):
-  eligible_age = program.student_min_age + program.student_max_age // 2
+DEFAULT_MAX_AGE = 100
+DEFAULT_MIN_AGE = 0
+
+def generateEligibleStudentBirthDate(program):
+  min_age = program.student_min_age or DEFAULT_MIN_AGE
+  max_age = program.student_max_age or DEFAULT_MAX_AGE
+  eligible_age = min_age + max_age / 2
   return datetime.date(datetime.today() - timedelta(days=eligible_age * 365))
 
 
@@ -225,7 +230,7 @@ def seedStudent(program, model=profile_model.Profile,
       'parent': profile,
       'school': None,
       'program': program,
-      'birth_date': generate_eligible_student_birth_date(program)
+      'birth_date': generateEligibleStudentBirthDate(program)
       }
   properties.update(**kwargs)
   student_info = seeder_logic.seed(student_info_model, properties=properties)
@@ -532,7 +537,7 @@ class GSoCProfileHelper(ProfileHelper):
         'number_of_projects': 0, 'number_of_proposals': 0,
         'passed_evaluations': 0, 'failed_evaluations': 0,
         'program': self.program,
-        'birth_date': generate_eligible_student_birth_date(self.program)}
+        'birth_date': generateEligibleStudentBirthDate(self.program)}
     self.profile.student_info = self.seed(GSoCStudentInfo, properties)
     self.profile.is_student = True
     self.profile.put()

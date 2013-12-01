@@ -172,7 +172,7 @@ class ProfileViewTest(GSoCDjangoTestCase):
         'mentor_for': [], 'org_admin_for': [],
         'is_org_admin': False, 'is_mentor': False,
         'birth_date':
-            profile_utils.generate_eligible_student_birth_date(self.gsoc)
+            profile_utils.generateEligibleStudentBirthDate(self.program)
     })
 
     response = self.post(role_url, postdata)
