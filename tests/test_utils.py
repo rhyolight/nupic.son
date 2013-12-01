@@ -309,8 +309,10 @@ class GSoCTestCase(SoCTestCase):
     """Performs test set-up by seeding data and setting attributes."""
     super(GSoCTestCase, self).init()
     self.sponsor = program_utils.seedSponsor()
-    self.program_helper = program_utils.GSoCProgramHelper(sponsor=self.sponsor)
-    self.gsoc = self.program = self.program_helper.createProgram()
+    self.program = self.gsoc = program_utils.seedGSoCProgram(
+        sponsor_key=self.sponsor.key())
+    self.program_helper = program_utils.GSoCProgramHelper(
+        sponsor=self.sponsor, program=self.program)
     self.site = program_utils.seedSite(active_program=self.program)
     self.org = self.program_helper.createOrg()
     self.org_app = self.program_helper.createOrgApp()
@@ -346,7 +348,10 @@ class GCITestCase(SoCTestCase):
     """Performs test set-up by seeding data and setting attributes."""
     super(GCITestCase, self).init()
     self.sponsor = program_utils.seedSponsor()
-    self.program_helper = program_utils.GCIProgramHelper(sponsor=self.sponsor)
+    self.program = self.gsoc = program_utils.seedGCIProgram(
+        sponsor_key=self.sponsor.key())
+    self.program_helper = program_utils.GCIProgramHelper(
+        sponsor=self.sponsor, program=self.program)
     self.gci = self.program = self.program_helper.createProgram()
     self.site = program_utils.seedSite(active_program=self.program)
     self.org = self.program_helper.createOrg()
