@@ -16,12 +16,15 @@
 
 from datetime import date
 
+from codein import types as ci_types
+
+from melange import types
+
 from soc.models.document import Document
 from soc.models.org_app_survey import OrgAppSurvey
 from soc.models import program as program_model
 from soc.models.site import Site
 from soc.models.sponsor import Sponsor
-from soc.models.user import User
 
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.program import GCIProgram
@@ -33,6 +36,8 @@ from soc.modules.gsoc.models.program import GSoCProgramMessages
 from soc.modules.gsoc.models.timeline import GSoCTimeline
 from soc.modules.seeder.logic.providers import string as string_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+from summerofcode import types as soc_types
 
 from tests import profile_utils
 from tests import timeline_utils
@@ -90,6 +95,36 @@ def seedSponsor(sponsor_id=None, **kwargs):
   sponsor.put()
 
   return sponsor
+
+
+def seedTimeline(models=types.MELANGE_MODELS,
+    timeline_id=None, sponsor_key=None, **kwargs):
+  """Seeds a new timeline.
+
+  Args:
+    models: Instance of types.Models that represent appropriate models.
+    timeline_id: Identifier of the new timeline.
+    sponsor_key: Sponsor key to be used as scope for the timeline.
+
+  Returns:
+    Newly seeded timeline entity.
+  """
+  timeline_id = timeline_id or string_provider.UniqueIDProvider().getValue()
+
+  sponsor_key = sponsor_key or seedSponsor()
+
+  properties = {
+      'key_name': '%s/%s' % (sponsor_key.name(), timeline_id),
+      'link_id': timeline_id,
+      'program_start': timeline_utils.past(),
+      'program_end': timeline_utils.future(),
+      'scope': sponsor_key,
+      }
+  properties.update(kwargs)
+  timeline = models.timeline_model(**properties)
+  timeline.put()
+
+  return timeline
 
 
 class ProgramHelper(object):
