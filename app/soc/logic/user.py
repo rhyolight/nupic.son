@@ -168,7 +168,7 @@ def getOrCreateDummyMelangeDeletedUser():
   if not user_ent:
     account = users.User(email=MELANGE_DELETED_USER)
     user_ent = user_model.User(
-        key_name=MELANGE_DELETED_USER, account=account,
+        key_name=MELANGE_DELETED_USER, account=account, name='Deleted',
         link_id=MELANGE_DELETED_USER)
     user_ent.put()
 
