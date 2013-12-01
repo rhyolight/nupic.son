@@ -316,27 +316,9 @@ class GSoCProgramHelper(ProgramHelper):
     if self.program:
       return self.program
     super(GSoCProgramHelper, self).createProgram()
-    properties = {
-        'scope': self.sponsor,
-        'program_start': timeline_utils.past(),
-        'program_end': timeline_utils.future()
-        }
-    self.program_timeline = self.seed(GSoCTimeline, properties)
 
-    properties = {'timeline': self.program_timeline,
-                  'key_name': self.program_timeline.key().name(),
-                  'status': program_model.STATUS_VISIBLE,
-                  'apps_tasks_limit': 20,
-                  'scope': self.sponsor, 'sponsor': self.sponsor,
-                  'student_agreement': None, 'events_page': None,
-                  'help_page': None, 'connect_with_us_page': None,
-                  'mentor_agreement': None, 'org_admin_agreement': None,
-                  'terms_and_conditions': None,
-                  'home': None, 'about_page': None,
-                  'student_min_age': 18, 'student_max_age': 999}
-    properties.update(override)
+    self.program = seedGSoCProgram(sponsor_key=self.sponsor.key())
 
-    self.program = self.seed(GSoCProgram, properties)
     user = profile_utils.seedUser()
     properties = {
         'prefix': 'gsoc_program',
@@ -347,7 +329,7 @@ class GSoCProgramHelper(ProgramHelper):
         'author': user,
         'home_for': None,
     }
-    document = self.seed(Document, properties=properties)
+    document = self.seed(Document, properties=properties, **override)
 
     self.program.about_page = document
     self.program.events_page = document
@@ -412,29 +394,8 @@ class GCIProgramHelper(ProgramHelper):
       return self.program
     super(GCIProgramHelper, self).createProgram()
 
-    properties = {
-        'scope': self.sponsor,
-        'program_start': timeline_utils.past(),
-        'program_end': timeline_utils.future()
-        }
-    self.program_timeline = self.seed(GCITimeline, properties)
+    self.program = seedGCIProgram(sponsor_key=self.sponsor.key(), **override)
 
-    properties = {
-        'timeline': self.program_timeline,
-        'status': program_model.STATUS_VISIBLE,
-        'scope': self.sponsor, 'sponsor': self.sponsor,
-        'student_agreement': None, 'events_page': None,
-        'help_page': None, 'connect_with_us_page': None,
-        'mentor_agreement': None, 'org_admin_agreement': None,
-        'terms_and_conditions': None, 'home': None, 'about_page': None,
-        'nr_simultaneous_tasks': 5,
-        'student_min_age': 13, 'student_max_age': 17,
-        'student_min_age_as_of': date.today(),
-        'task_types': ['code', 'documentation', 'design'],
-    }
-    properties.update(override)
-
-    self.program = self.seed(GCIProgram, properties)
     user = profile_utils.seedUser()
     properties = {
         'prefix': 'gci_program', 'scope': self.program,
