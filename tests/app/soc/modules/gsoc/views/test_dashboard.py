@@ -116,6 +116,7 @@ class DashboardTest(GSoCDjangoTestCase):
 
   def testDashboardAsOrgAdmin(self):
     self.profile_helper.createOrgAdmin(self.org)
+    self.timeline_helper.studentsAnnounced()
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
