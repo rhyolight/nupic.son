@@ -34,13 +34,14 @@ class Models(object):
 
   def __init__(
       self, ndb_org_model=None, org_model=None, profile_model=None,
-      program_model=None, timeline_model=None):
+      program_model=None, program_messages_model=None, timeline_model=None):
     """Initializes new instance of Models class.
 
     Args:
       org_model: class that represents organization model.
       profile_model: class that represents profile model.
       program_model: class that represents program model.
+      program_messages_model: class that represents program messages model.
       timeline_model: class that represents timeline model.
     """
     # TODO(daniel): remove when not necessary
@@ -48,6 +49,7 @@ class Models(object):
     self.org_model = org_model
     self.profile_model = profile_model
     self.program_model = program_model
+    self.program_messages_model = program_messages_model
     self.timeline_model = timeline_model
 
 MELANGE_MODELS = Models(
@@ -55,4 +57,5 @@ MELANGE_MODELS = Models(
     org_model=organization.Organization,
     profile_model=profile.Profile,
     program_model=program.Program,
+    program_messages_model=program.ProgramMessages,
     timeline_model=timeline.Timeline)

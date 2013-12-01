@@ -26,4 +26,5 @@ CI_MODELS = types.Models(
     org_model=organization.GCIOrganization,
     profile_model=profile.GCIProfile,
     program_model=program.GCIProgram,
+    program_messages_model=program.GCIProgramMessages,
     timeline_model=timeline.GCITimeline)
