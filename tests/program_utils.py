@@ -211,6 +211,51 @@ def seedGCIProgram(program_id=None, sponsor_key=None,
       sponsor_key=sponsor_key, timeline_key=timeline_key, **kwargs)
 
 
+def seedProgramMessages(
+    models=types.MELANGE_MODELS, program_key=None, **kwargs):
+  """Seeds a new program messages.
+
+  Args:
+    models: instance of types.Models that represent appropriate models.
+    program_key: Program key for messages.
+
+  Returns:
+    Newly seeded program messages entity.
+  """
+  properties = {'parent': program_key}
+  properties.update(kwargs)
+  program_messages = models.program_messages_model(**properties)
+  program_messages.put()
+
+  return program_messages
+
+
+def seedGSoCProgramMessages(program_key=None, **kwargs):
+  """Seeds a new program messages for Summer Of Code.
+
+  Args:
+    program_key: Program key for messages.
+
+  Returns:
+    Newly seeded program messages entity.
+  """
+  return seedProgramMessages(
+      models=soc_types.SOC_MODELS, program_key=program_key)
+
+
+def seedGCIProgramMessages(program_key=None, **kwargs):
+  """Seeds a new program messages for Code In.
+
+  Args:
+    program_key: Program key for messages.
+
+  Returns:
+    Newly seeded program messages entity.
+  """
+  return seedProgramMessages(
+      models=ci_types.CI_MODELS, program_key=program_key)
+
+
 class ProgramHelper(object):
   """Helper class to aid in manipulating program data.
   """
