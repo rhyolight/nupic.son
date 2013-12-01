@@ -18,7 +18,7 @@ from codein import types as ci_types
 
 from melange import types
 
-from soc.models.document import Document
+from soc.models import document as document_model
 from soc.models.org_app_survey import OrgAppSurvey
 from soc.models import program as program_model
 from soc.models.site import Site
@@ -123,6 +123,9 @@ TEST_PROGRAM_DESCRIPTION = 'Test Program Description'
 TEST_PROGRAM_NAME = 'Test Program'
 TEST_PROGRAM_SHORT_NAME = 'Program'
 
+TEST_DOCUMENT_PREFIX = 'program'
+TEST_DOCUMENT_TITLE = 'Test Document'
+
 def seedProgram(models=types.MELANGE_MODELS, program_id=None,
     sponsor_key=None, timeline_key=None, **kwargs):
   """Seeds a new program.
@@ -156,6 +159,29 @@ def seedProgram(models=types.MELANGE_MODELS, program_id=None,
       }
   properties.update(kwargs)
   program = models.program_model(**properties)
+
+  host = profile_utils.seedUser(host_for=[sponsor_key])
+  document_id = string_provider.UniqueIDProvider().getValue()
+  prefix = kwargs.get('prefix', TEST_DOCUMENT_PREFIX)
+  properties = {
+      'scope': program,
+      'read_access': 'public',
+      'key_name': '%s/%s/%s' % (prefix, program.key().name(), document_id),
+      'link_id': document_id,
+      'modified_by': host,
+      'author': host,
+      'home_for': None,
+      'title': TEST_DOCUMENT_TITLE,
+      'prefix': prefix,
+    }
+  document = document_model.Document(**properties)
+  document.put()
+
+  program.about_page = document
+  program.events_page = document
+  program.help_page = document
+  program.connect_with_us_page = document
+  program.privacy_policy = document
   program.put()
 
   seedProgramMessages(models=models, program_key=program.key(), **kwargs)
@@ -181,6 +207,7 @@ def seedGSoCProgram(program_id=None, sponsor_key=None,
   properties = {
       'apps_tasks_limit': TEST_APP_TASKS_LIMIT,
       'slots': TEST_SLOTS,
+      'prefix': 'gsoc_program',
       }
   properties.update(kwargs)
   return seedProgram(
@@ -200,9 +227,11 @@ def seedGCIProgram(program_id=None, sponsor_key=None,
   Returns:
     Newly seeded program entity.
   """
+  properties = {'prefix': 'gci_program'}
+  properties.update(kwargs)
   return seedProgram(
       models=ci_types.CI_MODELS, program_id=program_id,
-      sponsor_key=sponsor_key, timeline_key=timeline_key, **kwargs)
+      sponsor_key=sponsor_key, timeline_key=timeline_key, **properties)
 
 
 def seedProgramMessages(
@@ -358,26 +387,6 @@ class GSoCProgramHelper(ProgramHelper):
 
     self.program = seedGSoCProgram(sponsor_key=self.sponsor.key())
 
-    user = profile_utils.seedUser()
-    properties = {
-        'prefix': 'gsoc_program',
-        'scope': self.program,
-        'read_access': 'public',
-        'key_name': string_provider.DocumentKeyNameProvider(),
-        'modified_by': user,
-        'author': user,
-        'home_for': None,
-    }
-    document = self.seed(Document, properties=properties, **override)
-
-    self.program.about_page = document
-    self.program.events_page = document
-    self.program.help_page = document
-    self.program.connect_with_us_page = document
-    self.program.privacy_policy = document
-    self.program.program_id = self.program.link_id
-    self.program.put()
-
     return self.program
 
   def createNewOrg(self, override={}):
@@ -425,24 +434,6 @@ class GCIProgramHelper(ProgramHelper):
     super(GCIProgramHelper, self).createProgram()
 
     self.program = seedGCIProgram(sponsor_key=self.sponsor.key(), **override)
-
-    user = profile_utils.seedUser()
-    properties = {
-        'prefix': 'gci_program', 'scope': self.program,
-        'read_access': 'public',
-        'key_name': string_provider.DocumentKeyNameProvider(),
-        'modified_by': user, 'author': user,
-        'home_for': None,
-    }
-    document = self.seed(Document, properties=properties)
-
-    self.program.about_page = document
-    self.program.events_page = document
-    self.program.help_page = document
-    self.program.connect_with_us_page = document
-    self.program.privacy_policy = document
-    self.program.program_id = self.program.link_id
-    self.program.put()
 
     return self.program
 
