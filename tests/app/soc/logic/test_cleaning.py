@@ -495,14 +495,13 @@ class CleaningTest(GSoCDjangoTestCase):
     test_min_age = 13
     test_max_age = 20
 
-    program_properties = {'student_min_age_as_of': test_program_start,
-	                  'student_min_age': test_min_age,
-	                  'student_max_age': test_max_age}
+    properties = {
+        'student_min_age_as_of': test_program_start,
+	      'student_min_age': test_min_age,
+	      'student_max_age': test_max_age
+        }
 
-    # TODO(piyush.devel): Use a Program rather than CGIProgram
-    test_program = program_utils.GCIProgramHelper().createProgram(
-        override=program_properties)
-    self.form.program = test_program
+    self.form.program = program_utils.seedProgram(**properties)
 
     # Test that forms.ValidationError is raised
     # if the student is born after one year of program start

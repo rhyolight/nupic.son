@@ -152,7 +152,7 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
   def testSummerOfCodeStudentAccessDenied(self):
     """Tests that Summer Of Code student cannot access the page."""
     # seed Summer Of Code program
-    soc_program = program_utils.GSoCProgramHelper().createProgram()
+    soc_program = program_utils.seedGSoCProgram()
 
     # seed Summer Of Code student
     profile_utils.GSoCProfileHelper(soc_program, False).createStudent()
@@ -163,7 +163,7 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
   def testSummerOfCodeProfileAccessDenied(self):
     """Tests that Summer Of Code profile (no role) cannot access the page."""
     # seed Summer Of Code program
-    soc_program = program_utils.GSoCProgramHelper().createProgram()
+    soc_program = program_utils.seedGSoCProgram()
 
     # seed Summer Of Code student
     profile_utils.GSoCProfileHelper(soc_program, False).createProfile()

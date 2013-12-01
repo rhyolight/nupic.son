@@ -233,11 +233,11 @@ class ConvertProposalsTest(
     self.init()
 
     # seed a new program
-    program = self.program = program_utils.GSoCProgramHelper().createProgram()
+    self.program = program_utils.seedGSoCProgram()
 
     # seed a few organizations
     org_properties = {
-        'program': program,
+        'program': self.program,
         'status': 'active',
         }
     self.org_keys = []
@@ -247,7 +247,7 @@ class ConvertProposalsTest(
 
     # create post data that will be sent to tasks
     self.post_data = {
-        'program_key': program.key().name()
+        'program_key': self.program.key().name()
         }
 
   def testNoProgramKey(self):
