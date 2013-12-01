@@ -283,14 +283,14 @@ class ProgramHelper(object):
   """Helper class to aid in manipulating program data.
   """
 
-  def __init__(self, sponsor=None):
+  def __init__(self, sponsor=None, program=None):
     """Initializes the ProgramHelper.
 
     Args:
       sponsor: Sponsor entity.
     """
     self.sponsor = sponsor
-    self.program = None
+    self.program = program
     self.org_app = None
     self.org = None
     self.site = None
