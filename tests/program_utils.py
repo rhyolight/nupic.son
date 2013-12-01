@@ -14,8 +14,6 @@
 
 """Utils for manipulating program data."""
 
-from datetime import date
-
 from codein import types as ci_types
 
 from melange import types
@@ -27,13 +25,7 @@ from soc.models.site import Site
 from soc.models.sponsor import Sponsor
 
 from soc.modules.gci.models.organization import GCIOrganization
-from soc.modules.gci.models.program import GCIProgram
-from soc.modules.gci.models.program import GCIProgramMessages
-from soc.modules.gci.models.timeline import GCITimeline
 from soc.modules.gsoc.models.organization import GSoCOrganization
-from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gsoc.models.program import GSoCProgramMessages
-from soc.modules.gsoc.models.timeline import GSoCTimeline
 from soc.modules.seeder.logic.providers import string as string_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
@@ -165,6 +157,8 @@ def seedProgram(models=types.MELANGE_MODELS, program_id=None,
   properties.update(kwargs)
   program = models.program_model(**properties)
   program.put()
+
+  seedProgramMessages(models=models, program_key=program.key(), **kwargs)
 
   return program
 
@@ -384,15 +378,6 @@ class GSoCProgramHelper(ProgramHelper):
     self.program.program_id = self.program.link_id
     self.program.put()
 
-    properties = {
-        'parent': self.program,
-        'accepted_orgs_msg': 'Organization accepted',
-        'rejected_orgs_msg': 'Organization rejected',
-        }
-    self.program_messages = self.seed(GSoCProgramMessages,
-        properties=properties)
-    self.program_messages.put()
-
     return self.program
 
   def createNewOrg(self, override={}):
@@ -458,15 +443,6 @@ class GCIProgramHelper(ProgramHelper):
     self.program.privacy_policy = document
     self.program.program_id = self.program.link_id
     self.program.put()
-
-    properties = {
-        'parent': self.program,
-        'accepted_orgs_msg': 'Organization accepted',
-        'rejected_orgs_msg': 'Organization rejected',
-        }
-    self.program_messages = self.seed(GCIProgramMessages,
-        properties=properties)
-    self.program_messages.put()
 
     return self.program
 
