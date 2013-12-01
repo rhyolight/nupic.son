@@ -127,6 +127,90 @@ def seedTimeline(models=types.MELANGE_MODELS,
   return timeline
 
 
+TEST_PROGRAM_DESCRIPTION = 'Test Program Description'
+TEST_PROGRAM_NAME = 'Test Program'
+TEST_PROGRAM_SHORT_NAME = 'Program'
+
+def seedProgram(models=types.MELANGE_MODELS, program_id=None,
+    sponsor_key=None, timeline_key=None, **kwargs):
+  """Seeds a new program.
+
+  Args:
+    models: instance of types.Models that represent appropriate models.
+    program_id: Identifier of the new program.
+    sponsor_key: Sponsor key for the new program.
+    timeline_key: Timeline key for the new program.
+
+  Returns:
+    Newly seeded program entity.
+  """
+  program_id = program_id or string_provider.UniqueIDProvider().getValue()
+
+  sponsor_key = sponsor_key or seedSponsor().key()
+  timeline_key = timeline_key or seedTimeline(
+      models=models, timeline_id=program_id, sponsor_key=sponsor_key).key()
+
+  properties = {
+      'scope': sponsor_key,
+      'sponsor': sponsor_key,
+      'link_id': program_id,
+      'program_id': program_id,
+      'key_name': '%s/%s' % (sponsor_key.name(), program_id),
+      'name': TEST_PROGRAM_NAME,
+      'short_name': TEST_PROGRAM_SHORT_NAME,
+      'description': TEST_PROGRAM_DESCRIPTION,
+      'timeline': timeline_key,
+      'status': program_model.STATUS_VISIBLE,
+      }
+  properties.update(kwargs)
+  program = models.program_model(**properties)
+  program.put()
+
+  return program
+
+
+TEST_APP_TASKS_LIMIT = 20
+TEST_SLOTS = 1000
+
+def seedGSoCProgram(program_id=None, sponsor_key=None,
+    timeline_key=None, **kwargs):
+  """Seeds a new Summer Of Code program.
+
+  Args:
+    program_id: Identifier of the new program.
+    sponsor_key: Sponsor key for the new program.
+    timeline_key: Timeline key for the new program.
+
+  Returns:
+    Newly seeded program entity.
+  """
+  properties = {
+      'apps_tasks_limit': TEST_APP_TASKS_LIMIT,
+      'slots': TEST_SLOTS,
+      }
+  properties.update(kwargs)
+  return seedProgram(
+      models=soc_types.SOC_MODELS, program_id=program_id,
+      sponsor_key=sponsor_key, timeline_key=timeline_key, **properties)
+
+
+def seedGCIProgram(program_id=None, sponsor_key=None,
+    timeline_key=None, **kwargs):
+  """Seeds a new Code In program.
+
+  Args:
+    program_id: Identifier of the new program.
+    sponsor_key: Sponsor key for the new program.
+    timeline_key: Timeline key for the new program.
+
+  Returns:
+    Newly seeded program entity.
+  """
+  return seedProgram(
+      models=ci_types.CI_MODELS, program_id=program_id,
+      sponsor_key=sponsor_key, timeline_key=timeline_key, **kwargs)
+
+
 class ProgramHelper(object):
   """Helper class to aid in manipulating program data.
   """
