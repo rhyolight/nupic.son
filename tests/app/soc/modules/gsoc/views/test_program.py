@@ -61,7 +61,6 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
     create a new program.
     """
     return {
-        'group_label': 'soc',
         'nr_accepted_orgs': 200,
         'student_min_age': 18,
         'student_min_age_as_of': datetime.date.today(),

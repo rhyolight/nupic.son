@@ -159,7 +159,6 @@ def seed(request, *args, **kwargs):
       'scope': google,
       'name': 'Google Summer of Code 2014',
       'short_name': 'GSoC 2009',
-      'group_label': 'GSOC',
       'description': 'This is the program for GSoC 2014.',
       'apps_tasks_limit': 42,
       'slots': 42,
@@ -216,7 +215,6 @@ def seed(request, *args, **kwargs):
       'program_id': 'gci2009',
       'name': 'Google Code In Contest 2009',
       'short_name': 'GCI 2009',
-      'group_label': 'GCI',
       'description': 'This is the program for GCI 2009.',
       'timeline': gci2009_timeline,
       })
