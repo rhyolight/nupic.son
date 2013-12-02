@@ -227,8 +227,7 @@ class ProfileViewTest(GCIDjangoTestCase):
   def testCreateUserNoLinkId(self):
     self.timeline_helper.studentSignup()
 
-    self.default_props.update({
-        })
+    del self.default_props['link_id']
 
     response = self.post(self.student_url, self.default_props)
     self.assertResponseOK(response)
