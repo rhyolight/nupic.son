@@ -23,9 +23,9 @@ from soc.models.organization import Organization
 from soc.models.site import Site
 
 from soc.modules.gci.models.organization import GCIOrganization
-from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import org_utils
 from tests import profile_utils
 from tests import program_utils
 
@@ -48,7 +48,8 @@ class TestPrefixes(unittest.TestCase):
 
     self.organization = seeder_logic.seed(Organization)
 
-    self.gsoc_organization = seeder_logic.seed(GSoCOrganization)
+    self.gsoc_organization = org_utils.seedSOCOrganization(
+        self.gsoc_program.key())
 
     self.gci_organization = seeder_logic.seed(GCIOrganization)
 

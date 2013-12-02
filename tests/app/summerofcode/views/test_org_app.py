@@ -220,7 +220,7 @@ class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
     self.init()
     contact = contact_model.Contact(mailing_list=TEST_MAILING_LIST)
     self.org = org_utils.seedSOCOrganization(
-        TEST_ORG_ID, self.program.key(), name=TEST_ORG_NAME,
+        self.program.key(), org_id=TEST_ORG_ID, name=TEST_ORG_NAME,
         ideas_page=TEST_IDEAS_PAGE, tags=TEST_TAGS.split(','), contact=contact)
     self.app_response = survey_model.SurveyResponse(parent=self.org.key)
     self.app_response.put()
@@ -324,7 +324,7 @@ class OrgApplicationSubmitPageTest(test_utils.GSoCDjangoTestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.init()
-    self.org = org_utils.seedSOCOrganization(TEST_ORG_ID, self.program.key())
+    self.org = org_utils.seedSOCOrganization(self.program.key())
 
   def testPageLoads(self):
     """Tests that page loads properly."""
@@ -375,7 +375,7 @@ class OrgAppShowPageTest(test_utils.GSoCDjangoTestCase):
     """See unittest.TestCase.setUp for specification."""
     self.init()
     self.org = org_utils.seedSOCOrganization(
-        TEST_ORG_ID, self.program.key(), name=TEST_ORG_NAME)
+        self.program.key(), name=TEST_ORG_NAME)
     self.app_response = survey_model.SurveyResponse(parent=self.org.key)
     self.app_response.put()
 
@@ -416,7 +416,7 @@ class OrgPreferencesEditPageTest(test_utils.GSoCDjangoTestCase):
     """See unittest.TestCase.testUp for specification."""
     self.init()
     self.org = org_utils.seedSOCOrganization(
-        TEST_ORG_ID, self.program.key(), name=TEST_ORG_NAME)
+        self.program.key(), name=TEST_ORG_NAME)
 
   def testPageLoads(self):
     """Tests that page loads properly."""

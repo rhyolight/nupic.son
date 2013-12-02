@@ -37,8 +37,7 @@ class ProfileTest(unittest.TestCase):
 
   def setUp(self):
     self.program = program_utils.seedGSoCProgram()
-    self.foo_organization = org_utils.seedSOCOrganization(
-        'foo_org', self.program.key())
+    self.foo_organization = org_utils.seedSOCOrganization(self.program.key())
 
     #create mentors for foo_organization.
     self.foo_mentors = []
@@ -55,8 +54,7 @@ class ProfileTest(unittest.TestCase):
       self.foo_org_admins.append(org_admin)
 
     #create another organization bar_organization for our program.
-    self.bar_organization = org_utils.seedSOCOrganization(
-        'bar_org', self.program.key())
+    self.bar_organization = org_utils.seedSOCOrganization(self.program.key())
 
     #assign mentors for bar_organization.
     self.bar_mentors = []
@@ -97,7 +95,7 @@ class ProfileTest(unittest.TestCase):
 
     #Create an organization which has no mentors and org_admins and test that
     #an empty list is returned.
-    org = org_utils.seedSOCOrganization('test_org', self.program.key())
+    org = org_utils.seedSOCOrganization(self.program.key())
     mentors = []
     org_admins = []
     runTest(org, mentors, org_admins)
@@ -111,10 +109,8 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
     self.program = program_utils.seedGSoCProgram()
 
     # seed a couple of organizations
-    self.organization_one = org_utils.seedSOCOrganization(
-        'org_one', self.program.key())
-    self.organization_two = org_utils.seedSOCOrganization(
-        'org_two', self.program.key())
+    self.organization_one = org_utils.seedSOCOrganization(self.program.key())
+    self.organization_two = org_utils.seedSOCOrganization(self.program.key())
 
     # seed a new mentor for organization one
     mentor_properties = {
@@ -196,9 +192,8 @@ class ResignAsOrgAdminForOrgTest(unittest.TestCase):
     self.program = program_utils.seedGSoCProgram()
 
     # seed a couple of organizations
-    self.organization = org_utils.seedSOCOrganization(
-        'org_one', self.program.key())
-    org_utils.seedSOCOrganization('org_two', self.program.key())
+    self.organization = org_utils.seedSOCOrganization(self.program.key())
+    org_utils.seedSOCOrganization(self.program.key())
 
     # seed a new org admin for organization
     org_admin_properties = {
@@ -253,8 +248,7 @@ class ResignAsOrgAdminForOrgTest(unittest.TestCase):
         profile_model.GSoCProfile, org_admin_properties)
 
     # seed another organization
-    organization_two = org_utils.seedSOCOrganization(
-        'org_three', self.program.key())
+    organization_two = org_utils.seedSOCOrganization(self.program.key())
 
     # make the profile an org admin for organization two
     self.org_admin.mentor_for.append(organization_two.key.to_old_key())
@@ -281,10 +275,8 @@ class CountOrgAdminsTest(unittest.TestCase):
     self.program = program_utils.seedGSoCProgram()
 
     # seed a couple of organizations
-    self.organization_one = org_utils.seedSOCOrganization(
-        'org_one', self.program.key())
-    self.organization_two = org_utils.seedSOCOrganization(
-        'org_two', self.program.key())
+    self.organization_one = org_utils.seedSOCOrganization(self.program.key())
+    self.organization_two = org_utils.seedSOCOrganization(self.program.key())
 
   def testNoOrgAdmin(self):
     number = profile_logic.countOrgAdmins(
@@ -353,10 +345,8 @@ class GetMentorsTest(unittest.TestCase):
     self.program = program_utils.seedGSoCProgram()
 
     # seed a couple of organizations
-    self.organization_one = org_utils.seedSOCOrganization(
-        'org_one', self.program.key())
-    self.organization_two = org_utils.seedSOCOrganization(
-        'org_two', self.program.key())
+    self.organization_one = org_utils.seedSOCOrganization(self.program.key())
+    self.organization_two = org_utils.seedSOCOrganization(self.program.key())
 
   def testNoMentors(self):
     mentors = profile_logic.getOrgAdmins(self.organization_one.key.to_old_key())
@@ -493,8 +483,7 @@ class ResignAsMentorForOrgTest(unittest.TestCase):
     self.program = program_utils.seedGSoCProgram()
 
     # seed a couple of organizations
-    self.organization = org_utils.seedSOCOrganization(
-        'org_one', self.program.key())
+    self.organization = org_utils.seedSOCOrganization(self.program.key())
 
     # seed a new mentor for organization one
     mentor_properties = {
@@ -546,8 +535,7 @@ class ResignAsMentorForOrgTest(unittest.TestCase):
 
   def testForMentorForTwoOrgs(self):
     # seed another organization
-    organization_two = org_utils.seedSOCOrganization(
-        'org_two', self.program.key())
+    organization_two = org_utils.seedSOCOrganization(self.program.key())
 
     # make the profile a mentor for organization two
     self.mentor.mentor_for.append(organization_two.key.to_old_key())
@@ -573,8 +561,7 @@ class CanBecomeMentorTest(unittest.TestCase):
     self.program = program_utils.seedGSoCProgram()
 
     # seed an organization
-    self.organization = org_utils.seedSOCOrganization(
-        'org_one', self.program.key())
+    self.organization = org_utils.seedSOCOrganization(self.program.key())
 
     # seed a new profile
     profile_properties = {
@@ -640,8 +627,7 @@ class CanBecomeOrgAdminTest(unittest.TestCase):
     self.program = program_utils.seedGSoCProgram()
 
     # seed an organization
-    self.organization = org_utils.seedSOCOrganization(
-        'org_one', self.program.key())
+    self.organization = org_utils.seedSOCOrganization(self.program.key())
 
     # seed a new profile
     profile_properties = {
@@ -700,8 +686,7 @@ class CanBecomeOrgAdminTest(unittest.TestCase):
 
   def testForOrgAdminForAnotherOrg(self):
     # seed another organization
-    organization_two = org_utils.seedSOCOrganization(
-        'org_two', self.program.key())
+    organization_two = org_utils.seedSOCOrganization(self.program.key())
 
     # make the profile an org admin for organization two
     self.profile.is_mentor = True
@@ -722,10 +707,8 @@ class BecomeMentorForOrgTest(unittest.TestCase):
     self.program = program_utils.seedGSoCProgram()
 
     # seed a couple of organizations
-    self.organization_one = org_utils.seedSOCOrganization(
-        'org_one', self.program.key())
-    self.organization_two = org_utils.seedSOCOrganization(
-        'org_two', self.program.key())
+    self.organization_one = org_utils.seedSOCOrganization(self.program.key())
+    self.organization_two = org_utils.seedSOCOrganization(self.program.key())
 
     # seed a new profile
     profile_properties = {
@@ -840,10 +823,8 @@ class BecomeOrgAdminForOrgTest(unittest.TestCase):
     self.program = program_utils.seedGSoCProgram()
 
     # seed a couple of organizations
-    self.organization_one = org_utils.seedSOCOrganization(
-        'org_one', self.program.key())
-    self.organization_two = org_utils.seedSOCOrganization(
-        'org_two', self.program.key())
+    self.organization_one = org_utils.seedSOCOrganization(self.program.key())
+    self.organization_two = org_utils.seedSOCOrganization(self.program.key())
 
     # seed a new profile
     profile_properties = {

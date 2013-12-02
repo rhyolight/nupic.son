@@ -14,13 +14,10 @@
 
 """Unit tests for organization homepage views."""
 
-from summerofcode.views import org_home as org_home_view
-
 from tests import org_utils
 from tests import test_utils
 
 
-TEST_ORG_ID = 'test_org'
 TEST_BLOG = 'http://www.test.blog.com/'
 TEST_MAILING_LIST = 'mailinglist@example.com'
 TEST_TWITTER = u'http://www.test.twitter.com/'
@@ -49,7 +46,7 @@ class OrgHomePageTest(test_utils.GSoCDjangoTestCase):
         'twitter': TEST_TWITTER,
         }
     self.org = org_utils.seedSOCOrganization(
-        TEST_ORG_ID, self.program.key(), contact=contact)
+        self.program.key(), contact=contact)
 
   def testPageLoads(self):
     """Tests that page loads properly."""

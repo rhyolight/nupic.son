@@ -16,6 +16,8 @@
 
 from google.appengine.ext import ndb
 
+from soc.modules.seeder.logic.providers import string as string_provider
+
 from melange.models import organization as org_model
 from melange.models import survey as survey_model
 
@@ -25,18 +27,20 @@ from summerofcode.models import organization as soc_org_model
 TEST_ORG_NAME = 'Test Org'
 TEST_ORG_DESCRIPTION = 'Test Organization Description'
 
-def seedOrganization(org_id, program_key,
-    model=org_model.Organization, **kwargs):
+def seedOrganization(
+    program_key, model=org_model.Organization, org_id=None, **kwargs):
   """Seeds a new organization.
 
   Args:
-    org_id: Identifier of the new organization.
     program_key: Program key.
     model: Model class of which a new organization should be seeded.
+    org_id: Identifier of the new organization.
 
   Returns:
     Newly seeded Organization entity.
   """
+  org_id = org_id or string_provider.UniqueIDProvider().getValue()
+
   entity_id = '%s/%s' % (program_key.name(), org_id)
   program_key = ndb.Key.from_old_key(program_key)
 
@@ -52,18 +56,17 @@ def seedOrganization(org_id, program_key,
   return org
 
 
-def seedSOCOrganization(org_id, program_key, **kwargs):
+def seedSOCOrganization(program_key, **kwargs):
   """Seeds a new organization for SOC.
 
   Args:
-    org_id: Identifier of the new organization.
     program_key: Program key.
 
   Returns:
     Newly seeded SOCOrganization entity.
   """
   return seedOrganization(
-      org_id, program_key, model=soc_org_model.SOCOrganization, **kwargs)
+      program_key, model=soc_org_model.SOCOrganization, **kwargs)
 
 
 def seedApplication(org_key, survey_key, **kwargs):

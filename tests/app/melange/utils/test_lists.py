@@ -95,8 +95,7 @@ class TestGSoCProjectsColumns(unittest.TestCase):
 
   def setUp(self):
     self.program = program_utils.seedGSoCProgram()
-    self.organization = org_utils.seedSOCOrganization(
-        'test_org', self.program.key())
+    self.organization = org_utils.seedSOCOrganization(self.program.key())
     self.student = seeder_logic.seed(
         profile_model.GSoCProfile, {'key_name': 'student'})
 
