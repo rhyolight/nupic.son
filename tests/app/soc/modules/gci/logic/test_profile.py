@@ -19,10 +19,10 @@ import unittest
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
-from soc.modules.gci.models import program as program_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from soc.modules.gci.models import task as task_model
 
+from tests import program_utils
 from tests import task_utils
 
 
@@ -30,9 +30,7 @@ class ProfileTest(unittest.TestCase):
   """Tests the logic for GCI profiles."""
 
   def setUp(self):
-    program_properties = {'task_types': ['Any']}
-    self.program = seeder_logic.seed(
-        program_model.GCIProgram, properties=program_properties)
+    self.program = program_utils.seedGCIProgram()
 
     org_properties = {
         'program': self.program
