@@ -45,14 +45,19 @@ class ProposalList(Template):
   """Template for listing the student proposals submitted to the program."""
 
   def __init__(self, data):
+
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     self.data = data
 
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('student', 'Student',
                           lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addPlainTextColumn('org', 'Organization',
-                          lambda entity, *args: entity.org.name)
+    list_config.addPlainTextColumn('org', 'Organization', getOrganization)
 
     def status(proposal):
       """Status to show on the list with color.
@@ -217,14 +222,19 @@ class ProjectList(Template):
   """
 
   def __init__(self, data):
+
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = project_model.GSoCProject.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     self.data = data
 
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('student', 'Student',
         lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addPlainTextColumn('org', 'Organization',
-        lambda entity, *args: entity.org.name)
+    list_config.addPlainTextColumn('org', 'Organization', getOrganization)
 
     def status(project):
       """Status to show on the list with color.

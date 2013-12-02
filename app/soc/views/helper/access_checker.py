@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from soc.modules.gsoc.models.proposal import GSoCProposal
 
 """Module containing the AccessChecker class that contains helper functions
 for checking access.
@@ -669,7 +670,8 @@ class AccessChecker(BaseAccessChecker):
       return
 
     # all the mentors and org admins from the organization may access it
-    if self.data.mentorFor(self.data.url_proposal.org):
+    org_key = GSoCProposal.org.get_value_for_datastore(self.data.url_proposal)
+    if self.data.mentorFor(org_key):
       return
 
     raise exception.Forbidden(message=DEF_PROPOSAL_NOT_PUBLIC)

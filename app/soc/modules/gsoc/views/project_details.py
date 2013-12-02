@@ -262,8 +262,9 @@ class CodeSampleUploadFilePost(base.GSoCRequestHandler):
       url = url + '?file=0'
       return http.HttpResponseRedirect(url)
 
+    org_key = GSoCProject.org.get_value_for_datastore(data.url_project)
     form.cleaned_data['user'] = data.user
-    form.cleaned_data['org'] = data.url_project.org
+    form.cleaned_data['org'] = org_key
     form.cleaned_data['program'] = data.url_project.program
 
     project_key = data.url_project.key()
@@ -403,8 +404,8 @@ class UserActions(Template):
     assign_mentor_url = links.LINKER.userId(
         self.data.url_profile.key(), self.data.url_project.key().id(),
         'gsoc_project_assign_mentors')
-    all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(
-        self.data.url_project.org)
+    org_key = GSoCProject.org.get_value_for_datastore(self.data.url_project)
+    all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(org_key)
     context['assign_mentor'] = assign_mentor.AssignMentorFields(
         self.data, self.data.url_project.mentors, assign_mentor_url,
         all_mentors=all_mentors_keys, mentor_required=True,
@@ -486,15 +487,15 @@ class ProjectDetails(base.GSoCRequestHandler):
   def context(self, data, check, mutator):
     """Handler to for GSoC project details page HTTP get request."""
 
-    org_home_link = links.LINKER.organization(
-        data.url_project.org.key(), urls.UrlNames.ORG_HOME)
+    org_key = GSoCProject.org.get_value_for_datastore(data.url_project)
+    org_home_link = links.LINKER.organization(org_key, urls.UrlNames.ORG_HOME)
     context = {
         'page_name': 'Project details',
         'project': data.url_project,
         'org_home_link': org_home_link,
     }
 
-    if data.orgAdminFor(data.url_project.org):
+    if data.orgAdminFor(org_key):
       context['user_actions'] = UserActions(data)
 
     if _isUpdateLinkVisible(data):
@@ -524,7 +525,8 @@ class AssignMentors(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    check.isOrgAdminForOrganization(data.url_project.org)
+    org_key = GSoCProject.org.get_value_for_datastore(data.url_project)
+    check.isOrgAdminForOrganization(org_key)
 
   def assignMentors(self, data, mentor_keys):
     """Assigns the mentor to the project.
@@ -549,14 +551,14 @@ class AssignMentors(base.GSoCRequestHandler):
     str_mentor_keys = data.POST.getlist('assign_mentor')
 
     if str_mentor_keys:
-      org = data.url_project.org
+      org_key = GSoCProject.org.get_value_for_datastore(data.url_project)
 
       # need the list to set conversion and back to list conversion
       # to ensure that same mentor doesn't get assigned to the
       # project more than once
       mentor_keys = set([db.Key(k) for k in str_mentor_keys if k])
       if mentor_keys < set(
-          profile_logic.queryAllMentorsKeysForOrg(org)):
+          profile_logic.queryAllMentorsKeysForOrg(org_key)):
         return list(mentor_keys)
       else:
         raise exception.BadRequest(message="Invalid post data.")
@@ -588,7 +590,8 @@ class FeaturedProject(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    check.isOrgAdminForOrganization(data.url_project.org)
+    org_key = GSoCProject.org.get_value_for_datastore(data.url_project)
+    check.isOrgAdminForOrganization(org_key)
 
   def toggleFeatured(self, data, value):
     """Makes the project featured.

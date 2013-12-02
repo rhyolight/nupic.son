@@ -18,6 +18,7 @@ import collections
 
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 
@@ -213,8 +214,11 @@ class GradingRecordsList(Template):
     title_func = lambda rec, *args: rec.parent().title
     list_config.addPlainTextColumn(
         'project_title', 'Project Title', title_func)
-    org_func = lambda rec, *args: rec.parent().org.name
-    list_config.addPlainTextColumn('org_name', 'Organization', org_func)
+
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().name
+    list_config.addPlainTextColumn('org_name', 'Organization', getOrganization)
 
     stud_rec_func = lambda rec, *args: \
         'Present' if rec.student_record else 'Missing'

@@ -16,6 +16,7 @@
 for checking access.
 """
 
+from google.appengine.ext import ndb
 from google.appengine.ext import db
 
 from django.utils.translation import ugettext
@@ -164,7 +165,9 @@ class Mutator(access_checker.Mutator):
     assert access_checker.isSet(self.data.student_evaluation)
 
     # TODO(daniel): get rid of this ugly mutation!
-    self.data.organization = self.data.url_project.org
+    org_key = project_model.GSoCProject.org.get_value_for_datastore(
+        self.data.url_project)
+    self.data.organization = ndb.Key.from_old_key(org_key).get()
 
     q = GSoCProjectSurveyRecord.all()
     q.filter('project', self.data.url_project)
@@ -194,7 +197,9 @@ class Mutator(access_checker.Mutator):
     assert access_checker.isSet(self.data.mentor_evaluation)
 
     # TODO(daniel): get rid of this ugly mutation!
-    self.data.organization = self.data.url_project.org
+    org_key = project_model.GSoCProject.org.get_value_for_datastore(
+        self.data.url_project)
+    self.data.organization = ndb.Key.from_old_key(org_key).get()
 
     q = GSoCGradingProjectSurveyRecord.all()
     q.filter('project', self.data.url_project)

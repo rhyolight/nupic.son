@@ -231,9 +231,8 @@ class SurveyReminderTask(object):
           'Evaluation "%s" Reminder' %(survey.title)
 
       # find all org admins for the project's organization
-      org = project.org
-
-      org_admins = profile_logic.getOrgAdmins(org.key())
+      org_key = GSoCProject.org.get_value_for_datastore(project)
+      org_admins = profile_logic.getOrgAdmins(org_key)
 
       # collect email addresses for all found org admins
       org_admin_addresses = []

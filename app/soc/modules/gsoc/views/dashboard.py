@@ -18,6 +18,7 @@ import json
 import logging
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 from django.utils.translation import ugettext
@@ -427,10 +428,15 @@ class MyProposalsComponent(Component):
 
   def __init__(self, data):
     """Initializes this component."""
+
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = GSoCProposal.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addPlainTextColumn('org', 'Organization',
-                          lambda ent, *args: ent.org.name)
+    list_config.addPlainTextColumn('org', 'Organization', getOrganization)
     list_config.setRowAction(lambda e, *args:
         links.LINKER.userId(
             e.parent_key(), e.key().id(), url_names.PROPOSAL_REVIEW))
@@ -483,10 +489,15 @@ class MyProjectsComponent(Component):
 
   def __init__(self, data):
     """Initializes this component."""
+
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = GSoCProject.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addPlainTextColumn('org', 'Organization Name',
-        lambda ent, *args: ent.org.name)
+    list_config.addPlainTextColumn('org', 'Organization Name', getOrganization)
     list_config.setRowAction(
         lambda e, *args: links.LINKER.userId(
             e.parent_key(), e.key().id(), url_names.GSOC_PROJECT_DETAILS))
@@ -776,6 +787,11 @@ class SubmittedProposalsComponent(Component):
         lambda ent, *args: ent.parent().name())
     list_config.addSimpleColumn('accept_as_project', 'Should accept')
 
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = GSoCProposal.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     # assigned mentor column
     def split_key(key):
       split_name = key.name().split('/')
@@ -789,6 +805,11 @@ class SubmittedProposalsComponent(Component):
 
     def mentor_keys(ent, *args):
       return ', '.join(split_key(i) for i in ent.possible_mentors)
+
+    def getOrganizationKey(entity, *args):
+      """Helper function to get value of organization key column."""
+      org_key = GSoCProposal.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).id()
 
     list_config.addPlainTextColumn(
         'mentor', 'Assigned mentor usernames', mentor_key, hidden=True)
@@ -805,16 +826,14 @@ class SubmittedProposalsComponent(Component):
 
     hidden = len(data.mentor_for) < 2
     list_config.addPlainTextColumn(
-        'org', 'Organization', (lambda ent, *args: ent.org.short_name),
-        options=options, hidden=hidden)
+        'org', 'Organization', getOrganization, options=options, hidden=hidden)
 
     # hidden keys
     list_config.addPlainTextColumn(
         'full_proposal_key', 'Full proposal key',
         (lambda ent, *args: str(ent.key())), hidden=True)
     list_config.addPlainTextColumn(
-        'org_key', 'Organization key',
-        (lambda ent, *args: ent.org.key().name()), hidden=True)
+        'org_key', 'Organization key', getOrganizationKey, hidden=True)
 
     # row action
     list_config.setRowAction(lambda e, *args:
@@ -1026,12 +1045,17 @@ class ProjectsIMentorComponent(Component):
 
   def __init__(self, data):
     """Initializes this component."""
+
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = GSoCProject.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn('student', 'Student',
                           lambda ent, *args: ent.parent().name())
-    list_config.addPlainTextColumn('org', 'Organization',
-                          lambda ent, *args: ent.org.name)
+    list_config.addPlainTextColumn('org', 'Organization', getOrganization)
     list_config.setDefaultSort('title')
     list_config.setRowAction(
         lambda e, *args: links.LINKER.userId(
@@ -1568,6 +1592,11 @@ class StudentEvaluationComponent(Component):
 
     self.record = None
 
+    def getOrganization(entity, evaluation, *args):
+      """Helper function to get value of organization column."""
+      org_key = GSoCProject.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     list_config = lists.ListConfiguration(add_key_column=False)
 
     # key column must be added manually, as it must use evaluation_id
@@ -1584,8 +1613,7 @@ class StudentEvaluationComponent(Component):
         'student', 'Student',
         lambda entity, eval, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Project Title')
-    list_config.addPlainTextColumn('org', 'Organization',
-        lambda entity, eval, *args: entity.org.name)
+    list_config.addPlainTextColumn('org', 'Organization', getOrganization)
     list_config.addPlainTextColumn(
         'mentors', 'Mentors',
         lambda ent, eval, mentors, *args: ', '.join(

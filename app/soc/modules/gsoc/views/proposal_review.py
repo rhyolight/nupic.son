@@ -15,6 +15,7 @@
 """Module for the GSoC proposal page."""
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 from django.core.urlresolvers import resolve
@@ -282,9 +283,11 @@ class UserActions(Template):
       self.toggle_buttons.append(accept_proposal)
 
       possible_mentors_keys = self.data.url_proposal.possible_mentors
-      if self.data.url_proposal.org.list_all_mentors:
-        all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(
-            self.data.url_proposal.org)
+      org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+          self.data.url_proposal)
+      org = ndb.Key.from_old_key(org_key).get()
+      if org.list_all_mentors:
+        all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(org_key)
       else:
         all_mentors_keys = []
 
@@ -434,7 +437,9 @@ class ReviewProposal(base.GSoCRequestHandler):
     result = []
 
     for mentor in possible_mentors:
-      if data.url_proposal.org.key() in mentor.mentor_for:
+      org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+          self.data.url_proposal)
+      if org_key in mentor.mentor_for:
         result.append(mentor)
         continue
 
@@ -472,7 +477,9 @@ class ReviewProposal(base.GSoCRequestHandler):
       context['proposal_ignored'] = data.url_proposal.status == 'ignored'
 
       form = PrivateCommentForm(data=data.POST or None)
-      if data.orgAdminFor(data.url_proposal.org):
+      org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+          data.url_proposal)
+      if data.orgAdminFor(org_key):
         user_role = 'org_admin'
       else:
         user_role = 'mentor'
@@ -504,15 +511,18 @@ class ReviewProposal(base.GSoCRequestHandler):
     possible_mentors = self.sanitizePossibleMentors(data, possible_mentors)
     possible_mentors_names = ', '.join([m.name() for m in possible_mentors])
 
+    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+        data.url_proposal)
+    org = ndb.Key.from_old_key(org_key).get()
     scoring_visible = _getApplyingCommentType(data) == PRIVATE_COMMENTS and (
-        not data.url_proposal.org.scoring_disabled)
+        not org.scoring_disabled)
 
-    if data.orgAdminFor(data.url_proposal.org):
+    if data.orgAdminFor(org_key):
       scoring_visible = True
 
     duplicate = None
     if (data.program.duplicates_visible and
-        data.orgAdminFor(data.url_proposal.org)):
+        data.orgAdminFor(org_key)):
       q = GSoCProposalDuplicate.all()
       q.filter('duplicates', data.url_proposal)
       q.filter('is_duplicate', True)
@@ -529,7 +539,7 @@ class ReviewProposal(base.GSoCRequestHandler):
         'additional_info_link': additional_info,
         'comment_box': comment_box,
         'duplicate': duplicate,
-        'max_score': data.url_proposal.org.max_score,
+        'max_score': org.max_score,
         'mentor': data.url_proposal.mentor,
         'page_name': data.url_proposal.title,
         'possible_mentors': possible_mentors_names,
@@ -566,8 +576,10 @@ class PostComment(base.GSoCRequestHandler):
     check.isProfileActive()
 
     # private comments may be posted only by organization members
+    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+        data.url_proposal)
     if not _isProposer(data):
-      check.isMentorForOrganization(data.url_proposal.org)
+      check.isMentorForOrganization(org_key)
 
   def createCommentFromForm(self, data):
     """Creates a new comment based on the data inserted in the form.
@@ -593,7 +605,9 @@ class PostComment(base.GSoCRequestHandler):
       comment_form.cleaned_data['is_private'] = False
     comment_form.cleaned_data['author'] = data.profile
 
-    q = GSoCProfile.all().filter('mentor_for', data.url_proposal.org)
+    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+        data.url_proposal)
+    q = GSoCProfile.all().filter('mentor_for', org_key)
     q = q.filter('status', 'active')
     if comment_form.cleaned_data.get('is_private'):
       q.filter('notify_private_comments', True)
@@ -647,12 +661,14 @@ class PostScore(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    if (not data.orgAdminFor(data.url_proposal.org)
+    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+        data.url_proposal)
+    if (not data.orgAdminFor(org_key)
         and data.url_proposal.org.scoring_disabled):
       raise exception.BadRequest(
           message='Scoring is disabled for this organization')
 
-    check.isMentorForOrganization(data.url_proposal.org)
+    check.isMentorForOrganization(org_key)
 
   def createOrUpdateScore(self, data, value):
     """Creates a new score or updates a score if there is already one
@@ -668,7 +684,10 @@ class PostScore(base.GSoCRequestHandler):
     Returns:
       The score entity that was created/updated or None if value is 0.
     """
-    max_score = data.url_proposal.org.max_score
+    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+        data.url_proposal)
+    org = ndb.Key.from_old_key(org_key).get()
+    max_score = org.max_score
 
     if value < 0 or value > max_score:
       raise exception.BadRequest(
@@ -731,7 +750,9 @@ class WishToMentor(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    check.isMentorForOrganization(data.url_proposal.org)
+    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+        data.url_proposal)
+    check.isMentorForOrganization(org_key)
 
   def addToPotentialMentors(self, data, value):
     """Toggles the user from the potential mentors list.
@@ -791,7 +812,9 @@ class AssignMentor(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    check.isOrgAdminForOrganization(data.url_proposal.org)
+    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+        data.url_proposal)
+    check.isOrgAdminForOrganization(org_key)
 
   def assignMentor(self, data, mentor_entity):
     """Assigns the mentor to the proposal.
@@ -833,7 +856,9 @@ class AssignMentor(base.GSoCRequestHandler):
     mentor_key = data.POST.get('assign_mentor')
     if mentor_key:
       mentor_entity = db.get(mentor_key)
-      org = data.url_proposal.org
+      org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+          data.url_proposal)
+      org = ndb.Key.from_old_key(org_key).get()
 
       if mentor_entity and data.isPossibleMentorForProposal(
           mentor_entity) or (org.list_all_mentors
@@ -872,7 +897,9 @@ class IgnoreProposal(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    check.isOrgAdminForOrganization(data.url_proposal.org)
+    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+        data.url_proposal)
+    check.isOrgAdminForOrganization(org_key)
     if data.url_proposal.status == 'withdrawn':
       raise exception.Forbidden(
           message="You cannot ignore a withdrawn proposal")
@@ -927,7 +954,9 @@ class ProposalModificationPostDeadline(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    check.isMentorForOrganization(data.url_proposal.org)
+    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+        data.url_proposal)
+    check.isMentorForOrganization(org_key)
 
   def toggleModificationPermission(self, data, value):
     """Toggles the permission to modify the proposal after proposal deadline.
@@ -978,7 +1007,9 @@ class AcceptProposal(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    check.isOrgAdminForOrganization(data.url_proposal.org)
+    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+        data.url_proposal)
+    check.isOrgAdminForOrganization(org_key)
 
   def toggleStatus(self, data, value):
     """Toggles the the application state between accept and pending.

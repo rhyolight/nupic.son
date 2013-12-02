@@ -15,6 +15,7 @@
 """Module for the GSoC proposal page."""
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 from django.utils.translation import ugettext
@@ -166,7 +167,10 @@ class UpdateProposal(base.GSoCRequestHandler):
     check.isLoggedIn()
     check.isActiveStudent()
 
-    data.organization = data.url_proposal.org
+    # TODO(daniel): get rid of this ugly mutation!
+    org_key = GSoCProposal.org.get_value_for_datastore(
+        data.url_proposal)
+    data.organization = ndb.Key.from_old_key(org_key).get()
 
     check.canStudentUpdateProposal()
 
@@ -194,10 +198,12 @@ class UpdateProposal(base.GSoCRequestHandler):
     proposal_form = ProposalForm(
         data=data.POST or None, instance=data.url_proposal)
 
+    org_key = GSoCProposal.org.get_value_for_datastore(data.url_proposal)
+    org = ndb.Key.from_old_key(org_key).get()
+
     return {
         'page_name': 'Update proposal',
-        'form_header_message': 'Update proposal to %s' % (
-            data.url_proposal.org.name),
+        'form_header_message': 'Update proposal to %s' % org.name,
         'proposal_form': proposal_form,
         'is_pending': data.is_pending,
         'buttons_template': self.buttonsTemplate(),

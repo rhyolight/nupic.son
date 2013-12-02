@@ -17,6 +17,7 @@
 from google.appengine.api import taskqueue
 from google.appengine.api import users
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import forms as djangoforms
 from django import http
@@ -888,6 +889,12 @@ class ProposalsList(Template):
           return """<strong><font color="green">Pending acceptance</font><strong>"""
       # not showing duplicates or proposal doesn't have an interesting state
       return proposal.status
+
+    def getOrganizationKey(entity, *args):
+      """Helper function to get value of organization key column."""
+      org_key = GSoCProposal.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).name()
+
     options = [
         # TODO(nathaniel): This looks like structured data that should be
         # properly modeled in first-class structured Python objects.
@@ -917,8 +924,7 @@ class ProposalsList(Template):
         'full_proposal_key', 'Full proposal key',
         (lambda ent, *args: str(ent.key())), hidden=True)
     list_config.addPlainTextColumn(
-        'org_key', 'Organization key',
-        (lambda ent, *args: ent.org.key().name()), hidden=True)
+        'org_key', 'Organization key', getOrganizationKey, hidden=True)
 
     list_config.setDefaultSort('last_modified_on', 'desc')
 
@@ -1014,14 +1020,19 @@ class ProjectsList(Template):
   """Template for listing all projects of particular org."""
 
   def __init__(self, request, data):
+
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = GSoCProject.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     self.data = data
 
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('student', 'Student',
         lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addPlainTextColumn('org', 'Organization',
-        lambda entity, *args: entity.org.name)
+    list_config.addPlainTextColumn('org', 'Organization', getOrganization)
     list_config.addPlainTextColumn(
         'mentors', 'Mentor',
         lambda entity, m, *args: [m[i].name() for i in entity.mentors])

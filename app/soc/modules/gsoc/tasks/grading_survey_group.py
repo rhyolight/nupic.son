@@ -203,14 +203,17 @@ class GradingRecordTasks(object):
     survey_group_entity = record.grading_survey_group
     project_entity = record.parent()
     student_entity = project_entity.parent()
-    org_entity = project_entity.org
+
+    org_key = GSoCProject.org.get_value_for_datastore(project_entity)
+    org = ndb.Key.from_old_key(org_key).get()
+
     site_entity = site.singleton()
 
     mail_context = {
         'survey_group': survey_group_entity,
         'grading_record': record,
         'project': project_entity,
-        'organization': org_entity,
+        'organization': org,
         'site_name': site_entity.site_name,
         'to_name': student_entity.name()
     }

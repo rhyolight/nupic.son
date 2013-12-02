@@ -22,6 +22,7 @@ from django.conf.urls import url as django_url
 
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 from google.appengine.runtime import DeadlineExceededError
 
 from soc.logic import dicts
@@ -206,7 +207,9 @@ class ProposalAcceptanceTask(object):
     sender_name, sender = mail_dispatcher.getDefaultMailSender()
 
     student_entity = proposal.parent()
-    org_entity = proposal.org
+
+    org_key = GSoCProposal.org.get_value_for_datastore(proposal)
+    org = ndb.Key.from_old_key(org_key).get()
     program_entity = proposal.program
 
     context = {
@@ -217,7 +220,7 @@ class ProposalAcceptanceTask(object):
       'program_name': program_entity.name,
       'subject': 'Congratulations!',
       'proposal_title': proposal.title,
-      'org_entity': org_entity,
+      'org_entity': org,
       }
 
     messages = program_entity.getProgramMessages()
@@ -258,7 +261,10 @@ class ProposalAcceptanceTask(object):
     sender_name, sender = mail_dispatcher.getDefaultMailSender()
 
     student_entity = proposal.parent()
-    org_entity = proposal.org
+
+    org_key = GSoCProposal.org.get_value_for_datastore(proposal)
+    org = ndb.Key.from_old_key(org_key).get()
+
     program_entity = proposal.program
 
     context = {
@@ -269,7 +275,7 @@ class ProposalAcceptanceTask(object):
       'proposal_title': proposal.title,
       'program_name': program_entity.name,
       'subject': 'Thank you for applying to %s' % (program_entity.name),
-      'org_entity': org_entity,
+      'org_entity': org,
       }
 
     messages = program_entity.getProgramMessages()

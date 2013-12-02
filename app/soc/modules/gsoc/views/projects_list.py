@@ -17,6 +17,8 @@ into a GSoC program, excluding those which have been withdrawn
 or failed one of the evaluations.
 """
 
+from google.appengine.ext import ndb
+
 from melange.request import exception
 from melange.request import links
 
@@ -81,12 +83,16 @@ class ProjectList(Template):
 
     self.idx = self.DEFAULT_IDX if idx is None else idx
 
+    def getOrganization(entity, *args):
+      """."""
+      org_key = GSoCProject.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('student', 'Student',
         lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addPlainTextColumn('org', 'Organization',
-        lambda entity, *args: entity.org.name)
+    list_config.addPlainTextColumn('org', 'Organization', getOrganization)
     list_config.addSimpleColumn('status', 'Status', hidden=True)
     list_config.addPlainTextColumn('mentors', 'Mentors',
         lambda entity, *args: args[0][entity.key()], hidden=True)
