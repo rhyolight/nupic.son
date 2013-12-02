@@ -39,14 +39,7 @@ def queryAllMentorsKeysForOrg(org_key, limit=1000):
   # get all mentors keys first
   query = profile_model.GSoCProfile.all(keys_only=True)
   query.filter('mentor_for', org_key)
-  mentors_keys = query.fetch(limit=limit)
-
-  # get all org admins keys first
-  query = profile_model.GSoCProfile.all(keys_only=True)
-  query.filter('org_admin_for', org_key)
-  oa_keys = query.fetch(limit=limit)
-
-  return set(mentors_keys + oa_keys)
+  return query.fetch(limit=limit)
 
 
 def queryProfilesForUser(user):
