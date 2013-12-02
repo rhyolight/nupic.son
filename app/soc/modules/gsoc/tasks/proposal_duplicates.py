@@ -19,10 +19,14 @@
 import datetime
 
 from google.appengine.api import taskqueue
+from google.appengine.datastore import datastore_query
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 from django.conf.urls import url as django_url
+
+from melange.models import organization as org_model
 
 from soc.tasks.helper import error_handler
 
@@ -31,6 +35,8 @@ from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.logic import duplicates as duplicates_logic
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
+
+from summerofcode.models import organization as soc_org_model
 
 
 # TODO(ljvderijk): General purpose task responses such as retry(), abort() and
@@ -154,25 +160,24 @@ class ProposalDuplicatesTask(object):
           'Invalid program specified: %s' % program_key)
 
     # get the organization and update the cursor if possible
-    q = GSoCOrganization.all()
-    q.filter('status', 'active')
-    q.filter('program', program_entity)
-    q.filter('slots >', 0)
+    query = soc_org_model.SOCOrganization.query(
+        soc_org_model.SOCOrganization.status == org_model.Status.ACCEPTED,
+        soc_org_model.SOCOrganization.program ==
+            ndb.Key.from_old_key(program_entity.key()),
+        soc_org_model.SOCOrganization.slot_allocation > 0)
 
     # retrieve the org_cursor from POST data
     org_cursor = post_dict.get('org_cursor')
+    start_cursor = (
+        datastore_query.Cursor(urlsafe=org_cursor) if org_cursor else None)
 
-    if org_cursor:
-      org_cursor = str(org_cursor)
-      q.with_cursor(org_cursor)
+    organization, next_cursor, _ = query.fetch_page(
+        1, start_cursor=start_cursor)
 
-    org_entity = q.get()
-    # update the cursor
-    org_cursor = q.cursor()
-
-    if org_entity:
+    if organization:
       # get all the proposals likely to be accepted in the program
-      accepted_proposals = proposal_logic.getProposalsToBeAcceptedForOrg(org_entity)
+      accepted_proposals = (
+          proposal_logic.getProposalsToBeAcceptedForOrg(organization))
 
       for ap in accepted_proposals:
         student_entity = ap.parent()
@@ -187,13 +192,14 @@ class ProposalDuplicatesTask(object):
                                           [ap.key()]
           proposal_duplicate.is_duplicate = \
               len(proposal_duplicate.duplicates) >= 2
-          if org_entity.key() not in proposal_duplicate.orgs:
-            proposal_duplicate.orgs = proposal_duplicate.orgs + [org_entity.key()]
+          if organization.key.to_old_key() not in proposal_duplicate.orgs:
+            proposal_duplicate.orgs = (
+                proposal_duplicate.orgs + [organization.key.to_old_key()])
         else:
           pd_fields  = {
               'program': program_entity,
               'student': student_entity,
-              'orgs':[org_entity.key()],
+              'orgs':[organization.key.to_old_key()],
               'duplicates': [ap.key()],
               'is_duplicate': False
               }
@@ -203,8 +209,10 @@ class ProposalDuplicatesTask(object):
 
       # Adds a new task that performs duplicate calculation for
       # the next organization.
-      task_params = {'program_key': program_key,
-                     'org_cursor': unicode(org_cursor)}
+      task_params = {
+          'program_key': program_key,
+          'org_cursor': next_cursor.urlsafe()
+          }
       task_url = '/tasks/gsoc/proposal_duplicates/calculate'
 
       new_task = taskqueue.Task(params=task_params, url=task_url)

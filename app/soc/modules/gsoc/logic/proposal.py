@@ -27,31 +27,30 @@ from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
 
 
-def getProposalsToBeAcceptedForOrg(org_entity, step_size=25):
+def getProposalsToBeAcceptedForOrg(organization, step_size=25):
   """Returns all proposals which will be accepted into the program
-  for the given organization.
+  for the specified organization.
 
   Args:
-    org_entity: the Organization for which the proposals should be checked
+    organization: Organization entity.
     step_size: optional parameter to specify the amount of Student Proposals
         that should be retrieved per roundtrip to the datastore
 
   Returns:
     List with all GSoCProposal which will be accepted into the program
   """
-
   # check if there are already slots taken by this org
   query = proposal_model.GSoCProposal.all()
-  query.filter('org', org_entity)
+  query.filter('org', organization.key.to_old_key())
   query.filter('status', proposal_model.STATUS_ACCEPTED)
 
-  slots_left_to_assign = max(0, org_entity.slots - query.count())
+  slots_left_to_assign = max(0, organization.slot_allocation - query.count())
   if slots_left_to_assign == 0:
     # no slots left so return nothing
     return []
 
   query = proposal_model.GSoCProposal.all()
-  query.filter('org', org_entity)
+  query.filter('org', organization.key.to_old_key())
   query.filter('status', 'pending')
   query.filter('accept_as_project', True)
   query.filter('has_mentor', True)

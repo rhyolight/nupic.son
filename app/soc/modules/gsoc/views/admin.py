@@ -949,7 +949,6 @@ class ProposalsList(Template):
     if idx != 0:
       return None
 
-    org = self.data.organization
     program = self.data.program
 
     # Hold all the accepted projects for orgs where this user is a member of
@@ -958,17 +957,18 @@ class ProposalsList(Template):
     duplicates = []
     dupQ = GSoCProposalDuplicate.all()
     dupQ.filter('is_duplicate', True)
-    dupQ.filter('org', org)
+    dupQ.filter('org', self.data.url_ndb_org.key.to_old_key())
     dupQ.filter('program', program)
 
-    accepted.extend([p.key() for p in getProposalsToBeAcceptedForOrg(org)])
+    accepted.extend(
+        p.key() for p in getProposalsToBeAcceptedForOrg(self.data.url_ndb_org))
 
     duplicate_entities = dupQ.fetch(1000)
     for dup in duplicate_entities:
       duplicates.extend(dup.duplicates)
 
     q = GSoCProposal.all()
-    q.filter('org', org)
+    q.filter('org', self.data.url_ndb_org.key.to_old_key())
     q.filter('program', program)
 
     starter = lists.keyStarter

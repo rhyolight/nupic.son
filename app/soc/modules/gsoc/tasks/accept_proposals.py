@@ -37,6 +37,8 @@ from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.proposal import GSoCProposal
 
+from summerofcode.models import organization as org_model
+
 
 class ProposalAcceptanceTask(object):
   """Request handlers for accepting and rejecting proposals in form of a Task.
@@ -110,7 +112,7 @@ class ProposalAcceptanceTask(object):
     timekeeper = Timekeeper(20000)
 
     # Query proposals based on status
-    org = GSoCOrganization.get_by_key_name(params['org_key'])
+    org = org_model.SOCOrganization.get_by_id(params['org_key'])
     proposals = proposal_logic.getProposalsToBeAcceptedForOrg(org)
 
     # Accept proposals
