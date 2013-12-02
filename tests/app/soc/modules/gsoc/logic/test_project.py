@@ -20,10 +20,11 @@ from soc.modules.gsoc.logic import project as project_logic
 
 from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.models import profile as profile_model
-from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models import project as project_model
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+from tests import program_utils
 
 
 class HasMentorProjectAssignedTest(unittest.TestCase):
@@ -31,7 +32,7 @@ class HasMentorProjectAssignedTest(unittest.TestCase):
 
   def setUp(self):
     # seed a new program
-    self.program = seeder_logic.seed(program_model.GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
 
     # seed a couple of organizations
     self.organization_one = seeder_logic.seed(org_model.GSoCOrganization,

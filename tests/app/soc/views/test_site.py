@@ -18,11 +18,10 @@ import httplib
 
 from soc.models import program as program_model
 from soc.models import site as site_model
-from soc.modules.gci.models import program as gci_program_model
-from soc.modules.gsoc.models import program as gsoc_program_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import profile_utils
+from tests import program_utils
 from tests import test_utils
 
 
@@ -40,8 +39,8 @@ class LandingPageTest(test_utils.DjangoTestCase):
         }
     self.site = seeder_logic.seed(site_model.Site, properties=site_properties)
 
-    self.gsoc_program = seeder_logic.seed(gsoc_program_model.GSoCProgram)
-    self.gci_program = seeder_logic.seed(gci_program_model.GCIProgram)
+    self.gsoc_program = program_utils.seedGSoCProgram()
+    self.gci_program = program_utils.seedGCIProgram()
 
   def _assertPageTemplatesUsed(self, response):
     """Asserts that all templates for the tested page are used."""

@@ -21,22 +21,25 @@ from google.appengine.ext import db
 from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models import profile as profile_model
-from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.models import timeline as timeline_model
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
-from tests import profile_utils
+from tests import org_utils
+from tests import program_utils
 from tests import timeline_utils
 
+
+TEST_ORG_ID = 'test_org_id'
+TEST_PROGRAM_ID = 'test_program_id'
 
 class ProposalTest(unittest.TestCase):
   """Tests the gsoc logic for proposals.
   """
 
   def setUp(self):
-    self.program = seeder_logic.seed(GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
     #An organization which has all its slots allocated.
     org_properties = {
         'scope': self.program,
@@ -238,7 +241,7 @@ class WithdrawProposalTest(unittest.TestCase):
 
   def setUp(self):
     # seed a new program
-    program = seeder_logic.seed(GSoCProgram)
+    program = program_utils.seedGSoCProgram()
 
     # seed a new organization
     org_properties = {'program': program}
@@ -330,22 +333,21 @@ class CanSubmitProposalTest(unittest.TestCase):
   """Unit tests for canSubmitProposal function."""
 
   def setUp(self):
+    sponsor = program_utils.seedSponsor()
+
     # seed a timeline and set student app period for now
     timeline_properties = {
-        'key_name': 'test_keyname',
+        'key_name': '%s/%s' % (sponsor.key().name(), TEST_PROGRAM_ID),
         'student_signup_start': timeline_utils.past(),
         'student_signup_end': timeline_utils.future(),
+        'scope': sponsor,
         }
     self.timeline = seeder_logic.seed(
         timeline_model.GSoCTimeline, timeline_properties)
 
-    # seed a proggram
-    program_properties = {
-        'key_name': 'test_keyname',
-        'timeline': self.timeline,
-        'apps_tasks_limit': 3
-        }
-    self.program = seeder_logic.seed(GSoCProgram, program_properties)
+    self.program = program_utils.seedGSoCProgram(
+        program_id=TEST_PROGRAM_ID, sponsor_key=sponsor.key(),
+        timeline_key=self.timeline.key(), app_tasks_limit=3)
 
     # seed a new student info
     student_info_properties = {
@@ -406,23 +408,22 @@ class CanProposalBeResubmittedTest(unittest.TestCase):
   """Unit tests for canProposalBeResubmitted function."""
 
   def setUp(self):
+    sponsor = program_utils.seedSponsor()
+
     # seed a timeline and set student app period for now
     timeline_properties = {
-        'key_name': 'test_keyname',
+        'key_name': '%s/%s' % (sponsor.key().name(), TEST_PROGRAM_ID),
         'student_signup_start': timeline_utils.past(),
         'student_signup_end': timeline_utils.future(delta=50),
-        'accepted_students_announced_deadline': timeline_utils.future()
+        'accepted_students_announced_deadline': timeline_utils.future(delta=75),
+        'scope': sponsor,
         }
     self.timeline = seeder_logic.seed(
         timeline_model.GSoCTimeline, timeline_properties)
 
-    # seed a new program
-    program_properties = {
-        'key_name': 'test_keyname',
-        'timeline': self.timeline,
-        'apps_tasks_limit': 3,
-        }
-    self.program = seeder_logic.seed(GSoCProgram, program_properties)
+    self.program = program_utils.seedGSoCProgram(
+        program_id=TEST_PROGRAM_ID, sponsor_key=sponsor.key(),
+        timeline_key=self.timeline.key(), app_tasks_limit=3)
 
     # seed a new student info
     student_info_properties = {
@@ -535,23 +536,22 @@ class ResubmitProposalTest(unittest.TestCase):
   """Unit tests for resubmitProposal function."""
 
   def setUp(self):
+    sponsor = program_utils.seedSponsor()
+
     # seed a timeline and set student app period for now
     timeline_properties = {
-        'key_name': 'test_keyname',
+        'key_name': '%s/%s' % (sponsor.key().name(), TEST_PROGRAM_ID),
         'student_signup_start': timeline_utils.past(),
         'student_signup_end': timeline_utils.future(delta=50),
-        'accepted_students_announced_deadline': timeline_utils.future(),
+        'accepted_students_announced_deadline': timeline_utils.future(delta=75),
+        'scope': sponsor,
         }
     self.timeline = seeder_logic.seed(
         timeline_model.GSoCTimeline, timeline_properties)
 
-    # seed a new program
-    program_properties = {
-        'key_name': 'test_keyname',
-        'timeline': self.timeline,
-        'apps_tasks_limit': 3,
-        }
-    self.program = seeder_logic.seed(GSoCProgram, program_properties)
+    self.program = program_utils.seedGSoCProgram(
+        program_id=TEST_PROGRAM_ID, sponsor_key=sponsor.key(),
+        timeline_key=self.timeline.key(), app_tasks_limit=3)
 
     # seed a new student info
     student_info_properties = {
@@ -561,7 +561,9 @@ class ResubmitProposalTest(unittest.TestCase):
         profile_model.GSoCStudentInfo, student_info_properties)
 
     # seed a new proposal
-    proposal_properties = {'status': proposal_model.STATUS_WITHDRAWN}
+    proposal_properties = {
+        'status': proposal_model.STATUS_WITHDRAWN,
+        }
     self.proposal = seeder_logic.seed(
         proposal_model.GSoCProposal, proposal_properties)
 
@@ -607,7 +609,7 @@ class AcceptProposalTest(unittest.TestCase):
 
   def setUp(self):
     # seed a new program
-    self.program = seeder_logic.seed(GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
 
     # seed a new organization
     org_properties = {'program': self.program}
@@ -718,7 +720,7 @@ class RejectProposalTest(unittest.TestCase):
 
   def setUp(self):
     # seed a new program
-    self.program = seeder_logic.seed(GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
 
     # seed a new profile and make it a student
     self.profile = seeder_logic.seed(profile_model.GSoCProfile, {})

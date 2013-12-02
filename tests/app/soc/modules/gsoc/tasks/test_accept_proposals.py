@@ -17,7 +17,6 @@
 import httplib
 import urllib
 
-from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.models import organization as org_model
@@ -138,10 +137,7 @@ class AcceptProposalsTest(
 
   def testAcceptProposals(self):
     """Tests accept task for an organization."""
-    properties = {
-        'parent': self.gsoc,
-    }
-    self.seed(program_model.GSoCProgramMessages, properties)
+    program_utils.seedGSoCProgramMessages(program_key=self.gsoc.key())
 
     # assert current status of proposal to be accepted
     self.assertEqual(self.student1_proposals[0].status, 'pending')

@@ -20,12 +20,13 @@ from google.appengine.ext import ndb
 
 from melange.logic import organization as org_logic
 
-from soc.modules.gsoc.models import program as program_model
 from soc.models import survey as survey_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from summerofcode import types
 from summerofcode.models import organization as org_model
+
+from tests import program_utils
 
 
 TEST_ORG_ID = 'test_org_id'
@@ -40,7 +41,7 @@ class CreateOrganizationTest(unittest.TestCase):
 
   def setUp(self):
     # seed a program
-    self.program = seeder_logic.seed(program_model.GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
 
     # seed an organization application
     self.survey = seeder_logic.seed(survey_model.Survey)

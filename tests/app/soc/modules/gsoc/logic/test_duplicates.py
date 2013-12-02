@@ -22,12 +22,11 @@ from soc.modules.gsoc.logic import duplicates as duplicate_logic
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.proposal_duplicates_status import \
     GSoCProposalDuplicatesStatus
-from soc.modules.gsoc.models.program import GSoCProgram
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import profile_utils
-from tests.profile_utils import GSoCProfileHelper
+from tests import program_utils
 
 
 class DuplicatesTest(unittest.TestCase):
@@ -53,7 +52,9 @@ class DuplicatesTest(unittest.TestCase):
     assigned to them. Some of the students in each program have duplicate
     proposals and some not.
     """
-    self.program1 = seeder_logic.seed(GSoCProgram)
+    sponsor = program_utils.seedSponsor()
+
+    self.program1 = program_utils.seedGSoCProgram(sponsor_key=sponsor.key())
 
     #Create GSoCStudents in program1
     self.gsoc_students = []
@@ -71,7 +72,7 @@ class DuplicatesTest(unittest.TestCase):
       self.proposal_duplicates.append(proposal_duplicate)
 
     #Create other program entity.
-    self.program2 = seeder_logic.seed(GSoCProgram)
+    self.program2 = program_utils.seedGSoCProgram(sponsor_key=sponsor.key())
 
     #Create students in program2.
     self.other_gsoc_students = []

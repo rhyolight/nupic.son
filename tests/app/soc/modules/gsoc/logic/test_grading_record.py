@@ -22,12 +22,12 @@ from soc.modules.gsoc.models import grading_project_survey_record \
 from soc.modules.gsoc.models import grading_record as grading_record_model
 from soc.modules.gsoc.models import grading_survey_group \
     as grading_survey_group_model
-from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import project_survey_record \
     as project_survey_record_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import program_utils
 from tests import survey_utils
 
 
@@ -36,7 +36,7 @@ class GetFieldsForGradingRecordTest(unittest.TestCase):
 
   def setUp(self):
     # seed a program
-    self.program = seeder_logic.seed(program_model.GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
 
     survey_helper = survey_utils.SurveyHelper(self.program, False)
 

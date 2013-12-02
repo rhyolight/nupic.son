@@ -24,13 +24,15 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from summerofcode.logic import project_survey as project_survey_logic
 
+from tests import program_utils
+
 
 class ConstructEvaluationKeyTest(unittest.TestCase):
   """Unit tests for constructEvaluationKey function."""
 
   def testGetMidtermEvaluationKey(self):
     """Tests that correct midterm evaluation key is returned."""
-    program = seeder_logic.seed(program_model.GSoCProgram)
+    program = program_utils.seedGSoCProgram()
     actual_key = project_survey_logic.constructEvaluationKey(
         program.key(), project_survey_model.MIDTERM_EVAL)
     expected_key = db.Key.from_path(
@@ -40,7 +42,7 @@ class ConstructEvaluationKeyTest(unittest.TestCase):
 
   def testGetFinalEvaluationKey(self):
     """Tests that correct final evaluation key is returned."""
-    program = seeder_logic.seed(program_model.GSoCProgram)
+    program = program_utils.seedGSoCProgram()
     actual_key = project_survey_logic.constructEvaluationKey(
         program.key(), project_survey_model.FINAL_EVAL)
     expected_key = db.Key.from_path(
@@ -50,7 +52,7 @@ class ConstructEvaluationKeyTest(unittest.TestCase):
 
   def testUnknownSurveyType(self):
     """Tests that error is raised when survey type is not supported."""
-    program = seeder_logic.seed(program_model.GSoCProgram)
+    program = program_utils.seedGSoCProgram()
     with self.assertRaises(ValueError):
       project_survey_logic.constructEvaluationKey(program.key(), 'unknown')
 
@@ -59,7 +61,7 @@ class GetStudentEvaluationsTest(unittest.TestCase):
   """Unit tests for getStudentEvaluations function."""
 
   def setUp(self):
-    self.program = seeder_logic.seed(program_model.GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
 
     self.evaluation_keys = set()
 
@@ -92,7 +94,7 @@ class GetStudentEvaluationsTest(unittest.TestCase):
 
   def testNoEvaluationsForProgram(self):
     """Tests that no evaluations are returned for program with no surveys."""
-    other_program = seeder_logic.seed(program_model.GSoCProgram)
+    other_program = program_utils.seedGSoCProgram()
     evaluations = project_survey_logic.getStudentEvaluations(
         other_program.key())
     self.assertSetEqual(evaluations, set())

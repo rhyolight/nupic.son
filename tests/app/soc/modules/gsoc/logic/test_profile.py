@@ -25,11 +25,11 @@ from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
-from soc.modules.gsoc.models.program import GSoCProgram
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import profile_utils
+from tests import program_utils
 from tests.profile_utils import GSoCProfileHelper
 
 
@@ -53,7 +53,7 @@ class ProfileTest(unittest.TestCase):
     return admin
 
   def setUp(self):
-    self.program = seeder_logic.seed(GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
     organization_properties = {'program': self.program}
     self.foo_organization = seeder_logic.seed(GSoCOrganization,
                                               organization_properties)
@@ -125,7 +125,7 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
 
   def setUp(self):
     # seed a new program
-    self.program = seeder_logic.seed(GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
 
     # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
@@ -210,7 +210,7 @@ class ResignAsOrgAdminForOrgTest(unittest.TestCase):
 
   def setUp(self):
     # seed a new program
-    self.program = seeder_logic.seed(GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
 
     # seed a couple of organizations
     self.organization = seeder_logic.seed(GSoCOrganization,
@@ -292,7 +292,7 @@ class CountOrgAdminsTest(unittest.TestCase):
 
   def setUp(self):
     # seed a new program
-    self.program = seeder_logic.seed(GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
 
     # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
@@ -360,7 +360,7 @@ class GetMentorsTest(unittest.TestCase):
 
   def setUp(self):
     # seed a new program
-    self.program = seeder_logic.seed(GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
 
     # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
@@ -500,7 +500,7 @@ class ResignAsMentorForOrgTest(unittest.TestCase):
 
   def setUp(self):
     # seed a new program
-    self.program = seeder_logic.seed(GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
 
     # seed a couple of organizations
     self.organization = seeder_logic.seed(GSoCOrganization,
@@ -575,7 +575,7 @@ class CanBecomeMentorTest(unittest.TestCase):
 
   def setUp(self):
     # seed a new program
-    self.program = seeder_logic.seed(GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
 
     # seed an organization
     self.organization = seeder_logic.seed(GSoCOrganization,
@@ -642,7 +642,7 @@ class CanBecomeOrgAdminTest(unittest.TestCase):
 
   def setUp(self):
     # seed a new program
-    self.program = seeder_logic.seed(GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
 
     # seed an organization
     self.organization = seeder_logic.seed(GSoCOrganization,
@@ -724,7 +724,7 @@ class BecomeMentorForOrgTest(unittest.TestCase):
 
   def setUp(self):
     # seed a new program
-    self.program = seeder_logic.seed(GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
 
     # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,
@@ -831,7 +831,7 @@ class BecomeOrgAdminForOrgTest(unittest.TestCase):
 
   def setUp(self):
     # seed a new program
-    self.program = seeder_logic.seed(GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
 
     # seed a couple of organizations
     self.organization_one = seeder_logic.seed(GSoCOrganization,

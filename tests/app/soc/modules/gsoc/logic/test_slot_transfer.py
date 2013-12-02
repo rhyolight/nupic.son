@@ -23,8 +23,9 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
-from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
+
+from tests import program_utils
 
 
 class SlotTransferTest(unittest.TestCase):
@@ -32,7 +33,7 @@ class SlotTransferTest(unittest.TestCase):
   """
 
   def setUp(self):
-    self.gsoc_program = seeder_logic.seed(GSoCProgram)
+    self.gsoc_program = program_utils.seedGSoCProgram()
     self.gsoc_organization = seeder_logic.seed(GSoCOrganization,
         {'scope': self.gsoc_program, 'program': self.gsoc_program})
     slot_transfer_properties = {'program': self.gsoc_program,
