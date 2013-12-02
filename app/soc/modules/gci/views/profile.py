@@ -27,6 +27,7 @@ from soc.views import profile
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import profile as profile_logic
+from soc.modules.gci.logic import conversation_updater
 from soc.modules.gci.models.avatars import AVATARS_BY_COLOR
 from soc.modules.gci.models.avatars import COLORS
 from soc.modules.gci.models.profile import GCIProfile
@@ -341,6 +342,23 @@ class GCIProfilePage(profile.ProfilePage, GCIRequestHandler):
 
       return data.redirect.to(
           self._getEditProfileURLName(), validated=True, secure=True)
+
+  def validate(self, data, entities=None):
+    """Validate the user and profile data from the forms.
+
+    Extends soc.views.profile.ProfileForm.validate to additionally spawn a task
+    to update the profile's messages if the data is saved.
+    """
+    profiles = []
+    if super(GCIProfilePage, self).validate(data, profiles):
+      if (profiles):
+        conversation_updater.CONVERSATION_UPDATER.updateConversationsForProfile(
+            profiles[0])
+        if entities is not None:
+          entities.extend(profiles)
+      return True
+    else:
+      return False
 
   def _getModulePrefix(self):
     return 'gci'
