@@ -133,6 +133,18 @@ def seedProfile(program, model=profile_model.Profile, user=None,
   mentor_for = mentor_for or []
   org_admin_for = org_admin_for or []
 
+  to_append = []
+  for org_key in org_admin_for:
+    if isinstance(org_key, db.Key) and org_key.kind() == 'GSoCOrganization':
+      to_append.append(db.Key.from_path('SOCOrganization', org_key.name()))
+  org_admin_for.extend(to_append)
+
+  to_append = []
+  for org_key in mentor_for:
+    if isinstance(org_key, db.Key) and org_key.kind() == 'GSoCOrganization':
+      to_append.append(db.Key.from_path('SOCOrganization', org_key.name()))
+  mentor_for.extend(to_append)
+
   properties = {
       'program': program,
       'scope': program,
