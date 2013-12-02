@@ -25,25 +25,25 @@ from soc.modules.gsoc.models import profile as profile_model
 from summerofcode import types
 
 
-def queryAllMentorsKeysForOrg(org, limit=1000):
-  """Returns a list of keys of all the mentors for the organization
+def queryAllMentorsKeysForOrg(org_key, limit=1000):
+  """Returns a list of keys of all the mentors for the specified organization.
 
   Args:
-    org: the organization entity for which we need to get all the mentors
+    org_key: Organization key.
     limit: the maximum number of entities that must be fetched
 
   returns:
-    List of all the mentors for the organization
+    List of db.Key of all the mentors for the organization.
   """
 
   # get all mentors keys first
   query = profile_model.GSoCProfile.all(keys_only=True)
-  query.filter('mentor_for', org)
+  query.filter('mentor_for', org_key)
   mentors_keys = query.fetch(limit=limit)
 
   # get all org admins keys first
   query = profile_model.GSoCProfile.all(keys_only=True)
-  query.filter('org_admin_for', org)
+  query.filter('org_admin_for', org_key)
   oa_keys = query.fetch(limit=limit)
 
   return set(mentors_keys + oa_keys)

@@ -863,7 +863,7 @@ class AssignMentor(base.GSoCRequestHandler):
       if mentor_entity and data.isPossibleMentorForProposal(
           mentor_entity) or (org.list_all_mentors
           and db.Key(mentor_key) in profile_logic.queryAllMentorsKeysForOrg(
-          org)):
+          org_key)):
         return mentor_entity
       else:
         raise exception.BadRequest(message="Invalid post data.")

@@ -79,7 +79,8 @@ class ProfileTest(unittest.TestCase):
       mentor_keys = [entity.key() for entity in mentors]
       org_admin_keys = [entity.key() for entity in org_admins]
       expected_keys = set(mentor_keys + org_admin_keys)
-      actual_keys = set(profile_logic.queryAllMentorsKeysForOrg(org))
+      actual_keys = set(
+          profile_logic.queryAllMentorsKeysForOrg(org.key.to_old_key()))
       self.assertEqual(expected_keys, actual_keys)
 
     #Test for foo_organization
