@@ -575,7 +575,7 @@ class GSoCProfileHelper(ProfileHelper):
         'is_publicly_visible': False, 'accept_as_project': False,
         'is_editable_post_deadline': False, 'extra': None,
         'parent': self.profile, 'status': 'pending', 'has_mentor': True,
-        'program': self.program, 'org': org, 'mentor': mentor
+        'program': self.program, 'org': org.key.to_old_key(), 'mentor': mentor
     }
     self.seedn(GSoCProposal, properties, n)
     return self.profile
@@ -604,7 +604,7 @@ class GSoCProfileHelper(ProfileHelper):
     from soc.modules.gsoc.models import project as project_model
     properties = {
         'program': self.program,
-        'org': org,
+        'org': org.key.to_old_key(),
         'status': project_model.STATUS_ACCEPTED,
         'parent': self.profile,
         'mentors': [mentor.key()],
@@ -622,8 +622,8 @@ class GSoCProfileHelper(ProfileHelper):
 
     from soc.modules.gsoc.models.project import GSoCProject
     properties = {'mentors': [self.profile.key()], 'program': self.program,
-                  'parent': student, 'org': org, 'status': 'accepted',
-                  'proposal': proposal}
+                  'parent': student, 'org': org.key.to_old_key(),
+                  'status': 'accepted', 'proposal': proposal}
     self.seed(GSoCProject, properties)
     return self.profile
 
