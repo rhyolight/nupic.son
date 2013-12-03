@@ -16,14 +16,18 @@
 
 import datetime
 import logging
+import urllib
 
 from django import http
 from django.conf.urls import url as django_url
 
 from google.appengine.api import taskqueue
+from google.appengine.datastore import datastore_query
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 from google.appengine.runtime import DeadlineExceededError
+
+from melange.models import organization as org_model
 
 from soc.logic import dicts
 from soc.logic import mail_dispatcher
@@ -33,11 +37,10 @@ from soc.tasks import responses
 
 from soc.modules.gsoc.logic import accept_proposals as conversion_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
-from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.proposal import GSoCProposal
 
-from summerofcode.models import organization as org_model
+from summerofcode.models import organization as soc_org_model
 
 
 class ProposalAcceptanceTask(object):
@@ -73,28 +76,33 @@ class ProposalAcceptanceTask(object):
       logging.error("invalid program_key in params: '%s'", params)
       return responses.terminateTask()
 
-    q = GSoCOrganization.all()
-    q.filter('program', program)
-    q.filter('status', 'active')
+    query = soc_org_model.SOCOrganization.query(
+        soc_org_model.SOCOrganization.program ==
+            ndb.Key.from_old_key(program.key()),
+        soc_org_model.SOCOrganization.status == org_model.Status.ACCEPTED)
 
-    # Continue from the next organization
-    if 'org_cursor' in params:
-      q.with_cursor(params['org_cursor'])
+    org_cursor = params.get('org_cursor')
+    start_cursor = (
+        datastore_query.Cursor(urlsafe=urllib.unquote_plus(org_cursor))
+        if org_cursor else None)
 
     # Add a task for a single organization
-    org = q.get()
+    organizations, next_cursor, _ = query.fetch_page(
+        1, start_cursor=start_cursor)
 
-    if org:
-      logging.info('Enqueing task to accept proposals for %s.', org.name)
+    if organizations:
+      organization = organizations[0]
+      logging.info(
+          'Enqueing task to accept proposals for %s.', organization.name)
       # Compounded accept/reject taskflow
       taskqueue.add(
         url = '/tasks/gsoc/accept_proposals/accept',
         params = {
-          'org_key': org.key().id_or_name(),
+          'org_key': organization.key.id(),
         })
 
       # Enqueue a new task to do the next organization
-      params['org_cursor'] = q.cursor()
+      params['org_cursor'] = next_cursor.urlsafe()
       taskqueue.add(url=request.path, params=params)
 
     # Exit this task successfully
@@ -112,13 +120,13 @@ class ProposalAcceptanceTask(object):
     timekeeper = Timekeeper(20000)
 
     # Query proposals based on status
-    org = org_model.SOCOrganization.get_by_id(params['org_key'])
+    org = soc_org_model.SOCOrganization.get_by_id(params['org_key'])
     proposals = proposal_logic.getProposalsToBeAcceptedForOrg(org)
 
     # Accept proposals
     try:
       for remain, proposal in timekeeper.iterate(proposals):
-        logging.info("accept %s %s %s", remain, org.key(), proposal.key())
+        logging.info("accept %s %s %s", remain, org.key.id(), proposal.key())
         self.acceptProposal(proposal)
     # Requeue this task for continuation
     except DeadlineExceededError:
@@ -138,15 +146,15 @@ class ProposalAcceptanceTask(object):
     timekeeper = Timekeeper(20000)
 
     # Query proposals
-    org = GSoCOrganization.get_by_key_name(params['org_key'])
+    org = soc_org_model.SOCOrganization.get_by_id(params['org_key'])
     q = GSoCProposal.all()
-    q.filter('org', org)
+    q.filter('org', org.key.to_old_key())
     q.filter('status', 'pending')
 
     # Reject proposals
     try:
       for remain, proposal in timekeeper.iterate(q):
-        logging.info("reject %s %s %s", remain, org.key(), proposal.key())
+        logging.info("reject %s %s %s", remain, org.key.id(), proposal.key())
         self.rejectProposal(proposal)
     # Requeue this task for continuation
     except DeadlineExceededError:
