@@ -66,7 +66,7 @@ class SlotTransferTest(unittest.TestCase):
     #Every organization has a single slot transfer entity.
     expected = self.slot_transfer_entities[0]
     actual = slot_transfer_logic.getSlotTransferEntitiesForOrg(
-                 self.org_entities[0])
+                 self.org_entities[0].key)
     self.assertEqual(actual[0].key(), expected.key())
     self.assertNotEqual(actual[0].key(), self.slot_transfer_entities[1].key())
 
@@ -74,14 +74,14 @@ class SlotTransferTest(unittest.TestCase):
     #must be returned.
     expected = [
         entity.key() for entity in self.gsoc_organization_slot_transfer_entities]
-    slot_transfer_entities = (
-        slot_transfer_logic.getSlotTransferEntitiesForOrg(self.organization))
+    slot_transfer_entities = slot_transfer_logic.getSlotTransferEntitiesForOrg(
+        self.organization.key)
     actual = [entity.key() for entity in slot_transfer_entities]
     self.assertEqual(expected, actual)
 
     # An organization has no slot transfer entity
     expected = []
     other_organization = org_utils.seedSOCOrganization(self.program.key())
-    actual = (
-        slot_transfer_logic.getSlotTransferEntitiesForOrg(other_organization))
+    actual = slot_transfer_logic.getSlotTransferEntitiesForOrg(
+        other_organization.key)
     self.assertEqual(expected, actual)

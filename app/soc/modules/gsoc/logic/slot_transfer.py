@@ -12,23 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Logic for GSoC slot transfers.
-"""
+"""Logic for slot transfers."""
+
+from soc.modules.gsoc.models import slot_transfer as slot_transfer_model
 
 
-from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
+def getSlotTransferEntitiesForOrg(org_key, limit=1000):
+  """Returns the slot transfer entity for the specified organization.
 
+  Args:
+    org_key: NDB Organization key.
 
-def getSlotTransferEntitiesForOrg(org_entity, limit=1000):
-  """Returns the slot transfer entity for the organization.
-
-  params:
-    org_entity: the Organization for which the slot transfer entity must be
-        fetched
-
-  returns:
-    The slot transfer entity for the given organization
+  Returns:
+    The slot transfer entity for the specified organization.
   """
-
-  q = GSoCSlotTransfer.all().ancestor(org_entity)
-  return q.fetch(limit=limit)
+  query = slot_transfer_model.GSoCSlotTransfer.all().ancestor(
+      org_key.to_old_key())
+  return query.fetch(limit=limit)

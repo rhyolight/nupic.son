@@ -261,11 +261,9 @@ class Mutator(access_checker.Mutator):
     self.data.survey_group = survey_group
 
   def slotTransferEntities(self):
-    assert access_checker.isSet(self.data.organization)
-
-    self.data.slot_transfer_entities = \
+    self.data.slot_transfer_entities = (
         slot_transfer_logic.getSlotTransferEntitiesForOrg(
-            self.data.organization)
+            self.data.url_ndb_org.key))
 
 
 class AccessChecker(access_checker.AccessChecker):
