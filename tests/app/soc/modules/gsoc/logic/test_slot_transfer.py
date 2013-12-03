@@ -33,15 +33,15 @@ class SlotTransferTest(unittest.TestCase):
   """
 
   def setUp(self):
-    self.gsoc_program = program_utils.seedGSoCProgram()
+    self.program = program_utils.seedGSoCProgram()
     self.gsoc_organization = seeder_logic.seed(GSoCOrganization,
-        {'scope': self.gsoc_program, 'program': self.gsoc_program})
-    slot_transfer_properties = {'program': self.gsoc_program,
+        {'scope': self.program, 'program': self.program})
+    slot_transfer_properties = {'program': self.program,
                                 'status': 'accepted'}
 
     organization_properties = {
-        'scope': self.gsoc_program,
-        'program': self.gsoc_program
+        'scope': self.program,
+        'program': self.program
         }
     self.org_entities = seeder_logic.seedn(GSoCOrganization, 10,
                                            organization_properties)
@@ -83,6 +83,6 @@ class SlotTransferTest(unittest.TestCase):
     #An organization has no slot transer entity
     expected = []
     organization = seeder_logic.seed(GSoCOrganization,
-        {'scope': self.gsoc_program, 'program': self.gsoc_program})
+        {'scope': self.program, 'program': self.program})
     actual = slot_transfer_logic.getSlotTransferEntitiesForOrg(organization)
     self.assertEqual(expected, actual)
