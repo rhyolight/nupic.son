@@ -499,7 +499,7 @@ class TaskInformation(Template):
 
     task = self.data.task
 
-    is_org_admin = self.data.orgAdminFor(task.org)
+    is_org_admin = self.data.orgAdminFor(task.org.key())
     is_mentor = self.data.mentorFor(task.org)
     is_student = self.data.is_student
     is_owner = task_logic.isOwnerOfTask(task, profile)

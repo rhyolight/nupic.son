@@ -340,7 +340,7 @@ class AccessChecker(access_checker.AccessChecker):
         raise exception.Forbidden(message=DEF_FAILED_PREVIOUS_EVAL % (
             self.data.mentor_evaluation.short_name.lower()))
 
-    if self.data.orgAdminFor(self.data.organization):
+    if self.data.orgAdminFor(self.data.url_ndb_org.key):
       return
 
     # check if the currently logged in user is the mentor or co-mentor

@@ -49,12 +49,10 @@ class Apply(Template):
     self.current_timeline = current_timeline
 
   def context(self):
-    organization = self.data.organization
-
     context = {
         'request_data': self.data,
         'current_timeline': self.current_timeline,
-        'organization': organization,
+        'organization': self.data.url_ndb_org,
     }
 
     if not self.data.profile:
@@ -89,11 +87,11 @@ class Apply(Template):
 
     context['mentor_apply_block'] = True
 
-    if self.data.orgAdminFor(organization):
+    if self.data.orgAdminFor(self.data.url_ndb_org.key):
       context['role'] = 'an administrator'
       return context
 
-    if self.data.mentorFor(organization):
+    if self.data.mentorFor(self.data.url_ndb_org.key):
       context['role'] = 'a mentor'
       return context
 

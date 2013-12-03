@@ -17,6 +17,7 @@ request in the GCI module.
 """
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 # TODO(nathaniel): Still reticent about having the RequestData object
 # allowed to raise exceptions from the exception module.
@@ -367,17 +368,23 @@ class RequestData(request_data.RequestData):
 
     return self._org_map[org_key]
 
-  def orgAdminFor(self, organization):
+  def orgAdminFor(self, org_key):
     """Returns true iff the user is admin for the specified organization.
 
-    Organization may either be a key or an organization instance.
+    Args:
+      org_key: Organization key.
     """
     if self.is_host:
       return True
-    if isinstance(organization, db.Model):
-      organization = organization.key()
 
-    return organization in [i.key() for i in self.org_admin_for]
+    if not self.profile:
+      return False
+
+    # TODO(daniel): remove when all models are converted to NDB
+    if isinstance(org_key, ndb.Key):
+      org_key = org_key.to_old_key()
+
+    return org_key in self.profile.org_admin_for
 
   def mentorFor(self, organization):
     """Returns true iff the user is mentor for the specified organization.
