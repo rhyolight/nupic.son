@@ -12,32 +12,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for base templates. All the templates are tested on homepage.
-"""
-
+"""Tests for base templates. All the templates are tested on homepage."""
 
 from tests.test_utils import GSoCDjangoTestCase
 
+# A dict from names of links in the main menu to boolean values of whether
+# or not they are "safe" to follow in a test (the logout link will log out
+# the user and thus alter the test environment).
+MAIN_MENU_COMMON_LINK_NAMES = {
+    'home_link': True,
+    'search_link': True,
+    'about_link': True,
+    'events_link': True,
+    'connect_link': True,
+    'help_link': True,
+    'logout_link': False,
+}
+
 
 class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
-  """Tests base templates on home page.
-  """
+  """Tests base templates on home page."""
 
   def setUp(self):
     self.init()
 
   def assertMainMenuCommonLinks(self, mainmenu_context):
-    self.assertIn('home_link', mainmenu_context)
-    self.assertIn('search_link', mainmenu_context)
-    self.assertIn('about_link', mainmenu_context)
-    self.assertIn('events_link', mainmenu_context)
-    self.assertIn('connect_link', mainmenu_context)
-    self.assertIn('help_link', mainmenu_context)
-    self.assertIn('logout_link', mainmenu_context)
+    """Confirms that each link in the main menu functions."""
+    for link_name, follow in MAIN_MENU_COMMON_LINK_NAMES.iteritems():
+      url = mainmenu_context.get(link_name, None)
+      self.assertIsNotNone(url)
+      if follow:
+        response = self.get(url)
+        self.assertResponseOK(response)
 
   def testMainMenuDuringKickoff(self):
-    """Tests the main menu before the org signup period.
-    """
+    """Tests the main menu before the org signup period."""
     self.timeline_helper.kickoff()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
@@ -70,8 +79,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     self.assertIn('admin_link', mainmenu_context)
 
   def testMainMenuDuringOrgSignup(self):
-    """Tests the main menu during the org signup period.
-    """
+    """Tests the main menu during the org signup period."""
     self.timeline_helper.orgSignup()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
@@ -82,8 +90,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     self.assertNotIn('projects_link', mainmenu_context)
 
   def testMainMenuDuringOrgsAnnounced(self):
-    """Tests the main menu after organizations have been announced.
-    """
+    """Tests the main menu after organizations have been announced."""
     self.timeline_helper.orgsAnnounced()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
@@ -94,8 +101,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     self.assertNotIn('projects_link', mainmenu_context)
 
   def testMainMenuDuringStudentSignup(self):
-    """Tests the main menu during student signup period.
-    """
+    """Tests the main menu during student signup period."""
     self.timeline_helper.studentSignup()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
@@ -119,8 +125,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     self.assertNotIn('projects_link', mainmenu_context)
 
   def testMainMenuPostStudentsAnnounced(self):
-    """Tests the main menu after accepted students have been announced.
-    """
+    """Tests the main menu after accepted students have been announced."""
     self.timeline_helper.studentsAnnounced()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
