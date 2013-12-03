@@ -171,10 +171,11 @@ class ProposalDuplicatesTask(object):
     start_cursor = (
         datastore_query.Cursor(urlsafe=org_cursor) if org_cursor else None)
 
-    organization, next_cursor, _ = query.fetch_page(
+    organizations, next_cursor, _ = query.fetch_page(
         1, start_cursor=start_cursor)
 
-    if organization:
+    if organizations:
+      organization = organizations[0]
       # get all the proposals likely to be accepted in the program
       accepted_proposals = (
           proposal_logic.getProposalsToBeAcceptedForOrg(organization))
