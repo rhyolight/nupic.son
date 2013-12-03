@@ -21,12 +21,14 @@ import unittest
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
-from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
 from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
 
+from tests import org_utils
 from tests import program_utils
 
+
+NUMBER_OF_ORGS = 10
 
 class SlotTransferTest(unittest.TestCase):
   """Tests for GSoC slot transfer logic.
@@ -34,30 +36,27 @@ class SlotTransferTest(unittest.TestCase):
 
   def setUp(self):
     self.program = program_utils.seedGSoCProgram()
-    self.gsoc_organization = seeder_logic.seed(GSoCOrganization,
-        {'scope': self.program, 'program': self.program})
+    self.organization = org_utils.seedSOCOrganization(self.program.key())
+
     slot_transfer_properties = {'program': self.program,
                                 'status': 'accepted'}
 
-    organization_properties = {
-        'scope': self.program,
-        'program': self.program
-        }
-    self.org_entities = seeder_logic.seedn(GSoCOrganization, 10,
-                                           organization_properties)
+    self.org_entities = [
+        org_utils.seedSOCOrganization(self.program.key())
+        for _ in range(NUMBER_OF_ORGS)]
 
     #Assign one slot transfer entity to each of the organization in
     #self.org_entities
     self.slot_transfer_entities = []
     properties = slot_transfer_properties.copy()
     for i in range(10):
-      properties['parent'] = self.org_entities[i]
+      properties['parent'] = self.org_entities[i].key.to_old_key()
       entity = seeder_logic.seed(GSoCSlotTransfer, properties)
       self.slot_transfer_entities.append(entity)
 
-    #Assign multiple slot transfer entities to self.gsoc_organization
+    #Assign multiple slot transfer entities to self.organization
     properties = slot_transfer_properties.copy()
-    properties.update({'parent': self.gsoc_organization})
+    properties.update({'parent': self.organization.key.to_old_key()})
     self.gsoc_organization_slot_transfer_entities = seeder_logic.seedn(
         GSoCSlotTransfer, 5, properties)
 
@@ -75,14 +74,14 @@ class SlotTransferTest(unittest.TestCase):
     #must be returned.
     expected = [
         entity.key() for entity in self.gsoc_organization_slot_transfer_entities]
-    slot_transfer_entities = slot_transfer_logic.getSlotTransferEntitiesForOrg(
-                                 self.gsoc_organization)
+    slot_transfer_entities = (
+        slot_transfer_logic.getSlotTransferEntitiesForOrg(self.organization))
     actual = [entity.key() for entity in slot_transfer_entities]
     self.assertEqual(expected, actual)
 
-    #An organization has no slot transer entity
+    # An organization has no slot transfer entity
     expected = []
-    organization = seeder_logic.seed(GSoCOrganization,
-        {'scope': self.program, 'program': self.program})
-    actual = slot_transfer_logic.getSlotTransferEntitiesForOrg(organization)
+    other_organization = org_utils.seedSOCOrganization(self.program.key())
+    actual = (
+        slot_transfer_logic.getSlotTransferEntitiesForOrg(other_organization))
     self.assertEqual(expected, actual)
