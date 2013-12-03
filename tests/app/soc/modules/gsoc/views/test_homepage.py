@@ -13,26 +13,22 @@
 # limitations under the License.
 
 
-"""Tests for program homepage related views.
-"""
+"""Tests for program homepage related views."""
 
 import unittest
 
 from tests import profile_utils
-from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import GSoCDjangoTestCase
+from tests import test_utils
 
 
-class HomepageViewTest(GSoCDjangoTestCase):
-  """Tests program homepage views.
-  """
+class HomepageViewTest(test_utils.GSoCDjangoTestCase):
+  """Tests program homepage views."""
 
   def setUp(self):
     self.init()
 
   def assertHomepageTemplatesUsed(self, response):
-    """Asserts that all the templates from the homepage view were used.
-    """
+    """Asserts that all the templates from the homepage view were used."""
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'modules/gsoc/_connect_with_us.html')
     self.assertTemplateUsed(response, 'modules/gsoc/homepage/base.html')
@@ -40,8 +36,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gsoc/homepage/_timeline.html')
 
   def testHomepageAnonymous(self):
-    """Tests the homepage as an anonymous user throughout the program.
-    """
+    """Tests the homepage as an anonymous user throughout the program."""
     url = '/gsoc/homepage/' + self.gsoc.key().name()
 
     self.timeline_helper.offSeason()
@@ -76,8 +71,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
 
   @unittest.skip('timeline widget is currently disabled')
   def testHomepageDuringSignup(self):
-    """Tests the student homepage during the signup period.
-    """
+    """Tests the student homepage during the signup period."""
     self.timeline_helper.studentsAnnounced()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
@@ -91,7 +85,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
     # Show featured_project
     student = profile_utils.seedGSoCStudent(self.program)
 
-    mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
+    mentor = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
     mentor.createOtherUser('mentor@example.com')
     mentor.createMentorWithProject(self.org, student)
 
@@ -111,8 +105,7 @@ class HomepageViewTest(GSoCDjangoTestCase):
 
   @unittest.skip('timeline widget is currently disabled')
   def testHomepageAfterStudentsAnnounced(self):
-    """Tests the student homepage after the student's have been announced.
-    """
+    """Tests the student homepage after the student's have been announced."""
     self.timeline_helper.studentsAnnounced()
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
