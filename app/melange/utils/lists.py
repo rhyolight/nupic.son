@@ -749,6 +749,14 @@ class OrganizationColumn(Column):
     return ndb.Key.from_old_key(org_key).get().name
 
 
+class TagsColumn(Column):
+  """Column class to represent tags for organization."""
+
+  def getValue(self, entity):
+    """See Column.getValue for specification."""
+    return ', '.join(entity.tags)
+
+
 key = EncodedKeyColumn(key_column_id_const.KEY_COLUMN_ID, 'Key', hidden=True)
 student = StudentColumn('student', 'Student')
 title = SimpleColumn('title', 'Title')
@@ -775,8 +783,10 @@ class NdbKeyColumn(Column):
 
 key = NdbKeyColumn(key_column_id_const.KEY_COLUMN_ID, 'Key', hidden=True)
 name = SimpleColumn('name', 'Name')
+tags = TagsColumn('tags', 'Tags')
+
 ORGANIZATION_LIST = List(
-    ORGANIZATION_LIST_ID, 0, org_model.SOCOrganization, [key, name],
+    ORGANIZATION_LIST_ID, 0, org_model.SOCOrganization, [key, name, tags],
     datastore_reader)
 
 LISTS = {

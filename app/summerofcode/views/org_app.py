@@ -754,6 +754,8 @@ class PublicOrganizationList(template.Template):
     self._list_config = lists.ListConfiguration()
     self._list_config.addPlainTextColumn(
         'name', 'Name', lambda e, *args: e.name.strip())
+    self._list_config.addPlainTextColumn(
+        'tags', 'Tags', lambda e, *args: ', '.join(e.tags))
 
   def templatePath(self):
     """See template.Template.templatePath for specification."""
