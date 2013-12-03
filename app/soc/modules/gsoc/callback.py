@@ -67,7 +67,6 @@ class Callback(object):
     self.views.append(accept_proposals.AcceptProposalsPage())
     self.views.append(accept_withdraw_projects.AcceptProposals())
     self.views.append(accept_withdraw_projects.WithdrawProjects())
-    self.views.append(accepted_orgs.AcceptedOrgsPublicPage())
     self.views.append(accepted_orgs.AcceptedOrgsAdminPage())
     self.views.append(admin.DashboardPage())
     self.views.append(admin.LookupLinkIdPage())

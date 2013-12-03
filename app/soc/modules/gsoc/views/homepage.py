@@ -30,6 +30,8 @@ from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+from summerofcode.views.helper import urls
+
 
 class Timeline(Template):
   """Timeline template.
@@ -90,10 +92,12 @@ class Apply(Template):
 
     if self.data.timeline.orgsAnnounced():
       # accepted orgs block
-      accepted_orgs = redirector.urlOf('gsoc_accepted_orgs')
+      accepted_orgs_link = links.LINKER.program(
+          self.data.program, urls.UrlNames.ORG_PUBLIC_LIST)
+
       nr_orgs = self.data.program.nr_accepted_orgs
       context['nr_accepted_orgs'] = nr_orgs if nr_orgs else ""
-      context['accepted_orgs_link'] = accepted_orgs
+      context['accepted_orgs_link'] = accepted_orgs_link
       participating_orgs = []
       current_orgs = org_logic.participating(self.data.program)
       for org in current_orgs:
