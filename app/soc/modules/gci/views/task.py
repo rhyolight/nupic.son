@@ -248,8 +248,8 @@ class TaskViewPage(GCIRequestHandler):
     context = {
       'page_name': '%s - %s' % (task.title, task.org.name),
       'task': task,
-      'is_mentor': data.mentorFor(task.org),
-      'task_info': TaskInformation(data),
+      'is_mentor': data.mentorFor(task.org.key()),
+      'task_info': TaskInformation(data.key()),
     }
 
     if task.deadline:
@@ -500,7 +500,7 @@ class TaskInformation(Template):
     task = self.data.task
 
     is_org_admin = self.data.orgAdminFor(task.org.key())
-    is_mentor = self.data.mentorFor(task.org)
+    is_mentor = self.data.mentorFor(task.org.key())
     is_student = self.data.is_student
     is_owner = task_logic.isOwnerOfTask(task, profile)
 
@@ -687,7 +687,7 @@ class CommentsTemplate(Template):
     """Returns true iff the comments are allowed to be posted at this time."""
     return not self.data.timeline.allWorkStopped() or (
         not self.data.timeline.allReviewsStopped() and
-        self.data.mentorFor(self.data.task.org))
+        self.data.mentorFor(self.data.task.org.key()))
 
   def templatePath(self):
     """Returns the path to the template that should be used in render()."""

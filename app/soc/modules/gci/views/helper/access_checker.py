@@ -351,7 +351,7 @@ class AccessChecker(access_checker.AccessChecker):
     """Raises exception.UserError if commenting is not allowed."""
     if not self.data.timeline.allWorkStopped() or (
         not self.data.timeline.allReviewsStopped() and
-        self.data.mentorFor(self.data.task.org)):
+        self.data.mentorFor(self.data.task.org.key())):
       return
 
     raise exception.Forbidden(message=DEF_COMMENTING_NOT_ALLOWED)

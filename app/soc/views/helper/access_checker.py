@@ -487,13 +487,12 @@ class AccessChecker(BaseAccessChecker):
     """Checks if the user is not a mentor.
     """
     self.isProfileActive()
-    assert isSet(self.data.organization)
 
-    if not self.data.mentorFor(self.data.organization):
+    if not self.data.mentorFor(self.data.url_ndb_org.key):
       return
 
     raise exception.Forbidden(
-        message=DEF_ALREADY_MENTOR % self.data.organization.name)
+        message=DEF_ALREADY_MENTOR % self.data.url_ndb_org.name)
 
   def isOrgAdmin(self):
     """Checks if the user is an org admin.
@@ -521,7 +520,7 @@ class AccessChecker(BaseAccessChecker):
     """
     self.isProfileActive()
 
-    if self.data.mentorFor(org):
+    if self.data.mentorFor(org.key):
       return
 
     raise exception.Forbidden(message=DEF_NOT_MENTOR % org.name)
