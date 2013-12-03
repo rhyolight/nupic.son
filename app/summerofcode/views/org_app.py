@@ -37,6 +37,7 @@ from soc.logic import cleaning
 
 from soc.views import readonly_template
 from soc.views import template
+from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
 from soc.views.helper import lists
 
@@ -756,6 +757,9 @@ class PublicOrganizationList(template.Template):
         'name', 'Name', lambda e, *args: e.name.strip())
     self._list_config.addPlainTextColumn(
         'tags', 'Tags', lambda e, *args: ', '.join(e.tags))
+    self._list_config.addPlainTextColumn('ideas', 'Ideas',
+        lambda e, *args: url_helper.urlize(e.ideas, name='[ideas page]'),
+        hidden=True)
 
   def templatePath(self):
     """See template.Template.templatePath for specification."""

@@ -24,6 +24,7 @@ from melange import key_column_id_const
 
 from soc.mapreduce import cache_list_items
 from soc.modules.gsoc.models import project as project_model
+from soc.views.helper import url as url_helper
 
 from melange.logic import cached_list
 
@@ -757,6 +758,14 @@ class TagsColumn(Column):
     return ', '.join(entity.tags)
 
 
+class IdeasColumn(Column):
+  """Column class to represent URL to list of ideas for organization."""
+
+  def getValue(self, entity):
+    """See Column.getValue for specification."""
+    return url_helper.urlize(entity.ideas_page, name='Ideas page')
+
+
 key = EncodedKeyColumn(key_column_id_const.KEY_COLUMN_ID, 'Key', hidden=True)
 student = StudentColumn('student', 'Student')
 title = SimpleColumn('title', 'Title')
@@ -784,10 +793,11 @@ class NdbKeyColumn(Column):
 key = NdbKeyColumn(key_column_id_const.KEY_COLUMN_ID, 'Key', hidden=True)
 name = SimpleColumn('name', 'Name')
 tags = TagsColumn('tags', 'Tags')
+ideas = IdeasColumn('ideas', 'Ideas')
 
 ORGANIZATION_LIST = List(
-    ORGANIZATION_LIST_ID, 0, org_model.SOCOrganization, [key, name, tags],
-    datastore_reader)
+    ORGANIZATION_LIST_ID, 0, org_model.SOCOrganization,
+    [key, name, tags, ideas], datastore_reader)
 
 LISTS = {
     GSOC_PROJECTS_LIST_ID: GSOC_PROJECTS_LIST,
