@@ -41,25 +41,38 @@ class AcceptedOrgsAdminPageTest(test_utils.GSoCDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testPageForbiddenForStudents(self):
-    self.profile_helper.createStudent()
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCStudent(self.program, user)
+
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testPageForbiddenForMentors(self):
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user, mentor_for=[self.org.key.to_old_key()])
+
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testPageForbiddenForOrgAdmins(self):
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user, org_admin_for=[self.org.key.to_old_key()])
+
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testPageAccessibleForHosts(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedUser(host_for=[self.sponsor.key()])
+    profile_utils.login(user)
+
     response = self.get(self.url)
     self.assertResponseOK(response)
     self.assertAcceptedOrgsPageTemplatesUsed(response)

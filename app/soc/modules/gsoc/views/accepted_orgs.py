@@ -14,6 +14,8 @@
 
 """Module containing the views for GSoC accepted orgs."""
 
+from google.appengine.ext import ndb
+
 from django.utils import html as html_utils
 
 from melange.request import access
@@ -22,13 +24,14 @@ from soc.views.helper import lists
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.logic import profile as profile_logic
-from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.templates import org_list
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+from summerofcode.models import organization as org_model
 
+# TODO(daniel): update this class to fully work with NDB organizations
 class AcceptedOrgsAdminList(org_list.OrgList):
   """Template for list of accepted organizations."""
 
@@ -83,8 +86,10 @@ class AcceptedOrgsAdminList(org_list.OrgList):
 
   def _getQuery(self):
     """See org_list.OrgList._getQuery for specification."""
-    query = org_model.GSoCOrganization.all()
-    query.filter('scope', self.data.program)
+    query = org_model.SOCOrganization.query(
+        org_model.SOCOrganization.program ==
+            ndb.Key.from_old_key(self.data.program.key()))
+
     return query
 
   def _getPrefetcher(self):
