@@ -26,12 +26,11 @@ from soc.modules.gsoc.views.helper import url_names
 
 
 def siteMenuContext(data):
-  """Generates URL links for the hard-coded GSoC site menu items.
-  """
+  """Generates URL links for the hard-coded GSoC site menu items."""
   redirect = data.redirect
   program = data.program
 
-  from soc.modules.gsoc.models.program import GSoCProgram
+  GSoCProgram = program_model.GSoCProgram
   about_page = GSoCProgram.about_page.get_value_for_datastore(program)
   connect = GSoCProgram.connect_with_us_page.get_value_for_datastore(program)
   help_page = GSoCProgram.help_page.get_value_for_datastore(program)
@@ -47,7 +46,7 @@ def siteMenuContext(data):
           data.program))
 
   if events_page_key:
-    context['events_link'] = links.LINKER.program(data.program, 'gsoc_events'),
+    context['events_link'] = links.LINKER.program(data.program, 'gsoc_events')
 
   if data.gae_user:
     context['logout_link'] = links.LINKER.logout(data.request)
