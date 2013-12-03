@@ -389,12 +389,11 @@ class OrgConnectionPage(base.GSoCRequestHandler):
     if data.is_developer:
       return
 
-    assert isSet(data.organization)
     check.isProgramVisible()
     check.isOrganizationInURLActive()
 
     check.notStudent()
-    check.isOrgAdminForOrganization(data.organization)
+    check.isOrgAdminForOrganization(data.url_ndb_org.key.to_old_key())
 
   def context(self, data, check, mutator):
     """Handler for Connection page request for an org."""

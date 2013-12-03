@@ -498,8 +498,7 @@ class AccessChecker(BaseAccessChecker):
   def isOrgAdmin(self):
     """Checks if the user is an org admin.
     """
-    assert isSet(self.data.organization)
-    self.isOrgAdminForOrganization(self.data.organization)
+    self.isOrgAdminForOrganization(self.data.url_ndb_org.key.to_old_key())
 
   def isMentor(self):
     """Checks if the user is a mentor.
@@ -507,15 +506,15 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.organization)
     self.isMentorForOrganization(self.data.organization)
 
-  def isOrgAdminForOrganization(self, org):
+  def isOrgAdminForOrganization(self, org_key):
     """Checks if the user is an admin for the specified organiztaion.
     """
     self.isProfileActive()
 
-    if self.data.orgAdminFor(org):
+    if org_key in self.data.profile.org_admin_for:
       return
 
-    raise exception.Forbidden(message=DEF_NOT_ADMIN % org.name)
+    raise exception.Forbidden(message=DEF_NOT_ADMIN % org_key.name())
 
   def isMentorForOrganization(self, org):
     """Checks if the user is a mentor for the specified organiztaion.

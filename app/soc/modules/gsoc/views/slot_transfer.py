@@ -83,7 +83,7 @@ class SlotTransferPage(base.GSoCRequestHandler):
     check.isLoggedIn()
     check.isProgramVisible()
     check.isOrganizationInURLActive()
-    check.isOrgAdminForOrganization(data.organization)
+    check.isOrgAdminForOrganization(data.url_ndb_org.key.to_old_key())
 
     check.isSlotTransferActive()
     mutator.slotTransferEntities()
@@ -138,7 +138,7 @@ class UpdateSlotTransferPage(base.GSoCRequestHandler):
     check.isLoggedIn()
     check.isProgramVisible()
     check.isOrganizationInURLActive()
-    check.isOrgAdminForOrganization(data.organization)
+    check.isOrgAdminForOrganization(data.url_ndb_org.key.to_old_key())
 
     check.isSlotTransferActive()
     mutator.slotTransferEntities()
