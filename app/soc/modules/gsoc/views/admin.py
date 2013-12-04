@@ -893,7 +893,7 @@ class ProposalsList(Template):
     def getOrganizationKey(entity, *args):
       """Helper function to get value of organization key column."""
       org_key = GSoCProposal.org.get_value_for_datastore(entity)
-      return ndb.Key.from_old_key(org_key).name()
+      return ndb.Key.from_old_key(org_key).id()
 
     options = [
         # TODO(nathaniel): This looks like structured data that should be
@@ -934,7 +934,8 @@ class ProposalsList(Template):
     return'modules/gsoc/admin/_proposals_list.html'
 
   def context(self):
-    description = 'List of proposals submitted into %s' % self.data.organization.name
+    description = (
+        'List of proposals submitted into %s' % self.data.url_ndb_org.name)
 
     list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=0, description=description)
@@ -972,7 +973,9 @@ class ProposalsList(Template):
     q.filter('program', program)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
+
+    # TODO(daniel): enable prefetching from ndb models ('org')
+    prefetcher = lists.ModelPrefetcher(GSoCProposal, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
@@ -1046,7 +1049,7 @@ class ProjectsList(Template):
         self.data, self._list_config, idx=0,
         description='List of projects under %s that ' \
             'accepted into %s' % (
-            self.data.organization.name, self.data.program.name))
+            self.data.url_ndb_org.name, self.data.program.name))
 
     return {
         'lists': [list_configuration_response],
@@ -1217,11 +1220,15 @@ class StudentsList(Template):
           for student_info in student_infos if student_info
           )
 
-      orgs = db.get(set(sum(
-          (student_info.project_for_orgs for student_info in student_infos),
-          [])))
+      org_keys = set()
+      for student_info in student_infos:
+        org_keys.update(
+            GSoCStudentInfo.project_for_orgs.get_value_for_datastore(
+                student_info))
+      orgs = ndb.get_multi(org_keys)
+
       prefetched_organization_dict = dict(
-          (org.key(), org) for org in orgs if org)
+          (org.key, org) for org in orgs if org)
 
       return ([prefetched_student_info_dict, prefetched_organization_dict], {})
 
