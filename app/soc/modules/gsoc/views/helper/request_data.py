@@ -20,6 +20,8 @@ request in the GSoC module.
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
+from melange.models import connection as connection_model
+from melange.models import organization as melange_org_model
 # TODO(nathaniel): I'm not sure how I feel about the exception module
 # being important here, but that just goes hand-in-hand with my skepticism
 # about the RequestData object raising exceptions generally.
@@ -37,6 +39,7 @@ from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.views.helper import url_names
 
 from summerofcode import types
+
 
 class TimelineHelper(request_data.TimelineHelper):
   """Helper class for the determination of the currently active period.
@@ -501,7 +504,7 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = 'show_gsoc_document'
     return self
 
-  def connect_user(self, user=None, organization=None):
+  def connect_user(self, user=None, org_key=None):
     """Sets the _url_name for a gsoc_user_connection redirect.
 
     Intended for use when generating a url for a redirect to OrgConnectionPage.
@@ -516,29 +519,29 @@ class RedirectHelper(request_data.RedirectHelper):
       assert 'user' in self._data.kwargs
       user = self._data.kwargs['user']
 
-    self.connect_org(organization=organization)
+    self.connect_org(org_key=org_key)
     self.kwargs['link_id'] = user.link_id
     return self
 
-  def connect_org(self, organization=None):
+  def connect_org(self, org_key=None):
     """Sets the _url_name for a gsoc_org_connection redirect.
 
     Intended for use when generating a url for a redirect to
     UserConnectionPage.
 
     Args:
-      organization: Override the current organization (if any) provided
+      org_key: Override the current organization (if any) provided
         by the RequestData object. Intended specifically for the call
         from connect_user.
     """
-    if organization:
-      current_org = organization
-    else:
-      current_org = self._data.organization
-    self.organization(current_org)
+    if not org_key:
+      org_key = self._data.url_ndb_org.key
+
     # We need to reassign the kwarg to the org's link_id since it's
     # being set to the Organization object
-    self.kwargs['organization'] = current_org.link_id
+    self.kwargs['sponsor'] = melange_org_model.getSponsorId(org_key)
+    self.kwargs['program'] = melange_org_model.getProgramId(org_key)
+    self.kwargs['organization'] = melange_org_model.getOrgId(org_key)
     self._url_name = url_names.GSOC_USER_CONNECTION
     return self
 
@@ -548,7 +551,10 @@ class RedirectHelper(request_data.RedirectHelper):
     Args:
       connection: The Connection instance to view.
     """
-    self.connect_org(connection.organization)
+    org_key = (
+        connection_model.Connection.organization
+            .get_value_for_datastore(connection))
+    self.connect_org(org_key)
 
     self.kwargs['id'] = connection.key().id()
     # Need to make sure that when the view loads it can query for the
