@@ -116,10 +116,10 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     return self.seed(GSoCProject, properties)
 
   def getStudentEvalRecordProperties(self, show=False):
-    eval = self.evaluation.createStudentEvaluation()
+    evaluation = self.evaluation.createStudentEvaluation()
 
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
     student_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
     student_profile.createOtherUser('student_with_proj@example.com')
@@ -128,7 +128,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     project = GSoCProject.all().get()
 
     suffix = "%s/%s/%s/%s" % (
-        self.gsoc.key().name(), eval.link_id,
+        self.gsoc.key().name(), evaluation.link_id,
         project.parent().link_id, project.key().id())
 
     base_url = '/gsoc/eval/student'
@@ -137,12 +137,12 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     else:
       url = '%s/%s' % (base_url, suffix)
 
-    return (url, eval, mentor)
+    return (url, evaluation, mentor)
 
-  def ffPastEval(self, eval):
-    eval.survey_start = timeline_utils.past(20)
-    eval.survey_end = timeline_utils.past(10)
-    eval.put()
+  def ffPastEval(self, evaluation):
+    evaluation.survey_start = timeline_utils.past(20)
+    evaluation.survey_end = timeline_utils.past(10)
+    evaluation.put()
 
   def setEvaluationPeriodToFuture(self, evaluation):
     evaluation.survey_start = timeline_utils.future(delta=10)
@@ -174,7 +174,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     suffix = "%s/%s" % (self.gsoc.key().name(), link_id)
 
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
     self.profile_helper.createStudentWithProject(self.org, mentor)
     # test review GET
@@ -247,21 +247,21 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response, _ = self.modelPost(url, ProjectSurvey, override)
     self.assertResponseRedirect(response, url+'?validated')
 
-    eval = ProjectSurvey.all().get()
+    evaluation = ProjectSurvey.all().get()
 
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertEvaluationCreateTemplateUsed(response)
 
     self.assertContains(
-        response, 'Edit - %s' % (eval.title,))
+        response, 'Edit - %s' % (evaluation.title,))
     self.assertContains(
         response,
         '<input name="schema" type="hidden" id="schema" value=%s />'
-            % (json.dumps(html.escape(eval.schema)),), html=True)
+            % (json.dumps(html.escape(evaluation.schema)),), html=True)
 
     self.assertEqual(response.context['page_name'],
-                     'Edit - %s' % (eval.title,))
+                     'Edit - %s' % (evaluation.title,))
     self.assertEqual(response.context['post_url'], url)
     form = response.context['forms'][0]
 
@@ -271,7 +271,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(expected_fields, actual_fields)
 
   def testTakeEvaluationForMentor(self):
-    url, eval, _ = self.getStudentEvalRecordProperties()
+    url, _, _ = self.getStudentEvalRecordProperties()
 
     mentor = self.profile_helper.createMentor(self.org)
 
@@ -290,7 +290,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testTakeEvaluationForAnotherOrgMentor(self):
-    url, eval, _ = self.getStudentEvalRecordProperties()
+    url, _, _ = self.getStudentEvalRecordProperties()
 
     another_org = self.createOrg()
     self.profile_helper.createMentor(another_org)
@@ -299,7 +299,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testTakeEvaluationForAnotherOrgAdmin(self):
-    url, eval, _ = self.getStudentEvalRecordProperties()
+    url, _, _ = self.getStudentEvalRecordProperties()
 
     another_org = self.createOrg()
     self.profile_helper.createOrgAdmin(another_org)
@@ -308,12 +308,12 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testTakeEvaluationForOrgAdmin(self):
-    url, eval, _ = self.getStudentEvalRecordProperties()
+    url, evaluation, _ = self.getStudentEvalRecordProperties()
 
     project = GSoCProject.all().get()
 
     suffix = "%s/%s/%s/%s" % (
-        self.gsoc.key().name(), eval.link_id,
+        self.gsoc.key().name(), evaluation.link_id,
         project.parent().link_id, project.key().id())
 
     base_url = '/gsoc/eval/student'
@@ -328,25 +328,25 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
 
     # test student evaluation show GET for a for a student who
     # does not have a project in the program
-    url, eval, _ = self.getStudentEvalRecordProperties()
+    url, evaluation, _ = self.getStudentEvalRecordProperties()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
     project = GSoCProject.all().get()
 
     suffix = "%s/%s/%s/%s" % (
-        self.gsoc.key().name(), eval.link_id,
+        self.gsoc.key().name(), evaluation.link_id,
         project.parent().link_id, project.key().id())
 
     base_url = '/gsoc/eval/student'
 
-    self.ffPastEval(eval)
+    self.ffPastEval(evaluation)
     response = self.get(url)
     show_url = '%s/show/%s' % (base_url, suffix)
     self.assertResponseRedirect(response, show_url)
 
   def testTakeEvalForAnotherStudentWithProject(self):
-    url, eval, mentor = self.getStudentEvalRecordProperties()
+    url, evaluation, mentor = self.getStudentEvalRecordProperties()
 
     self.profile_helper.createStudentWithProject(self.org, mentor)
     # test student evaluation show GET for a for a student who
@@ -358,21 +358,21 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     project = GSoCProject.all().get()
 
     suffix = "%s/%s/%s/%s" % (
-        self.gsoc.key().name(), eval.link_id,
+        self.gsoc.key().name(), evaluation.link_id,
         project.parent().link_id, project.key().id())
 
     base_url = '/gsoc/eval/student'
 
-    self.ffPastEval(eval)
+    self.ffPastEval(evaluation)
     response = self.get(url)
     show_url = '%s/show/%s' % (base_url, suffix)
     self.assertResponseRedirect(response, show_url)
 
   def testTakeEvalForStudentProjectWithAnotherMentor(self):
-    url, eval, _ = self.getStudentEvalRecordProperties()
+    url, evaluation, _ = self.getStudentEvalRecordProperties()
 
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
     self.profile_helper.createStudentWithProject(self.org, mentor)
     # test student evaluation show GET for a for a student who
@@ -384,22 +384,22 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     project = GSoCProject.all().get()
 
     suffix = "%s/%s/%s/%s" % (
-        self.gsoc.key().name(), eval.link_id,
+        self.gsoc.key().name(), evaluation.link_id,
         project.parent().link_id, project.key().id())
 
     base_url = '/gsoc/eval/student'
 
-    self.ffPastEval(eval)
+    self.ffPastEval(evaluation)
     response = self.get(url)
     show_url = '%s/show/%s' % (base_url, suffix)
     self.assertResponseRedirect(response, show_url)
 
   def testTakeEvalForStudentProjectWithAnotherOrg(self):
-    url, eval, _ = self.getStudentEvalRecordProperties()
+    url, evaluation, _ = self.getStudentEvalRecordProperties()
     other_org = self.createOrg()
 
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[other_org.key()])
+        self.program, mentor_for=[other_org.key.to_old_key()])
 
     self.profile_helper.createStudentWithProject(other_org, mentor)
     # test student evaluation show GET for a for a student who
@@ -410,12 +410,12 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     project = GSoCProject.all().get()
 
     suffix = "%s/%s/%s/%s" % (
-        self.gsoc.key().name(), eval.link_id,
+        self.gsoc.key().name(), evaluation.link_id,
         project.parent().link_id, project.key().id())
 
     base_url = '/gsoc/eval/student'
 
-    self.ffPastEval(eval)
+    self.ffPastEval(evaluation)
     response = self.get(url)
     show_url = '%s/show/%s' % (base_url, suffix)
     self.assertResponseRedirect(response, show_url)
@@ -426,7 +426,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.setEvaluationPeriodToFuture(evaluation)
 
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
     self.profile_helper.createStudentWithProject(self.org, mentor)
 
@@ -459,10 +459,10 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseOK(response)
 
   def testTakeEvalForStudent(self):
-    eval = self.evaluation.createStudentEvaluation()
+    evaluation = self.evaluation.createStudentEvaluation()
 
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
     self.profile_helper.createStudentWithProject(self.org, mentor)
 
@@ -470,7 +470,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
 
     base_url = '/gsoc/eval/student'
     suffix = "%s/%s/%s/%s" % (
-        self.gsoc.key().name(), eval.link_id,
+        self.gsoc.key().name(), evaluation.link_id,
         project.parent().link_id, project.key().id())
 
     url = '%s/%s' % (base_url, suffix)
@@ -481,14 +481,13 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseOK(response)
     self.assertEvaluationTakeTemplateUsed(response)
 
-    self.assertContains(response, '%s' % (eval.title))
+    self.assertContains(response, '%s' % (evaluation.title))
     self.assertContains(response, 'Project: %s' % (project.title))
 
-    self.assertEqual(response.context['page_name'],
-                     '%s' % (eval.title))
+    self.assertEqual(response.context['page_name'], '%s' % (evaluation.title))
     form = response.context['forms'][0]
 
-    self.assertFormFromSchema(form, eval.schema)
+    self.assertFormFromSchema(form, evaluation.schema)
 
     postdata = {
         'frm-t1309871149671-item': 'one line text message',
@@ -514,7 +513,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response = self.post(url, postdata)
     self.assertResponseRedirect(response, '%s?validated' % (url,))
 
-    self.ffPastEval(eval)
+    self.ffPastEval(evaluation)
     response = self.get(url)
     show_url = '%s/show/%s' % (base_url, suffix)
     self.assertResponseRedirect(response, show_url)
@@ -524,16 +523,16 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
 
     # test student evaluation show GET for a for a student who
     # does not have a project in the program
-    url, eval, _ = self.getStudentEvalRecordProperties(show=True)
+    url, evaluation, _ = self.getStudentEvalRecordProperties(show=True)
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.ffPastEval(eval)
+    self.ffPastEval(evaluation)
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testShowEvalForAnotherStudentWithProject(self):
-    url, eval, mentor = self.getStudentEvalRecordProperties(show=True)
+    url, evaluation, mentor = self.getStudentEvalRecordProperties(show=True)
 
     self.profile_helper.createStudentWithProject(self.org, mentor)
     # test student evaluation show GET for a for a student who
@@ -542,15 +541,15 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.ffPastEval(eval)
+    self.ffPastEval(evaluation)
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testShowEvalForStudentProjectWithAnotherMentor(self):
-    url, eval, _ = self.getStudentEvalRecordProperties(show=True)
+    url, evaluation, _ = self.getStudentEvalRecordProperties(show=True)
 
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
     self.profile_helper.createStudentWithProject(self.org, mentor)
     # test student evaluation show GET for a for a student who
@@ -559,16 +558,16 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.ffPastEval(eval)
+    self.ffPastEval(evaluation)
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testShowEvalForStudentProjectWithAnotherOrg(self):
-    url, eval, _ = self.getStudentEvalRecordProperties(show=True)
+    url, evaluation, _ = self.getStudentEvalRecordProperties(show=True)
     other_org = self.createOrg()
 
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[other_org.key()])
+        self.program, mentor_for=[other_org.key.to_old_key()])
 
     self.profile_helper.createStudentWithProject(other_org, mentor)
     # test student evaluation show GET for a for a student who
@@ -576,22 +575,22 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.ffPastEval(eval)
+    self.ffPastEval(evaluation)
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testShowEvalForStudent(self):
-    eval = self.evaluation.createStudentEvaluation()
+    evaluation = self.evaluation.createStudentEvaluation()
 
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
     self.profile_helper.createStudentWithProject(self.org, mentor)
 
     project = GSoCProject.all().get()
 
     suffix = "%s/%s/%s/%s" % (
-        self.gsoc.key().name(), eval.link_id,
+        self.gsoc.key().name(), evaluation.link_id,
         project.parent().link_id, project.key().id())
 
     url = '/gsoc/eval/student/show/%s' % (suffix,)
@@ -602,14 +601,14 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseOK(response)
     self.assertEvaluationShowTemplateUsed(response)
 
-    self.ffPastEval(eval)
+    self.ffPastEval(evaluation)
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertEvaluationShowTemplateUsed(response)
 
   def testShowEvaluationForMentor(self):
     # test student evaluation show GET for a mentor of the same organization
-    url, eval, mentor = self.getStudentEvalRecordProperties(show=True)
+    url, evaluation, mentor = self.getStudentEvalRecordProperties(show=True)
     response = self.get(url)
     self.assertResponseForbidden(response)
 
@@ -622,7 +621,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.ffPastEval(eval)
+    self.ffPastEval(evaluation)
     project.mentors = project_mentors
     project.put()
 
@@ -638,38 +637,38 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
   def testShowEvaluationForOtherOrgMentor(self):
     another_org = self.createOrg()
     self.profile_helper.createMentor(another_org)
-    url, eval, _ = self.getStudentEvalRecordProperties(show=True)
+    url, evaluation, _ = self.getStudentEvalRecordProperties(show=True)
 
     # test student evaluation show GET for a mentor of another organization
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.ffPastEval(eval)
+    self.ffPastEval(evaluation)
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testShowEvaluationForOtherOrgAdmin(self):
     another_org = self.createOrg()
     self.profile_helper.createOrgAdmin(another_org)
-    url, eval, _ = self.getStudentEvalRecordProperties(show=True)
+    url, evaluation, _ = self.getStudentEvalRecordProperties(show=True)
 
     # test student evaluation show GET for an org admin of another organization
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.ffPastEval(eval)
+    self.ffPastEval(evaluation)
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testShowEvaluationForOrgAdmin(self):
     self.profile_helper.createOrgAdmin(self.org)
-    url, eval, _ = self.getStudentEvalRecordProperties(show=True)
+    url, evaluation, _ = self.getStudentEvalRecordProperties(show=True)
     # test student evaluation show GET for an org admin of the org
     # to which project belongs to
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.ffPastEval(eval)
+    self.ffPastEval(evaluation)
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertEvaluationShowTemplateUsed(response)
