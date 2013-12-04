@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from soc.modules.gsoc.models.proposal import GSoCProposal
-
 """Module containing the AccessChecker class that contains helper functions
 for checking access.
 """
@@ -21,11 +19,15 @@ import urllib
 
 from django.utils.translation import ugettext
 
+from google.appengine.ext import ndb
+
 from melange.request import exception
 from melange.request import links
 
 from soc.models import org_app_record
 from soc.models import program as program_model
+from soc.modules.gsoc.models.proposal import GSoCProposal
+
 from soc.views.helper.gdata_apis import oauth as oauth_helper
 
 from summerofcode.logic import survey as survey_logic
@@ -502,8 +504,7 @@ class AccessChecker(BaseAccessChecker):
   def isMentor(self):
     """Checks if the user is a mentor.
     """
-    assert isSet(self.data.organization)
-    self.isMentorForOrganization(self.data.organization)
+    self.isMentorForOrganization(self.data.url_ndb_org.key)
 
   def isOrgAdminForOrganization(self, org_key):
     """Checks if the user is an admin for the specified organiztaion.
@@ -515,15 +516,17 @@ class AccessChecker(BaseAccessChecker):
 
     raise exception.Forbidden(message=DEF_NOT_ADMIN % org_key.name())
 
-  def isMentorForOrganization(self, org):
+  def isMentorForOrganization(self, org_key):
     """Checks if the user is a mentor for the specified organiztaion.
     """
     self.isProfileActive()
 
-    if self.data.mentorFor(org.key):
+    if self.data.mentorFor(org_key):
       return
 
-    raise exception.Forbidden(message=DEF_NOT_MENTOR % org.name)
+    if isinstance(org_key, ndb.Key):
+      org_key = org_key.to_old_key()
+    raise exception.Forbidden(message=DEF_NOT_MENTOR % org_key.name())
 
   def isOrganizationInURLActive(self):
     """Checks if the organization in URL exists and if its status is active.
