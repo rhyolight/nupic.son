@@ -438,7 +438,7 @@ class ReviewProposal(base.GSoCRequestHandler):
 
     for mentor in possible_mentors:
       org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-          self.data.url_proposal)
+          data.url_proposal)
       if org_key in mentor.mentor_for:
         result.append(mentor)
         continue
