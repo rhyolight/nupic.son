@@ -20,6 +20,7 @@ import json
 import logging
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 
@@ -159,8 +160,12 @@ class ProposalList(Template):
       list_query = proposal_logic.getProposalsQuery(program=self.data.program)
 
       starter = lists.keyStarter
+
+      # TODO(daniel): support prefetching of NDB organizations
+      #prefetcher = lists.ModelPrefetcher(
+      #    proposal_model.GSoCProposal, ['org'], parent=True)
       prefetcher = lists.ModelPrefetcher(
-          proposal_model.GSoCProposal, ['org'], parent=True)
+          proposal_model.GSoCProposal, parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.data.request, self._list_config, list_query,
@@ -362,8 +367,10 @@ class ProjectList(Template):
       list_query = project_logic.getProjectsQuery(program=self.data.program)
 
       starter = lists.keyStarter
-      prefetcher = lists.ModelPrefetcher(
-          project_model.GSoCProject, ['org'], parent=True)
+      # TODO(daniel): support prefetching of NDB organizations
+      #prefetcher = lists.ModelPrefetcher(
+      #    project_model.GSoCProject, ['org'], parent=True)
+      prefetcher = None
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.data.request, self._list_config, list_query,
