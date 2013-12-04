@@ -405,31 +405,6 @@ class ProfileHelper(object):
     self.user.put()
     return self.user
 
-  def createOrgAdmin(self, org):
-    """Creates an Organization Administrator profile for the current user.
-
-    Args:
-      org: organization entity.
-
-    Returns:
-      the current profile entity.
-    """
-    self.createProfile()
-    self.profile.mentor_for = [org.key()]
-    self.profile.org_admin_for = [org.key()]
-    self.profile.is_mentor = True
-    self.profile.is_org_admin = True
-    self.profile.put()
-
-    connection_properties = {
-        'user_role': connection_model.ROLE,
-        'org_role': connection_model.ORG_ADMIN_ROLE
-        }
-    connection_utils.seed_new_connection(self.profile, org.key(),
-        **connection_properties)
-
-    return self.profile
-
   def removeOrgAdmin(self):
     """Removes the org admin profile from the current user.
     """
@@ -440,29 +415,6 @@ class ProfileHelper(object):
     self.profile.is_mentor = False
     self.profile.is_org_admin = False
     self.profile.put()
-    return self.profile
-
-  def createMentor(self, org):
-    """Creates a Mentor profile for the current user.
-
-    Args:
-      org: organization entity.
-
-    Returns:
-      the current profile entity.
-    """
-    self.createProfile()
-    self.profile.mentor_for = [org.key()]
-    self.profile.is_mentor = True
-    self.profile.put()
-
-    connection_properties = {
-        'user_role': connection_model.ROLE,
-        'org_role': connection_model.MENTOR_ROLE
-        }
-    connection_utils.seed_new_connection(self.profile, org.key(),
-        **connection_properties)
-
     return self.profile
 
   def removeMentor(self):
@@ -524,6 +476,54 @@ class GSoCProfileHelper(ProfileHelper):
         'is_org_admin': False, 'is_mentor': False, 'is_student': False
     }
     self.profile = self.seed(GSoCProfile, properties)
+    return self.profile
+
+  def createOrgAdmin(self, org):
+    """Creates an Organization Administrator profile for the current user.
+
+    Args:
+      org: organization entity.
+
+    Returns:
+      the current profile entity.
+    """
+    self.createProfile()
+    self.profile.mentor_for = [org.key.to_old_key()]
+    self.profile.org_admin_for = [org.key.to_old_key()]
+    self.profile.is_mentor = True
+    self.profile.is_org_admin = True
+    self.profile.put()
+
+    connection_properties = {
+        'user_role': connection_model.ROLE,
+        'org_role': connection_model.ORG_ADMIN_ROLE
+        }
+    connection_utils.seed_new_connection(self.profile, org.key.to_old_key(),
+        **connection_properties)
+
+    return self.profile
+
+  def createMentor(self, org):
+    """Creates a Mentor profile for the current user.
+
+    Args:
+      org: organization entity.
+
+    Returns:
+      the current profile entity.
+    """
+    self.createProfile()
+    self.profile.mentor_for = [org.key.to_old_key()]
+    self.profile.is_mentor = True
+    self.profile.put()
+
+    connection_properties = {
+        'user_role': connection_model.ROLE,
+        'org_role': connection_model.MENTOR_ROLE
+        }
+    connection_utils.seed_new_connection(self.profile, org.key.to_old_key(),
+        **connection_properties)
+
     return self.profile
 
   def notificationSettings(
@@ -599,7 +599,7 @@ class GSoCProfileHelper(ProfileHelper):
     # We add an organization entry for each project even if the projects belong
     # to the same organization, we add the organization multiple times. We do
     # this to make project removal easy.
-    student.student_info.project_for_orgs += [org.key()] * n
+    student.student_info.project_for_orgs += [org.key.to_old_key()] * n
     student.student_info.put()
     from soc.modules.gsoc.models import project as project_model
     properties = {
@@ -630,7 +630,7 @@ class GSoCProfileHelper(ProfileHelper):
   def createConnection(self, org):
     self.createProfile()
     self.connection = connection_utils.seed_new_connection(
-        self.profile, org.key())
+        self.profile, org.key.to_old_key())
     return self.connection
 
 
@@ -662,6 +662,54 @@ class GCIProfileHelper(ProfileHelper):
         'is_org_admin': False, 'is_mentor': False, 'is_student': False
     }
     self.profile = self.seed(GCIProfile, properties)
+    return self.profile
+
+  def createOrgAdmin(self, org):
+    """Creates an Organization Administrator profile for the current user.
+
+    Args:
+      org: organization entity.
+
+    Returns:
+      the current profile entity.
+    """
+    self.createProfile()
+    self.profile.mentor_for = [org.key()]
+    self.profile.org_admin_for = [org.key()]
+    self.profile.is_mentor = True
+    self.profile.is_org_admin = True
+    self.profile.put()
+
+    connection_properties = {
+        'user_role': connection_model.ROLE,
+        'org_role': connection_model.ORG_ADMIN_ROLE
+        }
+    connection_utils.seed_new_connection(self.profile, org.key(),
+        **connection_properties)
+
+    return self.profile
+
+  def createMentor(self, org):
+    """Creates a Mentor profile for the current user.
+
+    Args:
+      org: organization entity.
+
+    Returns:
+      the current profile entity.
+    """
+    self.createProfile()
+    self.profile.mentor_for = [org.key()]
+    self.profile.is_mentor = True
+    self.profile.put()
+
+    connection_properties = {
+        'user_role': connection_model.ROLE,
+        'org_role': connection_model.MENTOR_ROLE
+        }
+    connection_utils.seed_new_connection(self.profile, org.key(),
+        **connection_properties)
+
     return self.profile
 
   def notificationSettings(
