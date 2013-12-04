@@ -25,12 +25,12 @@ from soc.models.site import Site
 from soc.models.sponsor import Sponsor
 
 from soc.modules.gci.models.organization import GCIOrganization
-from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.seeder.logic.providers import string as string_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from summerofcode import types as soc_types
 
+from tests import org_utils
 from tests import profile_utils
 from tests import timeline_utils
 
@@ -394,17 +394,9 @@ class GSoCProgramHelper(ProgramHelper):
 
     This new organization will not be stored in self.org but returned.
     """
-    super(GSoCProgramHelper, self).createNewOrg(override)
-    properties = {
-        'scope': self.program,
-        'status': 'active',
-        'scoring_disabled': False,
-        'max_score': 5,
-        'home': None,
-        'program': self.program,
-        }
-    properties.update(override)
-    return self.seed(GSoCOrganization, properties)
+    if not self.program:
+      self.createProgram()
+    return org_utils.seedSOCOrganization(self.program.key())
 
   def createOrgApp(self, override={}):
     """Creates an organization application for the defined properties.
