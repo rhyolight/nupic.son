@@ -32,15 +32,15 @@ class SOCOrganization(org_model.Organization):
 
   #: Number of slots that have been allocated to this organization by
   #: program administrators.
-  slot_allocation = ndb.IntegerProperty()
+  slot_allocation = ndb.IntegerProperty(default=0)
 
   #: Number of slots that have been requested by organization administrators
   #: based on how many proposals the organization is really willing to accept.
-  slot_request_min = ndb.IntegerProperty()
+  slot_request_min = ndb.IntegerProperty(default=0)
 
   #: Number of slots that would have been desired by the organization,
   #: if the total number of slots was unlimited.
-  slot_request_max = ndb.IntegerProperty()
+  slot_request_max = ndb.IntegerProperty(default=0)
 
   #: Maximal number of points that can be given to a proposal by mentors.
   max_score = ndb.IntegerProperty(default=5)
