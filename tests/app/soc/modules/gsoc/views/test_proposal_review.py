@@ -52,14 +52,19 @@ class ProposalReviewTest(GSoCDjangoTestCase):
   def createMentorWithSettings(self, email, notification_settings={}):
     user = profile_utils.seedUser(email=email)
     return profile_utils.seedGSoCProfile(
-        self.program, user=user, mentor_for=[self.org.key()],
+        self.program, user=user, mentor_for=[self.org.key.to_old_key()],
         **notification_settings)
 
   def createProposal(self, override_properties={}):
     properties = {
-        'score': 0, 'nr_scores': 0, 'is_publicly_visible': False,
-        'accept_as_project': False, 'is_editable_post_deadline': False,
-        'status': 'pending', 'program': self.gsoc, 'org': self.org,
+        'score': 0,
+        'nr_scores': 0,
+        'is_publicly_visible': False,
+        'accept_as_project': False,
+        'is_editable_post_deadline': False,
+        'status': 'pending',
+        'program': self.gsoc,
+        'org': self.org.key.to_old_key(),
         'mentor': None
     }
     properties.update(override_properties)
