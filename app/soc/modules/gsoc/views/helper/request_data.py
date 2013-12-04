@@ -38,7 +38,6 @@ from soc.modules.gsoc.views.helper import url_names
 
 from summerofcode import types
 
-
 class TimelineHelper(request_data.TimelineHelper):
   """Helper class for the determination of the currently active period.
 
@@ -427,9 +426,13 @@ class RequestData(request_data.RequestData):
     """
     if not self._isSet(self._org_map):
       if self.profile:
-        orgs = db.get(
-            set(self.profile.mentor_for + self.profile.org_admin_for))
-        self._org_map = dict((i.key(), i) for i in orgs)
+        org_keys = set()
+        org_keys.update(map(ndb.Key.from_old_key, self.profile.mentor_for))
+        org_keys.update(map(ndb.Key.from_old_key, self.profile.org_admin_for))
+
+        orgs = ndb.get_multi(org_keys)
+
+        self._org_map = dict((i.key, i) for i in orgs)
       else:
         self._org_map = {}
 
