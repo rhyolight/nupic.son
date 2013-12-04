@@ -45,8 +45,8 @@ class TestApplyOrgAdmissionDecisions(
         org_model.Status.APPLYING)
     for i in range(4 * len(statuses)):
       org = org_utils.seedOrganization(
-          'org_id_%s' % i,
-          self.program.key(), status=statuses[i % len(statuses)])
+          self.program.key(), org_id='org_id_%s' % i,
+          status=statuses[i % len(statuses)])
       seeded_orgs[i % len(statuses)].append(org.key)
 
     self.pre_accepted_orgs = seeded_orgs[0]
@@ -89,14 +89,14 @@ class TestApplyOrgAdmissionDecisions(
     pre_accepted_orgs = []
     for i in range(2):
       org = org_utils.seedOrganization(
-          'pre_accepted_org_id_%s' % i, program.key(),
+          program.key(), org_id='pre_accepted_org_id_%s' % i,
           status=org_model.Status.PRE_ACCEPTED)
       pre_accepted_orgs.append(org.key)
 
     pre_rejected_orgs = []
     for i in range(3):
       org = org_utils.seedOrganization(
-          'pre_rejrected_org_id_%s' % i, program.key(),
+          program.key(), org_id='pre_rejrected_org_id_%s' % i,
           status=org_model.Status.PRE_REJECTED)
       pre_rejected_orgs.append(org.key)
 

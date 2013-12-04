@@ -139,7 +139,7 @@ class UpdateOrganizationTest(unittest.TestCase):
     """See unittest.TestCase.setUp for specification."""
     self.program = seeder_logic.seed(program_model.Program)
     self.org = org_utils.seedOrganization(
-        TEST_ORG_ID, self.program.key(), name=TEST_ORG_NAME)
+        self.program.key(), org_id=TEST_ORG_ID, name=TEST_ORG_NAME)
     self.app_response = survey_model.SurveyResponse(parent=self.org.key)
     self.app_response.put()
 
@@ -205,7 +205,7 @@ class SetApplicationResponseTest(unittest.TestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     program = seeder_logic.seed(program_model.Program)
-    self.org = org_utils.seedOrganization('test_org_id', program.key())
+    self.org = org_utils.seedOrganization(program.key())
 
     self.survey_key = db.Key.from_path('Survey', 'test_survey_name')
 
@@ -276,7 +276,7 @@ class SetStatusTest(test_utils.DjangoTestCase):
 
     self.site = program_utils.seedSite()
 
-    self.org = org_utils.seedOrganization(TEST_ORG_ID, self.program.key())
+    self.org = org_utils.seedOrganization(self.program.key())
 
   def testAcceptOrganization(self):
     """Tests that organization is successfully accepted."""
