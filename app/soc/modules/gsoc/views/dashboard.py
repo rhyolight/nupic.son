@@ -476,7 +476,10 @@ class MyProposalsComponent(Component):
     q.ancestor(self.data.profile)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
+
+    # TODO(daniel): enable prefetching from ndb models
+    #prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
+    prefetcher = lists.ModelPrefetcher(GSoCProposal, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
@@ -523,7 +526,8 @@ class MyProjectsComponent(Component):
         ancestor=self.data.profile, program=self.data.program)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(GSoCProject, ['org'], parent=True)
+    # TODO(daniel): enable prefetching from ndb models
+    prefetcher = lists.ModelPrefetcher(GSoCProject, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, list_query,
@@ -609,8 +613,9 @@ class MyEvaluationsComponent(Component):
         ancestor=self.data.profile)
 
     starter = lists.keyStarter
+    # TODO(daniel): enable prefetching from ndb models ('org')
     prefetcher = lists.ListModelPrefetcher(
-        GSoCProject, ['org'],
+        GSoCProject, [],
         ['mentors', 'failed_evaluations'],
         parent=True)
     row_adder = evaluationRowAdder(self.evals)
@@ -677,8 +682,9 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
         mentors=self.data.profile)
 
     starter = lists.keyStarter
+    # TODO(daniel): enable prefetching from ndb models ('orgs')
     prefetcher = lists.ListModelPrefetcher(
-        GSoCProject, ['org'],
+        GSoCProject, [],
         ['mentors', 'failed_evaluations'],
         parent=True)
     row_adder = evaluationRowAdder(self.evals)
@@ -818,7 +824,7 @@ class SubmittedProposalsComponent(Component):
         mentor_keys, hidden=True)
 
     orgs = data.mentor_for
-    options = [("^%s$" % i.short_name, i.short_name) for i in orgs]
+    options = [("^%s$" % i.name, i.name) for i in orgs]
 
 
     if options and len(options) > 1:
@@ -852,6 +858,10 @@ class SubmittedProposalsComponent(Component):
 
     extra_columns = []
     for org in data.mentor_for:
+      # TODO(daniel): add proposal_extra to Organization model??
+      if not hasattr(org, 'proposal_extra'):
+        continue
+
       for column in org.proposal_extra:
         extra_columns.append(column)
         col_name = "%s" % (column)
@@ -931,7 +941,7 @@ class SubmittedProposalsComponent(Component):
 
     for org in self.data.mentor_for:
       for column in org.proposal_extra:
-        extra_columns.setdefault(org.key().name(), []).append(column)
+        extra_columns.setdefault(org.key.id(), []).append(column)
 
     for _, properties in parsed.iteritems():
       if 'org_key' not in properties or 'full_proposal_key' not in properties:
@@ -1016,8 +1026,8 @@ class SubmittedProposalsComponent(Component):
     dupQ.filter('is_duplicate', True)
 
     q = GSoCProposal.all()
-    q.filter('org IN', self.data.mentor_for)
-    dupQ.filter('orgs IN', self.data.mentor_for)
+    q.filter('org IN', self.data.profile.mentor_for)
+    dupQ.filter('orgs IN', self.data.profile.mentor_for)
 
     # Only fetch the data if we will display it
     if self.data.program.duplicates_visible:
@@ -1032,7 +1042,8 @@ class SubmittedProposalsComponent(Component):
         duplicates.extend(dup.duplicates)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
+    # TODO(daniel): enable prefetching from ndb models ('org')
+    prefetcher = lists.ModelPrefetcher(GSoCProposal, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
@@ -1087,7 +1098,8 @@ class ProjectsIMentorComponent(Component):
       list_query.filter('mentors', self.data.profile)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(GSoCProject, ['org'], parent=True)
+    # TODO(daniel): enable prefetching from ndb models ('org')
+    prefetcher = lists.ModelPrefetcher(GSoCProject, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, list_query,
@@ -1216,17 +1228,19 @@ class OrganizationsIParticipateInComponent(Component):
     specified organization.
 
     Args:
-      org: the specified GSoCOrganization entity
+      org: organization entity.
 
     Returns:
       number of slots used by the organization
     """
     if self.data.timeline.studentsAnnounced():
-      query = db.Query(GSoCProposal, keys_only=True).filter('org', org)
+      query = db.Query(GSoCProposal, keys_only=True)
+      query.filter('org', org.key.to_old_key())
       query.filter('status', 'accepted')
       return query.count()
     else:
-      query = db.Query(GSoCProposal, keys_only=True).filter('org', org)
+      query = db.Query(GSoCProposal, keys_only=True)
+      query.filter('org', org.key.to_old_key())
       query.filter('has_mentor', True).filter('accept_as_project', True)
       return query.count()
 
@@ -1244,8 +1258,14 @@ class OrgConnectionComponent(Component):
     self.data = data
     list_config = lists.ListConfiguration()
 
-    list_config.addPlainTextColumn('organization', 'Organization',
-        lambda e, *args: e.organization.name)
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = (connection_model.Connection.organization
+          .get_value_for_datastore(entity))
+      return ndb.Key.from_old_key(org_key).get().name
+
+    list_config.addPlainTextColumn(
+        'organization', 'Organization', getOrganization)
     list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.parent().name())
     list_config.addPlainTextColumn('role', 'Role',
@@ -1275,14 +1295,16 @@ class OrgConnectionComponent(Component):
       return None
 
     q = connection_model.Connection.all()
-    q.filter('organization IN', [org.key() for org in self.data.org_admin_for])
+    q.filter('organization IN', self.data.profile.org_admin_for)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(
-        connection_model.Connection, ['organization'])
+
+    # TODO(daniel): enable prefetching from ndb models
+    #prefetcher = lists.ModelPrefetcher(
+    #    connection_model.Connection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
-      self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter, prefetcher=None)
     return response_builder.build()
 
   def context(self):
@@ -1312,11 +1334,17 @@ class UserConnectionComponent(Component):
   def __init__(self, data):
     """Initializes this component.
     """
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = (connection_model.Connection.organization
+          .get_value_for_datastore(entity))
+      return ndb.Key.from_old_key(org_key).get().name
+
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key',
         lambda e, *args: '%s' % e.keyName(), hidden=True)
-    list_config.addPlainTextColumn('organization', 'Organization',
-        lambda e, *args: '%s' % e.organization.name)
+    list_config.addPlainTextColumn(
+        'organization', 'Organization', getOrganization)
     list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.parent().name())
     list_config.addPlainTextColumn('role', 'Role',
@@ -1348,12 +1376,14 @@ class UserConnectionComponent(Component):
     q = connection_logic.queryForAncestor(self.data.profile)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(
-        connection_model.Connection, ['organization'])
+
+    # TODO(daniel): enable prefetching from ndb models
+    #prefetcher = lists.ModelPrefetcher(
+    #    connection_model.Connection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
-        prefetcher=prefetcher)
+        prefetcher=None)
     return response_builder.build()
 
   def context(self):
@@ -1398,7 +1428,7 @@ class ParticipantsComponent(Component):
       Args:
         data: A RequestData describing the current request.
       """
-      self.org_dict = dict((org.key(), org) for org in data.org_admin_for)
+      self.org_dict = dict((org.key, org) for org in data.org_admin_for)
 
     def prefetch(self, entities):
       """Prefetches the organizations that are administered by the current
@@ -1672,8 +1702,9 @@ class StudentEvaluationComponent(Component):
           orgs=self.data.org_admin_for)
 
       starter = lists.keyStarter
+      # TODO(daniel): enable prefetching from ndb models ('org')
       prefetcher = lists.ListModelPrefetcher(
-          GSoCProject, ['org'],
+          GSoCProject, [],
           ['mentors', 'failed_evaluations'],
           parent=True)
       row_adder = evaluationRowAdder(self.evals)
