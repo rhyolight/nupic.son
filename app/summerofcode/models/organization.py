@@ -50,3 +50,7 @@ class SOCOrganization(org_model.Organization):
   #: set to False, only mentors who are willing to take up the project will
   #: be presented. If the property is set to True, all mentors will be listed.
   list_all_mentors = ndb.BooleanProperty(default=False)
+
+  #: Boolean property telling whether submitting scores for proposals
+  #: is currently disabled for mentors of this organization or not.
+  scoring_disabled = ndb.BooleanProperty(default=False, indexed=False)
