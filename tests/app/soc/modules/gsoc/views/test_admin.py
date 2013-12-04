@@ -155,7 +155,7 @@ class ProposalsPageTest(GSoCDjangoTestCase):
     self.profile_helper.createHost()
     self.timeline_helper.studentSignup()
 
-    url = '/gsoc/admin/proposals/' + self.org.key().name()
+    url = '/gsoc/admin/proposals/' + self.org.key.id()
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertProposalsPage(response)
