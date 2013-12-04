@@ -19,6 +19,7 @@ from datetime import timedelta
 import uuid
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django.utils import translation
 
@@ -97,6 +98,10 @@ def queryForAncestorAndOrganization(ancestor, org_key, keys_only=False):
   """Returns a Query object for Connections with the specified ancestor and
   Organization.
   """
+  # TODO(daniel): remove when GCI orgs are converted to NDB
+  if isinstance(org_key, ndb.Key):
+    org_key = org_key.to_old_key()
+
   query = connection_model.Connection.all(
       keys_only=keys_only).ancestor(ancestor)
   query.filter('organization', org_key)
@@ -148,6 +153,10 @@ def canCreateConnection(profile, org_key):
     a string that represents the reason why it is not possible to create
     a new connection.
   """
+  # TODO(daniel): remove when GCI orgs are converted to NDB
+  if isinstance(org_key, ndb.Key):
+    org_key = org_key.to_old_key()
+
   if profile.is_student:
     return rich_bool.RichBool(
         False, extra=_PROFILE_IS_STUDENT % profile.link_id)
@@ -174,11 +183,17 @@ def createConnection(profile, org, user_role, org_role):
   Raises:
       ValueError if a connection exists between the user and organization.
   """
-  # TODO(daniel): remove this part when organizations are converted to NDB
+  # TODO(daniel): remove when GCI orgs are converted to NDB
   if isinstance(org, db.Model):
     org_key = org.key()
-  else:
+  elif isinstance(org, ndb.Key):
+    org_key = org_key.to_old_key()
+  elif isinstance(org, db.Key):
+    org_key = org
+  elif isinstance(org, ndb.Model):
     org_key = org.key.to_old_key()
+  else:
+    raise TypeError('Wrong type for org argument: %s' % type(org)) 
 
   if connectionExists(profile.parent_key(), org_key):
     raise ValueError(_CONNECTION_EXISTS % (profile.name(), org.name))
@@ -208,7 +223,7 @@ def createAnonymousConnection(email, org, org_role):
   token = uuid.uuid4().hex
 
   connection = connection_model.AnonymousConnection(
-      parent=org,
+      parent=org.key.to_old_key(),
       org_role=org_role,
       token=token,
       expiration_date=expiration,
@@ -256,7 +271,7 @@ def activateAnonymousConnection(profile, token):
   org_role = anonymous_connection.org_role
   new_connection = createConnection(
       profile=profile,
-      org=anonymous_connection.parent(),
+      org=anonymous_connection.parent_key(),
       org_role=org_role,
       user_role=connection_model.NO_ROLE
       )
