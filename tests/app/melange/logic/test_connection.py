@@ -73,10 +73,10 @@ class ConnectionExistsTest(ConnectionTest):
     Organizations can be fetched with this helper.
     """
     self.assertTrue(
-      connection_logic.connectionExists(self.profile, self.org.key()))
+      connection_logic.connectionExists(self.profile, self.org.key))
     self.connection.delete()
     self.assertFalse(
-      connection_logic.connectionExists(self.profile, self.org.key()))
+      connection_logic.connectionExists(self.profile, self.org.key))
 
 class CreateConnectionTest(ConnectionTest):
   """Unit tests for the connection_logic.createConnection function."""
@@ -94,10 +94,11 @@ class CreateConnectionTest(ConnectionTest):
         )
     new_connection = connection_model.Connection.all().get()
     self.assertEqual(self.profile.key(), new_connection.parent().key())
-    self.assertEqual(self.org.key(), new_connection.organization.key())
+    self.assertEqual(
+        self.org.key.to_old_key(), new_connection.organization.key())
     self.assertEqual(connection_model.NO_ROLE, new_connection.user_role)
     self.assertEqual(connection_model.MENTOR_ROLE, new_connection.org_role)
-    
+
     # Also test to ensure that a connection will not be created if a logically
     # equivalent connection already exists.
     self.assertRaises(
@@ -260,15 +261,16 @@ class CanCreateConnectionTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
+    program = program_utils.seedProgram()
     self.profile = seeder_logic.seed(profile_model.Profile)
-    self.org = seeder_logic.seed(org_model.Organization)
+    self.org = org_utils.seedOrganization(program.key())
 
   def testForStudent(self):
     """Tests that a student profile cannot create a connection."""
     # make the profile a student
     self.profile.is_student = True
 
-    result = connection_logic.canCreateConnection(self.profile, self.org.key())
+    result = connection_logic.canCreateConnection(self.profile, self.org.key)
     self.assertFalse(result)
     self.assertEqual(
         result.extra, 
@@ -280,18 +282,18 @@ class CanCreateConnectionTest(unittest.TestCase):
     # profile is not a student
     self.profile.is_student = False
 
-    result = connection_logic.canCreateConnection(self.profile, self.org.key())
+    result = connection_logic.canCreateConnection(self.profile, self.org.key)
     self.assertFalse(result)
     self.assertEqual(
         result.extra, connection_logic._CONNECTION_EXISTS % (
-            self.profile.link_id, self.org.key().name()))
+            self.profile.link_id, self.org.key.id()))
 
   def testForNonExistingConnection(self):
     """Tests that a non-student profile with no connection can create one."""
     # profile is not a student
     self.profile.is_student = False
 
-    result = connection_logic.canCreateConnection(self.profile, self.org.key())
+    result = connection_logic.canCreateConnection(self.profile, self.org.key)
     self.assertTrue(result)
 
 
@@ -415,6 +417,10 @@ class ActivateAnonymousConnectionTest(ConnectionTest):
     connection = query.get()
 
     self.assertEquals(connection.user_role, connection_model.NO_ROLE)
-    self.assertEquals(connection.organization.key(), self.org.key())
+
+    org_key = (
+        connection_model.Connection.organization
+            .get_value_for_datastore(connection))
+    self.assertEquals(org_key, self.org.key.to_old_key())
     anonymous_connection = connection_model.AnonymousConnection.all().get()
     self.assertIsNone(anonymous_connection)
