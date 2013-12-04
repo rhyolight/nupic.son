@@ -14,13 +14,20 @@
 
 """Unit tests for slot transfer admin view."""
 
-from soc.modules.gsoc.models import organization as org_model
+import unittest
+
+#from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.models import slot_transfer as slot_transfer_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from melange.models import organization as org_model
+
+from tests import org_utils
 from tests import profile_utils
 from tests import test_utils
 
+
+TEST_SLOT_COUNT = 3
 
 class SlotsTransferAdminPageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for SlotsTransferAdminPage class."""
@@ -35,30 +42,45 @@ class SlotsTransferAdminPageTest(test_utils.GSoCDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testStudentAccessForbidden(self):
-    self.profile_helper.createStudent()
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCStudent(self.program, user=user)
+
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testMentorAccessForbidden(self):
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, mentor_for=[self.org.key.to_old_key()])
+
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testOrgAdminAccessForbidden(self):
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testHostAccessGranted(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedUser(host_for=[self.sponsor.key()])
+    profile_utils.login(user)
+
     response = self.get(self.url)
     self.assertResponseOK(response)
 
+  @unittest.skip('add when GSoCSlotTransfer is updated to NDB')
   def testListData(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedUser(host_for=[self.sponsor.key()])
+    profile_utils.login(user)
 
     properties = {
         'program': self.gsoc,
@@ -68,18 +90,14 @@ class SlotsTransferAdminPageTest(test_utils.GSoCDjangoTestCase):
     }
 
     # seed slot transfer entity for self.org
-    properties['parent'] = self.org
+    properties['parent'] = self.org.key.to_old_key()
     seeder_logic.seed(slot_transfer_model.GSoCSlotTransfer, properties)
 
-    org_properties = {
-        'status': 'active',
-        'scope': self.gsoc,
-        'program': self.gsoc,
-        }
-    other_org = seeder_logic.seed(org_model.GSoCOrganization, org_properties)
+    other_org = org_utils.seedSOCOrganization(
+        self.program.key(), status=org_model.Status.ACCEPTED)
 
     # seed slot transfer entity for other_org
-    properties['parent'] = other_org
+    properties['parent'] = other_org.key.to_old_key()
     seeder_logic.seed(slot_transfer_model.GSoCSlotTransfer, properties)
 
     response = self.get(self.url)
@@ -92,25 +110,26 @@ class SlotsTransferAdminPageTest(test_utils.GSoCDjangoTestCase):
     """Tests that if an org admin rejects a slot transfer application that
     they had previously accepted, the slots are transferred back to the org.
     """
-    test_slot_count = 3
-    self.profile_helper.createHost()
+    user = profile_utils.seedUser(host_for=[self.sponsor.key()])
+    profile_utils.login(user)
+
     properties = {
         'program': self.gsoc,
-        'nr_slots': test_slot_count,
+        'nr_slots': TEST_SLOT_COUNT,
         'remarks': 'Sample Remark',
         'status': 'pending',
-        'parent' : self.org
+        'parent' : self.org.key.to_old_key()
     }
     slot_transfer = seeder_logic.seed(
         slot_transfer_model.GSoCSlotTransfer, properties)
     slot_transfer_key = slot_transfer.key()
 
-    self.org.slots = test_slot_count
+    self.org.slot_allocation = TEST_SLOT_COUNT
     org_key = self.org.put()
 
     slot_transfer_id = slot_transfer_key.id()
     slot_json = '[{ "key": "%s", "full_transfer_key" : "%s" }]' % (
-        str(slot_transfer_id) + org_key.name(), slot_transfer_key)
+        str(slot_transfer_id) + org_key.id(), slot_transfer_key)
     post_data = {
         'idx' : 0,
         'button_id' : [u'accept'],
@@ -124,7 +143,7 @@ class SlotsTransferAdminPageTest(test_utils.GSoCDjangoTestCase):
     slot_transfer = slot_transfer_model.GSoCSlotTransfer.get(
         slot_transfer_key)
     self.assertEqual(slot_transfer.status, 'accepted')
-    self.assertEqual(0, org_model.GSoCOrganization.get(org_key).slots)
+    self.assertEqual(0, org_key.get().slot_allocation)
 
     post_data['button_id'] = [u'reject']
     response = self.post(url, post_data)
@@ -134,6 +153,4 @@ class SlotsTransferAdminPageTest(test_utils.GSoCDjangoTestCase):
     slot_transfer = slot_transfer_model.GSoCSlotTransfer.get(
         slot_transfer_key)
     self.assertEqual(slot_transfer.status, 'rejected')
-    self.assertEqual(
-        test_slot_count, org_model.GSoCOrganization.get(org_key).slots)
-
+    self.assertEqual(TEST_SLOT_COUNT, org_key.get().slot_allocation)
