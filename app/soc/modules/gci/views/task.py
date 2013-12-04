@@ -249,7 +249,7 @@ class TaskViewPage(GCIRequestHandler):
       'page_name': '%s - %s' % (task.title, task.org.name),
       'task': task,
       'is_mentor': data.mentorFor(task.org.key()),
-      'task_info': TaskInformation(data.key()),
+      'task_info': TaskInformation(data),
     }
 
     if task.deadline:
