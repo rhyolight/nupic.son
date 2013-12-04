@@ -59,7 +59,7 @@ class TestPrefixes(unittest.TestCase):
     self.gci_program_key_name = self.gci_program.key().name()
     self.site_key_name = self.site.key().name()
     self.org_key_name = self.organization.key().name()
-    self.gsoc_org_key_name = self.gsoc_organization.key().name()
+    self.gsoc_org_key_name = self.gsoc_organization.key.id()
     self.gci_org_key_name = self.gci_organization.key().name()
 
   def testGetScopeForPrefix(self):
@@ -86,7 +86,7 @@ class TestPrefixes(unittest.TestCase):
     prefix = 'gsoc_org'
     key_name = self.gsoc_org_key_name
     scope_returned = prefixes.getScopeForPrefix(prefix, key_name)
-    self.assertEqual(scope_returned.key().name(), key_name)
+    self.assertEqual(scope_returned.key.id(), key_name)
     self.assertEqual(type(scope_returned), type(self.gsoc_organization))
 
     prefix = 'gci_org'

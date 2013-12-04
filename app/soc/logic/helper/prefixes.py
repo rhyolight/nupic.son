@@ -15,6 +15,8 @@
 """Prefix helper module for models with document prefixes.
 """
 
+from summerofcode.models import organization as org_model
+
 
 def getScopeForPrefix(prefix, key_name):
   """Gets the scope for the given prefix and key_name.
@@ -28,7 +30,6 @@ def getScopeForPrefix(prefix, key_name):
   import soc.models.user
   import soc.models.site
 
-  import soc.modules.gsoc.models.organization
   import soc.modules.gsoc.models.program
 
   import soc.modules.gci.models.organization
@@ -39,7 +40,6 @@ def getScopeForPrefix(prefix, key_name):
       "gsoc_program": soc.modules.gsoc.models.program.GSoCProgram,
       "gci_program": soc.modules.gci.models.program.GCIProgram,
       "program": soc.models.program.Program,
-      "gsoc_org": soc.modules.gsoc.models.organization.GSoCOrganization,
       "gci_org": soc.modules.gci.models.organization.GCIOrganization,
       "org": soc.models.organization.Organization,
       "user": soc.models.user.User,
@@ -49,8 +49,19 @@ def getScopeForPrefix(prefix, key_name):
   # determine the type of the scope
   scope_type = scope_types.get(prefix)
 
-  if not scope_type:
-    # no matching scope type found
-    raise AttributeError('No Matching Scope type found for %s' % prefix)
+  if scope_type:
+    return scope_type.get_by_key_name(key_name)
+  else:
+    # try finding a scope among NDB models
+    scope_types = {
+        'gsoc_org': org_model.SOCOrganization,
+        }
 
-  return scope_type.get_by_key_name(key_name)
+    # determine the type of the scope
+    scope_type = scope_types.get(prefix)
+
+    if scope_type:
+      return scope_type.get_by_id(key_name)
+    else:
+      # no matching scope type found
+      raise AttributeError('No Matching Scope type found for %s' % prefix)
