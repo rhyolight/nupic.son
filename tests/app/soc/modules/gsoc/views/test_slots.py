@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for slots view."""
+"""Tests for slot allocation view."""
 
 import json
 
-from tests.test_utils import GSoCDjangoTestCase
+from melange.models import organization as org_model
 
-from soc.modules.gsoc.models.organization import GSoCOrganization
+from tests import profile_utils
+from tests.test_utils import GSoCDjangoTestCase
 
 
 class SlotsTest(GSoCDjangoTestCase):
@@ -27,6 +28,8 @@ class SlotsTest(GSoCDjangoTestCase):
 
   def setUp(self):
     self.init()
+    self.org.status = org_model.Status.ACCEPTED
+    self.org.put()
 
   def assertProjectTemplatesUsed(self, response):
     """Asserts that all the templates from the dashboard were used.
@@ -37,7 +40,9 @@ class SlotsTest(GSoCDjangoTestCase):
         'modules/gsoc/admin/_accepted_orgs_list.html')
 
   def testAllocateSlots(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedUser(host_for=[self.sponsor.key()])
+    profile_utils.login(user)
+
     url = '/gsoc/admin/slots/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
@@ -47,12 +52,13 @@ class SlotsTest(GSoCDjangoTestCase):
     self.assertEqual(1, len(data))
 
     org_data = {
-        "slots": "20",
-        "note":"Great org",
+        'slot_allocation': '20',
+        # TOOD(daniel): add note to organization model?
+        #'note':'Great org',
     }
-    org_name = self.org.key().name()
+    org_id = self.org.key.id()
 
-    data = json.dumps({org_name: org_data})
+    data = json.dumps({org_id: org_data})
 
     postdata = {
         'data': data,
@@ -62,20 +68,18 @@ class SlotsTest(GSoCDjangoTestCase):
     response = self.post(url, postdata)
     self.assertResponseOK(response)
 
-    org = GSoCOrganization.all().get()
+    org_data['slot_allocation'] = 20
 
-    org_data["slots"] = 20
-
-    self.assertPropertiesEqual(org_data, org)
+    self.assertPropertiesEqual(org_data, self.org.key.get())
 
   def testColumnWithZero(self):
     """Tests that a lambda function returning a value that Python considers
     to be False will not result in an empty column value.
     """
-    self.org.slots = 0
-    self.org.save()
+    self.org.slot_allocation = 0
+    self.org.put()
     self.profile_helper.createHost()
 
     url = '/gsoc/admin/slots/' + self.gsoc.key().name()
     response = self.getListData(url, 0)
-    self.assertEquals(response[0]['columns']['slots'], 0)
+    self.assertEquals(response[0]['columns']['slot_allocation'], 0)
