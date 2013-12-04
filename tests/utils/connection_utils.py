@@ -14,6 +14,8 @@
 
 """ Utilities to manipulate Connection data."""
 
+from google.appengine.ext import ndb
+
 from melange.models import connection as connection_model
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
@@ -30,6 +32,10 @@ def seed_new_connection(profile, org_key, **kwargs):
   Returns:
     the newly seeded GSoCConnection entity
   """
+  # TODO(daniel): remove when GCI orgs are converted to NDB
+  if isinstance(org_key, ndb.Key):
+    org_key = org_key.to_old_key()
+
   properties = {
       'parent': profile,
       'organization': org_key,

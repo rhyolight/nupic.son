@@ -29,7 +29,9 @@ from soc.models import profile as profile_model
 from soc.models.program import Program
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import org_utils
 from tests import profile_utils
+from tests import program_utils
 from tests.utils import connection_utils
 from tests.program_utils import ProgramHelper
 
@@ -56,14 +58,11 @@ class ConnectionTest(unittest.TestCase):
         profile_model.Profile, profile_properties)
 
     self.program_helper = ProgramHelper()
-    org_properties = {
-        'scope': self.program, 'status': 'active',
-        'scoring_disabled': False, 'max_score': 5,
-        'home': None, 'program': self.program,
-        }
-    self.org = self.program_helper.seed(org_model.Organization, org_properties)
+
+    self.org = org_utils.seedOrganization(self.program.key())
+
     self.connection = connection_utils.seed_new_connection(
-        self.profile, self.org.key())
+        self.profile, self.org.key)
 
 
 class ConnectionExistsTest(ConnectionTest): 
@@ -148,15 +147,15 @@ class GetConnectionMessagesTest(ConnectionTest):
         self.connection, author=self.profile)
 
     # create another organization and a connection
-    organization2 = self.program_helper.createNewOrg(
-        {'program' : self.program})
-    connection2 = connection_utils.seed_new_connection(
-      self.profile, organization2)
+    other_org = org_utils.seedOrganization(self.program.key())
+
+    other_connection = connection_utils.seed_new_connection(
+      self.profile, other_org.key)
 
     # create a few messages for the other connection
     for _ in range(10):
       connection_utils.seed_new_connection_message(
-          connection2, author=self.profile)
+          other_connection, author=self.profile)
 
     # check that correct messages are returned
     messages = connection_logic.getConnectionMessages(self.connection)
@@ -170,28 +169,29 @@ class QueryForOrganizationAdminTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
+    program = program_utils.seedProgram()
     # seed a few organizations
-    self.first_org = seeder_logic.seed(org_model.Organization)
-    self.second_org = seeder_logic.seed(org_model.Organization)
-    self.third_org = seeder_logic.seed(org_model.Organization)
+    self.first_org = org_utils.seedOrganization(program.key())
+    self.second_org = org_utils.seedOrganization(program.key())
+    self.third_org = org_utils.seedOrganization(program.key())
 
     # seed a few profiles
     first_profile = seeder_logic.seed(profile_model.Profile)
     second_profile = seeder_logic.seed(profile_model.Profile)
 
     self.first_connection = connection_utils.seed_new_connection(
-        first_profile, self.first_org.key())
+        first_profile, self.first_org.key)
     self.second_connection = connection_utils.seed_new_connection(
-        second_profile, self.first_org.key())
+        second_profile, self.first_org.key)
     self.third_connection = connection_utils.seed_new_connection(
-        first_profile, self.second_org)
+        first_profile, self.second_org.key)
 
   def testForMentor(self):
     """Tests that no connections are fetched for user who is a mentor only."""
     properties = {
         'is_org_admin': False,
         'is_mentor': True,
-        'mentor_for': [self.first_org.key()],
+        'mentor_for': [self.first_org.key.to_old_key()],
         'org_admin_for': []
         }
     profile = seeder_logic.seed(profile_model.Profile, properties=properties)
@@ -208,8 +208,8 @@ class QueryForOrganizationAdminTest(unittest.TestCase):
     properties = {
         'is_org_admin': True,
         'is_mentor': True,
-        'mentor_for': [self.first_org.key()],
-        'org_admin_for': [self.first_org.key()]
+        'mentor_for': [self.first_org.key.to_old_key()],
+        'org_admin_for': [self.first_org.key.to_old_key()]
         }
     profile = seeder_logic.seed(profile_model.Profile, properties=properties)
     query = connection_logic.queryForOrganizationAdmin(profile)
@@ -231,8 +231,10 @@ class QueryForOrganizationAdminTest(unittest.TestCase):
     properties = {
         'is_org_admin': True,
         'is_mentor': True,
-        'mentor_for': [self.first_org.key(), self.second_org.key()],
-        'org_admin_for': [self.first_org.key(), self.second_org.key()]
+        'mentor_for': [
+            self.first_org.key.to_old_key(), self.second_org.key.to_old_key()],
+        'org_admin_for': [
+            self.first_org.key.to_old_key(), self.second_org.key.to_old_key()],
         }
     profile = seeder_logic.seed(profile_model.Profile, properties=properties)
     query = connection_logic.queryForOrganizationAdmin(profile)

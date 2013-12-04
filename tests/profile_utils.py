@@ -498,8 +498,8 @@ class GSoCProfileHelper(ProfileHelper):
         'user_role': connection_model.ROLE,
         'org_role': connection_model.ORG_ADMIN_ROLE
         }
-    connection_utils.seed_new_connection(self.profile, org.key.to_old_key(),
-        **connection_properties)
+    connection_utils.seed_new_connection(
+        self.profile, org.key, **connection_properties)
 
     return self.profile
 
@@ -521,8 +521,8 @@ class GSoCProfileHelper(ProfileHelper):
         'user_role': connection_model.ROLE,
         'org_role': connection_model.MENTOR_ROLE
         }
-    connection_utils.seed_new_connection(self.profile, org.key.to_old_key(),
-        **connection_properties)
+    connection_utils.seed_new_connection(
+        self.profile, org.key, **connection_properties)
 
     return self.profile
 
@@ -630,7 +630,7 @@ class GSoCProfileHelper(ProfileHelper):
   def createConnection(self, org):
     self.createProfile()
     self.connection = connection_utils.seed_new_connection(
-        self.profile, org.key.to_old_key())
+        self.profile, org.key)
     return self.connection
 
 
@@ -684,8 +684,8 @@ class GCIProfileHelper(ProfileHelper):
         'user_role': connection_model.ROLE,
         'org_role': connection_model.ORG_ADMIN_ROLE
         }
-    connection_utils.seed_new_connection(self.profile, org.key(),
-        **connection_properties)
+    connection_utils.seed_new_connection(
+        self.profile, org.key(), **connection_properties)
 
     return self.profile
 
@@ -707,8 +707,8 @@ class GCIProfileHelper(ProfileHelper):
         'user_role': connection_model.ROLE,
         'org_role': connection_model.MENTOR_ROLE
         }
-    connection_utils.seed_new_connection(self.profile, org.key(),
-        **connection_properties)
+    connection_utils.seed_new_connection(
+        self.profile, org.key(), **connection_properties)
 
     return self.profile
 
