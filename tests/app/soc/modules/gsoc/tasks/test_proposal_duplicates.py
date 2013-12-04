@@ -22,6 +22,8 @@ from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import TaskQueueTestCase
 
+from melange.models import organization as org_model
+
 from soc.modules.gsoc.logic import duplicates as duplicates_logic
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.models.proposal import GSoCProposal
@@ -37,15 +39,20 @@ class ProposalDuplicatesTest(GSoCDjangoTestCase, TaskQueueTestCase):
   def setUp(self):
     super(ProposalDuplicatesTest, self).setUp()
     self.init()
+
+    # set the organization as accepted and allocate some slots
+    self.org.status = org_model.Status.ACCEPTED
+    self.org.slot_allocation = 10
+    self.org.put()
+
     self.createMentor()
     self.createStudent()
-    self.updateOrgSlots()
     self.timeline_helper.studentSignup()
 
   def createMentor(self):
     """Creates a new mentor."""
     self.mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
   def createStudent(self):
     """Creates two new students the first one has a duplicate the second one has
@@ -72,7 +79,7 @@ class ProposalDuplicatesTest(GSoCDjangoTestCase, TaskQueueTestCase):
   def updateOrgSlots(self):
     """Updates the number of slots our org wants.
     """
-    self.org.slots = 10
+    self.org.slot_allocation = 10
     self.org.put()
 
   def testStartFailsWhenMissingProgram(self):
