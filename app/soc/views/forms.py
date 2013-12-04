@@ -20,6 +20,7 @@ import datetime
 import itertools
 import re
 
+from google.appengine.api import datastore_errors
 from google.appengine.ext import db
 
 from django import forms
@@ -368,12 +369,19 @@ class ReferenceProperty(djangoforms.ReferenceProperty):
 
     if not value:
       return None
-    if not isinstance(value, db.Model):
+    if isinstance(value, unicode):
       try:
-        value = db.get(value)
-      except db.BadKeyError as e:
-        raise forms.ValidationError(unicode(e))
-    return value
+        return db.Key(value)
+      except datastore_errors.BadKeyError:
+        raise forms.ValidationError(
+            'Supplied unicode representation of db.Key is not valid. '
+            'Found: %s' % value)
+    elif not isinstance(value, db.Model) and not isinstance(value, db.Key):
+      raise forms.ValidationError(
+          u'Value for reference property must be either an instance of '
+          'db.Model or db.Key. Found: %s' % type(value))
+    else:
+      return value
 
 
 class ModelFormOptions(object):
