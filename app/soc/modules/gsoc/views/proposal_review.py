@@ -663,9 +663,14 @@ class PostScore(base.GSoCRequestHandler):
   def checkAccess(self, data, check, mutator):
     org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
         data.url_proposal)
-    if (not data.orgAdminFor(org_key)
-        and data.url_proposal.org.scoring_disabled):
+
+    org = ndb.Key.from_old_key(org_key).get()
+    if not org:
       raise exception.BadRequest(
+          message='Organization for key %s does not exist for proposal %s' %
+              (org_key.name(), data.url_proposal.key().id()))
+    elif data.orgAdminFor(org_key) and org.scoring_disabled:
+      raise exception.Forbidden(
           message='Scoring is disabled for this organization')
 
     check.isMentorForOrganization(org_key)
