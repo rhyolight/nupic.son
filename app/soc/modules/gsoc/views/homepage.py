@@ -101,7 +101,7 @@ class Apply(Template):
       participating_orgs = []
       current_orgs = org_logic.participating(self.data.program)
       for org in current_orgs:
-        link = links.LINKER.organization(org.key(), url_names.GSOC_ORG_HOME)
+        link = links.LINKER.organization(org.key, url_names.GSOC_ORG_HOME)
         participating_orgs.append({
             'link': link,
             'logo': org.logo_url,
