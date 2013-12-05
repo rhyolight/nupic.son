@@ -17,8 +17,11 @@
 from google.appengine.ext import db
 
 from django import forms as django_forms
+from django import http
 
 from melange.request import exception
+from melange.request import links
+
 from soc.logic import cleaning
 from soc.logic import host as host_logic
 from soc.tasks import mailer
@@ -147,21 +150,23 @@ class UpdateSlotTransferPage(base.GSoCRequestHandler):
     return 'modules/gsoc/slot_transfer/form.html'
 
   def context(self, data, check, mutator):
-    slots = data.organization.slots
+    slot_allocation = data.url_ndb_org.slot_allocation
 
     if data.POST:
-      slot_transfer_form = SlotTransferForm(max_slots=slots, data=data.POST)
+      slot_transfer_form = SlotTransferForm(
+          max_slots=slot_allocation, data=data.POST)
     else:
-      slot_transfer_form = SlotTransferForm(max_slots=slots)
+      slot_transfer_form = SlotTransferForm(
+          max_slots=slot_allocation)
 
     for ent in data.slot_transfer_entities:
       if ent.status == 'pending':
         if data.POST:
           slot_transfer_form = SlotTransferForm(
-              max_slots=slots, data=data.POST, instance=ent)
+              max_slots=slot_allocation, data=data.POST, instance=ent)
         else:
           slot_transfer_form = SlotTransferForm(
-              max_slots=slots, instance=ent)
+              max_slots=slot_allocation, instance=ent)
 
     context = {
         'page_name': 'Transfer slots to pool',
@@ -192,7 +197,7 @@ class UpdateSlotTransferPage(base.GSoCRequestHandler):
     slot_transfer_entity = None
 
     slot_transfer_form = SlotTransferForm(
-         max_slots=data.organization.slots, data=data.POST)
+         max_slots=data.url_ndb_org.slot_allocation, data=data.POST)
 
     if not slot_transfer_form.is_valid():
       return None
@@ -223,7 +228,7 @@ class UpdateSlotTransferPage(base.GSoCRequestHandler):
         update = True
       else:
         slot_transfer = slot_transfer_form.create(
-            commit=True, parent=data.organization)
+            commit=True, parent=data.url_ndb_org.key.to_old_key())
 
       context = notifications.createOrUpdateSlotTransferContext(
           data, slot_transfer, to_emails, update)
@@ -239,10 +244,13 @@ class UpdateSlotTransferPage(base.GSoCRequestHandler):
     """Handler for HTTP POST request."""
     slot_transfer_entity = self.createOrUpdateFromForm(data)
     if slot_transfer_entity:
-      # TODO(nathaniel): make this .organization call unnecessary.
-      data.redirect.organization(organization=data.organization)
+      url = links.LINKER.organization(
+          data.url_ndb_org.key, 'gsoc_update_slot_transfer')
 
-      return data.redirect.to('gsoc_update_slot_transfer', validated=True)
+      # TODO(daniel): there should be utility function to do that
+      url += '?validated=True'
+
+      return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
