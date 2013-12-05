@@ -39,16 +39,17 @@ class ProposalTest(GSoCDjangoTestCase):
 
   def testSubmitProposal(self):
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()],
+        self.program, mentor_for=[self.org.key.to_old_key()],
         notify_new_proposals=True, notify_public_comments=True,
         notify_private_comments=True)
 
-    profile_utils.seedGSoCProfile(self.program, mentor_for=[self.org.key()])
+    profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
     self.profile_helper.createStudent()
     self.profile_helper.notificationSettings()
     self.timeline_helper.studentSignup()
-    url = '/gsoc/proposal/submit/' + self.org.key().name()
+    url = '/gsoc/proposal/submit/' + self.org.key.id()
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertProposalTemplatesUsed(response)
@@ -56,7 +57,8 @@ class ProposalTest(GSoCDjangoTestCase):
     # test proposal POST
     override = {
         'program': self.gsoc, 'score': 0, 'nr_scores': 0, 'mentor': None,
-        'org': self.org, 'status': 'pending', 'accept_as_project': False,
+        'org': self.org.key.to_old_key(),
+        'status': 'pending', 'accept_as_project': False,
         'is_editable_post_deadline': False, 'extra': None, 'has_mentor': False,
     }
     response, properties = self.modelPost(
@@ -68,6 +70,14 @@ class ProposalTest(GSoCDjangoTestCase):
     #self.assertEmailNotSent(to=other_mentor.profile.email)
 
     proposal = proposal_model.GSoCProposal.all().get()
+
+    # check org manually, as proposal.org will fail
+    # TODO(daniel): it will not be needed when proposal model is updated
+    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(proposal)
+    self.assertEqual(org_key, self.org.key.to_old_key())
+    proposal.org = None
+    del properties['org']
+
     self.assertPropertiesEqual(properties, proposal)
 
   def testProposalsSubmissionLimit(self):
@@ -75,11 +85,12 @@ class ProposalTest(GSoCDjangoTestCase):
     self.gsoc.put()
 
     profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()],
+        self.program, mentor_for=[self.org.key.to_old_key()],
         notify_new_proposals=True, notify_public_comments=True,
         notify_private_comments=True)
 
-    profile_utils.seedGSoCProfile(self.program, mentor_for=[self.org.key()])
+    profile_utils.seedGSoCProfile(
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
     self.profile_helper.createStudent()
     self.profile_helper.notificationSettings()
@@ -91,7 +102,7 @@ class ProposalTest(GSoCDjangoTestCase):
         'is_editable_post_deadline': False, 'extra': None, 'has_mentor': False,
     }
 
-    url = '/gsoc/proposal/submit/' + self.org.key().name()
+    url = '/gsoc/proposal/submit/' + self.org.key.id()
 
     # Try to submit proposals four times.
     for i in range(5):
@@ -110,34 +121,34 @@ class ProposalTest(GSoCDjangoTestCase):
     """
     self.profile_helper.createStudent()
     self.timeline_helper.orgSignup()
-    url = '/gsoc/proposal/submit/' + self.org.key().name()
+    url = '/gsoc/proposal/submit/' + self.org.key.id()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
     self.timeline_helper.offSeason()
-    url = '/gsoc/proposal/submit/' + self.org.key().name()
+    url = '/gsoc/proposal/submit/' + self.org.key.id()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
     self.timeline_helper.kickoff()
-    url = '/gsoc/proposal/submit/' + self.org.key().name()
+    url = '/gsoc/proposal/submit/' + self.org.key.id()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
     self.timeline_helper.orgsAnnounced()
-    url = '/gsoc/proposal/submit/' + self.org.key().name()
+    url = '/gsoc/proposal/submit/' + self.org.key.id()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
     self.timeline_helper.studentsAnnounced()
-    url = '/gsoc/proposal/submit/' + self.org.key().name()
+    url = '/gsoc/proposal/submit/' + self.org.key.id()
     response = self.get(url)
     self.assertResponseForbidden(response)
 
   def testUpdateProposal(self):
     """Test update proposals."""
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()],
+        self.program, mentor_for=[self.org.key.to_old_key()],
         notify_proposal_updates=True)
 
     self.profile_helper.createStudentWithProposal(self.org, mentor)
@@ -166,6 +177,16 @@ class ProposalTest(GSoCDjangoTestCase):
     properties.pop('action')
 
     proposal = proposal_model.GSoCProposal.all().get()
+
+    # check org manually, as proposal.org will fail
+    # TODO(daniel): it will not be needed when proposal model is updated
+    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(proposal)
+    self.assertEqual(org_key, self.org.key.to_old_key())
+    proposal.org = None
+    del properties['org']
+
+    self.assertPropertiesEqual(properties, proposal)
+
     self.assertPropertiesEqual(properties, proposal)
 
     # after update last_modified_on should be updated which is not equal
@@ -177,7 +198,7 @@ class ProposalTest(GSoCDjangoTestCase):
   def testUpdateProposalAfterDeadline(self):
     """Tests attempting to update a proposal after the deadline has passed."""
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
     self.profile_helper.createStudentWithProposal(self.org, mentor)
     self.timeline_helper.studentsAnnounced()
@@ -200,7 +221,7 @@ class ProposalTest(GSoCDjangoTestCase):
 
   def testWithdrawProposal(self):
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()],
+        self.program, mentor_for=[self.org.key.to_old_key()],
         notify_proposal_updates=True)
 
     self.profile_helper.createStudentWithProposal(self.org, mentor)
@@ -230,7 +251,7 @@ class ProposalTest(GSoCDjangoTestCase):
 
   def testResubmitProposal(self):
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()],
+        self.program, mentor_for=[self.org.key.to_old_key()],
         notify_proposal_updates=True)
 
     self.profile_helper.createStudentWithProposal(self.org, mentor)
