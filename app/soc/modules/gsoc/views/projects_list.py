@@ -125,8 +125,9 @@ class ProjectList(Template):
     idx = lists.getListIndex(self.data.request)
     if idx == self.idx:
       starter = lists.keyStarter
+      # TODO(daniel): enable prefetching from ndb models ('org')
       prefetcher = ProjectList.ListPrefetcher(
-          GSoCProject, ['org'], ['mentors'], parent=True)
+          GSoCProject, [], ['mentors'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.data.request, self._list_config, self.query,
