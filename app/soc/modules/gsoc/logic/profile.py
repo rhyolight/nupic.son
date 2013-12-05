@@ -317,6 +317,9 @@ def getMentors(org_key, keys_only=False, extra_attrs=None):
   Returns:
     list of profiles entities or keys of mentors
   """
+  if isinstance(org_key, ndb.Key):
+    org_key = org_key.to_old_key()
+
   query = profile_model.GSoCProfile.all(keys_only=keys_only)
   query.filter('mentor_for', org_key)
   query.filter('status', 'active')
