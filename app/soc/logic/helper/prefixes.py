@@ -12,38 +12,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Prefix helper module for models with document prefixes.
-"""
+"""Prefix helper module for models with document prefixes."""
 
-from summerofcode.models import organization as org_model
+from soc.models import program as program_model
+from soc.models import organization as org_model
+from soc.models import user as user_model
+from soc.models import site as site_model
+
+from soc.modules.gsoc.models import program as gsoc_program_model
+
+from soc.modules.gci.models import organization as gci_org_model
+from soc.modules.gci.models import program as gci_program_model
+
+from summerofcode.models import organization as soc_org_model
 
 
 def getScopeForPrefix(prefix, key_name):
   """Gets the scope for the given prefix and key_name.
 
-  params:
-      prefix: the prefix of the document
-      key_name: the key_name of the document
+  Args:
+    prefix: Prefix of the document.
+    key_name: key_name of the document.
+
+  Returns:
+    Scope entity for the specified document and prefix.
+
+  Raises:
+    ValueError if no scope model is found for the specified prefix.
   """
-  import soc.models.program
-  import soc.models.organization
-  import soc.models.user
-  import soc.models.site
-
-  import soc.modules.gsoc.models.program
-
-  import soc.modules.gci.models.organization
-  import soc.modules.gci.models.program
-
   # use prefix to generate dict key
   scope_types = {
-      "gsoc_program": soc.modules.gsoc.models.program.GSoCProgram,
-      "gci_program": soc.modules.gci.models.program.GCIProgram,
-      "program": soc.models.program.Program,
-      "gci_org": soc.modules.gci.models.organization.GCIOrganization,
-      "org": soc.models.organization.Organization,
-      "user": soc.models.user.User,
-      "site": soc.models.site.Site,
+      'gsoc_program': gsoc_program_model.GSoCProgram,
+      'gci_program': gci_program_model.GCIProgram,
+      'program': program_model.Program,
+      'gci_org': gci_org_model.GCIOrganization,
+      'org': org_model.Organization,
+      'user': user_model.User,
+      'site': site_model.Site,
   }
 
   # determine the type of the scope
@@ -54,7 +59,7 @@ def getScopeForPrefix(prefix, key_name):
   else:
     # try finding a scope among NDB models
     scope_types = {
-        'gsoc_org': org_model.SOCOrganization,
+        'gsoc_org': soc_org_model.SOCOrganization,
         }
 
     # determine the type of the scope
@@ -64,4 +69,4 @@ def getScopeForPrefix(prefix, key_name):
       return scope_type.get_by_id(key_name)
     else:
       # no matching scope type found
-      raise AttributeError('No Matching Scope type found for %s' % prefix)
+      raise ValueError('No Matching Scope type found for %s' % prefix)
