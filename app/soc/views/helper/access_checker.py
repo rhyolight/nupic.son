@@ -28,7 +28,7 @@ from melange.request import links
 
 from soc.models import org_app_record
 from soc.models import program as program_model
-from soc.modules.gsoc.models.proposal import GSoCProposal
+from soc.modules.gsoc.models import proposal as proposal_model
 
 from soc.views.helper.gdata_apis import oauth as oauth_helper
 
@@ -677,7 +677,9 @@ class AccessChecker(BaseAccessChecker):
       return
 
     # all the mentors and org admins from the organization may access it
-    org_key = GSoCProposal.org.get_value_for_datastore(self.data.url_proposal)
+    org_key = (
+        proposal_model.GSoCProposal.org
+            .get_value_for_datastore(self.data.url_proposal))
     if self.data.mentorFor(org_key):
       return
 
