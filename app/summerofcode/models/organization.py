@@ -52,5 +52,5 @@ class SOCOrganization(org_model.Organization):
   list_all_mentors = ndb.BooleanProperty(default=False)
 
   #: Boolean property telling whether submitting scores for proposals
-  #: is currently disabled for mentors of this organization or not.
-  scoring_disabled = ndb.BooleanProperty(default=False, indexed=False)
+  #: is currently enabled for mentors of this organization or not.
+  scoring_enabled = ndb.BooleanProperty(default=True, indexed=False)

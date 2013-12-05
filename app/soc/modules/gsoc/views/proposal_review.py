@@ -515,7 +515,7 @@ class ReviewProposal(base.GSoCRequestHandler):
         data.url_proposal)
     org = ndb.Key.from_old_key(org_key).get()
     scoring_visible = _getApplyingCommentType(data) == PRIVATE_COMMENTS and (
-        not org.scoring_disabled)
+        org.scoring_enabled)
 
     if data.orgAdminFor(org_key):
       scoring_visible = True
@@ -669,7 +669,7 @@ class PostScore(base.GSoCRequestHandler):
       raise exception.BadRequest(
           message='Organization for key %s does not exist for proposal %s' %
               (org_key.name(), data.url_proposal.key().id()))
-    elif data.orgAdminFor(org_key) and org.scoring_disabled:
+    elif not org.scoring_enabled:
       raise exception.Forbidden(
           message='Scoring is disabled for this organization')
 
