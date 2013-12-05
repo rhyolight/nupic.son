@@ -79,13 +79,15 @@ class ProposalPage(base.GSoCRequestHandler):
     if data.POST:
       proposal_form = ProposalForm(data=data.POST)
     else:
-      initial = {'content': data.organization.contrib_template}
+      # TODO(daniel): add contribution template to organization model
+      #initial = {'content': data.organization.contrib_template}
+      initial = {}
       proposal_form = ProposalForm(initial=initial)
 
     return {
         'page_name': 'Submit proposal',
         'form_header_message': 'Submit proposal to %s' % (
-            data.organization.name),
+            data.url_ndb_org.name),
         'proposal_form': proposal_form,
         'buttons_template': self.buttonsTemplate()
         }
@@ -106,7 +108,7 @@ class ProposalPage(base.GSoCRequestHandler):
 
     # set the organization and program references
     proposal_properties = proposal_form.asDict()
-    proposal_properties['org'] = data.organization
+    proposal_properties['org'] = data.url_ndb_org.key.to_old_key()
     proposal_properties['program'] = data.program
 
     student_info_key = data.student_info.key()
@@ -115,7 +117,7 @@ class ProposalPage(base.GSoCRequestHandler):
         GSoCProfile.notify_new_proposals: [True]
         }
     mentors = profile_logic.getMentors(
-        data.organization.key(), extra_attrs=extra_attrs)
+        data.url_ndb_org.key, extra_attrs=extra_attrs)
 
     to_emails = [i.email for i in mentors]
 

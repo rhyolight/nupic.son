@@ -21,6 +21,7 @@ from django.utils.translation import ugettext
 
 from google.appengine.ext import ndb
 
+from melange.models import organization as org_model
 from melange.request import exception
 from melange.request import links
 
@@ -148,7 +149,7 @@ DEF_NOT_VALID_CONNECTION = ugettext(
     'This is not a valid connection.')
 
 DEF_ORG_DOES_NOT_EXISTS = ugettext(
-    'Organization, whose Organization ID %(link_id)s, does not exist in '
+    'Organization, whose Organization ID %(org_id)s, does not exist in '
     '%(program)s.')
 
 DEF_ORG_NOT_ACTIVE = ugettext(
@@ -531,16 +532,18 @@ class AccessChecker(BaseAccessChecker):
   def isOrganizationInURLActive(self):
     """Checks if the organization in URL exists and if its status is active.
     """
-    assert isSet(self.data.organization)
-
-    if not self.data.organization:
+    if not self.data.url_ndb_org:
       error_msg = DEF_ORG_DOES_NOT_EXISTS % {
-          'link_id': self.data.kwargs['organization'],
+          'org_id': self.data.kwargs['organization'],
           'program': self.data.program.name
           }
       raise exception.Forbidden(message=error_msg)
 
-    self.isOrganizationActive(self.data.organization)
+    if self.data.url_ndb_org.status != org_model.Status.ACCEPTED:
+      error_msg = DEF_ORG_NOT_ACTIVE % {
+          'name': self.data.url_ndb_org.name,
+          'program': self.data.program.name
+          }
 
   def isOrganizationActive(self, organization):
     """Checks if the specified organization is active.
