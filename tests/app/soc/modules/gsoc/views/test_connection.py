@@ -48,7 +48,7 @@ class OrgConnectionPageTest(test_utils.GSoCDjangoTestCase):
 
   def _connectionPageURL(self):
     if not self.connection_url:
-      self.connection_url = ORG_CONNECTION_PAGE_URL % self.org.key().name()
+      self.connection_url = ORG_CONNECTION_PAGE_URL % self.org.key.id()
     return self.connection_url
 
   def testNormalUserForbiddenAccess(self):
@@ -117,7 +117,10 @@ class OrgConnectionPageTest(test_utils.GSoCDjangoTestCase):
     self.assertIsNotNone(connection_entity)
     self.assertEquals(connection.MENTOR_ROLE, connection_entity.org_role)
     self.assertEquals(connection.NO_ROLE, connection_entity.user_role)
-    self.assertEquals(self.org.key(), connection_entity.organization.key())
+    org_key = (
+        connection.Connection
+            .organization.get_value_for_datastore(connection_entity))
+    self.assertEquals(self.org.key.to_old_key(), org_key)
 
   def testInitiateAnonymousConnection(self):
     """Tests that given a valid email address that is not affiliated with any
@@ -131,11 +134,12 @@ class OrgConnectionPageTest(test_utils.GSoCDjangoTestCase):
       }
     response = self.post(self._connectionPageURL(), post_data)
 
-    query = connection.AnonymousConnection.all().ancestor(self.org)
+    query = connection.AnonymousConnection.all().ancestor(
+        self.org.key.to_old_key())
     connection_entity = query.get()
     self.assertIsNotNone(connection_entity)
     self.assertEquals(connection.MENTOR_ROLE, connection_entity.org_role)
-    self.assertEquals(self.org.key(), connection_entity.parent().key())
+    self.assertEquals(self.org.key.to_old_key(), connection_entity.parent_key())
     self.assertEquals('test@somethingelese.com', connection_entity.email)
 
   def testGuarnateedOneOrgAdmin(self):
@@ -152,7 +156,7 @@ class OrgConnectionPageTest(test_utils.GSoCDjangoTestCase):
     profile = db.get(self.profile_helper.profile.key())
     self.assertResponseBadRequest(response)
     self.assertTrue(profile.is_org_admin)
-    self.assertIn(self.org.key(), profile.org_admin_for)
+    self.assertIn(self.org.key.to_old_key(), profile.org_admin_for)
 
 
 class OrgConnectionPageEmailsTest(OrgConnectionPageTest):
@@ -194,7 +198,7 @@ class UserConnectionPageTest(test_utils.GSoCDjangoTestCase):
   def _connectionPageURL(self):
     if not self.connection_url:
       self.connection_url = USER_CONNECTION_PAGE_URL % (
-          self.org.key().name(), self.profile_helper.profile.parent().link_id)
+          self.org.key.id(), self.profile_helper.profile.parent().link_id)
     return self.connection_url
 
   def testStudentForbiddenAccess(self):
@@ -221,7 +225,11 @@ class UserConnectionPageTest(test_utils.GSoCDjangoTestCase):
     self.assertNotEqual(None, connection_entity)
     self.assertEquals(connection.ROLE, connection_entity.user_role)
     self.assertEquals(connection.NO_ROLE, connection_entity.org_role)
-    self.assertEquals(self.org.key(), connection_entity.organization.key())
+
+    org_key = (
+        connection.Connection
+            .organization.get_value_for_datastore(connection_entity))
+    self.assertEquals(self.org.key.to_old_key(), org_key)
 
   def testConnectionNotificationEmailsSent(self):
     """Test that an email is sent to all org admins when a user initiates
@@ -255,7 +263,7 @@ class ShowConnectionForOrgMemberPageTest(test_utils.GSoCDjangoTestCase):
   def _connectionPageURL(self):
     if not self.connection_url:
       self.connection_url = ORG_SHOW_CONNECTION_PAGE_URL % (
-          self.org.key().name(), self.other_data.profile.parent().link_id,
+          self.org.key.id(), self.other_data.profile.parent().link_id,
           self.other_data.connection.key().id())
     return self.connection_url
 
@@ -300,7 +308,7 @@ class ShowConnectionForOrgMemberPageTest(test_utils.GSoCDjangoTestCase):
     connection_entity = db.get(self.other_data.connection.key())
     self.assertEqual(connection.MENTOR_ROLE, connection_entity.org_role)
     self.assertTrue(profile.is_mentor)
-    self.assertIn(self.org.key(), profile.mentor_for)
+    self.assertIn(self.org.key.to_old_key(), profile.mentor_for)
 
     query = connection.ConnectionMessage.all().ancestor(connection_entity)
     expected = connection_view.USER_ASSIGNED_MENTOR % profile.name()
@@ -317,8 +325,8 @@ class ShowConnectionForOrgMemberPageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(connection.ORG_ADMIN_ROLE, connection_entity.org_role)
     self.assertTrue(profile.is_mentor)
     self.assertTrue(profile.is_org_admin)
-    self.assertIn(self.org.key(), profile.mentor_for)
-    self.assertIn(self.org.key(), profile.org_admin_for)
+    self.assertIn(self.org.key.to_old_key(), profile.mentor_for)
+    self.assertIn(self.org.key.to_old_key(), profile.org_admin_for)
 
     query = connection.ConnectionMessage.all().ancestor(connection_entity)
     expected = connection_view.USER_ASSIGNED_ORG_ADMIN % profile.name()
@@ -337,8 +345,8 @@ class ShowConnectionForOrgMemberPageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(connection.NO_ROLE, connection_entity.org_role)
     self.assertFalse(profile.is_mentor)
     self.assertFalse(profile.is_org_admin)
-    self.assertNotIn(self.org.key(), profile.mentor_for)
-    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key.to_old_key(), profile.mentor_for)
+    self.assertNotIn(self.org.key.to_old_key(), profile.org_admin_for)
 
     query = connection.ConnectionMessage.all().ancestor(connection_entity)
     expected = connection_view.USER_ASSIGNED_NO_ROLE % profile.name()
@@ -357,7 +365,7 @@ class ShowConnectionForUserPageTest(test_utils.GSoCDjangoTestCase):
   def _connectionPageURL(self):
     if not self.connection_url:
       self.connection_url = USER_SHOW_CONNECTION_PAGE_URL % (
-          self.org.key().name(), self.profile_helper.user.link_id,
+          self.org.key.id(), self.profile_helper.user.link_id,
           self.profile_helper.connection.key().id())
     return self.connection_url
 
@@ -377,7 +385,7 @@ class ShowConnectionForUserPageTest(test_utils.GSoCDjangoTestCase):
 
     self.profile_helper.createOrgAdmin(self.org)
     connection_url = USER_SHOW_CONNECTION_PAGE_URL % (
-          self.org.key().name(), other_helper.user.link_id,
+          self.org.key.id(), other_helper.user.link_id,
           other_helper.connection.key().id())
 
     response = self.get(connection_url)
@@ -409,7 +417,7 @@ class ShowConnectionForUserPageTest(test_utils.GSoCDjangoTestCase):
     profile = db.get(self.profile_helper.profile.key())
     self.assertEqual(connection.ROLE, connection_entity.user_role)
     self.assertTrue(profile.is_mentor)
-    self.assertIn(self.org.key(), profile.mentor_for)
+    self.assertIn(self.org.key.to_old_key(), profile.mentor_for)
 
     query = connection.ConnectionMessage.all().ancestor(connection_entity)
     expected = connection_view.USER_ASSIGNED_MENTOR % profile.name()
@@ -429,8 +437,8 @@ class ShowConnectionForUserPageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(connection.ROLE, connection_entity.user_role)
     self.assertTrue(profile.is_mentor)
     self.assertTrue(profile.is_org_admin)
-    self.assertIn(self.org.key(), profile.mentor_for)
-    self.assertIn(self.org.key(), profile.org_admin_for)
+    self.assertIn(self.org.key.to_old_key(), profile.mentor_for)
+    self.assertIn(self.org.key.to_old_key(), profile.org_admin_for)
 
     query = connection.ConnectionMessage.all().ancestor(connection_entity)
     expected = connection_view.USER_ASSIGNED_ORG_ADMIN % profile.name()
@@ -452,8 +460,8 @@ class ShowConnectionForUserPageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(connection.NO_ROLE, connection_entity.user_role)
     self.assertFalse(profile.is_mentor)
     self.assertFalse(profile.is_org_admin)
-    self.assertNotIn(self.org.key(), profile.mentor_for)
-    self.assertNotIn(self.org.key(), profile.org_admin_for)
+    self.assertNotIn(self.org.key.to_old_key(), profile.mentor_for)
+    self.assertNotIn(self.org.key.to_old_key(), profile.org_admin_for)
 
     query = connection.ConnectionMessage.all().ancestor(connection_entity)
     expected = connection_view.USER_ASSIGNED_NO_ROLE % profile.name()
