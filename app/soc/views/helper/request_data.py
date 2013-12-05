@@ -394,7 +394,9 @@ class RequestData(object):
 
   @property
   def POST(self):
-    """Returns the POST dictionary associated with the processed request."""
+    """Returns the POST dictionary associated with the processed request or
+    None if no POST data is present in the request.
+    """
     if not self._isSet(self._POST):
       self._POST = self.request.POST or None
     return self._POST
