@@ -40,9 +40,11 @@ from django.test import testcases
 from soc.logic.helper import xsrfutil
 from soc.middleware import xsrf as xsrf_middleware
 from soc.modules import callback
+from soc.modules.seeder.logic.providers import string as string_provider
 from soc.tasks import mailer
 from soc.views import template
 
+from tests import org_utils
 from tests import profile_utils
 from tests import program_utils
 from tests import timeline_utils
@@ -292,7 +294,7 @@ class GSoCTestCase(SoCTestCase):
   Attributes:
     gsoc: A GSoCProgram.
     program: The same GSoCProgram as "gsoc".
-    org: A GSoCOrganization.
+    org: An organization.
     org_app: An OrgAppSurvey.
     sponsor: A Sponsor.
     site: A Site.
@@ -783,13 +785,7 @@ class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
   def createOrg(self, override={}):
     """Creates an organization for the defined properties.
     """
-    from soc.modules.gsoc.models.organization import GSoCOrganization
-
-    properties = {'scope': self.gsoc, 'status': 'active',
-                  'scoring_disabled': False, 'max_score': 5,
-                  'home': None, 'program': self.gsoc}
-    properties.update(override)
-    return self.seed(GSoCOrganization, properties)
+    return org_utils.seedSOCOrganization(self.program.key(), **override)
 
   def createDocument(self, override={}):
     return self.createDocumentForPrefix('gsoc_program', override)
