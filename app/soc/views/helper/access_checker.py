@@ -21,6 +21,7 @@ from django.utils.translation import ugettext
 
 from google.appengine.ext import ndb
 
+from melange.models import connection as connection_model
 from melange.models import organization as org_model
 from melange.request import exception
 from melange.request import links
@@ -643,7 +644,9 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.profile)
     # Org admins may only view a connection if they are admins for the org
     # involved in the connection.
-    org_key = self.data.url_connection.organization.key()
+    org_key = (
+        connection_model.Connection
+            .organization.get_value_for_datastore(self.data.url_connection))
     if org_key not in self.data.profile.org_admin_for:
       raise exception.Forbidden(message=DEF_CONNECTION_UNACCESSIBLE)
 

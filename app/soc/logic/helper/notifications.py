@@ -17,6 +17,8 @@
 from django.template import loader
 from django.utils.translation import ugettext
 
+from google.appengine.ext import ndb
+
 from melange.request import links
 
 from soc.logic import mail_dispatcher
@@ -270,8 +272,9 @@ def anonymousConnectionContext(data, email, connection, message):
   url = data.redirect.profile_anonymous_connection(
       role=connection.org_role, token=connection.token).url(full=True)
 
+  org = ndb.Key.from_old_key(connection.parent_key()).get()
   message_properties = {
-      'org_name' : connection.parent().name,
+      'org_name' : org.name,
       'role' : connection.getRole(),
       'message' : message,
       'url' : url
