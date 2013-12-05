@@ -148,7 +148,7 @@ class GradingRecordsOverviewTest(test_utils.GSoCDjangoTestCase):
 
     # list response with projects
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
     self.profile_helper.createStudentWithProposal(self.org, mentor)
     self.profile_helper.createStudentWithProject(self.org, mentor)
