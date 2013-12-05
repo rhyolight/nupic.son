@@ -361,12 +361,21 @@ class ReferenceProperty(djangoforms.ReferenceProperty):
                              widget=ReferenceWidget)
 
   def make_value_from_form(self, value):
-    """Convert a form value to a property value.
+    """Convert a value submitted in a form to a property value that is allowed
+    for ReferenceProperty.
 
-    This turns a key string or object into a model instance.
-    Returns None if value is ''.
+    If the specified value is a string (or unicode) representation of
+    a datastore key is transformed into an actual instance of db.Key.
+
+    If the specified value is an instance of db.Key or db.Model, it is returned
+    as is.
+
+    None if returned if the specified value is the empty string. It means that
+    a user does not want to specify any value for this property.
+
+    Returns:
+      Value to be set for the ReferenceProperty as described above. 
     """
-
     if not value:
       return None
     if isinstance(value, unicode):
