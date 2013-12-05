@@ -14,6 +14,8 @@
 
 """GSoC logic for profiles."""
 
+from google.appengine.ext import ndb
+
 from melange.appengine import db as melange_db
 from melange.logic import profile as profile_logic
 
@@ -269,6 +271,9 @@ def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
   Returns:
     list of profiles entities or keys of organization administrators
   """
+  if isinstance(org_key, ndb.Key):
+    org_key = org_key.to_old_key()
+
   return profile_logic.getOrgAdmins(
       org_key, keys_only=keys_only, extra_attrs=extra_attrs,
       models=types.SOC_MODELS)

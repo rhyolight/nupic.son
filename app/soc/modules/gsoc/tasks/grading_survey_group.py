@@ -18,6 +18,7 @@ import datetime
 
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 from django.conf.urls import url
@@ -228,7 +229,7 @@ class GradingRecordTasks(object):
     mail_context['subject'] = '%s results processed for %s' %(
         survey_group_entity.name, project_entity.title)
 
-    org_admins = profile_logic.getOrgAdmins(org_entity)
+    org_admins = profile_logic.getOrgAdmins(org.key)
 
     # collect all mentors
     mentors = db.get(project_entity.mentors)
