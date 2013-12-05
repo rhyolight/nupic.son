@@ -41,7 +41,7 @@ class SurveyRemindersTest(
   def createMentor(self):
     """Creates a new mentor."""
     self.mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
   def createStudent(self):
     """Creates a Student with a project.
@@ -80,7 +80,7 @@ class SurveyRemindersTest(
     """
     # list response with projects
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
     # Create a student with the project.
     student_profile_helper = profile_utils.GSoCProfileHelper(
@@ -94,7 +94,8 @@ class SurveyRemindersTest(
 
     # Update the properties for withdrawing the project.
     student_profile.student_info.number_of_projects -= 1
-    student_profile.student_info.project_for_orgs.remove(self.org.key())
+    student_profile.student_info.project_for_orgs.remove(
+        self.org.key.to_old_key())
     project.status = 'withdrawn'
     proposal.status = 'withdrawn'
 
