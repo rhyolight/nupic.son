@@ -29,7 +29,9 @@ from soc.models import profile as profile_model
 from soc.models.program import Program
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import org_utils
 from tests import profile_utils
+from tests import program_utils
 from tests.utils import connection_utils
 from tests.program_utils import ProgramHelper
 
@@ -56,14 +58,11 @@ class ConnectionTest(unittest.TestCase):
         profile_model.Profile, profile_properties)
 
     self.program_helper = ProgramHelper()
-    org_properties = {
-        'scope': self.program, 'status': 'active',
-        'scoring_disabled': False, 'max_score': 5,
-        'home': None, 'program': self.program,
-        }
-    self.org = self.program_helper.seed(org_model.Organization, org_properties)
+
+    self.org = org_utils.seedOrganization(self.program.key())
+
     self.connection = connection_utils.seed_new_connection(
-        self.profile, self.org.key())
+        self.profile, self.org.key)
 
 
 class ConnectionExistsTest(ConnectionTest): 
@@ -74,10 +73,10 @@ class ConnectionExistsTest(ConnectionTest):
     Organizations can be fetched with this helper.
     """
     self.assertTrue(
-      connection_logic.connectionExists(self.profile, self.org.key()))
+      connection_logic.connectionExists(self.profile, self.org.key))
     self.connection.delete()
     self.assertFalse(
-      connection_logic.connectionExists(self.profile, self.org.key()))
+      connection_logic.connectionExists(self.profile, self.org.key))
 
 class CreateConnectionTest(ConnectionTest):
   """Unit tests for the connection_logic.createConnection function."""
@@ -95,10 +94,11 @@ class CreateConnectionTest(ConnectionTest):
         )
     new_connection = connection_model.Connection.all().get()
     self.assertEqual(self.profile.key(), new_connection.parent().key())
-    self.assertEqual(self.org.key(), new_connection.organization.key())
+    self.assertEqual(
+        self.org.key.to_old_key(), new_connection.organization.key())
     self.assertEqual(connection_model.NO_ROLE, new_connection.user_role)
     self.assertEqual(connection_model.MENTOR_ROLE, new_connection.org_role)
-    
+
     # Also test to ensure that a connection will not be created if a logically
     # equivalent connection already exists.
     self.assertRaises(
@@ -148,15 +148,15 @@ class GetConnectionMessagesTest(ConnectionTest):
         self.connection, author=self.profile)
 
     # create another organization and a connection
-    organization2 = self.program_helper.createNewOrg(
-        {'program' : self.program})
-    connection2 = connection_utils.seed_new_connection(
-      self.profile, organization2)
+    other_org = org_utils.seedOrganization(self.program.key())
+
+    other_connection = connection_utils.seed_new_connection(
+      self.profile, other_org.key)
 
     # create a few messages for the other connection
     for _ in range(10):
       connection_utils.seed_new_connection_message(
-          connection2, author=self.profile)
+          other_connection, author=self.profile)
 
     # check that correct messages are returned
     messages = connection_logic.getConnectionMessages(self.connection)
@@ -170,28 +170,29 @@ class QueryForOrganizationAdminTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
+    program = program_utils.seedProgram()
     # seed a few organizations
-    self.first_org = seeder_logic.seed(org_model.Organization)
-    self.second_org = seeder_logic.seed(org_model.Organization)
-    self.third_org = seeder_logic.seed(org_model.Organization)
+    self.first_org = org_utils.seedOrganization(program.key())
+    self.second_org = org_utils.seedOrganization(program.key())
+    self.third_org = org_utils.seedOrganization(program.key())
 
     # seed a few profiles
     first_profile = seeder_logic.seed(profile_model.Profile)
     second_profile = seeder_logic.seed(profile_model.Profile)
 
     self.first_connection = connection_utils.seed_new_connection(
-        first_profile, self.first_org.key())
+        first_profile, self.first_org.key)
     self.second_connection = connection_utils.seed_new_connection(
-        second_profile, self.first_org.key())
+        second_profile, self.first_org.key)
     self.third_connection = connection_utils.seed_new_connection(
-        first_profile, self.second_org)
+        first_profile, self.second_org.key)
 
   def testForMentor(self):
     """Tests that no connections are fetched for user who is a mentor only."""
     properties = {
         'is_org_admin': False,
         'is_mentor': True,
-        'mentor_for': [self.first_org.key()],
+        'mentor_for': [self.first_org.key.to_old_key()],
         'org_admin_for': []
         }
     profile = seeder_logic.seed(profile_model.Profile, properties=properties)
@@ -208,8 +209,8 @@ class QueryForOrganizationAdminTest(unittest.TestCase):
     properties = {
         'is_org_admin': True,
         'is_mentor': True,
-        'mentor_for': [self.first_org.key()],
-        'org_admin_for': [self.first_org.key()]
+        'mentor_for': [self.first_org.key.to_old_key()],
+        'org_admin_for': [self.first_org.key.to_old_key()]
         }
     profile = seeder_logic.seed(profile_model.Profile, properties=properties)
     query = connection_logic.queryForOrganizationAdmin(profile)
@@ -231,8 +232,10 @@ class QueryForOrganizationAdminTest(unittest.TestCase):
     properties = {
         'is_org_admin': True,
         'is_mentor': True,
-        'mentor_for': [self.first_org.key(), self.second_org.key()],
-        'org_admin_for': [self.first_org.key(), self.second_org.key()]
+        'mentor_for': [
+            self.first_org.key.to_old_key(), self.second_org.key.to_old_key()],
+        'org_admin_for': [
+            self.first_org.key.to_old_key(), self.second_org.key.to_old_key()],
         }
     profile = seeder_logic.seed(profile_model.Profile, properties=properties)
     query = connection_logic.queryForOrganizationAdmin(profile)
@@ -258,15 +261,16 @@ class CanCreateConnectionTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
+    program = program_utils.seedProgram()
     self.profile = seeder_logic.seed(profile_model.Profile)
-    self.org = seeder_logic.seed(org_model.Organization)
+    self.org = org_utils.seedOrganization(program.key())
 
   def testForStudent(self):
     """Tests that a student profile cannot create a connection."""
     # make the profile a student
     self.profile.is_student = True
 
-    result = connection_logic.canCreateConnection(self.profile, self.org.key())
+    result = connection_logic.canCreateConnection(self.profile, self.org.key)
     self.assertFalse(result)
     self.assertEqual(
         result.extra, 
@@ -278,18 +282,18 @@ class CanCreateConnectionTest(unittest.TestCase):
     # profile is not a student
     self.profile.is_student = False
 
-    result = connection_logic.canCreateConnection(self.profile, self.org.key())
+    result = connection_logic.canCreateConnection(self.profile, self.org.key)
     self.assertFalse(result)
     self.assertEqual(
         result.extra, connection_logic._CONNECTION_EXISTS % (
-            self.profile.link_id, self.org.key().name()))
+            self.profile.link_id, self.org.key.id()))
 
   def testForNonExistingConnection(self):
     """Tests that a non-student profile with no connection can create one."""
     # profile is not a student
     self.profile.is_student = False
 
-    result = connection_logic.canCreateConnection(self.profile, self.org.key())
+    result = connection_logic.canCreateConnection(self.profile, self.org.key)
     self.assertTrue(result)
 
 
@@ -413,6 +417,10 @@ class ActivateAnonymousConnectionTest(ConnectionTest):
     connection = query.get()
 
     self.assertEquals(connection.user_role, connection_model.NO_ROLE)
-    self.assertEquals(connection.organization.key(), self.org.key())
+
+    org_key = (
+        connection_model.Connection.organization
+            .get_value_for_datastore(connection))
+    self.assertEquals(org_key, self.org.key.to_old_key())
     anonymous_connection = connection_model.AnonymousConnection.all().get()
     self.assertIsNone(anonymous_connection)

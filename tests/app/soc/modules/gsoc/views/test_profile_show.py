@@ -164,7 +164,7 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
   def testOnlyAHostCanAccessTheAdminProfilePage(self):
     """Tests that only the host is allowed to access profile pages."""
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
     student.createOtherUser('student@example.com')
     student.createStudentWithProject(self.org, mentor)

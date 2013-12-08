@@ -24,10 +24,7 @@ from soc.logic import org_app as org_app_logic
 # MapReduce requires import of processed model classes.
 # pylint: disable=unused-import
 from soc.models.site import Site
-from soc.models.org_app_record import OrgAppRecord
 from soc.models.org_app_survey import OrgAppSurvey
-from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gsoc.views.helper import url_names as gsoc_url_names
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.views.helper import url_names as gci_url_names
 # pylint: enable=unused-import
@@ -48,14 +45,11 @@ def process(org_app):
   program_type = params['program_type']
   program_key_str = params['program_key']
 
-  if program_type == 'gci':
-    program_model = GCIProgram
-    create_org_url_name = gci_url_names.CREATE_GCI_ORG_PROFILE
-  elif program_type == 'gsoc':
-    program_model = GSoCProgram
-    create_org_url_name = gsoc_url_names.GSOC_ORG_PROFILE_CREATE
+  # now the script is used only for GCI
+  if program_type != 'gci':
+    return
 
-  program = program_model.get_by_key_name(program_key_str)
+  program = GCIProgram.get_by_key_name(program_key_str)
 
   survey_query = OrgAppSurvey.all(keys_only=True).filter('program', program)
   survey_key = survey_query.get()
@@ -67,7 +61,8 @@ def process(org_app):
   # TODO(daniel): create a MapReduce/Task RequestData
   data = MapreduceRequestData(program, Site.get_by_key_name('site'))
 
-  absolute_url = links.ABSOLUTE_LINKER.program(program, create_org_url_name)
+  absolute_url = links.ABSOLUTE_LINKER.program(
+      program, gci_url_names.CREATE_GCI_ORG_PROFILE)
 
   if org_app.status == 'pre-accepted':
     org_app_logic.setStatus(data, org_app, 'accepted', absolute_url)

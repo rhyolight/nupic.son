@@ -18,6 +18,7 @@ import collections
 
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 
@@ -34,6 +35,7 @@ from soc.modules.gsoc.logic import grading_record
 from soc.modules.gsoc.logic import survey
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
 from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
+from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
@@ -213,8 +215,14 @@ class GradingRecordsList(Template):
     title_func = lambda rec, *args: rec.parent().title
     list_config.addPlainTextColumn(
         'project_title', 'Project Title', title_func)
-    org_func = lambda rec, *args: rec.parent().org.name
-    list_config.addPlainTextColumn('org_name', 'Organization', org_func)
+
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = ndb.Key.from_old_key((
+          project_model.GSoCProject.org
+              .get_value_for_datastore(entity.parent())))
+      return org_key.get().name
+    list_config.addPlainTextColumn('org_name', 'Organization', getOrganization)
 
     stud_rec_func = lambda rec, *args: \
         'Present' if rec.student_record else 'Missing'

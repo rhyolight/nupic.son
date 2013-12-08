@@ -16,11 +16,14 @@
 for checking access.
 """
 
+from google.appengine.ext import ndb
 from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
 from melange.request import exception
+from melange.request import links
+
 from soc.logic import validate
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
@@ -40,7 +43,8 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
 from soc.modules.gsoc.models.organization import GSoCOrganization
-from soc.modules.gsoc.views.helper import url_names
+
+from summerofcode.views.helper import urls
 
 
 DEF_FAILED_PREVIOUS_EVAL = ugettext(
@@ -128,28 +132,6 @@ class Mutator(access_checker.Mutator):
   def __init__(self, data):
     super(Mutator, self).__init__(data)
 
-  def projectFromKwargs(self):
-    """Sets the project entity in RequestData object.
-    """
-    # can safely call int, since regexp guarnatees a number
-    project_id = int(self.data.kwargs['id'])
-
-    if not project_id:
-      raise exception.NotFound(
-          message=ugettext('Proposal id must be a positive number'))
-
-    self.data.project = project_model.GSoCProject.get_by_id(
-        project_id, parent=self.data.url_profile)
-
-    if not self.data.project:
-      raise exception.NotFound(message=DEF_NO_PROJECT)
-
-    parent_key = self.data.project.parent_key()
-    if self.data.profile and parent_key == self.data.profile.key():
-      self.data.project_owner = self.data.profile
-    else:
-      self.data.project_owner = self.data.project.parent()
-
   def anonymousConnectionFromKwargs(self):
     """Set the anonymous_connection entity in the RequestData object.
     """
@@ -181,12 +163,14 @@ class Mutator(access_checker.Mutator):
     """Sets the student evaluation record in RequestData object.
     """
     assert access_checker.isSet(self.data.student_evaluation)
-    assert access_checker.isSet(self.data.project)
 
-    self.data.organization = self.data.project.org
+    # TODO(daniel): get rid of this ugly mutation!
+    org_key = project_model.GSoCProject.org.get_value_for_datastore(
+        self.data.url_project)
+    self.data.organization = ndb.Key.from_old_key(org_key).get()
 
     q = GSoCProjectSurveyRecord.all()
-    q.filter('project', self.data.project)
+    q.filter('project', self.data.url_project)
     q.filter('survey', self.data.student_evaluation)
     self.data.student_evaluation_record = q.get()
 
@@ -211,20 +195,20 @@ class Mutator(access_checker.Mutator):
     """Sets the mentor evaluation record in RequestData object.
     """
     assert access_checker.isSet(self.data.mentor_evaluation)
-    assert access_checker.isSet(self.data.project)
 
-    self.data.organization = self.data.project.org
+    # TODO(daniel): get rid of this ugly mutation!
+    org_key = project_model.GSoCProject.org.get_value_for_datastore(
+        self.data.url_project)
+    self.data.organization = ndb.Key.from_old_key(org_key).get()
 
     q = GSoCGradingProjectSurveyRecord.all()
-    q.filter('project', self.data.project)
+    q.filter('project', self.data.url_project)
     q.filter('survey', self.data.mentor_evaluation)
     self.data.mentor_evaluation_record = q.get()
 
   def gradingSurveyRecordFromKwargs(self):
     """Sets a GradingSurveyRecord entry in the RequestData object.
     """
-    self.projectFromKwargs()
-
     if not ('group' in self.data.kwargs and 'id' in self.data.kwargs):
       raise exception.BadRequest(message=access_checker.DEF_NOT_VALID_REQUEST)
 
@@ -232,7 +216,8 @@ class Mutator(access_checker.Mutator):
     record_id = long(self.data.kwargs['record'])
     group_id = long(self.data.kwargs['group'])
 
-    record = GSoCGradingRecord.get_by_id(record_id, parent=self.data.project)
+    record = GSoCGradingRecord.get_by_id(
+        record_id, parent=self.data.url_project)
 
     if not record or record.grading_survey_group.key().id() != group_id:
       raise exception.NotFound(message=DEF_NO_RECORD_FOUND)
@@ -276,11 +261,9 @@ class Mutator(access_checker.Mutator):
     self.data.survey_group = survey_group
 
   def slotTransferEntities(self):
-    assert access_checker.isSet(self.data.organization)
-
-    self.data.slot_transfer_entities = \
+    self.data.slot_transfer_entities = (
         slot_transfer_logic.getSlotTransferEntitiesForOrg(
-            self.data.organization)
+            self.data.url_ndb_org.key))
 
 
 class AccessChecker(access_checker.AccessChecker):
@@ -308,29 +291,27 @@ class AccessChecker(access_checker.AccessChecker):
     """Checks if the student can take survey for the project.
     """
     assert access_checker.isSet(self.data.profile)
-    assert access_checker.isSet(self.data.project)
 
     self.isProjectInURLValid()
 
-    project = self.data.project
-
     # check if the project belongs to the current user and if so he
     # can access the survey
-    expected_profile_key = project.parent_key()
+    expected_profile_key = self.data.url_project.parent_key()
     if expected_profile_key != self.data.profile.key():
       raise exception.Forbidden(
           message=DEF_STUDENT_EVAL_DOES_NOT_BELONG_TO_YOU)
 
     # check if the project is still ongoing
-    if project.status in ['invalid', 'withdrawn']:
+    if self.data.url_project.status in ['invalid', 'withdrawn']:
       raise exception.Forbidden(message=DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT)
 
     # check if the project has failed in a previous evaluation
     # TODO(Madhu): This still has a problem that when the project fails
     # in the final evaluation, the users will not be able to access the
     # midterm evaluation show page. Should be fixed.
-    if project.status == 'failed' and project.failed_evaluations:
-      failed_evals = db.get(project.failed_evaluations)
+    if (self.data.url_project.status == 'failed'
+        and self.data.url_project.failed_evaluations):
+      failed_evals = db.get(self.data.url_project.failed_evaluations)
       fe_keynames = [f.grading_survey_group.grading_survey.key(
           ).id_or_name() for f in failed_evals]
       if self.data.student_evaluation.key().id_or_name() not in fe_keynames:
@@ -340,34 +321,31 @@ class AccessChecker(access_checker.AccessChecker):
   def isMentorForSurvey(self):
     """Checks if the user is the mentor for the project or org admin.
     """
-    assert access_checker.isSet(self.data.project)
-
     self.isProjectInURLValid()
 
-    project = self.data.project
-
     # check if the project is still ongoing
-    if project.status in ['invalid', 'withdrawn']:
+    if self.data.url_project.status in ['invalid', 'withdrawn']:
       raise exception.Forbidden(message=DEF_EVAL_NOT_ACCESSIBLE_FOR_PROJECT)
 
     # check if the project has failed in a previous evaluation
     # TODO(Madhu): This still has a problem that when the project fails
     # in the final evaluation, the users will not be able to access the
     # midterm evaluation show page. Should be fixed.
-    if project.status == 'failed' and project.failed_evaluations:
-      failed_evals = db.get(project.failed_evaluations)
+    if (self.data.url_project.status == 'failed'
+        and self.data.url_project.failed_evaluations):
+      failed_evals = db.get(self.data.url_project.failed_evaluations)
       fe_keynames = [f.grading_survey_group.grading_survey.key(
           ).id_or_name() for f in failed_evals]
       if self.data.mentor_evaluation.key().id_or_name() not in fe_keynames:
         raise exception.Forbidden(message=DEF_FAILED_PREVIOUS_EVAL % (
             self.data.mentor_evaluation.short_name.lower()))
 
-    if self.data.orgAdminFor(self.data.organization):
+    if self.data.orgAdminFor(self.data.url_ndb_org.key):
       return
 
     # check if the currently logged in user is the mentor or co-mentor
     # for the project in request or the org admin for the org
-    if self.data.profile.key() not in project.mentors:
+    if self.data.profile.key() not in self.data.url_project.mentors:
       raise exception.Forbidden(message=DEF_MENTOR_EVAL_DOES_NOT_BELONG_TO_YOU)
 
   def canApplyStudent(self, edit_url):
@@ -450,10 +428,8 @@ class AccessChecker(access_checker.AccessChecker):
     gsoc_org = q.get()
 
     if gsoc_org:
-      # TODO(nathaniel): make this .organization call unnecessary.
-      self.data.redirect.organization(organization=gsoc_org)
-
-      edit_url = self.data.redirect.urlOf(url_names.GSOC_ORG_PROFILE_EDIT)
+      edit_url = links.LINKER.organization(
+          gsoc_org.key(), urls.UrlNames.ORG_PROFILE_EDIT)
 
       raise exception.Forbidden(message=DEF_ORG_EXISTS % (org_id, edit_url))
 
@@ -478,7 +454,7 @@ class AccessChecker(access_checker.AccessChecker):
   def isProjectCompleted(self):
     """Checks whether the project specified in the request is completed.
     """
-    if len(self.data.project.passed_evaluations) < \
+    if len(self.data.url_project.passed_evaluations) < \
         project_logic.NUMBER_OF_EVALUATIONS:
       raise exception.Forbidden(message=DEF_PROJECT_NOT_COMPLETED)
 
@@ -523,8 +499,6 @@ class AccessChecker(access_checker.AccessChecker):
     """Checks if the student can edit the project details."""
     assert access_checker.isSet(self.data.program)
     assert access_checker.isSet(self.data.timeline)
-    assert access_checker.isSet(self.data.project)
-    assert access_checker.isSet(self.data.project_owner)
 
     self.isProjectInURLValid()
 
@@ -536,7 +510,7 @@ class AccessChecker(access_checker.AccessChecker):
     self.isActiveStudent()
 
     # check if the project belongs to the current user
-    expected_profile_key = self.data.project.parent_key()
+    expected_profile_key = self.data.url_project.parent_key()
     if expected_profile_key != self.data.profile.key():
       error_msg = access_checker.DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'name': 'project'
@@ -544,7 +518,7 @@ class AccessChecker(access_checker.AccessChecker):
       raise exception.Forbidden(message=error_msg)
 
     # check if the status allows the project to be updated
-    if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
+    if self.data.url_project.status in ['invalid', 'withdrawn', 'failed']:
       raise exception.Forbidden(
           message=access_checker.DEF_CANNOT_UPDATE_ENTITY % {
               'name': 'project'
@@ -554,8 +528,6 @@ class AccessChecker(access_checker.AccessChecker):
     """Checks if the organization admin can edit the project details."""
     assert access_checker.isSet(self.data.program)
     assert access_checker.isSet(self.data.timeline)
-    assert access_checker.isSet(self.data.project)
-    assert access_checker.isSet(self.data.project_owner)
 
     self.isProjectInURLValid()
 
@@ -566,11 +538,11 @@ class AccessChecker(access_checker.AccessChecker):
     # check if the person is an organization admin for the organization
     # to which the project was assigned
     org_key = project_model.GSoCProject.org.get_value_for_datastore(
-        self.data.project)
+        self.data.url_project)
     self.isOrgAdminForOrganization(org_key)
 
     # check if the status allows the project to be updated
-    if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
+    if self.data.url_project.status in ['invalid', 'withdrawn', 'failed']:
       raise exception.Forbidden(
           message=access_checker.DEF_CANNOT_UPDATE_ENTITY % {
               'name': 'project'

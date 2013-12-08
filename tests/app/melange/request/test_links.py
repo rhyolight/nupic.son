@@ -25,11 +25,11 @@ from melange.views.helper import urls
 from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model
-from soc.models import sponsor as sponsor_model
 from soc.modules.gci.views.helper import url_names as gci_url_names
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import profile_utils
+from tests import program_utils
 
 
 class _PathOnlyMockHttpRequest(object):
@@ -112,7 +112,7 @@ class TestLinker(unittest.TestCase):
 
   def testProgram(self):
     """Tests program function."""
-    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+    sponsor = program_utils.seedSponsor()
 
     program_properties = {
         'sponsor': sponsor,
@@ -126,7 +126,7 @@ class TestLinker(unittest.TestCase):
 
   def testSponsor(self):
     """Tests sponsor function."""
-    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+    sponsor = program_utils.seedSponsor()
     self.assertEqual(
         '/gci/program/create/%s' % sponsor.key().name(),
         self.linker.sponsor(sponsor, 'gci_program_create'))
@@ -174,22 +174,13 @@ class TestLinker(unittest.TestCase):
     program.program_id = program.link_id
     program.sponsor = program.scope
 
-    # seed a user
-    user = profile_utils.seedUser()
-
-    # seed a profile
-    profile_properties = {
-        'program': program,
-        'scope': program,
-        'parent': user
-        }
-    profile = seeder_logic.seed(profile_model.Profile, profile_properties)
+    profile = profile_utils.seedProfile(program)
 
     self.assertEqual(
         '/gci/connection/manage/user/%s/%s/%s' % (profile.program.key().name(),
             profile.parent_key().name(), 42),
         self.linker.userId(
-            profile, 42, ci_urls.UrlNames.CONNECTION_MANAGE_AS_USER))
+            profile.key(), 42, ci_urls.UrlNames.CONNECTION_MANAGE_AS_USER))
 
   def testOrganization(self):
     """Tests organization function."""

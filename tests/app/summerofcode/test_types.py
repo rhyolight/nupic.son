@@ -43,6 +43,11 @@ class TestSummerOfCodeModels(unittest.TestCase):
     """Tests program_model attribute."""
     self.assertEqual(self.models.program_model, program_model.GSoCProgram)
 
+  def testProgramMessagesModel(self):
+    """Tests program_messages_model attribute."""
+    self.assertEqual(
+        self.models.program_messages_model, program_model.GSoCProgramMessages)
+
   def testTimelineModel(self):
     """Tests timeline_model attribute."""
     self.assertEqual(self.models.timeline_model, timeline_model.GSoCTimeline)

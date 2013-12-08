@@ -18,6 +18,7 @@ import json
 import logging
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 from django.utils.translation import ugettext
@@ -427,13 +428,18 @@ class MyProposalsComponent(Component):
 
   def __init__(self, data):
     """Initializes this component."""
+
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = GSoCProposal.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addPlainTextColumn('org', 'Organization',
-                          lambda ent, *args: ent.org.name)
+    list_config.addPlainTextColumn('org', 'Organization', getOrganization)
     list_config.setRowAction(lambda e, *args:
         links.LINKER.userId(
-            e.parent(), e.key().id(), url_names.PROPOSAL_REVIEW))
+            e.parent_key(), e.key().id(), url_names.PROPOSAL_REVIEW))
     self._list_config = list_config
 
     super(MyProposalsComponent, self).__init__(data)
@@ -470,7 +476,10 @@ class MyProposalsComponent(Component):
     q.ancestor(self.data.profile)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
+
+    # TODO(daniel): enable prefetching from ndb models
+    #prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
+    prefetcher = lists.ModelPrefetcher(GSoCProposal, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
@@ -483,13 +492,18 @@ class MyProjectsComponent(Component):
 
   def __init__(self, data):
     """Initializes this component."""
+
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = GSoCProject.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addPlainTextColumn('org', 'Organization Name',
-        lambda ent, *args: ent.org.name)
-    list_config.setRowAction(lambda e, *args: data.redirect.project(
-        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
-        'gsoc_project_details'))
+    list_config.addPlainTextColumn('org', 'Organization Name', getOrganization)
+    list_config.setRowAction(
+        lambda e, *args: links.LINKER.userId(
+            e.parent_key(), e.key().id(), url_names.GSOC_PROJECT_DETAILS))
     self._list_config = list_config
 
     super(MyProjectsComponent, self).__init__(data)
@@ -512,7 +526,8 @@ class MyProjectsComponent(Component):
         ancestor=self.data.profile, program=self.data.program)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(GSoCProject, ['org'], parent=True)
+    # TODO(daniel): enable prefetching from ndb models
+    prefetcher = lists.ModelPrefetcher(GSoCProject, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, list_query,
@@ -598,8 +613,9 @@ class MyEvaluationsComponent(Component):
         ancestor=self.data.profile)
 
     starter = lists.keyStarter
+    # TODO(daniel): enable prefetching from ndb models ('org')
     prefetcher = lists.ListModelPrefetcher(
-        GSoCProject, ['org'],
+        GSoCProject, [],
         ['mentors', 'failed_evaluations'],
         parent=True)
     row_adder = evaluationRowAdder(self.evals)
@@ -666,8 +682,9 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
         mentors=self.data.profile)
 
     starter = lists.keyStarter
+    # TODO(daniel): enable prefetching from ndb models ('orgs')
     prefetcher = lists.ListModelPrefetcher(
-        GSoCProject, ['org'],
+        GSoCProject, [],
         ['mentors', 'failed_evaluations'],
         parent=True)
     row_adder = evaluationRowAdder(self.evals)
@@ -776,6 +793,11 @@ class SubmittedProposalsComponent(Component):
         lambda ent, *args: ent.parent().name())
     list_config.addSimpleColumn('accept_as_project', 'Should accept')
 
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = GSoCProposal.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     # assigned mentor column
     def split_key(key):
       split_name = key.name().split('/')
@@ -790,6 +812,11 @@ class SubmittedProposalsComponent(Component):
     def mentor_keys(ent, *args):
       return ', '.join(split_key(i) for i in ent.possible_mentors)
 
+    def getOrganizationKey(entity, *args):
+      """Helper function to get value of organization key column."""
+      org_key = GSoCProposal.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).id()
+
     list_config.addPlainTextColumn(
         'mentor', 'Assigned mentor usernames', mentor_key, hidden=True)
     list_config.addPlainTextColumn(
@@ -797,7 +824,7 @@ class SubmittedProposalsComponent(Component):
         mentor_keys, hidden=True)
 
     orgs = data.mentor_for
-    options = [("^%s$" % i.short_name, i.short_name) for i in orgs]
+    options = [("^%s$" % i.name, i.name) for i in orgs]
 
 
     if options and len(options) > 1:
@@ -805,21 +832,19 @@ class SubmittedProposalsComponent(Component):
 
     hidden = len(data.mentor_for) < 2
     list_config.addPlainTextColumn(
-        'org', 'Organization', (lambda ent, *args: ent.org.short_name),
-        options=options, hidden=hidden)
+        'org', 'Organization', getOrganization, options=options, hidden=hidden)
 
     # hidden keys
     list_config.addPlainTextColumn(
         'full_proposal_key', 'Full proposal key',
         (lambda ent, *args: str(ent.key())), hidden=True)
     list_config.addPlainTextColumn(
-        'org_key', 'Organization key',
-        (lambda ent, *args: ent.org.key().name()), hidden=True)
+        'org_key', 'Organization key', getOrganizationKey, hidden=True)
 
     # row action
     list_config.setRowAction(lambda e, *args:
         links.LINKER.userId(
-            e.parent(), e.key().id(), url_names.PROPOSAL_REVIEW))
+            e.parent_key(), e.key().id(), url_names.PROPOSAL_REVIEW))
     list_config.setDefaultSort('last_modified_on', 'desc')
 
     # additional columns
@@ -833,6 +858,10 @@ class SubmittedProposalsComponent(Component):
 
     extra_columns = []
     for org in data.mentor_for:
+      # TODO(daniel): add proposal_extra to Organization model??
+      if not hasattr(org, 'proposal_extra'):
+        continue
+
       for column in org.proposal_extra:
         extra_columns.append(column)
         col_name = "%s" % (column)
@@ -912,7 +941,7 @@ class SubmittedProposalsComponent(Component):
 
     for org in self.data.mentor_for:
       for column in org.proposal_extra:
-        extra_columns.setdefault(org.key().name(), []).append(column)
+        extra_columns.setdefault(org.key.id(), []).append(column)
 
     for _, properties in parsed.iteritems():
       if 'org_key' not in properties or 'full_proposal_key' not in properties:
@@ -997,8 +1026,8 @@ class SubmittedProposalsComponent(Component):
     dupQ.filter('is_duplicate', True)
 
     q = GSoCProposal.all()
-    q.filter('org IN', self.data.mentor_for)
-    dupQ.filter('orgs IN', self.data.mentor_for)
+    q.filter('org IN', self.data.profile.mentor_for)
+    dupQ.filter('orgs IN', self.data.profile.mentor_for)
 
     # Only fetch the data if we will display it
     if self.data.program.duplicates_visible:
@@ -1013,7 +1042,8 @@ class SubmittedProposalsComponent(Component):
         duplicates.extend(dup.duplicates)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
+    # TODO(daniel): enable prefetching from ndb models ('org')
+    prefetcher = lists.ModelPrefetcher(GSoCProposal, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
@@ -1026,16 +1056,21 @@ class ProjectsIMentorComponent(Component):
 
   def __init__(self, data):
     """Initializes this component."""
+
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = GSoCProject.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn('student', 'Student',
                           lambda ent, *args: ent.parent().name())
-    list_config.addPlainTextColumn('org', 'Organization',
-                          lambda ent, *args: ent.org.name)
+    list_config.addPlainTextColumn('org', 'Organization', getOrganization)
     list_config.setDefaultSort('title')
-    list_config.setRowAction(lambda e, *args: data.redirect.project(
-        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
-        'gsoc_project_details'))
+    list_config.setRowAction(
+        lambda e, *args: links.LINKER.userId(
+            e.parent_key(), e.key().id(), url_names.GSOC_PROJECT_DETAILS))
     self._list_config = list_config
 
     super(ProjectsIMentorComponent, self).__init__(data)
@@ -1063,7 +1098,8 @@ class ProjectsIMentorComponent(Component):
       list_query.filter('mentors', self.data.profile)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(GSoCProject, ['org'], parent=True)
+    # TODO(daniel): enable prefetching from ndb models ('org')
+    prefetcher = lists.ModelPrefetcher(GSoCProject, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, list_query,
@@ -1192,17 +1228,19 @@ class OrganizationsIParticipateInComponent(Component):
     specified organization.
 
     Args:
-      org: the specified GSoCOrganization entity
+      org: organization entity.
 
     Returns:
       number of slots used by the organization
     """
     if self.data.timeline.studentsAnnounced():
-      query = db.Query(GSoCProposal, keys_only=True).filter('org', org)
+      query = db.Query(GSoCProposal, keys_only=True)
+      query.filter('org', org.key.to_old_key())
       query.filter('status', 'accepted')
       return query.count()
     else:
-      query = db.Query(GSoCProposal, keys_only=True).filter('org', org)
+      query = db.Query(GSoCProposal, keys_only=True)
+      query.filter('org', org.key.to_old_key())
       query.filter('has_mentor', True).filter('accept_as_project', True)
       return query.count()
 
@@ -1220,8 +1258,14 @@ class OrgConnectionComponent(Component):
     self.data = data
     list_config = lists.ListConfiguration()
 
-    list_config.addPlainTextColumn('organization', 'Organization',
-        lambda e, *args: e.organization.name)
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = (connection_model.Connection.organization
+          .get_value_for_datastore(entity))
+      return ndb.Key.from_old_key(org_key).get().name
+
+    list_config.addPlainTextColumn(
+        'organization', 'Organization', getOrganization)
     list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.parent().name())
     list_config.addPlainTextColumn('role', 'Role',
@@ -1251,14 +1295,16 @@ class OrgConnectionComponent(Component):
       return None
 
     q = connection_model.Connection.all()
-    q.filter('organization IN', [org.key() for org in self.data.org_admin_for])
+    q.filter('organization IN', self.data.profile.org_admin_for)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(
-        connection_model.Connection, ['organization'])
+
+    # TODO(daniel): enable prefetching from ndb models
+    #prefetcher = lists.ModelPrefetcher(
+    #    connection_model.Connection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
-      self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter, prefetcher=None)
     return response_builder.build()
 
   def context(self):
@@ -1288,11 +1334,17 @@ class UserConnectionComponent(Component):
   def __init__(self, data):
     """Initializes this component.
     """
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = (connection_model.Connection.organization
+          .get_value_for_datastore(entity))
+      return ndb.Key.from_old_key(org_key).get().name
+
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key',
         lambda e, *args: '%s' % e.keyName(), hidden=True)
-    list_config.addPlainTextColumn('organization', 'Organization',
-        lambda e, *args: '%s' % e.organization.name)
+    list_config.addPlainTextColumn(
+        'organization', 'Organization', getOrganization)
     list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.parent().name())
     list_config.addPlainTextColumn('role', 'Role',
@@ -1324,12 +1376,14 @@ class UserConnectionComponent(Component):
     q = connection_logic.queryForAncestor(self.data.profile)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(
-        connection_model.Connection, ['organization'])
+
+    # TODO(daniel): enable prefetching from ndb models
+    #prefetcher = lists.ModelPrefetcher(
+    #    connection_model.Connection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
-        prefetcher=prefetcher)
+        prefetcher=None)
     return response_builder.build()
 
   def context(self):
@@ -1374,7 +1428,7 @@ class ParticipantsComponent(Component):
       Args:
         data: A RequestData describing the current request.
       """
-      self.org_dict = dict((org.key(), org) for org in data.org_admin_for)
+      self.org_dict = dict((org.key, org) for org in data.org_admin_for)
 
     def prefetch(self, entities):
       """Prefetches the organizations that are administered by the current
@@ -1471,11 +1525,9 @@ class TodoComponent(Component):
         data.redirect.program()
         url = data.redirect.urlOf(url_names.GSOC_PROFILE_EDIT, secure=True)
         return url + '#form_row_school_name'
-      if key.isdigit():
-        project_id = int(key)
-        # TODO(nathaniel): Eliminate this state-setting call.
-        data.redirect.project(id=project_id, student=data.profile.link_id)
-        return data.redirect.urlOf(url_names.GSOC_PROJECT_UPDATE)
+      if key.isdigit(): # provided key represents a project ID
+        return links.LINKER.userId(
+            data.profile.key(), int(key), url_names.GSOC_PROJECT_UPDATE)
       return None
 
     list_config.setRowAction(rowAction)
@@ -1570,6 +1622,11 @@ class StudentEvaluationComponent(Component):
 
     self.record = None
 
+    def getOrganization(entity, evaluation, *args):
+      """Helper function to get value of organization column."""
+      org_key = GSoCProject.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     list_config = lists.ListConfiguration(add_key_column=False)
 
     # key column must be added manually, as it must use evaluation_id
@@ -1586,8 +1643,7 @@ class StudentEvaluationComponent(Component):
         'student', 'Student',
         lambda entity, eval, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Project Title')
-    list_config.addPlainTextColumn('org', 'Organization',
-        lambda entity, eval, *args: entity.org.name)
+    list_config.addPlainTextColumn('org', 'Organization', getOrganization)
     list_config.addPlainTextColumn(
         'mentors', 'Mentors',
         lambda ent, eval, mentors, *args: ', '.join(
@@ -1646,8 +1702,9 @@ class StudentEvaluationComponent(Component):
           orgs=self.data.org_admin_for)
 
       starter = lists.keyStarter
+      # TODO(daniel): enable prefetching from ndb models ('org')
       prefetcher = lists.ListModelPrefetcher(
-          GSoCProject, ['org'],
+          GSoCProject, [],
           ['mentors', 'failed_evaluations'],
           parent=True)
       row_adder = evaluationRowAdder(self.evals)

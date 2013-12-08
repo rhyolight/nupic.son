@@ -82,7 +82,7 @@ class OrgProfilePage(GCIRequestHandler):
 
     if 'organization' in data.kwargs:
       check.isProfileActive()
-      check.isOrgAdminForOrganization(data.organization)
+      check.isOrgAdminForOrganization(data.organization.key())
       #probably check if the org is active
     else:
       data.organization = None

@@ -12,14 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests the view for GCI org homepage."""
 
-"""Tests the view for GCI org homepage.
-"""
-
-
-from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.task import GCITask
 
+from tests import timeline_utils
 from tests.test_utils import GCIDjangoTestCase
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
@@ -31,6 +28,10 @@ class OrgHomeTest(GCIDjangoTestCase):
   def setUp(self):
     self.init()
     self.url = '/gci/org/' + self.org.key().name()
+
+    # set the date when tasks are published to past
+    self.program.timeline.tasks_publicly_visible = timeline_utils.past()
+    self.program.timeline.put()
 
   def assertTemplatesUsed(self, response):
     """Asserts if all the templates required to correctly render the page
@@ -45,7 +46,6 @@ class OrgHomeTest(GCIDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gci/org_home/_about_us.html')
     self.assertTemplateUsed(response, 'soc/list/lists.html')
     self.assertTemplateUsed(response, 'soc/list/list.html')
-
 
   def testAboutUs(self):
     """Tests if all the required data of an org is displayed.

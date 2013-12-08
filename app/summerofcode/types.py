@@ -29,4 +29,5 @@ SOC_MODELS = types.Models(
     org_model=organization.GSoCOrganization,
     profile_model=profile.GSoCProfile,
     program_model=program.GSoCProgram,
+    program_messages_model=program.GSoCProgramMessages,
     timeline_model=timeline.GSoCTimeline)

@@ -15,6 +15,7 @@
 """Module for the GSoC project student survey."""
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 from django.utils.translation import ugettext
@@ -28,6 +29,7 @@ from melange.request import exception
 from soc.views.helper.access_checker import isSet
 from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 
+from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
@@ -167,7 +169,6 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.projectFromKwargs()
     mutator.studentEvaluationFromKwargs()
     mutator.studentEvaluationRecordFromKwargs()
 
@@ -183,7 +184,9 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
         data.student_evaluation, data.url_profile, show_url=show_url)
 
     check.isProfileActive()
-    if data.orgAdminFor(data.project.org):
+    org_key = project_model.GSoCProject.org.get_value_for_datastore(
+        data.url_project)
+    if data.orgAdminFor(org_key):
       raise exception.Redirect(show_url)
 
     check.canUserTakeSurvey(data.student_evaluation, 'student')
@@ -204,7 +207,7 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
     context = {
         'page_name': '%s' % data.student_evaluation.title,
         'description': data.student_evaluation.content,
-        'project': data.project.title,
+        'project': data.url_project.title,
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -232,8 +235,10 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
       return None
 
     if not data.student_evaluation_record:
-      form.cleaned_data['project'] = data.project
-      form.cleaned_data['org'] = data.project.org
+      org_key = project_model.GSoCProject.org.get_value_for_datastore(
+          data.url_project)
+      form.cleaned_data['project'] = data.url_project
+      form.cleaned_data['org'] = org_key
       form.cleaned_data['user'] = data.user
       form.cleaned_data['survey'] = data.student_evaluation
       entity = form.create(commit=True)
@@ -327,10 +332,15 @@ class GSoCStudentEvaluationRecordsList(base.GSoCRequestHandler):
     record_list = survey.SurveyRecordList(
         data, data.student_evaluation, GSoCProjectSurveyRecord, idx=0)
 
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = GSoCProjectSurveyRecord.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     record_list.list_config.addPlainTextColumn(
         'project', 'Project', lambda ent, *args: ent.project.title)
     record_list.list_config.addPlainTextColumn(
-        'org', 'Organization', lambda ent, *args: ent.org.name)
+        'org', 'Organization', getOrganization)
 
     return record_list
 
@@ -358,15 +368,15 @@ class GSoCStudentEvaluationShowPage(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.projectFromKwargs()
     mutator.studentEvaluationFromKwargs()
     mutator.studentEvaluationRecordFromKwargs()
 
-    assert isSet(data.project)
     assert isSet(data.student_evaluation)
 
     check.isProfileActive()
-    if data.orgAdminFor(data.project.org):
+    org_key = project_model.GSoCProject.org.get_value_for_datastore(
+        data.url_project)
+    if data.orgAdminFor(org_key):
       data.role = 'org_admin'
       if data.timeline.afterSurveyEnd(data.student_evaluation):
         return
@@ -387,11 +397,15 @@ class GSoCStudentEvaluationShowPage(base.GSoCRequestHandler):
     record = data.student_evaluation_record
     student = data.url_profile
 
+    org_key = project_model.GSoCProject.org.get_value_for_datastore(
+        data.url_project)
+    org = ndb.Key.from_old_key(org_key).get()
+
     context = {
         'page_name': 'Student evaluation - %s' % (student.name()),
         'student': student.name(),
-        'organization': data.project.org.name,
-        'project': data.project.title,
+        'organization': org.name,
+        'project': data.url_project.title,
         'css_prefix': GSoCStudentEvaluationReadOnlyTemplate.Meta.css_prefix,
         }
 

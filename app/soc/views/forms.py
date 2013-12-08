@@ -20,6 +20,7 @@ import datetime
 import itertools
 import re
 
+from google.appengine.api import datastore_errors
 from google.appengine.ext import db
 
 from django import forms
@@ -360,20 +361,36 @@ class ReferenceProperty(djangoforms.ReferenceProperty):
                              widget=ReferenceWidget)
 
   def make_value_from_form(self, value):
-    """Convert a form value to a property value.
+    """Convert a value submitted in a form to a property value that is allowed
+    for ReferenceProperty.
 
-    This turns a key string or object into a model instance.
-    Returns None if value is ''.
+    If the specified value is a string (or unicode) representation of
+    a datastore key is transformed into an actual instance of db.Key.
+
+    If the specified value is an instance of db.Key or db.Model, it is returned
+    as is.
+
+    None if returned if the specified value is the empty string. It means that
+    a user does not want to specify any value for this property.
+
+    Returns:
+      Value to be set for the ReferenceProperty as described above. 
     """
-
     if not value:
       return None
-    if not isinstance(value, db.Model):
+    if isinstance(value, unicode):
       try:
-        value = db.get(value)
-      except db.BadKeyError as e:
-        raise forms.ValidationError(unicode(e))
-    return value
+        return db.Key(value)
+      except datastore_errors.BadKeyError:
+        raise forms.ValidationError(
+            'Supplied unicode representation of db.Key is not valid. '
+            'Found: %s' % value)
+    elif not isinstance(value, db.Model) and not isinstance(value, db.Key):
+      raise forms.ValidationError(
+          u'Value for reference property must be either an instance of '
+          'db.Model or db.Key. Found: %s' % type(value))
+    else:
+      return value
 
 
 class ModelFormOptions(object):

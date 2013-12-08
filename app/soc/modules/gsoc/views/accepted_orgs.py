@@ -14,63 +14,24 @@
 
 """Module containing the views for GSoC accepted orgs."""
 
-from django.conf.urls import url as django_url
+from google.appengine.ext import ndb
+
 from django.utils import html as html_utils
 
 from melange.request import access
 from melange.request import exception
-from soc.views import base_templates
 from soc.views.helper import lists
-from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.logic import profile as profile_logic
-from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.templates import org_list
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+from summerofcode.models import organization as org_model
 
-class AcceptedOrgsPublicList(org_list.OrgList):
-  """Template for a public list of accepted organizations."""
-
-  def _getDescription(self):
-    """See org_list.OrgList._getDescription for specification."""
-    return org_list.ACCEPTED_ORG_LIST_DESCRIPTION % self.data.program.name
-
-  def _getListConfig(self):
-    """See org_list.OrgList._getListConfig for specification."""
-    list_config = lists.ListConfiguration()
-    list_config.addPlainTextColumn('name', 'Name',
-        lambda e, *args: e.name.strip())
-    list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
-    list_config.addPlainTextColumn(
-        'tags', 'Tags', lambda e, *args: ", ".join(e.tags))
-    list_config.addPlainTextColumn('ideas', 'Ideas',
-        lambda e, *args: url_helper.urlize(e.ideas, name="[ideas page]"),
-        hidden=True)
-
-    # TODO(nathaniel): squeeze this back into a lambda expression
-    # in the call to setRowAction below.
-    def _rowAction(e, *args):
-      # TODO(nathaniel): make this .organization call unnecessary.
-      self.data.redirect.organization(organization=e)
-      return self.data.redirect.urlOf(url_names.GSOC_ORG_HOME)
-
-    list_config.setRowAction(_rowAction)
-    list_config.setDefaultPagination(False)
-    list_config.setDefaultSort('name')
-
-    return list_config
-
-  def _getQuery(self):
-    """See org_list.OrgList._getQuery for specification."""
-    query = org_model.GSoCOrganization.all()
-    query.filter('scope', self.data.program)
-    return query
-
-
+# TODO(daniel): update this class to fully work with NDB organizations
 class AcceptedOrgsAdminList(org_list.OrgList):
   """Template for list of accepted organizations."""
 
@@ -125,46 +86,15 @@ class AcceptedOrgsAdminList(org_list.OrgList):
 
   def _getQuery(self):
     """See org_list.OrgList._getQuery for specification."""
-    query = org_model.GSoCOrganization.all()
-    query.filter('scope', self.data.program)
+    query = org_model.SOCOrganization.query(
+        org_model.SOCOrganization.program ==
+            ndb.Key.from_old_key(self.data.program.key()))
+
     return query
 
   def _getPrefetcher(self):
     """See org_list.OrgList._getPrefetcher for specification."""
     return AcceptedOrgsAdminList.ListPrefetcher()
-
-
-class AcceptedOrgsPublicPage(base.GSoCRequestHandler):
-  """View for public page that lists the accepted organizations."""
-
-  def templatePath(self):
-    return 'modules/gsoc/accepted_orgs/base.html'
-
-  def djangoURLPatterns(self):
-    return [
-        url(r'accepted_orgs/%s$' % url_patterns.PROGRAM, self,
-            name='gsoc_accepted_orgs'),
-        url(r'program/accepted_orgs/%s$' % url_patterns.PROGRAM, self),
-        django_url(r'^program/accepted_orgs/%s$' % url_patterns.PROGRAM, self),
-    ]
-
-  def checkAccess(self, data, check, mutator):
-    check.acceptedOrgsAnnounced()
-
-  def jsonContext(self, data, check, mutator):
-    list_content = AcceptedOrgsPublicList(data).getListData()
-    if list_content:
-      return list_content.content()
-    else:
-      raise exception.Forbidden(message='You do not have access to this data')
-
-  def context(self, data, check, mutator):
-    return {
-        'page_name': "Accepted organizations for %s" % data.program.name,
-        'accepted_orgs_list': AcceptedOrgsPublicList(data),
-        'program_select': base_templates.DefaultProgramSelect(
-            data, 'gsoc_accepted_orgs'),
-    }
 
 
 class AcceptedOrgsAdminPage(base.GSoCRequestHandler):

@@ -22,7 +22,6 @@ from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
 
 from tests import profile_utils
-from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 
 
@@ -64,7 +63,7 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
 
     # list response with projects
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
     self.profile_helper.createStudentWithProposal(self.org, mentor)
     self.profile_helper.createStudentWithProject(self.org, mentor)
 
@@ -80,7 +79,7 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
 
     # list response with projects
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
     self.profile_helper.createStudentWithProposal(self.org, mentor)
     student = self.profile_helper.createStudentWithProject(self.org, mentor)
     student_key = student.key()
@@ -122,6 +121,6 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
     self.assertEqual(student.student_info.number_of_projects,
                      orig_number_of_projects - 1)
 
-    orig_project_for_orgs.remove(self.org.key())
+    orig_project_for_orgs.remove(self.org.key.to_old_key())
     self.assertEqual(list(student.student_info.project_for_orgs),
                      orig_project_for_orgs)

@@ -24,6 +24,8 @@ from tests import profile_utils
 from tests.test_utils import GCIDjangoTestCase
 
 
+STUDENT_MIN_AGE = 13
+
 class AgeCheckTest(GCIDjangoTestCase):
   """Tests age check page.
   """
@@ -31,6 +33,11 @@ class AgeCheckTest(GCIDjangoTestCase):
   def setUp(self):
     self.init()
     self.timeline_helper.studentSignup()
+
+    # set minimal age for the program
+    self.program.student_min_age = STUDENT_MIN_AGE
+    self.program.student_min_age_as_of = date.today()
+    self.program.put()
 
   def assertAgeCheckTemplatesUsed(self, response):
     """Asserts that all the templates were used.
@@ -46,7 +53,7 @@ class AgeCheckTest(GCIDjangoTestCase):
   def testAgeCheckRejectsTooYoung(self):
     profile_utils.logout()
     url = '/gci/age_check/' + self.gci.key().name()
-    birth_date = str(date.today() - timedelta(365*10))
+    birth_date = str(date.today() - timedelta(365*(STUDENT_MIN_AGE - 1)))
     postdata = {'birth_date': birth_date}
     response = self.post(url, postdata)
     self.assertResponseRedirect(response)
@@ -58,7 +65,7 @@ class AgeCheckTest(GCIDjangoTestCase):
     response = self.get(url)
     self.assertAgeCheckTemplatesUsed(response)
 
-    birth_date = str(date.today() - timedelta(365*15))
+    birth_date = str(date.today() - timedelta(365 * (STUDENT_MIN_AGE + 1)))
     postdata = {'birth_date': birth_date}
     response = self.post(url, postdata)
     self.assertResponseRedirect(response)

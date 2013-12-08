@@ -42,6 +42,42 @@ TERMS_OF_SERVICE_GROUP = ugettext(
     "99. Terms of Service")
 
 
+def getSponsorId(profile_key):
+  """Returns sponsor ID based on the specified profile key.
+
+  Args:
+    profile_key: Profile key.
+
+  Returns:
+    A string that represents sponsor ID.
+  """
+  return profile_key.name().split('/')[0]
+
+
+def getProgramId(profile_key):
+  """Returns program ID based on the specified profile key.
+
+  Args:
+    profile_key: Profile key.
+
+  Returns:
+    A string that represents program ID.
+  """
+  return profile_key.name().split('/')[1]
+
+
+def getUserId(profile_key):
+  """Returns user ID based on the specified profile key.
+
+  Args:
+    profile_key: Profile key.
+
+  Returns:
+    A string that represents user ID.
+  """
+  return profile_key.name().split('/')[2]
+
+
 class StudentInfo(db.Model):
   """The model which contains some detailed information which are necessary
   only when the user has a student role.

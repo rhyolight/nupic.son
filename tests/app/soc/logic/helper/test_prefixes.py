@@ -20,17 +20,14 @@ import unittest
 
 from soc.logic.helper import prefixes
 from soc.models.organization import Organization
-from soc.models.program import Program
 from soc.models.site import Site
 
 from soc.modules.gci.models.organization import GCIOrganization
-from soc.modules.gci.models.program import GCIProgram
-from soc.modules.gsoc.models.organization import GSoCOrganization
-from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gsoc.models.timeline import GSoCTimeline
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import org_utils
 from tests import profile_utils
+from tests import program_utils
 
 
 class TestPrefixes(unittest.TestCase):
@@ -41,20 +38,18 @@ class TestPrefixes(unittest.TestCase):
 
     self.user = profile_utils.seedUser()
 
-    self.program_timeline = seeder_logic.seed(GSoCTimeline)
+    self.program = program_utils.seedProgram()
 
-    program_properties = {'timeline': self.program_timeline, 'scope': self.user}
-    self.program = seeder_logic.seed(Program, program_properties)
+    self.gsoc_program = program_utils.seedGSoCProgram()
 
-    self.gsoc_program = seeder_logic.seed(GSoCProgram, program_properties)
-
-    self.gci_program = seeder_logic.seed(GCIProgram, program_properties)
+    self.gci_program = program_utils.seedGCIProgram()
 
     self.site = seeder_logic.seed(Site, {'key_name': 'site'})
 
     self.organization = seeder_logic.seed(Organization)
 
-    self.gsoc_organization = seeder_logic.seed(GSoCOrganization)
+    self.gsoc_organization = org_utils.seedSOCOrganization(
+        self.gsoc_program.key())
 
     self.gci_organization = seeder_logic.seed(GCIOrganization)
 
@@ -64,7 +59,7 @@ class TestPrefixes(unittest.TestCase):
     self.gci_program_key_name = self.gci_program.key().name()
     self.site_key_name = self.site.key().name()
     self.org_key_name = self.organization.key().name()
-    self.gsoc_org_key_name = self.gsoc_organization.key().name()
+    self.gsoc_org_key_name = self.gsoc_organization.key.id()
     self.gci_org_key_name = self.gci_organization.key().name()
 
   def testGetScopeForPrefix(self):
@@ -91,7 +86,7 @@ class TestPrefixes(unittest.TestCase):
     prefix = 'gsoc_org'
     key_name = self.gsoc_org_key_name
     scope_returned = prefixes.getScopeForPrefix(prefix, key_name)
-    self.assertEqual(scope_returned.key().name(), key_name)
+    self.assertEqual(scope_returned.key.id(), key_name)
     self.assertEqual(type(scope_returned), type(self.gsoc_organization))
 
     prefix = 'gci_org'

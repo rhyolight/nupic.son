@@ -86,6 +86,21 @@ class LinkIDProvider(StringProvider):
     return "m" + link_id_provider.getValue()
 
 
+class UniqueIDProvider(StringProvider):
+  """Data provider that returns a unique identifier."""
+
+  counter = 0
+
+  def getValue(self):
+    """See provider.BaseDataProvider.getValue for specification."""
+    # this class does not need to be thread safe as long as one unit test
+    # is executed by a single thread; different unit tests may get the same
+    # values, as datastore is cleared between the tests
+    UniqueIDProvider.counter += 1
+    return 'm' + FixedLengthAscendingNumericStringProvider(
+        start=UniqueIDProvider.counter).getValue()
+
+
 class NextLinkIDProvider(FixedLengthAscendingNumericStringProvider):
   """Data provider that returns a string suitable for use as link_id.
   """

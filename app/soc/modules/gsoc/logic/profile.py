@@ -14,6 +14,8 @@
 
 """GSoC logic for profiles."""
 
+from google.appengine.ext import ndb
+
 from melange.appengine import db as melange_db
 from melange.logic import profile as profile_logic
 
@@ -25,28 +27,21 @@ from soc.modules.gsoc.models import profile as profile_model
 from summerofcode import types
 
 
-def queryAllMentorsKeysForOrg(org, limit=1000):
-  """Returns a list of keys of all the mentors for the organization
+def queryAllMentorsKeysForOrg(org_key, limit=1000):
+  """Returns a list of keys of all the mentors for the specified organization.
 
   Args:
-    org: the organization entity for which we need to get all the mentors
+    org_key: Organization key.
     limit: the maximum number of entities that must be fetched
 
   returns:
-    List of all the mentors for the organization
+    List of db.Key of all the mentors for the organization.
   """
 
   # get all mentors keys first
   query = profile_model.GSoCProfile.all(keys_only=True)
-  query.filter('mentor_for', org)
-  mentors_keys = query.fetch(limit=limit)
-
-  # get all org admins keys first
-  query = profile_model.GSoCProfile.all(keys_only=True)
-  query.filter('org_admin_for', org)
-  oa_keys = query.fetch(limit=limit)
-
-  return set(mentors_keys + oa_keys)
+  query.filter('mentor_for', org_key)
+  return query.fetch(limit=limit)
 
 
 def queryProfilesForUser(user):
@@ -276,6 +271,9 @@ def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
   Returns:
     list of profiles entities or keys of organization administrators
   """
+  if isinstance(org_key, ndb.Key):
+    org_key = org_key.to_old_key()
+
   return profile_logic.getOrgAdmins(
       org_key, keys_only=keys_only, extra_attrs=extra_attrs,
       models=types.SOC_MODELS)
@@ -319,6 +317,9 @@ def getMentors(org_key, keys_only=False, extra_attrs=None):
   Returns:
     list of profiles entities or keys of mentors
   """
+  if isinstance(org_key, ndb.Key):
+    org_key = org_key.to_old_key()
+
   query = profile_model.GSoCProfile.all(keys_only=keys_only)
   query.filter('mentor_for', org_key)
   query.filter('status', 'active')

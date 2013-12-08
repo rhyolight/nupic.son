@@ -19,6 +19,8 @@ from django.utils.translation import ugettext
 
 from melange.request import access
 from melange.request import exception
+from melange.request import links
+
 from soc.logic import accounts
 from soc.logic.helper import timeline as timeline_helper
 from soc.views.helper import lists
@@ -36,6 +38,8 @@ from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+from summerofcode.views.helper import urls
+
 
 class Apply(Template):
   """Apply template."""
@@ -45,16 +49,14 @@ class Apply(Template):
     self.current_timeline = current_timeline
 
   def context(self):
-    organization = self.data.organization
-
     context = {
         'request_data': self.data,
         'current_timeline': self.current_timeline,
-        'organization': organization,
+        'organization': self.data.url_ndb_org,
     }
 
     if not self.data.profile:
-      suffix = '?org=' + self.data.organization.link_id
+      suffix = '?org=' + self.data.url_ndb_org.org_id
 
       if self.data.timeline.studentsAnnounced():
         return context
@@ -75,21 +77,18 @@ class Apply(Template):
     if self.data.student_info:
       if self.data.timeline.studentSignup():
         context['student_apply_block'] = True
-        # TODO(nathaniel): make this .organization() call unnecessary.
-        self.data.redirect.organization()
-
-        submit_proposal_link = self.data.redirect.urlOf('submit_gsoc_proposal')
-        context['submit_proposal_link'] = submit_proposal_link
+        context['submit_proposal_link'] = links.LINKER.organization(
+            self.data.url_ndb_org.key, 'submit_gsoc_proposal')
 
       return context
 
     context['mentor_apply_block'] = True
 
-    if self.data.orgAdminFor(organization):
+    if self.data.orgAdminFor(self.data.url_ndb_org.key):
       context['role'] = 'an administrator'
       return context
 
-    if self.data.mentorFor(organization):
+    if self.data.mentorFor(self.data.url_ndb_org.key):
       context['role'] = 'a mentor'
       return context
 
@@ -111,12 +110,12 @@ class Contact(Template):
 
   def context(self):
     return {
-        'facebook_link': self.data.organization.facebook,
-        'twitter_link': self.data.organization.twitter,
-        'blogger_link': self.data.organization.blog,
-        'pub_mailing_list_link': self.data.organization.pub_mailing_list,
-        'irc_channel_link': self.data.organization.irc_channel,
-        'google_plus_link': self.data.organization.google_plus
+        'facebook_link': self.data.url_ndb_org.contact.facebook,
+        'twitter_link': self.data.url_ndb_org.contact.twitter,
+        'blogger_link': self.data.url_ndb_org.contact.blog,
+        'pub_mailing_list_link': self.data.url_ndb_org.contact.mailing_list,
+        'irc_channel_link': self.data.url_ndb_org.contact.irc_channel,
+        'google_plus_link': self.data.url_ndb_org.contact.google_plus
     }
 
   def templatePath(self):
@@ -138,16 +137,16 @@ class ProjectList(Template):
         lambda entity, m, *args: ", ".join(
             [m[i].name() for i in entity.mentors]))
     list_config.setDefaultSort('student')
-    list_config.setRowAction(lambda e, *args, **kwargs: data.redirect.project(
-        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
-        'gsoc_project_details'))
+    list_config.setRowAction(
+        lambda e, *args, **kwargs: links.LINKER.userId(
+            e.parent_key(), e.key().id(), url_names.GSOC_PROJECT_DETAILS))
     self._list_config = list_config
 
   def context(self):
     list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=0,
         description='List of projects accepted into %s' % (
-            self.data.organization.name))
+            self.data.url_ndb_org.name))
 
     return {
         'lists': [list_configuration_response],
@@ -162,7 +161,7 @@ class ProjectList(Template):
     idx = lists.getListIndex(self.data.request)
     if idx == 0:
       list_query = project_logic.getAcceptedProjectsQuery(
-          program=self.data.program, org=self.data.organization)
+          program=self.data.program, org=self.data.url_ndb_org.key.to_old_key())
 
       starter = lists.keyStarter
       prefetcher = lists.ListModelPrefetcher(
@@ -232,7 +231,6 @@ class OrgHome(base.GSoCRequestHandler):
 
   def jsonContext(self, data, check, mutator):
     """Handler for JSON requests."""
-    assert isSet(data.organization)
     list_content = ProjectList(data).getListData()
     if list_content:
       return list_content.content()
@@ -244,38 +242,28 @@ class OrgHome(base.GSoCRequestHandler):
     current_timeline = self.getCurrentTimeline(
         data.program_timeline, data.org_app)
 
-    assert isSet(data.organization)
-    organization = data.organization
-
     context = {
-        'page_name': '%s - Homepage' % organization.short_name,
-        'organization': organization,
+        'page_name': '%s - Homepage' % data.url_ndb_org.name,
+        'organization': data.url_ndb_org,
         'contact': Contact(data),
         'apply': Apply(data, current_timeline),
     }
 
-    ideas = organization.ideas
+    if data.url_ndb_org.ideas_page:
+      context['ideas_link'] = data.url_ndb_org.ideas_page
+      context['ideas_link_trimmed'] = (
+          url_helper.trim_url_to(data.url_ndb_org.ideas_page, 50))
 
-    if organization.ideas:
-      context['ideas_link'] = ideas
-      context['ideas_link_trimmed'] = url_helper.trim_url_to(ideas, 50)
-
-    if data.orgAdminFor(organization):
-      # TODO(nathaniel): make this .organization call unnecessary.
-      data.redirect.organization(organization=organization)
-
-      context['edit_link'] = data.redirect.urlOf(
-          url_names.GSOC_ORG_PROFILE_EDIT)
+    if data.orgAdminFor(data.url_ndb_org.key):
+      context['edit_link'] = links.LINKER.organization(
+          data.url_ndb_org.key, urls.UrlNames.ORG_PROFILE_EDIT)
       context['start_connection_link'] = data.redirect.connect_org().urlOf(
           url_names.GSOC_ORG_CONNECTION)
 
       if (data.program.allocations_visible and
           data.timeline.beforeStudentsAnnounced()):
-        # TODO(nathaniel): make this .organization call unnecessary.
-        data.redirect.organization(organization=organization)
-
-        context['slot_transfer_link'] = data.redirect.urlOf(
-            'gsoc_slot_transfer')
+        context['slot_transfer_link'] = links.LINKER.organization(
+            data.url_ndb_org.key, 'gsoc_slot_transfer')
 
     if data.timeline.studentsAnnounced():
       context['students_announced'] = True

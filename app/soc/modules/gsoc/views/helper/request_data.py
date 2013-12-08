@@ -18,7 +18,10 @@ request in the GSoC module.
 
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
+from melange.models import connection as connection_model
+from melange.models import organization as melange_org_model
 # TODO(nathaniel): I'm not sure how I feel about the exception module
 # being important here, but that just goes hand-in-hand with my skepticism
 # about the RequestData object raising exceptions generally.
@@ -29,6 +32,7 @@ from soc.views.helper.access_checker import isSet
 from soc.views.helper import request_data
 
 from soc.modules.gsoc.models import profile as profile_model
+from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.models import organization as org_model
@@ -223,6 +227,7 @@ class RequestData(request_data.RequestData):
     self._student_info = self._unset
     self._organization = self._unset
 
+    self._url_project = self._unset
     self._url_proposal = self._unset
 
     # _org_map contains only those organizations for which the current user
@@ -361,6 +366,35 @@ class RequestData(request_data.RequestData):
     return self._timeline
 
   @property
+  def url_project(self):
+    """Returns the url_project field.
+
+    This property represents a project entity corresponding to a profile whose
+    identifier is a part of the URL of the processed request. Numerical
+    identifier of the project is also a part of the URL.
+
+    Returns:
+      Retrieved project entity.
+
+    Raises:
+      exception.BadRequest: if some data is missing in the current request.
+      exception.NotFound: if no entity is found.
+    """
+    if not self._isSet(self._url_project):
+      if 'id' not in self.kwargs:
+        raise exception.BadRequest(
+            message='The request does not contain project id.')
+      else:
+        self._url_project = project_model.GSoCProject.get_by_id(
+            int(self.kwargs['id']), self.url_profile)
+
+        if not self._url_project:
+          raise exception.NotFound(
+              message='Requested project does not exist.')
+
+    return self._url_project
+
+  @property
   def url_proposal(self):
     """Returns the url_proposal field.
 
@@ -395,9 +429,13 @@ class RequestData(request_data.RequestData):
     """
     if not self._isSet(self._org_map):
       if self.profile:
-        orgs = db.get(
-            set(self.profile.mentor_for + self.profile.org_admin_for))
-        self._org_map = dict((i.key(), i) for i in orgs)
+        org_keys = set()
+        org_keys.update(map(ndb.Key.from_old_key, self.profile.mentor_for))
+        org_keys.update(map(ndb.Key.from_old_key, self.profile.org_admin_for))
+
+        orgs = ndb.get_multi(org_keys)
+
+        self._org_map = dict((i.key, i) for i in orgs)
       else:
         self._org_map = {}
 
@@ -411,28 +449,41 @@ class RequestData(request_data.RequestData):
 
     return self._org_map[org_key]
 
-  def orgAdminFor(self, organization):
+  def orgAdminFor(self, org_key):
     """Returns true iff the user is admin for the specified organization.
 
-    Organization may either be a key or an organization instance.
+    Args:
+      org_key: Organization key.
     """
     if self.is_host:
       return True
-    if isinstance(organization, db.Model):
-      organization = organization.key()
 
-    return organization in [i.key() for i in self.org_admin_for]
+    if not self.profile:
+      return False
 
-  def mentorFor(self, organization):
+    # TODO(daniel): remove when all models are converted to NDB
+    if isinstance(org_key, ndb.Key):
+      org_key = org_key.to_old_key()
+
+    return org_key in self.profile.org_admin_for
+
+  def mentorFor(self, org_key):
     """Returns true iff the user is mentor for the specified organization.
 
-    Organization may either be a key or an organization instance.
+    Args:
+      org_key: Organization key.
     """
     if self.is_host:
       return True
-    if isinstance(organization, db.Model):
-      organization = organization.key()
-    return organization in [i.key() for i in self.mentor_for]
+
+    if not self.profile:
+      return False
+
+    # TODO(daniel): remove when all models are converted to NDB
+    if isinstance(org_key, ndb.Key):
+      org_key = org_key.to_old_key()
+
+    return org_key in self.profile.mentor_for
 
   def isPossibleMentorForProposal(self, mentor_profile=None):
     """Checks if the user is a possible mentor for the proposal in the data.
@@ -453,7 +504,7 @@ class RedirectHelper(request_data.RedirectHelper):
     self._url_name = 'show_gsoc_document'
     return self
 
-  def connect_user(self, user=None, organization=None):
+  def connect_user(self, user=None, org_key=None):
     """Sets the _url_name for a gsoc_user_connection redirect.
 
     Intended for use when generating a url for a redirect to OrgConnectionPage.
@@ -468,29 +519,29 @@ class RedirectHelper(request_data.RedirectHelper):
       assert 'user' in self._data.kwargs
       user = self._data.kwargs['user']
 
-    self.connect_org(organization=organization)
+    self.connect_org(org_key=org_key)
     self.kwargs['link_id'] = user.link_id
     return self
 
-  def connect_org(self, organization=None):
+  def connect_org(self, org_key=None):
     """Sets the _url_name for a gsoc_org_connection redirect.
 
     Intended for use when generating a url for a redirect to
     UserConnectionPage.
 
     Args:
-      organization: Override the current organization (if any) provided
+      org_key: Override the current organization (if any) provided
         by the RequestData object. Intended specifically for the call
         from connect_user.
     """
-    if organization:
-      current_org = organization
-    else:
-      current_org = self._data.organization
-    self.organization(current_org)
+    if not org_key:
+      org_key = self._data.url_ndb_org.key
+
     # We need to reassign the kwarg to the org's link_id since it's
     # being set to the Organization object
-    self.kwargs['organization'] = current_org.link_id
+    self.kwargs['sponsor'] = melange_org_model.getSponsorId(org_key)
+    self.kwargs['program'] = melange_org_model.getProgramId(org_key)
+    self.kwargs['organization'] = melange_org_model.getOrgId(org_key)
     self._url_name = url_names.GSOC_USER_CONNECTION
     return self
 
@@ -500,7 +551,10 @@ class RedirectHelper(request_data.RedirectHelper):
     Args:
       connection: The Connection instance to view.
     """
-    self.connect_org(connection.organization)
+    org_key = (
+        connection_model.Connection.organization
+            .get_value_for_datastore(connection))
+    self.connect_org(org_key)
 
     self.kwargs['id'] = connection.key().id()
     # Need to make sure that when the view loads it can query for the
@@ -533,20 +587,6 @@ class RedirectHelper(request_data.RedirectHelper):
     return self
 
   # TODO(daniel): id built-in function should not be shadowed
-  def project(self, id=None, student=None):
-    """Returns the URL to the Student Project.
-
-    Args:
-      student: entity which represents the user for the student
-    """
-    if not student:
-      assert 'user' in self._data.kwargs
-      student = self._data.kwargs['user']
-    self.id(id)
-    self.kwargs['user'] = student
-    return self
-
-  # TODO(daniel): id built-in function should not be shadowed
   def survey_record(self, survey=None, id=None, student=None):
     """Returns the redirector object with the arguments for survey record
 
@@ -554,7 +594,13 @@ class RedirectHelper(request_data.RedirectHelper):
       survey: the survey's link_id
     """
     self.program()
-    self.project(id, student)
+    self.id(id=id)
+
+    if not student:
+      assert 'user' in self._data.kwargs
+      student = self._data.kwargs['user']
+    self.kwargs['user'] = student
+
     if not survey:
       assert 'survey' in self._data.kwargs
       survey = self._data.kwargs['survey']
@@ -568,11 +614,11 @@ class RedirectHelper(request_data.RedirectHelper):
     Args:
       record: the grading record entity
     """
-    self.program()
-
     project = record.parent()
-    self.project(project.key().id(), project.parent().link_id)
 
+    self.program()
+    self.id()
+    self.kwargs['user'] = project.parent().link_id
     self.kwargs['group'] = record.grading_survey_group.key().id_or_name()
     self.kwargs['record'] = record.key().id()
 

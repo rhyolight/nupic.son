@@ -18,12 +18,13 @@ import unittest
 
 from soc.modules.gsoc.logic import project as project_logic
 
-from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.models import profile as profile_model
-from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models import project as project_model
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+from tests import org_utils
+from tests import program_utils
 
 
 class HasMentorProjectAssignedTest(unittest.TestCase):
@@ -31,22 +32,20 @@ class HasMentorProjectAssignedTest(unittest.TestCase):
 
   def setUp(self):
     # seed a new program
-    self.program = seeder_logic.seed(program_model.GSoCProgram)
+    self.program = program_utils.seedGSoCProgram()
 
     # seed a couple of organizations
-    self.organization_one = seeder_logic.seed(org_model.GSoCOrganization,
-        {'scope': self.program, 'program': self.program})
-    self.organization_two = seeder_logic.seed(org_model.GSoCOrganization,
-        {'scope': self.program, 'program': self.program})
+    self.organization_one = org_utils.seedSOCOrganization(self.program.key())
+    self.organization_two = org_utils.seedSOCOrganization(self.program.key())
 
     # seed a couple of projects for the organizations
     self.project_one = seeder_logic.seed(project_model.GSoCProject,
-        {'scope': self.program, 'org': self.organization_one})
+        {'scope': self.program, 'org': self.organization_one.key.to_old_key()})
 
     # seed a new mentor for organization one, but without projects
     mentor_properties = {
         'is_mentor': True,
-        'mentor_for': [self.organization_one.key()],
+        'mentor_for': [self.organization_one.key.to_old_key()],
         'is_org_admin': False,
         'org_admin_for': [],
         'status': 'active',
@@ -59,7 +58,7 @@ class HasMentorProjectAssignedTest(unittest.TestCase):
     self.assertFalse(has_projects)
 
     has_projects = project_logic.hasMentorProjectAssigned(
-        self.mentor, org_key=self.organization_one.key())
+        self.mentor, org_key=self.organization_one.key.to_old_key())
     self.assertFalse(has_projects)
 
   def testMentorWithProject(self):
@@ -73,19 +72,19 @@ class HasMentorProjectAssignedTest(unittest.TestCase):
 
     # the mentor has a project for organization one
     has_projects = project_logic.hasMentorProjectAssigned(
-        self.mentor, org_key=self.organization_one.key())
+        self.mentor, org_key=self.organization_one.key.to_old_key())
     self.assertTrue(has_projects)
 
     # the mentor still does not have projects for organization two
     has_projects = project_logic.hasMentorProjectAssigned(
-        self.mentor, org_key=self.organization_two.key())
+        self.mentor, org_key=self.organization_two.key.to_old_key())
     self.assertFalse(has_projects)
 
   def testProjectWithMoreMentors(self):
     # seed a few extra mentors for the same project
     mentor_properties = {
         'is_mentor': True,
-        'mentor_for': [self.organization_one.key()],
+        'mentor_for': [self.organization_one.key.to_old_key()],
         'is_org_admin': False,
         'org_admin_for': [],
         'status': 'active',
@@ -106,19 +105,19 @@ class HasMentorProjectAssignedTest(unittest.TestCase):
 
     # the mentor has a project for organization one
     has_projects = project_logic.hasMentorProjectAssigned(
-        self.mentor, org_key=self.organization_one)
+        self.mentor, org_key=self.organization_one.key.to_old_key())
     self.assertTrue(has_projects)
 
     # the mentor still does not have projects for organization two
     has_projects = project_logic.hasMentorProjectAssigned(
-        self.mentor, org_key=self.organization_two.key())
+        self.mentor, org_key=self.organization_two.key.to_old_key())
     self.assertFalse(has_projects)
 
   def testMentorWithMoreProjects(self):
     # seed a few extra projects and assign our mentor
     project_properties = {
         'scope': self.program,
-        'org': self.organization_one,
+        'org': self.organization_one.key.to_old_key(),
         'mentors': [self.mentor.key()]
         }
     for _ in range(5):
@@ -126,18 +125,18 @@ class HasMentorProjectAssignedTest(unittest.TestCase):
 
     # the mentor has projects for organization one
     has_projects = project_logic.hasMentorProjectAssigned(
-        self.mentor, org_key=self.organization_one.key())
+        self.mentor, org_key=self.organization_one.key.to_old_key())
     self.assertTrue(has_projects)
 
   def testMentorWithProjectForOtherOrg(self):
     # set our profile a mentor for organization two
-    self.mentor.mentor_for.append(self.organization_two.key())
+    self.mentor.mentor_for.append(self.organization_two.key.to_old_key())
     self.mentor.put()
 
     # seed a project for organization two
     project_properties = {
         'scope': self.program,
-        'org': self.organization_two,
+        'org': self.organization_two.key.to_old_key(),
         'mentors': [self.mentor.key()]
         }
     seeder_logic.seed(project_model.GSoCProject, project_properties)
@@ -148,5 +147,5 @@ class HasMentorProjectAssignedTest(unittest.TestCase):
 
     # the mentor has only a project for organization two
     has_projects = project_logic.hasMentorProjectAssigned(
-        self.mentor, org_key=self.organization_one.key())
+        self.mentor, org_key=self.organization_one.key.to_old_key())
     self.assertFalse(has_projects)

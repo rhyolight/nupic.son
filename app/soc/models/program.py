@@ -98,14 +98,6 @@ class Program(linkable_model.Linkable):
   short_name.help_text = translation.ugettext(
       'Short name used for sidebar menu')
 
-  #: Optional field used to relate it to other programs
-  #: For example, GSoC would be a group label for GSoC2008/GSoC2009
-  group_label = db.StringProperty(
-      verbose_name=translation.ugettext('Group label'))
-  group_label.group = GENERAL_INFO_GROUP
-  group_label.help_text = translation.ugettext(
-      'Optional name used to relate this program to others.')
-
   #: Required field storing description of the group.
   description = db.TextProperty(required=True,
       verbose_name=translation.ugettext('Description'))

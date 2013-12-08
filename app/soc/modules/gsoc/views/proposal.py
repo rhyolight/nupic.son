@@ -15,6 +15,7 @@
 """Module for the GSoC proposal page."""
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 from django.utils.translation import ugettext
@@ -78,13 +79,15 @@ class ProposalPage(base.GSoCRequestHandler):
     if data.POST:
       proposal_form = ProposalForm(data=data.POST)
     else:
-      initial = {'content': data.organization.contrib_template}
+      # TODO(daniel): add contribution template to organization model
+      #initial = {'content': data.organization.contrib_template}
+      initial = {}
       proposal_form = ProposalForm(initial=initial)
 
     return {
         'page_name': 'Submit proposal',
         'form_header_message': 'Submit proposal to %s' % (
-            data.organization.name),
+            data.url_ndb_org.name),
         'proposal_form': proposal_form,
         'buttons_template': self.buttonsTemplate()
         }
@@ -105,7 +108,7 @@ class ProposalPage(base.GSoCRequestHandler):
 
     # set the organization and program references
     proposal_properties = proposal_form.asDict()
-    proposal_properties['org'] = data.organization
+    proposal_properties['org'] = data.url_ndb_org.key.to_old_key()
     proposal_properties['program'] = data.program
 
     student_info_key = data.student_info.key()
@@ -114,7 +117,7 @@ class ProposalPage(base.GSoCRequestHandler):
         GSoCProfile.notify_new_proposals: [True]
         }
     mentors = profile_logic.getMentors(
-        data.organization.key(), extra_attrs=extra_attrs)
+        data.url_ndb_org.key, extra_attrs=extra_attrs)
 
     to_emails = [i.email for i in mentors]
 
@@ -139,7 +142,7 @@ class ProposalPage(base.GSoCRequestHandler):
     proposal = self.createFromForm(data)
     if proposal:
       url = links.LINKER.userId(
-          data.profile, proposal.key().id(), url_names.PROPOSAL_REVIEW)
+          data.profile.key(), proposal.key().id(), url_names.PROPOSAL_REVIEW)
       return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-use.
@@ -166,7 +169,10 @@ class UpdateProposal(base.GSoCRequestHandler):
     check.isLoggedIn()
     check.isActiveStudent()
 
-    data.organization = data.url_proposal.org
+    # TODO(daniel): get rid of this ugly mutation!
+    org_key = GSoCProposal.org.get_value_for_datastore(
+        data.url_proposal)
+    data.organization = ndb.Key.from_old_key(org_key).get()
 
     check.canStudentUpdateProposal()
 
@@ -194,10 +200,12 @@ class UpdateProposal(base.GSoCRequestHandler):
     proposal_form = ProposalForm(
         data=data.POST or None, instance=data.url_proposal)
 
+    org_key = GSoCProposal.org.get_value_for_datastore(data.url_proposal)
+    org = ndb.Key.from_old_key(org_key).get()
+
     return {
         'page_name': 'Update proposal',
-        'form_header_message': 'Update proposal to %s' % (
-            data.url_proposal.org.name),
+        'form_header_message': 'Update proposal to %s' % org.name,
         'proposal_form': proposal_form,
         'is_pending': data.is_pending,
         'buttons_template': self.buttonsTemplate(),
@@ -243,7 +251,8 @@ class UpdateProposal(base.GSoCRequestHandler):
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     url = links.LINKER.userId(
-        data.profile, data.url_proposal.key().id(), url_names.PROPOSAL_REVIEW)
+        data.profile.key(), data.url_proposal.key().id(),
+        url_names.PROPOSAL_REVIEW)
 
     if data.POST[ACTION_POST_KEY] == self.ACTIONS['update']:
       proposal = self._updateFromForm(data)

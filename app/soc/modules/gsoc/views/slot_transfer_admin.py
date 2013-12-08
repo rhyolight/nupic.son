@@ -18,6 +18,7 @@ import json
 import logging
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 
@@ -123,7 +124,9 @@ class SlotsTransferAdminList(template.Template):
           logging.warning("Invalid slot_transfer_key '%s'", slot_transfer_key)
           return
 
-        org = slot_transfer.parent()
+        org_key = slot_transfer.parent_key()
+        org = ndb.Key.from_old_key(org_key).get()
+
         if not org:
           logging.warning("No organization present for the slot transfer %s",
                           slot_transfer_key)
@@ -141,9 +144,9 @@ class SlotsTransferAdminList(template.Template):
                 "using a negative number %s", org.name, slot_transfer.nr_slots)
             return
 
-          org.slots -= slot_transfer.nr_slots
-          if org.slots < 0:
-            org.slots = 0
+          org.slot_allocation -= slot_transfer.nr_slots
+          if org.slot_allocation < 0:
+            org.slot_allocation = 0
 
           org.put()
         else:
@@ -151,13 +154,15 @@ class SlotsTransferAdminList(template.Template):
             return
 
           if slot_transfer.status == 'accepted':
-            org.slots += slot_transfer.nr_slots
+            org.slot_allocation += slot_transfer.nr_slots
             org.put()
 
           slot_transfer.status = 'rejected'
         slot_transfer.put()
 
-      db.run_in_transaction(accept_slot_transfer_txn)
+      # TODO(daniel): run this function in transaction when GSoCSlotTransfer
+      # is updated to NDB
+      accept_slot_transfer_txn()
 
     return True
 

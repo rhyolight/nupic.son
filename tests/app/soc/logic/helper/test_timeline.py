@@ -24,7 +24,6 @@ from datetime import timedelta
 
 from soc.logic.helper import timeline
 from soc.models import timeline as timeline_model
-from soc.models.sponsor import Sponsor
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 

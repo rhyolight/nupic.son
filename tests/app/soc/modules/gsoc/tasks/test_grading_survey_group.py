@@ -48,7 +48,7 @@ class GradingSurveyGroupTest(
   def createMentor(self):
     """Creates a new mentor."""
     self.mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
   def createStudent(self):
     """Creates a Student with a project.
@@ -83,7 +83,7 @@ class GradingSurveyGroupTest(
 
     record_values = {
         'user': self.student.user,
-        'org': self.org,
+        'org': self.org.key.to_old_key(),
         'project': self.project,
         'survey': self.project_survey}
     self.project_survey_record = psr_model.GSoCProjectSurveyRecord(
@@ -95,7 +95,7 @@ class GradingSurveyGroupTest(
 
     record_values = {
         'user': self.student.user,
-        'org': self.org,
+        'org': self.org.key.to_old_key(),
         'project': self.project,
         'survey': self.grading_survey,
         'grade': True}
@@ -141,7 +141,7 @@ class GradingSurveyGroupTest(
   def testDoesNotCreateGradingRecordForWithdrawnProject(self):
     # list response with projects
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
     # create another project and mark it withdrawn
     student_profile_helper = profile_utils.GSoCProfileHelper(
@@ -156,7 +156,8 @@ class GradingSurveyGroupTest(
 
     # Update the properties for withdrawing the project.
     student_profile.student_info.number_of_projects -= 1
-    student_profile.student_info.project_for_orgs.remove(self.org.key())
+    student_profile.student_info.project_for_orgs.remove(
+        self.org.key.to_old_key())
     project.status = 'withdrawn'
     proposal.status = 'withdrawn'
 

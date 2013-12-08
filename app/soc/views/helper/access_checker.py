@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Module containing the AccessChecker class that contains helper functions
 for checking access.
 """
@@ -20,11 +19,17 @@ import urllib
 
 from django.utils.translation import ugettext
 
+from google.appengine.ext import ndb
+
+from melange.models import connection as connection_model
+from melange.models import organization as org_model
 from melange.request import exception
 from melange.request import links
 
 from soc.models import org_app_record
 from soc.models import program as program_model
+from soc.modules.gsoc.models import proposal as proposal_model
+
 from soc.views.helper.gdata_apis import oauth as oauth_helper
 
 from summerofcode.logic import survey as survey_logic
@@ -145,7 +150,7 @@ DEF_NOT_VALID_CONNECTION = ugettext(
     'This is not a valid connection.')
 
 DEF_ORG_DOES_NOT_EXISTS = ugettext(
-    'Organization, whose Organization ID %(link_id)s, does not exist in '
+    'Organization, whose Organization ID %(org_id)s, does not exist in '
     '%(program)s.')
 
 DEF_ORG_NOT_ACTIVE = ugettext(
@@ -486,59 +491,60 @@ class AccessChecker(BaseAccessChecker):
     """Checks if the user is not a mentor.
     """
     self.isProfileActive()
-    assert isSet(self.data.organization)
 
-    if not self.data.mentorFor(self.data.organization):
+    if not self.data.mentorFor(self.data.url_ndb_org.key):
       return
 
     raise exception.Forbidden(
-        message=DEF_ALREADY_MENTOR % self.data.organization.name)
+        message=DEF_ALREADY_MENTOR % self.data.url_ndb_org.name)
 
   def isOrgAdmin(self):
     """Checks if the user is an org admin.
     """
-    assert isSet(self.data.organization)
-    self.isOrgAdminForOrganization(self.data.organization)
+    self.isOrgAdminForOrganization(self.data.url_ndb_org.key.to_old_key())
 
   def isMentor(self):
     """Checks if the user is a mentor.
     """
-    assert isSet(self.data.organization)
-    self.isMentorForOrganization(self.data.organization)
+    self.isMentorForOrganization(self.data.url_ndb_org.key)
 
-  def isOrgAdminForOrganization(self, org):
+  def isOrgAdminForOrganization(self, org_key):
     """Checks if the user is an admin for the specified organiztaion.
     """
     self.isProfileActive()
 
-    if self.data.orgAdminFor(org):
+    if org_key in self.data.profile.org_admin_for:
       return
 
-    raise exception.Forbidden(message=DEF_NOT_ADMIN % org.name)
+    raise exception.Forbidden(message=DEF_NOT_ADMIN % org_key.name())
 
-  def isMentorForOrganization(self, org):
+  def isMentorForOrganization(self, org_key):
     """Checks if the user is a mentor for the specified organiztaion.
     """
     self.isProfileActive()
 
-    if self.data.mentorFor(org):
+    if self.data.mentorFor(org_key):
       return
 
-    raise exception.Forbidden(message=DEF_NOT_MENTOR % org.name)
+    if isinstance(org_key, ndb.Key):
+      org_key = org_key.to_old_key()
+    raise exception.Forbidden(message=DEF_NOT_MENTOR % org_key.name())
 
   def isOrganizationInURLActive(self):
     """Checks if the organization in URL exists and if its status is active.
     """
-    assert isSet(self.data.organization)
-
-    if not self.data.organization:
+    if not self.data.url_ndb_org:
       error_msg = DEF_ORG_DOES_NOT_EXISTS % {
-          'link_id': self.data.kwargs['organization'],
+          'org_id': self.data.kwargs['organization'],
           'program': self.data.program.name
           }
       raise exception.Forbidden(message=error_msg)
 
-    self.isOrganizationActive(self.data.organization)
+    if self.data.url_ndb_org.status != org_model.Status.ACCEPTED:
+      error_msg = DEF_ORG_NOT_ACTIVE % {
+          'name': self.data.url_ndb_org.name,
+          'program': self.data.program.name
+          }
 
   def isOrganizationActive(self, organization):
     """Checks if the specified organization is active.
@@ -638,7 +644,9 @@ class AccessChecker(BaseAccessChecker):
     assert isSet(self.data.profile)
     # Org admins may only view a connection if they are admins for the org
     # involved in the connection.
-    org_key = self.data.url_connection.organization.key()
+    org_key = (
+        connection_model.Connection
+            .organization.get_value_for_datastore(self.data.url_connection))
     if org_key not in self.data.profile.org_admin_for:
       raise exception.Forbidden(message=DEF_CONNECTION_UNACCESSIBLE)
 
@@ -669,7 +677,10 @@ class AccessChecker(BaseAccessChecker):
       return
 
     # all the mentors and org admins from the organization may access it
-    if self.data.mentorFor(self.data.url_proposal.org):
+    org_key = (
+        proposal_model.GSoCProposal.org
+            .get_value_for_datastore(self.data.url_proposal))
+    if self.data.mentorFor(org_key):
       return
 
     raise exception.Forbidden(message=DEF_PROPOSAL_NOT_PUBLIC)
@@ -719,16 +730,14 @@ class AccessChecker(BaseAccessChecker):
   def isProjectInURLValid(self):
     """Checks if the project in URL exists.
     """
-    assert isSet(self.data.project)
-
-    if not self.data.project:
+    if not self.data.url_project:
       error_msg = DEF_ID_BASED_ENTITY_NOT_EXISTS % {
           'model': 'GSoCProject',
           'id': self.data.kwargs['id']
           }
       raise exception.Forbidden(message=error_msg)
 
-    if self.data.project.status == 'invalid':
+    if self.data.url_project.status == 'invalid':
       error_msg = DEF_ID_BASED_ENTITY_INVALID % {
           'model': 'GSoCProject',
           'id': self.data.kwargs['id'],
@@ -740,8 +749,6 @@ class AccessChecker(BaseAccessChecker):
     """
     assert isSet(self.data.program)
     assert isSet(self.data.timeline)
-    assert isSet(self.data.project)
-    assert isSet(self.data.project_owner)
 
     self.isProjectInURLValid()
 
@@ -750,7 +757,7 @@ class AccessChecker(BaseAccessChecker):
     self.acceptedStudentsAnnounced()
 
     # check if the project belongs to the current user
-    expected_profile_key = self.data.project.parent_key()
+    expected_profile_key = self.data.url_project.parent_key()
     if expected_profile_key != self.data.profile.key():
       error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'name': 'project'
@@ -758,7 +765,7 @@ class AccessChecker(BaseAccessChecker):
       raise exception.Forbidden(message=error_msg)
 
     # check if the status allows the project to be updated
-    if self.data.project.status in ['invalid', 'withdrawn', 'failed']:
+    if self.data.url_project.status in ['invalid', 'withdrawn', 'failed']:
       raise exception.Forbidden(message=DEF_CANNOT_UPDATE_ENTITY % {
           'name': 'project'
           })

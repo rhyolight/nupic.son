@@ -27,6 +27,7 @@ from soc.views.template import Template
 
 from soc.modules.gsoc.logic import duplicates as duplicates_logic
 from soc.modules.gsoc.logic import profile as profile_logic
+from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_names
@@ -130,12 +131,14 @@ class Duplicate(Template):
 
       orgs_details[org.key().id_or_name()]['proposals'] = []
       for proposal in proposals:
-        if proposal.org.key() == org.key():
+        org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+            proposal)
+        if org_key == org.key():
           orgs_details[org.key().id_or_name()]['proposals'].append({
               'key': proposal.key().id_or_name(),
               'title': proposal.title,
               'link': links.LINKER.userId(
-                  proposal.parent(), proposal.key().id(),
+                  proposal.parent_key(), proposal.key().id(),
                   url_names.PROPOSAL_REVIEW),
               })
 

@@ -159,7 +159,6 @@ def seed(request, *args, **kwargs):
       'scope': google,
       'name': 'Google Summer of Code 2014',
       'short_name': 'GSoC 2009',
-      'group_label': 'GSOC',
       'description': 'This is the program for GSoC 2014.',
       'apps_tasks_limit': 42,
       'slots': 42,
@@ -216,7 +215,6 @@ def seed(request, *args, **kwargs):
       'program_id': 'gci2009',
       'name': 'Google Code In Contest 2009',
       'short_name': 'GCI 2009',
-      'group_label': 'GCI',
       'description': 'This is the program for GCI 2009.',
       'timeline': gci2009_timeline,
       })
@@ -295,7 +293,8 @@ def seed(request, *args, **kwargs):
     org_properties = {
         'name': 'Organization %d' % i,
         'org_id': 'org_%d' % i,
-        'program': ndb.Key.from_old_key(gsoc2014.key())
+        'program': ndb.Key.from_old_key(gsoc2014.key()),
+        'description': 'Organization %d!' % i,
         }
     org = soc_org_model.SOCOrganization(
         id='google/gsoc2014/org_%d' % i, **org_properties)
@@ -304,8 +303,8 @@ def seed(request, *args, **kwargs):
 
     # Admin (and thus mentor) for the first org
     if i == 0:
-      profile.org_admin_for.append(entity.key())
-      profile.mentor_for.append(entity.key())
+      profile.org_admin_for.extend([entity.key(), org.key.to_old_key()])
+      profile.mentor_for.extend([entity.key(), org.key.to_old_key()])
       profile.is_mentor = True
       profile.is_org_admin = True
       profile.put()

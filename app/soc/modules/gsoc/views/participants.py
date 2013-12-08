@@ -14,6 +14,8 @@
 
 """Module containing the view for GSoC participants list page."""
 
+from google.appengine.ext import ndb
+
 from melange.request import access
 from melange.request import exception
 from soc.views.helper import addresses
@@ -32,6 +34,17 @@ class MentorsList(Template):
   def __init__(self, data):
     self.data = data
 
+    def getMentorFor(entity, *args):
+      """Helper function to get value of mentor_for column."""
+      org_keys = map(ndb.Key.from_old_key, entity.mentor_for)
+      return ', '.join(org.name for org in ndb.get_multi(org_keys) if org)
+
+    def getOrgAdminFor(entity, *args):
+      """Helper function to get value of org_admin_for column."""
+      org_keys = map(ndb.Key.from_old_key, entity.org_admin_for)
+      return ', '.join(org.name for org in ndb.get_multi(org_keys) if org)
+
+
     list_config = lists.ListConfiguration()
 
     list_config.addPlainTextColumn('name', 'Name',
@@ -41,13 +54,8 @@ class MentorsList(Template):
         lambda e, *args: 'Yes' if e.is_org_admin else 'No', hidden=True)
     list_config.addSimpleColumn('email', 'Email')
     list_config.addPlainTextColumn(
-        'org_admin_for', 'Org Admin For',
-        lambda e, org_admin_for, *args: ', '.join(
-            [org_admin_for[k].name for k in e.org_admin_for]))
-    list_config.addPlainTextColumn(
-        'mentor_for', 'Mentor For',
-        lambda e, mentor_for, *args: ', '.join(
-            [mentor_for[k].name for k in e.mentor_for]))
+        'org_admin_for', 'Org Admin For', getOrgAdminFor)
+    list_config.addPlainTextColumn('mentor_for', 'Mentor For', getMentorFor)
 
     addresses.addAddressColumns(list_config)
 
@@ -75,8 +83,9 @@ class MentorsList(Template):
     q.filter('is_mentor', True)
 
     starter = lists.keyStarter
-    prefetcher = lists.ListFieldPrefetcher(
-        GSoCProfile, ['org_admin_for', 'mentor_for'])
+    # TODO(daniel): enable prefetching from ndb models
+    # ('mentor_for', 'org_admin_for')
+    prefetcher = lists.ListFieldPrefetcher(GSoCProfile, [])
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,

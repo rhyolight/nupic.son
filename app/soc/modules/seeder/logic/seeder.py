@@ -28,7 +28,7 @@ from soc.modules.seeder.logic.models import logic as seeder_models_logic
 from soc.modules.seeder.logic.providers import logic as seeder_providers_logic
 from soc.modules.seeder.logic.providers.provider import Error as provider_error
 from soc.modules.seeder.logic.providers.provider import BaseDataProvider
-from soc.modules.seeder.logic.providers.string import LinkIDProvider
+from soc.modules.seeder.logic.providers.string import UniqueIDProvider
 from soc.modules.seeder.logic.providers.string import KeyNameProvider
 from soc.modules.seeder.models.configuration_sheet import DataSeederConfigurationSheet
 
@@ -409,7 +409,7 @@ class Logic(object):
 
     # Specially generate link_id because it needs to be unique
     if prop_name == 'link_id' and not result:
-      result = LinkIDProvider(model_class)
+      result = UniqueIDProvider()
 
     if prop_name == 'key_name' and not result:
       result = KeyNameProvider()

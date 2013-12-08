@@ -58,7 +58,6 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
     create a new program.
     """
     return {
-        'group_label': 'soc',
         'nr_accepted_orgs': 20,
         'student_min_age': 13,
         'student_max_age': 18,

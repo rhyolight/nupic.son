@@ -12,19 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Definitions of Code In-specific types."""
-
-from melange import types
-
-from soc.modules.gci.models import organization
-from soc.modules.gci.models import profile
-from soc.modules.gci.models import program
-from soc.modules.gci.models import timeline
-
-
-CI_MODELS = types.Models(
-    org_model=organization.GCIOrganization,
-    profile_model=profile.GCIProfile,
-    program_model=program.GCIProgram,
-    program_messages_model=program.GCIProgramMessages,
-    timeline_model=timeline.GCITimeline)
+"""Package with Code In-specific models."""

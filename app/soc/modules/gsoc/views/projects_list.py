@@ -17,7 +17,11 @@ into a GSoC program, excluding those which have been withdrawn
 or failed one of the evaluations.
 """
 
+from google.appengine.ext import ndb
+
 from melange.request import exception
+from melange.request import links
+
 from soc.views import base_templates
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
@@ -27,6 +31,7 @@ from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper.url_patterns import url
+from soc.modules.gsoc.views.helper import url_names
 
 
 class ProjectList(Template):
@@ -78,12 +83,16 @@ class ProjectList(Template):
 
     self.idx = self.DEFAULT_IDX if idx is None else idx
 
+    def getOrganization(entity, *args):
+      """."""
+      org_key = GSoCProject.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('student', 'Student',
         lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addPlainTextColumn('org', 'Organization',
-        lambda entity, *args: entity.org.name)
+    list_config.addPlainTextColumn('org', 'Organization', getOrganization)
     list_config.addSimpleColumn('status', 'Status', hidden=True)
     list_config.addPlainTextColumn('mentors', 'Mentors',
         lambda entity, *args: args[0][entity.key()], hidden=True)
@@ -116,8 +125,9 @@ class ProjectList(Template):
     idx = lists.getListIndex(self.data.request)
     if idx == self.idx:
       starter = lists.keyStarter
+      # TODO(daniel): enable prefetching from ndb models ('org')
       prefetcher = ProjectList.ListPrefetcher(
-          GSoCProject, ['org'], ['mentors'], parent=True)
+          GSoCProject, [], ['mentors'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.data.request, self._list_config, self.query,
@@ -137,9 +147,9 @@ class ProjectList(Template):
       a lambda expression that takes a project entity as its first argument
         and returns URL to the page with details of that project.
     """
-    return lambda e, *args: self.data.redirect.project(
-        id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
-        'gsoc_project_details')
+    return lambda e, *args: links.LINKER.userId(
+        e.parent_key(), e.key().id(), url_names.GSOC_PROJECT_DETAILS)
+
 
 class ListProjects(base.GSoCRequestHandler):
   """View methods for listing all the projects accepted into a program."""

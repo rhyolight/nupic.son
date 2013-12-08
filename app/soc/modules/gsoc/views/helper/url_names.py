@@ -30,6 +30,7 @@ GSOC_PROGRAM_EDIT = 'gsoc_program_edit'
 GSOC_PROGRAM_DOWNLOAD_SCHOOLS = 'gsoc_program_download_schools'
 GSOC_PROGRAM_UPLOAD_SCHOOLS = 'gsoc_program_upload_schools'
 
+GSOC_PROJECT_DETAILS = 'gsoc_project_details'
 GSOC_PROJECT_UPDATE = 'gsoc_project_update'
 GSOC_PROJECT_CODE_SAMPLE_UPLOAD = 'gsoc_project_code_sample_upload'
 GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD = 'gsoc_project_code_sample_download'
@@ -43,8 +44,6 @@ GSOC_ORG_BAN = 'gsoc_org_ban'
 
 GSOC_ORG_HOME = 'gsoc_org_home'
 GSOC_ORG_LIST_FOR_HOST = 'gsoc_org_list_for_host'
-GSOC_ORG_PROFILE_CREATE = 'gsoc_org_profile_create'
-GSOC_ORG_PROFILE_EDIT = 'gsoc_org_profile_edit'
 
 GSOC_ORG_CONNECTION = 'gsoc_org_connection'
 GSOC_USER_CONNECTION = 'gsoc_user_connection'

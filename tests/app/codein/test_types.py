@@ -43,6 +43,11 @@ class TestCodeInModels(unittest.TestCase):
     """Tests program_model attribute."""
     self.assertEqual(self.models.program_model, program_model.GCIProgram)
 
+  def testProgramMessagesModel(self):
+    """Tests program_messages_model attribute."""
+    self.assertEqual(
+        self.models.program_messages_model, program_model.GCIProgramMessages)
+
   def testTimelineModel(self):
     """Tests timeline_model attribute."""
     self.assertEqual(self.models.timeline_model, timeline_model.GCITimeline)

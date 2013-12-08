@@ -25,6 +25,8 @@ from google.appengine.ext import db
 from soc.models import org_app_survey
 from soc.models import org_app_record
 
+from soc.modules.gci.models import program as program_model
+
 from tests import test_utils
 from tests import survey_utils
 from tests import profile_utils
@@ -152,7 +154,7 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
   def testSummerOfCodeStudentAccessDenied(self):
     """Tests that Summer Of Code student cannot access the page."""
     # seed Summer Of Code program
-    soc_program = program_utils.GSoCProgramHelper().createProgram()
+    soc_program = program_utils.seedGSoCProgram()
 
     # seed Summer Of Code student
     profile_utils.GSoCProfileHelper(soc_program, False).createStudent()
@@ -163,7 +165,7 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
   def testSummerOfCodeProfileAccessDenied(self):
     """Tests that Summer Of Code profile (no role) cannot access the page."""
     # seed Summer Of Code program
-    soc_program = program_utils.GSoCProgramHelper().createProgram()
+    soc_program = program_utils.seedGSoCProgram()
 
     # seed Summer Of Code student
     profile_utils.GSoCProfileHelper(soc_program, False).createProfile()
@@ -281,6 +283,9 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(record.name, params['name'])
 
 
+TEST_ACCEPTED_ORGS_MSG = 'Organization accepted'
+TEST_REJECTED_ORGS_MSG = 'Organization rejected'
+
 class GCIOrgAppRecordsPageTest(test_utils.GCIDjangoTestCase):
   """Tests for organization applications edit page.
   """
@@ -323,6 +328,13 @@ class GCIOrgAppRecordsPageTest(test_utils.GCIDjangoTestCase):
     return self.post(url, postdata)
 
   def testGetRecords(self):
+    # set acceptance / rejection messages
+    program_messages = (
+        program_model.GCIProgramMessages.all().ancestor(self.program).get())
+    program_messages.accepted_orgs_msg = TEST_ACCEPTED_ORGS_MSG
+    program_messages.rejected_orgs_msg = TEST_REJECTED_ORGS_MSG
+    program_messages.put()
+
     self.profile_helper.createHost()
     record = self.record.createOrgAppRecord(
         'org1', self.profile_helper.user, self.profile_helper.user,
@@ -358,14 +370,12 @@ class GCIOrgAppRecordsPageTest(test_utils.GCIDjangoTestCase):
     self.dataPostSingle(self.url, record, 'accepted')
     record = db.get(record.key())
     self.assertEqual('accepted', record.status)
-    html = 'Organization accepted'
-    self.assertEmailSent(html=html)
+    self.assertEmailSent(html=TEST_ACCEPTED_ORGS_MSG)
 
     self.dataPostSingle(self.url, record, 'rejected')
     record = db.get(record.key())
     self.assertEqual('rejected', record.status)
-    html = 'Organization rejected'
-    self.assertEmailSent(html=html)
+    self.assertEmailSent(html=TEST_REJECTED_ORGS_MSG)
 
     # TODO(daniel): add a utility function for that?
     # self.assertEmailSent(n=2)

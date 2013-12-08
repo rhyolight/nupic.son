@@ -40,9 +40,11 @@ from django.test import testcases
 from soc.logic.helper import xsrfutil
 from soc.middleware import xsrf as xsrf_middleware
 from soc.modules import callback
+from soc.modules.seeder.logic.providers import string as string_provider
 from soc.tasks import mailer
 from soc.views import template
 
+from tests import org_utils
 from tests import profile_utils
 from tests import program_utils
 from tests import timeline_utils
@@ -292,7 +294,7 @@ class GSoCTestCase(SoCTestCase):
   Attributes:
     gsoc: A GSoCProgram.
     program: The same GSoCProgram as "gsoc".
-    org: A GSoCOrganization.
+    org: An organization.
     org_app: An OrgAppSurvey.
     sponsor: A Sponsor.
     site: A Site.
@@ -308,9 +310,11 @@ class GSoCTestCase(SoCTestCase):
   def init(self):
     """Performs test set-up by seeding data and setting attributes."""
     super(GSoCTestCase, self).init()
-    self.program_helper = program_utils.GSoCProgramHelper()
-    self.sponsor = self.program_helper.createSponsor()
-    self.gsoc = self.program = self.program_helper.createProgram()
+    self.sponsor = program_utils.seedSponsor()
+    self.program = self.gsoc = program_utils.seedGSoCProgram(
+        sponsor_key=self.sponsor.key())
+    self.program_helper = program_utils.GSoCProgramHelper(
+        sponsor=self.sponsor, program=self.program)
     self.site = program_utils.seedSite(active_program=self.program)
     self.org = self.program_helper.createOrg()
     self.org_app = self.program_helper.createOrgApp()
@@ -345,8 +349,11 @@ class GCITestCase(SoCTestCase):
   def init(self):
     """Performs test set-up by seeding data and setting attributes."""
     super(GCITestCase, self).init()
-    self.program_helper = program_utils.GCIProgramHelper()
-    self.sponsor = self.program_helper.createSponsor()
+    self.sponsor = program_utils.seedSponsor()
+    self.program = self.gsoc = program_utils.seedGCIProgram(
+        sponsor_key=self.sponsor.key())
+    self.program_helper = program_utils.GCIProgramHelper(
+        sponsor=self.sponsor, program=self.program)
     self.gci = self.program = self.program_helper.createProgram()
     self.site = program_utils.seedSite(active_program=self.program)
     self.org = self.program_helper.createOrg()
@@ -778,13 +785,7 @@ class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
   def createOrg(self, override={}):
     """Creates an organization for the defined properties.
     """
-    from soc.modules.gsoc.models.organization import GSoCOrganization
-
-    properties = {'scope': self.gsoc, 'status': 'active',
-                  'scoring_disabled': False, 'max_score': 5,
-                  'home': None, 'program': self.gsoc}
-    properties.update(override)
-    return self.seed(GSoCOrganization, properties)
+    return org_utils.seedSOCOrganization(self.program.key(), **override)
 
   def createDocument(self, override={}):
     return self.createDocumentForPrefix('gsoc_program', override)

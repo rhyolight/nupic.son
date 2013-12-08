@@ -30,6 +30,8 @@ from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+from summerofcode.views.helper import urls
+
 
 class Timeline(Template):
   """Timeline template.
@@ -90,14 +92,16 @@ class Apply(Template):
 
     if self.data.timeline.orgsAnnounced():
       # accepted orgs block
-      accepted_orgs = redirector.urlOf('gsoc_accepted_orgs')
+      accepted_orgs_link = links.LINKER.program(
+          self.data.program, urls.UrlNames.ORG_PUBLIC_LIST)
+
       nr_orgs = self.data.program.nr_accepted_orgs
       context['nr_accepted_orgs'] = nr_orgs if nr_orgs else ""
-      context['accepted_orgs_link'] = accepted_orgs
+      context['accepted_orgs_link'] = accepted_orgs_link
       participating_orgs = []
       current_orgs = org_logic.participating(self.data.program)
       for org in current_orgs:
-        link = links.LINKER.organization(org.key(), url_names.GSOC_ORG_HOME)
+        link = links.LINKER.organization(org.key, url_names.GSOC_ORG_HOME)
         participating_orgs.append({
             'link': link,
             'logo': org.logo_url,
@@ -177,15 +181,10 @@ class FeaturedProject(Template):
     self.featured_project = featured_project
 
   def context(self):
-    project_id = self.featured_project.key().id_or_name()
-    student_link_id = self.featured_project.parent().link_id
-
-    redirect = self.data.redirect
-
-    featured_project_url = redirect.project(
-        id=project_id,
-        student=student_link_id).urlOf('gsoc_project_details')
-
+    """See template.Template.context for specification."""
+    featured_project_url = links.LINKER.userId(
+        self.featured_project.parent_key(), self.featured_project.key().id(),
+        url_names.GSOC_PROJECT_DETAILS)
     return {
       'featured_project': self.featured_project,
       'featured_project_url': featured_project_url,

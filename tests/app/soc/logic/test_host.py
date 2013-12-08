@@ -24,6 +24,7 @@ from soc.models import user as user_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import profile_utils
+from tests import program_utils
 
 
 class HostTest(unittest.TestCase):
@@ -31,8 +32,7 @@ class HostTest(unittest.TestCase):
 
   def setUp(self):
     """Set up required for the host logic tests."""
-    properties = {'home': None}
-    self.sponsor = seeder_logic.seed(sponsor_model.Sponsor, properties)
+    self.sponsor = program_utils.seedSponsor()
 
   def testGetHostsForProgram(self):
     """Tests if a host entity for a program is returned."""

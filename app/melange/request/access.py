@@ -264,7 +264,8 @@ class IsUserOrgAdminForUrlOrg(AccessChecker):
     else:
       if data.url_ndb_org.key.to_old_key() not in data.profile.org_admin_for:
         raise exception.Forbidden(
-            message=_MESSAGE_NOT_ORG_ADMIN_FOR_ORG % data.url_org.key().name())
+            message=_MESSAGE_NOT_ORG_ADMIN_FOR_ORG %
+                data.url_ndb_org.key.id())
 
 IS_USER_ORG_ADMIN_FOR_ORG = IsUserOrgAdminForUrlOrg()
 IS_USER_ORG_ADMIN_FOR_NDB_ORG = IsUserOrgAdminForUrlOrg(is_ndb=True)

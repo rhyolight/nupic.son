@@ -14,12 +14,15 @@
 
 """Notifications for the GSoC module."""
 
+from google.appengine.ext import ndb
+
 from django.utils.translation import ugettext
 
 from melange.request import links
 
 from soc.logic.helper.notifications import getContext
 from soc.views.helper.access_checker import isSet
+from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.views.helper import url_names
 
 
@@ -62,16 +65,19 @@ def newProposalContext(data, proposal, to_emails):
         receive notifications.
   """
   proposal_notification_url = links.ABSOLUTE_LINKER.userId(
-      data.profile, proposal.key().id(), url_names.PROPOSAL_REVIEW)
+      data.profile.key(), proposal.key().id(), url_names.PROPOSAL_REVIEW)
   edit_profile_url = links.ABSOLUTE_LINKER.program(
       data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
+
+  org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(proposal)
+  org = ndb.Key.from_old_key(org_key).get()
 
   message_properties = {
       'proposal_notification_url': proposal_notification_url,
       'proposer_name': data.profile.name(),
       'proposal_name': proposal.title,
       'proposal_content': proposal.content,
-      'org': proposal.org.name,
+      'org': org.name,
       'profile_edit_link': edit_profile_url,
   }
 
@@ -93,7 +99,7 @@ def updatedProposalContext(data, proposal, to_emails):
   assert isSet(data.organization)
 
   proposal_notification_url = links.ABSOLUTE_LINKER.userId(
-      data.profile, proposal.key().id(), url_names.PROPOSAL_REVIEW)
+      data.profile.key(), proposal.key().id(), url_names.PROPOSAL_REVIEW)
   edit_profile_url = links.ABSOLUTE_LINKER.program(
       data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
 
@@ -125,7 +131,7 @@ def newReviewContext(data, comment, to_emails):
   # a utility class
   review_notification_url = '%s#c%s' % (
       links.ABSOLUTE_LINKER.userId(
-          data.url_profile, data.url_proposal.key().id(),
+          data.url_profile.key(), data.url_proposal.key().id(),
           url_names.PROPOSAL_REVIEW),
       comment.key().id())
   edit_profile_url = links.ABSOLUTE_LINKER.program(
@@ -134,6 +140,10 @@ def newReviewContext(data, comment, to_emails):
   review_type = 'private' if comment.is_private else 'public'
   reviewed_name = data.url_proposal.title
 
+  org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+      data.url_proposal)
+  org = ndb.Key.from_old_key(org_key).get()
+
   message_properties = {
       'review_notification_url': review_notification_url,
       'reviewer_name': comment.author.name(),
@@ -141,7 +151,7 @@ def newReviewContext(data, comment, to_emails):
       'review_content': comment.content,
       'review_visibility': review_type,
       'proposer_name': data.url_profile.name(),
-      'org': data.url_proposal.org.name,
+      'org': org.name,
       'profile_edit_link': edit_profile_url,
       }
 

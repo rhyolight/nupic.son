@@ -14,12 +14,15 @@
 
 """Tests for project_detail views."""
 
+from tests import org_utils
 from tests import profile_utils
-from tests import program_utils
 from tests import test_utils
 
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.views import project_details
+from soc.modules.gsoc.views.helper import request_data
+
+from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 
 def _createProjectForStudent(program, org, dev_test, student=None):
@@ -28,7 +31,7 @@ def _createProjectForStudent(program, org, dev_test, student=None):
 
   Args:
     program: GSoCProgram instance for which the project is to be created
-    org: GSoCOrganization instance for which the project is to be created
+    org: Organization entity.
     dev_test: whether it is dev test environment
     student: the specified GSoCProfile student instance to mentor the project
 
@@ -38,16 +41,19 @@ def _createProjectForStudent(program, org, dev_test, student=None):
   if not student:
     student = profile_utils.seedGSoCStudent(program)
 
-  mentor_helper = profile_utils.GSoCProfileHelper(program, dev_test)
-  mentor_helper.createOtherUser('mentor@example.com')
-  mentor_helper.createMentorWithProject(org, student)
+  mentor = profile_utils.seedGSoCProfile(
+      program, mentor_for=[org.key.to_old_key()])
 
-  project = project_model.GSoCProject.all().get()
-  project.is_featured = False
-  project.status = project_model.STATUS_ACCEPTED
-  project.put()
-
-  return project
+  project_properties = {
+      'parent': student.key(),
+      'mentors': [mentor.key()],
+      'program': program,
+      'org': org.key.to_old_key(),
+      'status': project_model.STATUS_ACCEPTED,
+      'is_featured': False,
+      }
+  return seeder_logic.seed(
+      project_model.GSoCProject, properties=project_properties)
 
 
 def _createProjectForMentor(program, org, dev_test, mentor=None):
@@ -56,7 +62,7 @@ def _createProjectForMentor(program, org, dev_test, mentor=None):
 
   Args:
     program: GSoCProgram instance for which the project is to be created
-    org: GSoCOrganization instance for which the project is to be created
+    org: Organization entity.
     dev_test: whether it is dev test environment
     mentor: the specified GSoCProfile mentor instance to mentor the project
 
@@ -64,16 +70,21 @@ def _createProjectForMentor(program, org, dev_test, mentor=None):
     the newly created GSoCProject instance
   """
   if not mentor:
-    mentor = profile_utils.seedGSoCProfile(program, mentor_for=[org.key()])
+    mentor = profile_utils.seedGSoCProfile(
+        program, mentor_for=[org.key.to_old_key()])
 
-  student_helper = profile_utils.GSoCProfileHelper(program, dev_test)
-  student_helper.createOtherUser('student@example.com')
-  student_helper.createStudentWithProject(org, mentor)
-  project = project_model.GSoCProject.all().get()
-  project.is_featured = False
-  project.status = project_model.STATUS_ACCEPTED
-  project.put()
-  return project
+  student = profile_utils.seedGSoCStudent(program)
+
+  project_properties = {
+      'parent': student.key(),
+      'mentors': [mentor.key()],
+      'program': program,
+      'org': org.key.to_old_key(),
+      'status': project_model.STATUS_ACCEPTED,
+      'is_featured': False,
+      }
+  return seeder_logic.seed(
+      project_model.GSoCProject, properties=project_properties)
 
 
 class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
@@ -93,19 +104,21 @@ class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
 
   def createProject(self):
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
-    student_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
-    student_helper.createOtherUser('student@example.com')
-    student_helper.createStudentWithProject(self.org, mentor)
+        self.program, mentor_for=[self.org.key.to_old_key()])
+    student = profile_utils.seedGSoCStudent(self.program)
 
-    project = project_model.GSoCProject.all().get()
-    project.is_featured = False
-    project.status = project_model.STATUS_ACCEPTED
-    project.put()
-    return project
+    project_properties = {
+        'parent': student.key(),
+        'mentors': [mentor.key()],
+        'program': self.program,
+        'org': self.org.key.to_old_key(),
+        'status': project_model.STATUS_ACCEPTED,
+        'is_featured': False,
+        }
+    return seeder_logic.seed(
+        project_model.GSoCProject, properties=project_properties)
 
   def testProjectDetails(self):
-    self.profile_helper.createStudent()
     self.timeline_helper.studentsAnnounced()
 
     project = self.createProject()
@@ -122,13 +135,12 @@ class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
     self.assertProjectDetailsTemplateUsed(response)
 
   def testFeaturedProjectButton(self):
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+
     self.timeline_helper.studentsAnnounced()
-
-    student = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser('student@example.com')
-    student.createStudent()
-
-    self.profile_helper.createOrgAdmin(self.org)
 
     project = self.createProject()
 
@@ -170,7 +182,11 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
   def testMentorAccessForbidden(self):
     self.timeline_helper.studentsAnnounced()
 
-    mentor = self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, user=user, mentor_for=[self.org.key.to_old_key()])
+
     project = _createProjectForMentor(
         self.gsoc, self.org, self.dev_test, mentor=mentor)
 
@@ -182,7 +198,11 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
   def testOrgAdminAccessGranted(self):
     self.timeline_helper.studentsAnnounced()
 
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
     url = self._getProjectUpdateUrl(project)
@@ -192,8 +212,13 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
   def testOrgAdminForAnotherOrgForbidden(self):
     self.timeline_helper.studentsAnnounced()
 
-    another_org = self.createOrg()
-    self.profile_helper.createOrgAdmin(another_org)
+    other_org = org_utils.seedSOCOrganization(self.program.key())
+
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, org_admin_for=[other_org.key.to_old_key()])
+
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
     url = self._getProjectUpdateUrl(project)
@@ -204,7 +229,9 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
   def testHostAccessGranted(self):
     self.timeline_helper.studentsAnnounced()
 
-    self.profile_helper.createHost()
+    user = profile_utils.seedUser(host_for=[self.sponsor.key()])
+    profile_utils.login(user)
+
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
     url = self._getProjectUpdateUrl(project)
@@ -214,7 +241,10 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
   def testStudentAccessTheirProjectGranted(self):
     self.timeline_helper.studentsAnnounced()
 
-    student = self.profile_helper.createStudent()
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    student = profile_utils.seedGSoCStudent(self.program, user=user)
+
     project = _createProjectForStudent(
         self.gsoc, self.org, self.dev_test, student=student)
 
@@ -225,7 +255,10 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
   def testStudentAccessOtherProjectForbidden(self):
     self.timeline_helper.studentsAnnounced()
 
-    student = self.profile_helper.createStudent()
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCStudent(self.program, user=user)
+
     project = _createProjectForStudent(self.gsoc, self.org, self.dev_test)
 
     url = self._getProjectUpdateUrl(project)
@@ -241,78 +274,140 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
     super(TestIsUpdateLinkVisible, self).setUp()
     self.init()
 
-  class MockRequestData(object):
-    """Mock class used to simulate RequestData which is passed as argument."""
-
-    def __init__(self, is_host=False, project=None, profile=None):
-      self.is_host = is_host
-      self.project = project
-      self.profile = profile
-
-    def orgAdminFor(self, org_key):
-      return org_key in self.profile.org_admin_for
-
   def testForHost(self):
-    request_data = TestIsUpdateLinkVisible.MockRequestData(is_host=True)
-    result = project_details._isUpdateLinkVisible(request_data)
+    data = request_data.RequestData(None, None, None)
+    data._is_host = True
+    result = project_details._isUpdateLinkVisible(data)
     self.assertTrue(result)
 
   def testForProjectStudent(self):
-    student = self.profile_helper.createStudent()
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    student = profile_utils.seedGSoCStudent(self.program, user=user)
+
     project = _createProjectForStudent(
         self.gsoc, self.org, self.dev_test, student=student)
 
-    request_data = TestIsUpdateLinkVisible.MockRequestData(
-        project=project, profile=student)
-    self.assertTrue(project_details._isUpdateLinkVisible(request_data))
+    sponsor_id, program_id, user_id = project.parent_key().name().split('/')
+    kwargs = {
+        'sponsor': sponsor_id,
+        'program': program_id,
+        'user': user_id,
+        'id': project.key().id(),
+        }
+    data = request_data.RequestData(None, None, kwargs)
+
+    self.assertTrue(project_details._isUpdateLinkVisible(data))
 
   def testForOtherStudent(self):
-    student = self.profile_helper.createStudent()
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCStudent(self.program, user=user)
+
     project = _createProjectForStudent(self.gsoc, self.org, self.dev_test)
 
-    request_data = TestIsUpdateLinkVisible.MockRequestData(
-        project=project, profile=student)
-    self.assertFalse(project_details._isUpdateLinkVisible(request_data))
+    sponsor_id, program_id, user_id = project.parent_key().name().split('/')
+    kwargs = {
+        'sponsor': sponsor_id,
+        'program': program_id,
+        'user': user_id,
+        'id': project.key().id(),
+        }
+    data = request_data.RequestData(None, None, kwargs)
+
+    self.assertFalse(project_details._isUpdateLinkVisible(data))
 
   def testForProjectMentor(self):
-    mentor = self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    mentor = profile_utils.seedGSoCProfile(
+        self.program, user=user, mentor_for=[self.org.key.to_old_key()])
+
     project = _createProjectForMentor(
         self.gsoc, self.org, self.dev_test, mentor=mentor)
 
-    request_data = TestIsUpdateLinkVisible.MockRequestData(
-        project=project, profile=mentor)
-    self.assertFalse(project_details._isUpdateLinkVisible(request_data))
+    sponsor_id, program_id, user_id = project.parent_key().name().split('/')
+    kwargs = {
+        'sponsor': sponsor_id,
+        'program': program_id,
+        'user': user_id,
+        'id': project.key().id(),
+        }
+    data = request_data.RequestData(None, None, kwargs)
+
+    self.assertFalse(project_details._isUpdateLinkVisible(data))
 
   def testForOtherMentor(self):
-    mentor = self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, mentor_for=[self.org.key.to_old_key()])
+
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
-    request_data = TestIsUpdateLinkVisible.MockRequestData(
-        project=project, profile=mentor)
-    self.assertFalse(project_details._isUpdateLinkVisible(request_data))
+    sponsor_id, program_id, user_id = project.parent_key().name().split('/')
+    kwargs = {
+        'sponsor': sponsor_id,
+        'program': program_id,
+        'user': user_id,
+        'id': project.key().id(),
+        }
+    data = request_data.RequestData(None, None, kwargs)
+
+    self.assertFalse(project_details._isUpdateLinkVisible(data))
 
   def testForProjectOrgAdmin(self):
-    org_admin = self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
-    request_data = TestIsUpdateLinkVisible.MockRequestData(
-        project=project, profile=org_admin)
-    self.assertTrue(project_details._isUpdateLinkVisible(request_data))
+    sponsor_id, program_id, user_id = project.parent_key().name().split('/')
+    kwargs = {
+        'sponsor': sponsor_id,
+        'program': program_id,
+        'user': user_id,
+        'id': project.key().id(),
+        }
+    data = request_data.RequestData(None, None, kwargs)
+
+    self.assertTrue(project_details._isUpdateLinkVisible(data))
 
   def testForOtherOrgAdmin(self):
-    program_helper = program_utils.GSoCProgramHelper()
-    another_org = program_helper.createOrg()
-    org_admin = self.profile_helper.createOrgAdmin(self.org)
-    project = _createProjectForMentor(self.gsoc, another_org, self.dev_test)
+    other_org = org_utils.seedSOCOrganization(self.program.key())
 
-    request_data = TestIsUpdateLinkVisible.MockRequestData(
-        project=project, profile=org_admin)
-    self.assertFalse(project_details._isUpdateLinkVisible(request_data))
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+    profile_utils.seedGSoCProfile(
+        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+
+    project = _createProjectForMentor(self.gsoc, other_org, self.dev_test)
+
+    sponsor_id, program_id, user_id = project.parent_key().name().split('/')
+    kwargs = {
+        'sponsor': sponsor_id,
+        'program': program_id,
+        'user': user_id,
+        'id': project.key().id(),
+        }
+    data = request_data.RequestData(None, None, kwargs)
+
+    self.assertFalse(project_details._isUpdateLinkVisible(data))
 
   def testForLoneUser(self):
-    self.profile_helper.createUser()
+    user = profile_utils.seedUser()
+    profile_utils.login(user)
+
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
-    request_data = TestIsUpdateLinkVisible.MockRequestData(
-        project=project)
-    self.assertFalse(project_details._isUpdateLinkVisible(request_data))
+    kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': user.link_id,
+        'id': project.key().id(),
+        }
+    data = request_data.RequestData(None, None, kwargs)
+
+    self.assertFalse(project_details._isUpdateLinkVisible(data))

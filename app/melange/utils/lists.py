@@ -23,6 +23,8 @@ from google.appengine.ext import db
 from melange import key_column_id_const
 
 from soc.mapreduce import cache_list_items
+from soc.modules.gsoc.models import project as project_model
+from soc.views.helper import url as url_helper
 
 from melange.logic import cached_list
 
@@ -724,6 +726,13 @@ class KeyColumn(Column):
     return '%s/%s' % (entity.parent_key().name(), entity.key().id())
 
 
+class EncodedKeyColumn(Column):
+  """Column object to represent the unique key as encoded key of the entity."""
+  def getValue(self, entity):
+    """See Column.getValue for specification."""
+    return str(entity.key())
+
+
 class StudentColumn(Column):
   """Column object to represent the student"""
   def getValue(self, entity):
@@ -731,17 +740,36 @@ class StudentColumn(Column):
     return entity.parent_key().name()
 
 
-class OraganizationColumn(Column):
+class OrganizationColumn(Column):
   """Column object to represent the organization"""
   def getValue(self, entity):
     """See Column.getValue for specification"""
-    return entity.org.name
+    # TODO(daniel): this hack will not be needed, when project model is
+    # converted to NDB
+    org_key = project_model.GSoCProject.org.get_value_for_datastore(entity)
+    return ndb.Key.from_old_key(org_key).get().name
 
 
-key = KeyColumn(key_column_id_const.KEY_COLUMN_ID, 'Key', hidden=True)
+class TagsColumn(Column):
+  """Column class to represent tags for organization."""
+
+  def getValue(self, entity):
+    """See Column.getValue for specification."""
+    return ', '.join(entity.tags)
+
+
+class IdeasColumn(Column):
+  """Column class to represent URL to list of ideas for organization."""
+
+  def getValue(self, entity):
+    """See Column.getValue for specification."""
+    return url_helper.urlize(entity.ideas_page, name='Ideas page')
+
+
+key = EncodedKeyColumn(key_column_id_const.KEY_COLUMN_ID, 'Key', hidden=True)
 student = StudentColumn('student', 'Student')
 title = SimpleColumn('title', 'Title')
-org = OraganizationColumn('org', 'Organization')
+org = OrganizationColumn('org', 'Organization')
 status = SimpleColumn('status', 'Status')
 
 cache_reader = CacheReader()
@@ -764,9 +792,12 @@ class NdbKeyColumn(Column):
 
 key = NdbKeyColumn(key_column_id_const.KEY_COLUMN_ID, 'Key', hidden=True)
 name = SimpleColumn('name', 'Name')
+tags = TagsColumn('tags', 'Tags')
+ideas = IdeasColumn('ideas', 'Ideas')
+
 ORGANIZATION_LIST = List(
-    ORGANIZATION_LIST_ID, 0, org_model.SOCOrganization, [key, name],
-    datastore_reader)
+    ORGANIZATION_LIST_ID, 0, org_model.SOCOrganization,
+    [key, name, tags, ideas], datastore_reader)
 
 LISTS = {
     GSOC_PROJECTS_LIST_ID: GSOC_PROJECTS_LIST,

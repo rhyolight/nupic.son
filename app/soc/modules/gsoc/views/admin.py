@@ -17,6 +17,7 @@
 from google.appengine.api import taskqueue
 from google.appengine.api import users
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import forms as djangoforms
 from django import http
@@ -888,6 +889,12 @@ class ProposalsList(Template):
           return """<strong><font color="green">Pending acceptance</font><strong>"""
       # not showing duplicates or proposal doesn't have an interesting state
       return proposal.status
+
+    def getOrganizationKey(entity, *args):
+      """Helper function to get value of organization key column."""
+      org_key = GSoCProposal.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).id()
+
     options = [
         # TODO(nathaniel): This looks like structured data that should be
         # properly modeled in first-class structured Python objects.
@@ -917,8 +924,7 @@ class ProposalsList(Template):
         'full_proposal_key', 'Full proposal key',
         (lambda ent, *args: str(ent.key())), hidden=True)
     list_config.addPlainTextColumn(
-        'org_key', 'Organization key',
-        (lambda ent, *args: ent.org.key().name()), hidden=True)
+        'org_key', 'Organization key', getOrganizationKey, hidden=True)
 
     list_config.setDefaultSort('last_modified_on', 'desc')
 
@@ -928,7 +934,8 @@ class ProposalsList(Template):
     return'modules/gsoc/admin/_proposals_list.html'
 
   def context(self):
-    description = 'List of proposals submitted into %s' % self.data.organization.name
+    description = (
+        'List of proposals submitted into %s' % self.data.url_ndb_org.name)
 
     list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=0, description=description)
@@ -943,7 +950,6 @@ class ProposalsList(Template):
     if idx != 0:
       return None
 
-    org = self.data.organization
     program = self.data.program
 
     # Hold all the accepted projects for orgs where this user is a member of
@@ -952,21 +958,24 @@ class ProposalsList(Template):
     duplicates = []
     dupQ = GSoCProposalDuplicate.all()
     dupQ.filter('is_duplicate', True)
-    dupQ.filter('org', org)
+    dupQ.filter('org', self.data.url_ndb_org.key.to_old_key())
     dupQ.filter('program', program)
 
-    accepted.extend([p.key() for p in getProposalsToBeAcceptedForOrg(org)])
+    accepted.extend(
+        p.key() for p in getProposalsToBeAcceptedForOrg(self.data.url_ndb_org))
 
     duplicate_entities = dupQ.fetch(1000)
     for dup in duplicate_entities:
       duplicates.extend(dup.duplicates)
 
     q = GSoCProposal.all()
-    q.filter('org', org)
+    q.filter('org', self.data.url_ndb_org.key.to_old_key())
     q.filter('program', program)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
+
+    # TODO(daniel): enable prefetching from ndb models ('org')
+    prefetcher = lists.ModelPrefetcher(GSoCProposal, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
@@ -1014,14 +1023,19 @@ class ProjectsList(Template):
   """Template for listing all projects of particular org."""
 
   def __init__(self, request, data):
+
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = GSoCProject.org.get_value_for_datastore(entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     self.data = data
 
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('student', 'Student',
         lambda entity, *args: entity.parent().name())
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addPlainTextColumn('org', 'Organization',
-        lambda entity, *args: entity.org.name)
+    list_config.addPlainTextColumn('org', 'Organization', getOrganization)
     list_config.addPlainTextColumn(
         'mentors', 'Mentor',
         lambda entity, m, *args: [m[i].name() for i in entity.mentors])
@@ -1035,7 +1049,7 @@ class ProjectsList(Template):
         self.data, self._list_config, idx=0,
         description='List of projects under %s that ' \
             'accepted into %s' % (
-            self.data.organization.name, self.data.program.name))
+            self.data.url_ndb_org.name, self.data.program.name))
 
     return {
         'lists': [list_configuration_response],
@@ -1206,11 +1220,15 @@ class StudentsList(Template):
           for student_info in student_infos if student_info
           )
 
-      orgs = db.get(set(sum(
-          (student_info.project_for_orgs for student_info in student_infos),
-          [])))
+      org_keys = set()
+      for student_info in student_infos:
+        org_keys.update(
+            GSoCStudentInfo.project_for_orgs.get_value_for_datastore(
+                student_info))
+      orgs = ndb.get_multi(org_keys)
+
       prefetched_organization_dict = dict(
-          (org.key(), org) for org in orgs if org)
+          (org.key, org) for org in orgs if org)
 
       return ([prefetched_student_info_dict, prefetched_organization_dict], {})
 
@@ -1426,12 +1444,11 @@ def _getManageProjectRowAction(data):
   """Returns a row action that redirects to the manage project page.
 
   Args:
-    data: RequestData object for the current request.
+    data: request_data.RequestData object for the current request.
 
   Returns:
-    a lamba expression that takes a project entity as its first argument
-      and returns URL to the manage project page.
+    A function takes a project entity as its first argument and returns
+    URL to the manage project page.
   """
-  return lambda e, *args: data.redirect.project(
-      id=e.key().id_or_name(), student=e.parent().link_id).urlOf(
-      urls.UrlNames.PROJECT_MANAGE_ADMIN)
+  return lambda e, *args: links.SOC_LINKER.userId(
+      e.parent_key(), e.key().id(), urls.UrlNames.PROJECT_MANAGE_ADMIN)

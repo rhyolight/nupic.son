@@ -14,26 +14,23 @@
 
 """Utils for manipulating program data."""
 
-from datetime import date
+from codein import types as ci_types
 
-from soc.models.document import Document
+from melange import types
+
+from soc.models import document as document_model
 from soc.models.org_app_survey import OrgAppSurvey
 from soc.models import program as program_model
 from soc.models.site import Site
 from soc.models.sponsor import Sponsor
-from soc.models.user import User
 
 from soc.modules.gci.models.organization import GCIOrganization
-from soc.modules.gci.models.program import GCIProgram
-from soc.modules.gci.models.program import GCIProgramMessages
-from soc.modules.gci.models.timeline import GCITimeline
-from soc.modules.gsoc.models.organization import GSoCOrganization
-from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gsoc.models.program import GSoCProgramMessages
-from soc.modules.gsoc.models.timeline import GSoCTimeline
-from soc.modules.seeder.logic.providers.string import DocumentKeyNameProvider
+from soc.modules.seeder.logic.providers import string as string_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from summerofcode import types as soc_types
+
+from tests import org_utils
 from tests import profile_utils
 from tests import timeline_utils
 
@@ -56,21 +53,244 @@ def seedSite(**kwargs):
   return site
 
 
+TEST_SPONSOR_EMIAL = 'test.sponsor@example.com'
+TEST_SPONSOR_HOME_PAGE = 'http://test.sponsor.home.page.com'
+TEST_SPONSOR_NAME = 'Test Sponsor'
+TEST_SPONSOR_DESCRIPTION = 'Test Sponsor Description'
+TEST_SPONSOR_SHORT_NAME = 'Sponsor'
+
+# TODO(daniel): move this function to a separate module
+def seedSponsor(sponsor_id=None, **kwargs):
+  """Seeds a new sponsor entity.
+
+  Args:
+    sponsor_id: Identifier of the new sponsor.
+
+  Returns:
+    Newly seeded Sponsor entity.
+  """
+  sponsor_id = sponsor_id or string_provider.UniqueIDProvider().getValue()
+
+  properties = {
+      'description': TEST_SPONSOR_DESCRIPTION,
+      'email': TEST_SPONSOR_EMIAL,
+      'home_page': TEST_SPONSOR_HOME_PAGE,
+      'key_name': sponsor_id,
+      'link_id': sponsor_id,
+      'org_id': sponsor_id,
+      'name': TEST_SPONSOR_NAME,
+      'short_name': TEST_SPONSOR_SHORT_NAME,
+      'sponsor_id': sponsor_id,
+      }
+  properties.update(kwargs)
+  sponsor = Sponsor(**properties)
+  sponsor.put()
+
+  return sponsor
+
+
+def seedTimeline(models=types.MELANGE_MODELS,
+    timeline_id=None, sponsor_key=None, **kwargs):
+  """Seeds a new timeline.
+
+  Args:
+    models: Instance of types.Models that represent appropriate models.
+    timeline_id: Identifier of the new timeline.
+    sponsor_key: Sponsor key to be used as scope for the timeline.
+
+  Returns:
+    Newly seeded timeline entity.
+  """
+  timeline_id = timeline_id or string_provider.UniqueIDProvider().getValue()
+
+  sponsor_key = sponsor_key or seedSponsor()
+
+  properties = {
+      'key_name': '%s/%s' % (sponsor_key.name(), timeline_id),
+      'link_id': timeline_id,
+      'program_start': timeline_utils.past(),
+      'program_end': timeline_utils.future(),
+      'scope': sponsor_key,
+      }
+  properties.update(kwargs)
+  timeline = models.timeline_model(**properties)
+  timeline.put()
+
+  return timeline
+
+
+TEST_PROGRAM_DESCRIPTION = 'Test Program Description'
+TEST_PROGRAM_NAME = 'Test Program'
+TEST_PROGRAM_SHORT_NAME = 'Program'
+
+TEST_DOCUMENT_PREFIX = 'program'
+TEST_DOCUMENT_TITLE = 'Test Document'
+
+def seedProgram(models=types.MELANGE_MODELS, program_id=None,
+    sponsor_key=None, timeline_key=None, **kwargs):
+  """Seeds a new program.
+
+  Args:
+    models: instance of types.Models that represent appropriate models.
+    program_id: Identifier of the new program.
+    sponsor_key: Sponsor key for the new program.
+    timeline_key: Timeline key for the new program.
+
+  Returns:
+    Newly seeded program entity.
+  """
+  program_id = program_id or string_provider.UniqueIDProvider().getValue()
+
+  sponsor_key = sponsor_key or seedSponsor().key()
+  timeline_key = timeline_key or seedTimeline(
+      models=models, timeline_id=program_id, sponsor_key=sponsor_key).key()
+
+  properties = {
+      'scope': sponsor_key,
+      'sponsor': sponsor_key,
+      'link_id': program_id,
+      'program_id': program_id,
+      'key_name': '%s/%s' % (sponsor_key.name(), program_id),
+      'name': TEST_PROGRAM_NAME,
+      'short_name': TEST_PROGRAM_SHORT_NAME,
+      'description': TEST_PROGRAM_DESCRIPTION,
+      'timeline': timeline_key,
+      'status': program_model.STATUS_VISIBLE,
+      }
+  properties.update(kwargs)
+  program = models.program_model(**properties)
+
+  host = profile_utils.seedUser(host_for=[sponsor_key])
+  document_id = string_provider.UniqueIDProvider().getValue()
+  prefix = kwargs.get('prefix', TEST_DOCUMENT_PREFIX)
+  properties = {
+      'scope': program,
+      'read_access': 'public',
+      'key_name': '%s/%s/%s' % (prefix, program.key().name(), document_id),
+      'link_id': document_id,
+      'modified_by': host,
+      'author': host,
+      'home_for': None,
+      'title': TEST_DOCUMENT_TITLE,
+      'prefix': prefix,
+    }
+  document = document_model.Document(**properties)
+  document.put()
+
+  program.about_page = document
+  program.events_page = document
+  program.help_page = document
+  program.connect_with_us_page = document
+  program.privacy_policy = document
+  program.put()
+
+  seedProgramMessages(models=models, program_key=program.key(), **kwargs)
+
+  return program
+
+
+TEST_APP_TASKS_LIMIT = 20
+TEST_SLOTS = 1000
+
+def seedGSoCProgram(program_id=None, sponsor_key=None,
+    timeline_key=None, **kwargs):
+  """Seeds a new Summer Of Code program.
+
+  Args:
+    program_id: Identifier of the new program.
+    sponsor_key: Sponsor key for the new program.
+    timeline_key: Timeline key for the new program.
+
+  Returns:
+    Newly seeded program entity.
+  """
+  properties = {
+      'apps_tasks_limit': TEST_APP_TASKS_LIMIT,
+      'slots': TEST_SLOTS,
+      'prefix': 'gsoc_program',
+      }
+  properties.update(kwargs)
+  return seedProgram(
+      models=soc_types.SOC_MODELS, program_id=program_id,
+      sponsor_key=sponsor_key, timeline_key=timeline_key, **properties)
+
+
+def seedGCIProgram(program_id=None, sponsor_key=None,
+    timeline_key=None, **kwargs):
+  """Seeds a new Code In program.
+
+  Args:
+    program_id: Identifier of the new program.
+    sponsor_key: Sponsor key for the new program.
+    timeline_key: Timeline key for the new program.
+
+  Returns:
+    Newly seeded program entity.
+  """
+  properties = {'prefix': 'gci_program'}
+  properties.update(kwargs)
+  return seedProgram(
+      models=ci_types.CI_MODELS, program_id=program_id,
+      sponsor_key=sponsor_key, timeline_key=timeline_key, **properties)
+
+
+def seedProgramMessages(
+    models=types.MELANGE_MODELS, program_key=None, **kwargs):
+  """Seeds a new program messages.
+
+  Args:
+    models: instance of types.Models that represent appropriate models.
+    program_key: Program key for messages.
+
+  Returns:
+    Newly seeded program messages entity.
+  """
+  properties = {'parent': program_key}
+  properties.update(kwargs)
+  program_messages = models.program_messages_model(**properties)
+  program_messages.put()
+
+  return program_messages
+
+
+def seedGSoCProgramMessages(program_key=None, **kwargs):
+  """Seeds a new program messages for Summer Of Code.
+
+  Args:
+    program_key: Program key for messages.
+
+  Returns:
+    Newly seeded program messages entity.
+  """
+  return seedProgramMessages(
+      models=soc_types.SOC_MODELS, program_key=program_key)
+
+
+def seedGCIProgramMessages(program_key=None, **kwargs):
+  """Seeds a new program messages for Code In.
+
+  Args:
+    program_key: Program key for messages.
+
+  Returns:
+    Newly seeded program messages entity.
+  """
+  return seedProgramMessages(
+      models=ci_types.CI_MODELS, program_key=program_key)
+
+
 class ProgramHelper(object):
   """Helper class to aid in manipulating program data.
   """
 
-  def __init__(self):
+  def __init__(self, sponsor=None, program=None):
     """Initializes the ProgramHelper.
 
     Args:
-      program: a program
-      org_app: an organization application
-      org: an organization
-      site: a site
+      sponsor: Sponsor entity.
     """
-    self.sponsor = None
-    self.program = None
+    self.sponsor = sponsor
+    self.program = program
     self.org_app = None
     self.org = None
     self.site = None
@@ -86,23 +306,11 @@ class ProgramHelper(object):
     return seeder_logic.seedn(model, n, properties, recurse=False,
         auto_seed_optional_properties=auto_seed_optional_properties)
 
-  def createSponsor(self, override={}):
-    """Creates a sponsor for the defined properties.
-    """
-    if self.sponsor:
-      return self.sponsor
-    properties = {
-        'home': None,
-        }
-    properties.update(override)
-    self.sponsor = self.seed(Sponsor, properties)
-    return self.sponsor
-
   def createProgram(self, override={}):
     """Creates a program for the defined properties.
     """
     if self.sponsor is None:
-      self.createSponsor()
+      self.sponsor = seedSponsor()
 
   def createOrgApp(self, override={}):
     """Creates an organization application for the defined properties.
@@ -165,10 +373,10 @@ class GSoCProgramHelper(ProgramHelper):
   """Helper class to aid in manipulating GSoC program data.
   """
 
-  def __init__(self):
+  def __init__(self, **kwargs):
     """Initializes the GSoCProgramHelper.
     """
-    super(GSoCProgramHelper, self).__init__()
+    super(GSoCProgramHelper, self).__init__(**kwargs)
 
   def createProgram(self, override={}):
     """Creates a program for the defined properties.
@@ -176,55 +384,8 @@ class GSoCProgramHelper(ProgramHelper):
     if self.program:
       return self.program
     super(GSoCProgramHelper, self).createProgram()
-    properties = {
-        'scope': self.sponsor,
-        'program_start': timeline_utils.past(),
-        'program_end': timeline_utils.future()
-        }
-    self.program_timeline = self.seed(GSoCTimeline, properties)
 
-    properties = {'timeline': self.program_timeline,
-                  'key_name': self.program_timeline.key().name(),
-                  'status': program_model.STATUS_VISIBLE,
-                  'apps_tasks_limit': 20,
-                  'scope': self.sponsor, 'sponsor': self.sponsor,
-                  'student_agreement': None, 'events_page': None,
-                  'help_page': None, 'connect_with_us_page': None,
-                  'mentor_agreement': None, 'org_admin_agreement': None,
-                  'terms_and_conditions': None,
-                  'home': None, 'about_page': None,
-                  'student_min_age': 18, 'student_max_age': 999}
-    properties.update(override)
-
-    self.program = self.seed(GSoCProgram, properties)
-    user = profile_utils.seedUser()
-    properties = {
-        'prefix': 'gsoc_program',
-        'scope': self.program,
-        'read_access': 'public',
-        'key_name': DocumentKeyNameProvider(),
-        'modified_by': user,
-        'author': user,
-        'home_for': None,
-    }
-    document = self.seed(Document, properties=properties)
-
-    self.program.about_page = document
-    self.program.events_page = document
-    self.program.help_page = document
-    self.program.connect_with_us_page = document
-    self.program.privacy_policy = document
-    self.program.program_id = self.program.link_id
-    self.program.put()
-
-    properties = {
-        'parent': self.program,
-        'accepted_orgs_msg': 'Organization accepted',
-        'rejected_orgs_msg': 'Organization rejected',
-        }
-    self.program_messages = self.seed(GSoCProgramMessages,
-        properties=properties)
-    self.program_messages.put()
+    self.program = seedGSoCProgram(sponsor_key=self.sponsor.key())
 
     return self.program
 
@@ -233,17 +394,9 @@ class GSoCProgramHelper(ProgramHelper):
 
     This new organization will not be stored in self.org but returned.
     """
-    super(GSoCProgramHelper, self).createNewOrg(override)
-    properties = {
-        'scope': self.program,
-        'status': 'active',
-        'scoring_disabled': False,
-        'max_score': 5,
-        'home': None,
-        'program': self.program,
-        }
-    properties.update(override)
-    return self.seed(GSoCOrganization, properties)
+    if not self.program:
+      self.createProgram()
+    return org_utils.seedSOCOrganization(self.program.key())
 
   def createOrgApp(self, override={}):
     """Creates an organization application for the defined properties.
@@ -260,10 +413,10 @@ class GCIProgramHelper(ProgramHelper):
   """Helper class to aid in manipulating GCI program data.
   """
 
-  def __init__(self):
+  def __init__(self, **kwargs):
     """Initializes the GCIProgramHelper.
     """
-    super(GCIProgramHelper, self).__init__()
+    super(GCIProgramHelper, self).__init__(**kwargs)
 
   def createProgram(self, override={}):
     """Creates a program for the defined properties.
@@ -272,54 +425,7 @@ class GCIProgramHelper(ProgramHelper):
       return self.program
     super(GCIProgramHelper, self).createProgram()
 
-    properties = {
-        'scope': self.sponsor,
-        'program_start': timeline_utils.past(),
-        'program_end': timeline_utils.future()
-        }
-    self.program_timeline = self.seed(GCITimeline, properties)
-
-    properties = {
-        'timeline': self.program_timeline,
-        'status': program_model.STATUS_VISIBLE,
-        'scope': self.sponsor, 'sponsor': self.sponsor,
-        'student_agreement': None, 'events_page': None,
-        'help_page': None, 'connect_with_us_page': None,
-        'mentor_agreement': None, 'org_admin_agreement': None,
-        'terms_and_conditions': None, 'home': None, 'about_page': None,
-        'nr_simultaneous_tasks': 5,
-        'student_min_age': 13, 'student_max_age': 17,
-        'student_min_age_as_of': date.today(),
-        'task_types': ['code', 'documentation', 'design'],
-    }
-    properties.update(override)
-
-    self.program = self.seed(GCIProgram, properties)
-    user = profile_utils.seedUser()
-    properties = {
-        'prefix': 'gci_program', 'scope': self.program,
-        'read_access': 'public', 'key_name': DocumentKeyNameProvider(),
-        'modified_by': user, 'author': user,
-        'home_for': None,
-    }
-    document = self.seed(Document, properties=properties)
-
-    self.program.about_page = document
-    self.program.events_page = document
-    self.program.help_page = document
-    self.program.connect_with_us_page = document
-    self.program.privacy_policy = document
-    self.program.program_id = self.program.link_id
-    self.program.put()
-
-    properties = {
-        'parent': self.program,
-        'accepted_orgs_msg': 'Organization accepted',
-        'rejected_orgs_msg': 'Organization rejected',
-        }
-    self.program_messages = self.seed(GCIProgramMessages,
-        properties=properties)
-    self.program_messages.put()
+    self.program = seedGCIProgram(sponsor_key=self.sponsor.key(), **override)
 
     return self.program
 

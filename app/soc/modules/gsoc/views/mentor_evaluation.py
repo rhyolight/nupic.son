@@ -15,6 +15,7 @@
 """Module for the GSoC project evaluations."""
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 from django.utils.translation import ugettext
@@ -29,6 +30,7 @@ from soc.views.helper import lists
 from soc.views.helper.access_checker import isSet
 from soc.views.readonly_template import SurveyRecordReadOnlyTemplate
 
+from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
@@ -189,7 +191,6 @@ class GSoCMentorEvaluationTakePage(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.projectFromKwargs()
     mutator.mentorEvaluationFromKwargs()
     mutator.mentorEvaluationRecordFromKwargs()
 
@@ -217,8 +218,8 @@ class GSoCMentorEvaluationTakePage(base.GSoCRequestHandler):
     context = {
         'page_name': '%s' % (data.mentor_evaluation.title),
         'description': data.mentor_evaluation.content,
-        'project': data.project.title,
-        'student': data.project_owner.name(),
+        'project': data.url_project.title,
+        'student': data.url_project.parent().name(),
         'forms': [form],
         'error': bool(form.errors),
         }
@@ -246,8 +247,10 @@ class GSoCMentorEvaluationTakePage(base.GSoCRequestHandler):
       return None
 
     if not data.mentor_evaluation_record:
-      form.cleaned_data['project'] = data.project
-      form.cleaned_data['org'] = data.project.org
+      org_key = project_model.GSoCProject.org.get_value_for_datastore(
+          data.org_project)
+      form.cleaned_data['project'] = data.url_project
+      form.cleaned_data['org'] = org_key
       form.cleaned_data['user'] = data.user
       form.cleaned_data['survey'] = data.mentor_evaluation
       entity = form.create(commit=True)
@@ -345,11 +348,17 @@ class GSoCMentorEvaluationRecordsList(base.GSoCRequestHandler):
     record_list = survey.SurveyRecordList(
         data, data.mentor_evaluation, GSoCGradingProjectSurveyRecord, idx=0)
 
+    def getOrganization(entity, *args):
+      """Helper function to get value of organization column."""
+      org_key = GSoCGradingProjectSurveyRecord.org.get_value_for_datastore(
+          entity)
+      return ndb.Key.from_old_key(org_key).get().name
+
     record_list.list_config.addSimpleColumn('grade', 'Passed?')
     record_list.list_config.addPlainTextColumn(
         'project', 'Project', lambda ent, *args: ent.project.title)
     record_list.list_config.addPlainTextColumn(
-        'org', 'Organization', lambda ent, *args: ent.org.name)
+        'org', 'Organization', getOrganization)
 
     return record_list
 
@@ -376,11 +385,9 @@ class GSoCMentorEvaluationShowPage(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.projectFromKwargs()
     mutator.mentorEvaluationFromKwargs()
     mutator.mentorEvaluationRecordFromKwargs()
 
-    assert isSet(data.project)
     assert isSet(data.mentor_evaluation)
 
     check.isProfileActive()
@@ -398,8 +405,8 @@ class GSoCMentorEvaluationShowPage(base.GSoCRequestHandler):
     context = {
         'page_name': 'Student evaluation - %s' % (student.name()),
         'student': student.name(),
-        'organization': data.project.org.name,
-        'project': data.project.title,
+        'organization': data.url_project.org.name,
+        'project': data.url_project.title,
         'css_prefix': GSoCMentorEvaluationReadOnlyTemplate.Meta.css_prefix,
         }
 

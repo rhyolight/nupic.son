@@ -118,7 +118,7 @@ class UserConnectionList(ConnectionList):
 
     list_config.setRowAction(
         lambda e, *args: links.LINKER.userId(
-            e.parent(), e.key().id(),
+            e.parent_key(), e.key().id(),
             self.url_names.CONNECTION_MANAGE_AS_USER))
 
     return list_config
@@ -159,7 +159,7 @@ class OrgAdminConnectionList(ConnectionList):
 
     list_config.setRowAction(
         lambda e, *args: links.LINKER.userId(
-            e.parent(), e.key().id(),
+            e.parent_key(), e.key().id(),
             self.url_names.CONNECTION_MANAGE_AS_ORG))
 
     return list_config

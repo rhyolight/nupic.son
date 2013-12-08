@@ -29,6 +29,7 @@ from soc.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import profile_utils
+from tests import program_utils
 from tests import timeline_utils
 
 
@@ -107,7 +108,7 @@ class ProgramAdministratorAccessCheckerTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
-    self.sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+    self.sponsor = program_utils.seedSponsor()
 
     program_properties = {
         'sponsor': self.sponsor,
@@ -257,7 +258,7 @@ class NonStudentUrlProfileAccessCheckerTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.setUp for specification."""
-    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+    sponsor = program_utils.seedSponsor()
 
     program_properties = {
         'sponsor': sponsor,
@@ -327,7 +328,7 @@ class NonStudentProfileAccessCheckerTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.setUp for specification."""
-    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+    sponsor = program_utils.seedSponsor()
 
     program_properties = {
         'sponsor': sponsor,
@@ -500,7 +501,7 @@ class IsUserOrgAdminForUrlOrgTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
-    sponsor = seeder_logic.seed(sponsor_model.Sponsor)
+    sponsor = program_utils.seedSponsor()
 
     program_properties = {
         'sponsor': sponsor,

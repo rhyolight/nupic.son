@@ -17,13 +17,18 @@
 import httplib
 import urllib
 
-from soc.modules.gsoc.models import program as program_model
+from google.appengine.ext import ndb
+
+from melange.models import organization as org_model
+
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
-from soc.modules.gsoc.models import organization as org_model
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from summerofcode.models import organization as soc_org_model
+
+from tests import org_utils
 from tests import profile_utils
 from tests import program_utils
 from tests import test_utils
@@ -33,6 +38,8 @@ ACCEPT_URL = '/tasks/gsoc/accept_proposals/accept'
 REJECT_URL = '/tasks/gsoc/accept_proposals/reject'
 MAIN_URL = '/tasks/gsoc/accept_proposals/main'
 
+TEST_SLOT_ALLOCATION = 5
+
 class AcceptProposalsTest(
     test_utils.GSoCDjangoTestCase, test_utils.TaskQueueTestCase):
   """Tests for accept proposals task."""
@@ -40,6 +47,12 @@ class AcceptProposalsTest(
   def setUp(self):
     super(AcceptProposalsTest, self).setUp()
     self.init()
+
+    # the organization should already be accepted and have slots allocated
+    self.org.status = org_model.Status.ACCEPTED
+    self.org.slot_allocation = TEST_SLOT_ALLOCATION
+    self.org.put()
+
     self._createHost()
     self._createMentor()
     self._acceptProposals()
@@ -53,7 +66,7 @@ class AcceptProposalsTest(
   def _createMentor(self):
     """Creates a mentor for default organization."""
     self.mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
   def _createStudent(self, email, n_proposals):
     """Creates a student with proposals."""
@@ -94,9 +107,6 @@ class AcceptProposalsTest(
       proposal.accept_as_project = False
       proposal.put()
 
-    self.org.slots = 5
-    self.org.put()
-
     self.timeline_helper.studentsAnnounced()
 
   def testConvertProposals(self):
@@ -115,17 +125,19 @@ class AcceptProposalsTest(
     for task in self.get_tasks():
       if task['url'] == ACCEPT_URL:
         expected_params = {
-            'org_key': urllib.quote_plus(self.org.key().id_or_name())
+            'org_key': urllib.quote_plus(self.org.key.id())
             }
         self.assertEqual(expected_params, task['params'])
 
       elif task['url'] == MAIN_URL:
-        q = org_model.GSoCOrganization.all()
-        q.filter('scope', self.gsoc)
-        q.filter('status', 'active')
-        q.get()
+        query = soc_org_model.SOCOrganization.query(
+            soc_org_model.SOCOrganization.program ==
+                ndb.Key.from_old_key(self.program.key()),
+            soc_org_model.SOCOrganization.status == org_model.Status.ACCEPTED)
+        _, next_cursor, _ = query.fetch_page(1)
+
         expected_params = {
-            'org_cursor': q.cursor(),
+            'org_cursor': urllib.quote_plus(next_cursor.urlsafe()),
             'program_key': urllib.quote_plus(self.gsoc.key().name())
             }
 
@@ -138,15 +150,12 @@ class AcceptProposalsTest(
 
   def testAcceptProposals(self):
     """Tests accept task for an organization."""
-    properties = {
-        'parent': self.gsoc,
-    }
-    self.seed(program_model.GSoCProgramMessages, properties)
+    program_utils.seedGSoCProgramMessages(program_key=self.gsoc.key())
 
     # assert current status of proposal to be accepted
     self.assertEqual(self.student1_proposals[0].status, 'pending')
 
-    post_data = {'org_key': self.org.key().name(),
+    post_data = {'org_key': self.org.key.id(),
                  'program_key': self.gsoc.key().name()}
     response = self.post(ACCEPT_URL, post_data)
 
@@ -177,7 +186,7 @@ class AcceptProposalsTest(
     for task in self.get_tasks():
       if task['url'] == REJECT_URL:
         expected_params = {
-            'org_key': urllib.quote_plus(self.org.key().name()),
+            'org_key': urllib.quote_plus(self.org.key.id()),
             'program_key': urllib.quote_plus(self.gsoc.key().name())
             }
 
@@ -189,7 +198,7 @@ class AcceptProposalsTest(
         self.assertEqual(expected_params, task_params)
 
     # test reject proposals
-    post_data = {'org_key': self.org.key().name(),
+    post_data = {'org_key': self.org.key.id(),
                  'program_key': self.gsoc.key().name()}
     response = self.post(REJECT_URL, post_data)
     self.assertEqual(response.status_code, httplib.OK)
@@ -224,6 +233,8 @@ class AcceptProposalsTest(
     self.assertEqual(projects.count(), 0)
 
 
+TEST_NUMBER_OF_ORGS = 5
+
 class ConvertProposalsTest(
     test_utils.GSoCDjangoTestCase, test_utils.TaskQueueTestCase):
   """Unit tests for convertProposals function."""
@@ -233,21 +244,17 @@ class ConvertProposalsTest(
     self.init()
 
     # seed a new program
-    program = self.program = program_utils.GSoCProgramHelper().createProgram()
+    self.program = program_utils.seedGSoCProgram()
 
     # seed a few organizations
-    org_properties = {
-        'program': program,
-        'status': 'active',
-        }
-    self.org_keys = []
-    for _ in range(5):
-      self.org_keys.append(seeder_logic.seed(
-          org_model.GSoCOrganization, org_properties).key())
+    self.org_keys = [
+        org_utils.seedSOCOrganization(
+            self.program.key(), status=org_model.Status.ACCEPTED).key
+        for _ in range(TEST_NUMBER_OF_ORGS)]
 
     # create post data that will be sent to tasks
     self.post_data = {
-        'program_key': program.key().name()
+        'program_key': self.program.key().name()
         }
 
   def testNoProgramKey(self):
@@ -305,8 +312,8 @@ class ConvertProposalsTest(
       self.clear_task_queue()
 
     # there should be key name for every organization in the set
-    self.assertEqual(len(org_key_names), 5)
+    self.assertEqual(len(org_key_names), TEST_NUMBER_OF_ORGS)
 
     # there should be an entry for every org
-    expected_org_key_names = set([org_key.name() for org_key in self.org_keys])
+    expected_org_key_names = set(org_key.id() for org_key in self.org_keys)
     self.assertEqual(expected_org_key_names, org_key_names)

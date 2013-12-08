@@ -31,7 +31,7 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
   def createStudentProjects(self):
     """Creates two student projects."""
     mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key()])
+        self.program, mentor_for=[self.org.key.to_old_key()])
 
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
     student.createOtherUser('student@example.com')
@@ -55,7 +55,7 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
     """Tests the the org home page during the organization signup period.
     """
     self.timeline_helper.orgSignup()
-    url = '/gsoc/org/' + self.org.key().name()
+    url = '/gsoc/org/' + self.org.key.id()
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertOrgHomeTemplatesUsed(response, False)
@@ -64,7 +64,7 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
     """Tests the the org home page during the student signup period.
     """
     self.timeline_helper.studentSignup()
-    url = '/gsoc/org/' + self.org.key().name()
+    url = '/gsoc/org/' + self.org.key.id()
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertOrgHomeTemplatesUsed(response, False)
@@ -74,7 +74,7 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
     """
     self.timeline_helper.studentsAnnounced()
     self.createStudentProjects()
-    url = '/gsoc/org/' + self.org.key().name()
+    url = '/gsoc/org/' + self.org.key.id()
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertOrgHomeTemplatesUsed(response, True)
@@ -86,7 +86,7 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
     """
     self.timeline_helper.offSeason()
     self.createStudentProjects()
-    url = '/gsoc/org/' + self.org.key().name()
+    url = '/gsoc/org/' + self.org.key.id()
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertOrgHomeTemplatesUsed(response, True)
@@ -102,7 +102,7 @@ class OrgHomeApplyTest(GSoCDjangoTestCase):
     self.init()
 
   def homepageContext(self):
-    url = '/gsoc/org/' + self.org.key().name()
+    url = '/gsoc/org/' + self.org.key.id()
     response = self.get(url)
     self.assertResponseOK(response)
     return response.context

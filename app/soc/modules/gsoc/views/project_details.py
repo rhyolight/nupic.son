@@ -23,6 +23,8 @@ from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
 from melange.request import exception
+from melange.request import links
+
 from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
@@ -38,6 +40,8 @@ from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
+
+from summerofcode.views.helper import urls
 
 
 class ProjectDetailsForm(gsoc_forms.GSoCModelForm):
@@ -102,9 +106,8 @@ class ListCodeSamples(Template):
   def _buildContextForExistingCodeSamples(self):
     """Builds a list containing the info related to each code sample.
     """
-    assert isSet(self.data.project)
     code_samples = []
-    sources = self.data.project.codeSamples()
+    sources = self.data.url_project.codeSamples()
     for source in sorted(sources, key=lambda e: e.submitted_on):
       code_sample = {
           'entity': source
@@ -121,14 +124,17 @@ class ListCodeSamples(Template):
     return code_samples
 
   def context(self):
-    """Returns the context for the current template.
-    """
+    """See template.Template.context for specification."""
+    code_sample_download_url = links.LINKER.userId(
+        self.data.url_profile.key(), self.data.url_project.key().id(),
+        url_names.GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD)
+    code_sample_delete_file_action = links.LINKER.userId(
+        self.data.url_profile.key(), self.data.url_project.key().id(),
+        url_names.GSOC_PROJECT_CODE_SAMPLE_DELETE)
     return {
         'code_samples': self._buildContextForExistingCodeSamples(),
-        'code_sample_download_url': self.data.redirect.project().urlOf(
-              url_names.GSOC_PROJECT_CODE_SAMPLE_DOWNLOAD),
-        'code_sample_delete_file_action': self.data.redirect.project().urlOf(
-              url_names.GSOC_PROJECT_CODE_SAMPLE_DELETE),
+        'code_sample_download_url': code_sample_download_url,
+        'code_sample_delete_file_action': code_sample_delete_file_action,
         'deleteable': self.deleteable
         }
 
@@ -143,16 +149,14 @@ class UploadCodeSamples(Template):
   """
 
   def context(self):
-    """Returns the context for the current template.
-    """
-
-    self.data.redirect.project()
+    """See template.Template.context for specification."""
+    code_sample_upload_file_action = links.LINKER.userId(
+        self.data.url_profile.key(), self.data.url_project.key().id(),
+        url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD)
 
     context = {
         'code_sample_upload_file_form': CodeSampleUploadFileForm(),
-        'code_sample_upload_file_action': blobstore.create_upload_url(
-            self.data.redirect.urlOf(
-                url_names.GSOC_PROJECT_CODE_SAMPLE_UPLOAD))
+        'code_sample_upload_file_action': code_sample_upload_file_action,
         }
 
     if self.data.GET.get('file', None) == '0':
@@ -182,22 +186,21 @@ class ProjectDetailsUpdate(base.GSoCRequestHandler):
 
   def checkAccess(self, data, check, mutator):
     """Access checks for GSoC project details page."""
-    mutator.projectFromKwargs()
     check.canUpdateProject()
 
   def context(self, data, check, mutator):
     """Handler to for GSoC project details page HTTP get request."""
     project_details_form = ProjectDetailsForm(
-        data=data.POST or None, instance=data.project)
+        data=data.POST or None, instance=data.url_project)
 
     context = {
         'page_name': 'Update project details',
-        'project': data.project,
+        'project': data.url_project,
         'forms': [project_details_form],
         'error': project_details_form.errors,
     }
 
-    if len(data.project.passed_evaluations) >= \
+    if len(data.url_project.passed_evaluations) >= \
         project_logic.NUMBER_OF_EVALUATIONS:
       context['upload_code_samples'] = UploadCodeSamples(data)
       context['list_code_samples'] = ListCodeSamples(data, True)
@@ -207,7 +210,7 @@ class ProjectDetailsUpdate(base.GSoCRequestHandler):
   def validate(self, data):
     """Validate the form data and save if valid."""
     project_details_form = ProjectDetailsForm(
-        data=data.POST or None, instance=data.project)
+        data=data.POST or None, instance=data.url_project)
 
     if project_details_form.is_valid():
       project_details_form.save()
@@ -218,8 +221,10 @@ class ProjectDetailsUpdate(base.GSoCRequestHandler):
   def post(self, data, check, mutator):
     """Post handler for the project details update form."""
     if self.validate(data):
-      data.redirect.project()
-      return data.redirect.to('gsoc_project_details')
+      url = links.LINKER.userId(
+          data.url_profile.key(), data.url_project.key().id(),
+          url_names.GSOC_PROJECT_DETAILS)
+      return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
@@ -236,13 +241,12 @@ class CodeSampleUploadFilePost(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.projectFromKwargs()
     check.isProjectCompleted()
     check.canUpdateProject()
 
   def post(self, data, check, mutator):
     """Post handler for the code sample upload file."""
-    assert isSet(data.project)
+    assert isSet(data.url_project)
 
     form = CodeSampleUploadFileForm(
         data=data.POST, files=data.request.file_uploads)
@@ -251,15 +255,19 @@ class CodeSampleUploadFilePost(base.GSoCRequestHandler):
       # we are not storing this form, remove the uploaded blob from the cloud
       for blob_info in data.request.file_uploads.itervalues():
         blob_info.delete()
-      # TODO(nathaniel): make this .project() call unnecessary.
-      return data.redirect.project().to(
-          url_names.GSOC_PROJECT_UPDATE, extra=['file=0'])
+      url = links.LINKER.userId(
+          data.url_profile.key(), data.url_project.key().id(),
+          url_names.GSOC_PROJECT_UPDATE)
+      # TODO(daniel): GET params should be handled automatically
+      url = url + '?file=0'
+      return http.HttpResponseRedirect(url)
 
+    org_key = GSoCProject.org.get_value_for_datastore(data.url_project)
     form.cleaned_data['user'] = data.user
-    form.cleaned_data['org'] = data.project.org
-    form.cleaned_data['program'] = data.project.program
+    form.cleaned_data['org'] = org_key
+    form.cleaned_data['program'] = data.url_project.program
 
-    project_key = data.project.key()
+    project_key = data.url_project.key()
     code_sample = form.create(commit=False, parent=project_key)
 
     def txn():
@@ -272,10 +280,10 @@ class CodeSampleUploadFilePost(base.GSoCRequestHandler):
 
     db.run_in_transaction(txn)
 
-    # TODO(nathaniel): Make this .project() call unnecessary.
-    data.redirect.project()
-
-    return data.redirect.to('gsoc_project_details')
+    url = links.LINKER.userId(
+        data.url_profile.key(), data.url_project.key().id(),
+        url_names.GSOC_PROJECT_UPDATE)
+    return http.HttpResponseRedirect(url)
 
 
 class CodeSampleDownloadFileGet(base.GSoCRequestHandler):
@@ -289,16 +297,15 @@ class CodeSampleDownloadFileGet(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.projectFromKwargs()
     check.isProjectCompleted()
 
   def get(self, data, check, mutator):
     """Get handler for the code sample download file."""
-    assert isSet(data.project)
+    assert isSet(data.url_project)
 
     try:
       id_value = int(data.request.GET['id'])
-      code_sample = GSoCCodeSample.get_by_id(id_value, data.project)
+      code_sample = GSoCCodeSample.get_by_id(id_value, data.url_project)
       if not code_sample or not code_sample.upload_of_work:
         raise exception.BadRequest(
             message='Requested project or code sample not found')
@@ -322,17 +329,16 @@ class CodeSampleDeleteFilePost(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.projectFromKwargs()
     check.isProjectCompleted()
     check.canUpdateProject()
 
   def post(self, data, check, mutator):
     """Get handler for the code sample delete file."""
-    assert isSet(data.project)
+    assert isSet(data.url_project)
 
     try:
       id_value = int(data.request.POST['id'])
-      code_sample = GSoCCodeSample.get_by_id(id_value, data.project)
+      code_sample = GSoCCodeSample.get_by_id(id_value, data.url_project)
 
       if not code_sample:
         raise exception.BadRequest(message='Requested code sample not found')
@@ -345,15 +351,17 @@ class CodeSampleDeleteFilePost(base.GSoCRequestHandler):
           # this is executed outside of transaction
           upload_of_work.delete()
 
-        if data.project.countCodeSamples() <= 1:
-          project = GSoCProject.get(data.project.key())
+        if data.url_project.countCodeSamples() <= 1:
+          project = GSoCProject.get(data.url_project.key())
           project.code_samples_submitted = False
           project.put()
 
       db.run_in_transaction(txn)
 
-      data.redirect.project()
-      return data.redirect.to(url_names.GSOC_PROJECT_UPDATE)
+      url = links.LINKER.userId(
+          data.url_profile.key(), data.url_project.key().id(),
+          url_names.GSOC_PROJECT_UPDATE)
+      return http.HttpResponseRedirect(url)
     except KeyError:
       raise exception.BadRequest(message='id argument missing in POST data')
     except ValueError:
@@ -374,15 +382,14 @@ class UserActions(Template):
     self.toggle_buttons = []
 
   def context(self):
-    assert isSet(self.data.project)
-
-    # TODO(nathaniel): Eliminate this state-setting call.
-    self.data.redirect.project()
+    """See template.Template.context for specification."""
+    featured_project_url = links.LINKER.userId(
+        self.data.url_profile.key(), self.data.url_project.key().id(),
+        'gsoc_featured_project')
 
     featured_project = ToggleButtonTemplate(
         self.data, 'on_off', 'Featured', 'project-featured',
-        self.data.redirect.urlOf('gsoc_featured_project'),
-        checked=self.data.project.is_featured,
+        featured_project_url, checked=self.data.url_project.is_featured,
         help_text=self.DEF_FEATURED_PROJECT_HELP,
         labels={
             'checked': 'Yes',
@@ -394,11 +401,13 @@ class UserActions(Template):
         'toggle_buttons': self.toggle_buttons,
         }
 
-    all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(
-        self.data.project.org)
+    assign_mentor_url = links.LINKER.userId(
+        self.data.url_profile.key(), self.data.url_project.key().id(),
+        'gsoc_project_assign_mentors')
+    org_key = GSoCProject.org.get_value_for_datastore(self.data.url_project)
+    all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(org_key)
     context['assign_mentor'] = assign_mentor.AssignMentorFields(
-        self.data, self.data.project.mentors,
-        self.data.redirect.project().urlOf('gsoc_project_assign_mentors'),
+        self.data, self.data.url_project.mentors, assign_mentor_url,
         all_mentors=all_mentors_keys, mentor_required=True,
         allow_multiple=True)
 
@@ -426,15 +435,15 @@ def _isUpdateLinkVisible(data):
     return False
 
   # only passed and valid project can be updated
-  if data.project.status in ['invalid', 'withdrawn', 'failed']:
+  if data.url_project.status in ['invalid', 'withdrawn', 'failed']:
     return False
 
   # a student who own the project can update it
-  if data.project.parent_key() == data.profile.key():
+  if data.url_project.parent_key() == data.profile.key():
     return True
 
   # org admins of the organization that manages the project can update it
-  org_key = GSoCProject.org.get_value_for_datastore(data.project)
+  org_key = GSoCProject.org.get_value_for_datastore(data.url_project)
   if data.orgAdminFor(org_key):
     return True
 
@@ -469,36 +478,37 @@ class ProjectDetails(base.GSoCRequestHandler):
 
     return [
         url(r'project/%s$' % url_patterns.USER_ID, self,
-            name='gsoc_project_details')
+            name=url_names.GSOC_PROJECT_DETAILS)
     ]
 
   def checkAccess(self, data, check, mutator):
     """Access checks for GSoC project details page."""
-    mutator.projectFromKwargs()
 
   def context(self, data, check, mutator):
     """Handler to for GSoC project details page HTTP get request."""
-    # TODO(nathaniel): make this .organization call unnecessary?
-    data.redirect.organization(organization=data.project.org)
 
+    org_key = GSoCProject.org.get_value_for_datastore(data.url_project)
+    org_home_link = links.LINKER.organization(org_key, urls.UrlNames.ORG_HOME)
     context = {
         'page_name': 'Project details',
-        'project': data.project,
-        'org_home_link': data.redirect.urlOf(url_names.GSOC_ORG_HOME),
+        'project': data.url_project,
+        'org_home_link': org_home_link,
     }
 
-    if data.orgAdminFor(data.project.org):
+    if data.orgAdminFor(org_key):
       context['user_actions'] = UserActions(data)
 
     if _isUpdateLinkVisible(data):
-      context['update_link_visible'] = True
-      context['update_link_url'] = data.redirect.project().urlOf(
+      update_link_url = links.LINKER.userId(
+          data.url_profile.key(), data.url_project.key().id(),
           url_names.GSOC_PROJECT_UPDATE)
+      context['update_link_visible'] = True
+      context['update_link_url'] = update_link_url
       context['update_link_text'] = _getUpdateLinkText(data)
     else:
       context['update_link_visible'] = False
 
-    if len(data.project.passed_evaluations) >= \
+    if len(data.url_project.passed_evaluations) >= \
         project_logic.NUMBER_OF_EVALUATIONS:
       context['list_code_samples'] = ListCodeSamples(data, False)
 
@@ -515,9 +525,8 @@ class AssignMentors(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.projectFromKwargs()
-    assert isSet(data.project.org)
-    check.isOrgAdminForOrganization(data.project.org)
+    org_key = GSoCProject.org.get_value_for_datastore(data.url_project)
+    check.isOrgAdminForOrganization(org_key)
 
   def assignMentors(self, data, mentor_keys):
     """Assigns the mentor to the project.
@@ -527,9 +536,7 @@ class AssignMentors(base.GSoCRequestHandler):
       mentor_keys: List of mentor profile keys to to be assigned
           to the project.
     """
-    assert isSet(data.project)
-
-    project_key = data.project.key()
+    project_key = data.url_project.key()
 
     def assign_mentor_txn():
       project = db.get(project_key)
@@ -544,14 +551,14 @@ class AssignMentors(base.GSoCRequestHandler):
     str_mentor_keys = data.POST.getlist('assign_mentor')
 
     if str_mentor_keys:
-      org = data.project.org
+      org_key = GSoCProject.org.get_value_for_datastore(data.url_project)
 
       # need the list to set conversion and back to list conversion
       # to ensure that same mentor doesn't get assigned to the
       # project more than once
       mentor_keys = set([db.Key(k) for k in str_mentor_keys if k])
       if mentor_keys < set(
-          profile_logic.queryAllMentorsKeysForOrg(org)):
+          profile_logic.queryAllMentorsKeysForOrg(org_key)):
         return list(mentor_keys)
       else:
         raise exception.BadRequest(message="Invalid post data.")
@@ -559,16 +566,14 @@ class AssignMentors(base.GSoCRequestHandler):
     return None
 
   def post(self, data, check, mutator):
-    assert isSet(data.project)
-
     mentor_keys = self.validate(data)
     if mentor_keys:
       self.assignMentors(data, mentor_keys)
 
-    project_owner = data.project.parent()
-
-    data.redirect.project(data.project.key().id(), project_owner.link_id)
-    return data.redirect.to('gsoc_project_details')
+    url = links.LINKER.userId(
+        data.url_profile.key(), data.url_project.key().id(),
+        url_names.GSOC_PROJECT_UPDATE)
+    return http.HttpResponseRedirect(url)
 
   def get(self, data, check, mutator):
     """Special Handler for HTTP GET since this view only handles POST."""
@@ -585,9 +590,8 @@ class FeaturedProject(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    mutator.projectFromKwargs()
-    assert isSet(data.project.org)
-    check.isOrgAdminForOrganization(data.project.org)
+    org_key = GSoCProject.org.get_value_for_datastore(data.url_project)
+    check.isOrgAdminForOrganization(org_key)
 
   def toggleFeatured(self, data, value):
     """Makes the project featured.
@@ -596,16 +600,14 @@ class FeaturedProject(base.GSoCRequestHandler):
       data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(data.project)
-
     if value != 'checked' and value != 'unchecked':
       raise exception.BadRequest(message="Invalid post data.")
-    if value == 'checked' and not data.project.is_featured:
+    if value == 'checked' and not data.url_project.is_featured:
       raise exception.BadRequest(message="Invalid post data.")
-    if value == 'unchecked' and data.project.is_featured:
+    if value == 'unchecked' and data.url_project.is_featured:
       raise exception.BadRequest(message="Invalid post data.")
 
-    project_key = data.project.key()
+    project_key = data.url_project.key()
 
     def make_featured_txn():
       # transactionally get latest version of the project

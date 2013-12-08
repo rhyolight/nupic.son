@@ -18,10 +18,11 @@ import unittest
 
 from summerofcode.request import links
 
-from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models import project_survey as project_survey_model
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+from tests import program_utils
 
 
 TEST_SURVEY_ID = 'test_survey_id'
@@ -36,7 +37,7 @@ class SoCLinkerTest(unittest.TestCase):
   def testSurvey(self):
     """Tests survey function."""
     # seed a program
-    program = seeder_logic.seed(program_model.GSoCProgram)
+    program = program_utils.seedGSoCProgram()
 
     # seed a survey
     survey_properties = {

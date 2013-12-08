@@ -17,6 +17,7 @@
 from django.utils.translation import ugettext
 
 from melange.request import access
+from melange.request import links
 
 from soc.views import profile_show
 from soc.views.helper import url_patterns
@@ -145,21 +146,19 @@ class GSoCProfileAdminPage(base.GSoCRequestHandler):
         }
 
     if profile:
-      links = []
-
-      # TODO(nathaniel): Eliminate this state-setting call.
-      data.redirect.profile()
-
-      for project in GSoCProject.all().ancestor(profile):
-        data.redirect.project(project.key().id())
-        links.append(data.redirect.urlOf('gsoc_project_details', full=True))
+      urls = []
+      for project_key in GSoCProject.all(keys_only=True).ancestor(profile):
+        urls.append(
+            links.ABSOLUTE_LINKER.userId(
+                data.url_profile.key(), project_key.id(),
+                url_names.GSOC_PROJECT_DETAILS))
 
       # TODO(nathaniel): Eliminate this state-setting call.
       data.redirect.profile()
 
       context.update({
           'profile': GSoCProfileReadOnlyTemplate(profile),
-          'links': links,
+          'links': urls,
           'submit_tax_link': data.redirect.urlOf('gsoc_tax_form_admin'),
           'submit_enrollment_link': data.redirect.urlOf(
               'gsoc_enrollment_form_admin'),

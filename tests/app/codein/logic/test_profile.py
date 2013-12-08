@@ -23,11 +23,11 @@ from melange.utils import rich_bool
 
 from soc.modules.gci.models import organization as org_model
 from soc.modules.gci.models import profile as profile_model
-from soc.modules.gci.models import program as program_model
 from soc.modules.gci.models import task as task_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import profile_utils
+from tests import program_utils
 
 
 class CanResignAsMentorForOrgTest(unittest.TestCase):
@@ -216,7 +216,7 @@ class IsFormVerificationAwaitingTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
-    program = seeder_logic.seed(program_model.GCIProgram)
+    program = program_utils.seedGCIProgram()
     self.student_info = profile_utils.seedGCIStudent(program)
 
   def testForNoFormsSubmitted(self):

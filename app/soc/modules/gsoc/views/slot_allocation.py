@@ -18,19 +18,23 @@ import json
 import logging
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 
+from melange.models import organization as org_model
 from melange.request import access
 from melange.request import exception
+
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 
-from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.templates import org_list
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_patterns as gsoc_url_patterns
+
+from summerofcode.models import organization as soc_org_model
 
 
 class SlotsList(org_list.OrgList):
@@ -44,28 +48,28 @@ class SlotsList(org_list.OrgList):
 
     def prefetch(self, entities):
       """Prefetches the number of unused slots for each item in the
-      specified list of GSoCOrganization entities.
+      specified list of organization entities.
 
       See lists.Prefetcher.prefetch for specification.
 
       Args:
-        entities: the specified list of GSoCOrganization instances
+        entities: List of organization entities.
 
       Returns:
-        prefetched numbers in a structure whose format is described
-        in lists.ListModelPrefetcher.prefetch
+        Prefetched numbers in a structure whose format is described
+        in lists.ListModelPrefetcher.prefetch.
       """
       org_slots_unused = {}
 
       for entity in entities:
         query = proposal_model.GSoCProposal.all(keys_only=True)
-        query.filter('org', entity)
+        query.filter('org', entity.key.to_old_key())
         query.filter('has_mentor', True)
         query.filter('accept_as_project', True)
         slots_used = query.count()
 
-        org_slots_unused[entity.key()] = entity.slots - slots_used if \
-            entity.slots > slots_used else 0
+        org_slots_unused[entity.key] = max(
+            entity.slot_allocation - slots_used, 0)
 
       return ([org_slots_unused], {})
 
@@ -80,42 +84,45 @@ class SlotsList(org_list.OrgList):
     list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.name.strip())
 
-    list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
+    list_config.addSimpleColumn('org_id', 'Organization ID', hidden=True)
 
     options = [('', 'All'), ('true', 'New'), ('false', 'Veteran')]
-    list_config.addPlainTextColumn('new_org', 'New/Veteran',
-        lambda e, *args: 'New' if e.new_org else 'Veteran', width=60,
+    list_config.addPlainTextColumn('is_veteran', 'New/Veteran',
+        lambda e, *args: 'Veteran' if e.is_veteran else 'New', width=60,
         options=options)
-    list_config.setColumnEditable('new_org', True, 'select')
+    list_config.setColumnEditable('is_veteran', True, 'select')
 
-    list_config.addSimpleColumn('slots_desired', 'Min',
+    list_config.addSimpleColumn('slot_request_min', 'Min',
         width=25, column_type=lists.NUMERICAL)
-    list_config.addSimpleColumn('max_slots_desired', 'Max',
+    list_config.addSimpleColumn('slot_request_max', 'Max',
         width=25, column_type=lists.NUMERICAL)
 
-    list_config.addSimpleColumn('slots', 'Slots',
+    list_config.addSimpleColumn('slot_allocation', 'Slots',
         width=50, column_type=lists.NUMERICAL)
-    list_config.setColumnEditable('slots', True)
-    list_config.setColumnSummary('slots', 'sum', "<b>Total: {0}</b>")
+    list_config.setColumnEditable('slot_allocation', True)
+    list_config.setColumnSummary('slot_allocation', 'sum', '<b>Total: {0}</b>')
 
     list_config.addHtmlColumn(
         'slots_unused', 'Unused slots',
         lambda ent, s, *args: ('<strong><font color="red">%s</font></strong>'
-            % (s[ent.key()])))
+            % (s[ent.key])))
 
-    list_config.addSimpleColumn('note', 'Note')
-    list_config.setColumnEditable('note', True)
+    # TODO(daniel): add note to organization model?
+    #list_config.addSimpleColumn('note', 'Note')
+    #list_config.setColumnEditable('note', True)
 
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')
-    list_config.addPostEditButton('save', "Save", "", [], refresh="none")
+    list_config.addPostEditButton('save', 'Save', "", [], refresh='none')
 
     return list_config
 
   def _getQuery(self):
     """See org_list.OrgList._getQuery for specification."""
-    query = org_model.GSoCOrganization.all()
-    query.filter('scope', self.data.program)
+    query = soc_org_model.SOCOrganization.query(
+        soc_org_model.SOCOrganization.program ==
+            ndb.Key.from_old_key(self.data.program.key()),
+        soc_org_model.SOCOrganization.status == org_model.Status.ACCEPTED)
     return query
 
   def post(self):
@@ -135,41 +142,43 @@ class SlotsList(org_list.OrgList):
 
     parsed = json.loads(data)
 
-    for key_name, properties in parsed.iteritems():
+    for key_id, properties in parsed.iteritems():
       note = properties.get('note')
-      slots = properties.get('slots')
-      new_org = properties.get('new_org')
+      slot_allocation = properties.get('slot_allocation')
+      is_veteran = properties.get('is_veteran')
 
-      if ('note' not in properties and 'slots' not in properties and
-          'new_org' not in properties):
-        logging.warning("Neither note or slots present in '%s'", properties)
+      if ('note' not in properties and 'slot_allocation' not in properties and
+          'is_veteran' not in properties):
+        logging.warning(
+            'Neither note nor slots nor is_veteran present in "%s"', properties)
         continue
 
-      if 'slots' in properties:
-        if not slots.isdigit():
-          logging.warning("Non-int value for slots: '%s'", slots)
-          properties.pop('slots')
+      if 'slot_allocation' in properties:
+        if not slot_allocation.isdigit():
+          logging.warning('Non-int value for slots: "%s', slot_allocation)
+          properties.pop('slot_allocation')
         else:
-          slots = int(slots)
+          slot_allocation = int(slot_allocation)
 
-      if new_org:
-        if not new_org in ['New', 'Veteran']:
-          logging.warning("Invalid value for new_org: '%s'", new_org)
-          properties.pop('new_org')
+      if is_veteran:
+        if not is_veteran in ['New', 'Veteran']:
+          logging.warning('Invalid value for new_org: "%s"', is_veteran)
+          properties.pop('is_veteran')
         else:
-          new_org = True if new_org == 'New' else False
+          is_veteran = True if is_veteran == 'Veteran' else False
 
       def update_org_txn():
-        org = org_model.GSoCOrganization.get_by_key_name(key_name)
+        org = soc_org_model.SOCOrganization.get_by_id(key_id)
         if not org:
-          logging.warning("Invalid org_key '%s'", key_name)
-          return
-        if 'note' in properties:
-          org.note = note
-        if 'slots' in properties:
-          org.slots = slots
-        if 'new_org' in properties:
-          org.new_org = new_org
+          logging.warning('Invalid org_key "%s"', key_id)
+        elif 'note' in properties:
+          pass
+          # TODO(daniel): add note to organization model
+          #org.note = note
+        elif 'slot_allocation' in properties:
+          org.slot_allocation = slot_allocation
+        if 'is_veteran' in properties:
+          org.is_veteran = is_veteran
 
         org.put()
 
