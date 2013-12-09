@@ -353,27 +353,27 @@ class TestDatastoreReaderForNDB(unittest.TestCase):
 
     lists.LISTS[NDB_TEST_LIST_ID] = test_list
 
-  def testGetListDataWWithStartAndLimit(self):
+  def testGetListDataWithStartAndLimit(self):
     """Tests getGetListData method."""
     query = TestNDBModel.query()
-    start = str(ndb.Key(TestNDBModel, 'id 3').to_old_key())
+    _, start, _ = query.fetch_page(3)
 
     list_data = self.list_reader.getListData(
-        NDB_TEST_LIST_ID, query, start, 5)
+        NDB_TEST_LIST_ID, query, start=start.urlsafe(), limit=5)
 
     expected_list = [{'name': 'name %s' % i, 'value': i} for i in range(3, 8)]
-    expected_next_key = str(ndb.Key(TestNDBModel, 'id 8').to_old_key())
+    _, next_cursor, _ = query.fetch_page(8)
 
     self.assertListEqual(list_data.data, expected_list)
-    self.assertEqual(list_data.next_key, expected_next_key)
+    self.assertEqual(list_data.next_key, next_cursor.urlsafe())
 
   def testGetListDataWithStart(self):
     """Tests getGetListData with parameter start specified but not limit."""
     query = TestNDBModel.query()
-    start = str(ndb.Key(TestNDBModel, 'id 3').to_old_key())
+    _, start, _ = query.fetch_page(3)
 
     list_data = self.list_reader.getListData(
-        NDB_TEST_LIST_ID, query, start=start)
+        NDB_TEST_LIST_ID, query, start=start.urlsafe())
 
     # All the items after specified id should be returned. Returned next key
     # should indicate final batch.
@@ -392,10 +392,10 @@ class TestDatastoreReaderForNDB(unittest.TestCase):
 
     # First five entities should be returned.
     expected_list = [{'name': 'name %s' % i, 'value': i} for i in range(0, 5)]
-    expected_next_key = str(ndb.Key(TestNDBModel, 'id 5').to_old_key())
+    _, next_cursor, _ = query.fetch_page(5)
 
     self.assertListEqual(list_data.data, expected_list)
-    self.assertEqual(list_data.next_key, expected_next_key)
+    self.assertEqual(list_data.next_key, next_cursor.urlsafe())
 
   def testGetListDataWithoutStartOrLimit(self):
     """Tests getGetListData with parameter start or limit not specified."""

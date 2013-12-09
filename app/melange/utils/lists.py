@@ -17,6 +17,7 @@
 import datetime
 import pickle
 
+from google.appengine.datastore import datastore_query
 from google.appengine.ext import ndb
 from google.appengine.ext import db
 
@@ -200,20 +201,15 @@ class DatastoreReaderForNDB(ListDataReader):
 
   def getListData(self, list_id, query, start=None, limit=50):
     """See ListDataReader.getListData for specification."""
-    if start:
-      model_class = getList(list_id).model_class
-      query = query.filter(model_class.key >= ndb.Key(urlsafe=start))
+    start_cursor = datastore_query.Cursor(urlsafe=start)
+    entities, next_cursor, more = query.fetch_page(
+        limit, start_cursor=start_cursor)
 
-    entities = query.fetch(limit + 1)
-
-    if len(entities) == limit + 1:
-      next_key = str(entities[-1].key.to_old_key())
-    else:
-      next_key = FINAL_BATCH
+    next_cursor = next_cursor.urlsafe() if more else FINAL_BATCH
 
     col_funcs = [(c.col_id, c.getValue) for c in getList(list_id).columns]
     items = [toListItemDict(entity, col_funcs) for entity in entities]
-    return ListData(items[:limit], next_key)
+    return ListData(items[:limit], next_cursor)
 
 
 class JqgridResponse(object):
