@@ -770,6 +770,7 @@ status = SimpleColumn('status', 'Status')
 
 cache_reader = CacheReader()
 datastore_reader = DatastoreReaderForDB()
+ndb_datastore_reader = DatastoreReaderForNDB()
 # CachedList should be updated once a day
 valid_period = datetime.timedelta(0, 60)
 
@@ -793,7 +794,7 @@ ideas = IdeasColumn('ideas', 'Ideas')
 
 ORGANIZATION_LIST = List(
     ORGANIZATION_LIST_ID, 0, org_model.SOCOrganization,
-    [key, name, tags, ideas], datastore_reader)
+    [key, name, tags, ideas], ndb_datastore_reader)
 
 LISTS = {
     GSOC_PROJECTS_LIST_ID: GSOC_PROJECTS_LIST,
