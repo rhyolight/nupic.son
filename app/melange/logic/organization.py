@@ -14,7 +14,11 @@
 
 """Logic for organizations."""
 
+import collections
+import datetime
+
 from google.appengine.api import datastore_errors
+from google.appengine.api import memcache
 from google.appengine.ext import ndb
 
 from melange import types
@@ -160,3 +164,60 @@ def setStatus(organization, program, site, new_status, recipients=None):
       sub_txn()
 
   return organization
+
+
+# Default number of accepted organizations to be returned.
+_DEFAULT_ORG_NUMBER = 5
+
+# Defines how long a cached list of organizations is valid.
+_ORG_CACHE_DURATION = datetime.timedelta(seconds=1800)
+
+# Cache key pattern for organizations participating in the given program.
+_ORG_CACHE_KEY_PATTERN = '%s_accepted_orgs_for_%s'
+
+CachedData = collections.namedtuple('CachedData', ['orgs', 'time', 'cursor'])
+
+def getAcceptedOrganizations(
+    program_key, limit=None, models=types.MELANGE_MODELS):
+  """Gets a list of organizations participating in the specified program.
+
+  Args:
+    program_key: Program key.
+    limit: Maximum number of results to return.
+    models: instance of types.Models that represent appropriate models.
+
+  Returns:
+    A list of organization entities participating in the specified program.
+  """
+  limit = limit or _DEFAULT_ORG_NUMBER
+
+  cache_key = _ORG_CACHE_KEY_PATTERN % (limit, program_key.name())
+  cache_data = memcache.get(cache_key)
+  if cache_data:
+    if datetime.datetime.now() < cache_data.time + _ORG_CACHE_DURATION:
+      return cache_data.orgs
+    else:
+      start_cursor = cache_data.cursor
+  else:
+    start_cursor = None
+
+  # organizations are not returned from the cache so datastore is be queried
+  query = models.ndb_org_model.query(
+      models.ndb_org_model.program == ndb.Key.from_old_key(program_key),
+      models.ndb_org_model.status == org_model.Status.ACCEPTED)
+  orgs, next_cursor, _ = query.fetch_page(limit, start_cursor=start_cursor)
+
+  if len(orgs) < limit:
+    extra_orgs, next_cursor, _ = query.fetch_page(limit - len(orgs))
+
+    org_keys = [org.key for org in orgs]
+    for extra_org in extra_orgs:
+      if extra_org.key not in org_keys:
+        orgs.append(extra_org)
+
+  # if the requested number of organizations have been found, they are cached
+  if len(orgs) == limit:
+    memcache.set(
+        cache_key, CachedData(orgs, datetime.datetime.now(), next_cursor))
+
+  return orgs
