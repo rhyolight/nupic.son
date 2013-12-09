@@ -226,7 +226,7 @@ class JqgridResponse(object):
     """
     self._list = getList(list_id)
     self._buttons = buttons
-    self._custom_buttons = None
+    self._custom_buttons = []
 
     if buttons:
       self._custom_buttons = filter(
@@ -267,9 +267,10 @@ class JqgridResponse(object):
       item['columns'] = data
       item['operations'] = {}
 
-      custom_button_operations = self._getCustomButtonOperations(item)
-      if custom_button_operations:
-        item['operations']['buttons'] = self._getCustomButtonOperations(item)
+      item['operations']['buttons'] = self._getCustomButtonOperations(item)
+
+      # TODO(daniel): it should probably be supported or marked as deprecated
+      item['operations']['row_buttons'] = {}
 
       custom_row_operations = self._getCustomRowOperations(item)
       if custom_row_operations:
@@ -296,13 +297,12 @@ class JqgridResponse(object):
       button's custom parameters as the value of each key. None if the list does
       not contain custom buttons.
     """
-    if self._custom_buttons:
-      operations = {}
+    operations = {}
 
-      for button in self._custom_buttons:
-        operations[button.button_id] = button.getCustomParameters(item)
+    for button in self._custom_buttons:
+      operations[button.button_id] = button.getCustomParameters(item)
 
-      return operations
+    return operations
 
   def _getCustomRowOperations(self, item):
     """Get custom parameters regarding row operations in this list.
