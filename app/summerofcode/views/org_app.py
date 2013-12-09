@@ -828,7 +828,10 @@ class PublicOrganizationListPage(base.GSoCRequestHandler):
     response = melange_lists.JqgridResponse(
         melange_lists.ORGANIZATION_LIST_ID,
         row=PublicOrganizationListRowRedirect(data))
-    return response.getData(query)
+
+    start = data.GET.get('start')
+
+    return response.getData(query, start=start)
 
   def context(self, data, check, mutator):
     """See base.GSoCRequestHandler.context for specification."""
