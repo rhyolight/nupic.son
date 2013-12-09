@@ -17,13 +17,13 @@
 from django.conf.urls import url as django_url
 
 from melange.appengine import system
+from melange.logic import organization as org_logic
 from melange.request import links
 
 from soc.views import base_templates
 from soc.views.helper import url_patterns
 from soc.views.template import Template
 
-from soc.modules.gsoc.logic import organization as org_logic
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.views import base
@@ -99,13 +99,15 @@ class Apply(Template):
       context['nr_accepted_orgs'] = nr_orgs if nr_orgs else ""
       context['accepted_orgs_link'] = accepted_orgs_link
       participating_orgs = []
-      current_orgs = org_logic.participating(self.data.program)
+      current_orgs = org_logic.getAcceptedOrganizations(
+          self.data.program.key(), models=self.data.models)
+
       for org in current_orgs:
         link = links.LINKER.organization(org.key, url_names.GSOC_ORG_HOME)
         participating_orgs.append({
             'link': link,
             'logo': org.logo_url,
-            'name': org.short_name,
+            'name': org.name,
             })
       context['participating_orgs'] = participating_orgs
 
