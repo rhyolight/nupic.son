@@ -42,7 +42,6 @@ from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
-from soc.modules.gsoc.models.organization import GSoCOrganization
 
 from summerofcode.views.helper import urls
 
@@ -413,25 +412,6 @@ class AccessChecker(access_checker.AccessChecker):
     if not validate.hasNonStudentProfileForProgram(
         self.data.user, program, GSoCProfile):
       raise exception.Forbidden(message=msg)
-
-  def orgDoesnotExist(self, org_id):
-    """Checks if the organization with the given ID doesn't exist.
-
-    We cannot create organizations which are already created.
-
-    Args:
-      org_id: The link_id of the organization.
-    """
-    q = GSoCOrganization.all()
-    q.filter('link_id', org_id)
-    q.filter('scope', self.data.program)
-    gsoc_org = q.get()
-
-    if gsoc_org:
-      edit_url = links.LINKER.organization(
-          gsoc_org.key(), urls.UrlNames.ORG_PROFILE_EDIT)
-
-      raise exception.Forbidden(message=DEF_ORG_EXISTS % (org_id, edit_url))
 
   def canCreateOrgProfile(self):
     """Checks if the current user is an admin or a backup admin for the org app
