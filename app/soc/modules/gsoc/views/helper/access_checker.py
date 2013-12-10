@@ -22,7 +22,6 @@ from google.appengine.ext import db
 from django.utils.translation import ugettext
 
 from melange.request import exception
-from melange.request import links
 
 from soc.logic import validate
 from soc.models.org_app_record import OrgAppRecord
@@ -42,8 +41,6 @@ from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
-
-from summerofcode.views.helper import urls
 
 
 DEF_FAILED_PREVIOUS_EVAL = ugettext(
@@ -90,12 +87,6 @@ DEF_ORG_APP_NOT_FOUND = ugettext(
 DEF_ORG_APP_NOT_ACCEPTED = ugettext(
     'You cannot create the organization profile for %s because the '
     'organization application for it has not been accepted.')
-
-DEF_ORG_EXISTS = ugettext(
-    'The organization with the ID %s already exists and hence you cannot '
-    'create a new organization profile for the same ID. If you are actually '
-    'looking for editing this organization profile please click <a href="%s">'
-    'here</a>.')
 
 DEF_STUDENT_EVAL_DOES_NOT_BELONG_TO_YOU = ugettext(
     'This evaluation does not correspond to your project, and hence you '
