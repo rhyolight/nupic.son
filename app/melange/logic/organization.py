@@ -166,7 +166,8 @@ def setStatus(organization, program, site, new_status, recipients=None):
   return organization
 
 
-# Default number of accepted organizations to be returned.
+# Default number of accepted organizations to be returned by
+# getAcceptedOrganizations function.
 _DEFAULT_ORG_NUMBER = 5
 
 # Defines how long a cached list of organizations is valid.
@@ -181,6 +182,14 @@ def getAcceptedOrganizations(
     program_key, limit=None, models=types.MELANGE_MODELS):
   """Gets a list of organizations participating in the specified program.
 
+  There is no guarantee that two different invocation of this function for
+  the same arguments will return the same entities. The callers should
+  acknowledge that it will receive a list of 'any' accepted organizations for
+  the program and not make any further assumptions.
+
+  In order to speed up the function, organizations may be returned
+  from memcache, so subsequent calls to this function may be more efficient.
+
   Args:
     program_key: Program key.
     limit: Maximum number of results to return.
@@ -192,12 +201,12 @@ def getAcceptedOrganizations(
   limit = limit or _DEFAULT_ORG_NUMBER
 
   cache_key = _ORG_CACHE_KEY_PATTERN % (limit, program_key.name())
-  cache_data = memcache.get(cache_key)
-  if cache_data:
-    if datetime.datetime.now() < cache_data.time + _ORG_CACHE_DURATION:
-      return cache_data.orgs
+  cached_data = memcache.get(cache_key)
+  if cached_data:
+    if datetime.datetime.now() < cached_data.time + _ORG_CACHE_DURATION:
+      return cached_data.orgs
     else:
-      start_cursor = cache_data.cursor
+      start_cursor = cached_data.cursor
   else:
     start_cursor = None
 
