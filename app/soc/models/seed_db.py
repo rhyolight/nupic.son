@@ -51,7 +51,6 @@ from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.project import GSoCProject
-from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.timeline import GSoCTimeline
 
@@ -286,10 +285,6 @@ def seed(request, *args, **kwargs):
         'description': 'Organization %d!' % i,
         })
 
-    entity = GSoCOrganization(**group_properties)
-    orgs.append(entity)
-    entity.put()
-
     org_properties = {
         'name': 'Organization %d' % i,
         'org_id': 'org_%d' % i,
@@ -303,8 +298,8 @@ def seed(request, *args, **kwargs):
 
     # Admin (and thus mentor) for the first org
     if i == 0:
-      profile.org_admin_for.extend([entity.key(), org.key.to_old_key()])
-      profile.mentor_for.extend([entity.key(), org.key.to_old_key()])
+      profile.org_admin_for.append(org.key.to_old_key())
+      profile.mentor_for.append(org.key.to_old_key())
       profile.is_mentor = True
       profile.is_org_admin = True
       profile.put()
