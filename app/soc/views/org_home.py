@@ -19,6 +19,8 @@ from google.appengine.ext import db
 from django import http
 
 from melange.request import access
+from melange.request import links
+
 from soc.views.helper import url_patterns
 from soc.views.helper.access_checker import isSet
 from soc.views.template import Template
@@ -83,14 +85,12 @@ class HostActions(Template):
   def context(self):
     assert isSet(self.data.organization)
 
-    # TODO(nathaniel): make this .organization() call unnecessary.
-    self.data.redirect.organization()
-
     is_banned = self.data.organization.status == 'invalid'
 
     org_banned = ToggleButtonTemplate(
         self.data, 'on_off', 'Banned', 'organization-banned',
-        self.data.redirect.urlOf(self._getActionURLName()),
+        links.LINKER.organization(
+            self.data.url_ndb_org.key, self._getActionURLName()),
         checked=is_banned,
         help_text=self._getHelpText(),
         labels={

@@ -14,8 +14,11 @@
 
 """Tests for organization logic."""
 
+import datetime
+import mock
 import unittest
 
+from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
@@ -315,3 +318,64 @@ class SetStatusTest(test_utils.DjangoTestCase):
     self.assertEqual(org.status, org_model.Status.PRE_REJECTED)
 
     # TODO(daniel): make sure that email is not sent
+
+
+TEST_ORGS_NUMBER = 7
+
+class GetAcceptedOrganizationsTest(unittest.TestCase):
+  """Unit tests for getAcceptedOrganizations function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.program = program_utils.seedProgram()
+
+    self.orgs = []
+
+    # seed some accepted organizations
+    for _ in range(TEST_ORGS_NUMBER):
+      self.orgs.append(org_utils.seedOrganization(
+          self.program.key(), status=org_model.Status.ACCEPTED))
+
+    # seed some rejected organizations
+    for _ in range(TEST_ORGS_NUMBER):
+      self.orgs.append(org_utils.seedOrganization(
+          self.program.key(), status=org_model.Status.REJECTED))
+
+  def testAcceptedOrgsAreReturned(self):
+    """Tests that function returns organization entities."""
+    orgs = org_logic.getAcceptedOrganizations(
+        self.program.key(), limit=TEST_ORGS_NUMBER)
+    self.assertEqual(len(orgs), TEST_ORGS_NUMBER)
+    self.assertSetEqual(
+        set(org.status for org in orgs), set([org_model.Status.ACCEPTED]))
+
+  def testOrgsAreCached(self):
+    """Tests that organizations are cached."""
+    # get organizations for the first time
+    stats = memcache.get_stats()
+    orgs = org_logic.getAcceptedOrganizations(self.program.key())
+
+    # check that orgs were not present in cache
+    self.assertEqual(stats['hits'], memcache.get_stats()['hits'])
+    self.assertEqual(stats['misses'] + 1, memcache.get_stats()['misses'])
+    stats = memcache.get_stats()
+
+    # get organizations for the second time
+    new_orgs = org_logic.getAcceptedOrganizations(self.program.key())
+
+    # check that orgs were present in cache
+    self.assertSetEqual(
+        set(org.key for org in orgs), set(org.key for org in new_orgs))
+    self.assertEqual(stats['hits'] + 1, memcache.get_stats()['hits'])
+    self.assertEqual(stats['misses'], memcache.get_stats()['misses'])
+
+  @mock.patch.object(
+      org_logic, '_ORG_CACHE_DURATION', new=datetime.timedelta(seconds=0))
+  def testSubsequentBatches(self):
+    """Tests that a next batch is returned when cached data is not valid."""
+    orgs = org_logic.getAcceptedOrganizations(self.program.key())
+    new_orgs = org_logic.getAcceptedOrganizations(self.program.key())
+
+    # check that orgs returned by the second call are different
+    self.assertNotEqual(
+        set(org.key for org in orgs), set(org.key for org in new_orgs))

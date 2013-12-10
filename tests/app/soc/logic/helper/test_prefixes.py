@@ -116,5 +116,5 @@ class TestPrefixes(unittest.TestCase):
     #When prefix is invalid.
     prefix = 'invalid_prefix'
     key_name = 'some_key_name'
-    self.assertRaises(
-        AttributeError, prefixes.getScopeForPrefix, prefix, key_name)
+    with self.assertRaises(ValueError):
+      prefixes.getScopeForPrefix(prefix, key_name)

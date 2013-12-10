@@ -17,6 +17,7 @@
 import datetime
 import pickle
 
+from google.appengine.datastore import datastore_query
 from google.appengine.ext import ndb
 from google.appengine.ext import db
 
@@ -200,20 +201,15 @@ class DatastoreReaderForNDB(ListDataReader):
 
   def getListData(self, list_id, query, start=None, limit=50):
     """See ListDataReader.getListData for specification."""
-    if start:
-      model_class = getList(list_id).model_class
-      query = query.filter(model_class.key >= ndb.Key(urlsafe=start))
+    start_cursor = datastore_query.Cursor(urlsafe=start)
+    entities, next_cursor, more = query.fetch_page(
+        limit, start_cursor=start_cursor)
 
-    entities = query.fetch(limit + 1)
-
-    if len(entities) == limit + 1:
-      next_key = str(entities[-1].key.to_old_key())
-    else:
-      next_key = FINAL_BATCH
+    next_cursor = next_cursor.urlsafe() if more else FINAL_BATCH
 
     col_funcs = [(c.col_id, c.getValue) for c in getList(list_id).columns]
     items = [toListItemDict(entity, col_funcs) for entity in entities]
-    return ListData(items[:limit], next_key)
+    return ListData(items[:limit], next_cursor)
 
 
 class JqgridResponse(object):
@@ -230,7 +226,7 @@ class JqgridResponse(object):
     """
     self._list = getList(list_id)
     self._buttons = buttons
-    self._custom_buttons = None
+    self._custom_buttons = []
 
     if buttons:
       self._custom_buttons = filter(
@@ -262,7 +258,7 @@ class JqgridResponse(object):
 
     Returns: A dict containing the list data.
     """
-    list_data = self._list.getListData(query)
+    list_data = self._list.getListData(query, start=start, limit=limit)
 
     items = []
 
@@ -271,9 +267,10 @@ class JqgridResponse(object):
       item['columns'] = data
       item['operations'] = {}
 
-      custom_button_operations = self._getCustomButtonOperations(item)
-      if custom_button_operations:
-        item['operations']['buttons'] = self._getCustomButtonOperations(item)
+      item['operations']['buttons'] = self._getCustomButtonOperations(item)
+
+      # TODO(daniel): it should probably be supported or marked as deprecated
+      item['operations']['row_buttons'] = {}
 
       custom_row_operations = self._getCustomRowOperations(item)
       if custom_row_operations:
@@ -300,13 +297,12 @@ class JqgridResponse(object):
       button's custom parameters as the value of each key. None if the list does
       not contain custom buttons.
     """
-    if self._custom_buttons:
-      operations = {}
+    operations = {}
 
-      for button in self._custom_buttons:
-        operations[button.button_id] = button.getCustomParameters(item)
+    for button in self._custom_buttons:
+      operations[button.button_id] = button.getCustomParameters(item)
 
-      return operations
+    return operations
 
   def _getCustomRowOperations(self, item):
     """Get custom parameters regarding row operations in this list.
@@ -774,6 +770,7 @@ status = SimpleColumn('status', 'Status')
 
 cache_reader = CacheReader()
 datastore_reader = DatastoreReaderForDB()
+ndb_datastore_reader = DatastoreReaderForNDB()
 # CachedList should be updated once a day
 valid_period = datetime.timedelta(0, 60)
 
@@ -797,7 +794,7 @@ ideas = IdeasColumn('ideas', 'Ideas')
 
 ORGANIZATION_LIST = List(
     ORGANIZATION_LIST_ID, 0, org_model.SOCOrganization,
-    [key, name, tags, ideas], datastore_reader)
+    [key, name, tags, ideas], ndb_datastore_reader)
 
 LISTS = {
     GSOC_PROJECTS_LIST_ID: GSOC_PROJECTS_LIST,

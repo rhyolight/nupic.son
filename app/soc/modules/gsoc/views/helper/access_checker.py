@@ -22,7 +22,6 @@ from google.appengine.ext import db
 from django.utils.translation import ugettext
 
 from melange.request import exception
-from melange.request import links
 
 from soc.logic import validate
 from soc.models.org_app_record import OrgAppRecord
@@ -42,9 +41,6 @@ from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
     GSoCProjectSurveyRecord
-from soc.modules.gsoc.models.organization import GSoCOrganization
-
-from summerofcode.views.helper import urls
 
 
 DEF_FAILED_PREVIOUS_EVAL = ugettext(
@@ -91,12 +87,6 @@ DEF_ORG_APP_NOT_FOUND = ugettext(
 DEF_ORG_APP_NOT_ACCEPTED = ugettext(
     'You cannot create the organization profile for %s because the '
     'organization application for it has not been accepted.')
-
-DEF_ORG_EXISTS = ugettext(
-    'The organization with the ID %s already exists and hence you cannot '
-    'create a new organization profile for the same ID. If you are actually '
-    'looking for editing this organization profile please click <a href="%s">'
-    'here</a>.')
 
 DEF_STUDENT_EVAL_DOES_NOT_BELONG_TO_YOU = ugettext(
     'This evaluation does not correspond to your project, and hence you '
@@ -413,25 +403,6 @@ class AccessChecker(access_checker.AccessChecker):
     if not validate.hasNonStudentProfileForProgram(
         self.data.user, program, GSoCProfile):
       raise exception.Forbidden(message=msg)
-
-  def orgDoesnotExist(self, org_id):
-    """Checks if the organization with the given ID doesn't exist.
-
-    We cannot create organizations which are already created.
-
-    Args:
-      org_id: The link_id of the organization.
-    """
-    q = GSoCOrganization.all()
-    q.filter('link_id', org_id)
-    q.filter('scope', self.data.program)
-    gsoc_org = q.get()
-
-    if gsoc_org:
-      edit_url = links.LINKER.organization(
-          gsoc_org.key(), urls.UrlNames.ORG_PROFILE_EDIT)
-
-      raise exception.Forbidden(message=DEF_ORG_EXISTS % (org_id, edit_url))
 
   def canCreateOrgProfile(self):
     """Checks if the current user is an admin or a backup admin for the org app

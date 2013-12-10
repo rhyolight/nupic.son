@@ -108,17 +108,16 @@ class Duplicate(Template):
   def context(self):
     """Returns the context for the current template."""
     context = {'duplicate': self.duplicate}
+
+    # TODO(daniel): it should be done via NDB
     orgs = db.get(self.duplicate.orgs)
     proposals = db.get(self.duplicate.duplicates)
 
     orgs_details = {}
     for org in orgs:
-      # TODO(nathaniel): make this .organization call unnecessary.
-      self.data.redirect.organization(organization=org)
-
       orgs_details[org.key().id_or_name()] = {
           'name': org.name,
-          'link': self.data.redirect.urlOf(url_names.GSOC_ORG_HOME)
+          'link': links.LINKER.organization(org.key, url_names.GSOC_ORG_HOME),
           }
       org_admins = profile_logic.getOrgAdmins(org.key())
 

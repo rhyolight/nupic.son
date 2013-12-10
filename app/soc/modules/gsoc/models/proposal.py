@@ -20,7 +20,6 @@ from google.appengine.ext import db
 
 from django.utils.translation import ugettext
 
-import soc.modules.gsoc.models.organization
 import soc.modules.gsoc.models.profile
 import soc.modules.gsoc.models.program
 
@@ -120,7 +119,6 @@ class GSoCProposal(db.Model):
 
   #: organization to which this proposal is directed
   org = db.ReferenceProperty(
-      reference_class=soc.modules.gsoc.models.organization.GSoCOrganization,
       required=False,
       collection_name='proposals')
 

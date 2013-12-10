@@ -353,27 +353,27 @@ class TestDatastoreReaderForNDB(unittest.TestCase):
 
     lists.LISTS[NDB_TEST_LIST_ID] = test_list
 
-  def testGetListDataWWithStartAndLimit(self):
+  def testGetListDataWithStartAndLimit(self):
     """Tests getGetListData method."""
     query = TestNDBModel.query()
-    start = str(ndb.Key(TestNDBModel, 'id 3').to_old_key())
+    _, start, _ = query.fetch_page(3)
 
     list_data = self.list_reader.getListData(
-        NDB_TEST_LIST_ID, query, start, 5)
+        NDB_TEST_LIST_ID, query, start=start.urlsafe(), limit=5)
 
     expected_list = [{'name': 'name %s' % i, 'value': i} for i in range(3, 8)]
-    expected_next_key = str(ndb.Key(TestNDBModel, 'id 8').to_old_key())
+    _, next_cursor, _ = query.fetch_page(8)
 
     self.assertListEqual(list_data.data, expected_list)
-    self.assertEqual(list_data.next_key, expected_next_key)
+    self.assertEqual(list_data.next_key, next_cursor.urlsafe())
 
   def testGetListDataWithStart(self):
     """Tests getGetListData with parameter start specified but not limit."""
     query = TestNDBModel.query()
-    start = str(ndb.Key(TestNDBModel, 'id 3').to_old_key())
+    _, start, _ = query.fetch_page(3)
 
     list_data = self.list_reader.getListData(
-        NDB_TEST_LIST_ID, query, start=start)
+        NDB_TEST_LIST_ID, query, start=start.urlsafe())
 
     # All the items after specified id should be returned. Returned next key
     # should indicate final batch.
@@ -392,10 +392,10 @@ class TestDatastoreReaderForNDB(unittest.TestCase):
 
     # First five entities should be returned.
     expected_list = [{'name': 'name %s' % i, 'value': i} for i in range(0, 5)]
-    expected_next_key = str(ndb.Key(TestNDBModel, 'id 5').to_old_key())
+    _, next_cursor, _ = query.fetch_page(5)
 
     self.assertListEqual(list_data.data, expected_list)
-    self.assertEqual(list_data.next_key, expected_next_key)
+    self.assertEqual(list_data.next_key, next_cursor.urlsafe())
 
   def testGetListDataWithoutStartOrLimit(self):
     """Tests getGetListData with parameter start or limit not specified."""
@@ -452,3 +452,53 @@ class TestGetDataId(unittest.TestCase):
     different_query = TestDBModel.all().filter('value', 'bar')
     self.assertNotEqual(lists.getDataId(query),
                         lists.getDataId(different_query))
+
+
+TEST_NUMBER_OF_ENTITIES = 10
+TEST_BATCH_SIZE = 5
+
+class JqgridResponseTest(unittest.TestCase):
+  """Unit tests for JqgridResponse class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    for i in range(TEST_NUMBER_OF_ENTITIES):
+      TestNDBModel(name='name %s' % i, value=i, id='id %s' % i).put()
+
+    name = lists.SimpleColumn('name', 'Name')
+    value = lists.SimpleColumn('value', 'Value')
+
+    test_list = lists.List(
+        NDB_TEST_LIST_ID, 0, TestNDBModel, [name, value],
+        lists.DatastoreReaderForNDB())
+
+    # TODO(daniel): use mock library
+    lists.LISTS[NDB_TEST_LIST_ID] = test_list
+
+  def testGetData(self):
+    """Tests that all data is returned when no limit is specified."""
+    response = lists.JqgridResponse(NDB_TEST_LIST_ID)
+
+    query = TestNDBModel.query()
+    data = response.getData(query)
+
+    self.assertEqual(len(data['data']['']), TEST_NUMBER_OF_ENTITIES)
+    self.assertEqual(data['next'], lists.FINAL_BATCH)
+
+  def testGetDataInMoreBatches(self):
+    """Tests that data is returned correctly in batches."""
+    response = lists.JqgridResponse(NDB_TEST_LIST_ID)
+
+    query = TestNDBModel.query()
+
+    # Get the first batch of data
+    data = response.getData(query, limit=TEST_BATCH_SIZE)
+
+    self.assertEqual(len(data['data']['']), TEST_BATCH_SIZE)
+    self.assertNotEqual(data['next'], lists.FINAL_BATCH)
+
+    # Get the second batch of data
+    start = data['next']
+    data = response.getData(query, start=start, limit=TEST_BATCH_SIZE)
+    self.assertEqual(len(data['data'][start]), TEST_BATCH_SIZE)
+    self.assertEqual(data['next'], lists.FINAL_BATCH)

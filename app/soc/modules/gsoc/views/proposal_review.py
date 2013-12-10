@@ -118,12 +118,11 @@ class Duplicate(Template):
     for org in db.get(self.duplicate.orgs):
       admins = profile_logic.getOrgAdmins(org.key.to_old_key())
 
-      # TODO(nathaniel): make this .organization call unnecessary.
-      self.data.redirect.organization(organization=org)
-
-      data = {'name': org.name,
-              'link': self.data.redirect.urlOf(url_names.GSOC_ORG_HOME),
-              'admins': admins}
+      data = {
+          'name': org.name,
+          'link': links.LINKER.organization(org.key, url_names.GSOC_ORG_HOME),
+          'admins': admins
+          }
 
       orgs.append(data)
 

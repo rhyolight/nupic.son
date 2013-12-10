@@ -35,7 +35,6 @@ from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models import proposal as proposal_model
-from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.views.helper import url_names
 
 from summerofcode import types
@@ -289,8 +288,7 @@ class RequestData(request_data.RequestData):
             self.program.key().id_or_name(),
             self.kwargs.get('organization')]
         org_key_name = '/'.join(fields)
-        self._organization = org_model.GSoCOrganization.get_by_key_name(
-            org_key_name)
+        self._organization = self.models.ndb_org_model.get_by_id(org_key_name)
         if not self._organization:
           raise exception.NotFound(
               message="There is no organization for url '%s'" % org_key_name)

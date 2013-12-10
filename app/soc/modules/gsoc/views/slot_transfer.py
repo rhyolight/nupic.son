@@ -92,11 +92,9 @@ class SlotTransferPage(base.GSoCRequestHandler):
     mutator.slotTransferEntities()
     if not data.slot_transfer_entities:
       if 'new' not in data.kwargs:
-        # TODO(nathaniel): make this .organization() call unnecessary.
-        data.redirect.organization()
-
-        new_url = data.redirect.urlOf('gsoc_update_slot_transfer')
-        raise exception.Redirect(new_url)
+        url = links.LINKER.organization(
+            data.url_ndb_org.key, 'gsoc_update_slot_transfer')
+        raise exception.Redirect(url)
 
   def templatePath(self):
     return 'modules/gsoc/slot_transfer/base.html'
@@ -116,14 +114,12 @@ class SlotTransferPage(base.GSoCRequestHandler):
 
     if (data.program.allocations_visible and
         data.timeline.beforeStudentsAnnounced()):
-      # TODO(nathaniel): make this .organization() call unnecessary.
-      data.redirect.organization()
-
-      edit_url = data.redirect.urlOf('gsoc_update_slot_transfer')
       if require_new_link:
-        context['new_slot_transfer_page_link'] = edit_url
+        context['new_slot_transfer_page_link'] = links.LINKER.organization(
+            data.url_ndb_org.key, 'gsoc_update_slot_transfer')
       else:
-        context['edit_slot_transfer_page_link'] = edit_url
+        context['edit_slot_transfer_page_link'] = links.LINKER.organization(
+            data.url_ndb_org.key, 'gsoc_update_slot_transfer')
 
     return context
 
@@ -175,13 +171,10 @@ class UpdateSlotTransferPage(base.GSoCRequestHandler):
         'error': slot_transfer_form.errors
         }
 
-    # TODO(nathaniel): make this .organization() call unnecessary.
-    data.redirect.organization()
-
-    context['org_home_page_link'] = data.redirect.urlOf(
-        url_names.GSOC_ORG_HOME)
-    context['slot_transfer_page_link'] = data.redirect.urlOf(
-        'gsoc_slot_transfer')
+    context['org_home_page_link'] = links.LINKER.organization(
+        data.url_ndb_org.key, url_names.GSOC_ORG_HOME)
+    context['slot_transfer_page_link'] = links.LINKER.organization(
+        data.url_ndb_org.key, 'gsoc_slot_transfer')
 
     return context
 

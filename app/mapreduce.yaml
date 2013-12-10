@@ -257,3 +257,37 @@ mapreduce:
     handler: soc.mapreduce.model_pacifier.process
     params:
     - name: entity_kind
+
+
+# organization conversion related scripts
+- name: ConvertProposal
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_organization.convertProposalTxn
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.models.proposal.GSoCProposal
+
+- name: ConvertProject
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_organization.convertProjectTxn
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.models.project.GSoCProject
+
+- name: ConvertProjectSurveyRecord
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_organization.convertProjectSurveyRecordTxn
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.models.project_survey_record.GSoCProjectSurveyRecord
+
+- name: ConvertGradingProjectSurveyRecord
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_organization.convertProjectSurveyRecordTxn
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.models.grading_project_survey_record.GSoCGradingProjectSurveyRecord

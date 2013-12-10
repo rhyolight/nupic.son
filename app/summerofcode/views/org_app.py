@@ -26,6 +26,7 @@ from melange.logic import contact as contact_logic
 from melange.logic import organization as org_logic
 from melange.logic import profile as profile_logic
 from melange.models import connection as connection_model
+from melange.models import organization as org_model
 from melange.request import access
 from melange.request import exception
 from melange.request import links
@@ -819,12 +820,18 @@ class PublicOrganizationListPage(base.GSoCRequestHandler):
 
   def jsonContext(self, data, check, mutator):
     """See base.GSoCRequestHandler.jsonContext for specification."""
-    query = data.models.ndb_org_model.query()
+    query = data.models.ndb_org_model.query(
+        org_model.Organization.program ==
+            ndb.Key.from_old_key(data.program.key()),
+        org_model.Organization.status == org_model.Status.ACCEPTED)
 
     response = melange_lists.JqgridResponse(
         melange_lists.ORGANIZATION_LIST_ID,
         row=PublicOrganizationListRowRedirect(data))
-    return response.getData(query)
+
+    start = data.GET.get('start')
+
+    return response.getData(query, start=start)
 
   def context(self, data, check, mutator):
     """See base.GSoCRequestHandler.context for specification."""

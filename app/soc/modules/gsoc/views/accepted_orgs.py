@@ -20,6 +20,7 @@ from django.utils import html as html_utils
 
 from melange.request import access
 from melange.request import exception
+from melange.request import links
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 
@@ -70,14 +71,9 @@ class AcceptedOrgsAdminList(org_list.OrgList):
     list_config.addHtmlColumn('org_admin', 'Org Admins',
         lambda e, *args: args[0][e.key()])
 
-    # TODO(nathaniel): squeeze this back into a lambda expression
-    # in the call to setRowAction below.
-    def _rowAction(e, *args):
-      # TODO(nathaniel): make this .organization call unnecessary.
-      self.data.redirect.organization(organization=e)
-      return self.data.redirect.urlOf(url_names.GSOC_ORG_HOME)
-
-    list_config.setRowAction(_rowAction)
+    list_config.setRowAction(
+        lambda e, *args: links.LINKER.organization(
+            e.key, url_names.GSOC_ORG_HOME))
 
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')

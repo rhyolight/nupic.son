@@ -428,13 +428,17 @@ class OrgConnectionPage(base.GSoCRequestHandler):
         users to join the program (via anonymous connections).
     """
     if self._generate(data):
-      data.redirect.organization()
-      extra = []
+
+      url = links.LINKER.organization(
+          data.url_ndb_org.key, url_names.GSOC_ORG_CONNECTION)
+
+      # TODO(daniel): use a utility class to add GET parameters
+      url += '?'
       if len(data.unregistered) > 0:
-        unregistered = ','.join(data.unregistered)
-        extra = ['unregistered=%s' % unregistered, ]
-      return data.redirect.to(url_names.GSOC_ORG_CONNECTION, validated=True,
-          extra=extra)
+        url += 'unregistered=%s&' % ','.join(data.unregistered)
+      url += 'validated=True'
+
+      return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-call.
       return self.get(data, check, mutator)

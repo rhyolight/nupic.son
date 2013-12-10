@@ -343,12 +343,9 @@ class Logic(object):
     This is specified manually as there is no way to get it automatically
     at present. See issue 1104.
     """
-    from soc.models.organization import Organization
     from soc.models.program import Program
     from soc.models.sponsor import Sponsor
-    from soc.modules.gci.models.organization import GCIOrganization
     from soc.modules.gci.models.program import GCIProgram
-    from soc.modules.gsoc.models.organization import GSoCOrganization
     from soc.modules.gsoc.models.program import GSoCProgram
     scopes_dict = {'User': None,
                    'Sponsor': None,
