@@ -16,12 +16,12 @@
 
 import unittest
 
-from summerofcode import types
-
-from soc.modules.gsoc.models import organization as org_model
 from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models import timeline as timeline_model
+
+from summerofcode import types
+from summerofcode.models import organization as org_model
 
 
 class TestSummerOfCodeModels(unittest.TestCase):
@@ -33,7 +33,7 @@ class TestSummerOfCodeModels(unittest.TestCase):
 
   def testOrgModel(self):
     """Tests org_model attribute."""
-    self.assertEqual(self.models.org_model, org_model.GSoCOrganization)
+    self.assertEqual(self.models.org_model, org_model.SOCOrganization)
 
   def testProfileModel(self):
     """Tests profile_model attribute."""
