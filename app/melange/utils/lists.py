@@ -258,7 +258,7 @@ class JqgridResponse(object):
 
     Returns: A dict containing the list data.
     """
-    list_data = self._list.getListData(query)
+    list_data = self._list.getListData(query, start=start, limit=limit)
 
     items = []
 
