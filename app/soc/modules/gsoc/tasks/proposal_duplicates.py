@@ -31,7 +31,6 @@ from melange.models import organization as org_model
 from soc.tasks.helper import error_handler
 
 from soc.modules.gsoc.models.program import GSoCProgram
-from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.logic import proposal as proposal_logic
 from soc.modules.gsoc.logic import duplicates as duplicates_logic
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate

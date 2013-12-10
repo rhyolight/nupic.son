@@ -32,12 +32,12 @@ from soc.views.org_home import HostActions
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic import project as project_logic
-from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+from summerofcode.models import organization as org_model
 from summerofcode.views.helper import urls
 
 
@@ -192,7 +192,7 @@ class GSoCBanOrgPost(BanOrgPost, base.GSoCRequestHandler):
     return url_names.GSOC_ORG_BAN
 
   def _getOrgModel(self):
-    return GSoCOrganization
+    return org_model.SOCOrganization
 
 
 class GSoCHostActions(HostActions):
