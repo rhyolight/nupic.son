@@ -193,7 +193,7 @@ def createConnection(profile, org, user_role, org_role):
   elif isinstance(org, ndb.Model):
     org_key = org.key.to_old_key()
   else:
-    raise TypeError('Wrong type for org argument: %s' % type(org)) 
+    raise TypeError('Wrong type for org argument: %s' % type(org))
 
   if connectionExists(profile.parent_key(), org_key):
     raise ValueError(_CONNECTION_EXISTS % (profile.name(), org.name))

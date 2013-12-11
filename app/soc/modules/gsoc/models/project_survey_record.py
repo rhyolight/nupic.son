@@ -33,6 +33,6 @@ class GSoCProjectSurveyRecord(survey_record.SurveyRecord):
       required=True, collection_name='gsoc_survey_records')
 
   #: A many:1 relationship associating GSoCProjectSurveyRecords
-  #: with specific GSoCOrganization.
+  #: with specific organization.
   org = db.ReferenceProperty(
       required=False, collection_name='gsoc_survey_records')

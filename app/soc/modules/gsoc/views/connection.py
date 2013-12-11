@@ -163,7 +163,7 @@ def canUserResignRoleForOrg(profile_key, org_key):
 
   Args:
     profile: Key of GSoCProfile to evaluate.
-    organization: Key of GSoCOrganization to evaluate
+    organization: Organization key.
   Returns:
     melange.utils.rich_bool.RichBool indicating whether ot not a profile
     can legally resign and a reason as to why or why not.

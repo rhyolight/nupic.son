@@ -26,7 +26,6 @@ from soc.logic.helper import timeline as timeline_helper
 from soc.views.helper import lists
 from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
-from soc.views.helper.access_checker import isSet
 from soc.views.org_home import BanOrgPost
 from soc.views.org_home import HostActions
 from soc.views.template import Template

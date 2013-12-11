@@ -15,8 +15,7 @@
 """MapReduce that can be used to update models for which scope is defined
 as program. It will copy the scope property and save it under program property.
 
-Currently, it can be run for GCIOrganization, GCIProfile, GSoCOrganization,
-GSoCProfile.
+Currently, it can be run for GCIOrganization, GCIProfile, GSoCProfile.
 """
 
 import logging
@@ -32,7 +31,6 @@ from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
-from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.project_survey import ProjectSurvey

@@ -306,7 +306,7 @@ def seed(request, *args, **kwargs):
 
     # Mentor for the second org
     if i == 1:
-      profile.mentor_for.append(entity.key())
+      profile.mentor_for.append(org.key.key())
       profile.is_mentor = True
       profile.put()
 
@@ -559,7 +559,6 @@ def clear(*args, **kwargs):
   entities = itertools.chain(*[
       Survey.all(),
       SurveyRecord.all(),
-      GSoCOrganization.all(),
       GCIOrganization.all(),
       GSoCTimeline.all(),
       GCITimeline.all(),

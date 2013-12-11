@@ -1132,7 +1132,8 @@ class OrganizationsIParticipateInComponent(Component):
     """Initializes this component."""
     list_config = lists.ListConfiguration()
     list_config.setRowAction(
-        lambda e, *args: links.LINKER(e.key, url_names.GSOC_ORG_HOME))
+        lambda e, *args:
+            links.LINKER.organization(e.key, url_names.GSOC_ORG_HOME))
 
     if not data.program.allocations_visible:
       list_config.addSimpleColumn('name', 'name')
@@ -1431,7 +1432,7 @@ class ParticipantsComponent(Component):
         entities: list of profile entities (not actually used)
 
       Returns:
-        prefetched GSoCOrganization entities in a structure whose format is
+        Prefetched organization entities in a structure whose format is
         described in lists.Prefetcher.prefetch
 
       See lists.Prefetcher.prefetch for specification.

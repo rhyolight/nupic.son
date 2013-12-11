@@ -374,7 +374,7 @@ class ReferenceProperty(djangoforms.ReferenceProperty):
     a user does not want to specify any value for this property.
 
     Returns:
-      Value to be set for the ReferenceProperty as described above. 
+      Value to be set for the ReferenceProperty as described above.
     """
     if not value:
       return None

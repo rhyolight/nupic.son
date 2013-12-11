@@ -194,7 +194,7 @@ class RequestData(request_data.RequestData):
     org_admin_for: the organizations the current user is an admin for
     mentor_for: the organizations the current user is a mentor for
     student_info: the StudentInfo for the current user and program
-    organization: the GSoCOrganization for the current url
+    organization: the organization for the current url
 
   Raises:
     out_of_band: 404 when the program does not exist
@@ -510,7 +510,7 @@ class RedirectHelper(request_data.RedirectHelper):
     Args:
       user: The User instance for which one wishes to establish a connection to
         an organization.
-      organization: The GSoCOrganization instance to which a user is trying
+      organization: The organization instance to which a user is trying
         to connect.
     """
     if not user:

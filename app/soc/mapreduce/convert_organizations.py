@@ -27,7 +27,6 @@ from soc.models.org_app_record import OrgAppRecord
 from soc.models.org_app_survey import OrgAppSurvey
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.program import GCIProgram
-from soc.modules.gsoc.models.organization import GSoCOrganization
 from soc.modules.gsoc.models.program import GSoCProgram
 # pylint: enable=unused-import
 
