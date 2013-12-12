@@ -25,7 +25,8 @@ parser.add_option("-o", "--output", dest="outputdir", default="forms",
                   help="write files to target DIR", metavar="DIR")
 # TODO(nathaniel): Make program a required rather than optional parameter.
 parser.add_option('-p', '--program', dest='program_path', default='',
-                  help='full key name of the program', metavar='DIR')
+                  help='full program key name (such as "google/gsoc2014")',
+                  metavar='DIR')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
@@ -72,10 +73,7 @@ def downloadStudentForms(options):
 
   lists.distributeParentKeys(students, prefetched)
 
-  countries = ['United States']
-  us_students = [i for i in students if i.parent().res_country in countries]
-
-  for student in us_students:
+  for student in students:
     form = student.tax_form
     _, ext = os.path.splitext(form.filename)
     path = os.path.join(outputdir, student.parent().link_id + ext)
