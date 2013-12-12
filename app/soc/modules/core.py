@@ -16,7 +16,7 @@
 
 import importlib
 
-from django.conf.urls import defaults
+from django.conf import urls
 
 
 class Error(Exception):
@@ -160,17 +160,13 @@ class Core(object):
   ##
 
   def initialize(self):
-    """Performs the required initialization for all modules.
-    """
-
+    """Performs the required initialization for all modules."""
     self.callService('registerViews', True)
 
   def getPatterns(self):
-    """Returns the Django patterns for this site.
-    """
-
+    """Returns the Django patterns for this site."""
     self.callService('registerWithSitemap', True)
-    return defaults.patterns(None, *self.sitemap)
+    return urls.patterns(None, *self.sitemap)
 
   ###
   ### Core control code

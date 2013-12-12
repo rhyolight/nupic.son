@@ -19,7 +19,7 @@ import logging
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
 
-from django.conf.urls import defaults
+from django.conf import urls
 
 from soc.tasks import responses
 from soc.views.helper import url_patterns
@@ -118,10 +118,10 @@ class ScoreUpdate(object):
   def djangoURLPatterns(self):
     """Returns the URL patterns for the tasks in this module."""
     return [
-        defaults.url(
+        urls.url(
             r'^tasks/gci/scores/clear/%s$' % url_patterns.PROGRAM,
             self._clearScores, name='task_clear_gci_scores'),
-        defaults.url(
+        urls.url(
             r'^tasks/gci/scores/calculate/%s$' % url_patterns.PROGRAM,
             self._calculateScores, name='task_calculate_gci_scores'),
         ]

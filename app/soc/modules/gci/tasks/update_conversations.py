@@ -16,20 +16,16 @@
 
 import logging
 
-from soc.modules.gci.views.helper import url_names
+from google.appengine.api import taskqueue
+from google.appengine.ext import ndb
 
 from django import http
-
-from django.conf.urls import defaults
-
-from google.appengine.api import taskqueue
-
-from google.appengine.ext import ndb
+from django.conf import urls
 
 from soc.tasks.helper import error_handler
 
 from soc.modules.gci.logic import conversation as gciconversation_logic
-
+from soc.modules.gci.views.helper import url_names
 
 UPDATE_CONVERSATIONS_URL = '/tasks/gci/task/update_conversations'
 
@@ -40,7 +36,7 @@ class UpdateConversationsTask:
   def djangoURLPatterns(self):
     """Returns the URL pattern for the task."""
     return [
-        defaults.url(
+        urls.url(
             r'^tasks/gci/task/update_conversations$',
             self.updateConversations,
             name=url_names.GCI_TASK_UPDATE_CONVERSATIONS)

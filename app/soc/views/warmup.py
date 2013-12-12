@@ -17,7 +17,7 @@
 import httplib
 
 from django import http
-from django.conf.urls import defaults
+from django.conf import urls
 
 
 class WarmupPage(object):
@@ -25,7 +25,7 @@ class WarmupPage(object):
 
   def djangoURLPatterns(self):
     return [
-        defaults.url(r'^_ah/warmup$', self, name='warmup'),
+        urls.url(r'^_ah/warmup$', self, name='warmup'),
     ]
 
   def __call__(self, request, *args, **kwargs):
