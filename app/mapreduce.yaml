@@ -45,7 +45,7 @@ mapreduce:
     handler: soc.mapreduce.convert_organizations.convertSOCOrganization
     params:
     - name: entity_kind
-      value: soc.modules.gsoc.models.organization.GSoCOrganization
+      value: soc.mapreduce.convert_organizations.GSoCOrganization
 
 - name: ConvertProgramScopedModel
   mapper:
