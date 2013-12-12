@@ -35,14 +35,12 @@ def convertGSoCProfileRolesTxn(profile_key):
   profile = db.get(profile_key)
   new_mentor_for = []
   for org_key in profile.mentor_for:
-    new_mentor_for.append(org_key)
     new_mentor_for.append(
         db.Key.from_path('SOCOrganization', org_key.name()))
   profile.mentor_for = new_mentor_for
 
   new_org_admin_for = []
   for org_key in profile.org_admin_for:
-    new_org_admin_for.append(org_key)
     new_org_admin_for.append(
         db.Key.from_path('SOCOrganization', org_key.name()))
   profile.org_admin_for = new_org_admin_for
