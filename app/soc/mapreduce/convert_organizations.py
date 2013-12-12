@@ -13,6 +13,7 @@
 # limitations under the License.
 """Mapreduce converting GSoCOrganization to the new SOCOrganization model."""
 
+from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from mapreduce import operation
@@ -23,6 +24,7 @@ from melange.models import survey as survey_model
 
 # This MapReduce requires this model to have been imported.
 # pylint: disable=unused-import
+from soc.models.organization import Organization
 from soc.models.org_app_record import OrgAppRecord
 from soc.models.org_app_survey import OrgAppSurvey
 from soc.modules.gci.models.organization import GCIOrganization
@@ -33,6 +35,44 @@ from soc.modules.gsoc.models.program import GSoCProgram
 from codein.models import organization as ci_org_model
 
 from summerofcode.models import organization as soc_org_model
+
+
+class GSoCOrganization(Organization):
+  """GSoC Organization model extends the basic Organization model.
+
+  This model is deprecated and it exists here only for conversion purposes.
+  """
+  contact_street = db.StringProperty(required=True)
+  contact_street_extra = db.StringProperty()
+  contact_city = db.StringProperty(required=True)
+  contact_state = db.StringProperty()
+  contact_country = db.StringProperty(required=True)
+  contact_postalcode = db.StringProperty(required=True)
+  phone = db.PhoneNumberProperty(required=True)
+  shipping_street = db.StringProperty()
+  shipping_street_extra = db.StringProperty()
+  shipping_city = db.StringProperty()
+  shipping_state = db.StringProperty()
+  shipping_postalcode = db.StringProperty()
+  shipping_country = db.StringProperty()
+  contrib_template = db.TextProperty()
+  new_org = db.BooleanProperty(default=True, required=True)
+  slots = db.IntegerProperty(default=0)
+  note = db.TextProperty()
+  slots_desired = db.IntegerProperty(default=0)
+  max_slots_desired = db.IntegerProperty()
+  nr_applications = db.IntegerProperty(default=0)
+  max_score = db.IntegerProperty(default=5)
+  scoring_disabled = db.BooleanProperty(default=False)
+  list_all_mentors = db.BooleanProperty()
+  google_plus = db.LinkProperty()
+  blog = db.LinkProperty()
+  facebook = db.LinkProperty()
+  twitter = db.LinkProperty()
+  tags = db.StringListProperty()
+  proposal_extra = db.StringListProperty()
+  accepted_student_msg = db.TextProperty()
+  rejected_student_msg = db.TextProperty()
 
 
 def _socSpecificProperties(organization):
