@@ -39,8 +39,11 @@ def downloadStudentForms(options):
   from soc.modules.gsoc.models import program as program_model
 
   if not options.program_path:
-    print '--program_path or -p option is required'
+    parser.error('--program is required')
   program = program_model.GSoCProgram.get_by_key_name(options.program_path)
+  if not program:
+    print 'Could not find program "%s"' % options.program_path
+    return
 
   def QueryGen():
     query = profile.GSoCStudentInfo.all()
@@ -57,7 +60,7 @@ def downloadStudentForms(options):
     print "Could not create output dir: %s" % outputdir
 
   print "Fetching StudentInfo..."
-  students = list(i for i in interactive.deepFetch(QueryGen) if i.tax_form)
+  students = [i for i in interactive.deepFetch(QueryGen) if i.tax_form]
 
   keys = lists.collectParentKeys(students)
   keys = list(set(keys))
