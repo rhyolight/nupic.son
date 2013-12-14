@@ -287,7 +287,7 @@ mapreduce:
 - name: ConvertGradingProjectSurveyRecord
   mapper:
     input_reader: mapreduce.input_readers.DatastoreKeyInputReader
-    handler: soc.mapreduce.ndb_organization.convertProjectSurveyRecordTxn
+    handler: soc.mapreduce.ndb_organization.convertGradingProjectSurveyRecordTxn
     params:
     - name: entity_kind
       value: soc.modules.gsoc.models.grading_project_survey_record.GSoCGradingProjectSurveyRecord

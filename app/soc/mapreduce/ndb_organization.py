@@ -20,6 +20,7 @@ so that they point to 'SOCOrganization' type.
 
 from google.appengine.ext import db
 
+from soc.modules.gsoc.models import grading_project_survey_record as grading_project_survey_record_model
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import project_survey_record as project_survey_record_model
 from soc.modules.gsoc.models import proposal as proposal_model
@@ -62,3 +63,18 @@ def convertProjectSurveyRecordTxn(project_survey_recod_key):
 
   project_survey_record.org = new_key
   project_survey_record.put()
+
+
+@db.transactional
+def convertGradingProjectSurveyRecordTxn(grading_project_survey_recod_key):
+  grading_project_survey_record = (
+      grading_project_survey_record_model.GSoCGradingProjectSurveyRecord
+          .get(grading_project_survey_recod_key))
+
+  new_key = db.Key.from_path(
+      org_model.SOCOrganization._get_kind(),
+      grading_project_survey_record_model.GSoCGradingProjectSurveyRecord.org
+          .get_value_for_datastore(grading_project_survey_record).name())
+
+  grading_project_survey_record.org = new_key
+  grading_project_survey_record.put()
