@@ -776,7 +776,7 @@ valid_period = datetime.timedelta(0, 60)
 
 GSOC_PROJECTS_LIST = List(GSOC_PROJECTS_LIST_ID, 0, project.GSoCProject,
                           [key, student, title, org, status], datastore_reader,
-                          cache_reader=cache_reader, valid_period=valid_period)
+                          valid_period=valid_period)
 
 # TODO(daniel): move this part to a separate module
 # TODO(daniel): replace this column with one that is more versatile
