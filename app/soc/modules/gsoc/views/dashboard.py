@@ -1139,7 +1139,7 @@ class OrganizationsIParticipateInComponent(Component):
       list_config.addSimpleColumn('name', 'name')
     else:
       def c(ent, s, text):
-        if ent.slots - s == 0:
+        if ent.slot_allocation - s == 0:
           return text
         return """<strong><font color="red">%s</font></strong>""" % text
 
@@ -1151,10 +1151,10 @@ class OrganizationsIParticipateInComponent(Component):
           'slots_used', 'Slots used', lambda ent, s, *args: s)
       list_config.addHtmlColumn(
           'delta', 'Slots difference',
-          lambda ent, s, *args: c(ent, s, (ent.slots - s)))
+          lambda ent, s, *args: c(ent, s, (ent.slot_allocation - s)))
       list_config.addNumericalColumn(
           'delta_sortable', 'Slots difference (sortable)',
-          (lambda ent, s, *args: abs(ent.slots - s)), hidden=True)
+          (lambda ent, s, *args: abs(ent.slot_allocation - s)), hidden=True)
 
     list_config.setDefaultSort('name')
     self._list_config = list_config
