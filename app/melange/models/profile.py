@@ -1,0 +1,169 @@
+# Copyright 2013 the Melange authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""This module contains the profile related models."""
+
+from google.appengine.ext import ndb
+from google.appengine.ext.ndb import msgprop
+
+from protorpc import messages
+
+from melange.appengine import db
+from melange.models import address as address_model
+from melange.models import contact as contact_model
+
+
+class TeeStyle(messages.Enum):
+  """Class that enumerates possible styles for T-Shirts."""
+  #: Female style T-Shirt.
+  FEMALE = 1
+  #: Male style T-Shirt.
+  MALE = 2
+
+
+class TeeSize(messages.Enum):
+  """Class that enumerates possible sizes for T-Shirts."""
+  #: XXS size.
+  XXS = 1
+  #: XS size.
+  XS = 2
+  #: S size.
+  S = 3
+  #: M size.
+  M = 4
+  #: L size.
+  L = 5
+  #: XL size.
+  XL = 6
+  #: XXL size.
+  XXL = 7
+  #: XXXL size.
+  XXXL = 8
+
+
+class Gender(messages.Enum):
+  """Class that enumerates possible gender choices."""
+  #: Female gender.
+  FEMALE = 1
+  #: Male gender.
+  MALE = 2
+  #: Other gender.
+  OTHER = 3
+
+
+class Status(messages.Enum):
+  """Class that enumerates possible statuses of profiles."""
+  #: The profile is active and participates in the program.
+  ACTIVE = 1
+  #: The profile has been expelled from the program by program administrators.
+  BANNED = 2
+
+
+class StudentData(ndb.Model):
+  """TODO(daniel): complete this class."""
+
+
+class Profile(ndb.Model):
+  """Model that represents profile that is registered on per-program basis
+  for a user.
+
+  Parent:
+    soc.models.user.User
+  """
+  #: A reference to program entity to which the profile corresponds.
+  #: Each profile is created for exactly one program. If the same
+  #: user participates in more of them, a separate profile must be created
+  #: for each.
+  program = ndb.KeyProperty(required=True)
+
+  #: Required field storing first name of the profile. Can only be ASCII,
+  #: not UTF-8 text, because it may be used as a shipping address
+  #: and such characters may not be printable.
+  first_name = ndb.StringProperty(required=True)
+
+  #: Required field storing last name of the profile. Can only be ASCII,
+  #: not UTF-8 text, because it may be used as a shipping address
+  #: and such characters may not be printable.
+  last_name = ndb.StringProperty(required=True)
+
+  #: Optional field storing a URL to an image, for example a personal photo
+  #: or a cartoon avatar. May be displayed publicly.
+  photo_url = ndb.StringProperty(validator=db.email_validator)
+
+  #: Contact options to the profile.
+  contact = ndb.LocalStructuredProperty(
+      contact_model.Contact, default=contact_model.Contact())
+
+  #: Residential address of the registered profile. It is assumed that
+  #: the person resides at this address.
+  residential_address = ndb.StructuredProperty(
+      address_model.Address, required=True)
+
+  #: Shipping address of the registered profile. All possible program related
+  #: packages will be sent to this address.
+  shipping_address = ndb.StructuredProperty(address_model.Address)
+
+  #: Birth date of the registered profile.
+  birth_data = ndb.DateProperty(required=True)
+
+  #: Field storing chosen T-Shirt style.
+  tee_style = msgprop.EnumProperty(TeeStyle)
+
+  #: Field storing chosen T-Shirt size.
+  tee_size = msgprop.EnumProperty(TeeSize)
+
+  #: Field storing gender of the registered profile.
+  gender = msgprop.EnumProperty(Gender)
+
+  #: Field storing answers to the question how the registered profile heard
+  #: about the program.
+  program_knowledge = ndb.TextProperty()
+
+  #: Field storing student specific information which is relevant and set only
+  #: if the registered profile has a student role for the program.
+  student_data = ndb.StructuredProperty(StudentData)
+
+  #: Field storing whether the registered profile has
+  #: a student role for the program
+  is_student = ndb.ComputedProperty(lambda self: bool(self.student_data))
+
+  #: Field storing keys of organizations for which the registered profile
+  #: has a mentor role.
+  #: This information is also stored in a connection entity between the
+  #: specified organization and this profile.
+  mentor_for = ndb.KeyProperty(repeated=True)
+
+  #: Field storing whether the registered profile has a mentor
+  #: role for at least one organization in the program.
+  is_mentor = ndb.ComputedProperty(lambda self: bool(self.mentor_for))
+
+  #: Field storing keys of organizations for which the registered profile
+  #: has an organization administrator role.
+  #: This information is also stored in a connection entity between the
+  #: specified organization and this profile.
+  #: Please note that organization administrator is considered a mentor as well.
+  #: Therefore, each key, which is present in this field, can be also found
+  #: in mentor_for field.
+  admin_for = ndb.KeyProperty(repeated=True)
+
+  #: Field storing whether the registered profile has an organization
+  #: administrator role for at least one organization in the program.
+  is_admin = ndb.ComputedProperty(lambda self: bool(self.admin_for))
+
+  #: Field storing the status of the registerd profile.
+  status = msgprop.EnumProperty(Status, default=Status.ACTIVE)
+
+  #: Field storing keys of Terms Of Service documents that have been approved
+  #: by the registered profile.
+  approved_tos = ndb.KeyProperty(repeated=True)
