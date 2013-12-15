@@ -30,9 +30,9 @@ class GSoCProjectSurveyRecord(survey_record.SurveyRecord):
   #: Reference to the GSoCProject that this record belongs to.
   project = db.ReferenceProperty(
       reference_class=project_model.GSoCProject,
-      required=True, collection_name='gsoc_survey_records')
+      required=True, collection_name='project_survey_records')
 
   #: A many:1 relationship associating GSoCProjectSurveyRecords
   #: with specific organization.
   org = db.ReferenceProperty(
-      required=False, collection_name='gsoc_survey_records')
+      required=False, collection_name='org_survey_records')

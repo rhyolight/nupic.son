@@ -92,7 +92,7 @@ class GSoCProposal(db.Model):
   mentor = db.ReferenceProperty(
       reference_class=soc.modules.gsoc.models.profile.GSoCProfile,
       required=False,
-      collection_name='proposals')
+      collection_name='proposals_by_profile')
 
   #: true iff a proposal has a mentor
   has_mentor = db.BooleanProperty(default=False)
@@ -120,13 +120,13 @@ class GSoCProposal(db.Model):
   #: organization to which this proposal is directed
   org = db.ReferenceProperty(
       required=False,
-      collection_name='proposals')
+      collection_name='proposals_by_org')
 
   #: program in which this proposal has been created
   program = db.ReferenceProperty(
       reference_class=soc.modules.gsoc.models.program.GSoCProgram,
       required=True,
-      collection_name='proposals')
+      collection_name='proposals_by_program')
 
   #: indicates whether the proposal's content may be publicly seen or not
   is_editable_post_deadline = db.BooleanProperty(
