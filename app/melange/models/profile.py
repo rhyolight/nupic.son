@@ -167,3 +167,16 @@ class Profile(ndb.Model):
   #: Field storing keys of Terms Of Service documents that have been approved
   #: by the registered profile.
   approved_tos = ndb.KeyProperty(repeated=True)
+
+  @property
+  def profile_id(self):
+    """Unique identifier of the registered profile on per program basis.
+
+    It is the same as the identifier of the underlying user entity. It means
+    that all profiles for the same user for different programs hold
+    the same identifier.
+
+    May be displayed publicly and used as parts of various URLs that are
+    specific to this profile.
+    """
+    return self.key.parent.id
