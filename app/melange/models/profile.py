@@ -79,7 +79,7 @@ class Profile(ndb.Model):
   for a user.
 
   Parent:
-    soc.models.user.User
+    melange.models.user.User
   """
   #: A reference to program entity to which the profile corresponds.
   #: Each profile is created for exactly one program. If the same
@@ -161,7 +161,7 @@ class Profile(ndb.Model):
   #: administrator role for at least one organization in the program.
   is_admin = ndb.ComputedProperty(lambda self: bool(self.admin_for))
 
-  #: Field storing the status of the registerd profile.
+  #: Field storing the status of the registered profile.
   status = msgprop.EnumProperty(Status, default=Status.ACTIVE)
 
   #: Field storing keys of Terms Of Service documents that have been approved
