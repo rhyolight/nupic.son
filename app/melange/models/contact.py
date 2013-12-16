@@ -48,3 +48,6 @@ class Contact(ndb.Model):
 
   #: Field storing URL to Twitter profile.
   twitter = ndb.StringProperty(validator=db.link_validator)
+
+  #: Field storing phone number.
+  phone = ndb.StringProperty()

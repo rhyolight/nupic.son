@@ -20,7 +20,7 @@ from melange.utils import rich_bool
 
 def createContact(email=None, web_page=None, mailing_list=None,
     irc_channel=None, feed_url=None, google_plus=None, facebook=None,
-    blog=None, twitter=None):
+    blog=None, twitter=None, phone=None):
   """Creates a new contact based on the specified channels.
 
   Args:
@@ -33,6 +33,7 @@ def createContact(email=None, web_page=None, mailing_list=None,
     facebook: URL to Facebook page.
     blog: URL to a blog page.
     twitter: URL to Twitter profile.
+    phone: Phone number.
 
   Returns:
     RichBool whose value is set to True if contact entity has been successfully
@@ -44,6 +45,6 @@ def createContact(email=None, web_page=None, mailing_list=None,
     return rich_bool.RichBool(True, contact_model.Contact(
         email=email, web_page=web_page, mailing_list=mailing_list,
         irc_channel=irc_channel, feed_url=feed_url, google_plus=google_plus,
-        facebook=facebook, blog=blog, twitter=twitter))
+        facebook=facebook, blog=blog, twitter=twitter, phone=phone))
   except ValueError as e:
     return rich_bool.RichBool(False, str(e))
