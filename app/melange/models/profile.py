@@ -115,7 +115,7 @@ class Profile(ndb.Model):
   shipping_address = ndb.StructuredProperty(address_model.Address)
 
   #: Birth date of the registered profile.
-  birth_data = ndb.DateProperty(required=True)
+  birth_date = ndb.DateProperty(required=True)
 
   #: Field storing chosen T-Shirt style.
   tee_style = msgprop.EnumProperty(TeeStyle)
