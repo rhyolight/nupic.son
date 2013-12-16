@@ -17,7 +17,11 @@
 from django import forms as django_forms
 from django.utils import translation
 
+from melange.logic import address as address_logic
+from melange.logic import contact as contact_logic
+from melange.models import profile as profile_model
 from melange.request import access
+from melange.request import exception
 from melange.utils import countries
 
 from soc.logic import cleaning
@@ -118,25 +122,52 @@ GENDER_LABEL = translation.ugettext('Gender')
 PROGRAM_KNOWLEDGE_LABEL = translation.ugettext(
     'How did you hear about the program?')
 
+_TEE_STYLE_FEMALE_ID = 'female'
+_TEE_STYLE_MALE_ID = 'male'
+
 TEE_STYLE_CHOICES = (
-    ('female', 'Female'),
-    ('male', 'Male'))
+    (_TEE_STYLE_FEMALE_ID, 'Female'),
+    (_TEE_STYLE_MALE_ID, 'Male'))
+
+_TEE_SIZE_XXS_ID = 'xxs'
+_TEE_SIZE_XS_ID = 'xs'
+_TEE_SIZE_S_ID = 's'
+_TEE_SIZE_M_ID = 'm'
+_TEE_SIZE_L_ID = 'l'
+_TEE_SIZE_XL_ID = 'xl'
+_TEE_SIZE_XXL_ID = 'xxl'
+_TEE_SIZE_XXXL_ID = 'xxxl'
 
 TEE_SIZE_CHOICES = (
-    ('xxs', 'XXS'),
-    ('xs', 'XS'),
-    ('s', 'S'),
-    ('m', 'M'),
-    ('l', 'L'),
-    ('xl', 'XL'),
-    ('xxl', 'XXL'),
-    ('xxxl', 'XXXL'))
+    (_TEE_SIZE_XXS_ID, 'XXS'),
+    (_TEE_SIZE_XS_ID, 'XS'),
+    (_TEE_SIZE_S_ID, 'S'),
+    (_TEE_SIZE_M_ID, 'M'),
+    (_TEE_SIZE_L_ID, 'L'),
+    (_TEE_SIZE_XL_ID, 'XL'),
+    (_TEE_SIZE_XXL_ID, 'XXL'),
+    (_TEE_SIZE_XXXL_ID, 'XXXL'))
+
+_GENDER_FEMALE_ID = 'female'
+_GENDER_MALE_ID = 'male'
+_GENDER_OTHER_ID = 'other'
+_GENDER_NOT_ANSWERED_ID = 'not_answered'
 
 GENDER_CHOICES = (
-    ('female', 'Female'),
-    ('male', 'Male'),
-    ('other', 'Other'),
-    ('not_answered', 'I would prefer not to answer'))
+    (_GENDER_FEMALE_ID, 'Female'),
+    (_GENDER_MALE_ID, 'Male'),
+    (_GENDER_OTHER_ID, 'Other'),
+    (_GENDER_NOT_ANSWERED_ID, 'I would prefer not to answer'))
+
+_PROFILE_PROPERTIES_FORM_KEYS = [
+    'public_name', 'photo_url', 'first_name', 'last_name', 'birth_date',
+    'tee_style', 'tee_size', 'gender']
+
+_CONTACT_PROPERTIES_FORM_KEYS = ['web_page', 'blog', 'email', 'phone']
+
+_RESIDENTIAL_ADDRESS_PROPERTIES_FORM_KEYS = [
+    'residential_street', 'residential_city', 'residential_province',
+    'residential_country', 'residential_postal_code']
 
 
 def cleanUserId(user_id):
@@ -186,7 +217,7 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
   email = django_forms.EmailField(
       required=True, label=EMAIL_LABEL, help_text=EMAIL_HELP_TEXT)
 
-  phone = django_forms.EmailField(
+  phone = django_forms.CharField(
       required=True, label=PHONE_LABEL, help_text=PHONE_HELP_TEXT)
 
   residential_street = django_forms.CharField(
@@ -246,6 +277,90 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
     """
     return cleanUserId(self.cleaned_data['user_id'])
 
+  def getProfileProperties(self):
+    """Returns properties of the profile that were submitted in this form.
+
+    Returns:
+      A dict mapping profile properties to the corresponding values.
+    """
+    return self._getPropertiesForFields(_PROFILE_PROPERTIES_FORM_KEYS)
+
+  def getContactProperties(self):
+    """Returns properties of the contact information that were submitted
+    in this form.
+
+    Returns:
+      A dict mapping profile properties to the corresponding values.
+    """
+    return self._getPropertiesForFields(_CONTACT_PROPERTIES_FORM_KEYS)
+
+  def getResidentialAddressProperties(self):
+    """Returns properties of the residential address that were submitted
+    in this form.
+
+    Returns:
+      A dict mapping residential address properties to the corresponding values.
+    """
+    return self._getPropertiesForFields(
+        _RESIDENTIAL_ADDRESS_PROPERTIES_FORM_KEYS)
+
+
+_TEE_STYLE_ID_TO_ENUM_MAP = {
+    _TEE_STYLE_FEMALE_ID: profile_model.TeeStyle.FEMALE,
+    _TEE_STYLE_MALE_ID: profile_model.TeeStyle.MALE
+    }
+
+_TEE_SIZE_ID_TO_ENUM_MAP = {
+    _TEE_SIZE_XXS_ID: profile_model.TeeSize.XXS,
+    _TEE_SIZE_XS_ID: profile_model.TeeSize.XS,
+    _TEE_SIZE_S_ID: profile_model.TeeSize.S,
+    _TEE_SIZE_M_ID: profile_model.TeeSize.M,
+    _TEE_SIZE_L_ID: profile_model.TeeSize.L,
+    _TEE_SIZE_XL_ID: profile_model.TeeSize.XL,
+    _TEE_SIZE_XXL_ID: profile_model.TeeSize.XXL,
+    _TEE_SIZE_XXXL_ID: profile_model.TeeSize.XXXL,
+    }
+
+_GENDER_ID_TO_ENUM_MAP = {
+    _GENDER_FEMALE_ID: profile_model.Gender.FEMALE,
+    _GENDER_MALE_ID: profile_model.Gender.MALE,
+    _GENDER_OTHER_ID: profile_model.Gender.OTHER,
+    _GENDER_NOT_ANSWERED_ID: None,
+    }
+
+def _adaptProfilePropertiesForDatastore(form_data):
+  """Adopts properties corresponding to profile's properties, which
+  have been submitted in a form, to the format that is compliant with
+  profile_model.Profile model.
+
+  Args:
+    form_data: A dict containing data submitted in a form.
+
+  Returns:
+    A dict mapping properties of profile model to values based on
+    data submitted in a form.
+  """
+  properties = {
+      profile_model.Profile.first_name._name: form_data.get('first_name'),
+      profile_model.Profile.last_name._name: form_data.get('last_name'),
+      profile_model.Profile.photo_url._name: form_data.get('photo_url'),
+      profile_model.Profile.birth_date._name: form_data.get('birth_date'),
+      }
+
+  if 'tee_style' in form_data:
+    properties[profile_model.Profile.tee_style._name] = (
+        _TEE_STYLE_ID_TO_ENUM_MAP[form_data['tee_style']])
+
+  if 'tee_size' in form_data:
+    properties[profile_model.Profile.tee_size._name] = (
+        _TEE_SIZE_ID_TO_ENUM_MAP[form_data['tee_size']])
+
+  if 'gender' in form_data:
+    properties[profile_model.Profile.gender._name] = (
+        _GENDER_ID_TO_ENUM_MAP[form_data['gender']])
+
+  return properties
+
 
 def _profileFormToRegisterAsOrgMember(register_user, **kwargs):
   """Returns a Django form to register a new profile for organization members.
@@ -303,7 +418,30 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-use.
+      print form.errors
       return self.get(data, check, mutator)
     else:
-      # TODO(daniel): implement it
-      pass
+      profile_properties = _adaptProfilePropertiesForDatastore(
+          form.getProfileProperties())
+
+      address_properties = form.getResidentialAddressProperties()
+      result = address_logic.createAddress(
+          address_properties['residential_street'],
+          address_properties['residential_city'],
+          address_properties['residential_country'],
+          address_properties['residential_postal_code'],
+          province=address_properties.get('residential_province')
+          )
+      if not result:
+        raise exception.BadRequest(message=result.extra)
+      else:
+        profile_properties['residential_address'] = result.extra
+
+      contact_properties = form.getContactProperties()
+      result = contact_logic.createContact(**contact_properties)
+      if not result:
+        raise exception.BadRequest(message=result.extra)
+      else:
+        profile_properties['contact'] = result.extra
+
+      # TODO(daniel): create actual profile and redirect
