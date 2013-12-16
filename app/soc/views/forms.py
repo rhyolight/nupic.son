@@ -640,6 +640,31 @@ class ModelForm(djangoforms.ModelForm):
     """
     return self._name
 
+  def _getPropertiesForFields(self, field_keys):
+    """Maps fields specified by their keys to the corresponding values
+    that were submitted in the form data.
+
+    Fields, for which the empty string was received as their value, will be
+    mapped to None. This is because an occurrence of the empty string is
+    regarded as if the user did not specify any actual value for the field.
+
+    Not only are explicit None values more straightforward, but also
+    there are more convenient to be persisted in AppEngine datastore.
+
+    Args:
+      form: A form.
+      field_keys: A collection of identifiers of the form fields.
+
+    Returns:
+      A dict mapping the specified keys to their values.
+    """
+    return {
+        field_key: field_value
+        for field_key, field_value in self.cleaned_data.iteritems()
+        if field_key in field_keys and field_value != ''
+    }
+
+
 class SurveyEditForm(ModelForm):
   """Django form for creating and/or editing survey.
   """
