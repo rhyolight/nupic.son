@@ -16,6 +16,7 @@
 
 from summerofcode.views import org_app
 from summerofcode.views import org_home
+from summerofcode.views import profile
 from summerofcode.views import project_manage
 
 
@@ -41,6 +42,7 @@ class Callback(object):
     self.views.append(org_app.OrgProfileEditPage())
     self.views.append(org_app.PublicOrganizationListPage())
     self.views.append(org_home.OrgHomePage())
+    self.views.append(profile.ProfileRegisterAsOrgMemberPage())
     self.views.append(project_manage.ManageProjectProgramAdminView())
 
   def registerWithSitemap(self):
