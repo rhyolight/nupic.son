@@ -25,7 +25,8 @@ parser.add_option("-o", "--output", dest="outputdir", default="forms",
                   help="write files to target DIR", metavar="DIR")
 # TODO(nathaniel): Make program a required rather than optional parameter.
 parser.add_option('-p', '--program', dest='program_path', default='',
-                  help='full key name of the program', metavar='DIR')
+                  help='full program key name (such as "google/gsoc2014")',
+                  metavar='DIR')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
@@ -38,8 +39,11 @@ def downloadStudentForms(options):
   from soc.modules.gsoc.models import program as program_model
 
   if not options.program_path:
-    print '--program_path or -p option is required'
+    parser.error('--program is required')
   program = program_model.GSoCProgram.get_by_key_name(options.program_path)
+  if not program:
+    print 'Could not find program "%s"' % options.program_path
+    return
 
   def QueryGen():
     query = profile.GSoCStudentInfo.all()
@@ -56,7 +60,7 @@ def downloadStudentForms(options):
     print "Could not create output dir: %s" % outputdir
 
   print "Fetching StudentInfo..."
-  students = list(i for i in interactive.deepFetch(QueryGen) if i.tax_form)
+  students = [i for i in interactive.deepFetch(QueryGen) if i.tax_form]
 
   keys = lists.collectParentKeys(students)
   keys = list(set(keys))
@@ -72,10 +76,7 @@ def downloadStudentForms(options):
 
   lists.distributeParentKeys(students, prefetched)
 
-  countries = ['United States']
-  us_students = [i for i in students if i.parent().res_country in countries]
-
-  for student in us_students:
+  for student in students:
     form = student.tax_form
     _, ext = os.path.splitext(form.filename)
     path = os.path.join(outputdir, student.parent().link_id + ext)
