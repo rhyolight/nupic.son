@@ -1143,10 +1143,10 @@ class OrganizationsIParticipateInComponent(Component):
           return text
         return """<strong><font color="red">%s</font></strong>""" % text
 
-      list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
+      list_config.addSimpleColumn('org_id', 'Organization ID', hidden=True)
       list_config.addHtmlColumn(
           'name', 'name', lambda ent, s, *args: c(ent, s, ent.name))
-      list_config.addSimpleColumn('slots', 'Slots allowed')
+      list_config.addSimpleColumn('slot_allocation', 'Slots allowed')
       list_config.addNumericalColumn(
           'slots_used', 'Slots used', lambda ent, s, *args: s)
       list_config.addHtmlColumn(
