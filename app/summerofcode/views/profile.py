@@ -14,11 +14,15 @@
 
 """Module containing the profile related views for Summer Of Code."""
 
+from google.appengine.ext import ndb
+
+from django import http
 from django import forms as django_forms
 from django.utils import translation
 
 from melange.logic import address as address_logic
 from melange.logic import contact as contact_logic
+from melange.logic import user as user_logic
 from melange.models import profile as profile_model
 from melange.request import access
 from melange.request import exception
@@ -159,6 +163,8 @@ GENDER_CHOICES = (
     (_GENDER_OTHER_ID, 'Other'),
     (_GENDER_NOT_ANSWERED_ID, 'I would prefer not to answer'))
 
+_USER_PROPERTIES_FORM_KEYS = ['user_id']
+
 _PROFILE_PROPERTIES_FORM_KEYS = [
     'public_name', 'photo_url', 'first_name', 'last_name', 'birth_date',
     'tee_style', 'tee_size', 'gender']
@@ -276,6 +282,14 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
       django_forms.ValidationError if the submitted value is not valid.
     """
     return cleanUserId(self.cleaned_data['user_id'])
+
+  def getUserProperties(self):
+    """Returns properties of the user that were submitted in this form.
+
+    Returns:
+      A dict mapping user properties to the corresponding values.
+    """
+    return self._getPropertiesForFields(_USER_PROPERTIES_FORM_KEYS)
 
   def getProfileProperties(self):
     """Returns properties of the profile that were submitted in this form.
@@ -444,4 +458,39 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
       else:
         profile_properties['contact'] = result.extra
 
+      user = data.user
+      if not user:
+        # try to make sure that no user entity exists for the current account.
+        # it should be guaranteed by the condition above evaluating to None,
+        # but there is a slim chance that an entity has been created in
+        # the meantime.
+        user = user_logic.getByCurrentAccount()
+
+      username = form.getUserProperties()['user_id'] if not user else None
+
       # TODO(daniel): create actual profile and redirect
+      profile = createProfileTxn(username=username, user=user)
+
+      return http.HttpResponse()
+
+
+# TODO(daniel): complete this function.
+@ndb.transactional
+def createProfileTxn(username=None, user=None):
+  """Creates a new user profile based on the specified properties.
+
+  Args:
+    username: Username for a new User entity that will be created along with
+      the new Profile. May only be passed if user argument is omitted.
+    user: User entity for the profile. May only be passed if username argument
+      is omitted.
+  """
+  if username and user:
+    raise ValueError('Username and user arguments cannot be set together.')
+  elif not (username or user):
+    raise ValueError('Exactly one of username or user argument must be set.')
+
+  if username:
+    result = user_logic.createUser(username)
+    if not result:
+      raise exception.BadRequest(message=result.extra)

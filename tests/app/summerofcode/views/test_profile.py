@@ -14,6 +14,10 @@
 
 """Unit tests for user profile related views."""
 
+from google.appengine.api import users as users_api
+
+from melange.models import user as user_model
+
 from summerofcode.views import profile as profile_view
 
 from tests import test_utils
@@ -90,5 +94,12 @@ class ProfileOrgMemberCreatePageTest(test_utils.GSoCDjangoTestCase):
     response = self.post(
         _getProfileRegisterAsOrgMemberUrl(self.program.key()),
         postdata=postdata)
+
+    # check that user entity has been created
+    user = (user_model.User.query(
+        user_model.User.account_id == users_api.get_current_user().user_id())
+        .get())
+    self.assertIsNotNone(user)
+    self.assertEqual(user.key.id(), TEST_USER_ID)
 
     # TODO(daniel): complete this test
