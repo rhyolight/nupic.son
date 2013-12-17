@@ -15,19 +15,16 @@
 """Module containing the views for GSoC Homepage."""
 
 from django.conf.urls import url as django_url
-from django.utils.translation import ugettext
 
 from melange.request import access
 from melange.request import exception
 from melange.request import links
 
-from soc.logic import accounts
 from soc.logic.helper import timeline as timeline_helper
 from soc.views.helper import lists
 from soc.views.helper import url as url_helper
 from soc.views.helper import url_patterns
 from soc.views.org_home import BanOrgPost
-from soc.views.org_home import HostActions
 from soc.views.template import Template
 
 from soc.modules.gsoc.logic import project as project_logic
@@ -194,20 +191,6 @@ class GSoCBanOrgPost(BanOrgPost, base.GSoCRequestHandler):
     return org_model.SOCOrganization
 
 
-class GSoCHostActions(HostActions):
-  """Template to render the left side host actions.
-  """
-
-  DEF_BAN_ORGANIZATION_HELP = ugettext(
-      'When an organization is banned, it is not active in the program')
-
-  def _getActionURLName(self):
-    return url_names.GSOC_ORG_BAN
-
-  def _getHelpText(self):
-    return self.DEF_BAN_ORGANIZATION_HELP
-
-
 class OrgHome(base.GSoCRequestHandler):
   """View methods for Organization Home page."""
 
@@ -268,9 +251,6 @@ class OrgHome(base.GSoCRequestHandler):
       context['students_announced'] = True
 
       context['project_list'] = ProjectList(data)
-
-    if data.is_host or accounts.isDeveloper():
-      context['host_actions'] = GSoCHostActions(data)
 
     return context
 

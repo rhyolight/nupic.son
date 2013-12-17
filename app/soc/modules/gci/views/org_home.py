@@ -18,12 +18,14 @@ from django.utils.translation import ugettext
 
 from melange.request import access
 from melange.request import exception
+from melange.request import links
+
 from soc.logic import accounts
 from soc.views.helper import lists
 from soc.views.helper import url_patterns
 from soc.views.org_home import BanOrgPost
-from soc.views.org_home import HostActions
 from soc.views.template import Template
+from soc.views import toggle_button
 
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.task import CLAIMABLE
@@ -32,6 +34,9 @@ from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
 
+
+_BAN_ORGANIZATION_HELP_TEST = ugettext(
+    'When an organization is banned, students cannot work on their tasks')
 
 class AboutUs(Template):
   """About us template."""
@@ -171,21 +176,38 @@ class GCIBanOrgPost(BanOrgPost, GCIRequestHandler):
     return GCIOrganization
 
 
-class GCIHostActions(HostActions):
-  """Template to render the left side host actions."""
+class HostActions(Template):
+  """Template to render the left side host actions.
+  """
 
-  DEF_BAN_ORGANIZATION_HELP = ugettext(
-      'When an organization is banned, students cannot work on their tasks')
+  def __init__(self, data):
+    super(HostActions, self).__init__(data)
+    self.toggle_buttons = []
 
-  def _getActionURLName(self):
-    return url_names.GCI_ORG_BAN
+  def context(self):
+    is_banned = self.data.organization.status == 'invalid'
 
-  def _getHelpText(self):
-    return self.DEF_BAN_ORGANIZATION_HELP
+    org_banned = toggle_button.ToggleButtonTemplate(
+        self.data, 'on_off', 'Banned', 'organization-banned',
+        links.LINKER.organization(
+            self.data.organization.key(), url_names.GCI_ORG_BAN),
+        checked=is_banned,
+        help_text=_BAN_ORGANIZATION_HELP_TEST,
+        labels={
+            'checked': 'Yes',
+            'unchecked': 'No'})
+    self.toggle_buttons.append(org_banned)
+
+    context = {
+        'title': 'Host Actions',
+        'toggle_buttons': self.toggle_buttons,
+        }
+
+    return context
 
   def templatePath(self):
-    """See soc.views.org_home.HostActions.templatePath for specification."""
-    return "modules/gci/_user_action.html"
+    """See template.Template.templatePath for specification."""
+    return 'modules/gci/_user_action.html'
 
 
 class OrgHomepage(GCIRequestHandler):
@@ -229,6 +251,6 @@ class OrgHomepage(GCIRequestHandler):
       context['completed_tasks_list'] = CompletedTasksList(data)
 
     if data.is_host or accounts.isDeveloper():
-      context['host_actions'] = GCIHostActions(data)
+      context['host_actions'] = HostActions(data)
 
     return context
