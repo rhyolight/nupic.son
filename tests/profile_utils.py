@@ -25,12 +25,14 @@ from datetime import datetime
 from datetime import timedelta
 
 from melange.models import connection as connection_model
+from melange.models import user as ndb_user_model
 
 from soc.models import profile as profile_model
 from soc.models import user as user_model
 
 from soc.modules.gci.models import profile as gci_profile_model
 from soc.modules.gsoc.models import profile as gsoc_profile_model
+from soc.modules.seeder.logic.providers import string as string_provider
 from soc.modules.seeder.logic.providers import user as user_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
@@ -117,6 +119,27 @@ def seedUser(email=None, **kwargs):
   # only after it is retrieved from datastore for the first time
   user = user_model.User.get(user.key())
   user.user_id = user.account.user_id()
+  user.put()
+
+  return user
+
+
+# TODO(daniel): Change name to seedUser and remove the function above
+def seedNDBUser(user_id=None, **kwargs):
+  """Seeds a new user.
+
+  Args:
+    user_id: Identifier of the new user. 
+
+  Returns:
+    Newly seeded User entity.
+  """
+  user_id = user_id or string_provider.UniqueIDProvider().getValue()
+
+  properties = {'account_id': string_provider.UniqueIDProvider().getValue()}
+  properties.update(**kwargs)
+
+  user = ndb_user_model.User(id=user_id, **properties)
   user.put()
 
   return user
