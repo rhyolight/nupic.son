@@ -16,6 +16,7 @@
 
 from soc.modules.gci.models.task import GCITask
 
+from tests import profile_utils
 from tests import timeline_utils
 from tests.test_utils import GCIDjangoTestCase
 
@@ -46,6 +47,17 @@ class OrgHomeTest(GCIDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gci/org_home/_about_us.html')
     self.assertTemplateUsed(response, 'soc/list/lists.html')
     self.assertTemplateUsed(response, 'soc/list/list.html')
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    response = self.get(self.url)
+    self.assertResponseOK(response)
+
+    # tests that page loads properly for program hosts
+    user = profile_utils.seedUser(host_for=[self.sponsor.key()])
+    profile_utils.login(user)
+    response = self.get(self.url)
+    self.assertResponseOK(response)
 
   def testAboutUs(self):
     """Tests if all the required data of an org is displayed.
