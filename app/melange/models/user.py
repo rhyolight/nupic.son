@@ -36,9 +36,11 @@ class User(ndb.Model):
   so that no application specific infrastructure, like password management,
   is required.
   """
-
   #: A Google Account associated with this user entity.
-  account = ndb.UserProperty(required=True)
+  account = ndb.UserProperty()
+
+  #: Unique and permanent identifier associated with the Google Account.
+  account_id = ndb.StringProperty(required=True)
 
   #: Field storing the status of the user.
   status = msgprop.EnumProperty(Status, default=Status.ACTIVE)
