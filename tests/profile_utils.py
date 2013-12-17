@@ -60,6 +60,16 @@ def login(user):
   signInToGoogleAccount(user.account.email(), user.account.user_id())
 
 
+# TODO(daniel): Change name to login and remove the function above
+def loginNDB(user):
+  """Logs in the specified user by setting 'USER_ID' environmental variables.
+
+  Args:
+    user: user entity.
+  """
+  os.environ['USER_ID'] = user.account_id
+
+
 def logout():
   """Logs out the current user by clearing the 'USER_EMAIL'
   and 'USER_ID' environment variables.
