@@ -15,6 +15,7 @@
 """Definitions of Melange types."""
 
 from melange.models import organization as ndb_organization
+from melange.models import user
 
 from soc.models import organization
 from soc.models import profile
@@ -30,6 +31,7 @@ class Models(object):
     profile_model: class that represents profile model.
     program_model: class that represents program model.
     timeline_model: class that represents timeline model.
+    user_model: class that represents user model.
   """
 
   def __init__(
@@ -51,6 +53,7 @@ class Models(object):
     self.program_model = program_model
     self.program_messages_model = program_messages_model
     self.timeline_model = timeline_model
+    self.user_model = user.User
 
 MELANGE_MODELS = Models(
     ndb_org_model=ndb_organization.Organization,
