@@ -274,7 +274,6 @@ def seed(request, *args, **kwargs):
   profile = GSoCProfile(**role_properties)
   role_properties.pop('parent')
 
-  orgs = []
   ndb_orgs = []
   for i in range(15):
     group_properties.update({
@@ -306,7 +305,7 @@ def seed(request, *args, **kwargs):
 
     # Mentor for the second org
     if i == 1:
-      profile.mentor_for.append(org.key.key())
+      profile.mentor_for.append(org.key.to_old_key())
       profile.is_mentor = True
       profile.put()
 
@@ -431,7 +430,7 @@ def seed(request, *args, **kwargs):
       'status': 'accepted',
       'parent': melange_student,
       'has_mentor': True,
-      'org': orgs[1],
+      'org': ndb_orgs[1].key.to_old_key(),
       'program': gsoc2014,
       }
   melange_proposal = GSoCProposal(**proposal_properties)
@@ -449,13 +448,13 @@ def seed(request, *args, **kwargs):
 
   melange_project = GSoCProject(**project_properties)
   melange_project.put()
-  orgs[1].slots = 1
-  orgs[1].put()
+  ndb_orgs[1].slot_allocation = 1
+  ndb_orgs[1].put()
 
   student_info_properties.update({
       'number_of_projects': 1,
       'number_of_proposals': 1,
-      'project_for_orgs': [orgs[1].key()]
+      'project_for_orgs': [ndb_orgs[1].key.to_old_key()]
       })
   student_info = GSoCStudentInfo(**student_info_properties)
   student_info.put()
@@ -481,8 +480,8 @@ def seed(request, *args, **kwargs):
 
   melange_project2 = GSoCProject(**project_properties)
   melange_project2.put()
-  orgs[1].slots += 1
-  orgs[1].put()
+  ndb_orgs[1].slot_allocation += 1
+  ndb_orgs[1].put()
 
   student_id = 'student'
   student_properties.update({
