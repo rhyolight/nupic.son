@@ -15,10 +15,14 @@
 """Logic for profiles."""
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from melange import types
 from melange.utils import rich_bool
 from melange.appengine import db as melange_db
+
+from soc.models import program as program_model
+
 
 ONLY_ORG_ADMIN = 'only_org_admin'
 
@@ -176,3 +180,23 @@ def _handleExtraAttrs(query, extra_attrs):
   if extra_attrs:
     for prop, value in extra_attrs.iteritems():
       melange_db.addFilterToQuery(query, prop, value)
+
+
+def getProfileKey(sponsor_id, program_id, user_id, models=None):
+  """Constructs ndb.Key of a profile for the specified sponsor,
+  program and user identifiers.
+
+  Args:
+    sponsor_id: Sponsor identifier.
+    program_id: Program identifier.
+    user_id: User identifier.
+    models: instance of types.Models that represent appropriate models.
+
+  Returns:
+    ndb.Key instance of a profile entity with the specified properties.
+  """
+  models = models or types.MELANGE_MODELS
+  return ndb.Key(
+      models.user_model._get_kind(), user_id,
+      models.ndb_profile_model._get_kind(),
+      '%s/%s/%s' % (sponsor_id, program_id, user_id))

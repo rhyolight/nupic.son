@@ -17,6 +17,8 @@
 import unittest
 
 from melange.logic import profile as profile_logic
+from melange.models import profile as ndb_profile_model
+from melange.models import user as user_model
 
 from soc.models import organization as org_model
 from soc.models import profile as profile_model
@@ -24,6 +26,8 @@ from soc.models import program as program_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import profile_utils
+from tests import program_utils
+
 
 class CanResignAsOrgAdminForOrgTest(unittest.TestCase):
   """Unit tests for canResignAsOrgAdminForOrg function."""
@@ -399,3 +403,22 @@ class GetProfileForUsernameTest(unittest.TestCase):
     """Tests that profile is returned if exists."""
     profile = profile_logic.getProfileForUsername('test', self.program_key)
     self.assertEqual(profile.key(), self.profile.key())
+
+
+TEST_SPONSOR_ID = 'sponsor_id'
+TEST_PROGRAM_ID = 'program_id'
+TEST_PROFILE_ID = 'profile_id'
+
+class GetProfileKeyTest(unittest.TestCase):
+  """Unit tests for getProfileKey function."""
+
+  def testProfileKey(self):
+    """Tests that constructed profile key is correct."""
+    key = profile_logic.getProfileKey(
+        TEST_SPONSOR_ID, TEST_PROGRAM_ID, TEST_PROFILE_ID)
+    self.assertEqual(
+        key.id(),
+        '%s/%s/%s' % (TEST_SPONSOR_ID, TEST_PROGRAM_ID, TEST_PROFILE_ID))
+    self.assertEqual(key.kind(), ndb_profile_model.Profile._get_kind())
+    self.assertEqual(key.parent().id(), TEST_PROFILE_ID)
+    self.assertEqual(key.parent().kind(), user_model.User._get_kind())
