@@ -99,7 +99,7 @@ class Profile(ndb.Model):
 
   #: Optional field storing a URL to an image, for example a personal photo
   #: or a cartoon avatar. May be displayed publicly.
-  photo_url = ndb.StringProperty(validator=db.email_validator)
+  photo_url = ndb.StringProperty(validator=db.link_validator)
 
   #: Contact options to the profile.
   contact = ndb.LocalStructuredProperty(
