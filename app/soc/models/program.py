@@ -60,6 +60,31 @@ class ProgramMessages(db.Model):
   mentor_welcome_msg = db.TextProperty(required=False,
       verbose_name=translation.ugettext('Mentor Welcome Message'))
 
+def getSponsorId(program_key):
+  """Returns sponsor ID based on the specified program key.
+
+  Args:
+    program_key: Program key.
+
+  Returns:
+    A string that represents sponsor ID.
+  """
+  key_name = program_key.name()
+  return key_name.split('/')[0]
+
+
+def getProgramId(program_key):
+  """Returns program ID based on the specified program key.
+
+  Args:
+    program_key: Program key.
+
+  Returns:
+    A string that represents program ID.
+  """
+  key_name = program_key.name()
+  return key_name.split('/')[1]
+
 
 # TODO(daniel): drop inheritance from Linkable
 class Program(linkable_model.Linkable):
