@@ -16,15 +16,17 @@
 """Utils for manipulating profile data.
 """
 
+import datetime
 import os
 
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
-from datetime import datetime
 from datetime import timedelta
 
+from melange.models import address as address_model
 from melange.models import connection as connection_model
+from melange.models import profile as ndb_profile_model
 from melange.models import user as ndb_user_model
 
 from soc.models import profile as profile_model
@@ -49,7 +51,8 @@ def generateEligibleStudentBirthDate(program):
   min_age = program.student_min_age or DEFAULT_MIN_AGE
   max_age = program.student_max_age or DEFAULT_MAX_AGE
   eligible_age = min_age + max_age / 2
-  return datetime.date(datetime.today() - timedelta(days=eligible_age * 365))
+  return datetime.datetime.date(
+      datetime.datetime.today() - timedelta(days=eligible_age * 365))
 
 
 def login(user):
@@ -143,6 +146,47 @@ def seedNDBUser(user_id=None, **kwargs):
   user.put()
 
   return user
+
+
+TEST_FIRST_NAME = 'First'
+TEST_LAST_NAME = 'Last'
+TEST_STREET = 'Street'
+TEST_CITY = 'City'
+TEST_COUNTRY = 'United States'
+TEST_POSTAL_CODE = '90000'
+TEST_PROVINCE = 'California'
+
+def seedNDBProfile(program_key, model=ndb_profile_model.Profile,
+    user=None, **kwargs):
+  """Seeds a new profile.
+
+  Args:
+    program_key: Program key for which the profile is seeded.
+    model: Model class of which a new profile should be seeded.
+    user: User entity corresponding to the profile.
+
+  Returns:
+    A newly seeded Profile entity.
+  """
+  user = user or seedNDBUser()
+
+  residential_address = address_model.Address(
+      street=TEST_STREET, city=TEST_CITY, province=TEST_PROVINCE,
+      country=TEST_COUNTRY, postal_code=TEST_POSTAL_CODE)
+
+  properties = {
+      'program': ndb.Key.from_old_key(program_key),
+      'status': ndb_profile_model.Status.ACTIVE,
+      'first_name': TEST_FIRST_NAME,
+      'last_name': TEST_LAST_NAME,
+      'birth_date': datetime.date(1990, 1, 1),
+      'residential_address': residential_address,
+      }
+  properties.update(**kwargs)
+  profile = model(id='%s/%s' % (program_key.name(), user.key.id()),
+      parent=user.key, **properties)
+  profile.put()
+  return profile
 
 
 def seedProfile(program, model=profile_model.Profile, user=None,
