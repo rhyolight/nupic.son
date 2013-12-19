@@ -311,7 +311,8 @@ class RequestData(request_data.RequestData):
       if self.profile:
         self._initOrgMap()
         self._org_admin_for = [
-            self._org_map[i] for i in self.profile.org_admin_for]
+            self._org_map[i] for i in
+            map(ndb.Key.from_old_key, self.profile.org_admin_for)]
       else:
         self._org_admin_for = []
     return self._org_admin_for
