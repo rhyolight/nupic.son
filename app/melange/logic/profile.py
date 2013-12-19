@@ -14,6 +14,7 @@
 
 """Logic for profiles."""
 
+from google.appengine.api import datastore_errors
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
@@ -25,6 +26,8 @@ from soc.models import program as program_model
 
 
 ONLY_ORG_ADMIN = 'only_org_admin'
+PROFILE_EXISTS = unicode(
+    'A profile has already been registered for this program and this user.')
 
 
 def canResignAsOrgAdminForOrg(profile, org_key, models=types.MELANGE_MODELS):
@@ -200,3 +203,38 @@ def getProfileKey(sponsor_id, program_id, user_id, models=None):
       models.user_model._get_kind(), user_id,
       models.ndb_profile_model._get_kind(),
       '%s/%s/%s' % (sponsor_id, program_id, user_id))
+
+
+def createProfile(
+    user_key, program_key, profile_properties, models=types.MELANGE_MODELS):
+  """Creates a new profile entity based on the supplied properties.
+
+  Args:
+    user_key: User key for the profile to register.
+    program: Program key.
+    profile_properties: A dict mapping profile properties to their values.
+    models: instance of types.Models that represent appropriate models.
+
+  Returns:
+    RichBool whose value is set to True if profile has been successfully
+    created. In that case, extra part points to the newly created profile
+    entity. Otherwise, RichBool whose value is set to False and extra part is
+    a string that represents the reason why the action could not be completed.
+  """
+  # check if a profile entity for the user and the program already exists.
+  profile_key = getProfileKey(
+      program_model.getSponsorId(program_key),
+      program_model.getProgramId(program_key),
+      user_key.id(), models=models)
+
+  if profile_key.get():
+    return rich_bool.RichBool(False, PROFILE_EXISTS)
+  else:
+    try:
+      program_key = ndb.Key.from_old_key(program_key)
+      profile = models.ndb_profile_model(
+          key=profile_key, program=program_key, **profile_properties)
+      profile.put()
+    except datastore_errors.BadValueError as e:
+      return rich_bool.RichBool(False, str(e))
+    return rich_bool.RichBool(True, profile)
