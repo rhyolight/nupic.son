@@ -16,6 +16,8 @@
 
 from melange import types
 
+from melange.models import profile as ndb_profile
+
 from soc.modules.gsoc.models import profile
 from soc.modules.gsoc.models import program
 from soc.modules.gsoc.models import timeline
@@ -25,6 +27,7 @@ from summerofcode.models import organization
 
 SOC_MODELS = types.Models(
     ndb_org_model=organization.SOCOrganization,
+    ndb_profile_model=ndb_profile.Profile,
     org_model=organization.SOCOrganization,
     profile_model=profile.GSoCProfile,
     program_model=program.GSoCProgram,
