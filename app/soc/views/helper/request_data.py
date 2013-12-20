@@ -22,6 +22,7 @@ from django.core import urlresolvers
 
 from melange import types
 from melange.appengine import system
+from melange.logic import profile as profile_logic
 from melange.logic import settings as settings_logic
 from melange.logic import user as ndb_user_logic
 from melange.models import connection as connection_model
@@ -34,6 +35,7 @@ from soc.logic import program as program_logic
 from soc.logic import site as site_logic
 from soc.logic import user as user_logic
 from soc.models import document as document_model
+from soc.models import program as program_model
 from soc.models import site as site_model
 from soc.models import sponsor as sponsor_model
 from soc.models import user as user_model
@@ -174,6 +176,7 @@ class RequestData(object):
     user: the user entity (if logged in)
     ndb_user: the NDB user entity (if logged in)
     profile: the profile entity
+    ndb_profile: the NDB profile entity
     program: the program entity
     request: the request object (as provided by django)
     args: the request args (as provided by djang)
@@ -219,6 +222,7 @@ class RequestData(object):
     self._user = self._unset
     self._ndb_user = self._unset
     self._profile = self._unset
+    self._ndb_profile = self._unset
     self._program = self._unset
 
     self._GET = self._unset
@@ -388,6 +392,21 @@ class RequestData(object):
         self._profile = self.models.profile_model.get_by_key_name(
             key_name, parent=self.user)
     return self._profile
+
+  @property
+  def ndb_profile(self):
+    """Returns the ndb_profile property."""
+    if not self._isSet(self._ndb_profile):
+      if not self.ndb_user or not self.program:
+        self._ndb_profile = None
+      else:
+        sponsor_id = program_model.getSponsorId(self.program.key())
+        program_id = program_model.getProgramId(self.program.key())
+        user_id = self.ndb_user.user_id
+
+        self._ndb_profile = profile_logic.getProfileKey(
+            sponsor_id, program_id, user_id, models=self.models).get()
+    return self._ndb_profile
 
   @property
   def program(self):
