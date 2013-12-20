@@ -52,4 +52,4 @@ class User(ndb.Model):
     May be displayed publicly and used as parts of various URLs that are
     specific to this user.
     """
-    return self.key.id
+    return self.key.id()
