@@ -23,6 +23,7 @@ from django.core import urlresolvers
 from melange import types
 from melange.appengine import system
 from melange.logic import settings as settings_logic
+from melange.logic import user as ndb_user_logic
 from melange.models import connection as connection_model
 from melange.request import exception
 from melange.request import links
@@ -171,6 +172,7 @@ class RequestData(object):
   Fields:
     site: the singleton site.Site entity
     user: the user entity (if logged in)
+    ndb_user: the NDB user entity (if logged in)
     profile: the profile entity
     program: the program entity
     request: the request object (as provided by django)
@@ -215,6 +217,7 @@ class RequestData(object):
     self._site = self._unset
     self._sponsor = self._unset
     self._user = self._unset
+    self._ndb_user = self._unset
     self._profile = self._unset
     self._program = self._unset
 
@@ -365,6 +368,14 @@ class RequestData(object):
                 message=VIEW_AS_USER_DOES_NOT_EXIST % user_settings_url)
 
     return self._user
+
+  @property
+  def ndb_user(self):
+    """Returns the ndb_user field."""
+    if not self._isSet(self._ndb_user):
+      self._ndb_user = ndb_user_logic.getByCurrentAccount()
+      # TODO(daniel): add support for "Logged in as" feature
+    return self._ndb_user
 
   @property
   def profile(self):
