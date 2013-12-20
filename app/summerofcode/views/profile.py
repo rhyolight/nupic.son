@@ -30,6 +30,7 @@ from melange.utils import countries
 
 from soc.logic import cleaning
 
+from soc.views import forms as soc_forms
 from soc.views.helper import url_patterns
 
 from soc.modules.gsoc.views import base
@@ -126,6 +127,12 @@ GENDER_LABEL = translation.ugettext('Gender')
 PROGRAM_KNOWLEDGE_LABEL = translation.ugettext(
     'How did you hear about the program?')
 
+TERMS_OF_SERVICE_LABEL = translation.ugettext(
+    'I have read and agree to the terms of service')
+
+TERMS_OF_SERVICE_NOT_ACCEPTED = translation.ugettext(
+    'You cannot register without agreeing to the Terms of Service')
+
 _TEE_STYLE_FEMALE_ID = 'female'
 _TEE_STYLE_MALE_ID = 'male'
 
@@ -167,7 +174,7 @@ _USER_PROPERTIES_FORM_KEYS = ['user_id']
 
 _PROFILE_PROPERTIES_FORM_KEYS = [
     'public_name', 'photo_url', 'first_name', 'last_name', 'birth_date',
-    'tee_style', 'tee_size', 'gender']
+    'tee_style', 'tee_size', 'gender', 'terms_of_service']
 
 _CONTACT_PROPERTIES_FORM_KEYS = ['web_page', 'blog', 'email', 'phone']
 
@@ -194,6 +201,30 @@ def cleanUserId(user_id):
   cleaning.cleanLinkID(user_id)
 
   return user_id
+
+
+def cleanTermsOfService(is_accepted, terms_of_service):
+  """Cleans terms_of_service field.
+
+  Args:
+    is_accepted: A bool determining whether the user has accepted the terms
+      of service of not.
+    terms_of_service: Document entity that contains the terms of service that
+      need to be accepted.
+
+  Returns:
+    Cleaned value of terms_of_service field. Specifically, it is a key
+    of a document entity that contains the accepted terms of service.
+
+  Raises:
+    django_forms.ValidationError is the submitted value is not valid.
+  """
+  if not terms_of_service:
+    return None
+  elif not is_accepted:
+    raise django_forms.ValidationError(TERMS_OF_SERVICE_NOT_ACCEPTED)
+  else:
+    return ndb.Key.from_old_key(terms_of_service.key())
 
 
 class _UserProfileForm(gsoc_forms.GSoCModelForm):
@@ -270,7 +301,27 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
       help_text=PROGRAM_KNOWLEDGE_HELP_TEXT,
       widget=django_forms.Textarea())
 
+  terms_of_service = django_forms.BooleanField(
+      required=True, label=TERMS_OF_SERVICE_LABEL)
+
   Meta = object
+
+  def __init__(self, terms_of_service, **kwargs):
+    """Initializes a new form.
+
+    Args:
+      terms_of_service: Document with Terms of Service that has to be accepted
+        by the user.
+    """
+    super(_UserProfileForm, self).__init__(**kwargs)
+    self.terms_of_service = terms_of_service
+
+    # remove terms of service field if no document is defined
+    if not self.terms_of_service:
+      del self.fields['terms_of_service']
+    else:
+      self.fields['terms_of_service'].widget = soc_forms.TOSWidget(
+          self.terms_of_service.content)
 
   def clean_user_id(self):
     """Cleans user_id field.
@@ -282,6 +333,19 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
       django_forms.ValidationError if the submitted value is not valid.
     """
     return cleanUserId(self.cleaned_data['user_id'])
+
+  def clean_terms_of_service(self):
+    """Cleans terms_of_service_field.
+
+    Returns:
+      Cleaned value of terms_of_service field. Specifically, it is a key
+      of a document entity that contains the accepted terms of service.
+
+    Raises:
+      django_forms.ValidationError is the submitted value is not valid.
+    """
+    return cleanTermsOfService(
+        self.cleaned_data['terms_of_service'], self.terms_of_service)
 
   def getUserProperties(self):
     """Returns properties of the user that were submitted in this form.
@@ -373,20 +437,27 @@ def _adaptProfilePropertiesForDatastore(form_data):
     properties[profile_model.Profile.gender._name] = (
         _GENDER_ID_TO_ENUM_MAP[form_data['gender']])
 
+  if 'terms_of_service' in form_data:
+    properties[profile_model.Profile.accepted_tos._name] = (
+        [form_data.get('terms_of_service')])
+
   return properties
 
 
-def _profileFormToRegisterAsOrgMember(register_user, **kwargs):
+def _profileFormToRegisterAsOrgMember(
+    register_user, terms_of_service, **kwargs):
   """Returns a Django form to register a new profile for organization members.
 
   Args:
     register_user: If set to True, the constructed form will also be used to
       create a new User entity along with a new Profile entity.
+    terms_of_service: Document with Terms of Service that has to be accepted by
+      the user.
 
   Returns:
     _UserProfileForm adjusted to create a new profile for organization members.
   """
-  form = _UserProfileForm(**kwargs)
+  form = _UserProfileForm(terms_of_service, **kwargs)
 
   if not register_user:
     del form.fields['user_id']
@@ -418,7 +489,8 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.RequestHandler.context for specification."""
-    form = _profileFormToRegisterAsOrgMember(data.user is None, data=data.POST)
+    form = _profileFormToRegisterAsOrgMember(
+        data.user is None, data.program.org_admin_agreement, data=data.POST)
 
     return {
         'page_name': PROFILE_ORG_MEMBER_CREATE_PAGE_NAME,
@@ -428,7 +500,8 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """See base.RequestHandler.post for specification."""
-    form = _profileFormToRegisterAsOrgMember(data.user is None, data=data.POST)
+    form = _profileFormToRegisterAsOrgMember(
+        data.user is None, data.program.org_admin_agreement, data=data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-use.
