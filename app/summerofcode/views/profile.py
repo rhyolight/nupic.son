@@ -28,6 +28,7 @@ from melange.logic import user as user_logic
 from melange.models import profile as profile_model
 from melange.request import access
 from melange.request import exception
+from melange.request import links
 from melange.utils import countries
 
 from soc.logic import cleaning
@@ -542,15 +543,36 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
 
       username = form.getUserProperties()['user_id'] if not user else None
 
-      # TODO(daniel): create actual profile and redirect
-      profile = createProfileTxn(
+      createProfileTxn(
           data.program.key(), profile_properties, username=username, user=user,
           models=data.models)
 
-      return http.HttpResponse()
+      return http.HttpResponseRedirect(
+          links.LINKER.program(data.program, urls.UrlNames.PROFILE_EDIT))
 
 
-# TODO(daniel): complete this function.
+class ProfileEditPage(base.GSoCRequestHandler):
+  """View to edit user profiles."""
+
+  # TODO(daniel): implement actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def templatePath(self):
+    """See base.RequestHandler.templatePath for specification."""
+    return 'modules/gsoc/form_base.html'
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.djangoURLPatterns for specification."""
+    return [
+        soc_url_patterns.url(
+            r'profile/edit/%s$' % url_patterns.PROGRAM,
+            self, name=urls.UrlNames.PROFILE_EDIT)]
+
+  # TODO(daniel): implement this.
+  def context(self, data, check, mutator):
+    """See base.RequestHandler.context for specification."""
+    return {}
+
 @ndb.transactional
 def createProfileTxn(
     program_key, profile_properties, username=None, user=None,
