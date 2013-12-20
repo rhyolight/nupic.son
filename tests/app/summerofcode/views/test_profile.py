@@ -14,8 +14,9 @@
 
 """Unit tests for user profile related views."""
 
-from google.appengine.api import users as users_api
+from google.appengine.ext import ndb
 
+from melange.models import profile as profile_model
 from melange.models import user as user_model
 
 from summerofcode.views import profile as profile_view
@@ -56,6 +57,18 @@ def _getProfileRegisterAsOrgMemberUrl(program_key):
   return '/gsoc/profile/register/org_member/%s' % program_key.name()
 
 
+def _getEditProfileUrl(program_key):
+  """Returns URL to Edit Profile page.
+
+  Args:
+    program_key: Program key.
+
+  Returns:
+    A string containing the URL to Edit Profile page.
+  """
+  return '/gsoc/profile/edit/%s' % program_key.name()
+
+
 class ProfileOrgMemberCreatePageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for ProfileOrgMemberCreatePage class."""
 
@@ -94,12 +107,19 @@ class ProfileOrgMemberCreatePageTest(test_utils.GSoCDjangoTestCase):
     response = self.post(
         _getProfileRegisterAsOrgMemberUrl(self.program.key()),
         postdata=postdata)
+    self.assertResponseRedirect(
+        response, url=_getEditProfileUrl(self.program.key()))
 
     # check that user entity has been created
-    user = (user_model.User.query(
-        user_model.User.account_id == users_api.get_current_user().user_id())
-        .get())
+    user_key = ndb.Key(user_model.User._get_kind(), TEST_USER_ID)
+    user = user_key.get()
     self.assertIsNotNone(user)
-    self.assertEqual(user.key.id(), TEST_USER_ID)
 
-    # TODO(daniel): complete this test
+
+    # check that profile entity has been created
+    profile_key = ndb.Key(
+        user_model.User._get_kind(), TEST_USER_ID,
+        profile_model.Profile._get_kind(),
+        '%s/%s' % (self.program.key().name(), TEST_USER_ID))
+    profile = profile_key.get()
+    self.assertIsNotNone(profile)
