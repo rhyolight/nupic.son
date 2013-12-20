@@ -164,9 +164,9 @@ class Profile(ndb.Model):
   #: Field storing the status of the registered profile.
   status = msgprop.EnumProperty(Status, default=Status.ACTIVE)
 
-  #: Field storing keys of Terms Of Service documents that have been approved
+  #: Field storing keys of Terms Of Service documents that have been accepted
   #: by the registered profile.
-  approved_tos = ndb.KeyProperty(repeated=True)
+  accepted_tos = ndb.KeyProperty(repeated=True)
 
   @property
   def profile_id(self):
