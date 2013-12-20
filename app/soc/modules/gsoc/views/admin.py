@@ -1195,6 +1195,26 @@ def formsSubmittedValue(profile, prefetched_data):
     return 'Yes' if profile_logic.allFormsSubmitted(student_info) else 'No'
 
 
+# TODO(daniel): are *args necessary?
+def getOrganizationsColumnForStudentsList(
+    entity, prefeched_si, prefetched_orgs, *args):
+  """Returns value for 'Organizations' column.
+
+  For the specified student, it lists names of all organizations for which he
+  or she works on projects.
+
+  Args:
+    entity: StudentInfo entity.
+    prefeched_si: Prefeched StudentInfo entities.
+    prefeched_orgs: Prefetched organization entities.
+
+  Returns:
+    String value that will be rendered for 'Organizations' column.
+  """
+  return ', '.join(prefetched_orgs[ndb.Key.from_old_key(org_key)].name
+      for org_key in prefeched_si[entity.key()].project_for_orgs)
+
+
 class StudentsList(Template):
   """List configuration for listing all the students involved with the program.
   """
@@ -1225,7 +1245,8 @@ class StudentsList(Template):
         org_keys.update(
             GSoCStudentInfo.project_for_orgs.get_value_for_datastore(
                 student_info))
-      orgs = ndb.get_multi(org_keys)
+      ndb_org_keys = map(ndb.Key.from_old_key, org_keys)
+      orgs = ndb.get_multi(ndb_org_keys)
 
       prefetched_organization_dict = dict(
           (org.key, org) for org in orgs if org)
@@ -1302,8 +1323,7 @@ class StudentsList(Template):
         lambda ent, si, *args: si[ent.key()].failed_evaluations)
     list_config.addPlainTextColumn(
         'project_for_orgs', "Organizations",
-        lambda ent, si, o, *args: ', '.join(
-            [o[i].name for i in si[ent.key()].project_for_orgs]))
+        getOrganizationsColumnForStudentsList)
 
     self._list_config = list_config
 
