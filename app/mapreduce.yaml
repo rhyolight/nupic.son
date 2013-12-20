@@ -291,3 +291,11 @@ mapreduce:
     params:
     - name: entity_kind
       value: soc.modules.gsoc.models.grading_project_survey_record.GSoCGradingProjectSurveyRecord
+
+- name: ConvertStudentInfo
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_organization.convertStudentInfo
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.models.profile.GSoCStudentInfo
