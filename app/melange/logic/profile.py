@@ -235,6 +235,6 @@ def createProfile(
       profile = models.ndb_profile_model(
           key=profile_key, program=program_key, **profile_properties)
       profile.put()
+      return rich_bool.RichBool(True, profile)
     except datastore_errors.BadValueError as e:
       return rich_bool.RichBool(False, str(e))
-    return rich_bool.RichBool(True, profile)
