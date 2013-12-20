@@ -20,8 +20,10 @@ from django import http
 from django import forms as django_forms
 from django.utils import translation
 
+from melange import types
 from melange.logic import address as address_logic
 from melange.logic import contact as contact_logic
+from melange.logic import profile as profile_logic
 from melange.logic import user as user_logic
 from melange.models import profile as profile_model
 from melange.request import access
@@ -490,7 +492,7 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
   def context(self, data, check, mutator):
     """See base.RequestHandler.context for specification."""
     form = _profileFormToRegisterAsOrgMember(
-        data.user is None, data.program.org_admin_agreement, data=data.POST)
+        data.ndb_user is None, data.program.org_admin_agreement, data=data.POST)
 
     return {
         'page_name': PROFILE_ORG_MEMBER_CREATE_PAGE_NAME,
@@ -501,11 +503,10 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
   def post(self, data, check, mutator):
     """See base.RequestHandler.post for specification."""
     form = _profileFormToRegisterAsOrgMember(
-        data.user is None, data.program.org_admin_agreement, data=data.POST)
+        data.ndb_user is None, data.program.org_admin_agreement, data=data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-use.
-      print form.errors
       return self.get(data, check, mutator)
     else:
       profile_properties = _adaptProfilePropertiesForDatastore(
@@ -531,7 +532,7 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
       else:
         profile_properties['contact'] = result.extra
 
-      user = data.user
+      user = data.ndb_user
       if not user:
         # try to make sure that no user entity exists for the current account.
         # it should be guaranteed by the condition above evaluating to None,
@@ -542,21 +543,28 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
       username = form.getUserProperties()['user_id'] if not user else None
 
       # TODO(daniel): create actual profile and redirect
-      profile = createProfileTxn(username=username, user=user)
+      profile = createProfileTxn(
+          data.program.key(), profile_properties, username=username, user=user,
+          models=data.models)
 
       return http.HttpResponse()
 
 
 # TODO(daniel): complete this function.
 @ndb.transactional
-def createProfileTxn(username=None, user=None):
+def createProfileTxn(
+    program_key, profile_properties, username=None, user=None,
+    models=types.MELANGE_MODELS):
   """Creates a new user profile based on the specified properties.
 
   Args:
+    program_key: Program key.
+    profile_properties: A dict mapping profile properties to their values.
     username: Username for a new User entity that will be created along with
       the new Profile. May only be passed if user argument is omitted.
     user: User entity for the profile. May only be passed if username argument
       is omitted.
+    models: instance of types.Models that represent appropriate models.
   """
   if username and user:
     raise ValueError('Username and user arguments cannot be set together.')
@@ -567,3 +575,12 @@ def createProfileTxn(username=None, user=None):
     result = user_logic.createUser(username)
     if not result:
       raise exception.BadRequest(message=result.extra)
+    else:
+      user = result.extra
+
+  result = profile_logic.createProfile(
+      user.key, program_key, profile_properties, models=models)
+  if not result:
+    raise exception.BadRequest(message=result.extra)
+  else:
+    return result.extra
