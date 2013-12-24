@@ -46,6 +46,9 @@ from summerofcode.views.helper import urls
 PROFILE_ORG_MEMBER_CREATE_PAGE_NAME = translation.ugettext(
     'Create organization member profile')
 
+PROFILE_EDIT_PAGE_NAME = translation.ugettext(
+    'Edit profile')
+
 USER_ID_HELP_TEXT = translation.ugettext(
     'Used as part of various URL links throughout the site. '
     'ASCII alphanumeric characters, digits, and underscores only.')
@@ -309,7 +312,7 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
 
   Meta = object
 
-  def __init__(self, terms_of_service, **kwargs):
+  def __init__(self, terms_of_service=None, **kwargs):
     """Initializes a new form.
 
     Args:
@@ -386,28 +389,37 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
         _RESIDENTIAL_ADDRESS_PROPERTIES_FORM_KEYS)
 
 
-_TEE_STYLE_ID_TO_ENUM_MAP = {
-    _TEE_STYLE_FEMALE_ID: profile_model.TeeStyle.FEMALE,
-    _TEE_STYLE_MALE_ID: profile_model.TeeStyle.MALE
-    }
+_TEE_STYLE_ID_TO_ENUM_LINK = (
+    (_TEE_STYLE_FEMALE_ID, profile_model.TeeStyle.FEMALE),
+    (_TEE_STYLE_MALE_ID, profile_model.TeeStyle.MALE)
+    )
+_TEE_STYLE_ID_TO_ENUM_MAP = dict(_TEE_STYLE_ID_TO_ENUM_LINK)
+_TEE_STYLE_ENUM_TO_ID_MAP = dict(
+    (v, k) for (k, v) in _TEE_STYLE_ID_TO_ENUM_LINK)
 
-_TEE_SIZE_ID_TO_ENUM_MAP = {
-    _TEE_SIZE_XXS_ID: profile_model.TeeSize.XXS,
-    _TEE_SIZE_XS_ID: profile_model.TeeSize.XS,
-    _TEE_SIZE_S_ID: profile_model.TeeSize.S,
-    _TEE_SIZE_M_ID: profile_model.TeeSize.M,
-    _TEE_SIZE_L_ID: profile_model.TeeSize.L,
-    _TEE_SIZE_XL_ID: profile_model.TeeSize.XL,
-    _TEE_SIZE_XXL_ID: profile_model.TeeSize.XXL,
-    _TEE_SIZE_XXXL_ID: profile_model.TeeSize.XXXL,
-    }
+_TEE_SIZE_ID_TO_ENUM_LINK = (
+    (_TEE_SIZE_XXS_ID, profile_model.TeeSize.XXS),
+    (_TEE_SIZE_XS_ID, profile_model.TeeSize.XS),
+    (_TEE_SIZE_S_ID, profile_model.TeeSize.S),
+    (_TEE_SIZE_M_ID, profile_model.TeeSize.M),
+    (_TEE_SIZE_L_ID, profile_model.TeeSize.L),
+    (_TEE_SIZE_XL_ID, profile_model.TeeSize.XL),
+    (_TEE_SIZE_XXL_ID, profile_model.TeeSize.XXL),
+    (_TEE_SIZE_XXXL_ID, profile_model.TeeSize.XXXL)
+    )
+_TEE_SIZE_ID_TO_ENUM_MAP = dict(_TEE_SIZE_ID_TO_ENUM_LINK)
+_TEE_SIZE_ENUM_TO_ID_MAP = dict((v, k) for (k, v) in _TEE_SIZE_ID_TO_ENUM_LINK)
 
-_GENDER_ID_TO_ENUM_MAP = {
-    _GENDER_FEMALE_ID: profile_model.Gender.FEMALE,
-    _GENDER_MALE_ID: profile_model.Gender.MALE,
-    _GENDER_OTHER_ID: profile_model.Gender.OTHER,
-    _GENDER_NOT_ANSWERED_ID: None,
-    }
+
+_GENDER_ID_TO_ENUM_LINK = (
+    (_GENDER_FEMALE_ID, profile_model.Gender.FEMALE),
+    (_GENDER_MALE_ID, profile_model.Gender.MALE),
+    (_GENDER_OTHER_ID, profile_model.Gender.OTHER),
+    (_GENDER_NOT_ANSWERED_ID, None)
+    )
+_GENDER_ID_TO_ENUM_MAP = dict(_GENDER_ID_TO_ENUM_LINK)
+_GENDER_ENUM_TO_ID_MAP = dict((v, k) for (k, v) in _GENDER_ID_TO_ENUM_LINK)
+
 
 def _adaptProfilePropertiesForDatastore(form_data):
   """Adopts properties corresponding to profile's properties, which
@@ -447,6 +459,79 @@ def _adaptProfilePropertiesForDatastore(form_data):
   return properties
 
 
+def _adoptContactPropertiesForForm(contact_properties):
+  """Adopts properties of a contact entity, which are persisted in datastore,
+  to representation which may be passed to populate _UserProfileForm.
+
+  Args:
+    contact_properties: A dict containing contact properties as persisted
+      in datastore.
+
+  Returns:
+    A dict mapping properties of contact model to values which can be
+    populated to a user profile form.
+  """
+  return {
+      key: contact_properties.get(key) for key in _CONTACT_PROPERTIES_FORM_KEYS}
+
+
+def _adoptResidentialAddressPropertiesForForm(address_properties):
+  """Adopts properties of a address entity, which are persisted in datastore
+  as residential address, to representation which may be passed to
+  populate _UserProfileForm.
+
+  Args:
+    address_properties: A dict containing residential address properties
+      as persisted in datastore.
+
+  Returns:
+    A dict mapping properties of address model to values which can be
+    populated to a user profile form.
+  """
+  return {
+      'residential_street': address_properties['street'],
+      'residential_city': address_properties['city'],
+      'residential_country': address_properties['country'],
+      'residential_postal_code': address_properties['postal_code'],
+      'residential_province': address_properties['province'],
+      }
+
+
+def _adoptProfilePropertiesForForm(profile_properties):
+  """Adopts properties of a profile entity, which are persisted in datastore,
+  to representation which may be passed to populate _UserProfileForm.
+
+  Args:
+    profile_properties: A dict containing profile properties as
+      persisted in datastore.
+
+  Returns:
+    A dict mapping properties of profile model to values which can be
+    populated to a user profile form.
+  """
+  form_data = {
+      key: profile_properties.get(key) for key in
+      ['first_name', 'last_name', 'photo_url', 'birth_date']}
+
+  # residential address information
+  form_data.update(
+      _adoptResidentialAddressPropertiesForForm(
+          profile_properties[profile_model.Profile.residential_address._name]))
+
+  # contact information
+  if profile_model.Profile.contact._name in profile_properties:
+    form_data.update(_adoptContactPropertiesForForm(
+        profile_properties[profile_model.Profile.contact._name]))
+
+  form_data['tee_style'] = (
+      _TEE_STYLE_ENUM_TO_ID_MAP[profile_properties['tee_style']])
+  form_data['tee_size'] = (
+      _TEE_SIZE_ENUM_TO_ID_MAP[profile_properties['tee_size']])
+  form_data['gender'] = _GENDER_ENUM_TO_ID_MAP[profile_properties['gender']]
+
+  return form_data
+
+
 def _profileFormToRegisterAsOrgMember(
     register_user, terms_of_service, **kwargs):
   """Returns a Django form to register a new profile for organization members.
@@ -460,10 +545,18 @@ def _profileFormToRegisterAsOrgMember(
   Returns:
     _UserProfileForm adjusted to create a new profile for organization members.
   """
-  form = _UserProfileForm(terms_of_service, **kwargs)
+  form = _UserProfileForm(terms_of_service=terms_of_service, **kwargs)
 
   if not register_user:
     del form.fields['user_id']
+
+  return form
+
+
+def _profileFormToEditProfile(**kwargs):
+  form = _UserProfileForm(**kwargs)
+
+  del form.fields['user_id']
 
   return form
 
@@ -568,10 +661,16 @@ class ProfileEditPage(base.GSoCRequestHandler):
             r'profile/edit/%s$' % url_patterns.PROGRAM,
             self, name=urls.UrlNames.PROFILE_EDIT)]
 
-  # TODO(daniel): implement this.
   def context(self, data, check, mutator):
     """See base.RequestHandler.context for specification."""
-    return {}
+    form_data = _adoptProfilePropertiesForForm(data.ndb_profile.to_dict())
+    form = _profileFormToEditProfile(data=data.POST or form_data)
+
+    return {
+        'page_name': PROFILE_EDIT_PAGE_NAME,
+        'forms': [form],
+        'error': bool(form.errors)
+        }
 
 @ndb.transactional
 def createProfileTxn(
