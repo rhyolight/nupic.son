@@ -181,6 +181,8 @@ def seedNDBProfile(program_key, model=ndb_profile_model.Profile,
       'last_name': TEST_LAST_NAME,
       'birth_date': datetime.date(1990, 1, 1),
       'residential_address': residential_address,
+      'tee_style': ndb_profile_model.TeeStyle.MALE,
+      'tee_size': ndb_profile_model.TeeSize.M,
       }
   properties.update(**kwargs)
   profile = model(id='%s/%s' % (program_key.name(), user.key.id()),
