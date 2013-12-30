@@ -14,6 +14,8 @@
 
 """Unit tests for user profile related views."""
 
+import datetime
+
 from google.appengine.ext import ndb
 
 from melange.models import profile as profile_model
@@ -21,10 +23,11 @@ from melange.models import user as user_model
 
 from summerofcode.views import profile as profile_view
 
+from tests import profile_utils
 from tests import test_utils
 
 
-TEST_BIRTH_DATE = '1993-01-01'
+TEST_BIRTH_DATE = datetime.date(1993, 01, 01)
 TEST_BLOG = 'http://www.test.blog.com/'
 TEST_EMAIL = 'test@example.com'
 TEST_FIRST_NAME = 'Test First'
@@ -98,7 +101,7 @@ class ProfileOrgMemberCreatePageTest(test_utils.GSoCDjangoTestCase):
         'residential_province': TEST_RESIDENTIAL_PROVINCE,
         'residential_country': TEST_RESIDENTIAL_COUNTRY,
         'residential_postal_code': TEST_RESIDENTIAL_POSTAL_CODE,
-        'birth_date': TEST_BIRTH_DATE,
+        'birth_date': TEST_BIRTH_DATE.strftime('%Y-%m-%d'),
         'tee_style': TEST_TEE_STYLE,
         'tee_size': TEST_TEE_SIZE,
         'gender': TEST_GENDER,
@@ -115,7 +118,6 @@ class ProfileOrgMemberCreatePageTest(test_utils.GSoCDjangoTestCase):
     user = user_key.get()
     self.assertIsNotNone(user)
 
-
     # check that profile entity has been created
     profile_key = ndb.Key(
         user_model.User._get_kind(), TEST_USER_ID,
@@ -123,3 +125,71 @@ class ProfileOrgMemberCreatePageTest(test_utils.GSoCDjangoTestCase):
         '%s/%s' % (self.program.key().name(), TEST_USER_ID))
     profile = profile_key.get()
     self.assertIsNotNone(profile)
+
+
+class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for ProfileEditPage class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+    self.profile = profile_utils.seedNDBProfile(self.program.key())
+    profile_utils.loginNDB(self.profile.key.parent().get())
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    response = self.get(_getEditProfileUrl(self.program.key()))
+    self.assertResponseOK(response)
+
+  def testProfileUpdated(self):
+    """Tests that profile is updated properly."""
+    postdata = {
+        'public_name': TEST_PUBLIC_NAME,
+        'web_page': TEST_WEB_PAGE,
+        'blog': TEST_BLOG,
+        'photo_url': TEST_PHOTO_URL,
+        'first_name': TEST_FIRST_NAME,
+        'last_name': TEST_LAST_NAME,
+        'email': TEST_EMAIL,
+        'phone': TEST_PHONE,
+        'residential_street': TEST_RESIDENTIAL_STREET,
+        'residential_city': TEST_RESIDENTIAL_CITY,
+        'residential_province': TEST_RESIDENTIAL_PROVINCE,
+        'residential_country': TEST_RESIDENTIAL_COUNTRY,
+        'residential_postal_code': TEST_RESIDENTIAL_POSTAL_CODE,
+        'birth_date': TEST_BIRTH_DATE.strftime('%Y-%m-%d'),
+        'tee_style': TEST_TEE_STYLE,
+        'tee_size': TEST_TEE_SIZE,
+        'gender': TEST_GENDER,
+        'program_knowledge': TEST_PROGRAM_KNOWLEDGE,
+        }
+    response = self.post(
+        _getEditProfileUrl(self.program.key()), postdata=postdata)
+    self.assertResponseRedirect(
+        response, url=_getEditProfileUrl(self.program.key()))
+
+    # check profile properties
+    profile = self.profile.key.get()
+    # TODO(daniel): handle public_name
+    #self.assertEqual(profile.public_name, TEST_PUBLIC_NAME)
+    self.assertEqual(profile.contact.web_page, TEST_WEB_PAGE)
+    self.assertEqual(profile.contact.blog, TEST_BLOG)
+    self.assertEqual(profile.contact.email, TEST_EMAIL)
+    self.assertEqual(profile.first_name, TEST_FIRST_NAME)
+    self.assertEqual(profile.last_name, TEST_LAST_NAME)
+    self.assertEqual(profile.contact.phone, TEST_PHONE)
+    self.assertEqual(
+        profile.residential_address.street, TEST_RESIDENTIAL_STREET)
+    self.assertEqual(
+        profile.residential_address.city, TEST_RESIDENTIAL_CITY)
+    self.assertEqual(
+        profile.residential_address.province, TEST_RESIDENTIAL_PROVINCE)
+    self.assertEqual(
+        profile.residential_address.country, TEST_RESIDENTIAL_COUNTRY)
+    self.assertEqual(
+        profile.residential_address.postal_code, TEST_RESIDENTIAL_POSTAL_CODE)
+    self.assertEqual(profile.birth_date, TEST_BIRTH_DATE)
+    #: TODO(daniel): handle program_knowledge
+    #self.assertEqual(profile.program_knowledge, TEST_PROGRAM_KNOWLEDGE)
+    self.assertEqual(profile.tee_style, profile_model.TeeStyle.FEMALE)
+    self.assertEqual(profile.tee_size, profile_model.TeeSize.M)

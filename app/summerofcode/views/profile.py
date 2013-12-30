@@ -603,28 +603,7 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
     else:
-      profile_properties = _adaptProfilePropertiesForDatastore(
-          form.getProfileProperties())
-
-      address_properties = form.getResidentialAddressProperties()
-      result = address_logic.createAddress(
-          address_properties['residential_street'],
-          address_properties['residential_city'],
-          address_properties['residential_country'],
-          address_properties['residential_postal_code'],
-          province=address_properties.get('residential_province')
-          )
-      if not result:
-        raise exception.BadRequest(message=result.extra)
-      else:
-        profile_properties['residential_address'] = result.extra
-
-      contact_properties = form.getContactProperties()
-      result = contact_logic.createContact(**contact_properties)
-      if not result:
-        raise exception.BadRequest(message=result.extra)
-      else:
-        profile_properties['contact'] = result.extra
+      profile_properties = _getProfileEntityPropertiesFromForm(form)
 
       user = data.ndb_user
       if not user:
@@ -672,6 +651,56 @@ class ProfileEditPage(base.GSoCRequestHandler):
         'error': bool(form.errors)
         }
 
+  def post(self, data, check, mutator):
+    """See base.RequestHandler.post for specification."""
+    form = _profileFormToEditProfile(data=data.POST)
+
+    if not form.is_valid():
+      # TODO(nathaniel): problematic self-use.
+      return self.get(data, check, mutator)
+    else:
+      profile_properties = _getProfileEntityPropertiesFromForm(form)
+      editProfileTxn(data.ndb_profile.key, profile_properties)
+
+      return http.HttpResponseRedirect(
+          links.LINKER.program(data.program, urls.UrlNames.PROFILE_EDIT))
+
+
+def _getProfileEntityPropertiesFromForm(form):
+  """Extracts properties for a profile entity from the specified form.
+
+  Args:
+    form: Instance of _UserProfileForm.
+
+  Returns:
+    A dict with complete set of properties of profile entity.
+  """
+  profile_properties = _adaptProfilePropertiesForDatastore(
+      form.getProfileProperties())
+
+  address_properties = form.getResidentialAddressProperties()
+  result = address_logic.createAddress(
+      address_properties['residential_street'],
+      address_properties['residential_city'],
+      address_properties['residential_country'],
+      address_properties['residential_postal_code'],
+      province=address_properties.get('residential_province')
+      )
+  if not result:
+    raise exception.BadRequest(message=result.extra)
+  else:
+    profile_properties['residential_address'] = result.extra
+
+  contact_properties = form.getContactProperties()
+  result = contact_logic.createContact(**contact_properties)
+  if not result:
+    raise exception.BadRequest(message=result.extra)
+  else:
+    profile_properties['contact'] = result.extra
+
+  return profile_properties
+
+
 @ndb.transactional
 def createProfileTxn(
     program_key, profile_properties, username=None, user=None,
@@ -701,6 +730,21 @@ def createProfileTxn(
 
   result = profile_logic.createProfile(
       user.key, program_key, profile_properties, models=models)
+  if not result:
+    raise exception.BadRequest(message=result.extra)
+  else:
+    return result.extra
+
+
+@ndb.transactional
+def editProfileTxn(profile_key, profile_properties):
+  """Edits an existing profile based on the specified properties.
+
+  Args:
+    profile_key: Profile key of an existing profile to edit.
+    profile_properties: A dict mapping profile properties to their values.
+  """
+  result = profile_logic.editProfile(profile_key, profile_properties)
   if not result:
     raise exception.BadRequest(message=result.extra)
   else:
