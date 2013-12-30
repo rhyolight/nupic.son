@@ -28,6 +28,8 @@ from soc.models import program as program_model
 ONLY_ORG_ADMIN = 'only_org_admin'
 PROFILE_EXISTS = unicode(
     'A profile has already been registered for this program and this user.')
+PROFILE_DOES_NOT_EXIST = unicode(
+    'No profile exists for the specified key: %s')
 
 
 def canResignAsOrgAdminForOrg(profile, org_key, models=types.MELANGE_MODELS):
@@ -238,3 +240,29 @@ def createProfile(
       return rich_bool.RichBool(True, profile)
     except datastore_errors.BadValueError as e:
       return rich_bool.RichBool(False, str(e))
+
+
+def editProfile(profile_key, profile_properties):
+  """Edits profile with the specified key based on the supplied properties.
+
+  Args:
+    profile_key: Profile key of an existing profile to edit.
+    profile_properties: A dict mapping profile properties to their values.
+
+  Returns:
+    RichBool whose value is set to True if profile has been successfully
+    updated. In that case, extra part points to the updated profile entity.
+    Otherwise, RichBool whose value is set to False and extra part is a string
+    that represents the reason why the action could not be completed.
+  """
+  profile = profile_key.get()
+  if not profile:
+    return rich_bool.RichBool(False, PROFILE_DOES_NOT_EXIST % profile_key.id())
+  else:
+    try:
+      profile.populate(**profile_properties)
+      profile.put()
+      return rich_bool.RichBool(True, profile)
+    except datastore_errors.BadValueError as e:
+      return rich_bool.RichBool(False, str(e))
+

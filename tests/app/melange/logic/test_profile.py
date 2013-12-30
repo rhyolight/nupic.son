@@ -17,6 +17,8 @@
 import datetime
 import unittest
 
+from google.appengine.ext import ndb
+
 from melange.logic import profile as profile_logic
 from melange.models import address as address_model
 from melange.models import profile as ndb_profile_model
@@ -430,7 +432,7 @@ TEST_FIRST_NAME = 'First'
 TEST_LAST_NAME = 'Last'
 TEST_PHOTO_URL = 'http://www.test.photo.url.com'
 TEST_BIRTH_DATE = datetime.date(1990, 1, 1)
-TEST_STREET = 'Test city'
+TEST_STREET = 'Test street'
 TEST_CITY = 'Test city'
 TEST_COUNTRY = 'United States'
 TEST_PROVINCE = 'California'
@@ -492,3 +494,76 @@ class CreateProfileTest(unittest.TestCase):
         self.user.key, self.program.key(), TEST_PROFILE_PROPERTIES)
     self.assertFalse(result)
     self.assertEqual(result.extra, profile_logic.PROFILE_EXISTS)
+
+
+OTHER_TEST_FIRST_NAME = 'Other First'
+OTHER_TEST_LAST_NAME = 'Other Last'
+OTHER_TEST_PHOTO_URL = 'http://www.other.test.photo.url.com'
+OTHER_TEST_BIRTH_DATE = datetime.date(1991, 1, 1)
+OTHER_TEST_STREET = 'Test other street'
+OTHER_TEST_CITY = 'Test city'
+OTHER_TEST_COUNTRY = 'United States'
+OTHER_TEST_PROVINCE = 'Alaska'
+OTHER_TEST_POSTAL_CODE = '99503'
+
+OTHER_TEST_RESIDENTIAL_ADDRESS = address_model.Address(
+    street=OTHER_TEST_STREET, city=OTHER_TEST_CITY, country=OTHER_TEST_COUNTRY,
+    province=OTHER_TEST_PROVINCE, postal_code=OTHER_TEST_POSTAL_CODE)
+
+OTHER_TEST_PROFILE_PROPERTIES = {
+    'first_name': OTHER_TEST_FIRST_NAME,
+    'last_name': OTHER_TEST_LAST_NAME,
+    'photo_url': OTHER_TEST_PHOTO_URL,
+    'birth_date': OTHER_TEST_BIRTH_DATE,
+    'residential_address': OTHER_TEST_RESIDENTIAL_ADDRESS,
+    }
+
+class EditProfileTest(unittest.TestCase):
+  """Unit tests for editProfile function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.user = profile_utils.seedNDBUser()
+    self.program = program_utils.seedProgram()
+
+    self.profile_key = ndb.Key(
+      user_model.User._get_kind(), self.user.key.id(),
+      ndb_profile_model.Profile._get_kind(),
+      '%s/%s' % (self.program.key().name(), self.user.key.id()))
+
+  def testProfileDoesNotExist(self):
+    """Tests that error is raised when a profile does not exist."""
+    result = profile_logic.editProfile(
+        self.profile_key, TEST_PROFILE_PROPERTIES)
+    self.assertFalse(result)
+    self.assertEqual(
+        result.extra,
+        profile_logic.PROFILE_DOES_NOT_EXIST % self.profile_key.id())
+
+  def testProfileUpdated(self):
+    """Tests that profile properties are updated properly."""
+    # seed a profile
+    profile = profile_utils.seedNDBProfile(self.program.key(), user=self.user)
+    result = profile_logic.editProfile(
+        profile.key, OTHER_TEST_PROFILE_PROPERTIES)
+    self.assertTrue(result)
+
+    # check that updated profile is persisted
+    profile = result.extra.key.get()
+    self.assertIsNotNone(profile)
+
+    # check properties
+    self.assertEqual(
+        profile.key.id(),
+        '%s/%s' % (self.program.key().name(), self.user.key.id()))
+    self.assertEqual(profile.program.to_old_key(), self.program.key())
+    self.assertEqual(profile.first_name, OTHER_TEST_FIRST_NAME)
+    self.assertEqual(profile.last_name, OTHER_TEST_LAST_NAME)
+    self.assertEqual(profile.photo_url, OTHER_TEST_PHOTO_URL)
+    self.assertEqual(profile.birth_date, OTHER_TEST_BIRTH_DATE)
+    self.assertEqual(profile.residential_address.street, OTHER_TEST_STREET)
+    self.assertEqual(profile.residential_address.city, OTHER_TEST_CITY)
+    self.assertEqual(profile.residential_address.country, OTHER_TEST_COUNTRY)
+    self.assertEqual(profile.residential_address.province, OTHER_TEST_PROVINCE)
+    self.assertEqual(
+        profile.residential_address.postal_code, OTHER_TEST_POSTAL_CODE)
