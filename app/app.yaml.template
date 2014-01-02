@@ -55,6 +55,11 @@ handlers:
   upload: soc/content/js/(.*)
   expiration: 30d
 
+- url: /summerofcode/content/(.*?)/js/(.*)
+  static_files: summerofcode/content/js/\2
+  upload: soc/content/(.*)
+  expiration: 30d
+
 - url: /admin/shell.*
   script: shell/shell.py
   login: admin
