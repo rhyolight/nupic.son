@@ -15,8 +15,11 @@
 """Unit tests for user profile related views."""
 
 import datetime
+import unittest
 
 from google.appengine.ext import ndb
+
+from django import forms as django_forms
 
 from melange.models import profile as profile_model
 from melange.models import user as user_model
@@ -193,3 +196,45 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
     #self.assertEqual(profile.program_knowledge, TEST_PROGRAM_KNOWLEDGE)
     self.assertEqual(profile.tee_style, profile_model.TeeStyle.FEMALE)
     self.assertEqual(profile.tee_size, profile_model.TeeSize.M)
+
+
+class CleanShippingAddressPartTest(unittest.TestCase):
+  """Unit tests for _cleanShippingAddressPart function."""
+
+  def testShippingAddressIsNotDifferent(self):
+    """Tests that only no value is accepted if address is not different."""
+    # Empty or None values are accepted even when a field is required.
+    result = profile_view._cleanShippingAddressPart(False, '', True)
+    self.assertEqual(result, '')
+    result = profile_view._cleanShippingAddressPart(False, None, True)
+    self.assertIsNone(result)
+
+    # Empty or None values are accepted when a field is not required.
+    result = profile_view._cleanShippingAddressPart(False, '', False)
+    self.assertEqual(result, '')
+    result = profile_view._cleanShippingAddressPart(False, None, False)
+    self.assertIsNone(result)
+
+    # Actual values are not accepted no matter if a field is required or not
+    with self.assertRaises(django_forms.ValidationError):
+      profile_view._cleanShippingAddressPart(False, 'a value', True)
+    with self.assertRaises(django_forms.ValidationError):
+      profile_view._cleanShippingAddressPart(False, 'a value', False)
+
+  def testShippingAddressIsDifferent(self):
+    """Tests that values are cleaned and returned if address is different."""
+    # Empty or None values are accepted for non-required fields
+    result = profile_view._cleanShippingAddressPart(True, '', False)
+    self.assertEqual(result, '')
+    result = profile_view._cleanShippingAddressPart(True, None, False)
+    self.assertIsNone(result)
+
+    # Empty or None values are not accepted for required fields
+    with self.assertRaises(django_forms.ValidationError):
+      profile_view._cleanShippingAddressPart(True, '', True)
+    with self.assertRaises(django_forms.ValidationError):
+      profile_view._cleanShippingAddressPart(True, None, True)
+
+    # Actual values is returned upon clearing
+    result = profile_view._cleanShippingAddressPart(True, 'a value', False)
+    self.assertEqual(result, 'a value')

@@ -287,6 +287,32 @@ def cleanUserId(user_id):
   return user_id
 
 
+def _cleanShippingAddressPart(
+    is_shipping_address_different, value, is_required):
+  """Cleans a field that represents a part of the shipping address.
+
+  Args:
+    is_shipping_address_different: A bool indicating if the shipping address
+      to provide is different than the residential address.
+    value: The actual submitted value for the cleaned field.
+    is_required: Whether a value for the cleaned field is required or not.
+
+  Returns:
+    Cleaned value for the field.
+
+  Raises:
+    django_forms.ValidationError if the submitted value is not valid.
+  """
+  if not is_shipping_address_different and value:
+    raise django_forms.ValidationError(
+        'This field cannot be specified if the shipping address is the same '
+        'as the residential address.')
+  elif is_shipping_address_different and not value and is_required:
+    raise django_forms.ValidationError('This field is required.')
+  else:
+    return value
+
+
 def cleanTermsOfService(is_accepted, terms_of_service):
   """Cleans terms_of_service field.
 
@@ -484,6 +510,84 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
       django_forms.ValidationError if the submitted value is not valid.
     """
     return cleanUserId(self.cleaned_data['user_id'])
+
+  def clean_shipping_name(self):
+    """Cleans shipping_name field.
+
+    Returns:
+      Cleaned value for shipping_name field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return _cleanShippingAddressPart(
+        self.cleaned_data['is_shipping_address_different'],
+        self.cleaned_data['shipping_name'], False)
+
+  def clean_shipping_street(self):
+    """Cleans shipping_street field.
+
+    Returns:
+      Cleaned value for shipping_street field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return _cleanShippingAddressPart(
+        self.cleaned_data['is_shipping_address_different'],
+        self.cleaned_data['shipping_street'], True)
+
+  def clean_shipping_city(self):
+    """Cleans shipping_city field.
+
+    Returns:
+      Cleaned value for shipping_city field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return _cleanShippingAddressPart(
+        self.cleaned_data['is_shipping_address_different'],
+        self.cleaned_data['shipping_city'], True)
+
+  def clean_shipping_province(self):
+    """Cleans shipping_province field.
+
+    Returns:
+      Cleaned value for shipping_province field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return _cleanShippingAddressPart(
+        self.cleaned_data['is_shipping_address_different'],
+        self.cleaned_data['shipping_province'], False)
+
+  def clean_shipping_country(self):
+    """Cleans shipping_country field.
+
+    Returns:
+      Cleaned value for shipping_country field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return _cleanShippingAddressPart(
+        self.cleaned_data['is_shipping_address_different'],
+        self.cleaned_data['shipping_country'], True)
+
+  def clean_shipping_postal_code(self):
+    """Cleans shipping_postal_code field.
+
+    Returns:
+      Cleaned value for shipping_postal_code field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return _cleanShippingAddressPart(
+        self.cleaned_data['is_shipping_address_different'],
+        self.cleaned_data['shipping_postal_code'], True)
 
   def clean_terms_of_service(self):
     """Cleans terms_of_service_field.
