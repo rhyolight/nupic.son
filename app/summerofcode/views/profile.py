@@ -951,6 +951,22 @@ def _getProfileEntityPropertiesFromForm(form):
   else:
     profile_properties['residential_address'] = result.extra
 
+  address_properties = form.getShippingAddressProperties()
+  if address_properties:
+    result = address_logic.createAddress(
+        address_properties['shipping_street'],
+        address_properties['shipping_city'],
+        address_properties['shipping_country'],
+        address_properties['shipping_postal_code'],
+        province=address_properties.get('shipping_province'),
+        name=address_properties.get('shipping_name'))
+    if not result:
+      raise exception.BadRequest(message=result.extra)
+    else:
+      profile_properties['shipping_address'] = result.extra
+  else:
+    profile_properties['shipping_address'] = None
+
   contact_properties = form.getContactProperties()
   result = contact_logic.createContact(**contact_properties)
   if not result:
