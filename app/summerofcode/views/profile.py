@@ -834,7 +834,7 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""
-    return 'modules/gsoc/form_base.html'
+    return 'summerofcode/profile/profile_edit.html'
 
   def djangoURLPatterns(self):
     """See base.RequestHandler.djangoURLPatterns for specification."""
@@ -891,7 +891,7 @@ class ProfileEditPage(base.GSoCRequestHandler):
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""
-    return 'modules/gsoc/form_base.html'
+    return 'summerofcode/profile/profile_edit.html'
 
   def djangoURLPatterns(self):
     """See base.RequestHandler.djangoURLPatterns for specification."""
