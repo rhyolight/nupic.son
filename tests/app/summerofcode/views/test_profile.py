@@ -272,6 +272,20 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
     profile = self.profile.key.get()
     self.assertIsNone(profile.shipping_address)
 
+  def testIsShippingAddressDifferent(self):
+    """Tests whether is_shipping_address_different is set correctly."""
+    # different shipping address is used
+    response = self.get(_getEditProfileUrl(self.program.key()))
+    form = response.context['forms'][0]
+    self.assertTrue(form.data['is_shipping_address_different'])
+
+    # no shipping address is used
+    self.profile.shipping_address = None
+    self.profile.put()
+    response = self.get(_getEditProfileUrl(self.program.key()))
+    form = response.context['forms'][0]
+    self.assertFalse(form.data['is_shipping_address_different'])
+
 
 class CleanShippingAddressPartTest(unittest.TestCase):
   """Unit tests for _cleanShippingAddressPart function."""
