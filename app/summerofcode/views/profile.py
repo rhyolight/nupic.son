@@ -43,6 +43,9 @@ from soc.modules.gsoc.views.helper import url_patterns as soc_url_patterns
 from summerofcode.views.helper import urls
 
 
+_ALPHANUMERIC_CHARACTERS_ONLY = unicode(
+    'Please use alphanumeric characters (A-z, 0-9) and whitespaces only.')
+
 PROFILE_ORG_MEMBER_CREATE_PAGE_NAME = translation.ugettext(
     'Create organization member profile')
 
@@ -65,34 +68,59 @@ BLOG_HELP_TEXT = translation.ugettext(
 PHOTO_URL_HELP_TEXT = translation.ugettext(
     'URL to 64x64 pixel thumbnail image.')
 
-FIRST_NAME_HELP_TEXT = translation.ugettext('TODO(daniel): complete')
+FIRST_NAME_HELP_TEXT = translation.ugettext(
+    'First name of the participant. ' + _ALPHANUMERIC_CHARACTERS_ONLY)
 
-LAST_NAME_HELP_TEXT = translation.ugettext('TODO(daniel): complete')
+LAST_NAME_HELP_TEXT = translation.ugettext(
+    'Last name of the participant. ' + _ALPHANUMERIC_CHARACTERS_ONLY)
 
-EMAIL_HELP_TEXT = translation.ugettext('TODO(daniel): complete')
+EMAIL_HELP_TEXT = translation.ugettext(
+    'Email address of the participant. All program related emails '
+    'will be sent to this address. Please note this information is kept '
+    'private and visible only to program administrators.')
 
-PHONE_HELP_TEXT = translation.ugettext('TODO(daniel): complete')
+PHONE_HELP_TEXT = translation.ugettext(
+    'Phone number of the participant. Please use digits only and remember '
+    'to include the country code. Please note this information is kept '
+    'private and visible only to program administrators who may need to '
+    'contact you occasionally.')
 
 RESIDENTIAL_STREET_HELP_TEXT = translation.ugettext(
-    'Street number and name plus optional suite/apartment number.')
+    'Street number and name information plus optional suite/apartment number. '
+    + _ALPHANUMERIC_CHARACTERS_ONLY)
 
-RESIDENTIAL_CITY_HELP_TEXT = translation.ugettext('TODO(daniel): complete')
+RESIDENTIAL_CITY_HELP_TEXT = translation.ugettext(
+    'City information. ' + _ALPHANUMERIC_CHARACTERS_ONLY)
 
-RESIDENTIAL_PROVINCE_HELP_TEXT = translation.ugettext('TODO(daniel): complete')
+RESIDENTIAL_PROVINCE_HELP_TEXT = translation.ugettext(
+    'State or province information. In case you live in the United States, '
+    'type the two letter state abbreviation. ' + _ALPHANUMERIC_CHARACTERS_ONLY)
 
-RESIDENTIAL_COUNTRY_HELP_TEXT = translation.ugettext('TODO(daniel): complete')
+RESIDENTIAL_COUNTRY_HELP_TEXT = translation.ugettext('Country information.')
 
-RESIDENTIAL_POSTAL_CODE_HELP_TEXT = translation.ugettext('TODO(daniel): do it')
+RESIDENTIAL_POSTAL_CODE_HELP_TEXT = translation.ugettext(
+    'ZIP/Postal code information.')
 
-BIRTH_DATE_HELP_TEXT = translation.ugettext('TODO(daniel): complete')
+BIRTH_DATE_HELP_TEXT = translation.ugettext(
+    'Birth date of the participant. Use YYYY-MM-DD format. Please note this '
+    'information is kept private and visible only to program administrators '
+    'in order to determine program eligibility.')
 
-TEE_STYLE_HELP_TEXT = translation.ugettext('TODO(daniel): complete')
+TEE_STYLE_HELP_TEXT = translation.ugettext(
+    'Style of a T-Shirt that may be sent to you upon program completion.')
 
-TEE_SIZE_HELP_TEXT = translation.ugettext('TODO(daniel): complete')
+TEE_SIZE_HELP_TEXT = translation.ugettext(
+    'Size of a T-Shirt that may be sent to you upon program completion.')
 
-GENDER_HELP_TEXT = translation.ugettext('TODO(daniel): complete')
+GENDER_HELP_TEXT = translation.ugettext(
+    'Gender information of the participant. Please note this information'
+    'is kept private and visible only to program administrators for '
+    'statistical purposes.')
 
-PROGRAM_KNOWLEDGE_HELP_TEXT = translation.ugettext('TODO(daniel): complete')
+PROGRAM_KNOWLEDGE_HELP_TEXT = translation.ugettext(
+    'Please be as specific as possible, e.g. blog post (include URL '
+    'if possible), mailing list (please include list address), information '
+    'session (please include location and speakers if you can), etc.')
 
 USER_ID_LABEL = translation.ugettext('Username')
 
