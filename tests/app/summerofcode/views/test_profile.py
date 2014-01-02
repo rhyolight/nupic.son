@@ -21,6 +21,7 @@ from google.appengine.ext import ndb
 
 from django import forms as django_forms
 
+from melange.models import address as address_model
 from melange.models import profile as profile_model
 from melange.models import user as user_model
 
@@ -45,10 +46,23 @@ TEST_RESIDENTIAL_CITY = 'Test City'
 TEST_RESIDENTIAL_PROVINCE = 'CA'
 TEST_RESIDENTIAL_POSTAL_CODE = '90000'
 TEST_RESIDENTIAL_COUNTRY = 'United States'
+TEST_SHIPPING_NAME = 'Test Shipping Name'
+TEST_SHIPPING_STREET = 'Test Shipping Street'
+TEST_SHIPPING_CITY = 'Test Shipping City'
+TEST_SHIPPING_PROVINCE = 'DC'
+TEST_SHIPPING_POSTAL_CODE = '20000'
+TEST_SHIPPING_COUNTRY = 'United States'
 TEST_TEE_SIZE = profile_view._TEE_SIZE_M_ID
 TEST_TEE_STYLE = profile_view._TEE_STYLE_FEMALE_ID
 TEST_USER_ID = 'test_user_id'
 TEST_WEB_PAGE = u'http://www.web.page.com/'
+
+OTHER_TEST_SHIPPING_NAME = 'Other Shipping Name'
+OTHER_TEST_SHIPPING_STREET = 'Other Shipping Street'
+OTHER_TEST_SHIPPING_CITY = 'Other Shipping City'
+OTHER_TEST_SHIPPING_PROVINCE = 'AL'
+OTHER_TEST_SHIPPING_POSTAL_CODE = '35005'
+OTHER_TEST_SHIPPING_COUNTRY = 'United States'
 
 
 def _getProfileRegisterAsOrgMemberUrl(program_key):
@@ -136,7 +150,12 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.init()
-    self.profile = profile_utils.seedNDBProfile(self.program.key())
+    shipping_address = address_model.Address(
+        name=TEST_SHIPPING_NAME, street=TEST_SHIPPING_STREET,
+        city=TEST_SHIPPING_CITY, province=TEST_SHIPPING_PROVINCE,
+        country=TEST_SHIPPING_COUNTRY, postal_code=TEST_SHIPPING_POSTAL_CODE)
+    self.profile = profile_utils.seedNDBProfile(
+        self.program.key(), shipping_address=shipping_address)
     profile_utils.loginNDB(self.profile.key.parent().get())
 
   def testPageLoads(self):
@@ -160,6 +179,13 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
         'residential_province': TEST_RESIDENTIAL_PROVINCE,
         'residential_country': TEST_RESIDENTIAL_COUNTRY,
         'residential_postal_code': TEST_RESIDENTIAL_POSTAL_CODE,
+        'is_shipping_address_different': True,
+        'shipping_name': OTHER_TEST_SHIPPING_NAME,
+        'shipping_street': OTHER_TEST_SHIPPING_STREET,
+        'shipping_city': OTHER_TEST_SHIPPING_CITY,
+        'shipping_province': OTHER_TEST_SHIPPING_PROVINCE,
+        'shipping_country': OTHER_TEST_SHIPPING_COUNTRY,
+        'shipping_postal_code': OTHER_TEST_SHIPPING_POSTAL_CODE,
         'birth_date': TEST_BIRTH_DATE.strftime('%Y-%m-%d'),
         'tee_style': TEST_TEE_STYLE,
         'tee_size': TEST_TEE_SIZE,
@@ -181,6 +207,8 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(profile.first_name, TEST_FIRST_NAME)
     self.assertEqual(profile.last_name, TEST_LAST_NAME)
     self.assertEqual(profile.contact.phone, TEST_PHONE)
+
+    # check residential address properties
     self.assertEqual(
         profile.residential_address.street, TEST_RESIDENTIAL_STREET)
     self.assertEqual(
@@ -191,11 +219,58 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
         profile.residential_address.country, TEST_RESIDENTIAL_COUNTRY)
     self.assertEqual(
         profile.residential_address.postal_code, TEST_RESIDENTIAL_POSTAL_CODE)
+
+    # check shipping address properties
+    self.assertEqual(
+        profile.shipping_address.name, OTHER_TEST_SHIPPING_NAME)
+    self.assertEqual(
+        profile.shipping_address.street, OTHER_TEST_SHIPPING_STREET)
+    self.assertEqual(
+        profile.shipping_address.city, OTHER_TEST_SHIPPING_CITY)
+    self.assertEqual(
+        profile.shipping_address.province, OTHER_TEST_SHIPPING_PROVINCE)
+    self.assertEqual(
+        profile.shipping_address.country, OTHER_TEST_SHIPPING_COUNTRY)
+    self.assertEqual(
+        profile.shipping_address.postal_code, OTHER_TEST_SHIPPING_POSTAL_CODE)
+
     self.assertEqual(profile.birth_date, TEST_BIRTH_DATE)
     #: TODO(daniel): handle program_knowledge
     #self.assertEqual(profile.program_knowledge, TEST_PROGRAM_KNOWLEDGE)
     self.assertEqual(profile.tee_style, profile_model.TeeStyle.FEMALE)
     self.assertEqual(profile.tee_size, profile_model.TeeSize.M)
+
+  def testClearShippingAddress(self):
+    """Tests that shipping address is cleared properly."""
+    postdata = {
+        'public_name': TEST_PUBLIC_NAME,
+        'web_page': TEST_WEB_PAGE,
+        'blog': TEST_BLOG,
+        'photo_url': TEST_PHOTO_URL,
+        'first_name': TEST_FIRST_NAME,
+        'last_name': TEST_LAST_NAME,
+        'email': TEST_EMAIL,
+        'phone': TEST_PHONE,
+        'residential_street': TEST_RESIDENTIAL_STREET,
+        'residential_city': TEST_RESIDENTIAL_CITY,
+        'residential_province': TEST_RESIDENTIAL_PROVINCE,
+        'residential_country': TEST_RESIDENTIAL_COUNTRY,
+        'residential_postal_code': TEST_RESIDENTIAL_POSTAL_CODE,
+        'is_shipping_address_different': False,
+        'birth_date': TEST_BIRTH_DATE.strftime('%Y-%m-%d'),
+        'tee_style': TEST_TEE_STYLE,
+        'tee_size': TEST_TEE_SIZE,
+        'gender': TEST_GENDER,
+        'program_knowledge': TEST_PROGRAM_KNOWLEDGE,
+        }
+    response = self.post(
+        _getEditProfileUrl(self.program.key()), postdata=postdata)
+    self.assertResponseRedirect(
+        response, url=_getEditProfileUrl(self.program.key()))
+
+    # check that shipping address is cleared
+    profile = self.profile.key.get()
+    self.assertIsNone(profile.shipping_address)
 
 
 class CleanShippingAddressPartTest(unittest.TestCase):
