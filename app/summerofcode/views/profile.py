@@ -757,6 +757,31 @@ def _adoptResidentialAddressPropertiesForForm(address_properties):
       }
 
 
+def _adoptShippingAddressPropertiesForForm(address_properties):
+  """Adopts properties of a address entity, which are persisted in datastore
+  as shipping address, to representation which may be passed to
+  populate _UserProfileForm.
+
+  Args:
+    address_properties: A dict containing shipping address properties
+      as persisted in datastore or None, if no shipping address is specified.
+
+  Returns:
+    A dict mapping properties of address model to values which can be
+    populated to a user profile form.
+  """
+  address_properties = address_properties or {}
+  return {
+      'is_shipping_address_different': bool(address_properties),
+      'shipping_name': address_properties.get('name'),
+      'shipping_street': address_properties.get('street'),
+      'shipping_city': address_properties.get('city'),
+      'shipping_country': address_properties.get('country'),
+      'shipping_postal_code': address_properties.get('postal_code'),
+      'shipping_province': address_properties.get('province'),
+      }
+
+
 def _adoptProfilePropertiesForForm(profile_properties):
   """Adopts properties of a profile entity, which are persisted in datastore,
   to representation which may be passed to populate _UserProfileForm.
@@ -777,6 +802,11 @@ def _adoptProfilePropertiesForForm(profile_properties):
   form_data.update(
       _adoptResidentialAddressPropertiesForForm(
           profile_properties[profile_model.Profile.residential_address._name]))
+
+  # shipping address information
+  form_data.update(
+      _adoptShippingAddressPropertiesForForm(
+          profile_properties[profile_model.Profile.shipping_address._name]))
 
   # contact information
   if profile_model.Profile.contact._name in profile_properties:
