@@ -56,7 +56,8 @@ PROFILE_EDIT_PAGE_NAME = translation.ugettext(
 _PUBLIC_INFORMATION_GROUP = translation.ugettext('1. Public information')
 _CONTACT_GROUP = translation.ugettext('2. Contact information')
 _RESIDENTIAL_ADDRESS_GROUP = translation.ugettext('3. Residential address')
-_OTHER_INFORMATION_GROUP = translation.ugettext('4. Other information')
+_SHIPPING_ADDRESS_GROUP = translation.ugettext('4. Shipping address')
+_OTHER_INFORMATION_GROUP = translation.ugettext('5. Other information')
 
 USER_ID_HELP_TEXT = translation.ugettext(
     'Used as part of various URL links throughout the site. '
@@ -105,7 +106,32 @@ RESIDENTIAL_PROVINCE_HELP_TEXT = translation.ugettext(
 RESIDENTIAL_COUNTRY_HELP_TEXT = translation.ugettext('Country information.')
 
 RESIDENTIAL_POSTAL_CODE_HELP_TEXT = translation.ugettext(
-    'ZIP/Postal code information.')
+    'ZIP/Postal code information. ' + _ALPHANUMERIC_CHARACTERS_ONLY)
+
+IS_SHIPPING_ADDRESS_DIFFERENT_HELP_TEXT = translation.ugettext(
+    'Please check this box if your shipping address is different than '
+    'the residential address provided above.')
+
+SHIPPING_NAME_HELP_TEXT = translation.ugettext(
+    'Fill in the name of the person who should be receiving your packages. '
+    + _ALPHANUMERIC_CHARACTERS_ONLY)
+
+SHIPPING_STREET_HELP_TEXT = translation.ugettext(
+    'Street number and name information plus optional suite/apartment number. '
+    + _ALPHANUMERIC_CHARACTERS_ONLY)
+
+SHIPPING_CITY_HELP_TEXT = translation.ugettext(
+    'City information. ' + _ALPHANUMERIC_CHARACTERS_ONLY)
+
+SHIPPING_PROVINCE_HELP_TEXT = translation.ugettext(
+    'State or province information. In case packages should be sent to '
+    'the United States, type the two letter state abbreviation. '
+    + _ALPHANUMERIC_CHARACTERS_ONLY)
+
+SHIPPING_COUNTRY_HELP_TEXT = translation.ugettext('Country information.')
+
+SHIPPING_POSTAL_CODE_HELP_TEXT = translation.ugettext(
+    'ZIP/Postal code information. ' + _ALPHANUMERIC_CHARACTERS_ONLY)
 
 BIRTH_DATE_HELP_TEXT = translation.ugettext(
     'Birth date of the participant. Use YYYY-MM-DD format. Please note this '
@@ -155,6 +181,21 @@ RESIDENTIAL_PROVINCE_LABEL = translation.ugettext('State/Province')
 RESIDENTIAL_COUNTRY_LABEL = translation.ugettext('Country/Territory')
 
 RESIDENTIAL_POSTAL_CODE_LABEL = translation.ugettext('ZIP/Postal code')
+
+IS_SHIPPING_ADDRESS_DIFFERENT_LABEL = translation.ugettext(
+    'Shipping address is different than residential address')
+
+SHIPPING_NAME_LABEL = translation.ugettext('Full recipient name')
+
+SHIPPING_STREET_LABEL = translation.ugettext('Address')
+
+SHIPPING_CITY_LABEL = translation.ugettext('City')
+
+SHIPPING_PROVINCE_LABEL = translation.ugettext('State/Province')
+
+SHIPPING_COUNTRY_LABEL = translation.ugettext('Country/Territory')
+
+SHIPPING_POSTAL_CODE_LABEL = translation.ugettext('ZIP/Postal code')
 
 BIRTH_DATE_LABEL = translation.ugettext('Birth date')
 
@@ -222,6 +263,9 @@ _RESIDENTIAL_ADDRESS_PROPERTIES_FORM_KEYS = [
     'residential_street', 'residential_city', 'residential_province',
     'residential_country', 'residential_postal_code']
 
+_SHIPPING_ADDRESS_PROPERTIES_FORM_KEYS = [
+    'shipping_name', 'shipping_street', 'shipping_city', 'shipping_province',
+    'shipping_country', 'shipping_postal_code']
 
 def cleanUserId(user_id):
   """Cleans user_id field.
@@ -321,6 +365,38 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
       required=True, label=RESIDENTIAL_POSTAL_CODE_LABEL,
       help_text=RESIDENTIAL_POSTAL_CODE_HELP_TEXT)
 
+  is_shipping_address_different = django_forms.BooleanField(
+      required=False, label=IS_SHIPPING_ADDRESS_DIFFERENT_LABEL,
+      help_text=IS_SHIPPING_ADDRESS_DIFFERENT_HELP_TEXT)
+
+  shipping_name = django_forms.CharField(
+      required=False, label=SHIPPING_NAME_LABEL,
+      help_text=SHIPPING_NAME_HELP_TEXT)
+
+  shipping_street = django_forms.CharField(
+      required=False, label=SHIPPING_STREET_LABEL,
+      help_text=SHIPPING_STREET_HELP_TEXT)
+
+  shipping_city = django_forms.CharField(
+      required=False, label=SHIPPING_CITY_LABEL,
+      help_text=SHIPPING_CITY_HELP_TEXT)
+
+  shipping_province = django_forms.CharField(
+      required=False, label=SHIPPING_PROVINCE_LABEL,
+      help_text=SHIPPING_PROVINCE_HELP_TEXT)
+
+  shipping_country = django_forms.CharField(
+      required=False,label=SHIPPING_COUNTRY_LABEL,
+      help_text=SHIPPING_COUNTRY_HELP_TEXT,
+      widget=django_forms.Select(
+          choices=[('', 'Not Applicable')] + [
+              (country, country)
+              for country in countries.COUNTRIES_AND_TERRITORIES]))
+
+  shipping_postal_code = django_forms.CharField(
+      required=False, label=SHIPPING_POSTAL_CODE_LABEL,
+      help_text=SHIPPING_POSTAL_CODE_HELP_TEXT)
+
   birth_date = django_forms.DateField(
       required=True, label=BIRTH_DATE_LABEL, help_text=BIRTH_DATE_HELP_TEXT)
 
@@ -374,6 +450,15 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
     self.fields['residential_province'].group = _RESIDENTIAL_ADDRESS_GROUP
     self.fields['residential_country'].group = _RESIDENTIAL_ADDRESS_GROUP
     self.fields['residential_postal_code'].group = _RESIDENTIAL_ADDRESS_GROUP
+
+    # group residential address related fields together
+    self.fields['is_shipping_address_different'].group = _SHIPPING_ADDRESS_GROUP
+    self.fields['shipping_name'].group = _SHIPPING_ADDRESS_GROUP
+    self.fields['shipping_street'].group = _SHIPPING_ADDRESS_GROUP
+    self.fields['shipping_city'].group = _SHIPPING_ADDRESS_GROUP
+    self.fields['shipping_province'].group = _SHIPPING_ADDRESS_GROUP
+    self.fields['shipping_country'].group = _SHIPPING_ADDRESS_GROUP
+    self.fields['shipping_postal_code'].group = _SHIPPING_ADDRESS_GROUP
 
     # group other information related fields together
     self.fields['birth_date'].group = _OTHER_INFORMATION_GROUP
@@ -447,6 +532,17 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
     """
     return self._getPropertiesForFields(
         _RESIDENTIAL_ADDRESS_PROPERTIES_FORM_KEYS)
+
+  def getShippingAddressProperties(self):
+    """Returns properties of the shipping address that were submitted in
+    this form.
+
+    Returns:
+      A dict mapping shipping address properties to the corresponding values
+      or None, if the shipping address has not been specified.
+    """
+    return (self._getPropertiesForFields(_SHIPPING_ADDRESS_PROPERTIES_FORM_KEYS)
+        if self.cleaned_data['is_shipping_address_different'] else None)
 
 
 _TEE_STYLE_ID_TO_ENUM_LINK = (
