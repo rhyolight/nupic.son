@@ -52,6 +52,12 @@ PROFILE_ORG_MEMBER_CREATE_PAGE_NAME = translation.ugettext(
 PROFILE_EDIT_PAGE_NAME = translation.ugettext(
     'Edit profile')
 
+# names of structures to group related fields together
+_PUBLIC_INFORMATION_GROUP = translation.ugettext('1. Public information')
+_CONTACT_GROUP = translation.ugettext('2. Contact information')
+_RESIDENTIAL_ADDRESS_GROUP = translation.ugettext('3. Residential address')
+_OTHER_INFORMATION_GROUP = translation.ugettext('4. Other information')
+
 USER_ID_HELP_TEXT = translation.ugettext(
     'Used as part of various URL links throughout the site. '
     'ASCII alphanumeric characters, digits, and underscores only.')
@@ -349,6 +355,32 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
     """
     super(_UserProfileForm, self).__init__(**kwargs)
     self.terms_of_service = terms_of_service
+
+    # group public information related fields together
+    self.fields['public_name'].group = _PUBLIC_INFORMATION_GROUP
+    self.fields['web_page'].group = _PUBLIC_INFORMATION_GROUP
+    self.fields['blog'].group = _PUBLIC_INFORMATION_GROUP
+    self.fields['photo_url'].group = _PUBLIC_INFORMATION_GROUP
+
+    # group contact information related fields together
+    self.fields['first_name'].group = _CONTACT_GROUP
+    self.fields['last_name'].group = _CONTACT_GROUP
+    self.fields['email'].group = _CONTACT_GROUP
+    self.fields['phone'].group = _CONTACT_GROUP
+
+    # group residential address related fields together
+    self.fields['residential_street'].group = _RESIDENTIAL_ADDRESS_GROUP
+    self.fields['residential_city'].group = _RESIDENTIAL_ADDRESS_GROUP
+    self.fields['residential_province'].group = _RESIDENTIAL_ADDRESS_GROUP
+    self.fields['residential_country'].group = _RESIDENTIAL_ADDRESS_GROUP
+    self.fields['residential_postal_code'].group = _RESIDENTIAL_ADDRESS_GROUP
+
+    # group other information related fields together
+    self.fields['birth_date'].group = _OTHER_INFORMATION_GROUP
+    self.fields['tee_style'].group = _OTHER_INFORMATION_GROUP
+    self.fields['tee_size'].group = _OTHER_INFORMATION_GROUP
+    self.fields['gender'].group = _OTHER_INFORMATION_GROUP
+    self.fields['program_knowledge'].group = _OTHER_INFORMATION_GROUP
 
     # remove terms of service field if no document is defined
     if not self.terms_of_service:
