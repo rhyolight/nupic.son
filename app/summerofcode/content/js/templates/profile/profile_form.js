@@ -27,27 +27,30 @@
     });
 
     var shippingAddressElements = [
-        ".shipping_name", ".shipping_street", ".shipping_city", ".shipping_province",
-        ".shipping_country", ".shipping_postal_code"];
+        ".shipping_name",
+        ".shipping_street",
+        ".shipping_city",
+        ".shipping_province",
+        ".shipping_country",
+        ".shipping_postal_code"].join();
 
-	// Initialize Shipping Address section
-	jQuery("#is_shipping_address_different").each(function () {
-	  if (this.checked) {
-	    jQuery(shippingAddressElements.join(", ")).show(0); 
-	  } else {
-	    jQuery(shippingAddressElements.join(", ")).hide(0);
-	  };
-	});
+    // Initialize Shipping Address section
+    var $isShippingAddressDifferent = 
+        jQuery("#is_shipping_address_different");
+    var showShippingAddressElements =
+        $isShippingAddressDifferent.prop("checked");
+    jQuery(shippingAddressElements).toggle(showShippingAddressElements);
 
-	// Shipping Address related fields should be visible only when the checkbox is checked.
-    jQuery("#is_shipping_address_different").change(function () {
-	  if (this.checked) {
-	    jQuery(shippingAddressElements.join(", ")).show(0); 
-	  } else {
-	    jQuery(shippingAddressElements.join(", ")).hide(0);
-	    jQuery(shippingAddressElements.join(", ")).find("input, select").val("");
-	    jQuery.uniform.update();
-	  }
+    // Shipping Address related fields should be visible only 
+    // when the checkbox is checked.
+    $isShippingAddressDifferent.change(function () {
+      if (this.checked) {
+        jQuery(shippingAddressElements).show(); 
+      } else {
+        jQuery(shippingAddressElements).hide();
+        jQuery(shippingAddressElements).find(":input").val("");
+        jQuery.uniform.update();
+      }
     });
   }
 );
