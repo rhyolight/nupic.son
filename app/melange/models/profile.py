@@ -22,6 +22,7 @@ from protorpc import messages
 from melange.appengine import db
 from melange.models import address as address_model
 from melange.models import contact as contact_model
+from melange.utils import countries
 
 
 class TeeStyle(messages.Enum):
@@ -70,8 +71,48 @@ class Status(messages.Enum):
   BANNED = 2
 
 
+class Degree(messages.Enum):
+  """Class that enumerates possible types of supported degrees."""
+  #: The undergraduate degree.
+  UNDERGRADUATE = 1
+
+  #: The master's degree.
+  MASTERS = 2
+
+  #: Doctor of Philosophy degree.
+  PHD = 3
+
+
+class Education(ndb.Model):
+  """Model that represents education of a specified student."""
+  #: Unique identifier of the school.
+  school_id = ndb.StringProperty(required=False)
+
+  #: Country in which the school is located.
+  school_country = ndb.StringProperty(
+      required=False, choices=countries.COUNTRIES_AND_TERRITORIES)
+
+  #: Expected graduation year.
+  expected_graduation = ndb.IntegerProperty()
+
+
+class PostSecondaryEducation(Education):
+  """Model that represents post-secondary education (e.g. university or college)
+  of a specified student.
+  """
+  #: Major of the student.
+  major = ndb.StringProperty()
+
+  #: Degree which is currently being pursued by the student.
+  degree = msgprop.EnumProperty(Degree)
+
+
 class StudentData(ndb.Model):
-  """TODO(daniel): complete this class."""
+  """Model that represents student information to be associated with
+  the specified profile.
+  """
+  #: Education information of the student.
+  education = ndb.StructuredProperty(Education, required=True)
 
 
 class Profile(ndb.Model):
