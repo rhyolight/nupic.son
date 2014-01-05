@@ -23,8 +23,10 @@ from django.utils import translation
 from melange import types
 from melange.logic import address as address_logic
 from melange.logic import contact as contact_logic
+from melange.logic import education as education_logic
 from melange.logic import profile as profile_logic
 from melange.logic import user as user_logic
+from melange.models import education as education_model
 from melange.models import profile as profile_model
 from melange.request import access
 from melange.request import exception
@@ -58,6 +60,7 @@ _CONTACT_GROUP = translation.ugettext('2. Contact information')
 _RESIDENTIAL_ADDRESS_GROUP = translation.ugettext('3. Residential address')
 _SHIPPING_ADDRESS_GROUP = translation.ugettext('4. Shipping address')
 _OTHER_INFORMATION_GROUP = translation.ugettext('5. Other information')
+_EDUCATION_GROUP = translation.ugettext('6. Education')
 
 USER_ID_HELP_TEXT = translation.ugettext(
     'Used as part of various URL links throughout the site. '
@@ -154,6 +157,15 @@ PROGRAM_KNOWLEDGE_HELP_TEXT = translation.ugettext(
     'if possible), mailing list (please include list address), information '
     'session (please include location and speakers if you can), etc.')
 
+SCHOOL_COUNTRY_HELP_TEXT = translation.ugettext('TODO(daniel): complete')
+
+SCHOOL_NAME_HELP_TEXT = translation.ugettext('TODO(daniel): complete')
+
+MAJOR_HELP_TEXT = translation.ugettext('Your major at the university.')
+
+DEGREE_HELP_TEXT = translation.ugettext(
+    'Select degree that is the one you are working towards today.')
+
 USER_ID_LABEL = translation.ugettext('Username')
 
 PUBLIC_NAME_LABEL = translation.ugettext('Public name')
@@ -211,6 +223,14 @@ PROGRAM_KNOWLEDGE_LABEL = translation.ugettext(
 TERMS_OF_SERVICE_LABEL = translation.ugettext(
     'I have read and agree to the terms of service')
 
+SCHOOL_COUNTRY_LABEL = translation.ugettext('School country')
+
+SCHOOL_NAME_LABEL = translation.ugettext('School name')
+
+MAJOR_LABEL = translation.ugettext('Major')
+
+DEGREE_LABEL = translation.ugettext('Degree')
+
 TERMS_OF_SERVICE_NOT_ACCEPTED = translation.ugettext(
     'You cannot register without agreeing to the Terms of Service')
 
@@ -251,6 +271,15 @@ GENDER_CHOICES = (
     (_GENDER_OTHER_ID, 'Other'),
     (_GENDER_NOT_ANSWERED_ID, 'I would prefer not to answer'))
 
+_DEGREE_UNDERGRADUATE_ID = 'undergraduate'
+_DEGREE_MASTERS_ID = 'masters'
+_DEGREE_PHD_ID = 'phd'
+
+DEGREE_CHOICES = (
+    (_DEGREE_UNDERGRADUATE_ID, translation.ugettext('Undergraduate')),
+    (_DEGREE_MASTERS_ID, translation.ugettext('Master\'s')),
+    (_DEGREE_PHD_ID, translation.ugettext('PhD')))
+
 _USER_PROPERTIES_FORM_KEYS = ['user_id']
 
 _PROFILE_PROPERTIES_FORM_KEYS = [
@@ -266,6 +295,9 @@ _RESIDENTIAL_ADDRESS_PROPERTIES_FORM_KEYS = [
 _SHIPPING_ADDRESS_PROPERTIES_FORM_KEYS = [
     'shipping_name', 'shipping_street', 'shipping_city', 'shipping_province',
     'shipping_country', 'shipping_postal_code']
+
+_STUDENT_DATA_PROPERTIES_FORM_FIELDS = [
+    'school_country', 'school_name', 'major', 'degree']
 
 def cleanUserId(user_id):
   """Cleans user_id field.
@@ -446,17 +478,38 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
   terms_of_service = django_forms.BooleanField(
       required=True, label=TERMS_OF_SERVICE_LABEL)
 
+  school_country = django_forms.CharField(
+      required=True, label=SCHOOL_COUNTRY_LABEL,
+      help_text=SCHOOL_COUNTRY_HELP_TEXT,
+      widget=django_forms.Select(
+          choices=[
+              (country, country)
+              for country in countries.COUNTRIES_AND_TERRITORIES]))
+
+  school_name = django_forms.CharField(
+      required=True, label=SCHOOL_NAME_LABEL, help_text=SCHOOL_NAME_HELP_TEXT)
+
+  major = django_forms.CharField(
+      required=True, label=MAJOR_LABEL, help_text=MAJOR_HELP_TEXT)
+
+  degree = django_forms.CharField(
+      required=True, label=DEGREE_LABEL, help_text=DEGREE_HELP_TEXT,
+      widget=django_forms.Select(choices=DEGREE_CHOICES))
+
   Meta = object
 
-  def __init__(self, terms_of_service=None, **kwargs):
+  def __init__(self, terms_of_service=None, has_student_data=None, **kwargs):
     """Initializes a new form.
 
     Args:
       terms_of_service: Document with Terms of Service that has to be accepted
         by the user.
+      has_student_data: If specified to True, the form will contain fields
+        related to student data for the profile.
     """
     super(_UserProfileForm, self).__init__(**kwargs)
     self.terms_of_service = terms_of_service
+    self.has_student_data = has_student_data
 
     # group public information related fields together
     self.fields['public_name'].group = _PUBLIC_INFORMATION_GROUP
@@ -499,6 +552,17 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
     else:
       self.fields['terms_of_service'].widget = soc_forms.TOSWidget(
           self.terms_of_service.content)
+
+    if not self.has_student_data:
+      # remove all fields associated with student data
+      for field_name in _STUDENT_DATA_PROPERTIES_FORM_FIELDS:
+        del self.fields[field_name]
+    else:
+      # group education related fields together
+      self.fields['school_country'].group = _EDUCATION_GROUP
+      self.fields['school_name'].group = _EDUCATION_GROUP
+      self.fields['major'].group = _EDUCATION_GROUP
+      self.fields['degree'].group = _EDUCATION_GROUP
 
   def clean_user_id(self):
     """Cleans user_id field.
@@ -648,6 +712,16 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
     return (self._getPropertiesForFields(_SHIPPING_ADDRESS_PROPERTIES_FORM_KEYS)
         if self.cleaned_data['is_shipping_address_different'] else None)
 
+  def getStudentDataProperties(self):
+    """Returns properties of the student data that were submitted in this form.
+
+    Returns:
+      A dict mapping student data properties to the corresponding values
+      or None, if student data does not apply to this form.
+    """
+    return (self._getPropertiesForFields(_STUDENT_DATA_PROPERTIES_FORM_FIELDS)
+        if self.has_student_data else None)
+
 
 _TEE_STYLE_ID_TO_ENUM_LINK = (
     (_TEE_STYLE_FEMALE_ID, profile_model.TeeStyle.FEMALE),
@@ -680,6 +754,14 @@ _GENDER_ID_TO_ENUM_LINK = (
 _GENDER_ID_TO_ENUM_MAP = dict(_GENDER_ID_TO_ENUM_LINK)
 _GENDER_ENUM_TO_ID_MAP = dict((v, k) for (k, v) in _GENDER_ID_TO_ENUM_LINK)
 
+
+_DEGREE_ID_TO_ENUM_LINK = (
+    (_DEGREE_UNDERGRADUATE_ID, education_model.Degree.UNDERGRADUATE),
+    (_DEGREE_MASTERS_ID, education_model.Degree.MASTERS),
+    (_DEGREE_PHD_ID, education_model.Degree.PHD)
+    )
+_DEGREE_ID_TO_ENUM_MAP = dict(_DEGREE_ID_TO_ENUM_LINK)
+_DEGREE_ENUM_TO_ID_MAP = dict((v, k) for (k, v) in _DEGREE_ID_TO_ENUM_LINK)
 
 def _adaptProfilePropertiesForDatastore(form_data):
   """Adopts properties corresponding to profile's properties, which
@@ -717,6 +799,31 @@ def _adaptProfilePropertiesForDatastore(form_data):
         [form_data.get('terms_of_service')])
 
   return properties
+
+
+def _adaptStudentDataPropertiesForDatastore(form_data):
+  """Adopts properties corresponding to profile's student data properties, which
+  have been submitted in a form, to the format that is compliant with
+  profile_model.StudentData model.
+
+  Args:
+    form_data: A dict containing data submitted in a form.
+
+  Returns:
+    A dict mapping properties of student data model to values based on
+    data submitted in a form.
+  """
+  school_id = form_data.get('school_name')
+  school_country = form_data.get('school_country')
+  degree = _DEGREE_ID_TO_ENUM_MAP[form_data.get('degree')]
+  # TODO(daniel): support it
+  expected_graduation = None
+  major = form_data.get('major'),
+
+  education = education_logic.createPostSecondaryEducation(
+      school_id, school_country, expected_graduation, major, degree)
+
+  return {profile_model.StudentData.education._name: education}
 
 
 def _adoptContactPropertiesForForm(contact_properties):
@@ -758,7 +865,7 @@ def _adoptResidentialAddressPropertiesForForm(address_properties):
 
 
 def _adoptShippingAddressPropertiesForForm(address_properties):
-  """Adopts properties of a address entity, which are persisted in datastore
+  """Adopts properties of an address entity, which are persisted in datastore
   as shipping address, to representation which may be passed to
   populate _UserProfileForm.
 
@@ -779,6 +886,32 @@ def _adoptShippingAddressPropertiesForForm(address_properties):
       'shipping_country': address_properties.get('country'),
       'shipping_postal_code': address_properties.get('postal_code'),
       'shipping_province': address_properties.get('province'),
+      }
+
+
+def _adoptStudentDataPropertiesForForm(student_data_properties):
+  """Adopts properties of a student data entity, which are persisted in
+  datastore, to representation which may be passed to populate _UserProfileForm.
+
+  Args:
+    student_data_properties: A dict containing student data properties as
+      persisted in datastore.
+
+  Returns:
+    A dict mapping properties of student profile model to values which can be
+    populated to a user profile form.
+  """
+  student_data_properties = student_data_properties or {}
+
+  education = student_data_properties[profile_model.StudentData.education._name]
+  return {
+      'school_country': education.get(
+          education_model.Education.school_country._name),
+      'school_name': education.get(education_model.Education.school_id._name),
+      'major': education.get(
+          education_model.PostSecondaryEducation.major._name),
+      'degree': _DEGREE_ENUM_TO_ID_MAP[
+          education.get(education_model.PostSecondaryEducation.degree._name)]
       }
 
 
@@ -843,6 +976,7 @@ def _profileFormToRegisterAsOrgMember(
   return form
 
 
+# TODO(daniel): should this function also handle student profiles?
 def _profileFormToEditProfile(**kwargs):
   form = _UserProfileForm(**kwargs)
 
@@ -1003,6 +1137,14 @@ def _getProfileEntityPropertiesFromForm(form):
     raise exception.BadRequest(message=result.extra)
   else:
     profile_properties['contact'] = result.extra
+
+  student_data_properties = form.getStudentDataProperties()
+  if student_data_properties:
+    result = _adaptStudentDataPropertiesForDatastore(student_data_properties)
+    if not result:
+      raise exception.BadRequest(message=result.extra)
+    else:
+      profile_properties['student_data'] = result.extra
 
   return profile_properties
 
