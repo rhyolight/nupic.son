@@ -240,6 +240,10 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(profile.tee_style, profile_model.TeeStyle.FEMALE)
     self.assertEqual(profile.tee_size, profile_model.TeeSize.M)
 
+    # check profile is not a student
+    self.assertFalse(profile.is_student)
+    self.assertIsNone(profile.student_data)
+
   def testClearShippingAddress(self):
     """Tests that shipping address is cleared properly."""
     postdata = {
