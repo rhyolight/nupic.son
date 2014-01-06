@@ -61,6 +61,7 @@ _RESIDENTIAL_ADDRESS_GROUP = translation.ugettext('3. Residential address')
 _SHIPPING_ADDRESS_GROUP = translation.ugettext('4. Shipping address')
 _OTHER_INFORMATION_GROUP = translation.ugettext('5. Other information')
 _EDUCATION_GROUP = translation.ugettext('6. Education')
+_TERMS_OF_SERVICE_GROUP = translation.ugettext('7. Terms Of Service')
 
 USER_ID_HELP_TEXT = translation.ugettext(
     'Used as part of various URL links throughout the site. '
@@ -552,6 +553,7 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
     else:
       self.fields['terms_of_service'].widget = soc_forms.TOSWidget(
           self.terms_of_service.content)
+      self.fields['terms_of_service'].group = _TERMS_OF_SERVICE_GROUP
 
     if not self.has_student_data:
       # remove all fields associated with student data
