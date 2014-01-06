@@ -18,6 +18,7 @@ import unittest
 
 from melange import types
 
+from melange.models import profile as ndb_profile_model
 from melange.models import user as user_model
 
 from soc.models import organization as org_model
@@ -49,6 +50,11 @@ class ModelsTest(unittest.TestCase):
     """Tests program_messages_model attribute."""
     self.assertEqual(
         self.models.program_messages_model, program_model.ProgramMessages)
+
+  def testStudentDataModel(self):
+    """Tests student_data_model attribute."""
+    self.assertEqual(
+        self.models.student_data_model, ndb_profile_model.StudentData)
 
   def testTimelineModel(self):
     """Tests timeline_model attribute."""

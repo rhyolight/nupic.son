@@ -31,6 +31,7 @@ class Models(object):
     org_model: class that represents organization model.
     profile_model: class that represents profile model.
     program_model: class that represents program model.
+    student_data_model: class that represents student data model.
     timeline_model: class that represents timeline model.
     user_model: class that represents user model.
   """
@@ -38,7 +39,7 @@ class Models(object):
   def __init__(
       self, ndb_org_model=None, ndb_profile_model=None, org_model=None,
       profile_model=None, program_model=None, program_messages_model=None,
-      timeline_model=None):
+      student_data_model=None, timeline_model=None):
     """Initializes new instance of Models class.
 
     Args:
@@ -46,6 +47,7 @@ class Models(object):
       profile_model: class that represents profile model.
       program_model: class that represents program model.
       program_messages_model: class that represents program messages model.
+      student_data_model: class that represents student data model.
       timeline_model: class that represents timeline model.
     """
     # TODO(daniel): remove when not necessary
@@ -55,6 +57,7 @@ class Models(object):
     self.profile_model = profile_model
     self.program_model = program_model
     self.program_messages_model = program_messages_model
+    self.student_data_model = student_data_model
     self.timeline_model = timeline_model
     self.user_model = user.User
 
@@ -65,4 +68,5 @@ MELANGE_MODELS = Models(
     profile_model=profile.Profile,
     program_model=program.Program,
     program_messages_model=program.ProgramMessages,
+    student_data_model=ndb_profile.StudentData,
     timeline_model=timeline.Timeline)
