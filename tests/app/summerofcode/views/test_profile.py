@@ -57,6 +57,11 @@ TEST_TEE_STYLE = profile_view._TEE_STYLE_FEMALE_ID
 TEST_USER_ID = 'test_user_id'
 TEST_WEB_PAGE = u'http://www.web.page.com/'
 
+TEST_SCHOOL_COUNTRY = 'United States'
+TEST_SCHOOL_NAME = 'Melange University'
+TEST_MAJOR = 'Computer Science'
+TEST_DEGREE = profile_view._DEGREE_MASTERS_ID
+
 OTHER_TEST_SHIPPING_NAME = 'Other Shipping Name'
 OTHER_TEST_SHIPPING_STREET = 'Other Shipping Street'
 OTHER_TEST_SHIPPING_CITY = 'Other Shipping City'
@@ -75,6 +80,18 @@ def _getProfileRegisterAsOrgMemberUrl(program_key):
     A string containing the URL to Register As Organization Member page.
   """
   return '/gsoc/profile/register/org_member/%s' % program_key.name()
+
+
+def _getProfileRegisterAsStudentUrl(program_key):
+  """Returns URL to Register As Student page.
+
+  Args:
+    program_key: Program key.
+
+  Returns:
+    A string containing the URL to Register As Student page.
+  """
+  return '/gsoc/profile/register/student/%s' % program_key.name()
 
 
 def _getEditProfileUrl(program_key):
@@ -142,6 +159,69 @@ class ProfileOrgMemberCreatePageTest(test_utils.GSoCDjangoTestCase):
         '%s/%s' % (self.program.key().name(), TEST_USER_ID))
     profile = profile_key.get()
     self.assertIsNotNone(profile)
+
+
+class ProfileRegisterAsStudentPageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for ProfileRegisterAsStudentPage class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    response = self.get(_getProfileRegisterAsStudentUrl(self.program.key()))
+    self.assertResponseOK(response)
+
+  def testStudentProfileCreated(self):
+    """Tests that profile entity is created correctly."""
+    postdata = {
+        'user_id': TEST_USER_ID,
+        'public_name': TEST_PUBLIC_NAME,
+        'web_page': TEST_WEB_PAGE,
+        'blog': TEST_BLOG,
+        'photo_url': TEST_PHOTO_URL,
+        'first_name': TEST_FIRST_NAME,
+        'last_name': TEST_LAST_NAME,
+        'email': TEST_EMAIL,
+        'phone': TEST_PHONE,
+        'residential_street': TEST_RESIDENTIAL_STREET,
+        'residential_city': TEST_RESIDENTIAL_CITY,
+        'residential_province': TEST_RESIDENTIAL_PROVINCE,
+        'residential_country': TEST_RESIDENTIAL_COUNTRY,
+        'residential_postal_code': TEST_RESIDENTIAL_POSTAL_CODE,
+        'birth_date': TEST_BIRTH_DATE.strftime('%Y-%m-%d'),
+        'tee_style': TEST_TEE_STYLE,
+        'tee_size': TEST_TEE_SIZE,
+        'gender': TEST_GENDER,
+        'program_knowledge': TEST_PROGRAM_KNOWLEDGE,
+        'school_country': TEST_SCHOOL_COUNTRY,
+        'school_name': TEST_SCHOOL_NAME,
+        'major': TEST_MAJOR,
+        'degree': TEST_DEGREE,
+        }
+    response = self.post(
+        _getProfileRegisterAsStudentUrl(self.program.key()),
+        postdata=postdata)
+    self.assertResponseRedirect(
+        response, url=_getEditProfileUrl(self.program.key()))
+
+    # check that user entity has been created
+    user_key = ndb.Key(user_model.User._get_kind(), TEST_USER_ID)
+    user = user_key.get()
+    self.assertIsNotNone(user)
+
+    # check that profile entity has been created
+    profile_key = ndb.Key(
+        user_model.User._get_kind(), TEST_USER_ID,
+        profile_model.Profile._get_kind(),
+        '%s/%s' % (self.program.key().name(), TEST_USER_ID))
+    profile = profile_key.get()
+    self.assertIsNotNone(profile)
+
+    # check that the created profile is a student
+    self.assertIsNotNone(profile.student_data)
+    self.assertTrue(profile.is_student)
 
 
 class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):

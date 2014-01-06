@@ -32,6 +32,7 @@ from melange.request import access
 from melange.request import exception
 from melange.request import links
 from melange.utils import countries
+from melange.views.helper import form_handler
 
 from soc.logic import cleaning
 
@@ -50,6 +51,9 @@ _ALPHANUMERIC_CHARACTERS_ONLY = unicode(
 
 PROFILE_ORG_MEMBER_CREATE_PAGE_NAME = translation.ugettext(
     'Create organization member profile')
+
+PROFILE_STUDENT_CREATE_PAGE_NAME = translation.ugettext(
+    'Create student profile')
 
 PROFILE_EDIT_PAGE_NAME = translation.ugettext(
     'Edit profile')
@@ -820,12 +824,14 @@ def _adaptStudentDataPropertiesForDatastore(form_data):
   degree = _DEGREE_ID_TO_ENUM_MAP[form_data.get('degree')]
   # TODO(daniel): support it
   expected_graduation = None
-  major = form_data.get('major'),
+  major = form_data.get('major')
 
-  education = education_logic.createPostSecondaryEducation(
+  result = education_logic.createPostSecondaryEducation(
       school_id, school_country, expected_graduation, major, degree)
-
-  return {profile_model.StudentData.education._name: education}
+  if not result:
+    raise exception.BadRequest(message=result.extra)
+  else:
+    return {profile_model.StudentData.education._name: result.extra}
 
 
 def _adoptContactPropertiesForForm(contact_properties):
@@ -957,20 +963,24 @@ def _adoptProfilePropertiesForForm(profile_properties):
   return form_data
 
 
-def _profileFormToRegisterAsOrgMember(
-    register_user, terms_of_service, **kwargs):
-  """Returns a Django form to register a new profile for organization members.
+def _profileFormToRegisterProfile(
+    register_user, terms_of_service, has_student_data=None, **kwargs):
+  """Returns a Django form to register a new profile.
 
   Args:
     register_user: If set to True, the constructed form will also be used to
       create a new User entity along with a new Profile entity.
     terms_of_service: Document with Terms of Service that has to be accepted by
       the user.
+    has_student_data: If specified to True, the form will contain fields
+      related to student data for the profile.
 
   Returns:
-    _UserProfileForm adjusted to create a new profile for organization members.
+    _UserProfileForm adjusted to create a new profile.
   """
-  form = _UserProfileForm(terms_of_service=terms_of_service, **kwargs)
+  form = _UserProfileForm(
+      terms_of_service=terms_of_service,
+      has_student_data=has_student_data, **kwargs)
 
   if not register_user:
     del form.fields['user_id']
@@ -1011,7 +1021,7 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.RequestHandler.context for specification."""
-    form = _profileFormToRegisterAsOrgMember(
+    form = _profileFormToRegisterProfile(
         data.ndb_user is None, data.program.org_admin_agreement, data=data.POST)
 
     return {
@@ -1022,14 +1032,86 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """See base.RequestHandler.post for specification."""
-    form = _profileFormToRegisterAsOrgMember(
+    form = _profileFormToRegisterProfile(
         data.ndb_user is None, data.program.org_admin_agreement, data=data.POST)
 
-    if not form.is_valid():
+    # TODO(daniel): eliminate passing self object.
+    handler = CreateProfileFormHandler(self, form)
+    return handler.handle(data, check, mutator)
+
+
+class ProfileRegisterAsStudentPage(base.GSoCRequestHandler):
+  """View to create student profile.
+
+  It will be used by prospective students. Users with such profiles will be
+  eligible to submit proposals to organizations and work on projects
+  upon acceptance.
+  """
+
+  # TODO(daniel): implement actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def templatePath(self):
+    """See base.RequestHandler.templatePath for specification."""
+    return 'summerofcode/profile/profile_edit.html'
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.djangoURLPatterns for specification."""
+    return [
+        soc_url_patterns.url(
+            r'profile/register/student/%s$' % url_patterns.PROGRAM,
+            self, name=urls.UrlNames.PROFILE_REGISTER_AS_STUDENT)]
+
+  def context(self, data, check, mutator):
+    """See base.RequestHandler.context for specification."""
+    form = _profileFormToRegisterProfile(
+        data.ndb_user is None, data.program.student_agreement,
+        has_student_data=True, data=data.POST)
+
+    return {
+        'page_name': PROFILE_STUDENT_CREATE_PAGE_NAME,
+        'forms': [form],
+        'error': bool(form.errors)
+        }
+
+  def post(self, data, check, mutator):
+    """See base.RequestHandler.post for specification."""
+    form = _profileFormToRegisterProfile(
+        data.ndb_user is None, data.program.org_admin_agreement,
+        has_student_data=True, data=data.POST)
+
+    # TODO(daniel): eliminate passing self object.
+    handler = CreateProfileFormHandler(self, form)
+    return handler.handle(data, check, mutator)
+
+
+class CreateProfileFormHandler(form_handler.FormHandler):
+  """Form handler implementation to handle incoming data that is supposed to
+  create new profiles.
+  """
+
+  def __init__(self, view, form):
+    """Initializes new instance of form handler.
+
+    Args:
+      view: Callback to implementation of base.RequestHandler
+        that creates this object.
+      form: Instance of _UserProfileForm whose data is to be handled.
+    """
+    super(CreateProfileFormHandler, self).__init__(view)
+    self.form = form
+
+  def handle(self, data, check, mutator):
+    """Creates and persists a new profile based on the data that was sent
+    in the current request and supplied to the form.
+
+    See form_handler.FormHandler.handle for specification.
+    """
+    if not self.form.is_valid():
       # TODO(nathaniel): problematic self-use.
-      return self.get(data, check, mutator)
+      return self._view.get(data, check, mutator)
     else:
-      profile_properties = _getProfileEntityPropertiesFromForm(form)
+      profile_properties = _getProfileEntityPropertiesFromForm(self.form)
 
       user = data.ndb_user
       if not user:
@@ -1039,7 +1121,7 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
         # the meantime.
         user = user_logic.getByCurrentAccount()
 
-      username = form.getUserProperties()['user_id'] if not user else None
+      username = self.form.getUserProperties()['user_id'] if not user else None
 
       createProfileTxn(
           data.program.key(), profile_properties, username=username, user=user,
@@ -1142,11 +1224,8 @@ def _getProfileEntityPropertiesFromForm(form):
 
   student_data_properties = form.getStudentDataProperties()
   if student_data_properties:
-    result = _adaptStudentDataPropertiesForDatastore(student_data_properties)
-    if not result:
-      raise exception.BadRequest(message=result.extra)
-    else:
-      profile_properties['student_data'] = result.extra
+    profile_properties['student_data'] = profile_logic.createStudentData(
+        _adaptStudentDataPropertiesForDatastore(student_data_properties))
 
   return profile_properties
 
