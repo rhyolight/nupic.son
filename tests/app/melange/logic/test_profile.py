@@ -21,6 +21,7 @@ from google.appengine.ext import ndb
 
 from melange.logic import profile as profile_logic
 from melange.models import address as address_model
+from melange.models import education as education_model
 from melange.models import profile as ndb_profile_model
 from melange.models import user as user_model
 
@@ -567,3 +568,28 @@ class EditProfileTest(unittest.TestCase):
     self.assertEqual(profile.residential_address.province, OTHER_TEST_PROVINCE)
     self.assertEqual(
         profile.residential_address.postal_code, OTHER_TEST_POSTAL_CODE)
+
+
+TEST_SCHOOL_COUNTRY = 'United States'
+TEST_SCHOOL_ID = 'Melange University'
+TEST_EXPECTED_GRADUATION = datetime.date.today().year
+TEST_EDUCATION_PROPERTIES = {
+    'school_country': TEST_SCHOOL_COUNTRY,
+    'school_id': TEST_SCHOOL_ID,
+    'expected_graduation': TEST_EXPECTED_GRADUATION
+    }
+TEST_EDUCATION = education_model.Education(**TEST_EDUCATION_PROPERTIES)
+TEST_STUDENT_DATA_PROPERTIES = {
+    'education': TEST_EDUCATION
+    }
+
+class CreateStudentDataTest(unittest.TestCase):
+  """Unit tests for createStudentData function."""
+
+  def testStudentDataCreated(self):
+    """Tests that student data is created properly if all data is valid."""
+    student_data = profile_logic.createStudentData(TEST_STUDENT_DATA_PROPERTIES)
+
+    # check properties
+    self.assertDictEqual(
+        student_data.education.to_dict(), TEST_EDUCATION_PROPERTIES)

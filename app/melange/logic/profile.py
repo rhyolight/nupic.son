@@ -266,3 +266,15 @@ def editProfile(profile_key, profile_properties):
     except datastore_errors.BadValueError as e:
       return rich_bool.RichBool(False, str(e))
 
+
+def createStudentData(student_data_properties, models=types.MELANGE_MODELS):
+  """Creates a new student data object based on the specified properties.
+
+  Args:
+    student_data_properties: A dict mapping profile properties to their values.
+    models: Instance of types.Models that represent appropriate models.
+
+  Returns:
+    Newly created student data entity.
+  """
+  return models.student_data_model(**student_data_properties)
