@@ -140,8 +140,8 @@ def canCreateConnection(profile, org_key):
   can be created.
 
   Args:
-    profile: profile entity.
-    org_key: organization key.
+    profile: Profile entity.
+    org_key: Organization key.
 
   Returns:
     RichBool whose value is set to True, if a connection can be created.
@@ -149,16 +149,12 @@ def canCreateConnection(profile, org_key):
     a string that represents the reason why it is not possible to create
     a new connection.
   """
-  # TODO(daniel): remove when GCI orgs are converted to NDB
-  if isinstance(org_key, ndb.Key):
-    org_key = org_key.to_old_key()
-
   if profile.is_student:
     return rich_bool.RichBool(
-        False, extra=_PROFILE_IS_STUDENT % profile.link_id)
-  elif connectionExists(ndb.Key.from_old_key(profile.key()), org_key):
+        False, extra=_PROFILE_IS_STUDENT % profile.profile_id)
+  elif connectionExists(profile.key, org_key):
     return rich_bool.RichBool(
-        False, extra=_CONNECTION_EXISTS % (profile.link_id, org_key.name()))
+        False, extra=_CONNECTION_EXISTS % (profile.profile_id, org_key.id()))
   else:
     return rich_bool.TRUE
 
