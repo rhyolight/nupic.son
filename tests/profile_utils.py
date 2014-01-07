@@ -285,7 +285,7 @@ def seedProfile(program, model=profile_model.Profile, user=None,
     if isinstance(org_key, ndb.Key):
       org_key = org_key.to_old_key()
     connection_utils.seed_new_connection(
-        profile, org_key, **connection_properties)
+        ndb.Key.from_old_key(profile.key()), org_key, **connection_properties)
 
   return profile
 
@@ -602,7 +602,7 @@ class GSoCProfileHelper(ProfileHelper):
         'org_role': connection_model.ORG_ADMIN_ROLE
         }
     connection_utils.seed_new_connection(
-        self.profile, org.key, **connection_properties)
+        ndb.Key.from_old_key(self.profile.key()), org.key, **connection_properties)
 
     return self.profile
 
@@ -625,7 +625,7 @@ class GSoCProfileHelper(ProfileHelper):
         'org_role': connection_model.MENTOR_ROLE
         }
     connection_utils.seed_new_connection(
-        self.profile, org.key, **connection_properties)
+        ndb.Key.from_old_key(self.profile.key()), org.key, **connection_properties)
 
     return self.profile
 
@@ -733,7 +733,7 @@ class GSoCProfileHelper(ProfileHelper):
   def createConnection(self, org):
     self.createProfile()
     self.connection = connection_utils.seed_new_connection(
-        self.profile, org.key)
+        ndb.Key.from_old_key(self.profile.key()), org.key)
     return self.connection
 
 
@@ -788,7 +788,7 @@ class GCIProfileHelper(ProfileHelper):
         'org_role': connection_model.ORG_ADMIN_ROLE
         }
     connection_utils.seed_new_connection(
-        self.profile, org.key(), **connection_properties)
+        ndb.Key.from_old_key(self.profile.key()), org.key(), **connection_properties)
 
     return self.profile
 
@@ -811,7 +811,7 @@ class GCIProfileHelper(ProfileHelper):
         'org_role': connection_model.MENTOR_ROLE
         }
     connection_utils.seed_new_connection(
-        self.profile, org.key(), **connection_properties)
+        ndb.Key.from_old_key(self.profile.key()), org.key(), **connection_properties)
 
     return self.profile
 
