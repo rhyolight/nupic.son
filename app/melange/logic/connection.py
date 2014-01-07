@@ -132,7 +132,7 @@ def connectionExists(profile_key, org_key):
   """
   return bool(connection_model.Connection.query(
       connection_model.Connection.organization == org_key,
-      ancestor=profile_key, keys_only=True).count(limit=1))
+      ancestor=profile_key).count(keys_only=True, limit=1))
 
 
 def canCreateConnection(profile, org_key):
@@ -156,7 +156,7 @@ def canCreateConnection(profile, org_key):
   if profile.is_student:
     return rich_bool.RichBool(
         False, extra=_PROFILE_IS_STUDENT % profile.link_id)
-  elif connectionExists(profile, org_key):
+  elif connectionExists(ndb.Key.from_old_key(profile.key()), org_key):
     return rich_bool.RichBool(
         False, extra=_CONNECTION_EXISTS % (profile.link_id, org_key.name()))
   else:
@@ -191,7 +191,7 @@ def createConnection(profile, org, user_role, org_role):
   else:
     raise TypeError('Wrong type for org argument: %s' % type(org))
 
-  if connectionExists(profile.parent_key(), org_key):
+  if connectionExists(ndb.Key.from_old_key(profile.parent_key()), org_key):
     raise ValueError(_CONNECTION_EXISTS % (profile.name(), org.name))
 
   connection = connection_model.Connection(
