@@ -148,6 +148,7 @@ def seedNDBUser(user_id=None, **kwargs):
   return user
 
 
+TEST_PUBLIC_NAME = 'Public Name'
 TEST_FIRST_NAME = 'First'
 TEST_LAST_NAME = 'Last'
 TEST_STREET = 'Street'
@@ -184,6 +185,7 @@ def seedNDBProfile(program_key, model=ndb_profile_model.Profile,
   properties = {
       'program': ndb.Key.from_old_key(program_key),
       'status': ndb_profile_model.Status.ACTIVE,
+      'public_name': TEST_PUBLIC_NAME,
       'first_name': TEST_FIRST_NAME,
       'last_name': TEST_LAST_NAME,
       'birth_date': datetime.date(1990, 1, 1),

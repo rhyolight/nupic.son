@@ -334,8 +334,7 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
 
     # check profile properties
     profile = self.profile.key.get()
-    # TODO(daniel): handle public_name
-    #self.assertEqual(profile.public_name, TEST_PUBLIC_NAME)
+    self.assertEqual(profile.public_name, TEST_PUBLIC_NAME)
     self.assertEqual(profile.contact.web_page, TEST_WEB_PAGE)
     self.assertEqual(profile.contact.blog, TEST_BLOG)
     self.assertEqual(profile.contact.email, TEST_EMAIL)

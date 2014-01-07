@@ -392,6 +392,9 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
   photo_url = django_forms.URLField(
       required=False, label=PHOTO_URL_LABEL, help_text=PHOTO_URL_HELP_TEXT)
 
+  public_name = django_forms.CharField(
+      required=True, label=PUBLIC_NAME_LABEL, help_text=PUBLIC_NAME_HELP_TEXT)
+
   first_name = django_forms.CharField(
       required=True, label=FIRST_NAME_LABEL, help_text=FIRST_NAME_HELP_TEXT)
 
@@ -782,6 +785,7 @@ def _adaptProfilePropertiesForDatastore(form_data):
     data submitted in a form.
   """
   properties = {
+      profile_model.Profile.public_name._name: form_data.get('public_name'),
       profile_model.Profile.first_name._name: form_data.get('first_name'),
       profile_model.Profile.last_name._name: form_data.get('last_name'),
       profile_model.Profile.photo_url._name: form_data.get('photo_url'),
