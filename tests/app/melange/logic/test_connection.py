@@ -165,96 +165,63 @@ class GetConnectionMessagesTest(ConnectionTest):
     self.assertEqual(actual_keys, expected_keys)
 
 
-class QueryForOrganizationAdminTest(unittest.TestCase):
-  """Unit tests for queryForOrganizationAdmin function."""
+class QueryForOrganizationsTest(unittest.TestCase):
+  """Unit tests for queryForOrganizations function."""
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
-    program = program_utils.seedProgram()
+    self.program = program_utils.seedProgram()
     # seed a few organizations
-    self.first_org = org_utils.seedOrganization(program.key())
-    self.second_org = org_utils.seedOrganization(program.key())
-    self.third_org = org_utils.seedOrganization(program.key())
+    self.first_org = org_utils.seedOrganization(self.program.key())
+    self.second_org = org_utils.seedOrganization(self.program.key())
+    self.third_org = org_utils.seedOrganization(self.program.key())
 
     # seed a few profiles
-    first_profile = seeder_logic.seed(profile_model.Profile)
-    second_profile = seeder_logic.seed(profile_model.Profile)
+    first_profile = profile_utils.seedNDBProfile(self.program.key())
+    second_profile = profile_utils.seedNDBProfile(self.program.key())
 
     self.first_connection = connection_utils.seed_new_connection(
-        first_profile, self.first_org.key)
+        first_profile.key, self.first_org.key)
     self.second_connection = connection_utils.seed_new_connection(
-        second_profile, self.first_org.key)
+        second_profile.key, self.first_org.key)
     self.third_connection = connection_utils.seed_new_connection(
-        first_profile, self.second_org.key)
+        first_profile.key, self.second_org.key)
 
-  def testForMentor(self):
-    """Tests that no connections are fetched for user who is a mentor only."""
-    properties = {
-        'is_org_admin': False,
-        'is_mentor': True,
-        'mentor_for': [self.first_org.key.to_old_key()],
-        'org_admin_for': []
-        }
-    profile = seeder_logic.seed(profile_model.Profile, properties=properties)
-    query = connection_logic.queryForOrganizationAdmin(profile)
+  def testForEmptyList(self):
+    """Tests that an error is raised for an empty list of organizations."""
+    with self.assertRaises(ValueError):
+      connection_logic.queryForOrganizations([])
 
+  def testForListOfOrgs(self):
+    """Tests that proper connections are returned."""
+    query = connection_logic.queryForOrganizations([self.first_org.key])
     # exhaust the query to check what entities are fetched
     connections = query.fetch(1000)
+    self.assertSetEqual(
+        set(connection.key for connection in connections),
+        set([self.first_connection.key, self.second_connection.key]))
 
-    # check that correct connections are returned
-    self.assertListEqual(connections, [])
-
-  def testForOrgAdminForOneOrg(self):
-    """Tests for organization admin for one orgs."""
-    properties = {
-        'is_org_admin': True,
-        'is_mentor': True,
-        'mentor_for': [self.first_org.key.to_old_key()],
-        'org_admin_for': [self.first_org.key.to_old_key()]
-        }
-    profile = seeder_logic.seed(profile_model.Profile, properties=properties)
-    query = connection_logic.queryForOrganizationAdmin(profile)
-
+    query = connection_logic.queryForOrganizations([self.second_org.key])
     # exhaust the query to check what entities are fetched
     connections = query.fetch(1000)
+    self.assertSetEqual(
+        set(connection.key for connection in connections),
+        set([self.third_connection.key]))
 
-    # check that correct connections are returned
-    self.assertEqual(len(connections), 2)
-    self.assertIn(
-        self.first_connection.key(),
-        [connection.key() for connection in connections])
-    self.assertIn(
-        self.second_connection.key(),
-        [connection.key() for connection in connections])
-
-  def testForOrgAdminForManyOrgs(self):
-    """Tests for organization admin for many orgs."""
-    properties = {
-        'is_org_admin': True,
-        'is_mentor': True,
-        'mentor_for': [
-            self.first_org.key.to_old_key(), self.second_org.key.to_old_key()],
-        'org_admin_for': [
-            self.first_org.key.to_old_key(), self.second_org.key.to_old_key()],
-        }
-    profile = seeder_logic.seed(profile_model.Profile, properties=properties)
-    query = connection_logic.queryForOrganizationAdmin(profile)
-
+    query = connection_logic.queryForOrganizations([self.third_org.key])
     # exhaust the query to check what entities are fetched
     connections = query.fetch(1000)
+    self.assertSetEqual(
+        set(connection.key for connection in connections), set())
 
-    # check that correct connections are returned
-    self.assertEqual(len(connections), 3)
-    self.assertIn(
-        self.first_connection.key(),
-        [connection.key() for connection in connections])
-    self.assertIn(
-        self.second_connection.key(),
-        [connection.key() for connection in connections])
-    self.assertIn(
-        self.third_connection.key(),
-        [connection.key() for connection in connections])
-
+    query = connection_logic.queryForOrganizations(
+        [self.first_org.key, self.second_org.key, self.third_org.key])
+    # exhaust the query to check what entities are fetched
+    connections = query.fetch(1000)
+    self.assertSetEqual(
+        set(connection.key for connection in connections),
+        set([self.first_connection.key, self.second_connection.key,
+            self.third_connection.key]))
 
 class CanCreateConnectionTest(unittest.TestCase):
   """Unit tests for canCreateConnection function."""

@@ -108,19 +108,22 @@ def queryForAncestorAndOrganization(ancestor, org_key, keys_only=False):
   return query
 
 
-def queryForOrganizationAdmin(profile):
-  """Returns a query to fetch all connection entities that can be managed
-  from organization perspective by the specified profile.
+
+def queryForOrganizations(org_keys):
+  """Returns a query to fetch all connection entities that correspond to the
+  specified organizations.
 
   Args:
-    profile: profile entity.
+    org_keys: List of organization keys.
 
   Returns:
-    db.Query object to fetch all connection entities to manage.
+    db.Query object to fetch all connection entities for the organizations.
   """
-  query = connection_model.Connection.all()
-  query.filter('organization IN', profile.org_admin_for)
-  return query
+  if org_keys:
+    return connection_model.Connection.query(
+      connection_model.Connection.organization.IN(org_keys))
+  else:
+    raise ValueError('List of organizations cannot be empty.')
 
 
 def connectionExists(profile, org_key):
