@@ -94,19 +94,15 @@ def queryForAncestor(ancestor, keys_only=False):
   """
   return connection_model.Connection.all(keys_only=keys_only).ancestor(ancestor)
 
-def queryForAncestorAndOrganization(ancestor, org_key, keys_only=False):
-  """Returns a Query object for Connections with the specified ancestor and
-  Organization.
+  Args:
+    ancestor: The specified ancestor object (entity or key).
+    keys_only: Whether query operations return keys instead of entities.
+
+  Returns:
+    ndb.Query object for the specified parameters.
   """
-  # TODO(daniel): remove when GCI orgs are converted to NDB
-  if isinstance(org_key, ndb.Key):
-    org_key = org_key.to_old_key()
-
-  query = connection_model.Connection.all(
-      keys_only=keys_only).ancestor(ancestor)
-  query.filter('organization', org_key)
-  return query
-
+  return connection_model.Connection.query(
+      ancestor=ancestor, keys_only=keys_only)
 
 
 def queryForOrganizations(org_keys):
@@ -126,20 +122,21 @@ def queryForOrganizations(org_keys):
     raise ValueError('List of organizations cannot be empty.')
 
 
-def connectionExists(profile, org_key):
-  """Check to see whether or not a Connection exists between a user and
-  an organization.
+def connectionExists(profile_key, org_key):
+  """Check to see whether or not a Connection exists between the specified
+  profile and organization.
 
   Args:
-    profile: Profile instance (parent) for the connection.
+    profile_key: Profile key.
     org_key: Organization key.
 
   Returns:
-    True if a Connection object exists for the given User and
-    Organization, else False.
+    True if a Connection object exists for the given profile and
+    organization, else False.
   """
-  query = queryForAncestorAndOrganization(profile, org_key, True)
-  return query.count(limit=1) > 0
+  return bool(connection_model.Connection.query(
+      connection_model.Connection.organization == org_key,
+      ancestor=profile_key, keys_only=True).count(limit=1))
 
 
 def canCreateConnection(profile, org_key):
