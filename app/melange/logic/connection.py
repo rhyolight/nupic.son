@@ -89,20 +89,16 @@ def _updateSeenByProperties(connection, action_origin):
   return connection
 
 
-def queryForAncestor(ancestor, keys_only=False):
+def queryForAncestor(ancestor):
   """Returns a Query object for Connections with the specified ancestor.
-  """
-  return connection_model.Connection.all(keys_only=keys_only).ancestor(ancestor)
 
   Args:
-    ancestor: The specified ancestor object (entity or key).
-    keys_only: Whether query operations return keys instead of entities.
+    ancestor: The specified ancestor key.
 
   Returns:
     ndb.Query object for the specified parameters.
   """
-  return connection_model.Connection.query(
-      ancestor=ancestor, keys_only=keys_only)
+  return connection_model.Connection.query(ancestor=ancestor)
 
 
 def queryForOrganizations(org_keys):

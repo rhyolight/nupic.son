@@ -24,7 +24,6 @@ from nose.plugins import skip
 
 from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
-from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models.program import Program
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
@@ -163,6 +162,51 @@ class GetConnectionMessagesTest(ConnectionTest):
     expected_keys = set([message1.key(), message2.key()])
     actual_keys = set([m.key() for m in messages])
     self.assertEqual(actual_keys, expected_keys)
+
+
+class QueryForAncestorTest(unittest.TestCase):
+  """Unit tests for queryForAncestor function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.program = program_utils.seedProgram()
+    # seed a few organizations
+    self.first_org = org_utils.seedOrganization(self.program.key())
+    self.second_org = org_utils.seedOrganization(self.program.key())
+    self.third_org = org_utils.seedOrganization(self.program.key())
+
+    # seed a few profiles
+    self.profile = profile_utils.seedNDBProfile(self.program.key())
+    self.other_profile = profile_utils.seedNDBProfile(self.program.key())
+
+    self.first_connection = connection_utils.seed_new_connection(
+        self.profile.key, self.first_org.key)
+    self.second_connection = connection_utils.seed_new_connection(
+        self.other_profile.key, self.first_org.key)
+    self.third_connection = connection_utils.seed_new_connection(
+        self.profile.key, self.second_org.key)
+
+  def testForAncestor(self):
+    """Tests that proper connections are returned."""
+    query = connection_logic.queryForAncestor(self.profile.key)
+    # exhaust the query to check what entities are fetched
+    connections = query.fetch(1000)
+    self.assertSetEqual(
+        set(connection.key for connection in connections),
+        set([self.first_connection.key, self.third_connection.key]))
+
+    query = connection_logic.queryForAncestor(self.other_profile.key)
+    # exhaust the query to check what entities are fetched
+    connections = query.fetch(1000)
+    self.assertSetEqual(
+        set(connection.key for connection in connections),
+        set([self.second_connection.key]))
+
+    third_profile = profile_utils.seedNDBProfile(self.program.key())
+    query = connection_logic.queryForAncestor(third_profile.key)
+    # exhaust the query to check what entities are fetched
+    connections = query.fetch(1000)
+    self.assertSetEqual(set(connections), set())
 
 
 class QueryForOrganizationsTest(unittest.TestCase):
