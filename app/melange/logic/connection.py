@@ -159,41 +159,28 @@ def canCreateConnection(profile, org_key):
     return rich_bool.TRUE
 
 
-def createConnection(profile, org, user_role, org_role):
-  """Create a new Connection instance based on the contents of the form
-  and the roles provided.
+def createConnection(profile, org_key, user_role, org_role):
+  """Creates a new connection for the specified profile, organization
+  and designated roles.
 
   Args:
-    profile: Profile with which to establish the connection.
-    org: Organization with which to establish the connection.
+    profile: Profile entity with which to establish the connection.
+    org_key: Organization key with which to establish the connection.
     user_role: The user's role for the connection.
     org_role: The org's role for the connection.
 
   Returns:
-      Newly created Connection instance.
+      The newly created Connection instance.
 
   Raises:
       ValueError if a connection exists between the user and organization.
   """
-  # TODO(daniel): remove when GCI orgs are converted to NDB
-  if isinstance(org, db.Model):
-    org_key = org.key()
-  elif isinstance(org, ndb.Key):
-    org_key = org_key.to_old_key()
-  elif isinstance(org, db.Key):
-    org_key = org
-  elif isinstance(org, ndb.Model):
-    org_key = org.key.to_old_key()
-  else:
-    raise TypeError('Wrong type for org argument: %s' % type(org))
-
-  if connectionExists(ndb.Key.from_old_key(profile.parent_key()), org_key):
-    raise ValueError(_CONNECTION_EXISTS % (profile.name(), org.name))
+  if connectionExists(profile.key, org_key):
+    raise ValueError(_CONNECTION_EXISTS % (profile.key.id(), org_key.id()))
 
   connection = connection_model.Connection(
-      parent=profile, organization=org_key)
-  connection.user_role = user_role
-  connection.org_role = org_role
+      parent=profile.key, organization=org_key,
+      user_role=user_role, org_role=org_role)
   connection.put()
 
   return connection

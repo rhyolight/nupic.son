@@ -80,8 +80,7 @@ def createConnectionTxn(
   else:
     # create the new connection.
     connection = connection_logic.createConnection(
-        profile=profile, org=organization,
-        org_role=org_role, user_role=user_role)
+        profile, organization, org_role, user_role)
 
     # handle possible role assignment
     if connection.getRole() == connection_model.MENTOR_ROLE:

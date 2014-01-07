@@ -94,35 +94,36 @@ class ConnectionExistsTest(unittest.TestCase):
       connection_logic.connectionExists(self.profile.key, self.org.key))
 
 
-class CreateConnectionTest(ConnectionTest):
-  """Unit tests for the connection_logic.createConnection function."""
-  
-  def testCreateConnection(self):
-    """Tests that a Connection object can be generated successfully.
-    """
-    # TODO(daniel): this test fails sometimes when run locally on my machine
-    raise skip.SkipTest()
-    self.connection.delete()
-    connection_logic.createConnection(
-        profile=self.profile, org=self.org,
-        user_role=connection_model.NO_ROLE,
-        org_role=connection_model.MENTOR_ROLE,
-        )
-    new_connection = connection_model.Connection.all().get()
-    self.assertEqual(self.profile.key(), new_connection.parent().key())
-    self.assertEqual(
-        self.org.key.to_old_key(), new_connection.organization.key())
-    self.assertEqual(connection_model.NO_ROLE, new_connection.user_role)
-    self.assertEqual(connection_model.MENTOR_ROLE, new_connection.org_role)
+class CreateConnectionTest(unittest.TestCase):
+  """Unit tests for the createConnection function."""
 
-    # Also test to ensure that a connection will not be created if a logically
-    # equivalent connection already exists.
-    self.assertRaises(
-        ValueError, connection_logic.createConnection,
-        profile=self.profile, org=self.org, 
-        user_role=connection_model.NO_ROLE,
-        org_role=connection_model.NO_ROLE
-        )
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    program = program_utils.seedProgram()
+    self.profile = profile_utils.seedNDBProfile(program.key())
+    self.org = org_utils.seedOrganization(program.key())
+
+  def testCreateConnection(self):
+    """Tests that a connection object can be created successfully."""
+    connection_logic.createConnection(
+        self.profile, self.org.key, connection_model.NO_ROLE,
+        connection_model.MENTOR_ROLE)
+
+    # check that connection is created and persisted
+    connection = connection_model.Connection.query(
+        connection_model.Connection.organization == self.org.key,
+        ancestor=self.profile.key).get()
+    self.assertIsNotNone(connection)
+    self.assertEqual(connection_model.NO_ROLE, connection.user_role)
+    self.assertEqual(connection_model.MENTOR_ROLE, connection.org_role)
+
+    # also test to ensure that a connection will not be created
+    # if one already exists
+    with self.assertRaises(ValueError):
+      connection_logic.createConnection(
+          self.profile, self.org.key,
+          connection_model.NO_ROLE, connection_model.NO_ROLE)
+
 
 class CreateConnectionMessageTest(ConnectionTest):
   """Unit tests for the createConnectionMessage function."""
@@ -290,37 +291,31 @@ class CanCreateConnectionTest(unittest.TestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     program = program_utils.seedProgram()
-    self.profile = seeder_logic.seed(profile_model.Profile)
+    self.profile = profile_utils.seedNDBProfile(program.key())
     self.org = org_utils.seedOrganization(program.key())
 
   def testForStudent(self):
     """Tests that a student profile cannot create a connection."""
     # make the profile a student
-    self.profile.is_student = True
+    self.profile.student_data = profile_utils.seedStudentData()
 
     result = connection_logic.canCreateConnection(self.profile, self.org.key)
     self.assertFalse(result)
     self.assertEqual(
         result.extra, 
-        connection_logic._PROFILE_IS_STUDENT % self.profile.link_id)
+        connection_logic._PROFILE_IS_STUDENT % self.profile.profile_id)
 
   @mock.patch.object(connection_logic, 'connectionExists', return_value=True)
   def testForExistingConnection(self, mock_func):
     """Tests that a non-student profile with connection cannot create one."""
-    # profile is not a student
-    self.profile.is_student = False
-
     result = connection_logic.canCreateConnection(self.profile, self.org.key)
     self.assertFalse(result)
     self.assertEqual(
         result.extra, connection_logic._CONNECTION_EXISTS % (
-            self.profile.link_id, self.org.key.id()))
+            self.profile.profile_id, self.org.key.id()))
 
   def testForNonExistingConnection(self):
     """Tests that a non-student profile with no connection can create one."""
-    # profile is not a student
-    self.profile.is_student = False
-
     result = connection_logic.canCreateConnection(self.profile, self.org.key)
     self.assertTrue(result)
 
