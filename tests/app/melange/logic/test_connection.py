@@ -348,13 +348,18 @@ class CanCreateConnectionTest(unittest.TestCase):
 class GenerateMessageOnStartByUserTest(unittest.TestCase):
   """Unit tests for generateMessageOnStartByUser function."""
 
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    program = program_utils.seedProgram()
+    profile = profile_utils.seedNDBProfile(program.key())
+    org = org_utils.seedOrganization(program.key())
+    self.connection = connection_utils.seed_new_connection(profile.key, org.key)
+
   def testMessageIsCreated(self):
     """Tests that correct message is returned by the function."""
-    # seed a connection and create a message
-    connection = seeder_logic.seed(connection_model.Connection)
-    message = connection_logic.generateMessageOnStartByUser(connection)
+    message = connection_logic.generateMessageOnStartByUser(self.connection.key)
 
-    self.assertEqual(message.parent_key(), connection.key())
+    self.assertEqual(message.key.parent(), self.connection.key)
     self.assertEqual(message.content, connection_logic._USER_STARTED_CONNECTION)
     self.assertTrue(message.is_auto_generated)
 

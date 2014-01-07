@@ -94,7 +94,7 @@ def createConnectionTxn(
       connection_logic.generateMessageOnStartByOrg(connection, org_admin)
     else:
       # connection has been initialized by user
-      connection_logic.generateMessageOnStartByUser(connection)
+      connection_logic.generateMessageOnStartByUser(connection.key)
 
     # attach any user-provided messages to the connection.
     if message:

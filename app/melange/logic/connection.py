@@ -294,19 +294,18 @@ def getConnectionMessages(connection_key, limit=1000):
       .fetch(limit=limit))
 
 
-def generateMessageOnStartByUser(connection):
+def generateMessageOnStartByUser(connection_key):
   """Creates auto-generated message after the specified connection is
   started by user.
 
   Args:
-    connection: connection entity.
+    connection_key: Connection key.
 
   Returns:
-    newly created connection message.
+    The newly created connection message.
   """
-  message = createConnectionMessage(connection.key(), _USER_STARTED_CONNECTION)
+  message = createConnectionMessage(connection_key, _USER_STARTED_CONNECTION)
   message.put()
-
   return message
 
 
