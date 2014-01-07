@@ -505,7 +505,7 @@ class OrgProfileCreatePage(base.GSoCRequestHandler):
         else:
           # NOTE: this should rather be done within a transaction along with
           # creating the organization. At least one admin is required for
-          # each organization: what if the code above fails and there are none?
+          # each organization: what if the code below fails and there are none?
           # However, it should not be a practical problem.
           admin_keys = [
               data.profile.key(), form.cleaned_data['backup_admin'].key()]
