@@ -19,7 +19,6 @@
 import datetime
 import os
 
-from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from datetime import timedelta
@@ -157,18 +156,25 @@ TEST_POSTAL_CODE = '90000'
 TEST_PROVINCE = 'California'
 
 def seedNDBProfile(program_key, model=ndb_profile_model.Profile,
-    user=None, **kwargs):
+    user=None, mentor_for=None, admin_for=None, **kwargs):
   """Seeds a new profile.
 
   Args:
     program_key: Program key for which the profile is seeded.
     model: Model class of which a new profile should be seeded.
     user: User entity corresponding to the profile.
+    mentor_for: List of organizations keys for which the profile should be
+      registered as a mentor.
+    admin_for: List of organizations keys for which the profile should be
+      registered as organization administrator.
 
   Returns:
     A newly seeded Profile entity.
   """
   user = user or seedNDBUser()
+
+  mentor_for = mentor_for or []
+  admin_for = admin_for or []
 
   residential_address = address_model.Address(
       street=TEST_STREET, city=TEST_CITY, province=TEST_PROVINCE,
@@ -183,6 +189,8 @@ def seedNDBProfile(program_key, model=ndb_profile_model.Profile,
       'residential_address': residential_address,
       'tee_style': ndb_profile_model.TeeStyle.MALE,
       'tee_size': ndb_profile_model.TeeSize.M,
+      'mentor_for': list(set(mentor_for + admin_for)),
+      'admin_for': admin_for,
       }
   properties.update(**kwargs)
   profile = model(id='%s/%s' % (program_key.name(), user.key.id()),
