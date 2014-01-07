@@ -184,4 +184,4 @@ class Profile(ndb.Model):
     May be displayed publicly and used as parts of various URLs that are
     specific to this profile.
     """
-    return self.key.parent.id
+    return self.key.parent().id()
