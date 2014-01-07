@@ -118,8 +118,16 @@ class ProfileOrgMemberCreatePageTest(test_utils.GSoCDjangoTestCase):
     response = self.get(_getProfileRegisterAsOrgMemberUrl(self.program.key()))
     self.assertResponseOK(response)
 
-  def testOrgMemberProfileCreated(self):
+  def testProfileCreatedWhenNoUserExists(self):
     """Tests that profile entity is created correctly."""
+    # check that page loads properly
+    response = self.get(_getProfileRegisterAsOrgMemberUrl(self.program.key()))
+    self.assertResponseOK(response)
+
+    # check that username is present in the form
+    form = response.context['forms'][0]
+    self.assertIn('username', form.fields)
+
     postdata = {
         'user_id': TEST_USER_ID,
         'public_name': TEST_PUBLIC_NAME,
@@ -159,6 +167,53 @@ class ProfileOrgMemberCreatePageTest(test_utils.GSoCDjangoTestCase):
         '%s/%s' % (self.program.key().name(), TEST_USER_ID))
     profile = profile_key.get()
     self.assertIsNotNone(profile)
+
+  def testProfileCreatedWhenUserExists(self):
+    """Tests that a profile is created for a person with user entity."""
+    # seed user entity
+    user = profile_utils.seedNDBUser(TEST_USER_ID)
+    profile_utils.loginNDB(user)
+
+    # check that page loads properly
+    response = self.get(_getProfileRegisterAsOrgMemberUrl(self.program.key()))
+    self.assertResponseOK(response)
+
+    # check that username is not present in the form
+    form = response.context['forms'][0]
+    self.assertNotIn('username', form.fields)
+
+    # check POST request 
+    postdata = {
+        'public_name': TEST_PUBLIC_NAME,
+        'web_page': TEST_WEB_PAGE,
+        'blog': TEST_BLOG,
+        'photo_url': TEST_PHOTO_URL,
+        'first_name': TEST_FIRST_NAME,
+        'last_name': TEST_LAST_NAME,
+        'email': TEST_EMAIL,
+        'phone': TEST_PHONE,
+        'residential_street': TEST_RESIDENTIAL_STREET,
+        'residential_city': TEST_RESIDENTIAL_CITY,
+        'residential_province': TEST_RESIDENTIAL_PROVINCE,
+        'residential_country': TEST_RESIDENTIAL_COUNTRY,
+        'residential_postal_code': TEST_RESIDENTIAL_POSTAL_CODE,
+        'birth_date': TEST_BIRTH_DATE.strftime('%Y-%m-%d'),
+        'tee_style': TEST_TEE_STYLE,
+        'tee_size': TEST_TEE_SIZE,
+        'gender': TEST_GENDER,
+        'program_knowledge': TEST_PROGRAM_KNOWLEDGE,
+        }
+    response = self.post(
+        _getProfileRegisterAsOrgMemberUrl(self.program.key()),
+        postdata=postdata)
+    self.assertResponseRedirect(
+        response, url=_getEditProfileUrl(self.program.key()))
+
+    # check that profile entity has been created for the existing user
+    profile = profile_model.Profile.query(ancestor=user.key).get()
+    self.assertIsNotNone(profile)
+    self.assertEqual(
+        profile.key.id(), '%s/%s' % (self.program.key().name(), user.key.id()))
 
 
 class ProfileRegisterAsStudentPageTest(test_utils.GSoCDjangoTestCase):
