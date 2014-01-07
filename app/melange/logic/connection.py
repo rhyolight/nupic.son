@@ -277,19 +277,21 @@ def createConnectionMessage(connection_key, content, author_key=None):
       is_auto_generated=not bool(author_key))
 
 
-def getConnectionMessages(connection, limit=1000):
-  """Returns messages for the specified connection
+def getConnectionMessages(connection_key, limit=1000):
+  """Returns messages for the specified connection. They are ordered by their
+  creation time, so older messages come before newer ones.
 
   Args:
-    connection: the specified Connection entity
-    limit: maximal number of results to return
+    connection_key: Connection key
+    limit: Maximal number of results to return.
 
   Returns:
-    list of messages corresponding to the specified connection
+    List of messages corresponding to the specified connection.
   """
-  builder = connection_message_logic.QueryBuilder()
-  return builder.addAncestor(connection).setOrder('created').build().fetch(
-      limit=limit)
+  return (connection_model.ConnectionMessage
+      .query(ancestor=connection_key)
+      .order(connection_model.ConnectionMessage.created)
+      .fetch(limit=limit))
 
 
 def generateMessageOnStartByUser(connection):

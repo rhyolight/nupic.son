@@ -20,8 +20,6 @@ from datetime import timedelta
 import mock
 import unittest
 
-from nose.plugins import skip
-
 from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
 from soc.models import profile as profile_model
@@ -31,6 +29,7 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from tests import org_utils
 from tests import profile_utils
 from tests import program_utils
+from tests import timeline_utils
 from tests.utils import connection_utils
 from tests.program_utils import ProgramHelper
 
@@ -160,35 +159,52 @@ class CreateConnectionMessageTest(unittest.TestCase):
     self.assertTrue(message.is_auto_generated)
 
 
-class GetConnectionMessagesTest(ConnectionTest):
-  """Unit tests for the connection_logic.getConnectionMessage function."""
-  
-  def testGetConnectionMessages(self):
-    """Tests that all messages affiliated with a given Connection will
-    be returned by the query in connection logic.
-    """
-    # create a couple of messages for the connection
+class GetConnectionMessagesTest(unittest.TestCase):
+  """Unit tests for the getConnectionMessages function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.program = program_utils.seedProgram()
+    self.profile = profile_utils.seedNDBProfile(self.program.key())
+    org = org_utils.seedOrganization(self.program.key())
+    self.connection = connection_utils.seed_new_connection(
+        self.profile.key, org.key)
+
+  def testCorrectMessagesReturned(self):
+    """Tests that correct messages are returned."""
+    # seed a couple of messages for the connection
     message1 = connection_utils.seed_new_connection_message(
-        self.connection, author=self.profile)
-    message2 = connection_utils.seed_new_connection_message(
-        self.connection, author=self.profile)
+        self.connection.key, author=self.profile.key)
+    message2 = connection_utils.seed_new_connection_message(self.connection.key)
 
-    # create another organization and a connection
+    # seed another organization and a connection
     other_org = org_utils.seedOrganization(self.program.key())
-
     other_connection = connection_utils.seed_new_connection(
-      self.profile, other_org.key)
+      self.profile.key, other_org.key)
 
     # create a few messages for the other connection
-    for _ in range(10):
+    for _ in range(4):
       connection_utils.seed_new_connection_message(
-          other_connection, author=self.profile)
+          other_connection.key, author=self.profile.key)
 
-    # check that correct messages are returned
-    messages = connection_logic.getConnectionMessages(self.connection)
-    expected_keys = set([message1.key(), message2.key()])
-    actual_keys = set([m.key() for m in messages])
+    # check that only correct messages are returned
+    messages = connection_logic.getConnectionMessages(self.connection.key)
+    expected_keys = set([message1.key, message2.key])
+    actual_keys = set([message.key for message in messages])
     self.assertEqual(actual_keys, expected_keys)
+
+  def testMessagesOrdered(self):
+    """Tests that the returned messages are ordered by creation date."""
+    # seed a couple of messages for the connection
+    message1 = connection_utils.seed_new_connection_message(
+        self.connection.key, created=datetime.now())
+    message2 = connection_utils.seed_new_connection_message(
+        self.connection.key, created=timeline_utils.past(delta=100))
+    message3 = connection_utils.seed_new_connection_message(
+        self.connection.key, created=timeline_utils.past(delta=50))
+
+    messages = connection_logic.getConnectionMessages(self.connection.key)
+    self.assertListEqual([message2, message3, message1], messages)
 
 
 class QueryForAncestorTest(unittest.TestCase):
