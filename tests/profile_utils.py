@@ -25,6 +25,7 @@ from datetime import timedelta
 
 from melange.models import address as address_model
 from melange.models import connection as connection_model
+from melange.models import education as education_model
 from melange.models import profile as ndb_profile_model
 from melange.models import user as ndb_user_model
 
@@ -197,6 +198,31 @@ def seedNDBProfile(program_key, model=ndb_profile_model.Profile,
       parent=user.key, **properties)
   profile.put()
   return profile
+
+
+_TEST_SCHOOL_NAME = 'United States'
+_TEST_SCHOOL_ID = 'Melange University'
+_TEST_EXPECTED_GRADUATION = datetime.date.today().year + 1
+
+def _seedEducation():
+  """Seeds a new education."""
+  return education_model.Education(
+      school_country=_TEST_SCHOOL_NAME, school_id=_TEST_SCHOOL_ID,
+      expected_graduation=_TEST_EXPECTED_GRADUATION)
+
+
+def seedStudentData(model=ndb_profile_model.StudentData, **kwargs):
+  """Seeds a new student data.
+
+  Args:
+    model: Model class of which a new student data should be seeded.
+
+  Returns:
+    A newly seeded student data entity.
+  """
+  properties = {'education': _seedEducation()}
+  properties.update(**kwargs)
+  return model(**properties)
 
 
 def seedProfile(program, model=profile_model.Profile, user=None,
