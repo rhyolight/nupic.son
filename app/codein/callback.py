@@ -14,8 +14,6 @@
 
 """Module containing the Code In callback."""
 
-from codein.views import connection
-
 
 class Callback(object):
   """Callback object that handles interaction between the core."""
@@ -32,15 +30,16 @@ class Callback(object):
 
   def registerViews(self):
     """Instantiates all view objects."""
-    self.views.append(connection.ListConnectionsForOrgAdmin())
-    self.views.append(connection.ListConnectionsForUser())
-    self.views.append(connection.ManageConnectionAsOrg())
-    self.views.append(connection.ManageConnectionAsUser())
-    self.views.append(connection.MarkConnectionAsSeenByOrg())
-    self.views.append(connection.MarkConnectionAsSeenByUser())
-    self.views.append(connection.PickOrganizationToConnectPage())
-    self.views.append(connection.StartConnectionAsOrg())
-    self.views.append(connection.StartConnectionAsUser())
+    # TODO(daniel): uncomment when connection views are back
+    #self.views.append(connection.ListConnectionsForOrgAdmin())
+    #self.views.append(connection.ListConnectionsForUser())
+    #self.views.append(connection.ManageConnectionAsOrg())
+    #self.views.append(connection.ManageConnectionAsUser())
+    #self.views.append(connection.MarkConnectionAsSeenByOrg())
+    #self.views.append(connection.MarkConnectionAsSeenByUser())
+    #self.views.append(connection.PickOrganizationToConnectPage())
+    #self.views.append(connection.StartConnectionAsOrg())
+    #self.views.append(connection.StartConnectionAsUser())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered."""
