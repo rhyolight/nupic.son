@@ -382,16 +382,11 @@ class GetProfileForUsernameTest(unittest.TestCase):
     self.program_key = seeder_logic.seed(program_model.Program).key()
 
     # seed a user
-    self.user = profile_utils.seedUser(key_name='test')
+    self.user = profile_utils.seedNDBUser(user_id='test')
 
     # seed a profile
-    profile_properties = {
-        'key_name': '%s/%s' % (
-            self.program_key.name(), self.user.key().name()),
-        'parent': self.user,
-        }
-    self.profile = seeder_logic.seed(
-        profile_model.Profile, properties=profile_properties)
+    self.profile = profile_utils.seedNDBProfile(
+        self.program_key, user=self.user)
 
   def testForNoProfile(self):
     """Tests that no entity is returned when a user does not have a profile."""
@@ -407,7 +402,7 @@ class GetProfileForUsernameTest(unittest.TestCase):
   def testForExistingProfile(self):
     """Tests that profile is returned if exists."""
     profile = profile_logic.getProfileForUsername('test', self.program_key)
-    self.assertEqual(profile.key(), self.profile.key())
+    self.assertEqual(profile.key, self.profile.key)
 
 
 TEST_SPONSOR_ID = 'sponsor_id'

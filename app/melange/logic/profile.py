@@ -165,10 +165,11 @@ def getProfileForUsername(username, program_key, models=types.MELANGE_MODELS):
     profile entity for the specified user and program or None if the user
     does not have a profile for this program.
   """
-  profile_key = db.Key.from_path(
-      models.profile_model.kind(), '%s/%s' % (program_key.name(), username),
-      parent=db.Key.from_path('User', username))
-  return db.get(profile_key)
+  profile_key = ndb.Key(
+      models.user_model._get_kind(), username,
+      models.ndb_profile_model._get_kind(),
+      '%s/%s' % (program_key.name(), username))
+  return profile_key.get()
 
 
 def _handleExtraAttrs(query, extra_attrs):
