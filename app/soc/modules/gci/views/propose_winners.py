@@ -127,7 +127,7 @@ class ProposeWinnersPage(GCIRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    check.isOrgAdmin()
+    check.isOrgAdminForOrganization(data.url_org.key())
     if not data.timeline.allReviewsStopped():
       raise exception.Forbidden(
           message='This page may be accessed when the review period is over')
