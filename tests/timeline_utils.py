@@ -250,6 +250,7 @@ class GCITimelineHelper(TimelineHelper):
     self.timeline.tasks_publicly_visible = past()
     self.timeline.task_claim_deadline = past()
     self.timeline.stop_all_work_deadline = past()
+    self.timeline.work_review_deadline = past()
     self.timeline.put()
     self.org_appl.put()
 
@@ -260,6 +261,7 @@ class GCITimelineHelper(TimelineHelper):
     self.timeline.tasks_publicly_visible = future()
     self.timeline.task_claim_deadline = future()
     self.timeline.stop_all_work_deadline = future()
+    self.timeline.work_review_deadline = future()
     self.timeline.put()
     self.org_appl.put()
 
@@ -270,6 +272,7 @@ class GCITimelineHelper(TimelineHelper):
     self.timeline.tasks_publicly_visible = future()
     self.timeline.task_claim_deadline = future()
     self.timeline.stop_all_work_deadline = future()
+    self.timeline.work_review_deadline = future()
     self.timeline.put()
     self.org_appl.put()
 
@@ -280,6 +283,7 @@ class GCITimelineHelper(TimelineHelper):
     self.timeline.tasks_publicly_visible = future()
     self.timeline.task_claim_deadline = future()
     self.timeline.stop_all_work_deadline = future()
+    self.timeline.work_review_deadline = future()
     self.timeline.put()
     self.org_appl.put()
 
@@ -298,6 +302,7 @@ class GCITimelineHelper(TimelineHelper):
     self.timeline.task_claim_deadline = future()
     self.timeline.stop_all_work_deadline = future()
     self.timeline.work_review_deadline = future()
+    self.timeline.work_review_deadline = future()
     self.timeline.put()
     self.org_appl.put()
 
@@ -308,6 +313,7 @@ class GCITimelineHelper(TimelineHelper):
     self.timeline.tasks_publicly_visible = past()
     self.timeline.task_claim_deadline = future()
     self.timeline.stop_all_work_deadline = future()
+    self.timeline.work_review_deadline = future()
     self.timeline.put()
     self.org_appl.put()
 
@@ -325,6 +331,7 @@ class GCITimelineHelper(TimelineHelper):
     self.timeline.tasks_publicly_visible = past()
     self.timeline.task_claim_deadline = past()
     self.timeline.stop_all_work_deadline = future()
+    self.timeline.work_review_deadline = future()
     self.timeline.put()
     self.org_appl.put()
 
@@ -342,5 +349,6 @@ class GCITimelineHelper(TimelineHelper):
     self.timeline.tasks_publicly_visible = past()
     self.timeline.task_claim_deadline = past()
     self.timeline.stop_all_work_deadline = past()
+    self.timeline.work_review_deadline = future()
     self.timeline.put()
     self.org_appl.put()
