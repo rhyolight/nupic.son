@@ -267,7 +267,7 @@ class ChooseOrganizationForProposeWinnersPage(GCIRequestHandler):
   he or she is moved to the propose winner page for this organization.
   """
 
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = access.NON_STUDENT_PROFILE_ACCESS_CHECKER
 
   def templatePath(self):
     return 'modules/gci/org_list/base.html'
