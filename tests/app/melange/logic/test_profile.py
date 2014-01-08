@@ -431,6 +431,7 @@ class GetProfileKeyTest(unittest.TestCase):
 
 TEST_FIRST_NAME = 'First'
 TEST_LAST_NAME = 'Last'
+TEST_PUBLIC_NAME = 'Public Name'
 TEST_PHOTO_URL = 'http://www.test.photo.url.com'
 TEST_BIRTH_DATE = datetime.date(1990, 1, 1)
 TEST_STREET = 'Test street'
@@ -446,6 +447,7 @@ TEST_RESIDENTIAL_ADDRESS = address_model.Address(
 TEST_PROFILE_PROPERTIES = {
     'first_name': TEST_FIRST_NAME,
     'last_name': TEST_LAST_NAME,
+    'public_name': TEST_PUBLIC_NAME,
     'photo_url': TEST_PHOTO_URL,
     'birth_date': TEST_BIRTH_DATE,
     'residential_address': TEST_RESIDENTIAL_ADDRESS,
@@ -499,6 +501,7 @@ class CreateProfileTest(unittest.TestCase):
 
 OTHER_TEST_FIRST_NAME = 'Other First'
 OTHER_TEST_LAST_NAME = 'Other Last'
+OTHER_TEST_PUBLIC_NAME = 'Other Public Name'
 OTHER_TEST_PHOTO_URL = 'http://www.other.test.photo.url.com'
 OTHER_TEST_BIRTH_DATE = datetime.date(1991, 1, 1)
 OTHER_TEST_STREET = 'Test other street'
@@ -514,6 +517,7 @@ OTHER_TEST_RESIDENTIAL_ADDRESS = address_model.Address(
 OTHER_TEST_PROFILE_PROPERTIES = {
     'first_name': OTHER_TEST_FIRST_NAME,
     'last_name': OTHER_TEST_LAST_NAME,
+    'public_name': OTHER_TEST_PUBLIC_NAME,
     'photo_url': OTHER_TEST_PHOTO_URL,
     'birth_date': OTHER_TEST_BIRTH_DATE,
     'residential_address': OTHER_TEST_RESIDENTIAL_ADDRESS,
