@@ -253,16 +253,17 @@ class IsUserOrgAdminForUrlOrg(AccessChecker):
 
   def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
-    if not data.profile:
-      raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
-
     if not self._is_ndb:
+      if not data.profile:
+        raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
       # good ol' db
       if data.url_org.key() not in data.profile.org_admin_for:
         raise exception.Forbidden(
             message=_MESSAGE_NOT_ORG_ADMIN_FOR_ORG % data.url_org.key().name())
     else:
-      if data.url_ndb_org.key.to_old_key() not in data.profile.org_admin_for:
+      if not data.ndb_profile:
+        raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
+      if data.url_ndb_org.key not in data.ndb_profile.admin_for:
         raise exception.Forbidden(
             message=_MESSAGE_NOT_ORG_ADMIN_FOR_ORG %
                 data.url_ndb_org.key.id())
