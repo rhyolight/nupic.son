@@ -16,6 +16,7 @@
 
 from django.utils import translation
 
+from melange.models import profile as profile_model
 from melange.request import exception
 from melange.request import links
 
@@ -271,3 +272,16 @@ class IsUserOrgAdminForUrlOrg(AccessChecker):
 IS_USER_ORG_ADMIN_FOR_ORG = IsUserOrgAdminForUrlOrg()
 IS_USER_ORG_ADMIN_FOR_NDB_ORG = IsUserOrgAdminForUrlOrg(is_ndb=True)
 
+
+class HasProfileAccessChecker(AccessChecker):
+  """AccessChecker that ensures that the logged in user has an active profile
+  for the program specified in the URL.
+  """
+
+  def checkAccess(self, data, check):
+    """See AccessChecker.checkAccess for specification."""
+    if (not data.ndb_profile
+        or data.ndb_profile.status != profile_model.Status.ACTIVE):
+      raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
+
+HAS_PROFILE_ACCESS_CHECKER = HasProfileAccessChecker()

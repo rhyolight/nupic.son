@@ -18,13 +18,13 @@ import unittest
 
 from django import http
 
+from melange.models import profile as ndb_profile_model
 from melange.request import access
 from melange.request import exception
 
 from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model
-from soc.models import sponsor as sponsor_model
 from soc.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
@@ -604,3 +604,62 @@ class IsUserOrgAdminForUrlOrgTest(unittest.TestCase):
 
     access_checker = access.IsUserOrgAdminForUrlOrg()
     access_checker.checkAccess(self.data, None)
+
+
+class HasProfileAccessCheckerTest(unittest.TestCase):
+  """Unit tests for HasProfileAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.sponsor = program_utils.seedSponsor()
+    self.program = program_utils.seedProgram(sponsor_key=self.sponsor.key())
+
+    kwargs = {
+        'sponsor': self.sponsor.key().name(),
+        'program': self.program.program_id,
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+  def testUserWithNoProfileAccessDenied(self):
+    """Tests that access is denied if the user has no profile."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+
+    access_checker = access.HAS_PROFILE_ACCESS_CHECKER
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testUserWithActiveProfileAccessGranted(self):
+    """Tests that access is granted if the user has an active profile."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
+
+    access_checker = access.HAS_PROFILE_ACCESS_CHECKER
+    access_checker.checkAccess(self.data, None)
+
+  def testUserWithBannedProfileAccessDenied(self):
+    """Tests that access is denied if the user has a banned profile."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        status=ndb_profile_model.Status.BANNED)
+
+    access_checker = access.HAS_PROFILE_ACCESS_CHECKER
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testUserProfileForAnotherProgramAccessDenied(self):
+    """Tests that access is denied if the profile is another program."""
+    other_program = program_utils.seedProgram(sponsor_key=self.sponsor.key())
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(other_program.key(), user=user)
+
+    access_checker = access.HAS_PROFILE_ACCESS_CHECKER
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
