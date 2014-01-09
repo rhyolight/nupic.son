@@ -621,6 +621,33 @@ class GSoCProfileHelper(ProfileHelper):
     self.profile = self.seed(GSoCProfile, properties)
     return self.profile
 
+  def createNDBProfile(self):
+    """Creates a profile for the current user."""
+    if self.profile:
+      return self.profile
+
+    user = seedNDBUser()
+    loginNDB(user)
+    self.profile = seedNDBProfile(self.program.key(), user=user)
+
+    return self.profile
+
+  def createNDBOrgAdmin(self, org):
+    """Creates an Organization Administrator profile for the current user.
+
+    Args:
+      org: organization entity.
+
+    Returns:
+      the current profile entity.
+    """
+    user = seedNDBUser()
+    loginNDB(user)
+    self.profile = seedNDBProfile(
+        self.program.key(), user=user, admin_for=[org.key])
+
+    return self.profile
+
   def createOrgAdmin(self, org):
     """Creates an Organization Administrator profile for the current user.
 
@@ -669,6 +696,22 @@ class GSoCProfileHelper(ProfileHelper):
 
     return self.profile
 
+  def createNDBMentor(self, org):
+    """Creates an Organization Administrator profile for the current user.
+
+    Args:
+      org: organization entity.
+
+    Returns:
+      the current profile entity.
+    """
+    user = seedNDBUser()
+    loginNDB(user)
+    self.profile = seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[org.key])
+
+    return self.profile
+
   def notificationSettings(
       self, new_requests=False, request_handled=False,
       new_proposals=False, proposal_updates=False,
@@ -696,6 +739,13 @@ class GSoCProfileHelper(ProfileHelper):
     self.profile.student_info = self.seed(GSoCStudentInfo, properties)
     self.profile.is_student = True
     self.profile.put()
+    return self.profile
+
+  def createNDBStudent(self):
+    """Sets the current user to be a student for the current program."""
+    user = seedNDBUser()
+    loginNDB(user)
+    self.profile = seedSOCStudent(self.program, user=user)
     return self.profile
 
   def createStudentWithProposal(self, org, mentor):
