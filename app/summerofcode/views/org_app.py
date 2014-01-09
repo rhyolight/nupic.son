@@ -236,7 +236,7 @@ def cleanBackupAdmin(username, request_data):
       username, request_data.program.key(), models=request_data.models)
   if not profile:
     raise django_forms.ValidationError(PROFILE_DOES_NOT_EXIST % username)
-  elif profile.key() == request_data.profile.key():
+  elif profile.key == request_data.ndb_profile.key:
     raise django_forms.ValidationError(OTHER_PROFILE_IS_THE_CURRENT_PROFILE)
   else:
     return profile
@@ -508,7 +508,7 @@ class OrgProfileCreatePage(base.GSoCRequestHandler):
           # each organization: what if the code below fails and there are none?
           # However, it should not be a practical problem.
           admin_keys = [
-              data.profile.key(), form.cleaned_data['backup_admin'].key()]
+              data.ndb_profile.key, form.cleaned_data['backup_admin'].key]
           for admin_key in admin_keys:
             connection_view.createConnectionTxn(
                 data, admin_key, result.extra,
