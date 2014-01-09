@@ -19,6 +19,7 @@
 import datetime
 import os
 
+from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from datetime import timedelta
@@ -282,8 +283,8 @@ def seedProfile(program, model=profile_model.Profile, user=None,
         }
 
     # TODO(daniel): remove when all organizations are converted
-    if isinstance(org_key, ndb.Key):
-      org_key = org_key.to_old_key()
+    if isinstance(org_key, db.Key):
+      org_key = ndb.Key.from_old_key(org_key)
     connection_utils.seed_new_connection(
         ndb.Key.from_old_key(profile.key()), org_key, **connection_properties)
 
