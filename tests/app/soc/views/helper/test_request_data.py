@@ -27,13 +27,14 @@ from soc.models import org_app_survey as org_app_survey_model
 from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model
-from soc.models import sponsor as sponsor_model
 from soc.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import org_utils
 from tests import profile_utils
 from tests import program_utils
 from tests import timeline_utils
+from tests.utils import connection_utils
 
 
 class TimelineHelperTest(unittest.TestCase):
@@ -363,28 +364,21 @@ class UrlConnectionPropertyTest(unittest.TestCase):
   def testConnectionExists(self):
     """Tests that connection is returned correctly if exists."""
     sponsor = program_utils.seedSponsor()
-    program = seeder_logic.seed(program_model.Program)
-    user = profile_utils.seedUser()
-    profile_properties = {
-        'key_name': '%s/%s/%s' % 
-            (sponsor.link_id, program.program_id, user.link_id),
-        'parent': user,
-        'link_id': user.link_id
-        }
-    profile = seeder_logic.seed(profile_model.Profile, profile_properties)
-    connection_properties = {'parent': profile}
-    connection = seeder_logic.seed(connection_model.Connection,
-        connection_properties)
+    program = program_utils.seedProgram(sponsor_key=sponsor.key())
+    org = org_utils.seedOrganization(program.key())
+
+    profile = profile_utils.seedNDBProfile(program.key())
+    connection = connection_utils.seed_new_connection(profile.key, org.key)
 
     kwargs = {
         'sponsor': sponsor.link_id,
         'program': program.program_id,
-        'user': profile.link_id,
-        'id': str(connection.key().id())
+        'user': profile.profile_id,
+        'id': str(connection.key.id())
         }
     data = request_data.RequestData(None, None, kwargs)
     url_connection = data.url_connection
-    self.assertEqual(connection.key(), url_connection.key())
+    self.assertEqual(connection.key, url_connection.key)
 
 
 class IsHostPropertyTest(unittest.TestCase):
