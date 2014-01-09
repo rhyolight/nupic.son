@@ -789,7 +789,8 @@ class GCIProfileHelper(ProfileHelper):
         'org_role': connection_model.ORG_ADMIN_ROLE
         }
     connection_utils.seed_new_connection(
-        ndb.Key.from_old_key(self.profile.key()), org.key(), **connection_properties)
+        ndb.Key.from_old_key(self.profile.key()),
+        ndb.Key.from_old_key(org.key()), **connection_properties)
 
     return self.profile
 
@@ -812,7 +813,8 @@ class GCIProfileHelper(ProfileHelper):
         'org_role': connection_model.MENTOR_ROLE
         }
     connection_utils.seed_new_connection(
-        ndb.Key.from_old_key(self.profile.key()), org.key(), **connection_properties)
+        ndb.Key.from_old_key(self.profile.key()),
+        ndb.Key.from_old_key(org.key()), **connection_properties)
 
     return self.profile
 
