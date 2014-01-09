@@ -39,6 +39,8 @@ from soc.modules.seeder.logic.providers import string as string_provider
 from soc.modules.seeder.logic.providers import user as user_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from summerofcode.models import profile as soc_profile_model
+
 from tests import task_utils
 from tests.utils import connection_utils
 
@@ -289,6 +291,43 @@ def seedProfile(program, model=profile_model.Profile, user=None,
         ndb.Key.from_old_key(profile.key()), org_key, **connection_properties)
 
   return profile
+
+
+def seedNDBStudent(program, student_data_model=ndb_profile_model.StudentData,
+    student_data_properties=None, user=None, **kwargs):
+  """Seeds a new profile who is registered as a student.
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    student_data_model: Model of which a new student data should be seeded.
+    student_data_properties: Optional properties of the student data to seed.
+    user: User entity corresponding to the profile.
+
+  Returns:
+    A newly seeded Profile entity.
+  """
+  profile = seedNDBProfile(program.key(), user=user, **kwargs)
+
+  student_data_properties = student_data_properties or {}
+  profile.student_data = seedStudentData(
+      model=student_data_model, **student_data_properties)
+  profile.put()
+  return profile
+
+
+def seedSOCStudent(program, user=None, **kwargs):
+  """Seeds a new profile who is registered as a student for Summer Of Code.
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    user: User entity corresponding to the profile.
+
+  Returns:
+    A newly seeded Profile entity.
+  """
+  return seedNDBStudent(
+      program, student_data_model=soc_profile_model.SOCStudentData,
+      user=user, **kwargs)
 
 
 def seedGCIProfile(program, user=None, **kwargs):
