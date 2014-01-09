@@ -106,10 +106,13 @@ def queryForOrganizations(org_keys):
   specified organizations.
 
   Args:
-    org_keys: List of organization keys.
+    org_keys: Non-empty list of organization keys.
 
   Returns:
     db.Query object to fetch all connection entities for the organizations.
+
+  Raises:
+    ValueError: If the specified argument is an empty list.
   """
   if org_keys:
     return connection_model.Connection.query(

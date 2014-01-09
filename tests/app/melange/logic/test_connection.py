@@ -13,8 +13,6 @@
 # limitations under the License.
 """Tests for soc.modules.gsoc.logic.connection."""
 
-from google.appengine.ext import db
-
 from datetime import datetime
 from datetime import timedelta
 import mock
@@ -257,15 +255,15 @@ class QueryForOrganizationsTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
-    self.program = program_utils.seedProgram()
+    program = program_utils.seedProgram()
     # seed a few organizations
-    self.first_org = org_utils.seedOrganization(self.program.key())
-    self.second_org = org_utils.seedOrganization(self.program.key())
-    self.third_org = org_utils.seedOrganization(self.program.key())
+    self.first_org = org_utils.seedOrganization(program.key())
+    self.second_org = org_utils.seedOrganization(program.key())
+    self.third_org = org_utils.seedOrganization(program.key())
 
     # seed a few profiles
-    first_profile = profile_utils.seedNDBProfile(self.program.key())
-    second_profile = profile_utils.seedNDBProfile(self.program.key())
+    first_profile = profile_utils.seedNDBProfile(program.key())
+    second_profile = profile_utils.seedNDBProfile(program.key())
 
     self.first_connection = connection_utils.seed_new_connection(
         first_profile.key, self.first_org.key)
