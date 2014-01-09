@@ -135,20 +135,18 @@ def assignMentorRoleForOrg(profile, org_key):
 
 
 def assignOrgAdminRoleForOrg(profile, org_key):
-  """Assigns the specified profile to an organization administrator role
+  """Assigns the specified profile an organization administrator role
   for the specified organization.
 
   Args:
-    profile: profile entity.
-    org_key: organization key.
+    profile: Profile entity.
+    org_key: Organization key.
   """
-  if org_key not in profile.org_admin_for:
+  if org_key not in profile.admin_for:
     if org_key not in profile.mentor_for:
-      profile.is_mentor = True
       profile.mentor_for.append(org_key)
 
-    profile.is_org_admin = True
-    profile.org_admin_for.append(org_key)
+    profile.admin_for.append(org_key)
     profile.put()
 
 
