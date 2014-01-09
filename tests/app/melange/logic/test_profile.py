@@ -214,44 +214,43 @@ class AssignNoRoleForOrgTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
+    # seed a program
+    self.program = program_utils.seedProgram()
+
     # seed an organization
-    self.org = seeder_logic.seed(org_model.Organization)
+    self.org = org_utils.seedOrganization(self.program.key())
 
     # seed a profile
-    self.profile = seeder_logic.seed(profile_model.Profile)
+    self.profile = profile_utils.seedNDBProfile(self.program.key())
 
   def testForRoleForOneOrg(self):
     """Tests that the user does not have roles for organization anymore."""
-    self.profile.is_mentor = True
-    self.profile.mentor_for = [self.org.key()]
-    self.profile.is_org_admin = True
-    self.profile.org_admin_for = [self.org.key()]
+    self.profile.mentor_for = [self.org.key]
+    self.profile.admin_for = [self.org.key]
     self.profile.put()
 
-    profile_logic.assignNoRoleForOrg(self.profile, self.org.key())
+    profile_logic.assignNoRoleForOrg(self.profile, self.org.key)
 
     self.assertFalse(self.profile.is_mentor)
     self.assertListEqual(self.profile.mentor_for, [])
-    self.assertFalse(self.profile.is_org_admin)
-    self.assertListEqual(self.profile.org_admin_for, [])
+    self.assertFalse(self.profile.is_admin)
+    self.assertListEqual(self.profile.admin_for, [])
 
   def testForRoleForManyOrgs(self):
     """Tests that the user still have roles for other organizations."""
     # seed another organization
-    other_org = seeder_logic.seed(org_model.Organization)
+    other_org = org_utils.seedOrganization(self.program.key())
 
-    self.profile.is_mentor = True
-    self.profile.mentor_for = [self.org.key(), other_org.key()]
-    self.profile.is_org_admin = True
-    self.profile.org_admin_for = [self.org.key()]
+    self.profile.mentor_for = [self.org.key, other_org.key]
+    self.profile.org_admin_for = [self.org.key]
     self.profile.put()
 
-    profile_logic.assignNoRoleForOrg(self.profile, self.org.key())
+    profile_logic.assignNoRoleForOrg(self.profile, self.org.key)
 
     self.assertTrue(self.profile.is_mentor)
-    self.assertListEqual(self.profile.mentor_for, [other_org.key()])
-    self.assertFalse(self.profile.is_org_admin)
-    self.assertListEqual(self.profile.org_admin_for, [])
+    self.assertListEqual(self.profile.mentor_for, [other_org.key])
+    self.assertFalse(self.profile.is_admin)
+    self.assertListEqual(self.profile.admin_for, [])
 
 
 class AssignMentorRoleForOrgTest(unittest.TestCase):

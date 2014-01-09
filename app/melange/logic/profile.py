@@ -98,20 +98,18 @@ def getOrgAdmins(org_key, keys_only=False, extra_attrs=None,
 
 
 def assignNoRoleForOrg(profile, org_key):
-  """Removes any elevated role for the specified profile profile for the
+  """Removes any elevated role for the specified profile for the
   specified organization.
 
   Args:
-    profile: profile entity.
-    org_key: organization key.
+    profile: Profile entity.
+    org_key: Organization key.
   """
   if org_key in profile.mentor_for:
     profile.mentor_for.remove(org_key)
-    profile.is_mentor = True if len(profile.mentor_for) else False
 
-  if org_key in profile.org_admin_for:
-    profile.org_admin_for.remove(org_key)
-    profile.is_org_admin = True if len(profile.org_admin_for) else False
+  if org_key in profile.admin_for:
+    profile.admin_for.remove(org_key)
 
   profile.put()
 
