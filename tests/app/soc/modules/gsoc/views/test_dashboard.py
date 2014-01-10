@@ -19,6 +19,9 @@ import json
 from tests import profile_utils
 from tests.survey_utils import SurveyHelper
 from tests.test_utils import GSoCDjangoTestCase
+from tests.utils import project_utils
+from tests.utils import proposal_utils
+
 
 class DashboardTest(GSoCDjangoTestCase):
   """Tests dashboard page.
@@ -49,14 +52,14 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testDashboardAsLoneUser(self):
-    self.profile_helper.createProfile()
+    self.profile_helper.createNDBProfile()
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertDashboardTemplatesUsed(response)
 
   def testDashboardAsStudent(self):
-    self.profile_helper.createStudent()
+    self.profile_helper.createNDBStudent()
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
@@ -65,9 +68,9 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardAsStudentWithProposal(self):
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
-    self.profile_helper.createStudentWithProject(self.org, mentor)
+    profile = self.profile_helper.createNDBStudent()
+    proposal_utils.seedProposal(profile.key, self.program.key())
+
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
@@ -76,9 +79,9 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardAsStudentWithProject(self):
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
-    self.profile_helper.createStudentWithProject(self.org, mentor)
+    profile = self.profile_helper.createNDBStudent()
+    project_utils.seedProject(profile, self.program.key())
+
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
@@ -87,9 +90,9 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardAsStudentWithEval(self):
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
-    self.profile_helper.createStudentWithProject(self.org, mentor)
+    profile = self.profile_helper.createNDBStudent()
+    project_utils.seedProject(profile, self.program.key())
+
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
@@ -114,7 +117,7 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertEqual(len(data['data']['']), 2)
 
   def testDashboardAsOrgAdmin(self):
-    self.profile_helper.createOrgAdmin(self.org)
+    self.profile_helper.createNDBOrgAdmin(self.org)
     self.timeline_helper.studentsAnnounced()
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
