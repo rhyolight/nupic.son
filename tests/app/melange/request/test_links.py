@@ -102,14 +102,7 @@ class TestLinker(unittest.TestCase):
 
   def testProgram(self):
     """Tests program function."""
-    sponsor = program_utils.seedSponsor()
-
-    program_properties = {
-        'sponsor': sponsor,
-        'scope': sponsor,
-        }
-    program = seeder_logic.seed(
-        program_model.Program, properties=program_properties)
+    program = program_utils.seedProgram()
     self.assertEqual(
         '/gci/homepage/%s' % program.key().name(),
         self.linker.program(program, 'gci_homepage'))
@@ -124,10 +117,10 @@ class TestLinker(unittest.TestCase):
   def testUser(self):
     """Tests user function."""
     # seed a user
-    user = profile_utils.seedUser()
+    user = profile_utils.seedNDBUser()
 
     self.assertEqual(
-        '/site/settings/user/%s' % user.key().name(),
+        '/site/settings/user/%s' % user.key.id(),
         self.linker.user(user, urls.UrlNames.USER_SETTINGS))
 
   def testUserOrg(self):

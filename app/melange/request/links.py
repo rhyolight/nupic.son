@@ -144,7 +144,11 @@ class Linker(object):
     Returns:
       The URL of the page matching the given name for the given user.
     """
-    kwargs = {'user': user.key().name()}
+    if isinstance(user, ndb.Model):
+      user_id = user.key.id()
+    else:
+      user_id = user.key().name()
+    kwargs = {'user': user_id}
     return urlresolvers.reverse(url_name, kwargs=kwargs)
 
   def userOrg(self, profile, org, url_name):
