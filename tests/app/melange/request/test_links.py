@@ -17,8 +17,6 @@
 import unittest
 import urllib
 
-from codein.views.helper import urls as ci_urls
-
 from melange.request import links
 from melange.views.helper import urls
 
@@ -92,24 +90,14 @@ class TestLinker(unittest.TestCase):
 
   def testProfile(self):
     # seed a program
-    program = seeder_logic.seed(program_model.Program)
-    program.program_id = program.link_id
-    program.sponsor = program.scope
-
-    # seed a user
-    user = profile_utils.seedUser()
+    program = program_utils.seedProgram()
 
     # seed a profile
-    profile_properties = {
-        'program': program,
-        'scope': program,
-        'parent': user
-        }
-    profile = seeder_logic.seed(profile_model.Profile, profile_properties)
+    profile = profile_utils.seedNDBProfile(program.key())
 
     self.assertEqual(
         '/gci/profile/show/%s/%s' % (
-            profile.program.key().name(), profile.parent_key().name()),
+            profile.program.id(), profile.key.parent().id()),
         self.linker.profile(profile, gci_url_names.GCI_PROFILE_SHOW_ADMIN))
 
   def testProgram(self):

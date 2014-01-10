@@ -190,3 +190,48 @@ class Profile(ndb.Model):
     specific to this profile.
     """
     return self.key.parent().id()
+
+
+def getSponsorId(profile_key):
+  """Returns sponsor ID based on the specified profile key.
+
+  Args:
+    profile_key: Profile key.
+
+  Returns:
+    A string that represents sponsor ID.
+  """
+  if isinstance(profile_key, ndb.Key):
+    return profile_key.id().split('/')[0]
+  else:
+    return profile_key.name().split('/')[0]
+
+
+def getProgramId(profile_key):
+  """Returns program ID based on the specified profile key.
+
+  Args:
+    profile_key: Profile key.
+
+  Returns:
+    A string that represents program ID.
+  """
+  if isinstance(profile_key, ndb.Key):
+    return profile_key.id().split('/')[1]
+  else:
+    return profile_key.name().split('/')[1]
+
+
+def getUserId(profile_key):
+  """Returns user ID based on the specified profile key.
+
+  Args:
+    profile_key: Profile key.
+
+  Returns:
+    A string that represents user ID.
+  """
+  if isinstance(profile_key, ndb.Key):
+    return profile_key.id().split('/')[2]
+  else:
+    return profile_key.name().split('/')[2]

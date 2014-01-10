@@ -15,14 +15,15 @@
 """Module for managing URL generation."""
 
 from google.appengine.api import users
+from google.appengine.ext import ndb
 
 from django.core import urlresolvers
 
 from melange.models import organization as org_model
+from melange.models import profile as profile_model
 
 from soc.logic import program as program_logic
 from soc.logic import site as site_logic
-from soc.models import profile as profile_model
 
 
 def getAbsoluteUrl(relative_url, hostname, secure=False):
@@ -90,13 +91,16 @@ class Linker(object):
     Returns:
       The URL of the page matching the given name for the given profile.
     """
-    # TODO(daniel): program's key should be acquired in a more efficient way
-    program = profile.program
+    if isinstance(profile, ndb.Model):
+      profile_key = profile.key
+    else:
+      profile_key = profile.key()
+
     kwargs = {
-        'program': program.program_id,
-        'sponsor': program.sponsor.key().name(),
-        'user': profile.parent_key().name()
-        }
+        'program': profile_model.getProgramId(profile_key),
+        'sponsor': profile_model.getSponsorId(profile_key),
+        'user': profile_model.getUserId(profile_key)
+         }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
 
   def program(self, program, url_name):
