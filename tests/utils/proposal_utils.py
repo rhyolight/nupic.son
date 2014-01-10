@@ -61,4 +61,8 @@ def seedProposal(
       'content': TEST_CONTENT,
       }
   properties.update(**kwargs)
-  return proposal_model.GSoCProposal(**properties)
+  proposal = proposal_model.GSoCProposal(**properties)
+  proposal.put()
+
+  return proposal
+
