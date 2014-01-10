@@ -151,12 +151,14 @@ class Linker(object):
     kwargs = {'user': user_id}
     return urlresolvers.reverse(url_name, kwargs=kwargs)
 
-  def userOrg(self, profile, org, url_name):
+  def userOrg(self, profile_key, org_key, url_name):
     """Returns the URL of a page whose address contains parts associated
     with the specified profile and organization.
 
+    The specified profile and organization must come from the same program.
+
     Args:
-      profile: profile entity.
+      profile_key: Profile key.
       org: organization entity.
       url_name: the name with which a URL was registered with Django.
 
@@ -164,12 +166,11 @@ class Linker(object):
       The URL of the page matching the given names for the given profile
       and organization.
     """
-    program = profile.program
     kwargs = {
-        'sponsor': program_logic.getSponsorKey(program).name(),
-        'program': program.program_id,
-        'user': profile.parent_key().name(),
-        'organization': org.link_id,
+        'sponsor': profile_model.getSponsorId(profile_key),
+        'program': profile_model.getProgramId(profile_key),
+        'user': profile_model.getUserId(profile_key),
+        'organization': org_model.getOrgId(org_key),
         }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
 

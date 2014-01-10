@@ -21,13 +21,13 @@ from melange.request import links
 from melange.views.helper import urls
 
 from soc.models import organization as org_model
-from soc.models import profile as profile_model
 from soc.models import program as program_model
 from soc.modules.gci.views.helper import url_names as gci_url_names
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from summerofcode.views.helper import urls as soc_urls
 
+from tests import org_utils
 from tests import profile_utils
 from tests import program_utils
 
@@ -126,29 +126,19 @@ class TestLinker(unittest.TestCase):
   def testUserOrg(self):
     """Tests userOrg function."""
     # seed a program
-    program = seeder_logic.seed(program_model.Program)
-    program.program_id = program.link_id
-    program.sponsor = program.scope
-
-    # seed a user
-    user = profile_utils.seedUser()
+    program = program_utils.seedProgram()
 
     # seed a profile
-    profile_properties = {
-        'program': program,
-        'scope': program,
-        'parent': user
-        }
-    profile = seeder_logic.seed(profile_model.Profile, profile_properties)
+    profile = profile_utils.seedNDBProfile(program.key())
 
     # seed an organization
-    org = seeder_logic.seed(org_model.Organization)
+    org = org_utils.seedOrganization(program.key())
 
     self.assertEqual(
-        '/gci/student_tasks_for_org/%s/%s/%s' % (profile.program.key().name(),
-            profile.parent_key().name(), org.link_id),
+        '/gci/student_tasks_for_org/%s/%s/%s' % (program.key().name(),
+            profile.key.parent().id(), org.org_id),
         self.linker.userOrg(
-            profile, org, gci_url_names.GCI_STUDENT_TASKS_FOR_ORG))
+            profile.key, org.key, gci_url_names.GCI_STUDENT_TASKS_FOR_ORG))
 
   def testUserId(self):
     """Tests userId function."""
