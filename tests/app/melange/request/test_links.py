@@ -28,6 +28,8 @@ from soc.models import program as program_model
 from soc.modules.gci.views.helper import url_names as gci_url_names
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from summerofcode.views.helper import urls as soc_urls
+
 from tests import profile_utils
 from tests import program_utils
 
@@ -177,10 +179,11 @@ class TestLinker(unittest.TestCase):
     profile = profile_utils.seedProfile(program)
 
     self.assertEqual(
-        '/gci/connection/manage/user/%s/%s/%s' % (profile.program.key().name(),
+        '/gsoc/project/manage/admin/%s/%s/%s' % (
+            profile.program.key().name(),
             profile.parent_key().name(), 42),
         self.linker.userId(
-            profile.key(), 42, ci_urls.UrlNames.CONNECTION_MANAGE_AS_USER))
+            profile.key(), 42, soc_urls.UrlNames.PROJECT_MANAGE_ADMIN))
 
   def testOrganization(self):
     """Tests organization function."""
@@ -198,6 +201,6 @@ class TestLinker(unittest.TestCase):
         org_model.Organization, properties=org_properties)
 
     url = self.linker.organization(
-        organization.key(), ci_urls.UrlNames.CONNECTION_START_AS_ORG)
+        organization.key(), soc_urls.UrlNames.ORG_PROFILE_EDIT)
     self.assertEqual(
-        '/gci/connection/start/org/%s' % organization.key().name(), url)
+        '/gsoc/org/profile/edit/%s' % organization.key().name(), url)
