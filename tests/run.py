@@ -398,7 +398,7 @@ def run_pyunit_tests():
   args = ['--exclude=functional',
           '--exclude=^old_app$']
   sys.argv += args
-  nose.main(addplugins=plugins)
+  nose.run(addplugins=plugins)
 
 def get_js_tests_environment():
   """Create appropriate environment variables for JS tests.
@@ -513,8 +513,6 @@ def main():
     if 'pylint' in tests:
       run_pylint()
     if 'pyunit' in tests:
-      # run_pyunit_tests has to be the last one to run, since nose seems to
-      # terminate everything and prevent any other code in the file to run.
       run_pyunit_tests()
 
 if __name__ == '__main__':
