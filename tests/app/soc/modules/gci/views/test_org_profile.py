@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 """Tests for GCI Organization profile related views."""
+
+import unittest
 
 from google.appengine.ext import db
 
@@ -75,6 +76,7 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
         self.gci.key().name())
     self.assertResponseRedirect(response, url=redirect_url)
 
+  @unittest.skip('it will be enabled when GCI organizations are updated to NDB')
   def testCreateOrg(self):
     """Tests that only the assigned org admin for an organization can edit the
     org profile.
