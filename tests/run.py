@@ -12,15 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-import easyprocess
+import contextlib
+import logging
 import os
-import pyvirtualdisplay
 import socket
 import subprocess
 import sys
 
+import easyprocess
+import nose
+from nose import plugins
+import pyvirtualdisplay
+
+# Disable the messy logging information
+logging.disable(logging.INFO)
+log = logging.getLogger('nose.plugins.cover')
+logging.disable(logging.INFO)
 
 HERE = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                      '..'))
@@ -33,20 +40,9 @@ extra_paths = [HERE,
                os.path.join(HERE, 'tests')
               ]
 
-import nose
-from nose import plugins
-
-import logging
-
-# Disable the messy logging information
-logging.disable(logging.INFO)
-log =  logging.getLogger('nose.plugins.cover')
-logging.disable(logging.INFO)
-
 
 def setup_gae_services():
-  """Setups all google app engine services required for testing.
-  """
+  """Setups all google app engine services required for testing."""
   from google.appengine.api import apiproxy_stub_map
   from google.appengine.api import mail_stub
   from google.appengine.api import user_service_stub
@@ -82,6 +78,7 @@ def clean_datastore():
 
   ndb.get_context().clear_cache()
 
+
 def clear_memcache():
   """Clears all entries that exist in memcache."""
   from google.appengine.api import memcache
@@ -112,7 +109,6 @@ def load_melange():
   Registers a core, the GSoC and GCI modules, and calls the sitemap, sidebar
   and rights services.
   """
-
   from soc.modules import callback
   from soc.modules.core import Core
 
@@ -139,8 +135,7 @@ def load_melange():
 
 
 class AppEngineDatastoreClearPlugin(plugins.Plugin):
-  """Nose plugin to clear the AppEngine datastore between tests.
-  """
+  """Nose plugin to clear the AppEngine datastore between tests."""
   name = 'AppEngineDatastoreClearPlugin'
   enabled = True
   def options(self, parser, env):
@@ -158,7 +153,6 @@ class DefaultUserSignInPlugin(plugins.Plugin):
   """Nose plugin to sign in a user with the default Google Account
   between tests.
   """
-
   name = 'DefaultUserSignInPlugin'
   enabled = True
 
@@ -176,7 +170,6 @@ class DefaultUserSignInPlugin(plugins.Plugin):
 
 class AppEngineMemcacheClearPlugin(plugins.Plugin):
   """Nose plugin to clear the AppEngine memecache entries between the tests."""
-
   name = 'AppEngineMemcacheClearPlugin'
   enabled = True
 
@@ -248,13 +241,11 @@ def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
       errorClasses)
 
   def setup_process_env():
-    """Runs just after the process starts to setup services.
-    """
+    """Runs just after the process starts to setup services."""
     setup_gae_services()
 
   def after_each_test():
-    """Runs after each test to clean datastore.
-    """
+    """Runs after each test to clean datastore."""
     clean_datastore()
 
   # Setup gae services at the beginning of every process
@@ -400,6 +391,7 @@ def run_pyunit_tests():
   sys.argv += args
   nose.run(addplugins=plugins)
 
+
 def get_js_tests_environment():
   """Create appropriate environment variables for JS tests.
 
@@ -413,6 +405,7 @@ def get_js_tests_environment():
 
   return js_tests_environment
 
+
 def get_random_available_port():
   """Get an available port from the operating system.
 
@@ -424,12 +417,12 @@ def get_random_available_port():
   Returns:
     A random available port from the operating system.
   """
-  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  sock.bind(('', 0))
-  sock.listen(1)
-  port = str(sock.getsockname()[1])
-  sock.close()
-  return port
+  with contextlib.closing(
+      socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
+    sock.bind(('', 0))
+    sock.listen(1)
+    return str(sock.getsockname()[1])
+
 
 def run_js_tests(run_browsers_gui):
   """Run JS tests suite.
@@ -459,12 +452,11 @@ def run_js_tests(run_browsers_gui):
         env=get_js_tests_environment(), shell=True)
     return
 
-  virtual_display = None
   try:
     # start() assigns the DISPLAY environment variable to the virtual display.
     virtual_display = pyvirtualdisplay.Display().start()
   except easyprocess.EasyProcessCheckInstalledError:
-    pass
+    virtual_display = None
 
   if virtual_display:
     subprocess.call(
@@ -491,6 +483,7 @@ def run_js_dev():
     'node ./node_modules/testem/testem.js -l phantomjs -g',
     env=get_js_tests_environment(), shell=True)
 
+
 def main():
   tests = set()
   if '-js-dev' in sys.argv:
@@ -503,6 +496,10 @@ def main():
     else:
       tests = set(['js', 'pyunit', 'pylint'])
 
+    if 'pylint' in tests:
+      run_pylint()
+    if 'pyunit' in tests:
+      run_pyunit_tests()
     if 'js' in tests:
       run_browsers_gui = False
       if '--browsers-gui' in sys.argv:
@@ -510,10 +507,6 @@ def main():
         del sys.argv[i]
         run_browsers_gui = True
       run_js_tests(run_browsers_gui)
-    if 'pylint' in tests:
-      run_pylint()
-    if 'pyunit' in tests:
-      run_pyunit_tests()
 
 if __name__ == '__main__':
   main()
