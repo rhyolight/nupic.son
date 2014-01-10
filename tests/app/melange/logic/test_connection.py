@@ -386,12 +386,15 @@ class GenerateMessageOnStartByOrgTest(unittest.TestCase):
             connection_model.VERBOSE_ROLE_NAMES[self.connection.org_role]))
     self.assertTrue(message.is_auto_generated)
 
-class CreateAnonymousConnectionTest(ConnectionTest):
+class CreateAnonymousConnectionTest(unittest.TestCase):
   """Unit test for createAnonymousConnection function."""
 
   def testCreateAnonymousConnection(self):
     """Test that an AnonymousConnection can be created successfully."""
-    connection_logic.createAnonymousConnection(org=self.org,
+    program = program_utils.seedProgram()
+    org = org_utils.seedSOCOrganization(program.key())
+
+    connection_logic.createAnonymousConnection(org=org,
         org_role=connection_model.MENTOR_ROLE, email='person@test.com')
     expected_expiration =  datetime.today() + timedelta(7)
 
@@ -402,7 +405,7 @@ class CreateAnonymousConnectionTest(ConnectionTest):
     self.assertEquals('person@test.com', connection.email)
 
 
-class QueryAnonymousConnectionTest(ConnectionTest):
+class QueryAnonymousConnectionTest(unittest.TestCase):
   """Unit test for the queryAnonymousConnectionForToken function."""
 
   def testQueryInvalidToken(self):
@@ -415,69 +418,68 @@ class QueryAnonymousConnectionTest(ConnectionTest):
   def testQueryForAnonymousConnection(self):
     """Test that the function will correctly fetch AnonymousConnection objects
     given a valid token."""
-    connection_logic.createAnonymousConnection(org=self.org,
+    program = program_utils.seedProgram()
+    org = org_utils.seedOrganization(program.key())
+
+    connection_logic.createAnonymousConnection(org=org,
         org_role=connection_model.MENTOR_ROLE, email='person@test.com')
     token = connection_model.AnonymousConnection.all().get().token
     connection = connection_logic.queryAnonymousConnectionForToken(token)
     self.assertIsNotNone(connection)
 
-class ActivateAnonymousConnectionTest(ConnectionTest):
+class ActivateAnonymousConnectionTest(unittest.TestCase):
   """Unit test for actions related to the activateAnonymousConnection
   function."""
 
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.program = program_utils.seedProgram()
+
   def testInvalidToken(self):
-     """Test that the function will raise an error if the token does not
-     correspond to an AnonymousConnection object."""
-     token = "bad_token"
-     self.assertRaises(
-         ValueError,
-         connection_logic.activateAnonymousConnection,
-         profile=self.profile,
-         token=token
-         )
+    """Test that the function will raise an error if the token does not
+    correspond to an AnonymousConnection object."""
+    profile = profile_utils.seedNDBProfile(self.program.key())
+    with self.assertRaises(ValueError):
+      connection_logic.activateAnonymousConnection(profile, 'bad token')
 
   def testExpiredConnection(self):
     """Test that a user is prevented from activating a Connection that was
     created more than a week ago."""
+    org = org_utils.seedOrganization(self.program.key())
+    profile = profile_utils.seedNDBProfile(self.program.key())
+
     connection_logic.createAnonymousConnection(
-        org=self.org,
-        org_role=connection_model.ORG_ADMIN_ROLE,
-        email='test@something.com'
-        )
+        org=org, org_role=connection_model.ORG_ADMIN_ROLE,
+        email='test@example.com')
     # Cause the anonymous connection to "expire."
     anonymous_connection = connection_model.AnonymousConnection.all().get()
     anonymous_connection.expiration_date = datetime.today() - timedelta(1)
     anonymous_connection.put()
 
-    self.assertRaises(
-         ValueError,
-         connection_logic.activateAnonymousConnection,
-         profile=self.profile,
-         token=anonymous_connection.token
-         )
+    with self.assertRaises(ValueError):
+      connection_logic.activateAnonymousConnection(profile, 'bad token')
 
   def testSuccessfulActivation(self):
     """Test that given a valid token and date, an AnonymousConnection will be
     used to activate a new Connection for the user."""
-    self.connection.delete()
+    org = org_utils.seedOrganization(self.program.key())
+    profile = profile_utils.seedNDBProfile(self.program.key())
+
     connection_logic.createAnonymousConnection(
-        org=self.org,
-        org_role=connection_model.ORG_ADMIN_ROLE,
-        email='test@something.com'
-        )
+        'test@example.com', org, connection_model.ORG_ADMIN_ROLE)
+ 
     anonymous_connection = connection_model.AnonymousConnection.all().get()
 
-    connection_logic.activateAnonymousConnection(profile=self.profile,
-        token=anonymous_connection.token)
-    query = connection_model.Connection.all().ancestor(self.profile)
-    query.filter('org_role =', connection_model.ORG_ADMIN_ROLE)
+    connection_logic.activateAnonymousConnection(
+        profile, anonymous_connection.token)
+
+    query = connection_model.Connection.query(
+        connection_model.Connection.org_role == connection_model.ORG_ADMIN_ROLE,
+        ancestor=profile.key)
     connection = query.get()
 
     self.assertEquals(connection.user_role, connection_model.NO_ROLE)
+    self.assertEquals(connection.organization, org.key)
 
-    org_key = (
-        connection_model.Connection.organization
-            .get_value_for_datastore(connection))
-    self.assertEquals(org_key, self.org.key.to_old_key())
     anonymous_connection = connection_model.AnonymousConnection.all().get()
     self.assertIsNone(anonymous_connection)

@@ -252,11 +252,9 @@ def activateAnonymousConnection(profile, token):
 
   org_role = anonymous_connection.org_role
   new_connection = createConnection(
-      profile=profile,
-      org=anonymous_connection.parent_key(),
-      org_role=org_role,
-      user_role=connection_model.NO_ROLE
-      )
+      profile, ndb.Key.from_old_key(anonymous_connection.parent_key()),
+      connection_model.NO_ROLE, org_role)
+
   anonymous_connection.delete()
   return new_connection
 
