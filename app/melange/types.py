@@ -37,8 +37,8 @@ class Models(object):
   """
 
   def __init__(
-      self, ndb_org_model=None, ndb_profile_model=None, org_model=None,
-      profile_model=None, program_model=None, program_messages_model=None,
+      self, ndb_org_model=None, org_model=None, profile_model=None,
+      program_model=None, program_messages_model=None,
       student_data_model=None, timeline_model=None):
     """Initializes new instance of Models class.
 
@@ -52,7 +52,7 @@ class Models(object):
     """
     # TODO(daniel): remove when not necessary
     self.ndb_org_model = ndb_org_model
-    self.ndb_profile_model = ndb_profile_model
+    self.ndb_profile_model = ndb_profile.Profile
     self.org_model = org_model
     self.profile_model = profile_model
     self.program_model = program_model
@@ -63,7 +63,6 @@ class Models(object):
 
 MELANGE_MODELS = Models(
     ndb_org_model=ndb_organization.Organization,
-    ndb_profile_model=ndb_profile.Profile,
     org_model=organization.Organization,
     profile_model=profile.Profile,
     program_model=program.Program,
