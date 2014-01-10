@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from tests.profile_utils import seedNDBProfile
 
 """Tests for dashboard view."""
 
@@ -127,7 +128,7 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardAsMentor(self):
-    self.profile_helper.createMentor(self.org)
+    self.profile_helper.createNDBMentor(self.org)
     self.timeline_helper.studentsAnnounced()
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
@@ -138,8 +139,17 @@ class DashboardTest(GSoCDjangoTestCase):
 
   def testDashboardAsMentorWithProject(self):
     self.timeline_helper.studentsAnnounced()
-    student = profile_utils.seedGSoCStudent(self.program)
-    self.profile_helper.createMentorWithProject(self.org, student)
+
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
+
+    student = profile_utils.seedSOCStudent(self.program)
+    project_utils.seedProject(
+        student, self.program.key(), org_key=self.org.key,
+        mentor_key=profile.key)
+
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
@@ -148,7 +158,7 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardRequest(self):
-    self.profile_helper.createOrgAdmin(self.org)
+    self.profile_helper.createNDBOrgAdmin(self.org)
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.getListResponse(url, 7)
     self.assertIsJsonResponse(response)

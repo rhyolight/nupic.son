@@ -566,7 +566,7 @@ class MyEvaluationsComponent(Component):
     # which is not part of the project entity
     list_config.addPlainTextColumn(
         'key', 'Key', (lambda entity, evaluation_id, *args: '%s/%s/%s' % (
-            evaluation_id, entity.parent().key().name(),
+            evaluation_id, entity.parent_key().name(),
             entity.key().id())), hidden=True)
 
     list_config.addPlainTextColumn(
@@ -582,8 +582,9 @@ class MyEvaluationsComponent(Component):
         lambda ent, eval, *args: self.record.modified if self.record else None)
     def rowAction(ent, eval, *args):
       return data.redirect.survey_record(
-          eval, ent.key().id_or_name(), ent.parent().link_id).urlOf(
-          'gsoc_take_student_evaluation')
+          eval, ent.key().id_or_name(),
+          ent.parent_key().parent().name()).urlOf(
+              'gsoc_take_student_evaluation')
 
     list_config.setRowAction(rowAction)
     self._list_config = list_config
@@ -650,15 +651,18 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
     """
     super(OrgEvaluationsComponent, self).__init__(data, evals)
 
-    self._list_config.addPlainTextColumn(
-        'student', 'Student',
-        lambda ent, eval, *args: ent.parent().name())
+    def getStudent(entity, evaluation, *args):
+      """Helper function to get value of student column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
+
+    self._list_config.addPlainTextColumn('student', 'Student', getStudent)
 
     def rowAction(ent, eval, *args):
       eval_ent = eval
       return data.redirect.survey_record(
-          eval_ent, ent.key().id_or_name(), ent.parent().link_id).urlOf(
-          'gsoc_take_mentor_evaluation')
+          eval_ent, ent.key().id_or_name(),
+          ent.parent_key().parent().name()).urlOf(
+              'gsoc_take_mentor_evaluation')
 
     self._list_config.setRowAction(rowAction)
 
@@ -726,11 +730,15 @@ class SubmittedProposalsComponent(Component):
   # TODO(nathaniel): Wait, is this seriously a 100+-line *constructor*?
   def __init__(self, data):
     """Initializes this component."""
+
+    def getStudentEmail(entity, *args):
+      """Helper function to get value of Student Email column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().contact.email
+
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn(
-        'email', 'Student Email',
-        (lambda ent, *args: ent.parent().email), hidden=True)
+        'email', 'Student Email', getStudentEmail, hidden=True)
     list_config.addNumericalColumn('score', 'Score',
         lambda e, *args: e.score)
     list_config.addNumericalColumn('nr_scores', '#scores',
@@ -787,9 +795,12 @@ class SubmittedProposalsComponent(Component):
                                 column_type=lists.DATE)
     list_config.addSimpleColumn('created_on', 'Created on',
                                 hidden=True, column_type=lists.DATE)
-    list_config.addPlainTextColumn(
-        'student', 'Student',
-        lambda ent, *args: ent.parent().name())
+
+    def getStudent(entity, *args):
+      """Helper function to get value of student column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
+
+    list_config.addPlainTextColumn('student', 'Student', getStudent)
     list_config.addSimpleColumn('accept_as_project', 'Should accept')
 
     def getOrganization(entity, *args):
@@ -1045,12 +1056,12 @@ class SubmittedProposalsComponent(Component):
         duplicates.extend(dup.duplicates)
 
     starter = lists.keyStarter
-    # TODO(daniel): enable prefetching from ndb models ('org')
-    prefetcher = lists.ModelPrefetcher(GSoCProposal, [], parent=True)
+    # TODO(daniel): enable prefetching from ndb models ('org', 'parent')
+    #prefetcher = lists.ModelPrefetcher(GSoCProposal, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.data.request, self._list_config, q, starter,
-        prefetcher=prefetcher)
+        self.data.request, self._list_config, query, starter,
+        prefetcher=None)
     return response_builder.build(accepted, duplicates)
 
 
@@ -1067,8 +1078,12 @@ class ProjectsIMentorComponent(Component):
 
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addPlainTextColumn('student', 'Student',
-                          lambda ent, *args: ent.parent().name())
+
+    def getStudent(entity, *args):
+      """Helper function to get value of student column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
+
+    list_config.addPlainTextColumn('student', 'Student', getStudent)
     list_config.addPlainTextColumn('org', 'Organization', getOrganization)
     list_config.setDefaultSort('title')
     list_config.setRowAction(
@@ -1263,10 +1278,13 @@ class OrgConnectionComponent(Component):
           .get_value_for_datastore(entity))
       return ndb.Key.from_old_key(org_key).get().name
 
+    def getStudent(entity, *args):
+      """Helper function to get value of student column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
+
     list_config.addPlainTextColumn(
         'organization', 'Organization', getOrganization)
-    list_config.addPlainTextColumn('name', 'Name',
-        lambda e, *args: e.parent().name())
+    list_config.addPlainTextColumn('name', 'Name', getStudent)
     list_config.addPlainTextColumn('role', 'Role',
         lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()],
             options=CONNECTION_ROLES)
@@ -1339,13 +1357,16 @@ class UserConnectionComponent(Component):
           .get_value_for_datastore(entity))
       return ndb.Key.from_old_key(org_key).get().name
 
+    def getStudent(entity, *args):
+      """Helper function to get value of student column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
+
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key',
         lambda e, *args: '%s' % e.keyName(), hidden=True)
     list_config.addPlainTextColumn(
         'organization', 'Organization', getOrganization)
-    list_config.addPlainTextColumn('name', 'Name',
-        lambda e, *args: e.parent().name())
+    list_config.addPlainTextColumn('name', 'Name', getStudent)
     list_config.addPlainTextColumn('role', 'Role',
         lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()],
             options=CONNECTION_ROLES)
@@ -1628,21 +1649,23 @@ class StudentEvaluationComponent(Component):
       org_key = GSoCProject.org.get_value_for_datastore(entity)
       return ndb.Key.from_old_key(org_key).get().name
 
+    def getStudent(entity, evaluation, *args):
+      """Helper function to get value of student column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
+
     list_config = lists.ListConfiguration(add_key_column=False)
 
     # key column must be added manually, as it must use evaluation_id
     # which is not part of the project entity
     list_config.addPlainTextColumn(
         'key', 'Key', (lambda entity, evaluation_id, *args: "%s/%s/%s" % (
-            evaluation_id, entity.parent().key().name(),
+            evaluation_id, entity.parent_key().name(),
             entity.key().id())), hidden=True)
 
     list_config.addPlainTextColumn(
         'evaluation', 'Evaluation',
         lambda ent, eval, *args: eval.capitalize() if eval else '')
-    list_config.addPlainTextColumn(
-        'student', 'Student',
-        lambda entity, eval, *args: entity.parent().name())
+    list_config.addPlainTextColumn('student', 'Student', getStudent)
     list_config.addSimpleColumn('title', 'Project Title')
     list_config.addPlainTextColumn('org', 'Organization', getOrganization)
     list_config.addPlainTextColumn(
@@ -1667,7 +1690,8 @@ class StudentEvaluationComponent(Component):
 
       url = self.data.redirect.survey_record(
           eval, entity.key().id_or_name(),
-          entity.parent().link_id).urlOf('gsoc_show_student_evaluation')
+          entity.parent_key().parent().name()).urlOf(
+              'gsoc_show_student_evaluation')
       return url
     list_config.setRowAction(getRowAction)
 
@@ -1743,7 +1767,7 @@ class MentorEvaluationComponent(StudentEvaluationComponent):
     self._list_config.setRowAction(lambda entity, evaluation, *args:
         data.redirect.survey_record(
             evaluation, entity.key().id_or_name(),
-            entity.parent().link_id).urlOf(
+            entity.parent_key().parent().name()).urlOf(
                 'gsoc_take_mentor_evaluation'))
 
   def _getStatus(self, entity, evaluation, *args):
