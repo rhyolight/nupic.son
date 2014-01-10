@@ -126,7 +126,7 @@ class ProfileOrgMemberCreatePageTest(test_utils.GSoCDjangoTestCase):
 
     # check that username is present in the form
     form = response.context['forms'][0]
-    self.assertIn('username', form.fields)
+    self.assertIn('user_id', form.fields)
 
     postdata = {
         'user_id': TEST_USER_ID,
