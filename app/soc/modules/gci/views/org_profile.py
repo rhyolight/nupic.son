@@ -179,8 +179,7 @@ class OrgProfilePage(GCIRequestHandler):
 
     return entity
 
-
-@db.transactional(xg=True)
+# TODO(daniel): this should be transactional when GCI orgs are based on NDB.
 def createOrganizationTxn(data, profile_keys, form, key_name):
   """Creates a new organization in a transaction.
 
