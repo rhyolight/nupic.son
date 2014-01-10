@@ -317,18 +317,18 @@ def generateMessageOnStartByOrg(connection, org_admin):
   started by the specified organization administrator.
 
   Args:
-    connection: connection entity.
-    org_admin: profile entity of organization administrator who started
+    connection: Connection entity.
+    org_admin: Profile entity of organization administrator who initiated
       the connection.
 
   Returns:
-    newly created connection message.
+    The newly created connection message.
   """
   content = _ORG_STARTED_CONNECTION % (
-      org_admin.name(),
+      org_admin.public_name,
       connection_model.VERBOSE_ROLE_NAMES[connection.org_role])
 
-  message = createConnectionMessage(connection.key(), content)
+  message = createConnectionMessage(connection.key, content)
   message.put()
 
   return message

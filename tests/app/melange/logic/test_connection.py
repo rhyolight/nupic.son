@@ -365,19 +365,25 @@ class GenerateMessageOnStartByUserTest(unittest.TestCase):
 class GenerateMessageOnStartByOrgTest(unittest.TestCase):
   """Unit tests for generateMessageOnStartByOrg function."""
 
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    program = program_utils.seedProgram()
+    profile = profile_utils.seedNDBProfile(program.key())
+    org = org_utils.seedOrganization(program.key())
+    self.connection = connection_utils.seed_new_connection(profile.key, org.key)
+    self.org_admin = profile_utils.seedNDBProfile(
+        program.key(), admin_for=[org.key])
+
   def testMessageIsCreated(self):
     """Tests that correct message is returned by the function."""
-    # seed a connection, org admin's profile and create a message
-    connection = seeder_logic.seed(connection_model.Connection)
-    org_admin = seeder_logic.seed(profile_model.Profile)
     message = connection_logic.generateMessageOnStartByOrg(
-        connection, org_admin)
+        self.connection, self.org_admin)
 
-    self.assertEqual(message.parent_key(), connection.key())
+    self.assertEqual(message.key.parent(), self.connection.key)
     self.assertEqual(
         message.content, connection_logic._ORG_STARTED_CONNECTION % (
-            org_admin.name(),
-            connection_model.VERBOSE_ROLE_NAMES[connection.org_role]))
+            self.org_admin.public_name,
+            connection_model.VERBOSE_ROLE_NAMES[self.connection.org_role]))
     self.assertTrue(message.is_auto_generated)
 
 class CreateAnonymousConnectionTest(ConnectionTest):
