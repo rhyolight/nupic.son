@@ -143,18 +143,16 @@ class TestLinker(unittest.TestCase):
   def testUserId(self):
     """Tests userId function."""
     # seed a program
-    program = seeder_logic.seed(program_model.Program)
-    program.program_id = program.link_id
-    program.sponsor = program.scope
+    program = program_utils.seedProgram()
 
-    profile = profile_utils.seedProfile(program)
+    # seed a profile
+    profile = profile_utils.seedNDBProfile(program.key())
 
     self.assertEqual(
         '/gsoc/project/manage/admin/%s/%s/%s' % (
-            profile.program.key().name(),
-            profile.parent_key().name(), 42),
+            program.key().name(), profile.key.parent().id(), 42),
         self.linker.userId(
-            profile.key(), 42, soc_urls.UrlNames.PROJECT_MANAGE_ADMIN))
+            profile.key, 42, soc_urls.UrlNames.PROJECT_MANAGE_ADMIN))
 
   def testOrganization(self):
     """Tests organization function."""
