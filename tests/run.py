@@ -15,12 +15,16 @@
 import contextlib
 import logging
 import os
+import pickle
 import socket
 import subprocess
 import sys
+import time
 
 import easyprocess
+from mox import stubout
 import nose
+from nose import failure
 from nose import plugins
 import pyvirtualdisplay
 
@@ -190,10 +194,7 @@ def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
   * Setup gae services at the beginning of every process
   * Clean datastore after each test
   """
-  from nose import failure
   from nose.pyversion import bytes_
-  import time
-  import pickle
   try:
     from cStringIO import StringIO
   except ImportError:
@@ -222,9 +223,7 @@ def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
                verbosity=config.verbosity,
                config=config)
     plug_result = config.plugins.prepareTestResult(result)
-    if plug_result:
-      return plug_result
-    return result
+    return plug_result if plug_result else result
 
   def batch(result):
     failures = [(TestLet(c), err) for c, err in result.failures]
@@ -352,7 +351,6 @@ def run_pyunit_tests():
   if '--coverage' in sys.argv:
     from nose.plugins import cover
     plugin = cover.Coverage()
-    from mox import stubout
     plugin._orig_begin = plugin.begin
     stubout_obj = stubout.StubOutForTesting()
     stubout_obj.SmartSet(plugin, 'begin', begin)
@@ -376,7 +374,6 @@ def run_pyunit_tests():
       will_multiprocess = True
       break
   if will_multiprocess:
-    from mox import stubout
     from nose.plugins import multiprocess
     stubout_obj = stubout.StubOutForTesting()
     stubout_obj.SmartSet(multiprocess, '__runner', multiprocess_runner)
