@@ -879,7 +879,7 @@ class SubmittedProposalsComponent(Component):
 
     if data.is_org_admin:
       # accept/reject proposals
-      bounds = [1,'all']
+      bounds = [1, 'all']
       keys = ['full_proposal_key']
       list_config.addPostButton('accept', "Accept", "", bounds, keys)
       list_config.addPostButton('unaccept', "Unaccept", "", bounds, keys)

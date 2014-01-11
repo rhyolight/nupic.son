@@ -61,7 +61,7 @@ class GSoCProject(db.Model):
 
   #: Text field containing all kinds of information about this project
   public_info = db.TextProperty(
-      required=False, default ='',
+      required=False, default='',
       verbose_name=ugettext('Additional information'))
   public_info.help_text = ugettext(
       'Additional information about this project to be shown publicly')

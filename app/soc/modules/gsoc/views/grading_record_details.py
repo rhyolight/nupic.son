@@ -260,9 +260,9 @@ class GradingRecordsList(Template):
 
 
     list_config.addPostButton(
-        'update_records', 'Update Records', '', [0,'all'], [])
+        'update_records', 'Update Records', '', [0, 'all'], [])
     list_config.addPostButton(
-        'update_projects', 'Update Projects', '', [0,'all'], [])
+        'update_projects', 'Update Projects', '', [0, 'all'], [])
 
     def mentorRecordInfo(rec, *args):
       """Displays information about a GradingRecord's mentor_record property.

@@ -713,7 +713,7 @@ class MyOrgsTaskList(Component):
     # present on the list.
     if data.is_org_admin:
       # publish/unpublish tasks
-      bounds = [1,'all']
+      bounds = [1, 'all']
       # GCITask is keyed based solely on the entity ID, because it is very
       # difficult to group it with either organizations or profiles, so to
       # make the querying easier across entity groups we only use entity ids

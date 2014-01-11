@@ -82,7 +82,7 @@ class ProposalList(Template):
         (lambda ent, *args: str(ent.key())), hidden=True)
 
     # action button
-    bounds = [1,'all']
+    bounds = [1, 'all']
     keys = [_PROPOSAL_KEY]
     list_config.addPostButton('accept', "Accept", "", bounds, keys)
 
@@ -263,7 +263,7 @@ class ProjectList(Template):
         lambda ent, *args: str(ent.key()), hidden=True)
 
     # action button
-    bounds = [1,'all']
+    bounds = [1, 'all']
     keys = ['full_project_key']
     list_config.addPostButton('withdraw', "Withdraw", "", bounds, keys)
     list_config.addPostButton('accept', "Accept", "", bounds, keys)

@@ -766,7 +766,7 @@ class ListConfiguration(object):
 
   def addTemplateColumn(self, col_id, name, template, **kwargs):
     """Adds a new template column."""
-    self._addColumn(col_id, name, lambda *args, **kwargs: '' , **kwargs)
+    self._addColumn(col_id, name, lambda *args, **kwargs: '', **kwargs)
 
     if self._templates.get(col_id):
       logging.warning(
@@ -1147,7 +1147,7 @@ class ListContentResponse(object):
 
     get_args = request.GET
     self.next = ''
-    self.start =  get_args.get('start', '')
+    self.start = get_args.get('start', '')
     self.limit = int(get_args.get('limit', 50))
 
   def addRow(self, entity, *args, **kwargs):

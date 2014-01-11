@@ -22,7 +22,7 @@ from soc.modules.gsoc.models.project import GSoCProject
 
 
 def process(project):
-  mentor =  GSoCProject.mentor.get_value_for_datastore(project)
+  mentor = GSoCProject.mentor.get_value_for_datastore(project)
   mentors = [mentor]
   for am in project.additional_mentors:
     if am not in mentors:

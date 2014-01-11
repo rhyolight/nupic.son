@@ -205,12 +205,12 @@ class Logic():
         #properties[prop_name] = prop_data
         properties.append(prop_data)
 
-      properties.sort(key = lambda x : x['group'])
+      properties.sort(key=lambda x: x['group'])
       data['properties'] = properties
 
       models_data.append(data)
 
-    models_data.sort(key = lambda x : x['name'])
+    models_data.sort(key=lambda x: x['name'])
     return models_data
 
   def getModelsData(self):

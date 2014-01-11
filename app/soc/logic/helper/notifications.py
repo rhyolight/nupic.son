@@ -27,7 +27,7 @@ from soc.tasks import mailer
 
 
 DEF_NEW_USER_CONNECTION = ugettext(
-    'New connection for %(org)s' )
+    'New connection for %(org)s')
 
 DEF_NEW_ORG_CONNECTION = ugettext(
     'New connection from %(org)s')
@@ -110,7 +110,7 @@ def getDefaultContext(request_data, emails, subject, extra_context=None):
     A dictionary with the default context for the emails that are sent
     in this module.
   """
-  default_context  = {}
+  default_context = {}
   default_context['sender_name'] = 'The %s Team' % (
       request_data.site.site_name)
   default_context['program_name'] = request_data.program.name
