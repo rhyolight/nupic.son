@@ -27,6 +27,7 @@ TEST_GOOGLE_PLUS = 'http://www.test.google.plus.com'
 TEST_FACEBOOK = 'http://www.test.facebook.com'
 TEST_BLOG = 'http://www.test.blog.com'
 TEST_TWITTER = 'http://www.test.twitter.com'
+TEST_PHONE = '1234567890'
 
 class CreateContactTest(unittest.TestCase):
   """Unit tests for createContact function."""
@@ -37,7 +38,8 @@ class CreateContactTest(unittest.TestCase):
         email=TEST_EMAIL, web_page=TEST_WEB_PAGE,
         mailing_list=TEST_MAILING_LIST, irc_channel=TEST_IRC_CHANNEL,
         feed_url=TEST_FEED_URL, google_plus=TEST_GOOGLE_PLUS,
-        facebook=TEST_FACEBOOK, blog=TEST_BLOG, twitter=TEST_TWITTER)
+        facebook=TEST_FACEBOOK, blog=TEST_BLOG, twitter=TEST_TWITTER,
+        phone=TEST_PHONE)
     self.assertTrue(result)
 
     contact = result.extra
@@ -50,6 +52,7 @@ class CreateContactTest(unittest.TestCase):
     self.assertEqual(contact.facebook, TEST_FACEBOOK)
     self.assertEqual(contact.blog, TEST_BLOG)
     self.assertEqual(contact.twitter, TEST_TWITTER)
+    self.assertEqual(contact.phone, TEST_PHONE)
 
   def testInvalidData(self):
     """Tests that contact entity is not created if data is not valid."""

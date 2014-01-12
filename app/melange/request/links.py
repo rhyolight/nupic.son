@@ -15,14 +15,15 @@
 """Module for managing URL generation."""
 
 from google.appengine.api import users
+from google.appengine.ext import ndb
 
 from django.core import urlresolvers
 
 from melange.models import organization as org_model
+from melange.models import profile as profile_model
 
 from soc.logic import program as program_logic
 from soc.logic import site as site_logic
-from soc.models import profile as profile_model
 
 
 def getAbsoluteUrl(relative_url, hostname, secure=False):
@@ -90,13 +91,16 @@ class Linker(object):
     Returns:
       The URL of the page matching the given name for the given profile.
     """
-    # TODO(daniel): program's key should be acquired in a more efficient way
-    program = profile.program
+    if isinstance(profile, ndb.Model):
+      profile_key = profile.key
+    else:
+      profile_key = profile.key()
+
     kwargs = {
-        'program': program.program_id,
-        'sponsor': program.sponsor.key().name(),
-        'user': profile.parent_key().name()
-        }
+        'program': profile_model.getProgramId(profile_key),
+        'sponsor': profile_model.getSponsorId(profile_key),
+        'user': profile_model.getUserId(profile_key)
+         }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
 
   def program(self, program, url_name):
@@ -140,15 +144,21 @@ class Linker(object):
     Returns:
       The URL of the page matching the given name for the given user.
     """
-    kwargs = {'user': user.key().name()}
+    if isinstance(user, ndb.Model):
+      user_id = user.key.id()
+    else:
+      user_id = user.key().name()
+    kwargs = {'user': user_id}
     return urlresolvers.reverse(url_name, kwargs=kwargs)
 
-  def userOrg(self, profile, org, url_name):
+  def userOrg(self, profile_key, org_key, url_name):
     """Returns the URL of a page whose address contains parts associated
     with the specified profile and organization.
 
+    The specified profile and organization must come from the same program.
+
     Args:
-      profile: profile entity.
+      profile_key: Profile key.
       org: organization entity.
       url_name: the name with which a URL was registered with Django.
 
@@ -156,12 +166,11 @@ class Linker(object):
       The URL of the page matching the given names for the given profile
       and organization.
     """
-    program = profile.program
     kwargs = {
-        'sponsor': program_logic.getSponsorKey(program).name(),
-        'program': program.program_id,
-        'user': profile.parent_key().name(),
-        'organization': org.link_id,
+        'sponsor': profile_model.getSponsorId(profile_key),
+        'program': profile_model.getProgramId(profile_key),
+        'user': profile_model.getUserId(profile_key),
+        'organization': org_model.getOrgId(org_key),
         }
     return urlresolvers.reverse(url_name, kwargs=kwargs)
 

@@ -30,7 +30,7 @@ class Address(ndb.Model):
   #: Required field containing street information. Can only be ASCII,
   #: not UTF-8 text, because it may be used as a shipping address
   #: and such characters may not be printable.
-  street = ndb.StringProperty(requred=True)
+  street = ndb.StringProperty(required=True)
 
   #: Required field containing city information. Can only be ASCII,
   #: not UTF-8 text, because it may be used as a shipping address and

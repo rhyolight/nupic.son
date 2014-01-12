@@ -21,6 +21,7 @@ from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models import timeline as timeline_model
 
 from summerofcode import types
+from summerofcode.models import profile as soc_profile_model
 from summerofcode.models import organization as org_model
 
 
@@ -47,6 +48,11 @@ class TestSummerOfCodeModels(unittest.TestCase):
     """Tests program_messages_model attribute."""
     self.assertEqual(
         self.models.program_messages_model, program_model.GSoCProgramMessages)
+
+  def testStudentDataModel(self):
+    """Tests student_data_model attribute."""
+    self.assertEqual(
+        self.models.student_data_model, soc_profile_model.SOCStudentData)
 
   def testTimelineModel(self):
     """Tests timeline_model attribute."""

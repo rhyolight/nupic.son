@@ -17,7 +17,7 @@ a user and an organization.
 """
 from django.utils.translation import ugettext
 from google.appengine.ext import db
-from soc.models.organization import Organization
+from google.appengine.ext import ndb
 from soc.models.profile import Profile
 
 
@@ -50,7 +50,7 @@ ORG_RESPONSES = (
   )
 
 
-class Connection(db.Model):
+class Connection(ndb.Model):
   """Connection model.
 
   This model is intended to be used to represent a connection between a user
@@ -62,37 +62,36 @@ class Connection(db.Model):
   The class also defines a number of convenience methods to clean up
   a lot of the logic in the connection module for determining valid actions.
 
-  Parent: soc.models.profile.Profile
+  Parent: melange.models.profile.Profile
   """
 
   #: The User's state with respect to a given role.
-  user_role = db.StringProperty(default=NO_ROLE,
+  user_role = ndb.StringProperty(default=NO_ROLE,
       choices=(NO_ROLE, ROLE))
 
   #: The Org's state with respect to a given role.
-  org_role = db.StringProperty(default=NO_ROLE,
+  org_role = ndb.StringProperty(default=NO_ROLE,
       choices=(NO_ROLE, MENTOR_ROLE, ORG_ADMIN_ROLE))
 
   #: The organization entity involved in the connection for which a user
   #: may gain heightened privileges.
-  organization = db.ReferenceProperty(Organization,
-      collection_name='user_connections')
+  organization = ndb.KeyProperty()
 
   #: Property for the ShowConnection pages to keep track of the time that the
   #: connection was initiated.
-  created_on = db.DateTimeProperty(auto_now_add=True)
+  created_on = ndb.DateTimeProperty(auto_now_add=True)
 
   #: Property for the ShowConnection pages to keep a record of the last time
   #: that either the org or user modified the connection.
-  last_modified = db.DateTimeProperty(auto_now=True)
+  last_modified = ndb.DateTimeProperty(auto_now=True)
 
   #: Property indicating that a member of the organization has seen
   #: the latest changes made by the user.
-  seen_by_org = db.BooleanProperty()
+  seen_by_org = ndb.BooleanProperty()
 
   #: Property indicating that the user has seen the latest changes made
   #: by a member of the organization.
-  seen_by_user = db.BooleanProperty()
+  seen_by_user = ndb.BooleanProperty()
 
   def userRequestedRole(self):
     """Indicate whether or not a user has requested to be promoted to a
@@ -187,7 +186,7 @@ class AnonymousConnection(db.Model):
       return 'No Role'
 
 
-class ConnectionMessage(db.Model):
+class ConnectionMessage(ndb.Model):
   """Model of a message that may be sent along with or in response to
   connections.
 
@@ -197,18 +196,16 @@ class ConnectionMessage(db.Model):
 
   #: A required many:1 relationship with a comment entity indicating
   #: the user who provided that comment.
-  author = db.ReferenceProperty(
-      reference_class=Profile, required=False,
-      collection_name="connection_commented")
+  author = ndb.KeyProperty()
 
   #: The rich textual content of this comment
-  content = db.TextProperty(verbose_name=ugettext('Content'))
+  content = ndb.TextProperty(verbose_name=ugettext('Content'))
 
   #: Date when the comment was added
-  created = db.DateTimeProperty(auto_now_add=True)
+  created = ndb.DateTimeProperty(auto_now_add=True)
 
   #: Whether or not the message was generated programatically
-  is_auto_generated = db.BooleanProperty(default=False)
+  is_auto_generated = ndb.BooleanProperty(default=False)
 
   def getAuthor(self):
     if self.is_auto_generated:

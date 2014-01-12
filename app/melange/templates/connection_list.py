@@ -102,7 +102,7 @@ class UserConnectionList(ConnectionList):
 
   def _getQuery(self):
     """See ConnectionList._getQuery for specification."""
-    return connection_logic.queryForAncestor(self.data.url_profile)
+    return connection_logic.queryForAncestor(self.data.url_ndb_profile)
 
   def _getListConfig(self):
     """See ConnectionList._getListConfig for specification."""
@@ -135,7 +135,8 @@ class OrgAdminConnectionList(ConnectionList):
 
   def _getQuery(self):
     """See ConnectionList._getQuery for specification."""
-    return connection_logic.queryForOrganizationAdmin(self.data.url_profile)
+    return connection_logic.queryForOrganizations(
+        self.data.url_ndb_profile.admin_for)
 
   def _getListConfig(self):
     """See ConnectionList._getListConfig for specification."""

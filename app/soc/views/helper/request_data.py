@@ -16,13 +16,16 @@ request.
 
 from google.appengine.api import users
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 from django.core import urlresolvers
 
 from melange import types
 from melange.appengine import system
+from melange.logic import profile as profile_logic
 from melange.logic import settings as settings_logic
+from melange.logic import user as ndb_user_logic
 from melange.models import connection as connection_model
 from melange.request import exception
 from melange.request import links
@@ -33,6 +36,7 @@ from soc.logic import program as program_logic
 from soc.logic import site as site_logic
 from soc.logic import user as user_logic
 from soc.models import document as document_model
+from soc.models import program as program_model
 from soc.models import site as site_model
 from soc.models import sponsor as sponsor_model
 from soc.models import user as user_model
@@ -171,7 +175,9 @@ class RequestData(object):
   Fields:
     site: the singleton site.Site entity
     user: the user entity (if logged in)
+    ndb_user: the NDB user entity (if logged in)
     profile: the profile entity
+    ndb_profile: the NDB profile entity
     program: the program entity
     request: the request object (as provided by django)
     args: the request args (as provided by djang)
@@ -215,7 +221,9 @@ class RequestData(object):
     self._site = self._unset
     self._sponsor = self._unset
     self._user = self._unset
+    self._ndb_user = self._unset
     self._profile = self._unset
+    self._ndb_profile = self._unset
     self._program = self._unset
 
     self._GET = self._unset
@@ -232,6 +240,7 @@ class RequestData(object):
     self._url_org = self._unset
     self._url_ndb_org = self._unset
     self._url_profile = self._unset
+    self._url_ndb_profile = self._unset
     self._url_student_info = self._unset
     self._url_user = self._unset
     self._document = self._unset
@@ -367,6 +376,14 @@ class RequestData(object):
     return self._user
 
   @property
+  def ndb_user(self):
+    """Returns the ndb_user field."""
+    if not self._isSet(self._ndb_user):
+      self._ndb_user = ndb_user_logic.getByCurrentAccount()
+      # TODO(daniel): add support for "Logged in as" feature
+    return self._ndb_user
+
+  @property
   def profile(self):
     """Returns the profile property."""
     if not self._isSet(self._profile):
@@ -377,6 +394,21 @@ class RequestData(object):
         self._profile = self.models.profile_model.get_by_key_name(
             key_name, parent=self.user)
     return self._profile
+
+  @property
+  def ndb_profile(self):
+    """Returns the ndb_profile property."""
+    if not self._isSet(self._ndb_profile):
+      if not self.ndb_user or not self.program:
+        self._ndb_profile = None
+      else:
+        sponsor_id = program_model.getSponsorId(self.program.key())
+        program_id = program_model.getProgramId(self.program.key())
+        user_id = self.ndb_user.user_id
+
+        self._ndb_profile = profile_logic.getProfileKey(
+            sponsor_id, program_id, user_id, models=self.models).get()
+    return self._ndb_profile
 
   @property
   def program(self):
@@ -439,19 +471,21 @@ class RequestData(object):
     """
     if not self._isSet(self._url_connection):
       try:
-        connection_key = db.Key.from_path('Connection', int(self.kwargs['id']),
-            parent=self._getUrlProfileKey())
+        connection_key = ndb.Key(
+            connection_model.Connection._get_kind(), int(self.kwargs['id']),
+            parent=self._getUrlNdbProfileKey())
       except KeyError:
         raise exception.BadRequest(
             message='The request does not contain connection id.')
 
-      self._url_connection = connection_model.Connection.get(connection_key)
+      self._url_connection = connection_key.get()
       if not self._url_connection:
         raise exception.NotFound(
             message='Requested connection does not exist.')
     return self._url_connection
 
   @property
+  # TODO(daniel): remove when profiles converted
   def url_profile(self):
     """Returns url_profile property.
 
@@ -471,6 +505,27 @@ class RequestData(object):
       if not self._url_profile:
         raise exception.NotFound(message='Requested profile does not exist.')
     return self._url_profile
+
+  @property
+  def url_ndb_profile(self):
+    """Returns url_profile property.
+
+    This property represents profile entity for a person whose identifier
+    is a part of the URL of the processed request for the program whose
+    identifier is also a part of the URL.
+
+    Returns:
+      Retrieved profile entity.
+
+    Raises:
+      exception.UserError: if no profile entity is found.
+    """
+    if not self._isSet(self._url_ndb_profile):
+      self._url_ndb_profile = self.models.ndb_profile_model.get(
+          self._getUrlNdbProfileKey())
+      if not self._url_ndb_profile:
+        raise exception.NotFound(message='Requested profile does not exist.')
+    return self._url_ndb_profile
 
   @property
   def url_student_info(self):
@@ -616,6 +671,27 @@ class RequestData(object):
       return db.Key.from_path(
           'User', self.kwargs['user'], self.models.profile_model.kind(),
           profile_key_name)
+    except KeyError:
+      raise exception.BadRequest(
+          message='The request does not contain full profile data.')
+
+  def _getUrlNdbProfileKey(self):
+    """Returns ndb.Key that represents profile for the data specified in
+    the URL of the current request.
+
+    Returns:
+      ndb.Key of the profile for data specified in the URL of the
+      current request.
+
+    Raises:
+      exception.BadRequest: if some data is missing in the current request.
+    """
+    try:
+      fields = ['sponsor', 'program', 'user']
+      profile_key_name = '/'.join(self.kwargs[i] for i in fields)
+      return ndb.Key(
+          'User', self.kwargs['user'],
+          self.models.ndb_profile_model._get_kind(), profile_key_name)
     except KeyError:
       raise exception.BadRequest(
           message='The request does not contain full profile data.')

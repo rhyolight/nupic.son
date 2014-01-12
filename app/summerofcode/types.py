@@ -21,6 +21,7 @@ from soc.modules.gsoc.models import program
 from soc.modules.gsoc.models import timeline
 
 from summerofcode.models import organization
+from summerofcode.models import profile as soc_profile
 
 
 SOC_MODELS = types.Models(
@@ -29,4 +30,5 @@ SOC_MODELS = types.Models(
     profile_model=profile.GSoCProfile,
     program_model=program.GSoCProgram,
     program_messages_model=program.GSoCProgramMessages,
+    student_data_model=soc_profile.SOCStudentData,
     timeline_model=timeline.GSoCTimeline)

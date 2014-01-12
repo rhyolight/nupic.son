@@ -120,13 +120,17 @@ class GSoCProposal(db.Model):
   #: organization to which this proposal is directed
   org = db.ReferenceProperty(
       required=False,
-      collection_name='proposals')
+      collection_name='proposals_by_org')
 
   #: program in which this proposal has been created
   program = db.ReferenceProperty(
       reference_class=soc.modules.gsoc.models.program.GSoCProgram,
       required=True,
+<<<<<<< HEAD
       collection_name='program_proposals')
+=======
+      collection_name='proposals_by_program')
+>>>>>>> daniel/profile-changes
 
   #: indicates whether the proposal's content may be publicly seen or not
   is_editable_post_deadline = db.BooleanProperty(

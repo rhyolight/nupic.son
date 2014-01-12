@@ -25,6 +25,8 @@ from django.utils.translation import ugettext
 
 from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
+from melange.models import profile as profile_model
+from melange.request import access
 from melange.request import exception
 from melange.request import links
 
@@ -48,7 +50,6 @@ from soc.modules.gsoc.logic.survey_record import getEvalRecord
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
 from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
-from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
@@ -133,15 +134,13 @@ class ComponentsDashboard(Dashboard):
 class DashboardPage(base.GSoCRequestHandler):
   """View for the participant dashboard."""
 
+  access_checker = access.HAS_PROFILE_ACCESS_CHECKER
+
   def djangoURLPatterns(self):
     """The URL pattern for the dashboard."""
     return [
         url(r'dashboard/%s$' % url_patterns.PROGRAM, self,
             name='gsoc_dashboard')]
-
-  def checkAccess(self, data, check, mutator):
-    """Denies access if you don't have a profile in the current program."""
-    check.isProfileActive()
 
   def templatePath(self):
     """Returns the path to the template."""
@@ -197,7 +196,7 @@ class DashboardPage(base.GSoCRequestHandler):
 
     return {
         'page_name': data.program.name,
-        'user_name': data.profile.name() if data.profile else None,
+        'user_name': data.ndb_profile.public_name,
         'program_select': base_templates.DefaultProgramSelect(
             data, 'gsoc_dashboard'),
     # TODO(ljvderijk): Implement code for setting dashboard messages.
@@ -209,9 +208,9 @@ class DashboardPage(base.GSoCRequestHandler):
     """Returns the components that are active on the page."""
     components = []
 
-    if data.student_info:
+    if data.ndb_profile.is_student:
       components += self._getStudentComponents(data)
-    elif data.is_mentor:
+    elif data.ndb_profile.is_mentor:
       components.append(TodoComponent(data))
       components += self._getOrgMemberComponents(data)
     else:
@@ -223,17 +222,17 @@ class DashboardPage(base.GSoCRequestHandler):
     """Get the dashboard components for a student."""
     components = []
 
-    info = data.student_info
-
     components.append(DocumentComponent(data))
 
-    if data.is_student and info.number_of_projects:
+    if (data.ndb_profile.is_student 
+        and data.ndb_profile.student_data.number_of_projects):
       components.append(TodoComponent(data))
       # Add a component to show the evaluations
       evals = dictForSurveyModel(
           ProjectSurvey, data.program, ['midterm', 'final'])
       any_survey_active = any(
-          survey_logic.isSurveyActive(evaluation, data.profile.key())
+          survey_logic.isSurveyActive(
+              evaluation, data.ndb_profile.key.to_old_key())
               for evaluation in evals.values())
       if any_survey_active:
         components.append(MyEvaluationsComponent(data, evals))
@@ -263,7 +262,7 @@ class DashboardPage(base.GSoCRequestHandler):
     if evals and data.timeline.afterFirstSurveyStart(evals.values()):
       components.append(OrgEvaluationsComponent(data, evals))
 
-    if data.is_mentor:
+    if data.ndb_profile.is_mentor:
       if data.timeline.studentsAnnounced():
         # add a component to show all projects a user is mentoring
         components.append(ProjectsIMentorComponent(data))
@@ -278,7 +277,7 @@ class DashboardPage(base.GSoCRequestHandler):
       # Add the submitted proposals component
       components.append(SubmittedProposalsComponent(data))
 
-    if data.is_org_admin:
+    if data.ndb_profile.is_admin:
       # add a component for all organization that this user administers
       components.append(OrgConnectionComponent(data, True))
       components.append(ParticipantsComponent(data))
@@ -287,7 +286,7 @@ class DashboardPage(base.GSoCRequestHandler):
     if not data.timeline.studentSignup():
       components.append(orgs)
 
-    if data.is_org_admin:
+    if data.ndb_profile.is_admin:
       mentor_evals = dictForSurveyModel(
           GradingProjectSurvey, data.program, ['midterm', 'final'])
       student_evals = dictForSurveyModel(
@@ -473,17 +472,17 @@ class MyProposalsComponent(Component):
 
     q = GSoCProposal.all()
     q.filter('program', self.data.program)
-    q.ancestor(self.data.profile)
+    q.ancestor(self.data.ndb_profile.key.to_old_key())
 
     starter = lists.keyStarter
 
     # TODO(daniel): enable prefetching from ndb models
     #prefetcher = lists.ModelPrefetcher(GSoCProposal, ['org'], parent=True)
-    prefetcher = lists.ModelPrefetcher(GSoCProposal, [], parent=True)
+    #prefetcher = lists.ModelPrefetcher(GSoCProposal, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
-        prefetcher=prefetcher)
+        prefetcher=None)
     return response_builder.build()
 
 
@@ -523,15 +522,16 @@ class MyProjectsComponent(Component):
       return None
 
     list_query = project_logic.getAcceptedProjectsQuery(
-        ancestor=self.data.profile, program=self.data.program)
+        ancestor=self.data.ndb_profile.key.to_old_key(),
+        program=self.data.program)
 
     starter = lists.keyStarter
     # TODO(daniel): enable prefetching from ndb models
-    prefetcher = lists.ModelPrefetcher(GSoCProject, [], parent=True)
+    #prefetcher = lists.ModelPrefetcher(GSoCProject, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, list_query,
-        starter, prefetcher=prefetcher)
+        starter, prefetcher=None)
     return response_builder.build()
 
   def context(self):
@@ -566,7 +566,7 @@ class MyEvaluationsComponent(Component):
     # which is not part of the project entity
     list_config.addPlainTextColumn(
         'key', 'Key', (lambda entity, evaluation_id, *args: '%s/%s/%s' % (
-            evaluation_id, entity.parent().key().name(),
+            evaluation_id, entity.parent_key().name(),
             entity.key().id())), hidden=True)
 
     list_config.addPlainTextColumn(
@@ -582,8 +582,9 @@ class MyEvaluationsComponent(Component):
         lambda ent, eval, *args: self.record.modified if self.record else None)
     def rowAction(ent, eval, *args):
       return data.redirect.survey_record(
-          eval, ent.key().id_or_name(), ent.parent().link_id).urlOf(
-          'gsoc_take_student_evaluation')
+          eval, ent.key().id_or_name(),
+          ent.parent_key().parent().name()).urlOf(
+              'gsoc_take_student_evaluation')
 
     list_config.setRowAction(rowAction)
     self._list_config = list_config
@@ -610,14 +611,13 @@ class MyEvaluationsComponent(Component):
       return None
 
     list_query = project_logic.getProjectsQueryForEval(
-        ancestor=self.data.profile)
+        ancestor=self.data.ndb_profile.key.to_old_key())
 
     starter = lists.keyStarter
-    # TODO(daniel): enable prefetching from ndb models ('org')
+    # TODO(daniel): enable prefetching from ndb models ('org', 'parent')
     prefetcher = lists.ListModelPrefetcher(
         GSoCProject, [],
-        ['mentors', 'failed_evaluations'],
-        parent=True)
+        ['failed_evaluations'])
     row_adder = evaluationRowAdder(self.evals)
 
     response_builder = lists.RawQueryContentResponseBuilder(
@@ -651,15 +651,18 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
     """
     super(OrgEvaluationsComponent, self).__init__(data, evals)
 
-    self._list_config.addPlainTextColumn(
-        'student', 'Student',
-        lambda ent, eval, *args: ent.parent().name())
+    def getStudent(entity, evaluation, *args):
+      """Helper function to get value of student column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
+
+    self._list_config.addPlainTextColumn('student', 'Student', getStudent)
 
     def rowAction(ent, eval, *args):
       eval_ent = eval
       return data.redirect.survey_record(
-          eval_ent, ent.key().id_or_name(), ent.parent().link_id).urlOf(
-          'gsoc_take_mentor_evaluation')
+          eval_ent, ent.key().id_or_name(),
+          ent.parent_key().parent().name()).urlOf(
+              'gsoc_take_mentor_evaluation')
 
     self._list_config.setRowAction(rowAction)
 
@@ -679,7 +682,7 @@ class OrgEvaluationsComponent(MyEvaluationsComponent):
       return None
 
     list_query = project_logic.getProjectsQueryForEval(
-        mentors=self.data.profile)
+        mentors=self.data.ndb_profile.key.to_old_key())
 
     starter = lists.keyStarter
     # TODO(daniel): enable prefetching from ndb models ('orgs')
@@ -727,11 +730,15 @@ class SubmittedProposalsComponent(Component):
   # TODO(nathaniel): Wait, is this seriously a 100+-line *constructor*?
   def __init__(self, data):
     """Initializes this component."""
+
+    def getStudentEmail(entity, *args):
+      """Helper function to get value of Student Email column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().contact.email
+
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn(
-        'email', 'Student Email',
-        (lambda ent, *args: ent.parent().email), hidden=True)
+        'email', 'Student Email', getStudentEmail, hidden=True)
     list_config.addNumericalColumn('score', 'Score',
         lambda e, *args: e.score)
     list_config.addNumericalColumn('nr_scores', '#scores',
@@ -748,7 +755,7 @@ class SubmittedProposalsComponent(Component):
         'average', 'Average', lambda ent, *a: getAverage(ent))
 
     query = db.Query(GSoCScore)
-    query.filter('author', data.profile.key())
+    query.filter('author', data.ndb_profile.key.to_old_key())
     myScores = dict((q.parent_key(), q.value) for q in query.fetch(1000))
     def getMyScore(ent, *args):
       return myScores.get(ent.key(), '')
@@ -788,9 +795,12 @@ class SubmittedProposalsComponent(Component):
                                 column_type=lists.DATE)
     list_config.addSimpleColumn('created_on', 'Created on',
                                 hidden=True, column_type=lists.DATE)
-    list_config.addPlainTextColumn(
-        'student', 'Student',
-        lambda ent, *args: ent.parent().name())
+
+    def getStudent(entity, *args):
+      """Helper function to get value of student column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
+
+    list_config.addPlainTextColumn('student', 'Student', getStudent)
     list_config.addSimpleColumn('accept_as_project', 'Should accept')
 
     def getOrganization(entity, *args):
@@ -877,7 +887,7 @@ class SubmittedProposalsComponent(Component):
       fields = ['full_proposal_key', 'org_key']
       list_config.addPostEditButton('save', "Save", "", fields, refresh="none")
 
-    if data.is_org_admin:
+    if data.ndb_profile.is_admin:
       # accept/reject proposals
       bounds = [1,'all']
       keys = ['full_proposal_key']
@@ -1025,9 +1035,13 @@ class SubmittedProposalsComponent(Component):
     dupQ = GSoCProposalDuplicate.all()
     dupQ.filter('is_duplicate', True)
 
-    q = GSoCProposal.all()
-    q.filter('org IN', self.data.profile.mentor_for)
-    dupQ.filter('orgs IN', self.data.profile.mentor_for)
+    query = GSoCProposal.all()
+    query.filter(
+        'org IN',
+        map(lambda key: key.to_old_key(), self.data.ndb_profile.mentor_for))
+    dupQ.filter(
+        'orgs IN',
+        map(lambda key: key.to_old_key(), self.data.ndb_profile.mentor_for))
 
     # Only fetch the data if we will display it
     if self.data.program.duplicates_visible:
@@ -1042,12 +1056,12 @@ class SubmittedProposalsComponent(Component):
         duplicates.extend(dup.duplicates)
 
     starter = lists.keyStarter
-    # TODO(daniel): enable prefetching from ndb models ('org')
-    prefetcher = lists.ModelPrefetcher(GSoCProposal, [], parent=True)
+    # TODO(daniel): enable prefetching from ndb models ('org', 'parent')
+    #prefetcher = lists.ModelPrefetcher(GSoCProposal, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.data.request, self._list_config, q, starter,
-        prefetcher=prefetcher)
+        self.data.request, self._list_config, query, starter,
+        prefetcher=None)
     return response_builder.build(accepted, duplicates)
 
 
@@ -1064,8 +1078,12 @@ class ProjectsIMentorComponent(Component):
 
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
-    list_config.addPlainTextColumn('student', 'Student',
-                          lambda ent, *args: ent.parent().name())
+
+    def getStudent(entity, *args):
+      """Helper function to get value of student column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
+
+    list_config.addPlainTextColumn('student', 'Student', getStudent)
     list_config.addPlainTextColumn('org', 'Organization', getOrganization)
     list_config.setDefaultSort('title')
     list_config.setRowAction(
@@ -1092,10 +1110,12 @@ class ProjectsIMentorComponent(Component):
     list_query = project_logic.getAcceptedProjectsQuery(
         program=self.data.program)
 
-    if self.data.is_org_admin:
-      list_query.filter('org IN', self.data.profile.org_admin_for)
+    if self.data.ndb_profile.is_admin:
+      list_query.filter(
+          'org IN',
+          map(lambda key: key.to_old_key(), self.data.ndb_profile.admin_for))
     else:
-      list_query.filter('mentors', self.data.profile)
+      list_query.filter('mentors', self.data.ndb_profile.key.to_old_key())
 
     starter = lists.keyStarter
     # TODO(daniel): enable prefetching from ndb models ('org')
@@ -1111,7 +1131,7 @@ class ProjectsIMentorComponent(Component):
     list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, idx=5)
 
-    if self.data.is_org_admin:
+    if self.data.ndb_profile.is_admin:
       title = 'Projects for my orgs'
     else:
       title = 'Projects I am a mentor for'
@@ -1258,10 +1278,13 @@ class OrgConnectionComponent(Component):
           .get_value_for_datastore(entity))
       return ndb.Key.from_old_key(org_key).get().name
 
+    def getStudent(entity, *args):
+      """Helper function to get value of student column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
+
     list_config.addPlainTextColumn(
         'organization', 'Organization', getOrganization)
-    list_config.addPlainTextColumn('name', 'Name',
-        lambda e, *args: e.parent().name())
+    list_config.addPlainTextColumn('name', 'Name', getStudent)
     list_config.addPlainTextColumn('role', 'Role',
         lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()],
             options=CONNECTION_ROLES)
@@ -1288,8 +1311,8 @@ class OrgConnectionComponent(Component):
     if lists.getListIndex(self.data.request) != self.IDX:
       return None
 
-    q = connection_model.Connection.all()
-    q.filter('organization IN', self.data.profile.org_admin_for)
+    query = connection_logic.queryForOrganizations(
+        self.data.ndb_profile.admin_for)
 
     starter = lists.keyStarter
 
@@ -1298,7 +1321,7 @@ class OrgConnectionComponent(Component):
     #    connection_model.Connection, ['organization'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.data.request, self._list_config, q, starter, prefetcher=None)
+        self.data.request, self._list_config, query, starter, prefetcher=None)
     return response_builder.build()
 
   def context(self):
@@ -1334,13 +1357,16 @@ class UserConnectionComponent(Component):
           .get_value_for_datastore(entity))
       return ndb.Key.from_old_key(org_key).get().name
 
+    def getStudent(entity, *args):
+      """Helper function to get value of student column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
+
     list_config = lists.ListConfiguration(add_key_column=False)
     list_config.addPlainTextColumn('key', 'Key',
         lambda e, *args: '%s' % e.keyName(), hidden=True)
     list_config.addPlainTextColumn(
         'organization', 'Organization', getOrganization)
-    list_config.addPlainTextColumn('name', 'Name',
-        lambda e, *args: e.parent().name())
+    list_config.addPlainTextColumn('name', 'Name', getStudent)
     list_config.addPlainTextColumn('role', 'Role',
         lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()],
             options=CONNECTION_ROLES)
@@ -1367,7 +1393,7 @@ class UserConnectionComponent(Component):
     if lists.getListIndex(self.data.request) != self.IDX:
       return None
 
-    q = connection_logic.queryForAncestor(self.data.profile)
+    q = connection_logic.queryForAncestor(self.data.ndb_profile.key)
 
     starter = lists.keyStarter
 
@@ -1473,14 +1499,14 @@ class ParticipantsComponent(Component):
     if idx != 9:
       return None
 
-    q = GSoCProfile.all()
-    q.filter('mentor_for IN', self.data.profile.org_admin_for)
+    query = self.data.ndb_profile_model.query(
+        profile_model.Profile.mentor_for.IN(self.data.ndb_profile.admin_for))
     prefetcher = ParticipantsComponent.AdministeredOrgsPrefetcher(self.data)
 
     starter = lists.keyStarter
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.data.request, self._list_config, q, starter,
+        self.data.request, self._list_config, query, starter,
         prefetcher=prefetcher)
     return response_builder.build()
 
@@ -1521,7 +1547,8 @@ class TodoComponent(Component):
         return url + '#form_row_school_name'
       if key.isdigit(): # provided key represents a project ID
         return links.LINKER.userId(
-            data.profile.key(), int(key), url_names.GSOC_PROJECT_UPDATE)
+            data.ndb_profile.key.to_old_key(), int(key),
+            url_names.GSOC_PROJECT_UPDATE)
       return None
 
     list_config.setRowAction(rowAction)
@@ -1570,7 +1597,8 @@ class TodoComponent(Component):
           'name': 'School name selected from autocomplete',
           'status': status,
       })
-      projects = project_logic.getAcceptedProjectsForStudent(self.data.profile)
+      projects = project_logic.getAcceptedProjectsForStudent(
+          self.data.ndb_profile.key.to_old_key())
       for project in projects:
         status = colorize(project.public_info, "Yes", "No")
         response.addRow({
@@ -1621,21 +1649,23 @@ class StudentEvaluationComponent(Component):
       org_key = GSoCProject.org.get_value_for_datastore(entity)
       return ndb.Key.from_old_key(org_key).get().name
 
+    def getStudent(entity, evaluation, *args):
+      """Helper function to get value of student column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
+
     list_config = lists.ListConfiguration(add_key_column=False)
 
     # key column must be added manually, as it must use evaluation_id
     # which is not part of the project entity
     list_config.addPlainTextColumn(
         'key', 'Key', (lambda entity, evaluation_id, *args: "%s/%s/%s" % (
-            evaluation_id, entity.parent().key().name(),
+            evaluation_id, entity.parent_key().name(),
             entity.key().id())), hidden=True)
 
     list_config.addPlainTextColumn(
         'evaluation', 'Evaluation',
         lambda ent, eval, *args: eval.capitalize() if eval else '')
-    list_config.addPlainTextColumn(
-        'student', 'Student',
-        lambda entity, eval, *args: entity.parent().name())
+    list_config.addPlainTextColumn('student', 'Student', getStudent)
     list_config.addSimpleColumn('title', 'Project Title')
     list_config.addPlainTextColumn('org', 'Organization', getOrganization)
     list_config.addPlainTextColumn(
@@ -1660,7 +1690,8 @@ class StudentEvaluationComponent(Component):
 
       url = self.data.redirect.survey_record(
           eval, entity.key().id_or_name(),
-          entity.parent().link_id).urlOf('gsoc_show_student_evaluation')
+          entity.parent_key().parent().name()).urlOf(
+              'gsoc_show_student_evaluation')
       return url
     list_config.setRowAction(getRowAction)
 
@@ -1736,7 +1767,7 @@ class MentorEvaluationComponent(StudentEvaluationComponent):
     self._list_config.setRowAction(lambda entity, evaluation, *args:
         data.redirect.survey_record(
             evaluation, entity.key().id_or_name(),
-            entity.parent().link_id).urlOf(
+            entity.parent_key().parent().name()).urlOf(
                 'gsoc_take_mentor_evaluation'))
 
   def _getStatus(self, entity, evaluation, *args):

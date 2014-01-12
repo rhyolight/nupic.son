@@ -200,31 +200,6 @@ MAX_SCORE_MIN_VALUE = 1
 MAX_SCORE_MAX_VALUE = 12
 
 
-def _getPropertiesForFields(form, field_keys):
-  """Maps fields specified by their keys to the corresponding values
-  that were submitted in the form data.
-
-  Fields, for which the empty string was received as their value, will be
-  mapped to None. This is because an occurrence of the empty string is
-  regarded as if the user did not specify any actual value for the field.
-
-  Not only are explicit None values more straightforward, but also
-  there are more convenient to be persisted in AppEngine datastore.
-
-  Args:
-    form: A form.
-    field_keys: A collection of identifiers of the form fields.
-
-  Returns:
-    A dict mapping the specified keys to their values.
-  """
-  return {
-      field_key: field_value
-      for field_key, field_value in form.cleaned_data.iteritems()
-      if field_key in field_keys and field_value != ''
-  }
-
-
 def cleanOrgId(org_id):
   """Cleans org_id field.
 
@@ -261,7 +236,7 @@ def cleanBackupAdmin(username, request_data):
       username, request_data.program.key(), models=request_data.models)
   if not profile:
     raise django_forms.ValidationError(PROFILE_DOES_NOT_EXIST % username)
-  elif profile.key() == request_data.profile.key():
+  elif profile.key == request_data.ndb_profile.key:
     raise django_forms.ValidationError(OTHER_PROFILE_IS_THE_CURRENT_PROFILE)
   else:
     return profile
@@ -394,7 +369,7 @@ class _OrgProfileForm(gsoc_forms.GSoCModelForm):
     Returns:
       A dict mapping contact properties to the corresponding values.
     """
-    return _getPropertiesForFields(self, _CONTACT_PROPERTIES_FORM_KEYS)
+    return self._getPropertiesForFields(_CONTACT_PROPERTIES_FORM_KEYS)
 
   def getOrgProperties(self):
     """Returns properties of the organization that were submitted in this form.
@@ -402,7 +377,7 @@ class _OrgProfileForm(gsoc_forms.GSoCModelForm):
     Returns:
       A dict mapping organization properties to the corresponding values.
     """
-    return _getPropertiesForFields(self, _ORG_PROFILE_PROPERTIES_FORM_KEYS)
+    return self._getPropertiesForFields(_ORG_PROFILE_PROPERTIES_FORM_KEYS)
 
 
 def _formToCreateOrgProfile(**kwargs):
@@ -455,7 +430,7 @@ class _OrgPreferencesForm(gsoc_forms.GSoCModelForm):
       A dict mapping organization preferences properties to
       the corresponding values.
     """
-    return _getPropertiesForFields(self, _ORG_PREFERENCES_PROPERTIES_FORM_KEYS)
+    return self._getPropertiesForFields(_ORG_PREFERENCES_PROPERTIES_FORM_KEYS)
 
 
 class OrgApplicationReminder(object):
@@ -530,10 +505,10 @@ class OrgProfileCreatePage(base.GSoCRequestHandler):
         else:
           # NOTE: this should rather be done within a transaction along with
           # creating the organization. At least one admin is required for
-          # each organization: what if the code above fails and there are none?
+          # each organization: what if the code below fails and there are none?
           # However, it should not be a practical problem.
           admin_keys = [
-              data.profile.key(), form.cleaned_data['backup_admin'].key()]
+              data.ndb_profile.key, form.cleaned_data['backup_admin'].key]
           for admin_key in admin_keys:
             connection_view.createConnectionTxn(
                 data, admin_key, result.extra,

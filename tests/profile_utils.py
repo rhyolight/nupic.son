@@ -16,23 +16,30 @@
 """Utils for manipulating profile data.
 """
 
+import datetime
 import os
 
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
-from datetime import datetime
 from datetime import timedelta
 
+from melange.models import address as address_model
 from melange.models import connection as connection_model
+from melange.models import education as education_model
+from melange.models import profile as ndb_profile_model
+from melange.models import user as ndb_user_model
 
 from soc.models import profile as profile_model
 from soc.models import user as user_model
 
 from soc.modules.gci.models import profile as gci_profile_model
 from soc.modules.gsoc.models import profile as gsoc_profile_model
+from soc.modules.seeder.logic.providers import string as string_provider
 from soc.modules.seeder.logic.providers import user as user_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+from summerofcode.models import profile as soc_profile_model
 
 from tests import task_utils
 from tests.utils import connection_utils
@@ -47,7 +54,8 @@ def generateEligibleStudentBirthDate(program):
   min_age = program.student_min_age or DEFAULT_MIN_AGE
   max_age = program.student_max_age or DEFAULT_MAX_AGE
   eligible_age = min_age + max_age / 2
-  return datetime.date(datetime.today() - timedelta(days=eligible_age * 365))
+  return datetime.datetime.date(
+      datetime.datetime.today() - timedelta(days=eligible_age * 365))
 
 
 def login(user):
@@ -58,6 +66,16 @@ def login(user):
     user: user entity.
   """
   signInToGoogleAccount(user.account.email(), user.account.user_id())
+
+
+# TODO(daniel): Change name to login and remove the function above
+def loginNDB(user):
+  """Logs in the specified user by setting 'USER_ID' environmental variables.
+
+  Args:
+    user: user entity.
+  """
+  os.environ['USER_ID'] = user.account_id
 
 
 def logout():
@@ -110,6 +128,106 @@ def seedUser(email=None, **kwargs):
   user.put()
 
   return user
+
+
+# TODO(daniel): Change name to seedUser and remove the function above
+def seedNDBUser(user_id=None, **kwargs):
+  """Seeds a new user.
+
+  Args:
+    user_id: Identifier of the new user. 
+
+  Returns:
+    Newly seeded User entity.
+  """
+  user_id = user_id or string_provider.UniqueIDProvider().getValue()
+
+  properties = {'account_id': string_provider.UniqueIDProvider().getValue()}
+  properties.update(**kwargs)
+
+  user = ndb_user_model.User(id=user_id, **properties)
+  user.put()
+
+  return user
+
+
+TEST_PUBLIC_NAME = 'Public Name'
+TEST_FIRST_NAME = 'First'
+TEST_LAST_NAME = 'Last'
+TEST_STREET = 'Street'
+TEST_CITY = 'City'
+TEST_COUNTRY = 'United States'
+TEST_POSTAL_CODE = '90000'
+TEST_PROVINCE = 'California'
+
+def seedNDBProfile(program_key, model=ndb_profile_model.Profile,
+    user=None, mentor_for=None, admin_for=None, **kwargs):
+  """Seeds a new profile.
+
+  Args:
+    program_key: Program key for which the profile is seeded.
+    model: Model class of which a new profile should be seeded.
+    user: User entity corresponding to the profile.
+    mentor_for: List of organizations keys for which the profile should be
+      registered as a mentor.
+    admin_for: List of organizations keys for which the profile should be
+      registered as organization administrator.
+
+  Returns:
+    A newly seeded Profile entity.
+  """
+  user = user or seedNDBUser()
+
+  mentor_for = mentor_for or []
+  admin_for = admin_for or []
+
+  residential_address = address_model.Address(
+      street=TEST_STREET, city=TEST_CITY, province=TEST_PROVINCE,
+      country=TEST_COUNTRY, postal_code=TEST_POSTAL_CODE)
+
+  properties = {
+      'program': ndb.Key.from_old_key(program_key),
+      'status': ndb_profile_model.Status.ACTIVE,
+      'public_name': TEST_PUBLIC_NAME,
+      'first_name': TEST_FIRST_NAME,
+      'last_name': TEST_LAST_NAME,
+      'birth_date': datetime.date(1990, 1, 1),
+      'residential_address': residential_address,
+      'tee_style': ndb_profile_model.TeeStyle.MALE,
+      'tee_size': ndb_profile_model.TeeSize.M,
+      'mentor_for': list(set(mentor_for + admin_for)),
+      'admin_for': admin_for,
+      }
+  properties.update(**kwargs)
+  profile = model(id='%s/%s' % (program_key.name(), user.key.id()),
+      parent=user.key, **properties)
+  profile.put()
+  return profile
+
+
+_TEST_SCHOOL_NAME = 'United States'
+_TEST_SCHOOL_ID = 'Melange University'
+_TEST_EXPECTED_GRADUATION = datetime.date.today().year + 1
+
+def _seedEducation():
+  """Seeds a new education."""
+  return education_model.Education(
+      school_country=_TEST_SCHOOL_NAME, school_id=_TEST_SCHOOL_ID,
+      expected_graduation=_TEST_EXPECTED_GRADUATION)
+
+
+def seedStudentData(model=ndb_profile_model.StudentData, **kwargs):
+  """Seeds a new student data.
+
+  Args:
+    model: Model class of which a new student data should be seeded.
+
+  Returns:
+    A newly seeded student data entity.
+  """
+  properties = {'education': _seedEducation()}
+  properties.update(**kwargs)
+  return model(**properties)
 
 
 def seedProfile(program, model=profile_model.Profile, user=None,
@@ -167,12 +285,49 @@ def seedProfile(program, model=profile_model.Profile, user=None,
         }
 
     # TODO(daniel): remove when all organizations are converted
-    if isinstance(org_key, ndb.Key):
-      org_key = org_key.to_old_key()
+    if isinstance(org_key, db.Key):
+      org_key = ndb.Key.from_old_key(org_key)
     connection_utils.seed_new_connection(
-        profile, org_key, **connection_properties)
+        ndb.Key.from_old_key(profile.key()), org_key, **connection_properties)
 
   return profile
+
+
+def seedNDBStudent(program, student_data_model=ndb_profile_model.StudentData,
+    student_data_properties=None, user=None, **kwargs):
+  """Seeds a new profile who is registered as a student.
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    student_data_model: Model of which a new student data should be seeded.
+    student_data_properties: Optional properties of the student data to seed.
+    user: User entity corresponding to the profile.
+
+  Returns:
+    A newly seeded Profile entity.
+  """
+  profile = seedNDBProfile(program.key(), user=user, **kwargs)
+
+  student_data_properties = student_data_properties or {}
+  profile.student_data = seedStudentData(
+      model=student_data_model, **student_data_properties)
+  profile.put()
+  return profile
+
+
+def seedSOCStudent(program, user=None, **kwargs):
+  """Seeds a new profile who is registered as a student for Summer Of Code.
+
+  Args:
+    program: Program entity for which the profile is seeded.
+    user: User entity corresponding to the profile.
+
+  Returns:
+    A newly seeded Profile entity.
+  """
+  return seedNDBStudent(
+      program, student_data_model=soc_profile_model.SOCStudentData,
+      user=user, **kwargs)
 
 
 def seedGCIProfile(program, user=None, **kwargs):
@@ -466,6 +621,33 @@ class GSoCProfileHelper(ProfileHelper):
     self.profile = self.seed(GSoCProfile, properties)
     return self.profile
 
+  def createNDBProfile(self):
+    """Creates a profile for the current user."""
+    if self.profile:
+      return self.profile
+
+    user = seedNDBUser()
+    loginNDB(user)
+    self.profile = seedNDBProfile(self.program.key(), user=user)
+
+    return self.profile
+
+  def createNDBOrgAdmin(self, org):
+    """Creates an Organization Administrator profile for the current user.
+
+    Args:
+      org: organization entity.
+
+    Returns:
+      the current profile entity.
+    """
+    user = seedNDBUser()
+    loginNDB(user)
+    self.profile = seedNDBProfile(
+        self.program.key(), user=user, admin_for=[org.key])
+
+    return self.profile
+
   def createOrgAdmin(self, org):
     """Creates an Organization Administrator profile for the current user.
 
@@ -487,7 +669,7 @@ class GSoCProfileHelper(ProfileHelper):
         'org_role': connection_model.ORG_ADMIN_ROLE
         }
     connection_utils.seed_new_connection(
-        self.profile, org.key, **connection_properties)
+        ndb.Key.from_old_key(self.profile.key()), org.key, **connection_properties)
 
     return self.profile
 
@@ -510,7 +692,23 @@ class GSoCProfileHelper(ProfileHelper):
         'org_role': connection_model.MENTOR_ROLE
         }
     connection_utils.seed_new_connection(
-        self.profile, org.key, **connection_properties)
+        ndb.Key.from_old_key(self.profile.key()), org.key, **connection_properties)
+
+    return self.profile
+
+  def createNDBMentor(self, org):
+    """Creates an Organization Administrator profile for the current user.
+
+    Args:
+      org: organization entity.
+
+    Returns:
+      the current profile entity.
+    """
+    user = seedNDBUser()
+    loginNDB(user)
+    self.profile = seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[org.key])
 
     return self.profile
 
@@ -541,6 +739,13 @@ class GSoCProfileHelper(ProfileHelper):
     self.profile.student_info = self.seed(GSoCStudentInfo, properties)
     self.profile.is_student = True
     self.profile.put()
+    return self.profile
+
+  def createNDBStudent(self):
+    """Sets the current user to be a student for the current program."""
+    user = seedNDBUser()
+    loginNDB(user)
+    self.profile = seedSOCStudent(self.program, user=user)
     return self.profile
 
   def createStudentWithProposal(self, org, mentor):
@@ -618,7 +823,7 @@ class GSoCProfileHelper(ProfileHelper):
   def createConnection(self, org):
     self.createProfile()
     self.connection = connection_utils.seed_new_connection(
-        self.profile, org.key)
+        ndb.Key.from_old_key(self.profile.key()), org.key)
     return self.connection
 
 
@@ -673,7 +878,8 @@ class GCIProfileHelper(ProfileHelper):
         'org_role': connection_model.ORG_ADMIN_ROLE
         }
     connection_utils.seed_new_connection(
-        self.profile, org.key(), **connection_properties)
+        ndb.Key.from_old_key(self.profile.key()),
+        ndb.Key.from_old_key(org.key()), **connection_properties)
 
     return self.profile
 
@@ -696,7 +902,8 @@ class GCIProfileHelper(ProfileHelper):
         'org_role': connection_model.MENTOR_ROLE
         }
     connection_utils.seed_new_connection(
-        self.profile, org.key(), **connection_properties)
+        ndb.Key.from_old_key(self.profile.key()),
+        ndb.Key.from_old_key(org.key()), **connection_properties)
 
     return self.profile
 

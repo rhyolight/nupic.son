@@ -79,9 +79,6 @@ DEF_ID_BASED_ENTITY_NOT_EXISTS = ugettext(
 DEF_CONNECTION_CANNOT_BE_RESUBMITTED = ugettext(
     'Only withdrawn connections may be resubmitted.')
 
-DEF_CONNECTION_UNACCESSIBLE = ugettext(
-    'This connection is not accessible from this profile.')
-
 DEF_IS_NOT_STUDENT = ugettext(
     'This page is inaccessible because you do not have a student role '
     'in the program.')
@@ -636,28 +633,6 @@ class AccessChecker(BaseAccessChecker):
       self.data.is_pending = True
     elif status == 'withdrawn':
       self.data.is_pending = False
-
-  def canOrgMemberAccessConnection(self):
-    """Checks if the current user is an org admin allowed to access a
-    Connection entity.
-    """
-    assert isSet(self.data.profile)
-    # Org admins may only view a connection if they are admins for the org
-    # involved in the connection.
-    org_key = (
-        connection_model.Connection
-            .organization.get_value_for_datastore(self.data.url_connection))
-    if org_key not in self.data.profile.org_admin_for:
-      raise exception.Forbidden(message=DEF_CONNECTION_UNACCESSIBLE)
-
-  def canUserAccessConnection(self):
-    """Checks if the current user is allowed to access a Connection entity.
-    """
-    assert isSet(self.data.profile)
-    # Only org admins and the user involved in the connection may view it.
-    if self.data.url_connection.parent_key() != self.data.profile.key():
-      raise exception.Forbidden(message=DEF_CONNECTION_UNACCESSIBLE)
-
 
   def canAccessProposalEntity(self):
     """Checks if the current user is allowed to access a Proposal entity.

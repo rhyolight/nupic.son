@@ -239,8 +239,10 @@ class OrgHome(base.GSoCRequestHandler):
     if data.orgAdminFor(data.url_ndb_org.key):
       context['edit_link'] = links.LINKER.organization(
           data.url_ndb_org.key, urls.UrlNames.ORG_PROFILE_EDIT)
-      context['start_connection_link'] = data.redirect.connect_org().urlOf(
-          url_names.GSOC_ORG_CONNECTION)
+
+      # TODO(daniel): uncomment when new connection views added
+      #context['start_connection_link'] = data.redirect.connect_org().urlOf(
+      #    url_names.GSOC_ORG_CONNECTION)
 
       if (data.program.allocations_visible and
           data.timeline.beforeStudentsAnnounced()):

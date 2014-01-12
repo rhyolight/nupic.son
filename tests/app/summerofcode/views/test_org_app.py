@@ -132,9 +132,12 @@ class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
 
   def testOrgProfileCreated(self):
     """Tests that organization entity is created properly."""
-    self.profile_helper.createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
-    backup_admin = profile_utils.seedGSoCProfile(self.program)
+    backup_admin = profile_utils.seedNDBProfile(self.program.key())
 
     postdata = {
         'org_id': TEST_ORG_ID,
@@ -147,7 +150,7 @@ class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
         'logo_url': TEST_LOGO_URL,
         'ideas_page': TEST_IDEAS_PAGE,
         'irc_channel': TEST_IRC_CHANNEL,
-        'backup_admin': backup_admin.link_id,
+        'backup_admin': backup_admin.profile_id,
         'mailing_list': TEST_MAILING_LIST,
         'tags': TEST_TAGS,
         'twitter': TEST_TWITTER,
@@ -180,19 +183,21 @@ class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseRedirect(response, url=_getOrgApplicationSubmitUrl(org))
 
     # check that a connection with the current user has been started
-    profile = db.get(self.profile_helper.profile.key())
-    self.assertIn(org.key.to_old_key(), profile.org_admin_for)
-    connection = connection_model.Connection.all().ancestor(
-        profile.key()).filter('organization', org.key.to_old_key()).get()
+    profile = profile.key.get()
+    self.assertIn(org.key, profile.admin_for)
+    connection = connection_model.Connection.query(
+        connection_model.Connection.organization == org.key,
+        ancestor=profile.key).get()
     self.assertIsNotNone(connection)
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertEqual(connection.user_role, connection_model.ROLE)
 
     # check that a connection with backup admin has been started
-    backup_admin = db.get(backup_admin.key())
-    self.assertIn(org.key.to_old_key(), backup_admin.org_admin_for)
-    connection = connection_model.Connection.all().ancestor(
-        backup_admin.key()).filter('organization', org.key.to_old_key()).get()
+    backup_admin = backup_admin.key.get()
+    self.assertIn(org.key, backup_admin.admin_for)
+    connection = connection_model.Connection.query(
+        connection_model.Connection.organization == org.key,
+        ancestor=backup_admin.key).get()
     self.assertIsNotNone(connection)
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertEqual(connection.user_role, connection_model.ROLE)
@@ -227,20 +232,20 @@ class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
 
   def testPageLoads(self):
     """Tests that page loads properly."""
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     response = self.get(_getOrgProfileEditUrl(self.org))
     self.assertResponseOK(response)
 
   def testOrgProfileUpdated(self):
     """Tests that organization entity is updated correctly."""
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     # check that mutable properties are updated
     postdata = {
@@ -303,10 +308,10 @@ class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
 
   def testOrgsTabs(self):
     """Tests that correct organization related tabs are present in context."""
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     response = self.get(_getOrgProfileEditUrl(self.org))
 
@@ -328,20 +333,20 @@ class OrgApplicationSubmitPageTest(test_utils.GSoCDjangoTestCase):
 
   def testPageLoads(self):
     """Tests that page loads properly."""
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     response = self.get(_getOrgApplicationSubmitUrl(self.org))
     self.assertResponseOK(response)
 
   def testApplicationCreated(self):
     """Tests that organization application is created properly."""
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     # TODO(daniel): submit actual responses in POST data
     response = self.post(_getOrgApplicationSubmitUrl(self.org))
@@ -353,10 +358,10 @@ class OrgApplicationSubmitPageTest(test_utils.GSoCDjangoTestCase):
 
   def testOrgsTabs(self):
     """Tests that correct organization related tabs are present in context."""
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     response = self.get(_getOrgApplicationSubmitUrl(self.org))
 
@@ -420,20 +425,20 @@ class OrgPreferencesEditPageTest(test_utils.GSoCDjangoTestCase):
 
   def testPageLoads(self):
     """Tests that page loads properly."""
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     response = self.get(_getOrgPreferencesEditUrl(self.org))
     self.assertResponseOK(response)
 
   def testOrgPreferencesUpdated(self):
     """Tests that organization entity is updated correctly."""
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     postdata = {
         'slot_request_min': unicode(TEST_SLOT_REQUEST_MIN),
@@ -451,10 +456,10 @@ class OrgPreferencesEditPageTest(test_utils.GSoCDjangoTestCase):
 
   def testOrgsTabs(self):
     """Tests that correct organization related tabs are present in context."""
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     response = self.get(_getOrgPreferencesEditUrl(self.org))
 

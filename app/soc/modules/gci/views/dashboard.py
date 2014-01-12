@@ -84,7 +84,9 @@ def _initMainDashboardSubpages(data):
   Returns:
     initial list of subpages to set for the main dashboard.
   """
-  if not data.profile.is_student and data.timeline.orgsAnnounced():
+  if False:
+  # TODO(daniel): re-enable when connection views are back
+  #if not data.profile.is_student and data.timeline.orgsAnnounced():
     connection_dashboard = ConnectionsDashboard(data)
 
     return [{
@@ -267,7 +269,8 @@ class DashboardPage(GCIRequestHandler):
           }))
 
     dashboards.append(main)
-    dashboards.append(ConnectionsDashboard(data))
+    # TODO(daniel): re-enable when connection views are back
+    #dashboards.append(ConnectionsDashboard(data))
 
     return dashboards
 

@@ -89,54 +89,53 @@ def _updateSeenByProperties(connection, action_origin):
   return connection
 
 
-def queryForAncestor(ancestor, keys_only=False):
+def queryForAncestor(ancestor):
   """Returns a Query object for Connections with the specified ancestor.
-  """
-  return connection_model.Connection.all(keys_only=keys_only).ancestor(ancestor)
-
-def queryForAncestorAndOrganization(ancestor, org_key, keys_only=False):
-  """Returns a Query object for Connections with the specified ancestor and
-  Organization.
-  """
-  # TODO(daniel): remove when GCI orgs are converted to NDB
-  if isinstance(org_key, ndb.Key):
-    org_key = org_key.to_old_key()
-
-  query = connection_model.Connection.all(
-      keys_only=keys_only).ancestor(ancestor)
-  query.filter('organization', org_key)
-  return query
-
-
-def queryForOrganizationAdmin(profile):
-  """Returns a query to fetch all connection entities that can be managed
-  from organization perspective by the specified profile.
 
   Args:
-    profile: profile entity.
+    ancestor: The specified ancestor key.
 
   Returns:
-    db.Query object to fetch all connection entities to manage.
+    ndb.Query object for the specified parameters.
   """
-  query = connection_model.Connection.all()
-  query.filter('organization IN', profile.org_admin_for)
-  return query
+  return connection_model.Connection.query(ancestor=ancestor)
 
 
-def connectionExists(profile, org_key):
-  """Check to see whether or not a Connection exists between a user and
-  an organization.
+def queryForOrganizations(org_keys):
+  """Returns a query to fetch all connection entities that correspond to the
+  specified organizations.
 
   Args:
-    profile: Profile instance (parent) for the connection.
+    org_keys: Non-empty list of organization keys.
+
+  Returns:
+    db.Query object to fetch all connection entities for the organizations.
+
+  Raises:
+    ValueError: If the specified argument is an empty list.
+  """
+  if org_keys:
+    return connection_model.Connection.query(
+      connection_model.Connection.organization.IN(org_keys))
+  else:
+    raise ValueError('List of organizations cannot be empty.')
+
+
+def connectionExists(profile_key, org_key):
+  """Check to see whether or not a Connection exists between the specified
+  profile and organization.
+
+  Args:
+    profile_key: Profile key.
     org_key: Organization key.
 
   Returns:
-    True if a Connection object exists for the given User and
-    Organization, else False.
+    True if a Connection object exists for the given profile and
+    organization, else False.
   """
-  query = queryForAncestorAndOrganization(profile, org_key, True)
-  return query.count(limit=1) > 0
+  return bool(connection_model.Connection.query(
+      connection_model.Connection.organization == org_key,
+      ancestor=profile_key).count(keys_only=True, limit=1))
 
 
 def canCreateConnection(profile, org_key):
@@ -144,8 +143,8 @@ def canCreateConnection(profile, org_key):
   can be created.
 
   Args:
-    profile: profile entity.
-    org_key: organization key.
+    profile: Profile entity.
+    org_key: Organization key.
 
   Returns:
     RichBool whose value is set to True, if a connection can be created.
@@ -153,55 +152,38 @@ def canCreateConnection(profile, org_key):
     a string that represents the reason why it is not possible to create
     a new connection.
   """
-  # TODO(daniel): remove when GCI orgs are converted to NDB
-  if isinstance(org_key, ndb.Key):
-    org_key = org_key.to_old_key()
-
   if profile.is_student:
     return rich_bool.RichBool(
-        False, extra=_PROFILE_IS_STUDENT % profile.link_id)
-  elif connectionExists(profile, org_key):
+        False, extra=_PROFILE_IS_STUDENT % profile.profile_id)
+  elif connectionExists(profile.key, org_key):
     return rich_bool.RichBool(
-        False, extra=_CONNECTION_EXISTS % (profile.link_id, org_key.name()))
+        False, extra=_CONNECTION_EXISTS % (profile.profile_id, org_key.id()))
   else:
     return rich_bool.TRUE
 
 
-def createConnection(profile, org, user_role, org_role):
-  """Create a new Connection instance based on the contents of the form
-  and the roles provided.
+def createConnection(profile, org_key, user_role, org_role):
+  """Creates a new connection for the specified profile, organization
+  and designated roles.
 
   Args:
-    profile: Profile with which to establish the connection.
-    org: Organization with which to establish the connection.
+    profile: Profile entity with which to establish the connection.
+    org_key: Organization key with which to establish the connection.
     user_role: The user's role for the connection.
     org_role: The org's role for the connection.
 
   Returns:
-      Newly created Connection instance.
+      The newly created Connection instance.
 
   Raises:
       ValueError if a connection exists between the user and organization.
   """
-  # TODO(daniel): remove when GCI orgs are converted to NDB
-  if isinstance(org, db.Model):
-    org_key = org.key()
-  elif isinstance(org, ndb.Key):
-    org_key = org_key.to_old_key()
-  elif isinstance(org, db.Key):
-    org_key = org
-  elif isinstance(org, ndb.Model):
-    org_key = org.key.to_old_key()
-  else:
-    raise TypeError('Wrong type for org argument: %s' % type(org))
-
-  if connectionExists(profile.parent_key(), org_key):
-    raise ValueError(_CONNECTION_EXISTS % (profile.name(), org.name))
+  if connectionExists(profile.key, org_key):
+    raise ValueError(_CONNECTION_EXISTS % (profile.key.id(), org_key.id()))
 
   connection = connection_model.Connection(
-      parent=profile, organization=org_key)
-  connection.user_role = user_role
-  connection.org_role = org_role
+      parent=profile.key, organization=org_key,
+      user_role=user_role, org_role=org_role)
   connection.put()
 
   return connection
@@ -270,62 +252,61 @@ def activateAnonymousConnection(profile, token):
 
   org_role = anonymous_connection.org_role
   new_connection = createConnection(
-      profile=profile,
-      org=anonymous_connection.parent_key(),
-      org_role=org_role,
-      user_role=connection_model.NO_ROLE
-      )
+      profile, ndb.Key.from_old_key(anonymous_connection.parent_key()),
+      connection_model.NO_ROLE, org_role)
+
   anonymous_connection.delete()
   return new_connection
 
 def createConnectionMessage(connection_key, content, author_key=None):
-  """Create a new ConnectionMessage to represent a message left
+  """Create a new connection message to represent a message left
   on the specified connection.
 
   Please note that the created entity is not persisted in the datastore.
 
   Args:
-    connection: connection key.
-    content: message content as a string
-    author_key: profile key of the user who is the author of the message.
+    connection: Connection key.
+    content: Message content as a string
+    author_key: Profile key of the user who is the author of the message.
       If set to None, the message is considered auto-generated by the system.
 
   Returns:
-    Newly created ConnectionMessage entity.
+    The newly created ConnectionMessage entity.
   """
   return connection_model.ConnectionMessage(
       parent=connection_key, content=content, author=author_key,
       is_auto_generated=not bool(author_key))
 
 
-def getConnectionMessages(connection, limit=1000):
-  """Returns messages for the specified connection
+def getConnectionMessages(connection_key, limit=1000):
+  """Returns messages for the specified connection. They are ordered by their
+  creation time, so older messages come before newer ones.
 
   Args:
-    connection: the specified Connection entity
-    limit: maximal number of results to return
+    connection_key: Connection key
+    limit: Maximal number of results to return.
 
   Returns:
-    list of messages corresponding to the specified connection
+    List of messages corresponding to the specified connection.
   """
-  builder = connection_message_logic.QueryBuilder()
-  return builder.addAncestor(connection).setOrder('created').build().fetch(
-      limit=limit)
+  return (connection_model.ConnectionMessage
+      .query(ancestor=connection_key)
+      .order(connection_model.ConnectionMessage.created)
+      .fetch(limit=limit))
 
 
-def generateMessageOnStartByUser(connection):
+def generateMessageOnStartByUser(connection_key):
   """Creates auto-generated message after the specified connection is
   started by user.
 
   Args:
-    connection: connection entity.
+    connection_key: Connection key.
 
   Returns:
-    newly created connection message.
+    The newly created connection message.
   """
-  message = createConnectionMessage(connection.key(), _USER_STARTED_CONNECTION)
+  message = createConnectionMessage(connection_key, _USER_STARTED_CONNECTION)
   message.put()
-
   return message
 
 
@@ -334,18 +315,18 @@ def generateMessageOnStartByOrg(connection, org_admin):
   started by the specified organization administrator.
 
   Args:
-    connection: connection entity.
-    org_admin: profile entity of organization administrator who started
+    connection: Connection entity.
+    org_admin: Profile entity of organization administrator who initiated
       the connection.
 
   Returns:
-    newly created connection message.
+    The newly created connection message.
   """
   content = _ORG_STARTED_CONNECTION % (
-      org_admin.name(),
+      org_admin.public_name,
       connection_model.VERBOSE_ROLE_NAMES[connection.org_role])
 
-  message = createConnectionMessage(connection.key(), content)
+  message = createConnectionMessage(connection.key, content)
   message.put()
 
   return message

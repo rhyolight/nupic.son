@@ -66,28 +66,21 @@ def createConnectionTxn(
   Returns:
     The newly created Connection entity.
   """
-  profile = db.get(profile_key)
+  profile = profile_key.get()
 
-  # TODO(daniel): remove this part when organizations are converted to NDB
-  if isinstance(organization, db.Model):
-    org_key = organization.key()
-  else:
-    org_key = organization.key.to_old_key()
-
-  can_create = connection_logic.canCreateConnection(profile, org_key)
+  can_create = connection_logic.canCreateConnection(profile, organization.key)
   if not can_create:
     raise exception.BadRequest(message=can_create.extra)
   else:
     # create the new connection.
     connection = connection_logic.createConnection(
-        profile=profile, org=organization,
-        org_role=org_role, user_role=user_role)
+        profile, organization.key, user_role, org_role)
 
     # handle possible role assignment
     if connection.getRole() == connection_model.MENTOR_ROLE:
-      profile_logic.assignMentorRoleForOrg(profile, org_key)
+      profile_logic.assignMentorRoleForOrg(profile, organization.key)
     elif connection.getRole() == connection_model.ORG_ADMIN_ROLE:
-      profile_logic.assignOrgAdminRoleForOrg(profile, org_key)
+      profile_logic.assignOrgAdminRoleForOrg(profile, organization.key)
 
     # auto-generate a message indicated that the connection has been started
     if org_admin:
@@ -95,12 +88,12 @@ def createConnectionTxn(
       connection_logic.generateMessageOnStartByOrg(connection, org_admin)
     else:
       # connection has been initialized by user
-      connection_logic.generateMessageOnStartByUser(connection)
+      connection_logic.generateMessageOnStartByUser(connection.key)
 
     # attach any user-provided messages to the connection.
     if message:
       connection_logic.createConnectionMessage(
-          connection.key(), message, author_key=profile.key()).put()
+          connection.key, message, author_key=profile.key).put()
 
     # dispatch an email to the users.
     if notification_context_provider and recipients:

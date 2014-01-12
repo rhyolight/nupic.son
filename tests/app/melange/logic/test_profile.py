@@ -14,16 +14,26 @@
 
 """Tests for profile logic."""
 
+import datetime
 import unittest
 
+from google.appengine.ext import ndb
+
 from melange.logic import profile as profile_logic
+from melange.models import address as address_model
+from melange.models import education as education_model
+from melange.models import profile as ndb_profile_model
+from melange.models import user as user_model
 
 from soc.models import organization as org_model
 from soc.models import profile as profile_model
 from soc.models import program as program_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import org_utils
 from tests import profile_utils
+from tests import program_utils
+
 
 class CanResignAsOrgAdminForOrgTest(unittest.TestCase):
   """Unit tests for canResignAsOrgAdminForOrg function."""
@@ -204,44 +214,43 @@ class AssignNoRoleForOrgTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
+    # seed a program
+    self.program = program_utils.seedProgram()
+
     # seed an organization
-    self.org = seeder_logic.seed(org_model.Organization)
+    self.org = org_utils.seedOrganization(self.program.key())
 
     # seed a profile
-    self.profile = seeder_logic.seed(profile_model.Profile)
+    self.profile = profile_utils.seedNDBProfile(self.program.key())
 
   def testForRoleForOneOrg(self):
     """Tests that the user does not have roles for organization anymore."""
-    self.profile.is_mentor = True
-    self.profile.mentor_for = [self.org.key()]
-    self.profile.is_org_admin = True
-    self.profile.org_admin_for = [self.org.key()]
+    self.profile.mentor_for = [self.org.key]
+    self.profile.admin_for = [self.org.key]
     self.profile.put()
 
-    profile_logic.assignNoRoleForOrg(self.profile, self.org.key())
+    profile_logic.assignNoRoleForOrg(self.profile, self.org.key)
 
     self.assertFalse(self.profile.is_mentor)
     self.assertListEqual(self.profile.mentor_for, [])
-    self.assertFalse(self.profile.is_org_admin)
-    self.assertListEqual(self.profile.org_admin_for, [])
+    self.assertFalse(self.profile.is_admin)
+    self.assertListEqual(self.profile.admin_for, [])
 
   def testForRoleForManyOrgs(self):
     """Tests that the user still have roles for other organizations."""
     # seed another organization
-    other_org = seeder_logic.seed(org_model.Organization)
+    other_org = org_utils.seedOrganization(self.program.key())
 
-    self.profile.is_mentor = True
-    self.profile.mentor_for = [self.org.key(), other_org.key()]
-    self.profile.is_org_admin = True
-    self.profile.org_admin_for = [self.org.key()]
+    self.profile.mentor_for = [self.org.key, other_org.key]
+    self.profile.org_admin_for = [self.org.key]
     self.profile.put()
 
-    profile_logic.assignNoRoleForOrg(self.profile, self.org.key())
+    profile_logic.assignNoRoleForOrg(self.profile, self.org.key)
 
     self.assertTrue(self.profile.is_mentor)
-    self.assertListEqual(self.profile.mentor_for, [other_org.key()])
-    self.assertFalse(self.profile.is_org_admin)
-    self.assertListEqual(self.profile.org_admin_for, [])
+    self.assertListEqual(self.profile.mentor_for, [other_org.key])
+    self.assertFalse(self.profile.is_admin)
+    self.assertListEqual(self.profile.admin_for, [])
 
 
 class AssignMentorRoleForOrgTest(unittest.TestCase):
@@ -249,59 +258,53 @@ class AssignMentorRoleForOrgTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
+    # seed a program
+    self.program = program_utils.seedProgram()
+
     # seed an organization
-    self.org = seeder_logic.seed(org_model.Organization)
+    self.org = org_utils.seedOrganization(self.program.key())
 
     # seed a profile
-    self.profile = seeder_logic.seed(profile_model.Profile)
+    self.profile = profile_utils.seedNDBProfile(self.program.key())
 
   def testForUserWithNoRole(self):
     """Tests that a user with no role is promoted to a mentor role."""
-    self.profile.is_mentor = False
-    self.profile.mentor_for = []
-    self.profile.is_org_admin = False
-    self.profile.org_admin_for = []
-
-    profile_logic.assignMentorRoleForOrg(self.profile, self.org.key())
+    profile_logic.assignMentorRoleForOrg(self.profile, self.org.key)
 
     self.assertTrue(self.profile.is_mentor)
-    self.assertListEqual(self.profile.mentor_for, [self.org.key()])
-    self.assertFalse(self.profile.is_org_admin)
-    self.assertListEqual(self.profile.org_admin_for, [])
+    self.assertListEqual(self.profile.mentor_for, [self.org.key])
+    self.assertFalse(self.profile.is_admin)
+    self.assertListEqual(self.profile.admin_for, [])
 
   def testForUserWithOrgAdminRole(self):
     """Tests that a user with org admin role is lowered to a mentor role."""
-    self.profile.is_mentor = True
-    self.profile.mentor_for = [self.org.key()]
-    self.profile.is_org_admin = True
-    self.profile.org_admin_for = [self.org.key()]
+    self.profile.mentor_for = [self.org.key]
+    self.profile.admin_for = [self.org.key]
     self.profile.put()
 
-    profile_logic.assignMentorRoleForOrg(self.profile, self.org.key())
+    profile_logic.assignMentorRoleForOrg(self.profile, self.org.key)
 
     self.assertTrue(self.profile.is_mentor)
-    self.assertListEqual(self.profile.mentor_for, [self.org.key()])
-    self.assertFalse(self.profile.is_org_admin)
-    self.assertListEqual(self.profile.org_admin_for, [])
+    self.assertListEqual(self.profile.mentor_for, [self.org.key])
+    self.assertFalse(self.profile.is_admin)
+    self.assertListEqual(self.profile.admin_for, [])
 
   def testForOrgAdminForAnotherOrg(self):
     """Tests that a user is still org admin for another organization."""
     # seed another organization
-    other_org = seeder_logic.seed(org_model.Organization)
+    other_org = org_utils.seedOrganization(self.program.key())
 
-    self.profile.is_mentor = True
-    self.profile.mentor_for = [other_org.key()]
-    self.profile.is_org_admin = True
-    self.profile.org_admin_for = [other_org.key()]
+    self.profile.mentor_for = [other_org.key]
+    self.profile.admin_for = [other_org.key]
     self.profile.put()
 
-    profile_logic.assignMentorRoleForOrg(self.profile, self.org.key())
+    profile_logic.assignMentorRoleForOrg(self.profile, self.org.key)
 
     self.assertTrue(self.profile.is_mentor)
-    self.assertIn(self.org.key(), self.profile.mentor_for)
-    self.assertIn(other_org.key(), self.profile.mentor_for)
-    self.assertTrue(self.profile.is_org_admin)
-    self.assertListEqual(self.profile.org_admin_for, [other_org.key()])
+    self.assertIn(self.org.key, self.profile.mentor_for)
+    self.assertIn(other_org.key, self.profile.mentor_for)
+    self.assertTrue(self.profile.is_admin)
+    self.assertListEqual(self.profile.admin_for, [other_org.key])
 
 
 class AssignOrgAdminRoleForOrgTest(unittest.TestCase):
@@ -309,59 +312,51 @@ class AssignOrgAdminRoleForOrgTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
+    # seed a program
+    self.program = program_utils.seedProgram()
+
     # seed an organization
-    self.org = seeder_logic.seed(org_model.Organization)
+    self.org = org_utils.seedOrganization(self.program.key())
 
     # seed a profile
-    self.profile = seeder_logic.seed(profile_model.Profile)
+    self.profile = profile_utils.seedNDBProfile(self.program.key())
 
   def testForUserWithNoRole(self):
     """Tests that a user with no role is promoted to an org admin role."""
-    self.profile.is_mentor = False
-    self.profile.mentor_for = []
-    self.profile.is_org_admin = False
-    self.profile.org_admin_for = []
-
-    profile_logic.assignOrgAdminRoleForOrg(self.profile, self.org.key())
+    profile_logic.assignOrgAdminRoleForOrg(self.profile, self.org.key)
 
     self.assertTrue(self.profile.is_mentor)
-    self.assertListEqual(self.profile.mentor_for, [self.org.key()])
-    self.assertTrue(self.profile.is_org_admin)
-    self.assertListEqual(self.profile.org_admin_for, [self.org.key()])
+    self.assertListEqual(self.profile.mentor_for, [self.org.key])
+    self.assertTrue(self.profile.is_admin)
+    self.assertListEqual(self.profile.admin_for, [self.org.key])
 
   def testForUserWithMentorRole(self):
     """Tests that a user with mentor role is promoted to an org admin role."""
-    self.profile.is_mentor = True
-    self.profile.mentor_for = [self.org.key()]
-    self.profile.is_org_admin = False
-    self.profile.org_admin_for = []
+    self.profile.mentor_for = [self.org.key]
     self.profile.put()
 
-    profile_logic.assignOrgAdminRoleForOrg(self.profile, self.org.key())
+    profile_logic.assignOrgAdminRoleForOrg(self.profile, self.org.key)
 
     self.assertTrue(self.profile.is_mentor)
-    self.assertListEqual(self.profile.mentor_for, [self.org.key()])
-    self.assertTrue(self.profile.is_org_admin)
-    self.assertListEqual(self.profile.org_admin_for, [self.org.key()])
+    self.assertListEqual(self.profile.mentor_for, [self.org.key])
+    self.assertTrue(self.profile.is_admin)
+    self.assertListEqual(self.profile.admin_for, [self.org.key])
 
   def testForMentorForAnotherOrg(self):
     """Tests that a user is still only a mentor for another organization."""
     # seed another organization
-    other_org = seeder_logic.seed(org_model.Organization)
+    other_org = org_utils.seedOrganization(self.program.key())
 
-    self.profile.is_mentor = True
-    self.profile.mentor_for = [other_org.key()]
-    self.profile.is_org_admin = False
-    self.profile.org_admin_for = []
+    self.profile.mentor_for = [other_org.key]
     self.profile.put()
 
-    profile_logic.assignOrgAdminRoleForOrg(self.profile, self.org.key())
+    profile_logic.assignOrgAdminRoleForOrg(self.profile, self.org.key)
 
     self.assertTrue(self.profile.is_mentor)
-    self.assertIn(self.org.key(), self.profile.mentor_for)
-    self.assertIn(other_org.key(), self.profile.mentor_for)
-    self.assertTrue(self.profile.is_org_admin)
-    self.assertListEqual(self.profile.org_admin_for, [self.org.key()])
+    self.assertIn(self.org.key, self.profile.mentor_for)
+    self.assertIn(other_org.key, self.profile.mentor_for)
+    self.assertTrue(self.profile.is_admin)
+    self.assertListEqual(self.profile.admin_for, [self.org.key])
 
 
 class GetProfileForUsernameTest(unittest.TestCase):
@@ -373,16 +368,11 @@ class GetProfileForUsernameTest(unittest.TestCase):
     self.program_key = seeder_logic.seed(program_model.Program).key()
 
     # seed a user
-    self.user = profile_utils.seedUser(key_name='test')
+    self.user = profile_utils.seedNDBUser(user_id='test')
 
     # seed a profile
-    profile_properties = {
-        'key_name': '%s/%s' % (
-            self.program_key.name(), self.user.key().name()),
-        'parent': self.user,
-        }
-    self.profile = seeder_logic.seed(
-        profile_model.Profile, properties=profile_properties)
+    self.profile = profile_utils.seedNDBProfile(
+        self.program_key, user=self.user)
 
   def testForNoProfile(self):
     """Tests that no entity is returned when a user does not have a profile."""
@@ -398,4 +388,193 @@ class GetProfileForUsernameTest(unittest.TestCase):
   def testForExistingProfile(self):
     """Tests that profile is returned if exists."""
     profile = profile_logic.getProfileForUsername('test', self.program_key)
-    self.assertEqual(profile.key(), self.profile.key())
+    self.assertEqual(profile.key, self.profile.key)
+
+
+TEST_SPONSOR_ID = 'sponsor_id'
+TEST_PROGRAM_ID = 'program_id'
+TEST_PROFILE_ID = 'profile_id'
+
+class GetProfileKeyTest(unittest.TestCase):
+  """Unit tests for getProfileKey function."""
+
+  def testProfileKey(self):
+    """Tests that constructed profile key is correct."""
+    key = profile_logic.getProfileKey(
+        TEST_SPONSOR_ID, TEST_PROGRAM_ID, TEST_PROFILE_ID)
+    self.assertEqual(
+        key.id(),
+        '%s/%s/%s' % (TEST_SPONSOR_ID, TEST_PROGRAM_ID, TEST_PROFILE_ID))
+    self.assertEqual(key.kind(), ndb_profile_model.Profile._get_kind())
+    self.assertEqual(key.parent().id(), TEST_PROFILE_ID)
+    self.assertEqual(key.parent().kind(), user_model.User._get_kind())
+
+
+TEST_FIRST_NAME = 'First'
+TEST_LAST_NAME = 'Last'
+TEST_PUBLIC_NAME = 'Public Name'
+TEST_PHOTO_URL = 'http://www.test.photo.url.com'
+TEST_BIRTH_DATE = datetime.date(1990, 1, 1)
+TEST_STREET = 'Test street'
+TEST_CITY = 'Test city'
+TEST_COUNTRY = 'United States'
+TEST_PROVINCE = 'California'
+TEST_POSTAL_CODE = '90000'
+
+TEST_RESIDENTIAL_ADDRESS = address_model.Address(
+    street=TEST_STREET, city=TEST_CITY, country=TEST_COUNTRY,
+    province=TEST_PROVINCE, postal_code=TEST_POSTAL_CODE)
+
+TEST_PROFILE_PROPERTIES = {
+    'first_name': TEST_FIRST_NAME,
+    'last_name': TEST_LAST_NAME,
+    'public_name': TEST_PUBLIC_NAME,
+    'photo_url': TEST_PHOTO_URL,
+    'birth_date': TEST_BIRTH_DATE,
+    'residential_address': TEST_RESIDENTIAL_ADDRESS,
+    }
+
+class CreateProfileTest(unittest.TestCase):
+  """Unit tests for createProfile function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.user = profile_utils.seedNDBUser()
+    self.program = program_utils.seedProgram()
+
+  def testProfileCreated(self):
+    """Tests that profile entity is created."""
+    result = profile_logic.createProfile(
+        self.user.key, self.program.key(), TEST_PROFILE_PROPERTIES)
+
+    # check that profile is returned
+    self.assertTrue(result)
+
+    # check that profile is persisted
+    profile = result.extra.key.get()
+    self.assertIsNotNone(profile)
+
+    # check properties
+    self.assertEqual(
+        profile.key.id(),
+        '%s/%s' % (self.program.key().name(), self.user.key.id()))
+    self.assertEqual(profile.program.to_old_key(), self.program.key())
+    self.assertEqual(profile.first_name, TEST_FIRST_NAME)
+    self.assertEqual(profile.last_name, TEST_LAST_NAME)
+    self.assertEqual(profile.photo_url, TEST_PHOTO_URL)
+    self.assertEqual(profile.birth_date, TEST_BIRTH_DATE)
+    self.assertEqual(profile.residential_address.street, TEST_STREET)
+    self.assertEqual(profile.residential_address.city, TEST_CITY)
+    self.assertEqual(profile.residential_address.country, TEST_COUNTRY)
+    self.assertEqual(profile.residential_address.province, TEST_PROVINCE)
+    self.assertEqual(profile.residential_address.postal_code, TEST_POSTAL_CODE)
+
+  def testProfileExists(self):
+    """Tests that second profile is not created for same user and program."""
+    # seed a profile
+    profile_utils.seedNDBProfile(self.program.key(), user=self.user)
+
+    result = profile_logic.createProfile(
+        self.user.key, self.program.key(), TEST_PROFILE_PROPERTIES)
+    self.assertFalse(result)
+    self.assertEqual(result.extra, profile_logic.PROFILE_EXISTS)
+
+
+OTHER_TEST_FIRST_NAME = 'Other First'
+OTHER_TEST_LAST_NAME = 'Other Last'
+OTHER_TEST_PUBLIC_NAME = 'Other Public Name'
+OTHER_TEST_PHOTO_URL = 'http://www.other.test.photo.url.com'
+OTHER_TEST_BIRTH_DATE = datetime.date(1991, 1, 1)
+OTHER_TEST_STREET = 'Test other street'
+OTHER_TEST_CITY = 'Test city'
+OTHER_TEST_COUNTRY = 'United States'
+OTHER_TEST_PROVINCE = 'Alaska'
+OTHER_TEST_POSTAL_CODE = '99503'
+
+OTHER_TEST_RESIDENTIAL_ADDRESS = address_model.Address(
+    street=OTHER_TEST_STREET, city=OTHER_TEST_CITY, country=OTHER_TEST_COUNTRY,
+    province=OTHER_TEST_PROVINCE, postal_code=OTHER_TEST_POSTAL_CODE)
+
+OTHER_TEST_PROFILE_PROPERTIES = {
+    'first_name': OTHER_TEST_FIRST_NAME,
+    'last_name': OTHER_TEST_LAST_NAME,
+    'public_name': OTHER_TEST_PUBLIC_NAME,
+    'photo_url': OTHER_TEST_PHOTO_URL,
+    'birth_date': OTHER_TEST_BIRTH_DATE,
+    'residential_address': OTHER_TEST_RESIDENTIAL_ADDRESS,
+    }
+
+class EditProfileTest(unittest.TestCase):
+  """Unit tests for editProfile function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.user = profile_utils.seedNDBUser()
+    self.program = program_utils.seedProgram()
+
+    self.profile_key = ndb.Key(
+      user_model.User._get_kind(), self.user.key.id(),
+      ndb_profile_model.Profile._get_kind(),
+      '%s/%s' % (self.program.key().name(), self.user.key.id()))
+
+  def testProfileDoesNotExist(self):
+    """Tests that error is raised when a profile does not exist."""
+    result = profile_logic.editProfile(
+        self.profile_key, TEST_PROFILE_PROPERTIES)
+    self.assertFalse(result)
+    self.assertEqual(
+        result.extra,
+        profile_logic.PROFILE_DOES_NOT_EXIST % self.profile_key.id())
+
+  def testProfileUpdated(self):
+    """Tests that profile properties are updated properly."""
+    # seed a profile
+    profile = profile_utils.seedNDBProfile(self.program.key(), user=self.user)
+    result = profile_logic.editProfile(
+        profile.key, OTHER_TEST_PROFILE_PROPERTIES)
+    self.assertTrue(result)
+
+    # check that updated profile is persisted
+    profile = result.extra.key.get()
+    self.assertIsNotNone(profile)
+
+    # check properties
+    self.assertEqual(
+        profile.key.id(),
+        '%s/%s' % (self.program.key().name(), self.user.key.id()))
+    self.assertEqual(profile.program.to_old_key(), self.program.key())
+    self.assertEqual(profile.first_name, OTHER_TEST_FIRST_NAME)
+    self.assertEqual(profile.last_name, OTHER_TEST_LAST_NAME)
+    self.assertEqual(profile.photo_url, OTHER_TEST_PHOTO_URL)
+    self.assertEqual(profile.birth_date, OTHER_TEST_BIRTH_DATE)
+    self.assertEqual(profile.residential_address.street, OTHER_TEST_STREET)
+    self.assertEqual(profile.residential_address.city, OTHER_TEST_CITY)
+    self.assertEqual(profile.residential_address.country, OTHER_TEST_COUNTRY)
+    self.assertEqual(profile.residential_address.province, OTHER_TEST_PROVINCE)
+    self.assertEqual(
+        profile.residential_address.postal_code, OTHER_TEST_POSTAL_CODE)
+
+
+TEST_SCHOOL_COUNTRY = 'United States'
+TEST_SCHOOL_ID = 'Melange University'
+TEST_EXPECTED_GRADUATION = datetime.date.today().year
+TEST_EDUCATION_PROPERTIES = {
+    'school_country': TEST_SCHOOL_COUNTRY,
+    'school_id': TEST_SCHOOL_ID,
+    'expected_graduation': TEST_EXPECTED_GRADUATION
+    }
+TEST_EDUCATION = education_model.Education(**TEST_EDUCATION_PROPERTIES)
+TEST_STUDENT_DATA_PROPERTIES = {
+    'education': TEST_EDUCATION
+    }
+
+class CreateStudentDataTest(unittest.TestCase):
+  """Unit tests for createStudentData function."""
+
+  def testStudentDataCreated(self):
+    """Tests that student data is created properly if all data is valid."""
+    student_data = profile_logic.createStudentData(TEST_STUDENT_DATA_PROPERTIES)
+
+    # check properties
+    self.assertDictEqual(
+        student_data.education.to_dict(), TEST_EDUCATION_PROPERTIES)

@@ -12,57 +12,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Utilities to manipulate Connection data."""
-
-from google.appengine.ext import ndb
+""" Utilities to manipulate connection data."""
 
 from melange.models import connection as connection_model
 
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
-
-def seed_new_connection(profile, org_key, **kwargs):
-  """Seeds and returns a new GSoCConnection entity with the specified
-  properties.
+def seed_new_connection(profile_key, org_key, **kwargs):
+  """Seeds a new connection.
 
   Args:
-    profile: Profile entity for the connection
-    org_key: Organization key.
+    profile_key: Profile key for the connection.
+    org_key: Organization key for the connection.
 
   Returns:
-    the newly seeded GSoCConnection entity
+    The newly seeded connection entity.
   """
-  # TODO(daniel): remove when GCI orgs are converted to NDB
-  if isinstance(org_key, ndb.Key):
-    org_key = org_key.to_old_key()
-
   properties = {
-      'parent': profile,
       'organization': org_key,
       'org_role' : connection_model.NO_ROLE,
       'user_role' : connection_model.NO_ROLE
       }
   properties.update(kwargs)
 
-  return seeder_logic.seed(connection_model.Connection, properties,
-      recurse=False, auto_seed_optional_properties=True)
+  connection = connection_model.Connection(parent=profile_key, **properties)
+  connection.put()
+  return connection
 
 
-def seed_new_connection_message(connection, **kwargs):
-  """Seeds and returns a new GSoCConnectionMassage entity for the specified
+def seed_new_connection_message(connection_key, **kwargs):
+  """Seeds and returns a new connection message entity for the specified
   connection and other properties.
 
   Args:
-    connection: Connection entity to seed a message for
+    connection_key: Connection key to seed a message for.
 
   Returns:
-    the newly seeded GSoCConnectionMessage entity
+    The newly seeded connection message entity.
   """
+  message = connection_model.ConnectionMessage(parent=connection_key, **kwargs)
+  message.put()
+  return message
 
-  properties = {
-      'parent': connection
-      }
-  properties.update(kwargs)
-
-  return seeder_logic.seed(connection_model.ConnectionMessage,
-      properties, recurse=False, auto_seed_optional_properties=True)

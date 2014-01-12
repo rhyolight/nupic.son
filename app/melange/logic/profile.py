@@ -14,13 +14,22 @@
 
 """Logic for profiles."""
 
+from google.appengine.api import datastore_errors
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from melange import types
 from melange.utils import rich_bool
 from melange.appengine import db as melange_db
 
+from soc.models import program as program_model
+
+
 ONLY_ORG_ADMIN = 'only_org_admin'
+PROFILE_EXISTS = unicode(
+    'A profile has already been registered for this program and this user.')
+PROFILE_DOES_NOT_EXIST = unicode(
+    'No profile exists for the specified key: %s')
 
 
 def canResignAsOrgAdminForOrg(profile, org_key, models=types.MELANGE_MODELS):
@@ -89,57 +98,51 @@ def getOrgAdmins(org_key, keys_only=False, extra_attrs=None,
 
 
 def assignNoRoleForOrg(profile, org_key):
-  """Removes any elevated role for the specified profile profile for the
+  """Removes any elevated role for the specified profile for the
   specified organization.
 
   Args:
-    profile: profile entity.
-    org_key: organization key.
+    profile: Profile entity.
+    org_key: Organization key.
   """
   if org_key in profile.mentor_for:
     profile.mentor_for.remove(org_key)
-    profile.is_mentor = True if len(profile.mentor_for) else False
 
-  if org_key in profile.org_admin_for:
-    profile.org_admin_for.remove(org_key)
-    profile.is_org_admin = True if len(profile.org_admin_for) else False
+  if org_key in profile.admin_for:
+    profile.admin_for.remove(org_key)
 
   profile.put()
 
 
 def assignMentorRoleForOrg(profile, org_key):
-  """Assigns the specified profile to a mentor role for the specified
+  """Assigns the specified profile a mentor role for the specified
   organization. If a user is currently an organization administrator,
   they will be lowered to a mentor role.
 
   Args:
-    profile: profile entity.
-    organization: organization key.
+    profile: Profile entity.
+    organization: Organization key.
   """
-  if org_key in profile.org_admin_for:
-    profile.org_admin_for.remove(org_key)
-    profile.is_org_admin = bool(profile.org_admin_for)
+  if org_key in profile.admin_for:
+    profile.admin_for.remove(org_key)
 
-  profile.is_mentor = True
   profile.mentor_for = list(set(profile.mentor_for + [org_key]))
   profile.put()
 
 
 def assignOrgAdminRoleForOrg(profile, org_key):
-  """Assigns the specified profile to an organization administrator role
+  """Assigns the specified profile an organization administrator role
   for the specified organization.
 
   Args:
-    profile: profile entity.
-    org_key: organization key.
+    profile: Profile entity.
+    org_key: Organization key.
   """
-  if org_key not in profile.org_admin_for:
+  if org_key not in profile.admin_for:
     if org_key not in profile.mentor_for:
-      profile.is_mentor = True
       profile.mentor_for.append(org_key)
 
-    profile.is_org_admin = True
-    profile.org_admin_for.append(org_key)
+    profile.admin_for.append(org_key)
     profile.put()
 
 
@@ -156,10 +159,11 @@ def getProfileForUsername(username, program_key, models=types.MELANGE_MODELS):
     profile entity for the specified user and program or None if the user
     does not have a profile for this program.
   """
-  profile_key = db.Key.from_path(
-      models.profile_model.kind(), '%s/%s' % (program_key.name(), username),
-      parent=db.Key.from_path('User', username))
-  return db.get(profile_key)
+  profile_key = ndb.Key(
+      models.user_model._get_kind(), username,
+      models.ndb_profile_model._get_kind(),
+      '%s/%s' % (program_key.name(), username))
+  return profile_key.get()
 
 
 def _handleExtraAttrs(query, extra_attrs):
@@ -176,3 +180,96 @@ def _handleExtraAttrs(query, extra_attrs):
   if extra_attrs:
     for prop, value in extra_attrs.iteritems():
       melange_db.addFilterToQuery(query, prop, value)
+
+
+def getProfileKey(sponsor_id, program_id, user_id, models=None):
+  """Constructs ndb.Key of a profile for the specified sponsor,
+  program and user identifiers.
+
+  Args:
+    sponsor_id: Sponsor identifier.
+    program_id: Program identifier.
+    user_id: User identifier.
+    models: instance of types.Models that represent appropriate models.
+
+  Returns:
+    ndb.Key instance of a profile entity with the specified properties.
+  """
+  models = models or types.MELANGE_MODELS
+  return ndb.Key(
+      models.user_model._get_kind(), user_id,
+      models.ndb_profile_model._get_kind(),
+      '%s/%s/%s' % (sponsor_id, program_id, user_id))
+
+
+def createProfile(
+    user_key, program_key, profile_properties, models=types.MELANGE_MODELS):
+  """Creates a new profile entity based on the supplied properties.
+
+  Args:
+    user_key: User key for the profile to register.
+    program: Program key.
+    profile_properties: A dict mapping profile properties to their values.
+    models: instance of types.Models that represent appropriate models.
+
+  Returns:
+    RichBool whose value is set to True if profile has been successfully
+    created. In that case, extra part points to the newly created profile
+    entity. Otherwise, RichBool whose value is set to False and extra part is
+    a string that represents the reason why the action could not be completed.
+  """
+  # check if a profile entity for the user and the program already exists.
+  profile_key = getProfileKey(
+      program_model.getSponsorId(program_key),
+      program_model.getProgramId(program_key),
+      user_key.id(), models=models)
+
+  if profile_key.get():
+    return rich_bool.RichBool(False, PROFILE_EXISTS)
+  else:
+    try:
+      program_key = ndb.Key.from_old_key(program_key)
+      profile = models.ndb_profile_model(
+          key=profile_key, program=program_key, **profile_properties)
+      profile.put()
+      return rich_bool.RichBool(True, profile)
+    except datastore_errors.BadValueError as e:
+      return rich_bool.RichBool(False, str(e))
+
+
+def editProfile(profile_key, profile_properties):
+  """Edits profile with the specified key based on the supplied properties.
+
+  Args:
+    profile_key: Profile key of an existing profile to edit.
+    profile_properties: A dict mapping profile properties to their values.
+
+  Returns:
+    RichBool whose value is set to True if profile has been successfully
+    updated. In that case, extra part points to the updated profile entity.
+    Otherwise, RichBool whose value is set to False and extra part is a string
+    that represents the reason why the action could not be completed.
+  """
+  profile = profile_key.get()
+  if not profile:
+    return rich_bool.RichBool(False, PROFILE_DOES_NOT_EXIST % profile_key.id())
+  else:
+    try:
+      profile.populate(**profile_properties)
+      profile.put()
+      return rich_bool.RichBool(True, profile)
+    except datastore_errors.BadValueError as e:
+      return rich_bool.RichBool(False, str(e))
+
+
+def createStudentData(student_data_properties, models=types.MELANGE_MODELS):
+  """Creates a new student data object based on the specified properties.
+
+  Args:
+    student_data_properties: A dict mapping profile properties to their values.
+    models: Instance of types.Models that represent appropriate models.
+
+  Returns:
+    Newly created student data entity.
+  """
+  return models.student_data_model(**student_data_properties)
