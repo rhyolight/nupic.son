@@ -157,19 +157,12 @@ class TestLinker(unittest.TestCase):
   def testOrganization(self):
     """Tests organization function."""
     # seed a program
-    program = seeder_logic.seed(program_model.Program)
-    program.program_id = program.link_id
-    program.sponsor = program.scope
+    program = program_utils.seedProgram()
 
     # seed an organization
-    org_properties = {
-        'scope': program,
-        'program': program
-        }
-    organization = seeder_logic.seed(
-        org_model.Organization, properties=org_properties)
+    organization = org_utils.seedOrganization(program.key())
 
     url = self.linker.organization(
-        organization.key(), soc_urls.UrlNames.ORG_PROFILE_EDIT)
+        organization.key, soc_urls.UrlNames.ORG_PROFILE_EDIT)
     self.assertEqual(
-        '/gsoc/org/profile/edit/%s' % organization.key().name(), url)
+        '/gsoc/org/profile/edit/%s' % organization.key.id(), url)
