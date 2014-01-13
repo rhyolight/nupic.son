@@ -100,9 +100,23 @@ class GetByCurrentAccountTest(unittest.TestCase):
     self.assertIsNone(result)
 
 
-class GetByAccountTest(unittest.TestCase):
-  """Unit tests for getByAccount function."""
+class IsHostForProgramTest(unittest.TestCase):
+  """Unit tests for isHostForProgram function."""
 
-  def testUserEntityExists(self):
-    """Tests that user entity is returned if it exists for the account."""
-    
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.user = profile_utils.seedNDBUser()
+
+  def testIsHostForProgram(self):
+    """Tests that True is returned for a program host."""
+    # seed a couple of programs
+    program_one = program_utils.seedProgram()
+    program_two = program_utils.seedProgram()
+
+    # make the user a host for the first program but not for the other
+    self.user.host_for = [ndb.Key.from_old_key(program_one.key())]
+    self.user.put()
+
+    # check that the user is a host only for the first program
+    self.assertTrue(user_logic.isHostForProgram(self.user, program_one.key()))
+    self.assertFalse(user_logic.isHostForProgram(self.user, program_two.key()))

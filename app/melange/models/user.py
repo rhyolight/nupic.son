@@ -45,7 +45,7 @@ class User(ndb.Model):
   #: Field storing the status of the user.
   status = msgprop.EnumProperty(Status, default=Status.ACTIVE)
 
-  #: List of programs that the user is a host for
+  #: List of programs that the user is a host for.
   host_for = ndb.KeyProperty(repeated=True)
 
   @property

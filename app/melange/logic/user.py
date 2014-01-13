@@ -83,3 +83,19 @@ def getByCurrentAccount():
   account = users_api.get_current_user()
   return None if not account else user_model.User.query(
        user_model.User.account_id == account.user_id()).get()
+
+
+def isHostForProgram(user, program_key):
+  """Tells whether the specified user is a host for the specified program.
+
+  If no user entity is supplied, it is considered as not a program host.
+
+  Args:
+    user: User entity.
+    program_key: Program key.
+
+  Returns:
+    True if the specified user is a host for the specified program.
+    False, otherwise.
+  """
+  return user and ndb.Key.from_old_key(program_key) in user.host_for
