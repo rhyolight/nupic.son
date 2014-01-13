@@ -96,8 +96,8 @@ class ProposalAcceptanceTask(object):
           'Enqueing task to accept proposals for %s.', organization.name)
       # Compounded accept/reject taskflow
       taskqueue.add(
-        url = '/tasks/gsoc/accept_proposals/accept',
-        params = {
+        url='/tasks/gsoc/accept_proposals/accept',
+        params={
           'org_key': organization.key.id(),
         })
 

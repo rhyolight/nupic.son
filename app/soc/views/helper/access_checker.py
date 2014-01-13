@@ -21,7 +21,6 @@ from django.utils.translation import ugettext
 
 from google.appengine.ext import ndb
 
-from melange.models import connection as connection_model
 from melange.models import organization as org_model
 from melange.request import exception
 from melange.request import links
@@ -107,7 +106,7 @@ DEF_NO_SLOT_TRANSFER = ugettext(
 DEF_NO_SUCH_PROGRAM = ugettext(
     'The url is wrong (no program was found).')
 
-DEF_NO_SURVEY_ACCESS = ugettext (
+DEF_NO_SURVEY_ACCESS = ugettext(
     'You cannot take this evaluation because this evaluation is not created for'
     'your role in the program.')
 

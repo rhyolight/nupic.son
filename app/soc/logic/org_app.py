@@ -16,9 +16,6 @@
 
 from google.appengine.ext import db
 
-from melange import types
-from melange.logic import profile as profile_logic
-
 from soc.logic import mail_dispatcher
 from soc.logic.helper import notifications
 from soc.models import org_app_survey

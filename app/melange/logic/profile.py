@@ -15,7 +15,6 @@
 """Logic for profiles."""
 
 from google.appengine.api import datastore_errors
-from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from melange import types

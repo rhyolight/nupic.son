@@ -89,7 +89,7 @@ class Logic(object):
     """Checks whether a model has a specific property.
     """
     if (property_name in dir(model_class) and
-        type(getattr(model_class,property_name)) == _ReverseReferenceProperty):
+        type(getattr(model_class, property_name)) == _ReverseReferenceProperty):
       return True
     return property_name in model_class.properties()
 

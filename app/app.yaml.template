@@ -89,3 +89,10 @@ inbound_services:
 libraries:
 - name: django
   version: "1.5"
+
+# TODO(nathaniel): This entire stanza can probably be dropped after
+# PageSpeed Service makes a necessary bugfix. See
+# https://code.google.com/p/soc/issues/detail?id=1945 for details.
+pagespeed:
+  disabled_rewriters:
+  - WebpOptimization

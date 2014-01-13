@@ -54,7 +54,7 @@ def updateOrCreateRecordsFor(survey_group, projects):
 
     if record:
       # update existing GradingRecord
-      for key,value in record_fields.iteritems():
+      for key, value in record_fields.iteritems():
         setattr(record, key, value)
     else:
       # create a new GradingRecord

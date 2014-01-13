@@ -224,7 +224,7 @@ class DashboardPage(base.GSoCRequestHandler):
 
     components.append(DocumentComponent(data))
 
-    if (data.ndb_profile.is_student 
+    if (data.ndb_profile.is_student
         and data.ndb_profile.student_data.number_of_projects):
       components.append(TodoComponent(data))
       # Add a component to show the evaluations
@@ -889,7 +889,7 @@ class SubmittedProposalsComponent(Component):
 
     if data.ndb_profile.is_admin:
       # accept/reject proposals
-      bounds = [1,'all']
+      bounds = [1, 'all']
       keys = ['full_proposal_key']
       list_config.addPostButton('accept', "Accept", "", bounds, keys)
       list_config.addPostButton('unaccept', "Unaccept", "", bounds, keys)

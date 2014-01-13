@@ -466,7 +466,7 @@ class Profile(soc.models.linkable.Linkable):
   #: Invalid means that a role should not be able to excercise any
   #: priviliges.
   status = db.StringProperty(default='active',
-      choices=['active','invalid'],
+      choices=['active', 'invalid'],
       verbose_name=ugettext('Status of this Role'))
   status.help_text = ugettext('Indicates the status of the role '
       'concerning which privileges may be used.')

@@ -217,7 +217,7 @@ class Program(linkable_model.Linkable):
   about_page = db.ReferenceProperty(
       reference_class=document_model.Document,
       verbose_name=translation.ugettext('About page document'),
-      collection_name = 'about_page')
+      collection_name='about_page')
   about_page.group = PROGRAM_DOCUMENTS_GROUP
   about_page.help_text = translation.ugettext('The document with <b>About</b>')
 
@@ -226,7 +226,7 @@ class Program(linkable_model.Linkable):
   events_page = db.ReferenceProperty(
       reference_class=document_model.Document,
       verbose_name=translation.ugettext('Events page document'),
-      collection_name = 'events_page')
+      collection_name='events_page')
   events_page.group = PROGRAM_DOCUMENTS_GROUP
   events_page.help_text = translation.ugettext(
       'The document for the <b>Events & Timeline</b> page')
@@ -243,7 +243,7 @@ class Program(linkable_model.Linkable):
   connect_with_us_page = db.ReferenceProperty(
       reference_class=document_model.Document,
       verbose_name=translation.ugettext('Connect with us document'),
-      collection_name = 'connect_with_us_page')
+      collection_name='connect_with_us_page')
   connect_with_us_page.group = PROGRAM_DOCUMENTS_GROUP
   connect_with_us_page.help_text = translation.ugettext(
       'The document for the <b>Connect With Us</b> page')
@@ -253,7 +253,7 @@ class Program(linkable_model.Linkable):
   help_page = db.ReferenceProperty(
       reference_class=document_model.Document,
       verbose_name=translation.ugettext('Help document'),
-      collection_name = 'help_page')
+      collection_name='help_page')
   help_page.group = PROGRAM_DOCUMENTS_GROUP
   help_page.help_text = translation.ugettext(
       'The document for the <b>Help</b> page')

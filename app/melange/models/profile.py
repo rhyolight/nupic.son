@@ -92,7 +92,7 @@ class Profile(ndb.Model):
   #: for each.
   program = ndb.KeyProperty(required=True)
 
-  #: Required field storing a name that is to be displayed publicly. 
+  #: Required field storing a name that is to be displayed publicly.
   # Can be a real name or a nick name or some other public alias.
   # Public names can be any valid UTF-8 text.
   public_name = ndb.StringProperty(required=True)

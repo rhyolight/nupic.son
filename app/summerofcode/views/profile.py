@@ -452,7 +452,7 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
       help_text=SHIPPING_PROVINCE_HELP_TEXT)
 
   shipping_country = django_forms.CharField(
-      required=False,label=SHIPPING_COUNTRY_LABEL,
+      required=False, label=SHIPPING_COUNTRY_LABEL,
       help_text=SHIPPING_COUNTRY_HELP_TEXT,
       widget=django_forms.Select(
           choices=[('', 'Not Applicable')] + [

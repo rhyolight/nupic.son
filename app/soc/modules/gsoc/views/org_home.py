@@ -161,7 +161,7 @@ class ProjectList(Template):
 
       starter = lists.keyStarter
       prefetcher = lists.ListModelPrefetcher(
-          GSoCProject, [],  ['mentors'], parent=True)
+          GSoCProject, [], ['mentors'], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.data.request, self._list_config, list_query,

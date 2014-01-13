@@ -21,13 +21,13 @@ from google.appengine.datastore import datastore_query
 from google.appengine.ext import ndb
 from google.appengine.ext import db
 
-from melange import key_column_id_const
+from mapreduce import base_handler
+from mapreduce import mapreduce_pipeline
 
-from soc.mapreduce import cache_list_items
+from melange import key_column_id_const
+from melange.logic import cached_list
 from soc.modules.gsoc.models import project as project_model
 from soc.views.helper import url as url_helper
-
-from melange.logic import cached_list
 
 # These imports are needed for the toListItemDict function, to avoid
 # 'KindError' by func(entity) if func access a db.ReferenceProperty of the
@@ -39,6 +39,39 @@ from soc.modules.gsoc.models.timeline import GSoCTimeline
 
 # string that is used as the next_key parameter in the final batch.
 FINAL_BATCH = 'done'
+
+# The number of shards in a CacheListsPipeline.
+_NO_OF_SHARDS = 4
+
+
+# TODO(nathaniel): Should this class be module-private? It is only ever
+# used in this module.
+class CacheListsPipeline(base_handler.PipelineBase):
+  """A pipeline to read datastore entities and cache them for lists.
+
+  Args:
+    list_id: A unique id to identify the list.
+    entity_kind: Kind of the entity the DatastoreInputReader should read.
+    query_pickle: A pickled Query object that is used to filter entities that
+      should be cached.
+  """
+  # Overridden method defines only *args.
+  # pylint: disable=arguments-differ
+  def run(self, list_id, entity_kind, query_pickle):
+    yield mapreduce_pipeline.MapreducePipeline(
+      'cache_list_items',
+      'soc.mapreduce.cache_list_items.mapProcess',
+      'soc.mapreduce.cache_list_items.reduceProcess',
+      'mapreduce.input_readers.DatastoreInputReader',
+      mapper_params={
+          'list_id': list_id,
+          'entity_kind': entity_kind,
+          'query_pickle': query_pickle
+      },
+      reducer_params={
+          'list_id': list_id
+      },
+      shards=_NO_OF_SHARDS)
 
 
 class List(object):
@@ -170,8 +203,7 @@ class CacheReader(ListDataReader):
         (query._model_class.__module__, query._model_class.__name__)
     query_pickle = pickle.dumps(query)
 
-    cache_list_pipline = cache_list_items.CacheListsPipeline(
-        list_id, entity_kind, query_pickle)
+    cache_list_pipline = CacheListsPipeline(list_id, entity_kind, query_pickle)
 
     cache_list_pipline.start()
 

@@ -196,7 +196,7 @@ class ProposalDuplicatesTask(object):
             proposal_duplicate.orgs = (
                 proposal_duplicate.orgs + [organization.key.to_old_key()])
         else:
-          pd_fields  = {
+          pd_fields = {
               'program': program_entity,
               'student': student_entity,
               'orgs':[organization.key.to_old_key()],

@@ -404,7 +404,7 @@ class TaskViewPage(GCIRequestHandler):
     task = data.task
     # TODO(ljvderijk): Add a non-required profile property?
     form.cleaned_data['user'] = data.user
-    form.cleaned_data['org'] =  task.org
+    form.cleaned_data['org'] = task.org
     form.cleaned_data['program'] = task.program
 
     # store the submission, parented by the task
