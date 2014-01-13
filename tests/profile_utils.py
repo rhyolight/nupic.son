@@ -131,18 +131,25 @@ def seedUser(email=None, **kwargs):
 
 
 # TODO(daniel): Change name to seedUser and remove the function above
-def seedNDBUser(user_id=None, **kwargs):
+def seedNDBUser(user_id=None, host_for=None, **kwargs):
   """Seeds a new user.
 
   Args:
-    user_id: Identifier of the new user. 
+    user_id: Identifier of the new user.
+    host_for: List of programs for which the seeded user is a host.
 
   Returns:
     Newly seeded User entity.
   """
   user_id = user_id or string_provider.UniqueIDProvider().getValue()
 
-  properties = {'account_id': string_provider.UniqueIDProvider().getValue()}
+  host_for = host_for or []
+  host_for = [ndb.Key.from_old_key(program.key()) for program in host_for]
+
+  properties = {
+      'account_id': string_provider.UniqueIDProvider().getValue(),
+      'host_for': host_for,
+      }
   properties.update(**kwargs)
 
   user = ndb_user_model.User(id=user_id, **properties)
