@@ -502,18 +502,15 @@ def refreshConversationsForUserAndProgram(user, program):
     user: Key (ndb) of the User.
     program: Key (ndb) of the GCIProgram.
   """
-  profile_results = gciprofile_logic.queryProfileForUserAndProgram(
+  profile = gciprofile_logic.queryProfileForUserAndProgram(
       user=ndb.Key.to_old_key(user),
-      program=ndb.Key.to_old_key(program)).fetch(1)
+      program=ndb.Key.to_old_key(program)).get()
 
-  if len(profile_results) == 0:
+  if not profile:
     raise Exception('Could not find GCIProfile for user and program.')
 
-  profile = profile_results[0]
-
   student_info_query = gciprofile_logic.queryStudentInfoForParent(profile)
-  student_info_results = student_info_query.fetch(1)
-  student_info = student_info_results[0] if student_info_results else None
+  student_info = student_info_query.get()
 
   def deleteConvUserIfDoesntBelong(conv_user):
     if not doesConversationUserBelong(

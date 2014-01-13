@@ -40,6 +40,7 @@ from soc.views import template
 from soc.views.helper import url_patterns
 from soc.views.helper import lists
 
+from soc.modules.gsoc.logic import conversation_updater
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_names
@@ -432,6 +433,7 @@ class OrgProfileCreatePage(base.GSoCRequestHandler):
           for admin_key in admin_keys:
             connection_view.createConnectionTxn(
                 data, admin_key, result.extra,
+                conversation_updater.CONVERSATION_UPDATER,
                 org_role=connection_model.ORG_ADMIN_ROLE,
                 user_role=connection_model.ROLE)
 

@@ -35,6 +35,7 @@ from soc.logic import accounts
 from soc.logic import cleaning
 from soc.logic.helper import notifications
 from soc.models.user import User
+from soc.modules.gsoc.logic import conversation_updater
 from soc.modules.gsoc.logic import profile as soc_profile_logic
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
@@ -363,6 +364,7 @@ class OrgConnectionPage(base.GSoCRequestHandler):
       profile = GSoCProfile.all().ancestor(user).get()
       connection_view.createConnectionTxn(
           data, profile.key(), data.organization,
+          conversation_updater.CONVERSATION_UPDATER,
           message=connection_form.cleaned_data['message'],
           notification_context_provider=notification_context_provider,
           recipients=[profile.email],
@@ -485,6 +487,7 @@ class UserConnectionPage(base.GSoCRequestHandler):
             links.ABSOLUTE_LINKER, urls.UrlNames))
     connection_view.createConnectionTxn(
         data, data.profile.key(), data.organization,
+        conversation_updater.CONVERSATION_UPDATER,
         message=connection_form.cleaned_data['message'],
         notification_context_provider=notification_context_provider,
         recipients=recipients, user_role=connection.ROLE)

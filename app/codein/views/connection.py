@@ -38,6 +38,7 @@ from soc.logic import cleaning
 from soc.logic import user as user_logic
 from soc.logic.helper import notifications
 from soc.models import user as user_model
+from soc.modules.gci.logic import conversation_updater
 from soc.modules.gci.templates import org_list
 from soc.modules.gci.views import base
 from soc.modules.gci.views import forms as gci_forms
@@ -431,6 +432,7 @@ class StartConnectionAsUser(base.GCIRequestHandler):
 
       connection = connection_view.createConnectionTxn(
           data, data.profile.key(), data.organization,
+          conversation_updater.CONVERSATION_UPDATER,
           message=form.cleaned_data['message'], notification_context_provider=
           START_CONNECTION_BY_USER_CONTEXT_PROVIDER, recipients=emails,
           user_role=connection_model.ROLE)
@@ -492,6 +494,7 @@ class StartConnectionAsOrg(base.GCIRequestHandler):
       for profile in profiles:
         connections.append(connection_view.createConnectionTxn(
             data, profile.key(), data.organization,
+            conversation_updater.CONVERSATION_UPDATER,
             message=form.cleaned_data['message'],
             notification_context_provider=
             START_CONNECTION_BY_ORG_CONTEXT_PROVIDER,
@@ -831,7 +834,8 @@ class UserActionsFormHandler(form_handler.FormHandler):
     is_eligible = profile_logic.isNoRoleEligibleForOrg(
         data.url_profile, org_key)
     if is_eligible:
-      connection_view.handleUserNoRoleSelectionTxn(data.url_connection)
+      connection_view.handleUserNoRoleSelectionTxn(
+          data.url_connection, conversation_updater.CONVERSATION_UPDATER)
 
     return is_eligible
 
@@ -860,7 +864,8 @@ class UserActionsFormHandler(form_handler.FormHandler):
       # the call below. without these now XG transactions may be needed
       data.program  # pylint: disable=pointless-statement
       data.site  # pylint: disable=pointless-statement
-      connection_view.handleUserRoleSelectionTxn(data, data.url_connection)
+      connection_view.handleUserRoleSelectionTxn(
+          data, data.url_connection, conversation_updater.CONVERSATION_UPDATER)
 
     return is_eligible
 
@@ -918,7 +923,8 @@ class OrgActionsFormHandler(form_handler.FormHandler):
         data.url_profile, org_key)
     if is_eligible:
       connection_view.handleOrgNoRoleSelection(
-          data.url_connection, data.profile)
+          data.url_connection, data.profile,
+          conversation_updater.CONVERSATION_UPDATER)
     return is_eligible
 
   def _handleMentorSelection(self, data):
@@ -940,7 +946,8 @@ class OrgActionsFormHandler(form_handler.FormHandler):
         data.url_profile, org_key)
     if is_eligible:
       connection_view.handleMentorRoleSelection(
-          data.url_connection, data.profile)
+          data.url_connection, data.profile,
+          conversation_updater.CONVERSATION_UPDATER)
     return is_eligible
 
   def _handleOrgAdminSelection(self, data):
@@ -957,7 +964,8 @@ class OrgActionsFormHandler(form_handler.FormHandler):
       is not possible.
     """
     connection_view.handleOrgAdminRoleSelection(
-        data.url_connection, data.profile)
+        data.url_connection, data.profile,
+        conversation_updater.CONVERSATION_UPDATER)
     return rich_bool.TRUE
 
 
