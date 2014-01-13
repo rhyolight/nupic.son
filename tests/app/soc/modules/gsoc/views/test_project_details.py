@@ -276,7 +276,6 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
 
   def testForHost(self):
     data = request_data.RequestData(None, None, None)
-    data._is_host = True
     result = project_details._isUpdateLinkVisible(data)
     self.assertTrue(result)
 

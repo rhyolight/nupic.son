@@ -16,6 +16,7 @@
 
 from django.core.urlresolvers import reverse
 
+from melange.logic import user as user_logic
 from melange.request import links
 
 from soc.views import template
@@ -128,7 +129,7 @@ class MainMenu(template.Template):
       context['profile_link'] = self.data.redirect.urlOf(
           url_names.GSOC_PROFILE_SHOW, secure=True)
 
-    if self.data.is_host:
+    if user_logic.isHostForProgram(self.data.ndb_user, self.data.program.key()):
       self.data.redirect.program()
       context['admin_link'] = self.data.redirect.urlOf('gsoc_admin_dashboard')
 

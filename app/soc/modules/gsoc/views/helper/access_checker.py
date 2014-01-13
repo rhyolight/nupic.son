@@ -28,6 +28,7 @@ from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 
 from melange.logic import connection as connection_logic
+from melange.logic import user as user_logic
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
 from soc.modules.gsoc.models import proposal as proposal_model
@@ -522,7 +523,8 @@ class AccessChecker(access_checker.AccessChecker):
   def canUpdateProject(self):
     """Checks if the current user is allowed to update project details."""
     self.isLoggedIn()
-    if not self.data.is_host:
+    if not user_logic.isHostForProgram(
+        self.data.ndb_user, self.data.program.key()):
       self.hasProfile()
       if self.data.profile.is_student:
         # check if this is a student trying to update their project

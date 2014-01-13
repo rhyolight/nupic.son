@@ -16,6 +16,7 @@
 
 from django.utils import translation
 
+from melange.logic import user as user_logic
 from melange.models import profile as profile_model
 from melange.request import exception
 from melange.request import links
@@ -129,7 +130,7 @@ class ProgramAdministratorAccessChecker(AccessChecker):
       return
     elif not data.gae_user:
       raise exception.LoginRequired()
-    elif not data.is_host:
+    elif not user_logic.isHostForProgram(data.ndb_user, data.program.key()):
       raise exception.Forbidden(message=_MESSAGE_NOT_PROGRAM_ADMINISTRATOR)
 
 PROGRAM_ADMINISTRATOR_ACCESS_CHECKER = ProgramAdministratorAccessChecker()

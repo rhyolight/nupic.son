@@ -21,6 +21,7 @@ from django.utils.translation import ugettext
 
 from google.appengine.ext import ndb
 
+from melange.logic import user as user_logic
 from melange.models import connection as connection_model
 from melange.models import organization as org_model
 from melange.request import exception
@@ -357,7 +358,7 @@ class AccessChecker(BaseAccessChecker):
     """
     self.isLoggedIn()
 
-    if self.data.is_host:
+    if user_logic.isHostForProgram(self.data.ndb_user, self.data.program.key()):
       return
 
     raise exception.Forbidden(message=DEF_NOT_HOST)

@@ -23,6 +23,7 @@ from django.utils.translation import ugettext
 from soc.views import survey
 from soc.views.helper import lists
 
+from melange.logic import user as user_logic
 from melange.request import access
 from melange.request import exception
 
@@ -174,7 +175,7 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
 
     assert isSet(data.student_evaluation)
 
-    if data.is_host:
+    if user_logic.isHostForProgram(data.ndb_user, data.program.key()):
       return
 
     show_url = data.redirect.survey_record(

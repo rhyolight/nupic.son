@@ -20,6 +20,7 @@ import logging
 from django import http
 from django.utils.translation import ugettext
 
+from melange.logic import user as user_logic
 from melange.request import access
 from melange.request import exception
 from soc.logic import org_app as org_app_logic
@@ -382,7 +383,7 @@ class GSoCOrgAppShowPage(base.GSoCRequestHandler):
       context['record'] = OrgAppReadOnlyTemplate(record)
 
       # admin info should be available only to the hosts
-      if data.is_host:
+      if user_logic.isHostForProgram(data.ndb_user, data.program.key()):
         context['main_admin_url'] = data.redirect.profile(
             record.main_admin.link_id).urlOf(url_names.GSOC_PROFILE_SHOW_ADMIN)
         context['backup_admin_url'] = data.redirect.profile(
