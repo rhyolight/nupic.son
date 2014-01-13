@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Utils for manipulating the survey."""
 
-"""Utils for manipulating the survey.
-"""
-
+from google.appengine.ext import ndb
 
 from soc.models import org_app_record
 
@@ -75,12 +74,12 @@ class SurveyHelper(object):
     # is complete
     properties = {
         'program': self.program,
-        'created_by': host,
+        'created_by': host.key.to_old_key(),
         'prefix': 'gsoc_program',
         'schema': self.evalSchemaString(),
         'survey_content': None,
-        'author': host,
-        'modified_by': host,
+        'author': host.key.to_old_key(),
+        'modified_by': host.key.to_old_key(),
         'scope': self.program,
         'key_name': string_provider.SurveyKeyNameProvider(),
         'survey_start': timeline_utils.past(),
