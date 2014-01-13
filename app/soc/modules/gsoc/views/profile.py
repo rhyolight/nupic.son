@@ -209,7 +209,7 @@ class GSoCStudentInfoForm(gsoc_forms.GSoCModelForm):
         ['school_country', 'school_type', 'degree'])
 
   school_home_page = fields.URLField(required=True)
-  clean_school_home_page =  cleaning.clean_url('school_home_page')
+  clean_school_home_page = cleaning.clean_url('school_home_page')
 
   clean_school_name = cleaning.clean_html_content('school_name')
   clean_major = cleaning.clean_html_content('major')

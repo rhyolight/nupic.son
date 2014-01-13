@@ -20,10 +20,6 @@ import pickle
 from google.appengine.ext import ndb
 
 from mapreduce import context
-from mapreduce import base_handler
-from mapreduce import mapreduce_pipeline
-
-NO_OF_SHARDS = 4
 
 
 def mapProcess(entity):
@@ -58,33 +54,3 @@ def reduceProcess(data_id, entities):
 
   ndb.transaction(lambda: cached_list.setCacheItems(
       data_id, map(json.loads, entities), lists.getList(list_id).valid_period))
-
-
-class CacheListsPipeline(base_handler.PipelineBase):
-  """A pipeline to read datastore entities and cache them for lists.
-
-  Args:
-    list_id: A unique id to identify the list.
-    entity_kind: Kind of the entity the DatastoreInputReader should read.
-    query_pickle: A pickled Query object that is used to filter entities that
-      should be cached.
-  """
-
-  # Overridden method defines only *args.
-  # pylint: disable=arguments-differ
-  def run(self, list_id, entity_kind, query_pickle):
-    yield mapreduce_pipeline.MapreducePipeline(
-      'cache_list_items',
-      'soc.mapreduce.cache_list_items.mapProcess',
-      'soc.mapreduce.cache_list_items.reduceProcess',
-      'mapreduce.input_readers.DatastoreInputReader',
-      mapper_params={
-          'list_id': list_id,
-          'entity_kind': entity_kind,
-          'query_pickle': query_pickle
-      },
-      reducer_params={
-          'list_id': list_id
-      },
-      shards=NO_OF_SHARDS)
-  # pylint: enable=arguments-differ

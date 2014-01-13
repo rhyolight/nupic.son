@@ -69,7 +69,7 @@ class SlotsTransferAdminList(template.Template):
     list_config.addPostEditButton('save', "Save", "",
                                   ['full_transfer_key'], refresh="none")
 
-    bounds = [1,'all']
+    bounds = [1, 'all']
     keys = ['key', 'full_transfer_key']
     list_config.addPostButton('accept', "Accept", "", bounds, keys)
     list_config.addPostButton('reject', "Reject", "", bounds, keys)
@@ -193,7 +193,7 @@ class SlotsTransferAdminList(template.Template):
           nr_slots = int(nr_slots)
 
       def update_org_txn():
-        slot_transfer =  db.get(full_transfer_key)
+        slot_transfer = db.get(full_transfer_key)
         if not slot_transfer:
           logging.warning("Invalid slot_transfer_key '%s'", key_name)
           return

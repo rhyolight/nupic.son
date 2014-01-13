@@ -21,9 +21,9 @@ from datetime import datetime
 from django.utils import translation
 
 #: Constants for specifiying the type of recipients
-PROGRAM       = 'Program'       #: Types of users within the program
-ORGANIZATION  = 'Organization'  #: Types of users within the specified org
-USER          = 'User'          #: Specific users, specified manually
+PROGRAM = 'Program'            #: Types of users within the program
+ORGANIZATION = 'Organization'  #: Types of users within the specified org
+USER = 'User'                  #: Specific users, specified manually
 
 
 class Conversation(ndb.Model):

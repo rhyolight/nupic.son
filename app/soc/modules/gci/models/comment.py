@@ -46,7 +46,7 @@ class GCIComment(db.Model):
   #: valid: comment is visible to all
   #: invalid: comment is deleted, which is marked as invalid
   status = db.StringProperty(default='valid',
-                             choices=['valid','invalid'],
+                             choices=['valid', 'invalid'],
                              verbose_name=ugettext('Status of this Comment'))
 
   #: A non-required many:1 relationship with a comment entity indicating

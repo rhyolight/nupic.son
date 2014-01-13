@@ -225,7 +225,7 @@ class UserActions(Template):
         self.data, 'on_off', 'Wish to Mentor', 'wish-to-mentor',
         wish_to_mentor_url, checked=self.data.isPossibleMentorForProposal(),
         help_text=self.DEF_WISH_TO_MENTOR_HELP,
-        labels = {
+        labels={
             'checked': 'Yes',
             'unchecked': 'No'})
     self.toggle_buttons.append(wish_to_mentor)
@@ -240,7 +240,7 @@ class UserActions(Template):
           proposal_modifications_url,
           checked=self.data.url_proposal.is_editable_post_deadline,
           help_text=self.DEF_PROPOSAL_MODIFICATION_HELP,
-          labels = {
+          labels={
             'checked': 'Enabled',
             'unchecked': 'Disabled'})
       self.toggle_buttons.append(proposal_modification_button)
@@ -276,7 +276,7 @@ class UserActions(Template):
           self.data.redirect.urlOf('gsoc_proposal_accept'),
           checked=self.data.url_proposal.accept_as_project,
           help_text=self.DEF_ACCEPT_PROPOSAL_HELP,
-          labels = {
+          labels={
               'checked': 'Yes',
               'unchecked': 'No',})
       self.toggle_buttons.append(accept_proposal)
@@ -316,7 +316,7 @@ class UserActions(Template):
         publicly_visible_url,
         checked=self.data.url_proposal.is_publicly_visible,
         help_text=self.DEF_PUBLICLY_VISIBLE_HELP,
-        labels = {
+        labels={
             'checked': 'Yes',
             'unchecked': 'No',})
     self.toggle_buttons.append(publicly_visible)
@@ -334,7 +334,7 @@ class UserActions(Template):
           self.data, 'on_off', 'Withdraw Proposal', 'withdraw-proposal',
           withdraw_proposal_url, checked=checked,
           help_text=self.DEF_WITHDRAW_PROPOSAL_HELP,
-          labels = {
+          labels={
               TOGGLE_BUTTON_IS_WITHDRAWN: 'Yes',
               TOGGLE_BUTTON_NOT_WITHDRAWN: 'No'
           })

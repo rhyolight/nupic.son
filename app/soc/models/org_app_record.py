@@ -91,7 +91,7 @@ class OrgAppRecord(SurveyRecord):
   # pre-rejected: used to indicate that the application has been rejected
   # but the applicant has not been informed yet.
   status = db.StringProperty(required=True,
-      choices=['accepted','rejected','ignored','needs review','completed',
+      choices=['accepted', 'rejected', 'ignored', 'needs review', 'completed',
                'pre-accepted', 'pre-rejected'],
       default='needs review',
       verbose_name=ugettext('Application Status'))

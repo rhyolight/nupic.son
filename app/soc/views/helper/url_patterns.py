@@ -80,22 +80,22 @@ _org_document = ''.join([
 ])
 _mentor_role = r'(?P<role>%s)/' % ("org_admin|mentor")
 
-ID        = namedIdBasedPattern(['sponsor', 'program'])
-KEY       = namedKeyBasedPattern(['sponsor', 'program'])
-SPONSOR   = namedLinkIdPattern(['sponsor'])
-PROGRAM   = namedLinkIdPattern(['sponsor', 'program'])
+ID = namedIdBasedPattern(['sponsor', 'program'])
+KEY = namedKeyBasedPattern(['sponsor', 'program'])
+SPONSOR = namedLinkIdPattern(['sponsor'])
+PROGRAM = namedLinkIdPattern(['sponsor', 'program'])
 CREATE_PROFILE = _role + namedLinkIdPattern(['sponsor', 'program'])
-PROFILE   = namedLinkIdPattern(['sponsor', 'program', 'user'])
+PROFILE = namedLinkIdPattern(['sponsor', 'program', 'user'])
 MESSAGE = namedIdBasedPattern(['sponsor', 'program', 'user'])
-DOCUMENT_FMT      = _document
-ORG_DOCUMENT_FMT  = _org_document
-ORG       = namedLinkIdPattern(['sponsor', 'program', 'organization'])
-INVITE    = _mentor_role + ORG
-REQUEST   = _mentor_role + ORG
+DOCUMENT_FMT = _document
+ORG_DOCUMENT_FMT = _org_document
+ORG = namedLinkIdPattern(['sponsor', 'program', 'organization'])
+INVITE = _mentor_role + ORG
+REQUEST = _mentor_role + ORG
 
 USER = namedLinkIdPattern(['user'])
-USER_ID	  = namedIdBasedPattern(['sponsor', 'program', 'user'])
-USER_ORG  = namedLinkIdPattern(['sponsor', 'program', 'user', 'organization'])
+USER_ID = namedIdBasedPattern(['sponsor', 'program', 'user'])
+USER_ORG = namedLinkIdPattern(['sponsor', 'program', 'user', 'organization'])
 CONNECT = namedLinkIdPattern(['sponsor', 'program', 'organization', 'link_id'])
 SHOW_CONNECTION = namedIdBasedPattern(['sponsor', 'program', 'organization', 'user'])
 ANONYMOUS_CONNECTION = _mentor_role + namedKeyBasedPattern(['sponsor', 'program'])
