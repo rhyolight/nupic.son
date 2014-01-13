@@ -33,6 +33,10 @@ from paver import easy
 from paver import path
 from paver import tasks
 
+from epydoc import cli
+
+from google.appengine.ext import testbed
+
 
 # Paver comes with Jason Orendorff's 'path' module; this makes path
 # manipulation easy and far more readable.
@@ -484,26 +488,42 @@ def closure(options):
 ])
 def build_docs(options):
   """Builds documentation for the project."""
+  # Epydoc smartly makes its own output directory if the output
+  # directory doesn't exist, but is not so smart that it will
+  # recursively create the parents of the output directory if they
+  # don't exist. Since we have the output directory path here we
+  # might as well create it rather than parsing out just the parents
+  # and leaving the directory itself to epydoc.
+  if not os.path.exists(options.docs_output):
+    os.makedirs(options.docs_output)
 
-  # TODO(daniel): definitely move this part somewhere
-  # it is required by code instrospection
+  # NOTE(nathaniel): Epydoc actually imports modules during analysis,
+  # Melange's modules in turn import App Engine modules, and App Engine
+  # modules complain if the right Django and App Engine settings aren't
+  # in place at import time. Consequently, we must mutate the current
+  # environment to be that of an App Engine test before we can build
+  # Melange's documentation.
   os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
   os.environ['SERVER_SOFTWARE'] = 'build'
+  appengine_testbed = testbed.Testbed()
+  appengine_testbed.activate()
+  appengine_testbed.init_datastore_v3_stub()
 
-  # some App Engine models cannot be introspected
-  # specifically, the models which inherit from another models and
-  # redefine properties. Epydoc is not capable to handle these situations
-  exclude_intorspect_modules = [
-      'soc.modules.gci.models',
+  # NOTE(nathaniel): Deriving the options to pass to (epydoc.)cli.main this
+  # way is horsehockey, but epydoc doesn't actually expose a proper API.
+  stored_actual_argv = sys.argv
+  sys.argv = [
+      'unused_fake_executuable',
+      '--config=%s' % options.docs_config,
+      '--output=%s' % options.docs_output,
       ]
+  epydoc_options, epydoc_names = cli.parse_arguments()
+  sys.argv = stored_actual_argv
 
-  # Create reports directory if not existent
-  if not os.path.exists(REPORTS_DIR):
-    os.makedirs(REPORTS_DIR)
-
-  easy.sh('bin/epydoc -o %s --config=%s --exclude-introspect=%s' %
-      (options.docs_output, options.docs_config,
-          ','.join(exclude_intorspect_modules)))
+  # NOTE(nathaniel): As of 13 January 2014 this call emits two false
+  # positive "Bad argument - expected name or tuple" errors. See
+  # https://sourceforge.net/p/epydoc/bugs/363/ for progress.
+  cli.main(epydoc_options, epydoc_names)
 
 
 @easy.task
