@@ -18,7 +18,6 @@ a user and an organization.
 from django.utils.translation import ugettext
 from google.appengine.ext import db
 from google.appengine.ext import ndb
-from soc.models.profile import Profile
 
 
 # Constants to represent the different states that users and org admins

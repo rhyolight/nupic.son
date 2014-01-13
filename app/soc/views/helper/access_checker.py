@@ -21,7 +21,6 @@ from django.utils.translation import ugettext
 
 from google.appengine.ext import ndb
 
-from melange.models import connection as connection_model
 from melange.models import organization as org_model
 from melange.request import exception
 from melange.request import links

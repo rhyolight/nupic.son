@@ -29,7 +29,7 @@ class Status(messages.Enum):
 
 
 class User(ndb.Model):
-  """Model that represents a user and associated login credentials, 
+  """Model that represents a user and associated login credentials,
   the fundamental identity entity.
 
   Melange users are backed up by Google Accounts which are used to login

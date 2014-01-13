@@ -18,12 +18,10 @@ from datetime import datetime
 from datetime import timedelta
 import uuid
 
-from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from django.utils import translation
 
-from melange.logic import connection_message as connection_message_logic
 from melange.models import connection as connection_model
 from melange.utils import rich_bool
 

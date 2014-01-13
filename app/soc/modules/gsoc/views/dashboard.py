@@ -224,7 +224,7 @@ class DashboardPage(base.GSoCRequestHandler):
 
     components.append(DocumentComponent(data))
 
-    if (data.ndb_profile.is_student 
+    if (data.ndb_profile.is_student
         and data.ndb_profile.student_data.number_of_projects):
       components.append(TodoComponent(data))
       # Add a component to show the evaluations

@@ -14,7 +14,6 @@
 
 """Module for the GCI organization profile page."""
 
-from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from codein.logic import profile as profile_logic
