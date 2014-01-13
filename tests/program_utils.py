@@ -385,7 +385,7 @@ class GSoCProgramHelper(ProgramHelper):
       return self.program
     super(GSoCProgramHelper, self).createProgram()
 
-    self.program = seedGSoCProgram(sponsor_key=self.sponsor.key())
+    self.program = seedGSoCProgram(sponsor_key=self.sponsor.key(), **override)
 
     return self.program
 
