@@ -1147,7 +1147,7 @@ class ListContentResponse(object):
 
     get_args = request.GET
     self.next = ''
-    self.start = get_args.get('start', '')
+    self.start = html.escape(get_args.get('start', ''))
     self.limit = int(get_args.get('limit', 50))
 
   def addRow(self, entity, *args, **kwargs):
