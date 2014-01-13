@@ -46,8 +46,8 @@ class AcceptedOrgsAdminList(org_list.OrgList):
       """See lists.Prefetcher.prefetch for specification."""
       org_admins = {}
       for entity in entities:
-        org_admins_for_org = profile_logic.getOrgAdmins(entity.key())
-        org_admins[entity.key()] = ', '.join(
+        org_admins_for_org = profile_logic.getOrgAdmins(entity.key)
+        org_admins[entity.key] = ', '.join(
             ['"%s" &lt;%s&gt;' % (
                 html_utils.conditional_escape(org_admin_for_org.name()),
                 html_utils.conditional_escape(org_admin_for_org.email))
@@ -66,10 +66,10 @@ class AcceptedOrgsAdminList(org_list.OrgList):
     list_config.addPlainTextColumn('name', 'Name',
         lambda e, *args: e.name.strip())
 
-    list_config.addSimpleColumn('link_id', 'Organization ID', hidden=True)
+    list_config.addSimpleColumn('org_id', 'Organization ID', hidden=True)
 
     list_config.addHtmlColumn('org_admin', 'Org Admins',
-        lambda e, *args: args[0][e.key()])
+        lambda e, *args: args[0][e.key])
 
     list_config.setRowAction(
         lambda e, *args: links.LINKER.organization(

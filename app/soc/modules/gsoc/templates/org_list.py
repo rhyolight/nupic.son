@@ -55,7 +55,7 @@ class OrgList(template.Template):
         self.data.request, self._list_config, query,
         lists.keyStarter, prefetcher=prefetcher)
 
-    return response_builder.build()
+    return response_builder.buildNDB()
 
   def templatePath(self):
     """See template.Template.templatePath for specification."""
