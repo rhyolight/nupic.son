@@ -539,10 +539,9 @@ class ProfileHelper(object):
     return self.profile
 
   def createHost(self):
-    """Sets the current user to be a host for the current program.
-    """
-    self.createUser()
-    self.user.host_for = [self.program.scope.key()]
+    """Sets the current user to be a host for the current program."""
+    self.user = seedNDBUser()
+    self.user.host_for = [ndb.Key.from_old_key(self.program.key())]
     self.user.put()
     return self.user
 
