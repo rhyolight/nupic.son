@@ -21,11 +21,13 @@ from google.appengine.ext import ndb
 from melange.logic import user as user_logic
 
 from tests import profile_utils
+from tests import program_utils
 
 
 TEST_ACCOUNT_ID = 'test_account_id'
 TEST_EMAIL = 'test@example.com'
 TEST_USERNAME = 'test_username'
+TEST_PROGRAM = program_utils.seedProgram()
 
 class CreateUserTest(unittest.TestCase):
   """Unit tests for createUser function."""
@@ -35,10 +37,16 @@ class CreateUserTest(unittest.TestCase):
     # sign in a user with an account but with no user entity
     profile_utils.signInToGoogleAccount(TEST_EMAIL, TEST_ACCOUNT_ID)
 
-    result = ndb.transaction(lambda: user_logic.createUser(TEST_USERNAME))
+    result = ndb.transaction(
+        lambda: user_logic.createUser(
+            TEST_USERNAME,
+            host_for=[ndb.Key.from_old_key(TEST_PROGRAM.key())]))
+
     self.assertTrue(result)
     self.assertEqual(result.extra.key.id(), TEST_USERNAME)
     self.assertEqual(result.extra.account_id, TEST_ACCOUNT_ID)
+    self.assertIn(
+        ndb.Key.from_old_key(TEST_PROGRAM.key()), result.extra.host_for)
 
   def testUserExists(self):
     """Tests that user entity is not existed for a taken username."""
@@ -52,7 +60,7 @@ class CreateUserTest(unittest.TestCase):
     self.assertFalse(result)
 
   def testForNonLoggedInAccount(self):
-    """Tests that user is not craeted when no account is logged in."""
+    """Tests that user is not created when no account is logged in."""
     # make sure that nobody is logged in
     profile_utils.logout()
 

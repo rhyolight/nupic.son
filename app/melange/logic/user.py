@@ -29,7 +29,7 @@ _ACCOUNT_NOT_LOGGED_IN = translation.ugettext(
 _USER_EXISTS_FOR_USERNAME = translation.ugettext(
     'User already exists for username %s.')
 
-def createUser(username):
+def createUser(username, host_for=None):
   """Creates a new User entity for the specified username for the currently
   logged in account.
 
@@ -43,6 +43,8 @@ def createUser(username):
 
   Args:
     username: A string containing username.
+    host_for: A list of program keys for which the user has a program
+      administrator role.
 
   Returns:
     RichBool whose value is set to True if user has been successfully created.
@@ -60,7 +62,9 @@ def createUser(username):
     # there is already a user with the specified username
     return rich_bool.RichBool(False, _USER_EXISTS_FOR_USERNAME % username)
   else:
-    user = user_model.User(id=username, account_id=account.user_id())
+    host_for = host_for or []
+    user = user_model.User(
+        id=username, account_id=account.user_id(), host_for=host_for)
     user.put()
     return rich_bool.RichBool(True, user)
 
