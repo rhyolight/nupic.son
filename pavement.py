@@ -23,27 +23,25 @@ it were. For example, you could run ``paver --dry-run tinymce_zip`` to see what
 files would be added to the ``tinymce.zip`` file, etc.
 """
 
+import cStringIO
 import os
-from cStringIO import StringIO
 import shutil
 import sys
 import zipfile
 
+from google.appengine.ext import testbed
+
+from epydoc import cli
 from paver import easy
 from paver import path
 from paver import tasks
-
-from epydoc import cli
-
-from google.appengine.ext import testbed
-
+from pylint import lint
 
 # Paver comes with Jason Orendorff's 'path' module; this makes path
 # manipulation easy and far more readable.
 PROJECT_DIR = path.path(__file__).dirname().abspath()
 REPORTS_DIR = PROJECT_DIR / 'reports'
 JS_DIRS = ['soc/content/js']
-
 
 # Set some default options. Having the options at the top of the file cleans
 # the whole thing up and makes the behaviour a lot more configurable.
@@ -222,8 +220,6 @@ def symlink(target, link_name):
 ])
 def pylint(options):
   """Check the source code using PyLint."""
-  from pylint import lint
-
   # Initial command.
   arguments = []
 
@@ -231,6 +227,7 @@ def pylint(options):
     arguments.extend(options.verbose_args)
   else:
     arguments.extend(options.quiet_args)
+
   if 'pylint_args' in options:
     arguments.extend(list(options.pylint_args))
 
@@ -326,7 +323,6 @@ def build(options):
 @easy.task
 def run_grunt(options):
   """Run Grunt for build"""
-
   easy.sh('bin/grunt build')
 
 
@@ -349,17 +345,15 @@ def build_symlinks(options):
 @easy.task
 def build_css(options):
   """Compiles the css files into one."""
-
   for css_dir in options.css_dirs:
     for target, components in options.css_files.iteritems():
       target = options.app_folder / css_dir / target
-      f = target.open('w')
-
-      for component in components:
-        source = options.app_folder / css_dir / component
-        easy.dry("cat %s >> %s" % (source, target),
-            lambda: shutil.copyfileobj(source.open('r'), f))
-      f.close()
+      with target.open('w') as target_file:
+        for component in components:
+          source = options.app_folder / css_dir / component
+          easy.dry(
+              "cat %s >> %s" % (source, target),
+              lambda: shutil.copyfileobj(source.open('r'), target_file))
 
 
 @easy.task
@@ -397,7 +391,7 @@ def tinymce_zip(options):
       options.app_folder) / 'soc/content/js/thirdparty/tiny_mce'
   tinymce_zip_filename = path.path(options.app_folder) / 'tiny_mce.zip'
   if tasks.environment.dry_run:
-    tinymce_zip_fp = StringIO()
+    tinymce_zip_fp = cStringIO.StringIO()
   else:
     # Ensure the parent directories exist.
     tinymce_zip_filename.dirname().makedirs_p()
@@ -416,7 +410,6 @@ def tinymce_zip(options):
 
 def run_closure(f):
   """Runs the closure compiler over one JS file"""
-
   tmp = f + ".tmp.js"
   f.move(tmp)
 
@@ -438,7 +431,6 @@ def run_closure(f):
 ])
 def closure(options):
   """Runs the closure compiler over the JS files."""
-
   if options.js_dir:
     dirs = [options.app_folder / options.js_dir]
   else:
@@ -528,8 +520,7 @@ def build_docs(options):
 
 @easy.task
 def deep_overrides(options):
-  """Copies files from the copy structure to the build directory.
-  """
+  """Copies files from the copy structure to the build directory."""
   dirs = [options.app_folder / i for i in options.copy_dirs]
   dont_copy_dirs = [options.app_folder / i for i in options.dont_copy_dirs]
 
@@ -545,8 +536,7 @@ def deep_overrides(options):
 
 @easy.task
 def overrides(options):
-  """Copies files from the overrides structure to the build directory.
-  """
+  """Copies files from the overrides structure to the build directory."""
   for path in options.overrides_dirs:
     target = options.app_build / path
     unroll_symlink(target)
