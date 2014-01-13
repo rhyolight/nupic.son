@@ -16,6 +16,8 @@
 
 from datetime import date
 
+from google.appengine.ext import ndb
+
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import project_survey as project_survey_model
 
@@ -103,7 +105,9 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
 
   def testProgramAdminAccessGranted(self):
     """Tests that program hosts can access the page."""
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     self._seedProjectData()
 
     response = self.get(self._getUrl(self.project))
@@ -111,7 +115,9 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
 
   def testExtensionForms(self):
     """Tests that the response contains extension adequate forms."""
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     self._seedProjectData()
 
     # check that no forms are present if there are no evaluations
@@ -151,7 +157,9 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
 
   def testPersonalExtensionIsSet(self):
     """Tests that personal extension is set for an evaluation."""
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     self._seedProjectData()
 
     # seed midterm evaluation
@@ -179,8 +187,9 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
 
   def testPersonalExtensionIsSetWithEmptyDate(self):
     """Tests that personal extension is set even if a date is empty."""
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
-    self.profile_helper.createHost()
     self._seedProjectData()
 
     # seed midterm evaluation
