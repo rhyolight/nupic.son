@@ -15,6 +15,7 @@
 """Logic for users."""
 
 from google.appengine.api import users as users_api
+from google.appengine.ext import ndb
 
 from django.utils import translation
 
@@ -37,6 +38,9 @@ def createUser(username):
   not exist for the account. Therefore, the callers should try to make sure that
   this function will not create a duplicate User entity.
 
+  This function will raise an error, if it is not called from within
+  a transaction.
+
   Args:
     username: A string containing username.
 
@@ -46,6 +50,9 @@ def createUser(username):
     RichBool whose value is set to False and extra part is a string that
     represents the reason why the action could not be completed.
     """
+  if not ndb.in_transaction():
+    raise RuntimeError('This function must be called from within a transaction')
+
   account = users_api.get_current_user()
   if not account:
     return rich_bool.RichBool(False, _ACCOUNT_NOT_LOGGED_IN)

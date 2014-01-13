@@ -16,6 +16,8 @@
 
 import unittest
 
+from google.appengine.ext import ndb
+
 from melange.logic import user as user_logic
 
 from tests import profile_utils
@@ -33,7 +35,7 @@ class CreateUserTest(unittest.TestCase):
     # sign in a user with an account but with no user entity
     profile_utils.signInToGoogleAccount(TEST_EMAIL, TEST_ACCOUNT_ID)
 
-    result = user_logic.createUser(TEST_USERNAME)
+    result = ndb.transaction(lambda: user_logic.createUser(TEST_USERNAME))
     self.assertTrue(result)
     self.assertEqual(result.extra.key.id(), TEST_USERNAME)
     self.assertEqual(result.extra.account_id, TEST_ACCOUNT_ID)
@@ -46,7 +48,7 @@ class CreateUserTest(unittest.TestCase):
     # sign in a user with an account but with no user entity
     profile_utils.signInToGoogleAccount(TEST_EMAIL, TEST_ACCOUNT_ID)
 
-    result = user_logic.createUser(TEST_USERNAME)
+    result = ndb.transaction(lambda: user_logic.createUser(TEST_USERNAME))
     self.assertFalse(result)
 
   def testForNonLoggedInAccount(self):
@@ -54,7 +56,7 @@ class CreateUserTest(unittest.TestCase):
     # make sure that nobody is logged in
     profile_utils.logout()
 
-    result = user_logic.createUser(TEST_USERNAME)
+    result = ndb.transaction(lambda: user_logic.createUser(TEST_USERNAME))
     self.assertFalse(result)
 
 
