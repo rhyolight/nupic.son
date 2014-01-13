@@ -43,6 +43,7 @@ import datetime
 import json
 import logging
 
+from google.appengine.datastore import datastore_query
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
@@ -1389,8 +1390,10 @@ class RawQueryContentResponseBuilder(object):
           for increased performance.
     """
     if not ender:
-      ender = lambda entity, is_last, start: (
-          "done" if is_last else str(entity.key()))
+      ender = lambda entity, is_last, next_cursor: (
+          'done' if is_last else (
+              str(entity.key())
+              if isinstance(entity, db.Model) else next_cursor.urlsafe()))
     if not skipper:
       skipper = lambda entity, start: False
     if not prefetcher:
@@ -1452,5 +1455,52 @@ class RawQueryContentResponseBuilder(object):
       content_response.next = self._ender(entities[-1], is_last, start)
     else:
       content_response.next = self._ender(None, True, start)
+
+    return content_response
+
+  def buildNDB(self, *args, **kwargs):
+    """Returns a ListContentResponse containing the data as indicated by the
+    query.
+
+    The start variable will be used as the starting key for our query, the data
+    returned does not contain the entity that is referred to by the start key.
+    The next variable will be defined as the key of the last entity returned,
+    empty if there are no entities to return.
+
+    Args and Kwargs passed into this method will be passed along to
+    _addEntity() method.
+    """
+    content_response = ListContentResponse(self._request, self._config)
+
+    start = content_response.start
+
+    if start == 'done':
+      logging.warning('Received query with "done" start key')
+      # return empty response
+      return content_response
+
+    count = content_response.limit
+    cursor = datastore_query.Cursor(urlsafe=start) if start else None
+    logging.error(cursor)
+
+    entities, next_cursor, _ = self._query.fetch_page(
+        count, start_cursor=cursor)
+
+    is_last = next_cursor is None
+
+    extra_args, extra_kwargs = self._prefetcher.prefetch(entities)
+    args = list(args) + list(extra_args)
+    kwargs.update(extra_kwargs)
+
+    logging.error(next_cursor)
+    for entity in entities:
+      if self._skipper(entity, start):
+        continue
+      self._row_adder(content_response, entity, *args, **kwargs)
+
+    if entities:
+      content_response.next = self._ender(None, is_last, next_cursor)
+    else:
+      content_response.next = self._ender(None, True, None)
 
     return content_response
