@@ -58,9 +58,10 @@ def setStatus(data, record, new_status, accept_url):
 
   context = None
 
-  if new_status in ['accepted', 'rejected']:
-    context = notifications.orgAppContext(
-        data, record, new_status, accept_url)
+  # TODO(daniel): update this function below to work with new org apps and users
+  #if new_status in ['accepted', 'rejected']:
+  #  context = notifications.orgAppContext(
+  #      data, record, new_status, accept_url)
 
   def txn():
     record = db.get(record_key)
