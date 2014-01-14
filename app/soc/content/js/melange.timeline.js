@@ -56,11 +56,11 @@
 
       $.extend(this.options, options);
 
-      // transform date into miliseconds
+      // transform date into milliseconds
       if (
         isNaN(parseInt(this.options.now, 10)) || !isFinite(this.options.now)
       ) {
-        this.options.now = this.dateToUTCMiliseconds(this.options.now);
+        this.options.now = this.dateToUTCMilliseconds(this.options.now);
       }
 
       // Default active slice
@@ -258,15 +258,15 @@
         time_start = null,
         time_end = null,
         time_zero_grade,
-        milisecondsInOneGrade = 1000 * 60 * 60 * 24 * 365 / 360;
+        millisecondsInOneGrade = 1000 * 60 * 60 * 24 * 365 / 360;
 
       // Find minimax and maximal time intervals
       $.each(slices, function (index, slice) {
-        if (time_start === null || time_start > that.dateToUTCMiliseconds(slice.from)) {
-          time_start = that.dateToUTCMiliseconds(slice.from);
+        if (time_start === null || time_start > that.dateToUTCMilliseconds(slice.from)) {
+          time_start = that.dateToUTCMilliseconds(slice.from);
         }
-        if (time_end === null || time_end < that.dateToUTCMiliseconds(slice.to)) {
-          time_end = that.dateToUTCMiliseconds(slice.to);
+        if (time_end === null || time_end < that.dateToUTCMilliseconds(slice.to)) {
+          time_end = that.dateToUTCMilliseconds(slice.to);
         }
       });
 
@@ -279,8 +279,8 @@
 
       // Transform dates to grades
       for (var index in slices) {
-        slices[index].from_grade = (that.dateToUTCMiliseconds(slices[index].from) - time_zero_grade) / milisecondsInOneGrade;
-        slices[index].to_grade = (that.dateToUTCMiliseconds(slices[index].to) - time_zero_grade) / milisecondsInOneGrade;
+        slices[index].from_grade = (that.dateToUTCMilliseconds(slices[index].from) - time_zero_grade) / millisecondsInOneGrade;
+        slices[index].to_grade = (that.dateToUTCMilliseconds(slices[index].to) - time_zero_grade) / millisecondsInOneGrade;
       }
 
       return slices;
@@ -293,13 +293,13 @@
         slice_next;
 
       // Sort slices
-      slices.sort(function (a, b) {return that.dateToUTCMiliseconds(a.from) - that.dateToUTCMiliseconds(b.from); });
+      slices.sort(function (a, b) {return that.dateToUTCMilliseconds(a.from) - that.dateToUTCMilliseconds(b.from); });
 
       for (var index = 0; index < slices_count; index++) {
         slice_prev = slices[index];
         slice_next = slices[(index + 1) % slices_count];
 
-        if (this.dateToUTCMiliseconds(slice_prev.to) != this.dateToUTCMiliseconds(slice_next.from)) {
+        if (this.dateToUTCMilliseconds(slice_prev.to) != this.dateToUTCMilliseconds(slice_next.from)) {
           slices.push({
             title: slice_next.title + that.options.slice_title_append,
             from: slice_prev.to,
@@ -321,8 +321,8 @@
 
       for (var i = slices.length - 1; i >= 0; i--) {
         if (slices[i].timerange === undefined) {
-          date_from = new Date(this.dateToUTCMiliseconds(slices[i].from));
-          date_to = new Date(this.dateToUTCMiliseconds(slices[i].to));
+          date_from = new Date(this.dateToUTCMilliseconds(slices[i].from));
+          date_to = new Date(this.dateToUTCMilliseconds(slices[i].to));
 
           if (date_from.getUTCMonth() == date_to.getUTCMonth()) {
             slices[i].timerange = month_names[date_from.getUTCMonth()] + " " + date_from.getUTCDate() + " - " + date_to.getUTCDate();
@@ -339,8 +339,8 @@
 
   // Parse yyyy-mm-dd hh:mm:ss
   // Parse using custom function as standart parse function is implementation dependant
-  // Returns number of miliseconds from midnight January 1 1970
-  Timeline.prototype.dateToUTCMiliseconds = function (date) {
+  // Returns number of milliseconds from midnight January 1 1970
+  Timeline.prototype.dateToUTCMilliseconds = function (date) {
     var parts = date.match(/(\d+)/g);
     return Date.UTC(
       parts[0],
@@ -358,8 +358,8 @@
     // Find active slice and set it as active
     for (var index = 0; index < slices_count; index++) {
       if (
-        this.dateToUTCMiliseconds(slices[index].from) < this.options.now &&
-        this.dateToUTCMiliseconds(slices[index].to) > this.options.now
+        this.dateToUTCMilliseconds(slices[index].from) < this.options.now &&
+        this.dateToUTCMilliseconds(slices[index].to) > this.options.now
       ) {
         slices[index].active = true;
         break;
