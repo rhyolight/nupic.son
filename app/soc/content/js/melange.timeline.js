@@ -30,30 +30,9 @@
 
     init: function (element, options) {
       this.R = Raphael(element);
+      this.R = this.enrichRaphaelObjectWithCustomAttributes(this.R);
+
       this.options = $.extend({}, $.fn.timeline.defaults, options);
-
-      // Definde R custom attributes
-      this.R.customAttributes.segment = function (x, y, r, a1, a2) {
-        var flag = (a2 - a1) > 180;
-
-        a1 = (a1 % 360) * Math.PI / 180;
-        a2 = (a2 % 360) * Math.PI / 180;
-
-        return {
-          path: [["M", x, y], ["l", r * Math.cos(a1), r * Math.sin(a1)], ["A", r, r, 0, +flag, 1, x + r * Math.cos(a2), y + r * Math.sin(a2)], ["z"]]
-        };
-      };
-
-      this.R.customAttributes.arc = function (x, y, r, a1, a2) {
-        var flag = (a2 - a1) > 180;
-
-        a1 = (a1 % 360) * Math.PI / 180;
-        a2 = (a2 % 360) * Math.PI / 180;
-
-        return {
-          path: [["M", x + r * Math.cos(a1), y + r * Math.sin(a1)], ["A", r, r, 0, +flag, 1, x + r * Math.cos(a2), y + r * Math.sin(a2)]]
-        };
-      };
 
       // Default active slice
       this.slice_active = null;
@@ -372,6 +351,40 @@
 
   };
 
+
+  Timeline.prototype.enrichRaphaelObjectWithCustomAttributes = function (R) {
+    R.customAttributes.segment = function (x, y, r, a1, a2) {
+      var flag = (a2 - a1) > 180;
+
+      a1 = (a1 % 360) * Math.PI / 180;
+      a2 = (a2 % 360) * Math.PI / 180;
+
+      return {
+        path: [
+          ["M", x, y],
+          ["l", r * Math.cos(a1), r * Math.sin(a1)],
+          ["A", r, r, 0, +flag, 1, x + r * Math.cos(a2), y + r * Math.sin(a2)],
+          ["z"]
+        ]
+      };
+    };
+
+    R.customAttributes.arc = function (x, y, r, a1, a2) {
+      var flag = (a2 - a1) > 180;
+
+      a1 = (a1 % 360) * Math.PI / 180;
+      a2 = (a2 % 360) * Math.PI / 180;
+
+      return {
+        path: [
+          ["M", x + r * Math.cos(a1), y + r * Math.sin(a1)],
+          ["A", r, r, 0, +flag, 1, x + r * Math.cos(a2), y + r * Math.sin(a2)]
+        ]
+      };
+    };
+
+    return R;
+  };
 
  /* Timeline PLUGIN DEFINITION
   * ===================== */
