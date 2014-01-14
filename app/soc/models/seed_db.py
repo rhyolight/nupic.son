@@ -487,15 +487,21 @@ def clear(*args, **kwargs):
       Sponsor.all(),
       Site.all(),
       Document.all(),
-      # Delete NDB instances since .delete() must be called on Keys.
-      soc_org_model.SOCOrganization.query().fetch(limit=100, keys_only=True),
-      profile_model.Profile.query().fetch(limit=100, keys_only=True),
-      users.User.query().fetch(limit=100, keys_only=True),
+      # The below models are all subclasses of ndb.Model and therefore must
+      # use .query() to return all instances instead of .all().
+      soc_org_model.SOCOrganization.query(),
+      profile_model.Profile.query(),
+      user.User.query(),
+      address.Address.query(),
+      contact.Contact.query()
       ])
 
   try:
     for entity in entities:
-      entity.delete()
+      if isinstance(entity, ndb.Model):
+        entity.key.delete()
+      else:
+        entity.delete()
   except db.Timeout:
     return http.HttpResponseRedirect('#')
   memcache.flush_all()
