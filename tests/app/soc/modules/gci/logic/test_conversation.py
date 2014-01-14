@@ -65,6 +65,27 @@ class GCIConversationTest(unittest.TestCase):
         creator=self.user_keys[1],
         users=[self.user_keys[2]])
 
+  def testQueryForProgramAndCreator(self):
+    """Tests that queryForProgramAndCreator returns a query for all
+    GCIConversation entities for a particular program and creator.
+    """
+
+    # User 0 should have created the first conversation
+    expected_keys = set([self.conv_a.key])
+    actual_keys = set(
+        gciconversation_logic.queryForProgramAndCreator(
+            program=self.program_key, creator=self.user_keys[0])
+        .fetch(keys_only=True))
+    self.assertEqual(expected_keys, actual_keys)
+
+    # User 1 should have created the second conversation
+    expected_keys = set([self.conv_b.key])
+    actual_keys = set(
+        gciconversation_logic.queryForProgramAndCreator(
+            program=self.program_key, creator=self.user_keys[1])
+        .fetch(keys_only=True))
+    self.assertEqual(expected_keys, actual_keys)
+
   def testQueryForProgramAndUser(self):
     """Tests that queryForProgramAndUser returns a query for all
     GCIConversationUser entities for a particular program and user.
@@ -180,11 +201,14 @@ class GCIConversationTest(unittest.TestCase):
             conversation=conv.key, user=self.user_keys[1])))
     self.assertEqual(expected_keys, actual_keys)
 
-    # Test that, for the third user, an exception is raised because they're not
+    # Test that, for the third user, None is returned because they're not
     # involved in the conversation
-    with self.assertRaises(Exception):
-      gciconversation_logic.queryUnreadMessagesForConversationAndUser(
-          conversation=conv.key, user=self.user_keys[2])
+    expected_query = None
+    actual_query = (
+        gciconversation_logic.queryUnreadMessagesForConversationAndUser(
+            conversation=conv.key, user=self.user_keys[2]))
+    self.assertEqual(expected_query, actual_query)
+      
 
   def testNumUnreadMessagesForConversationAndUser(self):
     """Tests that numUnreadMessagesForConversationAndUser returns the correct
@@ -226,11 +250,12 @@ class GCIConversationTest(unittest.TestCase):
         conversation=self.conv_a.key, user=self.user_keys[1])
     self.assertEqual(expected, actual)
 
-    # An exception should be raised if the user is not involved in the
-    # conversation. The first user is not involved in the second conversation.
-    with self.assertRaises(Exception):
-      gciconversation_logic.numUnreadMessagesForConversationAndUser(
-          conversation=self.conv_b.key, user=self.user_keys[0])
+    # None should be returned if the user is not involved in the conversation.
+    # The first user is not involved in the second conversation.
+    expected = 0
+    actual = gciconversation_logic.numUnreadMessagesForConversationAndUser(
+        conversation=self.conv_b.key, user=self.user_keys[0])
+    self.assertEqual(expected, actual)
 
   def testMarkAllReadForConversationAndUser(self):
     """Tests that markAllReadForConversationAndUser correctly marks the

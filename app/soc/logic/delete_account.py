@@ -15,13 +15,17 @@
 """Logic related to handling deletion of user accounts."""
 
 from google.appengine.api import mail
+from google.appengine.ext import ndb
 from google.appengine.ext import db
 
 from melange.appengine import system
 from soc.logic import accounts
 from soc.logic import user as user_logic
 
+from soc.modules.gci.logic import conversation as conversation_logic
+from soc.modules.gci.logic import message as message_logic
 from soc.modules.gci.logic import profile as profile_logic
+
 from soc.modules.gci.models import comment as comment_model
 from soc.modules.gci.models import task as task_model
 
@@ -63,10 +67,14 @@ def confirm_delete(profile):
 
   1. Deletes the profile.
   2. Deletes the user entity if no other profiles exist for the user.
-  3. Removes the user from task notification subscription lists
+  3. Removes the user from task notification subscription lists.
   4. Replaces GCITask created_by, modified_by, student and GCIComment
      created_by properties with dummy "melange_deleted_user" profile or user
      entity.
+  5. Replaces GCIMessage author with dummy "melange_deleted_user".
+  6. Replaces GCIConversation creator with dummy "melange_deleted_user".
+  7. Removes GCIConversationUser entities representing the user's involvement
+     in a GCIConversation.
 
   This method implements a giant XG transaction, but should not take a long
   time because experience has shown that there won't be too much data to
@@ -76,6 +84,9 @@ def confirm_delete(profile):
     profile: GCIProfile entity of the user.
   """
   profile_key = profile.key()
+
+  program_ndb_key = ndb.Key.from_old_key(profile.program.key())
+  user_ndb_key = ndb.Key.from_old_key(profile.parent_key())
 
   # Cannot delete the user entity if the user has other profiles, so set it
   # to False in that case.
@@ -108,9 +119,19 @@ def confirm_delete(profile):
   for comment in comments_created_by_q.run():
     comments_created_by_list.append(comment)
 
+  conversations = conversation_logic.queryForProgramAndCreator(
+      program_ndb_key, user_ndb_key)
+
+  messages = message_logic.queryForUser(user_ndb_key)
+
+  conversation_users = conversation_logic.queryForProgramAndUser(
+      program_ndb_key, user_ndb_key)
+
   dummy_user = user_logic.getOrCreateDummyMelangeDeletedUser()
   dummy_profile = profile_logic.getOrCreateDummyMelangeDeletedProfile(
       profile.program)
+
+  dummy_user_ndb_key = ndb.Key.from_old_key(dummy_user.key())
 
   options = db.create_transaction_options(xg=True)
 
@@ -126,6 +147,18 @@ def confirm_delete(profile):
     # tasks or performing another activity after this batch fetch. However,
     # the chances of that happening is very low and can be traded-off for
     # the bigger problem of half run transactions.
+
+    for conversation in conversations:
+      conversation.creator = dummy_user_ndb_key
+      conversation.put()
+
+    for message in messages:
+      message.author = dummy_user_ndb_key
+      message.put()
+
+    for conversation_user in conversation_users:
+      conversation_user.key.delete()
+
     for task in task_sub_remove_list:
       task.subscribers.remove(profile_key)
       entities_to_save.add(task)

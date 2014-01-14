@@ -32,6 +32,24 @@ from soc.modules.gci.logic.helper import notifications
 from soc.models import conversation as conversation_model
 
 
+def queryForProgramAndCreator(program, creator):
+  """Creates a query for GCIConversation entities for the given program and
+  creator.
+
+  Args:
+    program: Key (ndb) of GCIProgram.
+    creator: Key (ndb) of User who created the conversation.
+
+  Returns:
+    An ndb query for GCIConversations for the program and creator.
+  """
+  query = (gciconversation_model.GCIConversation.query()
+      .filter(gciconversation_model.GCIConversation.program == program)
+      .filter(gciconversation_model.GCIConversation.creator == creator))
+
+  return query
+
+
 def queryForProgramAndUser(program, user):
   """Creates a query for GCIConversationUser entities for the given program and
   user.
@@ -102,13 +120,11 @@ def queryUnreadMessagesForConversationAndUser(conversation, user):
     An ndb query for GCIMessages the user has not yet read in the conversation.
     If the user is not part of the conversation, None is returned.
   """
-  conversation_user_results = queryConversationUserForConversationAndUser(
-      conversation, user).fetch(1)
+  conversation_user = queryConversationUserForConversationAndUser(
+      conversation, user).get()
 
-  if len(conversation_user_results) == 0:
-    raise Exception('No GCIConversationUser could be found.')
-
-  conversation_user = conversation_user_results[0]
+  if not conversation_user:
+    return None
 
   date_last_seen = conversation_user.last_message_seen_on
 
@@ -129,10 +145,10 @@ def numUnreadMessagesForConversationAndUser(conversation, user):
 
   Returns:
     The number of messages the user has not read in the conversation.
-    If the user is not involved in the conversation, None is returned.
+    If the user is not involved in the conversation, 0 is returned.
   """
   query = queryUnreadMessagesForConversationAndUser(conversation, user)
-  return None if query is None else query.count()
+  return 0 if query is None else query.count()
 
 
 #TODO(drewgottlieb) use mapreduce for this
@@ -486,18 +502,15 @@ def refreshConversationsForUserAndProgram(user, program):
     user: Key (ndb) of the User.
     program: Key (ndb) of the GCIProgram.
   """
-  profile_results = gciprofile_logic.queryProfileForUserAndProgram(
+  profile = gciprofile_logic.queryProfileForUserAndProgram(
       user=ndb.Key.to_old_key(user),
-      program=ndb.Key.to_old_key(program)).fetch(1)
+      program=ndb.Key.to_old_key(program)).get()
 
-  if len(profile_results) == 0:
+  if not profile:
     raise Exception('Could not find GCIProfile for user and program.')
 
-  profile = profile_results[0]
-
   student_info_query = gciprofile_logic.queryStudentInfoForParent(profile)
-  student_info_results = student_info_query.fetch(1)
-  student_info = student_info_results[0] if student_info_results else None
+  student_info = student_info_query.get()
 
   def deleteConvUserIfDoesntBelong(conv_user):
     if not doesConversationUserBelong(

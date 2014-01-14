@@ -26,6 +26,7 @@ from soc.models import org_app_record as org_app_record_model
 from soc.views.helper import url_patterns
 from soc.views import org_profile
 
+from soc.modules.gci.logic import conversation_updater
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.tasks import update_conversations as update_conversation_task
 from soc.modules.gci.views.base import GCIRequestHandler
@@ -196,6 +197,7 @@ def createOrganizationTxn(data, profile_keys, form, key_name):
   for profile_key in profile_keys:
     connection_view.createConnectionTxn(
         data, profile_key, organization,
+        conversation_updater.CONVERSATION_UPDATER,
         org_role=connection_model.ORG_ADMIN_ROLE,
         user_role=connection_model.ROLE)
 
