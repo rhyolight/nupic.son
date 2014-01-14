@@ -26,6 +26,12 @@ from google.appengine.ext import ndb
 
 from django import http
 
+from melange.models import education
+from melange.models import address
+from melange.models import contact
+from melange.models import profile as profile_model
+from melange.models import user
+
 from soc.logic import accounts
 from soc.models.document import Document
 
@@ -36,10 +42,7 @@ from soc.models.sponsor import Sponsor
 from soc.models.survey import Survey
 from soc.models.survey_record import SurveyRecord
 
-from soc.models.user import User
-
 from soc.modules.gci.models.organization import GCIOrganization
-from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.score import GCIScore
 from soc.modules.gci.models.timeline import GCITimeline
@@ -47,7 +50,6 @@ from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.models.task import DifficultyLevel
 from soc.modules.gci.models.task import GCITask
 
-from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.models.project import GSoCProject
@@ -55,6 +57,7 @@ from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.timeline import GSoCTimeline
 
 from summerofcode.models import organization as soc_org_model
+from summerofcode.models import profile as soc_profile
 
 
 def seed(request, *args, **kwargs):
@@ -66,7 +69,6 @@ def seed(request, *args, **kwargs):
       'latest_gsoc': 'google/gsoc2014',
       'latest_gci': 'google/gci2009',
       }
-
   site = Site(**site_properties)
   site.put()
 
@@ -76,13 +78,11 @@ def seed(request, *args, **kwargs):
     account = users.User(email='test@example.com')
 
   user_properties = {
-      'key_name': 'test',
-      'link_id': 'test',
+      'id': 'test',
+      'account_id': 'test',
       'account': account,
-      'name': 'Test',
       }
-
-  current_user = User(**user_properties)
+  current_user = user.User(**user_properties)
   current_user.put()
 
   group_properties = {
@@ -100,33 +100,8 @@ def seed(request, *args, **kwargs):
        'phone': '15551110000',
        'status': 'active',
        }
-
   google = Sponsor(**group_properties)
   google.put()
-
-
-  role_properties = {
-      'key_name': 'google/test',
-      'link_id': 'test',
-      'public_name': 'test',
-      'scope': google,
-      'user': current_user,
-      'given_name': 'Test',
-      'surname': 'Example',
-      'name_on_documents': 'Test Example',
-      'email': 'test@example.com',
-      'res_street': 'Some Street',
-      'res_city': 'Some City',
-      'res_state': 'CA',
-      'res_country': 'United States',
-      'res_postalcode': '12345',
-      'phone': '15550001111',
-      'birth_date': db.DateProperty.now(),
-      'agreed_to_tos': True,
-      'is_org_admin': True,
-      'is_mentor': True,
-      }
-
 
   current_user.host_for = [google.key()]
   current_user.put()
@@ -145,10 +120,8 @@ def seed(request, *args, **kwargs):
       'student_signup_start': before,
       'student_signup_end': after,
   }
-
   gsoc2014_timeline = GSoCTimeline(**timeline_properties)
   gsoc2014_timeline.put()
-
 
   program_properties = {
       'key_name': 'google/gsoc2014',
@@ -164,16 +137,13 @@ def seed(request, *args, **kwargs):
       'timeline': gsoc2014_timeline,
       'status': program_model.STATUS_VISIBLE,
       }
-
   gsoc2014 = GSoCProgram(**program_properties)
   gsoc2014.put()
-
 
   timeline_properties.update({
       'key_name': 'google/gsoc2010',
       'link_id': 'gsoc2010',
   })
-
   gsoc2010_timeline = GSoCTimeline(**timeline_properties)
   gsoc2010_timeline.put()
 
@@ -186,7 +156,6 @@ def seed(request, *args, **kwargs):
       'short_name': 'GSoC 2010',
       'timeline': gsoc2010_timeline,
   })
-
   gsoc2010 = GSoCProgram(**program_properties)
   gsoc2010.put()
 
@@ -203,10 +172,8 @@ def seed(request, *args, **kwargs):
         'task_claim_deadline': after,
         'stop_all_work_deadline': after,
   }
-
   gci2009_timeline = GCITimeline(**timeline_properties)
   gci2009_timeline.put()
-
 
   program_properties.update({
       'key_name': 'google/gci2009',
@@ -217,13 +184,11 @@ def seed(request, *args, **kwargs):
       'description': 'This is the program for GCI 2009.',
       'timeline': gci2009_timeline,
       })
-
   gci2009 = GCIProgram(**program_properties)
   gci2009.put()
 
   site.active_program = gci2009
   site.put()
-
 
   group_properties.update({
     'key_name': 'google/gci2009/melange',
@@ -238,7 +203,6 @@ def seed(request, *args, **kwargs):
     'license_name': 'Apache License',
     'ideas': 'http://code.google.com/p/soc/issues',
     })
-
   melange = GCIOrganization(**group_properties)
   melange.put()
 
@@ -247,32 +211,32 @@ def seed(request, *args, **kwargs):
     'program': gsoc2014,
     })
 
-  role_properties = {
-      'key_name': 'google/gsoc2014/test',
-      'parent': current_user,
-      'link_id': 'test',
-      'public_name': 'test',
-      'scope': gsoc2014,
-      'program': gsoc2014,
-      'user': current_user,
-      'given_name': 'Test',
-      'surname': 'Example',
-      'name_on_documents': 'Test Example',
-      'email': 'test@example.com',
-      'res_street': 'Some Street',
-      'res_city': 'Some City',
-      'res_state': 'CA',
-      'res_country': 'United States',
-      'res_postalcode': '12345',
-      'phone': '15550001111',
-      'birth_date': db.DateProperty.now(),
-      'agreed_to_tos': True,
-      'is_org_admin': True,
-      'is_mentor': True,
-      }
+  address_properties = address.Address(
+      street='1 Test St.',
+      city='Some City',
+      country='United States',
+      postal_code='12345')
+  address_properties.put()
 
-  profile = GSoCProfile(**role_properties)
-  role_properties.pop('parent')
+  contact_info = Contact(email='test@example.com')
+  contact_info.put()
+
+  gsoc_delta = datetime.timedelta(days=(365 * 18))
+
+  profile_properties = {
+      'id': 'google/gsoc2014/test',
+      'parent': current_user.key,
+      'public_name': 'test',
+      'program': ndb.Key.from_old_key(gsoc2014.key()),
+      'first_name': 'Test',
+      'last_name': 'Example',
+      'contact' : contact_info,
+      'residential_address' : address_properties,
+      'shipping_address' : address_properties,
+      'birth_date' : datetime.date.today() - gsoc_delta,
+      'program_knowledge' : 'Friend referral',
+      }
+  profile = profile_model.Profile(**profile_properties)
 
   ndb_orgs = []
   for i in range(15):
@@ -297,38 +261,32 @@ def seed(request, *args, **kwargs):
 
     # Admin (and thus mentor) for the first org
     if i == 0:
-      profile.org_admin_for.append(org.key.to_old_key())
-      profile.mentor_for.append(org.key.to_old_key())
-      profile.is_mentor = True
-      profile.is_org_admin = True
+      profile.admin_for.append(org.key)
+      profile.mentor_for.append(org.key)
       profile.put()
 
     # Mentor for the second org
     if i == 1:
-      profile.mentor_for.append(org.key.to_old_key())
-      profile.is_mentor = True
+      profile.mentor_for.append(org.key)
       profile.put()
 
-  role_properties.update({
-      'key_name': 'google/gci2009/test',
-      'link_id': 'test',
-      'scope': gci2009,
-      'program': gci2009,
-      'org_admin_for': [melange.key()],
-      'mentor_for': [melange.key()],
-      'parent': current_user,
+  profile_properties.update({
+      'id': 'google/gci2009/test',
+      'parent': current_user.key,
+      'program': ndb.Key.from_old_key(gci2009.key()),
+      'admin_for': [ndb.Key.from_old_key(melange.key())],
+      'mentor_for': [ndb.Key.from_old_key(melange.key())],
       })
-
-  melange_admin = GCIProfile(**role_properties)
+  melange_admin = profile_model.Profile(**profile_properties)
   # TODO: add GCI orgs
   melange_admin.put()
 
   task_properties = {
       'status': 'Open',
-      'modified_by': melange_admin.key(),
-      'subscribers': [melange_admin.key()],
+      'modified_by': melange_admin.key.to_old_key(),
+      'subscribers': [melange_admin.key.to_old_key()],
       'title': 'Awesomeness',
-      'created_by': melange_admin.key(),
+      'created_by': melange_admin.key.to_old_key(),
       'created_on': now,
       'program': gci2009,
       'time_to_complete': 1337,
@@ -338,100 +296,87 @@ def seed(request, *args, **kwargs):
       'difficulty_level': DifficultyLevel.MEDIUM,
       'types': ['Code']
   }
-
   gci_task = GCITask(**task_properties)
   gci_task.put()
 
   user_properties = {
-      'key_name': 'student',
-      'link_id': 'student',
+      'id': 'student',
+      'account_id': 'student',
       'account': users.User(email='student@example.com'),
-      'name': 'Student',
       }
-
-  student_user = User(**user_properties)
+  student_user = user.User(**user_properties)
   student_user.put()
+
+  gci_delta = datetime.timedelta(days=(365 * 14))
+
+  contact_properties = contact.Contact(
+      email='student@email.com',
+      web_page='http://www.homepage.com/',
+      blog='http://www.blog.com/',
+      phone='1650253000')
+  contact_properties.put()
+
+  graduation_year = datetime.date.today() + datetime.timedelta(days=365)
+
+  student_data = soc_profile.SOCStudentData(
+      education=education.PostSecondaryEducation(
+          school_id="123",
+          school_country="United States",
+          expected_graduation=int(graduation_year.strftime('%Y')),
+          major='Some Major',
+          degree=education.Degree.UNDERGRADUATE)
+      )
+  student_data.put()
 
   student_id = 'student'
   student_properties = {
-      'key_name': gsoc2014.key().name() + "/" + student_id,
-      'link_id': student_id,
-      'parent': student_user,
-      'scope': gsoc2014,
-      'program': gsoc2014,
-      'user': student_user,
-      'is_student': True,
+      'id': gsoc2014.key().name() + "/" + student_id,
+      'parent': student_user.key,
+      'program': ndb.Key.from_old_key(gsoc2014.key()),
       'public_name': 'Student',
-      'given_name': 'Student',
-      'surname': 'Student',
-      'birth_date': db.DateProperty.now(),
-      'email': 'student@email.com',
-      'im_handle': 'student_im_handle',
-      'major': 'test major',
-      'name_on_documents': 'Student',
-      'res_country': 'United States',
-      'res_city': 'city',
-      'res_street': 'test street',
-      'res_postalcode': '12345',
-      'blog': 'http://www.blog.com/',
-      'home_page': 'http://www.homepage.com/',
-      'photo_url': 'http://www.photosite.com/thumbnail.png',
-      'ship_state': None,
-      'tshirt_size': 'XS',
-      'tshirt_style': 'male',
-      'degree': 'Undergraduate',
-      'phone': '1650253000',
-      'can_we_contact_you': True,
-      'program_knowledge': 'I heard about this program through a friend.'
+      'first_name': 'Student',
+      'last_name': 'Student',
+      'contact' : contact_properties,
+      'residential_address' : address_properties,
+      'shipping_address' : address_properties,
+      'birth_date': datetime.date.today() - gci_delta,
+      'tee_size': profile_model.TeeSize.L,
+      'tee_style': profile_model.TeeStyle.MALE,
+      'gender' : profile_model.Gender.MALE,
+      'program_knowledge': 'Friend referral.',
+      'student_data' : student_data,
       }
-
-  melange_student = GSoCProfile(**student_properties)
-
-  student_info_properties = {
-      'key_name': melange_student.key().name(),
-      'parent': melange_student,
-      'expected_graduation': 2016,
-      'program': gsoc2014,
-      'school_country': 'United States',
-      'school_name': 'Test School',
-      'school_home_page': 'http://www.example.com',
-  }
-  student_info = GSoCStudentInfo(**student_info_properties)
-  student_info.put()
-
-  melange_student.student_info = student_info
+  melange_student = profile_model.Profile(**student_properties)
   melange_student.put()
 
   user_properties = {
-      'key_name': 'student2',
-      'link_id': 'student2',
+      'id': 'student2',
+      'account_id': 'student2',
       'account': users.User(email='student@example.com'),
-      'name': 'Student 2',
       }
-
-  student_user2 = User(**user_properties)
+  student_user2 = user.User(**user_properties)
   student_user2.put()
+
   student_id = 'student2'
   student_properties.update({
-      'key_name': gsoc2014.key().name() + "/" + student_id,
-      'link_id': student_id,
-      'user': student_user2,
-      'parent': student_user2,
+      'id': gsoc2014.key().name() + "/" + student_id,
+      'parent': student_user2.key,
+      'first_name' : 'Student 2',
+      'last_name' : 'Example'
   })
-
-  melange_student2 = GSoCProfile(**student_properties)
+  melange_student2 = profile_model.Profile(**student_properties)
   melange_student2.put()
 
   proposal_properties = {
+      'parent': melange_student.key.to_old_key(),
+      'program': gsoc2014,
       'title': 'test proposal',
       'abstract': 'test abstract',
       'content': 'test content',
-      'mentor': profile,
+      'mentor': profile.key.to_old_key(),
       'status': 'accepted',
-      'parent': melange_student,
       'has_mentor': True,
       'org': ndb_orgs[1].key.to_old_key(),
-      'program': gsoc2014,
       }
   melange_proposal = GSoCProposal(**proposal_properties)
   melange_proposal.put()
@@ -440,45 +385,28 @@ def seed(request, *args, **kwargs):
       'title': 'test project',
       'abstract': 'test abstract',
       'status': 'accepted',
-      'parent': melange_student,
-      'mentors': [profile.key()],
+      'parent': melange_student.key.to_old_key(),
+      'mentors': [profile.key.to_old_key()],
       'program':  gsoc2014,
       'org': ndb_orgs[1].key.to_old_key(),
       'proposal' : melange_proposal.key(),
        }
-
   melange_project = GSoCProject(**project_properties)
   melange_project.put()
   ndb_orgs[1].slot_allocation = 1
   ndb_orgs[1].put()
 
-  student_info_properties.update({
-      'number_of_projects': 1,
-      'number_of_proposals': 1,
-      'project_for_orgs': [ndb_orgs[1].key.to_old_key()]
-      })
-  student_info = GSoCStudentInfo(**student_info_properties)
-  student_info.put()
+  student_data.number_of_projects = 1
+  student_data.number_of_proposals = 1
+  student_data.project_for_orgs = [ndb_orgs[1].key]
 
-  melange_student.student_info = student_info
   melange_student.put()
+  melange_student2.put()
 
   project_properties.update({
       'student': melange_student2,
       'title': 'test project2'
       })
-
-  student_info_properties.update({
-      'key_name': gsoc2014.key().name() + "/" + student_id,
-      'link_id': student_id,
-      'parent': melange_student2,
-  })
-  student_info2 = GSoCStudentInfo(**student_info_properties)
-  student_info2.put()
-
-  melange_student2.student_info = student_info2
-  melange_student2.put()
-
   melange_project2 = GSoCProject(**project_properties)
   melange_project2.put()
   ndb_orgs[1].slot_allocation += 1
@@ -486,26 +414,15 @@ def seed(request, *args, **kwargs):
 
   student_id = 'student'
   student_properties.update({
-      'key_name': gci2009.key().name() + '/' + student_id,
-      'parent': student_user,
-      'scope': gci2009,
-      'program': gci2009,
+      'id': gci2009.key().name() + '/' + student_id,
+      'parent': student_user.key,
+      'program': ndb.Key.from_old_key(gci2009.key()),
   })
-  gci_student = GCIProfile(**student_properties)
-  gci_student.put()
-
-  student_info_properties.update({
-      'key_name': gci_student.key().name(),
-      'parent': gci_student,
-      'program': gci2009,
-  })
-  student_info = GCIStudentInfo(**student_info_properties)
-  student_info.put()
-  gci_student.student_info = student_info
+  gci_student = profile_model.Profile(**student_properties)
   gci_student.put()
 
   score_properties = {
-      'parent': gci_student,
+      'parent': gci_student.key.to_old_key(),
       'program': gci2009,
       'points': 5,
       'tasks': [gci_task.key()]
@@ -518,27 +435,24 @@ def seed(request, *args, **kwargs):
       'link_id': 'home',
       'scope': site,
       'prefix': 'site',
-      'author': current_user,
+      'author': current_user.key.to_old_key(),
       'title': 'Home Page',
       'content': 'This is the Home Page',
-      'modified_by': current_user,
+      'modified_by': current_user.key.to_old_key(),
       }
-
   home_document = Document(**document_properties)
   home_document.put()
-
 
   document_properties = {
       'key_name': 'user/test/notes',
       'link_id': 'notes',
-      'scope': current_user,
+      'scope': current_user.key.to_old_key(),
       'prefix': 'user',
-      'author': current_user,
+      'author': current_user.key.to_old_key(),
       'title': 'My Notes',
       'content': 'These are my notes',
-      'modified_by': current_user,
+      'modified_by': current_user.key.to_old_key(),
       }
-
   notes_document = Document(**document_properties)
   notes_document.put()
 
@@ -563,8 +477,6 @@ def clear(*args, **kwargs):
       GSoCTimeline.all(),
       GCITimeline.all(),
       GSoCProgram.all(),
-      GSoCProfile.all(),
-      GCIProfile.all(),
       GSoCProject.all(),
       GSoCProposal.all(),
       GCIProgram.all(),
@@ -573,9 +485,12 @@ def clear(*args, **kwargs):
       GCIStudentInfo.all(),
       GCITask.all(),
       Sponsor.all(),
-      User.all(),
       Site.all(),
       Document.all(),
+      # Delete NDB instances since .delete() must be called on Keys.
+      soc_org_model.SOCOrganization.query().fetch(limit=100, keys_only=True),
+      profile_model.Profile.query().fetch(limit=100, keys_only=True),
+      users.User.query().fetch(limit=100, keys_only=True),
       ])
 
   try:
