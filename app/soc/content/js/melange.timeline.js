@@ -286,14 +286,6 @@
       return slices;
     },
 
-    // Parse yyyy-mm-dd hh:mm:ss
-    // Parse using custom function as standart parse function is implementation dependant
-    // Returns number of miliseconds from midnight January 1 1970
-    dateToUTCMiliseconds: function (date) {
-      var parts = date.match(/(\d+)/g);
-      return Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5] || 0); // months are 0-based
-    },
-
     addMissingSlices: function (slices) {
       var that = this,
         slices_count = slices.length,
@@ -343,6 +335,21 @@
       return slices;
     },
 
+  };
+
+  // Parse yyyy-mm-dd hh:mm:ss
+  // Parse using custom function as standart parse function is implementation dependant
+  // Returns number of miliseconds from midnight January 1 1970
+  Timeline.prototype.dateToUTCMiliseconds = function (date) {
+    var parts = date.match(/(\d+)/g);
+    return Date.UTC(
+      parts[0],
+      parts[1] - 1, // months are 0-based
+      parts[2],
+      parts[3],
+      parts[4],
+      parts[5] || 0
+    );
   };
 
   Timeline.prototype.setActiveSlice = function (slices, now) {
