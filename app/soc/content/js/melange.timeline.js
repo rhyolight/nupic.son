@@ -28,11 +28,33 @@
 
     constructor: Timeline,
 
+    options: {
+      color_blue: '#3089b6',
+      color_blue_light: '#bff2ff',
+      color_gray: '#e7e7ea',
+      slice_faded_opacity: 0.2,
+      title_element: '',
+      timerange_element: '',
+      colors_default: [
+        '#d3d2d7',
+        '#fb1714',
+        '#fde733',
+        '#92f13d',
+        '#16d53d',
+        '#419ca6',
+        '#03588c'
+      ],
+      slices: [],
+      slice_title_append: ' soon',
+      slice_missing_shade: 30,
+      now: new Date().getTime()
+    },
+
     init: function (element, options) {
       this.R = Raphael(element);
       this.R = this.enrichRaphaelObjectWithCustomAttributes(this.R);
 
-      this.options = $.extend({}, $.fn.timeline.defaults, options);
+      $.extend(this.options, options);
 
       // Default active slice
       this.slice_active = null;
@@ -408,19 +430,5 @@
   };
 
   $.fn.timeline.Constructor = Timeline;
-
-  $.fn.timeline.defaults = {
-    color_blue: '#3089b6',
-    color_blue_light: '#bff2ff',
-    color_gray: '#e7e7ea',
-    slice_faded_opacity: 0.2,
-    title_element: '',
-    timerange_element: '',
-    colors_default: ['#d3d2d7', '#fb1714', '#fde733', '#92f13d', '#16d53d', '#419ca6', '#03588c'],
-    slices: [],
-    slice_title_append: ' soon',
-    slice_missing_shade: 30,
-    now: new Date().getTime()
-  };
 
 }(window.jQuery);
