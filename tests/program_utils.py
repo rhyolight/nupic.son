@@ -396,7 +396,7 @@ class GSoCProgramHelper(ProgramHelper):
     """
     if not self.program:
       self.createProgram()
-    return org_utils.seedSOCOrganization(self.program.key())
+    return org_utils.seedSOCOrganization(self.program.key(), **override)
 
   def createOrgApp(self, override={}):
     """Creates an organization application for the defined properties.
