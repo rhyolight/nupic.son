@@ -32,25 +32,22 @@ class HostTest(unittest.TestCase):
 
   def setUp(self):
     """Set up required for the host logic tests."""
-    self.sponsor = program_utils.seedSponsor()
+    self.program = program_utils.seedProgram()
 
   def testGetHostsForProgram(self):
     """Tests if a host entity for a program is returned."""
-    program_properties = {'sponsor': self.sponsor}
-    program = seeder_logic.seed(program_model.Program, program_properties)
-
     # hosts of the program
     user_entities = []
     for _ in range(5):
-      user_entity = profile_utils.seedUser(host_for=[self.sponsor.key()])
+      user_entity = profile_utils.seedNDBUser(host_for=[self.program])
       user_entities.append(user_entity)
 
-    expected_host_keys = set(user.key() for user in user_entities)
-    hosts_set = host_logic.getHostsForProgram(program)
+    expected_host_keys = set(user.key for user in user_entities)
+    hosts_set = host_logic.getHostsForProgram(self.program)
     actual_host_keys = set(host.key() for host in hosts_set)
     self.assertSetEqual(actual_host_keys, expected_host_keys)
 
     # program with a different sponsor
-    program = seeder_logic.seed(program_model.Program)
-    hosts_set = host_logic.getHostsForProgram(program)
+    other_program = program_utils.seedProgram()
+    hosts_set = host_logic.getHostsForProgram(other_program)
     self.assertSetEqual(hosts_set, set())

@@ -125,12 +125,12 @@ class GSoCStudentEvaluationEditPage(base.GSoCRequestHandler):
     if not form.is_valid():
       return None
 
-    form.cleaned_data['modified_by'] = data.user
+    form.cleaned_data['modified_by'] = data.ndb_user.key.to_old_key()
 
     if not data.student_evaluation:
       form.cleaned_data['link_id'] = data.kwargs.get('survey')
       form.cleaned_data['prefix'] = 'gsoc_program'
-      form.cleaned_data['author'] = data.user
+      form.cleaned_data['author'] = data.ndb_user.key.to_old_key()
       form.cleaned_data['scope'] = data.program
       # kwargs which defines an evaluation
       fields = ['sponsor', 'program', 'survey']

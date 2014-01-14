@@ -19,6 +19,7 @@
 
 from soc.modules.gci.models.organization import GCIOrganization
 
+from tests import profile_utils
 from tests.test_utils import GCIDjangoTestCase
 
 
@@ -61,12 +62,15 @@ class ChooseOrganizationForOrgScorePageTest(GCIDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testHostCanAccess(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     response = self.get(self.url)
     self.assertPageTemplatesUsed(response)
 
   def testActiveOrgsAreDisplayed(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     org_properties = {
         'scope': self.gci, 'status': 'active', 'program': self.gci,
@@ -83,7 +87,8 @@ class ChooseOrganizationForOrgScorePageTest(GCIDjangoTestCase):
     self.assertEqual(3, len(list_data))
 
   def testNonActiveOrgsAreNotDisplayed(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     org_properties = {
         'scope': self.gci, 'status': 'invalid', 'program': self.gci,

@@ -12,15 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""Tests the view for GCI Dashboard.
-"""
-
-from google.appengine.ext import blobstore
+"""Tests the view for GCI Dashboard."""
 
 from soc.modules.gci.models.score import GCIScore
 
-from tests.profile_utils import GCIProfileHelper
+from tests import profile_utils
 from tests.test_utils import GCIDjangoTestCase
 
 
@@ -53,14 +49,15 @@ class StudentsInfoTest(GCIDjangoTestCase):
     response = self.get(self.url)
     self.assertResponseForbidden(response)
 
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
     response = self.get(self.url)
     self.assertResponseOK(response)
 
   def testStudentsInfoList(self):
     """Tests the studentsInfoList component of the dashboard.
     """
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
+    profile_helper = profile_utils.GCIProfileHelper(self.gci, self.dev_test)
     profile_helper.createOtherUser('pr@gmail.com')
 
     idx = 1
@@ -70,8 +67,9 @@ class StudentsInfoTest(GCIDjangoTestCase):
     score = GCIScore(**score_properties)
     score.put()
 
-    #Set the current user to be the host.
-    self.profile_helper.createHost()
+    # set the current user to be the host.
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
     response = self.get(self.url)
     self.assertStudentsInfoTemplatesUsed(response)
 

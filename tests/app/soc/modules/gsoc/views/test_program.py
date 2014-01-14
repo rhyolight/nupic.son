@@ -24,6 +24,7 @@ from melange.models import school as school_model
 from soc.models import program as soc_program_model
 from soc.modules.gsoc.models import program as program_model
 
+from tests import profile_utils
 from tests import test_utils
 
 # TODO: perhaps we should move this out?
@@ -115,14 +116,17 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
 
   def testHostAccessGranted(self):
     url = '/gsoc/program/create/' + self.sponsor.key().name()
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertProgramTemplatesUsed(response)
 
   def testCreateProgramWithRequiredProperties(self):
     url = '/gsoc/program/create/' + self.sponsor.key().name()
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     properties = self._getCreateProgramFormRequiredProperties()
 
@@ -139,7 +143,8 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
 
   def testCreateProgramWithInsufficientData(self):
     url = '/gsoc/program/create/' + self.sponsor.key().name()
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     properties = self._getCreateProgramFormRequiredProperties()
 
@@ -157,7 +162,8 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
 
   def testCreateProgramWithAllData(self):
     url = '/gsoc/program/create/' + self.sponsor.key().name()
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     properties = self._getCreateProgramFormRequiredProperties()
     properties.update(self._getCreateProgramFormOptionalProperties())
@@ -201,8 +207,9 @@ class EditProgramTest(test_utils.GSoCDjangoTestCase):
     self.assertProgramTemplatesUsed(response)
 
   def testEditProgram(self):
-    from soc.models.document import Document
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     url = '/gsoc/program/edit/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
@@ -278,14 +285,17 @@ class GSoCProgramMessagesPageTest(test_utils.GSoCDjangoTestCase):
 
   def testHostAccessGranted(self):
     url = self._getUrl()
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertProgramTemplatesUsed(response)
 
   def testEditProgramMessages(self):
     url = self._getUrl()
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     properties = self._getGSoCProgramMessagesFormProperties()
 
@@ -331,14 +341,17 @@ class UploadSchoolsPageTest(test_utils.GSoCDjangoTestCase):
 
   def testPageLoads(self):
     """Tests that page loads properly."""
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     response = self.get(self._getUrl())
     self.assertResponseOK(response)
     self._assertPageTemplatesUsed(response)
 
   def testSchoolsUploaded(self):
     """Tests that schools are uploaded correctly."""
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     # check that there is no file with schools at this stage
     self.assertIsNone(self.program.schools)
@@ -356,7 +369,8 @@ class UploadSchoolsPageTest(test_utils.GSoCDjangoTestCase):
 
   def testSchoolsNotUploadedOnBadInput(self):
     """Tests that schools are not uploaded if input is not valid."""
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     post_data = {'schools': TEST_SCHOOLS_BAD_INPUT}
     response = self.post(self._getUrl(), post_data)

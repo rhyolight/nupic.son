@@ -229,8 +229,8 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
   def testHostAccessGranted(self):
     self.timeline_helper.studentsAnnounced()
 
-    user = profile_utils.seedUser(host_for=[self.sponsor.key()])
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
@@ -276,6 +276,8 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
 
   def testForHost(self):
     data = request_data.RequestData(None, None, None)
+    data._program = self.program
+    data._ndb_user = profile_utils.seedNDBUser(host_for=[self.program])
     result = project_details._isUpdateLinkVisible(data)
     self.assertTrue(result)
 

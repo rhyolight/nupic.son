@@ -538,13 +538,6 @@ class ProfileHelper(object):
       self.profile.put()
     return self.profile
 
-  def createHost(self):
-    """Sets the current user to be a host for the current program."""
-    self.user = seedNDBUser()
-    self.user.host_for = [ndb.Key.from_old_key(self.program.key())]
-    self.user.put()
-    return self.user
-
   def removeHost(self):
     """Removes the host profile from the current user.
     """

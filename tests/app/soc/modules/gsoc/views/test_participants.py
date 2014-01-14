@@ -58,12 +58,15 @@ class MentorsListAdminPageTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testHostAccessGranted(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     response = self.get(self.url)
     self._assertPageTemplatesUsed(response)
 
   def testMentorsAreDisplayed(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     # seed a couple of mentors
     profile_utils.GSoCProfileHelper(self.gsoc, False).createMentor(self.org)

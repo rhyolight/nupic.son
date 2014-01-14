@@ -70,16 +70,16 @@ class SlotsTransferAdminPageTest(test_utils.GSoCDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testHostAccessGranted(self):
-    user = profile_utils.seedUser(host_for=[self.sponsor.key()])
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     response = self.get(self.url)
     self.assertResponseOK(response)
 
   @unittest.skip('add when GSoCSlotTransfer is updated to NDB')
   def testListData(self):
-    user = profile_utils.seedUser(host_for=[self.sponsor.key()])
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     properties = {
         'program': self.gsoc,
@@ -109,8 +109,8 @@ class SlotsTransferAdminPageTest(test_utils.GSoCDjangoTestCase):
     """Tests that if an org admin rejects a slot transfer application that
     they had previously accepted, the slots are transferred back to the org.
     """
-    user = profile_utils.seedUser(host_for=[self.sponsor.key()])
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     properties = {
         'program': self.gsoc,

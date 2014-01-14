@@ -65,10 +65,7 @@ class SurveyHelper(object):
 
   def createEvaluation(self, survey, host=None, override={}):
     if not host:
-      host_profile = profile_utils.GSoCProfileHelper(self.program,
-                                                     self.dev_test)
-      host_profile.createOtherUser('host@example.com')
-      host = host_profile.createHost()
+      host = profile_utils.seedNDBUser(host_for=[self.program])
 
     # TODO (Madhu): Remove scope and author once the survey data conversion
     # is complete

@@ -14,6 +14,7 @@
 
 """Tests for base templates. All the templates are tested on homepage."""
 
+from tests import profile_utils
 from tests.test_utils import GSoCDjangoTestCase
 
 # A dict from names of links in the main menu to boolean values of whether
@@ -69,7 +70,9 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     self.assertIn('dashboard_link', mainmenu_context)
 
     # Make the current user the host.
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     mainmenu_context = response.context['mainmenu'].context()
