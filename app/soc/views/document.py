@@ -64,14 +64,14 @@ def validateForm(data, document_form):
     return
 
   cleaned_data = document_form.cleaned_data
-  cleaned_data['modified_by'] = data.user
+  cleaned_data['modified_by'] = data.ndb_user.key.to_old_key()
 
   if data.document:
     document = document_form.save()
   else:
     prefix = data.kwargs['prefix']
     cleaned_data['link_id'] = data.kwargs['document']
-    cleaned_data['author'] = data.user
+    cleaned_data['author'] = data.ndb_user.key.to_old_key()
     cleaned_data['prefix'] = prefix
 
     if prefix in ['gsoc_program', 'gci_program']:
