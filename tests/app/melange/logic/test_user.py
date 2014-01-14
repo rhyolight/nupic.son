@@ -120,3 +120,26 @@ class IsHostForProgramTest(unittest.TestCase):
     # check that the user is a host only for the first program
     self.assertTrue(user_logic.isHostForProgram(self.user, program_one.key()))
     self.assertFalse(user_logic.isHostForProgram(self.user, program_two.key()))
+
+
+class GetHostsForProgramTest(unittest.TestCase):
+  """Unit tests for getHostsForProgram function."""
+
+  def testGetHostsForProgram(self):
+    """Tests if a correct user entities are returned."""
+    program_one = program_utils.seedProgram()
+    program_two = program_utils.seedProgram()
+
+    # seed hosts for the program one
+    hosts = set()
+    for _ in range(3):
+      user_entity = profile_utils.seedNDBUser(host_for=[program_one])
+      hosts.add(user_entity.key)
+
+    # seed hosts for the program two
+    for _ in range(2):
+      user_entity = profile_utils.seedNDBUser(host_for=[program_two])
+
+    # check that correct hosts for program one are returned
+    actual_hosts = user_logic.getHostsForProgram(program_one.key())
+    self.assertSetEqual(hosts, set(host.key for host in actual_hosts))

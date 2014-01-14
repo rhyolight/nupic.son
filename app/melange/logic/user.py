@@ -99,3 +99,17 @@ def isHostForProgram(user, program_key):
     False, otherwise.
   """
   return user and ndb.Key.from_old_key(program_key) in user.host_for
+
+
+def getHostsForProgram(program_key):
+  """Returns all users who are hosts for the specified program.
+
+  Args:
+    program_key: Program key.
+
+  Returns:
+    A list of user entities representing program administrators.
+  """
+  query = user_model.User.query(
+      user_model.User.host_for == ndb.Key.from_old_key(program_key))
+  return query.fetch(1000)
