@@ -23,23 +23,25 @@ it were. For example, you could run ``paver --dry-run tinymce_zip`` to see what
 files would be added to the ``tinymce.zip`` file, etc.
 """
 
+import cStringIO
 import os
-from cStringIO import StringIO
 import shutil
 import sys
 import zipfile
 
+from google.appengine.ext import testbed
+
+from epydoc import cli
 from paver import easy
 from paver import path
 from paver import tasks
-
+from pylint import lint
 
 # Paver comes with Jason Orendorff's 'path' module; this makes path
 # manipulation easy and far more readable.
 PROJECT_DIR = path.path(__file__).dirname().abspath()
 REPORTS_DIR = PROJECT_DIR / 'reports'
 JS_DIRS = ['soc/content/js']
-
 
 # Set some default options. Having the options at the top of the file cleans
 # the whole thing up and makes the behaviour a lot more configurable.
@@ -218,8 +220,6 @@ def symlink(target, link_name):
 ])
 def pylint(options):
   """Check the source code using PyLint."""
-  from pylint import lint
-
   # Initial command.
   arguments = []
 
@@ -227,6 +227,7 @@ def pylint(options):
     arguments.extend(options.verbose_args)
   else:
     arguments.extend(options.quiet_args)
+
   if 'pylint_args' in options:
     arguments.extend(list(options.pylint_args))
 
@@ -322,7 +323,6 @@ def build(options):
 @easy.task
 def run_grunt(options):
   """Run Grunt for build"""
-
   easy.sh('bin/grunt build')
 
 
@@ -345,17 +345,15 @@ def build_symlinks(options):
 @easy.task
 def build_css(options):
   """Compiles the css files into one."""
-
   for css_dir in options.css_dirs:
     for target, components in options.css_files.iteritems():
       target = options.app_folder / css_dir / target
-      f = target.open('w')
-
-      for component in components:
-        source = options.app_folder / css_dir / component
-        easy.dry("cat %s >> %s" % (source, target),
-            lambda: shutil.copyfileobj(source.open('r'), f))
-      f.close()
+      with target.open('w') as target_file:
+        for component in components:
+          source = options.app_folder / css_dir / component
+          easy.dry(
+              "cat %s >> %s" % (source, target),
+              lambda: shutil.copyfileobj(source.open('r'), target_file))
 
 
 @easy.task
@@ -393,7 +391,7 @@ def tinymce_zip(options):
       options.app_folder) / 'soc/content/js/thirdparty/tiny_mce'
   tinymce_zip_filename = path.path(options.app_folder) / 'tiny_mce.zip'
   if tasks.environment.dry_run:
-    tinymce_zip_fp = StringIO()
+    tinymce_zip_fp = cStringIO.StringIO()
   else:
     # Ensure the parent directories exist.
     tinymce_zip_filename.dirname().makedirs_p()
@@ -412,7 +410,6 @@ def tinymce_zip(options):
 
 def run_closure(f):
   """Runs the closure compiler over one JS file"""
-
   tmp = f + ".tmp.js"
   f.move(tmp)
 
@@ -434,7 +431,6 @@ def run_closure(f):
 ])
 def closure(options):
   """Runs the closure compiler over the JS files."""
-
   if options.js_dir:
     dirs = [options.app_folder / options.js_dir]
   else:
@@ -484,32 +480,47 @@ def closure(options):
 ])
 def build_docs(options):
   """Builds documentation for the project."""
+  # Epydoc smartly makes its own output directory if the output
+  # directory doesn't exist, but is not so smart that it will
+  # recursively create the parents of the output directory if they
+  # don't exist. Since we have the output directory path here we
+  # might as well create it rather than parsing out just the parents
+  # and leaving the directory itself to epydoc.
+  if not os.path.exists(options.docs_output):
+    os.makedirs(options.docs_output)
 
-  # TODO(daniel): definitely move this part somewhere
-  # it is required by code instrospection
+  # NOTE(nathaniel): Epydoc actually imports modules during analysis,
+  # Melange's modules in turn import App Engine modules, and App Engine
+  # modules complain if the right Django and App Engine settings aren't
+  # in place at import time. Consequently, we must mutate the current
+  # environment to be that of an App Engine test before we can build
+  # Melange's documentation.
   os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
   os.environ['SERVER_SOFTWARE'] = 'build'
+  appengine_testbed = testbed.Testbed()
+  appengine_testbed.activate()
+  appengine_testbed.init_datastore_v3_stub()
 
-  # some App Engine models cannot be introspected
-  # specifically, the models which inherit from another models and
-  # redefine properties. Epydoc is not capable to handle these situations
-  exclude_intorspect_modules = [
-      'soc.modules.gci.models',
+  # NOTE(nathaniel): Deriving the options to pass to (epydoc.)cli.main this
+  # way is horsehockey, but epydoc doesn't actually expose a proper API.
+  stored_actual_argv = sys.argv
+  sys.argv = [
+      'unused_fake_executuable',
+      '--config=%s' % options.docs_config,
+      '--output=%s' % options.docs_output,
       ]
+  epydoc_options, epydoc_names = cli.parse_arguments()
+  sys.argv = stored_actual_argv
 
-  # Create reports directory if not existent
-  if not os.path.exists(REPORTS_DIR):
-    os.makedirs(REPORTS_DIR)
-
-  easy.sh('bin/epydoc -o %s --config=%s --exclude-introspect=%s' %
-      (options.docs_output, options.docs_config,
-          ','.join(exclude_intorspect_modules)))
+  # NOTE(nathaniel): As of 13 January 2014 this call emits two false
+  # positive "Bad argument - expected name or tuple" errors. See
+  # https://sourceforge.net/p/epydoc/bugs/363/ for progress.
+  cli.main(epydoc_options, epydoc_names)
 
 
 @easy.task
 def deep_overrides(options):
-  """Copies files from the copy structure to the build directory.
-  """
+  """Copies files from the copy structure to the build directory."""
   dirs = [options.app_folder / i for i in options.copy_dirs]
   dont_copy_dirs = [options.app_folder / i for i in options.dont_copy_dirs]
 
@@ -525,8 +536,7 @@ def deep_overrides(options):
 
 @easy.task
 def overrides(options):
-  """Copies files from the overrides structure to the build directory.
-  """
+  """Copies files from the overrides structure to the build directory."""
   for path in options.overrides_dirs:
     target = options.app_build / path
     unroll_symlink(target)
