@@ -134,10 +134,10 @@ class GSoCOrgAppEditPage(base.GSoCRequestHandler):
     if not form.is_valid():
       return None
 
-    form.cleaned_data['modified_by'] = data.user
+    form.cleaned_data['modified_by'] = data.ndb_user.key.to_old_key()
 
     if not data.org_app:
-      form.cleaned_data['created_by'] = data.user
+      form.cleaned_data['created_by'] = data.ndb_user.key.to_old_key()
       form.cleaned_data['program'] = data.program
       key_name = 'gsoc_program/%s/orgapp' % data.program.key().name()
       entity = form.create(key_name=key_name, commit=True)

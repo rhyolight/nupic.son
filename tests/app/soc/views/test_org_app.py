@@ -135,7 +135,9 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
     # Make sure we do not have an org app for this test.
     self.org_app.delete()
 
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     url = '/gsoc/org/application/edit/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
