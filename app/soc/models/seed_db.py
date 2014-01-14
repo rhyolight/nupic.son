@@ -97,7 +97,7 @@ def seed(request, *args, **kwargs):
        'contact_city': 'Some City',
        'contact_country': 'United States',
        'contact_postalcode': '12345',
-       'phone': '1-555-111-0000',
+       'phone': '15551110000',
        'status': 'active',
        }
 
@@ -120,7 +120,7 @@ def seed(request, *args, **kwargs):
       'res_state': 'CA',
       'res_country': 'United States',
       'res_postalcode': '12345',
-      'phone': '1-555-BANANA',
+      'phone': '15550001111',
       'birth_date': db.DateProperty.now(),
       'agreed_to_tos': True,
       'is_org_admin': True,
@@ -264,7 +264,7 @@ def seed(request, *args, **kwargs):
       'res_state': 'CA',
       'res_country': 'United States',
       'res_postalcode': '12345',
-      'phone': '1-555-000-1111',
+      'phone': '15550001111',
       'birth_date': db.DateProperty.now(),
       'agreed_to_tos': True,
       'is_org_admin': True,
@@ -444,6 +444,7 @@ def seed(request, *args, **kwargs):
       'mentors': [profile.key()],
       'program':  gsoc2014,
       'org': ndb_orgs[1].key.to_old_key(),
+      'proposal' : melange_proposal.key(),
        }
 
   melange_project = GSoCProject(**project_properties)
