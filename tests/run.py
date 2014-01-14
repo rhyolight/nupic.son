@@ -31,7 +31,6 @@ import pyvirtualdisplay
 # Disable the messy logging information
 logging.disable(logging.INFO)
 log = logging.getLogger('nose.plugins.cover')
-logging.disable(logging.INFO)
 
 HERE = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                      '..'))
