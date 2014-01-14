@@ -312,31 +312,54 @@
       }
 
       return slices;
-    },
-
-    computeTimeRanges: function (slices) {
-      var date_from,
-        date_to,
-        month_names = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
-
-      for (var i = slices.length - 1; i >= 0; i--) {
-        if (slices[i].timerange === undefined) {
-          date_from = new Date(this.dateToUTCMilliseconds(slices[i].from));
-          date_to = new Date(this.dateToUTCMilliseconds(slices[i].to));
-
-          if (date_from.getUTCMonth() == date_to.getUTCMonth()) {
-            slices[i].timerange = month_names[date_from.getUTCMonth()] + " " + date_from.getUTCDate() + " - " + date_to.getUTCDate();
-          } else {
-            slices[i].timerange = month_names[date_from.getUTCMonth()] + " " + date_from.getUTCDate() + " - " + month_names[date_to.getUTCMonth()] + " " + date_to.getUTCDate();
-          }
-        }
-      }
-
-      return slices;
-    },
-
+    }
   };
 
+  Timeline.prototype.computeTimeRanges = function (slices) {
+    var month_names = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ];
+
+    for (var i = slices.length - 1; i >= 0; i--) {
+      if (slices[i].timerange === undefined) {
+        var date_from = new Date(this.dateToUTCMilliseconds(slices[i].from));
+        var date_to = new Date(this.dateToUTCMilliseconds(slices[i].to));
+
+        if (date_from.getUTCMonth() == date_to.getUTCMonth()) {
+          slices[i].timerange = [
+            month_names[date_from.getUTCMonth()],
+            ' ',
+            date_from.getUTCDate(),
+            ' - ',
+            date_to.getUTCDate()
+          ].join('');
+        } else {
+          slices[i].timerange = [
+            month_names[date_from.getUTCMonth()],
+            ' ',
+            date_from.getUTCDate(),
+            ' - ',
+            month_names[date_to.getUTCMonth()],
+            ' ',
+            date_to.getUTCDate()
+          ].join('');
+        }
+      }
+    }
+
+    return slices;
+  };
   // Parse yyyy-mm-dd hh:mm:ss
   // Parse using custom function as standart parse function is implementation dependant
   // Returns number of milliseconds from midnight January 1 1970
