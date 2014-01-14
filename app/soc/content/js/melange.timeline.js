@@ -56,6 +56,13 @@
 
       $.extend(this.options, options);
 
+      // transform date into miliseconds
+      if (
+        isNaN(parseInt(this.options.now, 10)) || !isFinite(this.options.now)
+      ) {
+        this.options.now = this.dateToUTCMiliseconds(this.options.now);
+      }
+
       // Default active slice
       this.slice_active = null;
 
@@ -84,7 +91,7 @@
 
       slices = this.computeTimeRanges(slices);
 
-      slices = this.setActiveSlice(slices);
+      slices = this.setActiveSlice(slices, this.options.now);
 
       // Add top lines
       this.R.path('M0 0.5L187 0.5').attr({stroke: options.color_blue});
@@ -336,25 +343,24 @@
       return slices;
     },
 
-    setActiveSlice: function (slices) {
-      var slices_count = slices.length;
-
-      // transform date into miliseconds
-      if (isNaN(parseInt(this.options.now, 10)) || !isFinite(this.options.now)) {
-        this.options.now = this.dateToUTCMiliseconds(this.options.now);
-      }
-
-      // Find active slice and set it as active
-      for (var index = 0; index < slices_count; index++) {
-        if (this.dateToUTCMiliseconds(slices[index].from) < this.options.now && this.dateToUTCMiliseconds(slices[index].to) > this.options.now) {
-          slices[index].active = true;
-          break;
-        }
-      }
-
-      return slices;
-    }
   };
+
+  Timeline.prototype.setActiveSlice = function (slices, now) {
+    var slices_count = slices.length;
+
+    // Find active slice and set it as active
+    for (var index = 0; index < slices_count; index++) {
+      if (
+        this.dateToUTCMiliseconds(slices[index].from) < this.options.now &&
+        this.dateToUTCMiliseconds(slices[index].to) > this.options.now
+      ) {
+        slices[index].active = true;
+        break;
+      }
+    }
+
+    return slices;
+  }
 
   Timeline.prototype.shadeColor = function(color, percent) {
     // Source http://stackoverflow.com/a/13542669/1194327
