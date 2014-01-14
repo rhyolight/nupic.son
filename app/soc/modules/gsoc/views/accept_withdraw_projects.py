@@ -164,8 +164,10 @@ class ProposalList(Template):
       # TODO(daniel): support prefetching of NDB organizations
       #prefetcher = lists.ModelPrefetcher(
       #    proposal_model.GSoCProposal, ['org'], parent=True)
+      # Since ModelPrefetcher doesn't work with NDB, pass an empty list
+      # for the field parameter to prevent __init__() exception.
       prefetcher = lists.ModelPrefetcher(
-          proposal_model.GSoCProposal, parent=True)
+          proposal_model.GSoCProposal, [], parent=True)
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.data.request, self._list_config, list_query,

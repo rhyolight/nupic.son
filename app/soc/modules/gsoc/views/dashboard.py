@@ -779,14 +779,14 @@ class SubmittedProposalsComponent(Component):
     options = [
         # TODO(nathaniel): This structured data deserves first-class representation
         # in Python rather than this stringly typed... stuff.
-        ('(pending|accepted|rejected|duplicate|mentor)', 'Valid'),
+        ('(pending|duplicate|mentor)', 'Reviewable'),
         ('(duplicate|mentor)', 'Needs attention'),
-        ('(duplicate)', 'Duplicate'),
         ('(accepted)', 'Accepted'),
         ('(rejected)', 'Rejected'),
+        ('(duplicate)', 'Duplicate'),
         ('(mentor)', 'No mentor assigned'),
-        ('', 'All'),
         ('(invalid|withdrawn|ignored)', 'Invalid'),
+        ('', 'All'),
     ]
     list_config.addHtmlColumn('status', 'Status', getStatusOnDashboard,
         options=options)
