@@ -120,13 +120,11 @@ def queryUnreadMessagesForConversationAndUser(conversation, user):
     An ndb query for GCIMessages the user has not yet read in the conversation.
     If the user is not part of the conversation, None is returned.
   """
-  conversation_user_results = queryConversationUserForConversationAndUser(
-      conversation, user).fetch(1)
+  conversation_user = queryConversationUserForConversationAndUser(
+      conversation, user).get()
 
-  if len(conversation_user_results) == 0:
-    raise Exception('No GCIConversationUser could be found.')
-
-  conversation_user = conversation_user_results[0]
+  if not conversation_user:
+    return None
 
   date_last_seen = conversation_user.last_message_seen_on
 
@@ -147,10 +145,10 @@ def numUnreadMessagesForConversationAndUser(conversation, user):
 
   Returns:
     The number of messages the user has not read in the conversation.
-    If the user is not involved in the conversation, None is returned.
+    If the user is not involved in the conversation, 0 is returned.
   """
   query = queryUnreadMessagesForConversationAndUser(conversation, user)
-  return None if query is None else query.count()
+  return 0 if query is None else query.count()
 
 
 #TODO(drewgottlieb) use mapreduce for this
