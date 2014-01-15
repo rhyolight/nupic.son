@@ -133,7 +133,7 @@
         );
       }
     );
-  }
+  };
 
   Timeline.prototype.datesToGrades = function (from, to, time_end) {
     var time_zero_grade;
