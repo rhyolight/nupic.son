@@ -51,24 +51,24 @@
     },
 
     slice_active: null,
-    slices: [],
+    slices: []
+  };
 
-    init: function (element, options) {
-      // transform date into milliseconds
-      if (
-        (typeof(options.now) !== 'undefined') &&
-        (isNaN(parseInt(options.now, 10)) || !isFinite(options.now))
-      ) {
-        options.now = this.dateToUTCMilliseconds(options.now);
-      }
-
-      $.extend(this.options, options);
-
-      this.R = this.enrichRaphaelObjectWithCustomAttributes(Raphael(element));
-
-      // Draw slices
-      this.draw(this.options.slices);
+  Timeline.prototype.init = function (element, options) {
+    // transform date into milliseconds
+    if (
+      (typeof(options.now) !== 'undefined') &&
+      (isNaN(parseInt(options.now, 10)) || !isFinite(options.now))
+    ) {
+      options.now = this.dateToUTCMilliseconds(options.now);
     }
+
+    $.extend(this.options, options);
+
+    this.R = this.enrichRaphaelObjectWithCustomAttributes(Raphael(element));
+
+    // Draw slices
+    this.draw(this.options.slices);
   };
 
   Timeline.prototype.draw = function (slices) {
