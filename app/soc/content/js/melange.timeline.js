@@ -88,6 +88,9 @@
         current_slice.from, current_slice.to, last_slice.to);
       current_slice.from_grade = grades_boundaries.from_grade;
       current_slice.to_grade = grades_boundaries.to_grade;
+
+      var color = this.assignColors(a, this.options.colors_default);
+      current_slice.color = color;
     }
   };
 
@@ -104,20 +107,17 @@
     );
   }
 
+  Timeline.prototype.assignColors = function(index, colors) {
+    return colors[index % colors.length];
+  };
+
+
   Timeline.prototype.draw = function (slices) {
     this.clean();
 
     var options = this.options;
     var that = this;
     var i;
-
-    for (i in slices) {
-      // Check for colors. Set default if missing
-      if (slices[i].color === undefined) {
-        slices[i].color =
-            options.colors_default[i % options.colors_default.length];
-      }
-    }
 
     slices = this.addMissingSlices(slices);
 
