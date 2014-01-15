@@ -784,7 +784,7 @@ class AccessChecker(BaseAccessChecker):
     if active_period.state != survey_logic.IN_PERIOD_STATE:
       # try finding a personal extension for the student
       extension = survey_logic.getPersonalExtension(
-          student.key(), survey.key())
+          student.key, survey.key())
       active_period = survey_logic.getSurveyActivePeriod(
           survey, extension=extension)
 
