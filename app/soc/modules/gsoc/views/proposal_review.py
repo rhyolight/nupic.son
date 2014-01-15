@@ -1140,7 +1140,7 @@ class WithdrawProposalHandler(form_handler.FormHandler):
   def handle(self, data, check, mutator):
     """See form_handler.FormHandler.handle for specification."""
     is_withdrawn = withdrawProposalTxn(
-        data.url_proposal.key(), data.ndb_profile.student_data.key)
+        data.url_proposal.key(), data.ndb_profile.key)
     if is_withdrawn:
       if self._url is not None:
         return http.HttpResponseRedirect(self._url)

@@ -392,9 +392,12 @@ class WithdrawProposalHandlerTest(GSoCDjangoTestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.init()
-    self.profile = self.profile_helper.createStudentWithProposal(
-        self.org, None)
-    self.proposal = GSoCProposal.all().get()
+    user = profile_utils.seedNDBUser()
+    self.profile = profile_utils.seedSOCStudent(self.program, user=user)
+    profile_utils.loginNDB(user)
+
+    self.proposal = proposal_utils.seedProposal(
+        self.profile.key, self.program.key(), org_key=self.org.key)
 
     # view used as a callback for handler
     self.view = proposal_review_view.ProposalStatusSetter()
@@ -408,7 +411,7 @@ class WithdrawProposalHandlerTest(GSoCDjangoTestCase):
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
         'program': self.program.program_id,
-        'user': self.profile.link_id,
+        'user': self.profile.profile_id,
         'id': self.proposal.key().id()
         }
 
@@ -424,11 +427,11 @@ class WithdrawProposalHandlerTest(GSoCDjangoTestCase):
 
   def testWithdrawProposal(self):
     """Tests that a proposal is successfully withdrawn if possible."""
-    old_number_of_proposals = self.profile.student_info.number_of_proposals
+    old_number_of_proposals = self.profile.student_data.number_of_proposals
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
         'program': self.program.program_id,
-        'user': self.profile.link_id,
+        'user': self.profile.profile_id,
         'id': self.proposal.key().id()
         }
 
@@ -446,10 +449,9 @@ class WithdrawProposalHandlerTest(GSoCDjangoTestCase):
     self.assertEqual(proposal.status, proposal_model.STATUS_WITHDRAWN)
 
     # check that number of proposals is updated
-    student_info = profile_model.GSoCStudentInfo.all(
-        ).ancestor(self.profile).get()
+    profile = self.profile.key.get()
     self.assertEqual(
-        old_number_of_proposals, student_info.number_of_proposals + 1)
+        old_number_of_proposals, profile.student_data.number_of_proposals + 1)
 
 
 class ResubmitProposalHandlerTest(GSoCDjangoTestCase):
