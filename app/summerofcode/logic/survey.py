@@ -110,11 +110,10 @@ def getPersonalExtension(profile_key, survey_key):
   """
   # TODO(daniel): NDB migration
   ndb_survey_key = ndb.Key.from_old_key(survey_key)
-  ndb_profile_key = ndb.Key.from_old_key(profile_key)
 
   query = survey_model.PersonalExtension.query(
       survey_model.PersonalExtension.survey == ndb_survey_key,
-      ancestor=ndb_profile_key)
+      ancestor=profile_key)
   return query.get()
 
 
@@ -232,9 +231,8 @@ def createOrUpdatePersonalExtension(profile_key, survey_key, **kwargs):
     # TODO(daniel): NDB migration; key does not need to be translated
     # when Profile and Survey models migrate to NDB
     ndb_survey_key = ndb.Key.from_old_key(survey_key)
-    ndb_profile_key = ndb.Key.from_old_key(profile_key)
     extension = survey_model.PersonalExtension(
-        parent=ndb_profile_key, survey=ndb_survey_key, **kwargs)
+        parent=profile_key, survey=ndb_survey_key, **kwargs)
   extension.put()
 
   return extension

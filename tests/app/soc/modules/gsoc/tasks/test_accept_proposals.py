@@ -53,15 +53,11 @@ class AcceptProposalsTest(
     self.org.slot_allocation = TEST_SLOT_ALLOCATION
     self.org.put()
 
-    self._createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     self._createMentor()
     self._acceptProposals()
-
-  def _createHost(self):
-    """Sets program host."""
-    self.host = self.profile_helper
-    self.host.createHost()
-    self.host.createProfile()
 
   def _createMentor(self):
     """Creates a mentor for default organization."""

@@ -131,18 +131,25 @@ def seedUser(email=None, **kwargs):
 
 
 # TODO(daniel): Change name to seedUser and remove the function above
-def seedNDBUser(user_id=None, **kwargs):
+def seedNDBUser(user_id=None, host_for=None, **kwargs):
   """Seeds a new user.
 
   Args:
-    user_id: Identifier of the new user. 
+    user_id: Identifier of the new user.
+    host_for: List of programs for which the seeded user is a host.
 
   Returns:
     Newly seeded User entity.
   """
   user_id = user_id or string_provider.UniqueIDProvider().getValue()
 
-  properties = {'account_id': string_provider.UniqueIDProvider().getValue()}
+  host_for = host_for or []
+  host_for = [ndb.Key.from_old_key(program.key()) for program in host_for]
+
+  properties = {
+      'account_id': string_provider.UniqueIDProvider().getValue(),
+      'host_for': host_for,
+      }
   properties.update(**kwargs)
 
   user = ndb_user_model.User(id=user_id, **properties)
@@ -531,14 +538,6 @@ class ProfileHelper(object):
       self.profile.put()
     return self.profile
 
-  def createHost(self):
-    """Sets the current user to be a host for the current program.
-    """
-    self.createUser()
-    self.user.host_for = [self.program.scope.key()]
-    self.user.put()
-    return self.user
-
   def removeHost(self):
     """Removes the host profile from the current user.
     """
@@ -609,16 +608,9 @@ class GSoCProfileHelper(ProfileHelper):
     """
     if self.profile:
       return self.profile
-    from soc.modules.gsoc.models.profile import GSoCProfile
-    user = self.createUser()
-    properties = {
-        'link_id': user.link_id, 'student_info': None, 'user': user,
-        'parent': user, 'scope': self.program, 'status': 'active',
-        'email': self.user.account.email(), 'program': self.program,
-        'mentor_for': [], 'org_admin_for': [],
-        'is_org_admin': False, 'is_mentor': False, 'is_student': False
-    }
-    self.profile = self.seed(GSoCProfile, properties)
+
+    user = seedNDBUser()
+    self.profile = seedNDBProfile(self.program.key(), user=user)
     return self.profile
 
   def createNDBProfile(self):
@@ -632,7 +624,7 @@ class GSoCProfileHelper(ProfileHelper):
 
     return self.profile
 
-  def createNDBOrgAdmin(self, org):
+  def createOrgAdmin(self, org):
     """Creates an Organization Administrator profile for the current user.
 
     Args:
@@ -648,55 +640,7 @@ class GSoCProfileHelper(ProfileHelper):
 
     return self.profile
 
-  def createOrgAdmin(self, org):
-    """Creates an Organization Administrator profile for the current user.
-
-    Args:
-      org: organization entity.
-
-    Returns:
-      the current profile entity.
-    """
-    self.createProfile()
-    self.profile.mentor_for = [org.key.to_old_key()]
-    self.profile.org_admin_for = [org.key.to_old_key()]
-    self.profile.is_mentor = True
-    self.profile.is_org_admin = True
-    self.profile.put()
-
-    connection_properties = {
-        'user_role': connection_model.ROLE,
-        'org_role': connection_model.ORG_ADMIN_ROLE
-        }
-    connection_utils.seed_new_connection(
-        ndb.Key.from_old_key(self.profile.key()), org.key, **connection_properties)
-
-    return self.profile
-
   def createMentor(self, org):
-    """Creates a Mentor profile for the current user.
-
-    Args:
-      org: organization entity.
-
-    Returns:
-      the current profile entity.
-    """
-    self.createProfile()
-    self.profile.mentor_for = [org.key.to_old_key()]
-    self.profile.is_mentor = True
-    self.profile.put()
-
-    connection_properties = {
-        'user_role': connection_model.ROLE,
-        'org_role': connection_model.MENTOR_ROLE
-        }
-    connection_utils.seed_new_connection(
-        ndb.Key.from_old_key(self.profile.key()), org.key, **connection_properties)
-
-    return self.profile
-
-  def createNDBMentor(self, org):
     """Creates an Organization Administrator profile for the current user.
 
     Args:
@@ -728,17 +672,13 @@ class GSoCProfileHelper(ProfileHelper):
   def createStudent(self):
     """Sets the current user to be a student for the current program.
     """
-    self.createProfile()
-    from soc.modules.gsoc.models.profile import GSoCStudentInfo
-    properties = {'key_name': self.profile.key().name(), 'parent': self.profile,
-        'school': None, 'tax_form': None, 'enrollment_form': None,
-        'number_of_projects': 0, 'number_of_proposals': 0,
-        'passed_evaluations': 0, 'failed_evaluations': 0,
-        'program': self.program,
-        'birth_date': generateEligibleStudentBirthDate(self.program)}
-    self.profile.student_info = self.seed(GSoCStudentInfo, properties)
-    self.profile.is_student = True
-    self.profile.put()
+    if self.profile:
+      return self.profile
+
+    user = seedNDBUser()
+    self.profile = seedSOCStudent(
+        self.program, birth_date=generateEligibleStudentBirthDate(self.program),
+        user=user)
     return self.profile
 
   def createNDBStudent(self):
@@ -783,27 +723,20 @@ class GSoCProfileHelper(ProfileHelper):
     """Sets the current user to be a student with specified number of 
     projects for the current program.
     """
-    student = self.createStudentWithProposal(org, mentor)
     from soc.modules.gsoc.models import proposal as proposal_model
-    proposal = proposal_model.GSoCProposal.all().ancestor(student).get()
+    from tests.utils import project_utils
+    from tests.utils import proposal_utils
+    user = seedNDBUser()
+    student = seedSOCStudent(self.program, user=user)
 
-    student.student_info.number_of_projects = n
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), org.key)
 
-    # We add an organization entry for each project even if the projects belong
-    # to the same organization, we add the organization multiple times. We do
-    # this to make project removal easy.
-    student.student_info.project_for_orgs += [org.key.to_old_key()] * n
-    student.student_info.put()
-    from soc.modules.gsoc.models import project as project_model
-    properties = {
-        'program': self.program,
-        'org': org.key.to_old_key(),
-        'status': project_model.STATUS_ACCEPTED,
-        'parent': self.profile,
-        'mentors': [mentor.key()],
-        'proposal': proposal
-        }
-    self.seedn(project_model.GSoCProject, properties, n)
+    mentor_key = ndb.Key.from_old_key(
+        proposal_model.GSoCProposal.mentor.get_value_for_datastore(proposal))
+    project_utils.seedProject(
+        student, self.program.key(), proposal.key(), org.key, mentor_key)
+
     return self.profile
 
   def createMentorWithProject(self, org, student):
@@ -839,6 +772,13 @@ class GCIProfileHelper(ProfileHelper):
       dev_test: if set, always creates users as developers
     """
     super(GCIProfileHelper, self).__init__(program, dev_test)
+
+  def createHost(self):
+    """Sets the current user to be a host for the current program."""
+    self.createUser()
+    self.user.host_for = [self.program.scope.key()]
+    self.user.put()
+    return self.user
 
   def createProfile(self):
     """Creates a profile for the current user.

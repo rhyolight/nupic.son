@@ -242,8 +242,8 @@ class AccessChecker(access_checker.AccessChecker):
   def canApplyStudent(self, edit_url):
     """Checks if a user may apply as a student to the program.
     """
-    if self.data.profile:
-      if self.data.profile.student_info:
+    if self.data.ndb_profile:
+      if self.data.ndb_profile.is_student:
         raise exception.Redirect(edit_url)
       else:
         raise exception.Forbidden(
@@ -330,7 +330,7 @@ class AccessChecker(access_checker.AccessChecker):
       get_params: optional dictionary with GET parameters that should be
         appended to the redirect URL
     """
-    if not self.data.profile:
+    if not self.data.ndb_profile:
       get_params = get_params or {}
       profile_url = self.data.redirect.createProfile('org_admin').urlOf(
           url_names.GCI_PROFILE_CREATE, secure=True)

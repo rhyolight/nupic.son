@@ -183,8 +183,8 @@ class ProfileAdminPageTest(GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    self.profile_helper.deleteProfile().createProfile()
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     response = self.get(url)
     self.assertResponseOK(response)

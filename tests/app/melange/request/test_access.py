@@ -16,6 +16,8 @@
 import httplib
 import unittest
 
+from google.appengine.ext import ndb
+
 from django import http
 
 from melange.models import profile as ndb_profile_model
@@ -28,6 +30,7 @@ from soc.models import program as program_model
 from soc.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
+from tests import org_utils
 from tests import profile_utils
 from tests import program_utils
 from tests import timeline_utils
@@ -109,17 +112,11 @@ class ProgramAdministratorAccessCheckerTest(unittest.TestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.sponsor = program_utils.seedSponsor()
-
-    program_properties = {
-        'sponsor': self.sponsor,
-        'scope': self.sponsor,
-        }
-    self.program = seeder_logic.seed(
-        program_model.Program, properties=program_properties)
+    self.program = program_utils.seedProgram(sponsor_key=self.sponsor.key())
 
     # seed a user who will be tested for access
-    self.user = profile_utils.seedUser(is_developer=False)
-    profile_utils.login(self.user)
+    self.user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(self.user)
 
     kwargs = {
         'sponsor': self.sponsor.key().name(),
@@ -130,7 +127,7 @@ class ProgramAdministratorAccessCheckerTest(unittest.TestCase):
   def testProgramAdministratorsAllowedAccess(self):
     """Tests that a program administrator is allowed access."""
     # make the user a program administrator
-    self.user.host_for = [self.sponsor.key()]
+    self.user.host_for = [ndb.Key.from_old_key(self.program.key())]
     self.user.put()
 
     access_checker = access.ProgramAdministratorAccessChecker()
@@ -138,17 +135,10 @@ class ProgramAdministratorAccessCheckerTest(unittest.TestCase):
 
   def testOrganizationAdministratorsDeniedAccess(self):
     """Tests that an organization administrator is denied access."""
-    # seed a profile who is org admin
-    org = seeder_logic.seed(org_model.Organization)
-    profile_properties = {
-        'is_org_admin': True,
-        'org_admin_for': [org.key()],
-        'is_mentor': True,
-        'mentor_for': [org.key()],
-        'is_student': False,
-        'parent': self.user,
-        }
-    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+    # seed a profile who is an organization admin
+    org = org_utils.seedOrganization(self.program.key())
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=self.user, admin_for=[org.key])
 
     access_checker = access.ProgramAdministratorAccessChecker()
     with self.assertRaises(exception.UserError) as context:
@@ -158,17 +148,10 @@ class ProgramAdministratorAccessCheckerTest(unittest.TestCase):
 
   def testMentorDeniedAccess(self):
     """Tests that a mentor is denied access."""
-    # seed a profile who is org mentor
-    org = seeder_logic.seed(org_model.Organization)
-    profile_properties = {
-        'is_org_admin': False,
-        'org_admin_for': [],
-        'is_mentor': True,
-        'mentor_for': [org.key()],
-        'is_student': False,
-        'parent': self.user,
-        }
-    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+    # seed a profile who is a mentor
+    org = org_utils.seedOrganization(self.program.key())
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=self.user, mentor_for=[org.key])
 
     access_checker = access.ProgramAdministratorAccessChecker()
     with self.assertRaises(exception.UserError) as context:
@@ -179,15 +162,7 @@ class ProgramAdministratorAccessCheckerTest(unittest.TestCase):
   def testStudentDeniedAccess(self):
     """Tests that students are denied access."""
     # seed a profile who is a student
-    profile_properties = {
-        'is_org_admin': False,
-        'org_admin_for': [],
-        'is_mentor': False,
-        'mentor_for': [],
-        'is_student': True,
-        'parent': self.user,
-        }
-    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+    profile_utils.seedNDBStudent(self.program, user=self.user)
 
     access_checker = access.ProgramAdministratorAccessChecker()
     with self.assertRaises(exception.UserError) as context:
@@ -329,24 +304,18 @@ class NonStudentProfileAccessCheckerTest(unittest.TestCase):
   def setUp(self):
     """See unittest.setUp for specification."""
     sponsor = program_utils.seedSponsor()
-
-    program_properties = {
-        'sponsor': sponsor,
-        'scope': sponsor,
-        }
-    program = seeder_logic.seed(
-        program_model.Program, properties=program_properties)
+    self.program = program_utils.seedProgram(sponsor_key=sponsor.key())
 
     kwargs = {
         'sponsor': sponsor.key().name(),
-        'program': program.link_id,
+        'program': self.program.link_id,
         }
     self.data = request_data.RequestData(None, None, kwargs)
 
   def testUserWithNoProfileAccessDenied(self):
     """Tests that access is denied if current user has no profile"""
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
 
     access_checker = access.NON_STUDENT_PROFILE_ACCESS_CHECKER
     with self.assertRaises(exception.UserError) as context:
@@ -355,15 +324,9 @@ class NonStudentProfileAccessCheckerTest(unittest.TestCase):
 
   def testUserWithStudentProfileAccessDenied(self):
     """Tests that access is denied if current user has student profile."""
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-
-    profile_properties = {
-        'is_student': True,
-        'parent': user,
-        'status': 'active',
-        }
-    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedSOCStudent(self.program, user=user)
 
     access_checker = access.NON_STUDENT_PROFILE_ACCESS_CHECKER
     with self.assertRaises(exception.UserError) as context:
@@ -371,18 +334,10 @@ class NonStudentProfileAccessCheckerTest(unittest.TestCase):
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
 
   def testUserWithNonStudentProfileAccessGranted(self):
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-
-    profile_properties = {
-        'is_student': False,
-        'parent': user,
-        'status': 'active',
-        'program': self.data.program,
-        'scope': self.data.program,
-        'link_id': user.link_id,
-        }
-    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+    """Tests that access is granted if current user has non-student profile."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     access_checker = access.NON_STUDENT_PROFILE_ACCESS_CHECKER
     access_checker.checkAccess(self.data, None)

@@ -23,7 +23,6 @@ from melange.request import exception
 from melange.request import links
 
 from soc.logic import cleaning
-from soc.logic import host as host_logic
 from soc.tasks import mailer
 from soc.views.helper import url_patterns
 
@@ -202,14 +201,9 @@ class UpdateSlotTransferPage(base.GSoCRequestHandler):
         slot_transfer_entity = ent
         break
 
-    # TODO(Madhu): This should return the host entities and not the user
-    # entities and we should check for host.notify_slot_transfer before
-    # sending the email. But at the moment we haved saved all our hosts
-    # without reference to their user entities as parents, so we don't
-    # have a way to get the relationship between the user entities and
-    # the host entities. So use the user entities for now.
-    host_users = host_logic.getHostsForProgram(data.program)
-    to_emails = [u.account.email() for u in host_users]
+    # TODO(daniel): send actual emails when we have email address in User model.
+    host_users = host_logic.getHostsForProgram(data.program.key())
+    to_emails = []
 
     def create_or_update_slot_transfer_trx():
       update = False

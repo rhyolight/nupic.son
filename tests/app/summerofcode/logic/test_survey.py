@@ -25,6 +25,8 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from summerofcode.logic import survey as survey_logic
 from summerofcode.models import survey as survey_model
 
+from tests import profile_utils
+from tests import program_utils
 from tests import timeline_utils
 
 
@@ -32,23 +34,23 @@ class GetPersonalExtensionTest(unittest.TestCase):
   """Unit tests for getPersonalExtension function."""
 
   def setUp(self):
+    self.program = program_utils.seedProgram()
     self.survey = seeder_logic.seed(soc_survey_model.Survey)
-    self.profile = seeder_logic.seed(profile_model.Profile)
+    self.profile = profile_utils.seedNDBProfile(self.program.key())
 
   def testPersonalExtensionExists(self):
     """Tests that if a personal extension exists, it will be returned."""
     # create personal extension
     # TODO(daniel): NDB migration
-    ndb_profile_key = ndb.Key.from_old_key(self.profile.key())
     ndb_survey_key = ndb.Key.from_old_key(self.survey.key())
 
     extension = survey_model.PersonalExtension(
-        parent=ndb_profile_key, survey=ndb_survey_key)
+        parent=self.profile.key, survey=ndb_survey_key)
     extension.put()
 
     # try getting the extension
     result = survey_logic.getPersonalExtension(
-        self.profile.key(), self.survey.key())
+        self.profile.key, self.survey.key())
 
     # the extension should be returned
     self.assertEqual(extension.key, result.key)
@@ -57,27 +59,24 @@ class GetPersonalExtensionTest(unittest.TestCase):
     """Tests that if a personal extensions does not exist, None is returned."""
     # try getting the extension
     result = survey_logic.getPersonalExtension(
-        self.profile.key(), self.survey.key())
+        self.profile.key, self.survey.key())
 
     # no extension should be returned
     self.assertIsNone(result)
 
   def testPersonalExtensionForAnotherSurvey(self):
     """Tests for no result even if extension exists for another survey."""
-    # TODO(daniel): NDB migration
-    ndb_profile_key = ndb.Key.from_old_key(self.profile.key())
-
     # create an extension but for another survey
     other_survey = seeder_logic.seed(soc_survey_model.Survey)
     # TODO(daniel): NDB migration
     ndb_other_survey_key = ndb.Key.from_old_key(other_survey.key())
     extension = survey_model.PersonalExtension(
-        parent=ndb_profile_key, survey=ndb_other_survey_key)
+        parent=self.profile.key, survey=ndb_other_survey_key)
     extension.put()
 
     # try getting the extension for the main survey
     result = survey_logic.getPersonalExtension(
-        self.profile.key(), self.survey.key())
+        self.profile.key, self.survey.key())
 
     # no extension should be returned
     self.assertIsNone(result)
@@ -88,16 +87,14 @@ class GetPersonalExtensionTest(unittest.TestCase):
     ndb_survey_key = ndb.Key.from_old_key(self.survey.key())
 
     # create an extension but for another profile
-    other_profile = seeder_logic.seed(profile_model.Profile)
-    # TODO(daniel): NDB migration
-    ndb_other_profile_key = ndb.Key.from_old_key(other_profile.key())
+    other_profile = profile_utils.seedNDBProfile(self.program.key())
     extension = survey_model.PersonalExtension(
-        parent=ndb_other_profile_key, survey=ndb_survey_key)
+        parent=other_profile.key, survey=ndb_survey_key)
     extension.put()
 
     # try getting the extension for the main profile
     result = survey_logic.getPersonalExtension(
-        self.profile.key(), self.survey.key())
+        self.profile.key, self.survey.key())
 
     # no extension should be returned
     self.assertIsNone(result)
@@ -265,29 +262,28 @@ class CreateOrUpdatePersonalExtensionTest(unittest.TestCase):
   """Unit tests for createOrUpdatePersonalExtension function."""
 
   def setUp(self):
+    program = program_utils.seedProgram()
     self.survey = seeder_logic.seed(soc_survey_model.Survey)
     # TODO(daniel): NDB migration; no key translation after Survey migrates
     self.survey_key = ndb.Key.from_old_key(self.survey.key())
-    self.profile = seeder_logic.seed(profile_model.Profile)
-    # TODO(daniel): NDB migration; no key translation after Profile migrates
-    self.profile_key = ndb.Key.from_old_key(self.profile.key())
+    self.profile = profile_utils.seedNDBProfile(program.key())
 
   def testExtensionDoesNotExist(self):
     """Tests that extension is created when it does not exist."""
     extension = survey_logic.createOrUpdatePersonalExtension(
-        self.profile.key(), self.survey.key())
+        self.profile.key, self.survey.key())
     self.assertIsNotNone(extension)
-    self.assertEqual(extension.key.parent(), self.profile_key)
+    self.assertEqual(extension.key.parent(), self.profile.key)
     self.assertEqual(extension.survey, self.survey_key)
 
   def testExtensionAreadyExists(self):
     """Tests that another extension is not created if one exists."""
     extension = survey_model.PersonalExtension(
-        parent=self.profile_key, survey=self.survey_key)
+        parent=self.profile.key, survey=self.survey_key)
     extension.put()
 
     result = survey_logic.createOrUpdatePersonalExtension(
-        self.profile.key(), self.survey.key())
+        self.profile.key, self.survey.key())
 
     # check that result and extension are the same entity
     self.assertEqual(extension.key, result.key)
@@ -295,14 +291,14 @@ class CreateOrUpdatePersonalExtensionTest(unittest.TestCase):
   def testExtensionIsUpdated(self):
     """Tests that extension can be updated."""
     extension = survey_model.PersonalExtension(
-        parent=self.profile_key, survey=self.survey_key)
+        parent=self.profile.key, survey=self.survey_key)
     extension.put()
 
     # set new dates
     start_date = timeline_utils.past()
     end_date = timeline_utils.future()
     result = survey_logic.createOrUpdatePersonalExtension(
-        self.profile.key(), self.survey.key(),
+        self.profile.key, self.survey.key(),
         start_date=start_date, end_date=end_date)
 
     # check that the dates are updated
@@ -311,7 +307,7 @@ class CreateOrUpdatePersonalExtensionTest(unittest.TestCase):
 
     # try cleaning the dates
     result = survey_logic.createOrUpdatePersonalExtension(
-        self.profile.key(), self.survey.key(),
+        self.profile.key, self.survey.key(),
         start_date=None, end_date=None)
 
     # check that the dates are cleared
@@ -323,18 +319,18 @@ class IsSurveyActiveTest(unittest.TestCase):
   """Unit tests for isSurveyActive function."""
 
   def setUp(self):
+    program = program_utils.seedProgram()
     self.survey = seeder_logic.seed(soc_survey_model.Survey)
     # TODO(daniel): NDB migration; no key translation after Survey migrates
     self.survey_key = ndb.Key.from_old_key(self.survey.key())
-    self.profile = seeder_logic.seed(profile_model.Profile)
-    self.profile_key =  ndb.Key.from_old_key(self.profile.key())
+    self.profile = profile_utils.seedNDBProfile(program.key())
 
   def testSurveyIsActive(self):
     """Tests for survey that is active."""
     self.survey.survey_start = timeline_utils.past(delta=100)
     self.survey.survey_end = timeline_utils.future(delta=100)
 
-    result = survey_logic.isSurveyActive(self.survey, self.profile.key())
+    result = survey_logic.isSurveyActive(self.survey, self.profile.key)
     self.assertTrue(result)
 
   def testSurveyIsNotActive(self):
@@ -343,14 +339,14 @@ class IsSurveyActiveTest(unittest.TestCase):
     self.survey.survey_start = timeline_utils.past(delta=200)
     self.survey.survey_end = timeline_utils.past(delta=100)
 
-    result = survey_logic.isSurveyActive(self.survey, self.profile.key())
+    result = survey_logic.isSurveyActive(self.survey, self.profile.key)
     self.assertFalse(result)
 
     # check for survey that has yet to start
     self.survey.survey_start = timeline_utils.future(delta=100)
     self.survey.survey_end = timeline_utils.future(delta=200)
 
-    result = survey_logic.isSurveyActive(self.survey, self.profile.key())
+    result = survey_logic.isSurveyActive(self.survey, self.profile.key)
     self.assertFalse(result)
 
   def testSurveyActiveWithExtension(self):
@@ -361,11 +357,11 @@ class IsSurveyActiveTest(unittest.TestCase):
 
     # seed an extension
     self.extension = survey_model.PersonalExtension(
-        parent=self.profile_key, survey=self.survey_key)
+        parent=self.profile.key, survey=self.survey_key)
     self.extension.end_date = timeline_utils.future()
     self.extension.put()
 
-    result = survey_logic.isSurveyActive(self.survey, self.profile.key())
+    result = survey_logic.isSurveyActive(self.survey, self.profile.key)
     self.assertTrue(result)
 
     # survey has not started
@@ -376,7 +372,7 @@ class IsSurveyActiveTest(unittest.TestCase):
     self.extension.end_date = None
     self.extension.start_date = timeline_utils.past()
 
-    result = survey_logic.isSurveyActive(self.survey, self.profile.key())
+    result = survey_logic.isSurveyActive(self.survey, self.profile.key)
     self.assertTrue(result)
 
   def testSurveyNotActiveWithExtension(self):
@@ -387,11 +383,11 @@ class IsSurveyActiveTest(unittest.TestCase):
 
     # seed an extension that also has ended
     self.extension = survey_model.PersonalExtension(
-        parent=self.profile_key, survey=self.survey_key)
+        parent=self.profile.key, survey=self.survey_key)
     self.extension.end_date = timeline_utils.past()
     self.extension.put()
 
-    result = survey_logic.isSurveyActive(self.survey, self.profile.key())
+    result = survey_logic.isSurveyActive(self.survey, self.profile.key)
     self.assertFalse(result)
 
     # survey has not started, neither the extension
@@ -401,7 +397,7 @@ class IsSurveyActiveTest(unittest.TestCase):
     self.extension.end_date = None
     self.extension.start_date = timeline_utils.future()
 
-    result = survey_logic.isSurveyActive(self.survey, self.profile.key())
+    result = survey_logic.isSurveyActive(self.survey, self.profile.key)
     self.assertFalse(result)
 
 
@@ -410,11 +406,11 @@ class HasSurveyStartedTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
+    program = program_utils.seedProgram()
     self.survey = seeder_logic.seed(soc_survey_model.Survey)
     # TODO(daniel): NDB migration; no key translation after Survey migrates
     self.survey_key = ndb.Key.from_old_key(self.survey.key())
-    self.profile = seeder_logic.seed(profile_model.Profile)
-    self.profile_key =  ndb.Key.from_old_key(self.profile.key())
+    self.profile = profile_utils.seedNDBProfile(program.key())
 
   def testSurveyHasStarted(self):
     """Tests for survey that has already started."""
@@ -422,14 +418,14 @@ class HasSurveyStartedTest(unittest.TestCase):
     self.survey.survey_start = timeline_utils.past(delta=100)
     self.survey.survey_end = timeline_utils.future(delta=100)
 
-    result = survey_logic.hasSurveyStarted(self.survey, self.profile.key())
+    result = survey_logic.hasSurveyStarted(self.survey, self.profile.key)
     self.assertTrue(result)
 
     # survey has already ended
     self.survey.survey_start = timeline_utils.past(delta=200)
     self.survey.survey_end = timeline_utils.past(delta=100)
 
-    result = survey_logic.hasSurveyStarted(self.survey, self.profile.key())
+    result = survey_logic.hasSurveyStarted(self.survey, self.profile.key)
     self.assertTrue(result)
 
   def testSurveyHasNotStarted(self):
@@ -438,7 +434,7 @@ class HasSurveyStartedTest(unittest.TestCase):
     self.survey.survey_start = timeline_utils.future(delta=100)
     self.survey.survey_end = timeline_utils.future(delta=200)
 
-    result = survey_logic.hasSurveyStarted(self.survey, self.profile.key())
+    result = survey_logic.hasSurveyStarted(self.survey, self.profile.key)
     self.assertFalse(result)
 
   def testSurveyHasStartedWithExtension(self):
@@ -449,11 +445,11 @@ class HasSurveyStartedTest(unittest.TestCase):
 
     # seed an extension
     self.extension = survey_model.PersonalExtension(
-        parent=self.profile_key, survey=self.survey_key)
+        parent=self.profile.key, survey=self.survey_key)
     self.extension.start_date = timeline_utils.past()
     self.extension.put()
 
-    result = survey_logic.hasSurveyStarted(self.survey, self.profile.key())
+    result = survey_logic.hasSurveyStarted(self.survey, self.profile.key)
     self.assertTrue(result)
 
   def testSurveyHasNotStartedWithExtension(self):
@@ -464,9 +460,9 @@ class HasSurveyStartedTest(unittest.TestCase):
 
     # seed an extension
     self.extension = survey_model.PersonalExtension(
-        parent=self.profile_key, survey=self.survey_key)
+        parent=self.profile.key, survey=self.survey_key)
     self.extension.start_date = timeline_utils.future(delta=50)
     self.extension.put()
 
-    result = survey_logic.hasSurveyStarted(self.survey, self.profile.key())
+    result = survey_logic.hasSurveyStarted(self.survey, self.profile.key)
     self.assertFalse(result)

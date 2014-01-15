@@ -20,6 +20,7 @@ request in the GSoC module.
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
+from melange.logic import user as user_logic
 from melange.models import connection as connection_model
 from melange.models import organization as melange_org_model
 # TODO(nathaniel): I'm not sure how I feel about the exception module
@@ -255,7 +256,8 @@ class RequestData(request_data.RequestData):
       if not self.profile:
         self._is_org_admin = False
       else:
-        self._is_org_admin = bool(self.profile.org_admin_for) or self.is_host
+        self._is_org_admin = (bool(self.profile.org_admin_for) or
+            user_logic.isHostForProgram(self.ndb_user, self.program.key()))
     return self._is_org_admin
 
   @property
@@ -385,7 +387,7 @@ class RequestData(request_data.RequestData):
             message='The request does not contain project id.')
       else:
         self._url_project = project_model.GSoCProject.get_by_id(
-            int(self.kwargs['id']), self.url_profile)
+            int(self.kwargs['id']), self.url_ndb_profile.key.to_old_key())
 
         if not self._url_project:
           raise exception.NotFound(
@@ -414,7 +416,7 @@ class RequestData(request_data.RequestData):
             message='The request does not contain proposal id.')
       else:
         self._url_proposal = proposal_model.GSoCProposal.get_by_id(
-            int(self.kwargs['id']), self.url_profile)
+            int(self.kwargs['id']), self.url_ndb_profile.key.to_old_key())
 
         if not self._url_proposal:
           raise exception.NotFound(
@@ -454,7 +456,7 @@ class RequestData(request_data.RequestData):
     Args:
       org_key: Organization key.
     """
-    if self.is_host:
+    if user_logic.isHostForProgram(self.ndb_user, self.program.key()):
       return True
 
     if not self.profile:
@@ -472,7 +474,7 @@ class RequestData(request_data.RequestData):
     Args:
       org_key: Organization key.
     """
-    if self.is_host:
+    if user_logic.isHostForProgram(self.ndb_user, self.program.key()):
       return True
 
     if not self.profile:

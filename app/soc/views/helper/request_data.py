@@ -521,8 +521,7 @@ class RequestData(object):
       exception.UserError: if no profile entity is found.
     """
     if not self._isSet(self._url_ndb_profile):
-      self._url_ndb_profile = self.models.ndb_profile_model.get(
-          self._getUrlNdbProfileKey())
+      self._url_ndb_profile = self._getUrlNdbProfileKey().get()
       if not self._url_ndb_profile:
         raise exception.NotFound(message='Requested profile does not exist.')
     return self._url_ndb_profile

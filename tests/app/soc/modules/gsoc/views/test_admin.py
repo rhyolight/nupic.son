@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for admin dashboard view.
-"""
+"""Tests for admin dashboard view."""
 
-
+from tests import profile_utils
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 
@@ -51,7 +50,8 @@ class AdminDashboardTest(GSoCDjangoTestCase):
     self.assertAdminBaseTemplatesUsed(response)
 
   def testAdminDashboard(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     url = '/gsoc/admin/' + self.gsoc.key().name()
     response = self.get(url)
@@ -94,7 +94,8 @@ class LookupProfileTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gsoc/admin/lookup.html')
 
   def testLookupProfile(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     # rendered with default base layout
     url = '/gsoc/admin/lookup/' + self.gsoc.key().name()
@@ -152,7 +153,9 @@ class ProposalsPageTest(GSoCDjangoTestCase):
         'modules/gsoc/admin/_proposals_list.html')
 
   def testListProposals(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     self.timeline_helper.studentSignup()
 
     url = '/gsoc/admin/proposals/' + self.org.key.id()

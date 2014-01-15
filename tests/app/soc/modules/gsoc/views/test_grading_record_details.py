@@ -34,7 +34,8 @@ class GradingGroupCreateTest(test_utils.GSoCDjangoTestCase):
 
   def setUp(self):
     self.init()
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     evaluation_helper = survey_utils.SurveyHelper(self.gsoc, self.dev_test)
     midterm_prop = {'link_id': 'midterm'}
@@ -108,7 +109,8 @@ class GradingRecordsOverviewTest(test_utils.GSoCDjangoTestCase):
 
   def setUp(self):
     self.init()
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
     self.timeline_helper.studentsAnnounced()
 
   def createGradingSurveyGroup(self):

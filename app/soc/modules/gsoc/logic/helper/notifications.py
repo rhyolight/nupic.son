@@ -65,7 +65,7 @@ def newProposalContext(data, proposal, to_emails):
         receive notifications.
   """
   proposal_notification_url = links.ABSOLUTE_LINKER.userId(
-      data.profile.key(), proposal.key().id(), url_names.PROPOSAL_REVIEW)
+      data.ndb_profile.key, proposal.key().id(), url_names.PROPOSAL_REVIEW)
   edit_profile_url = links.ABSOLUTE_LINKER.program(
       data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
 
@@ -74,7 +74,7 @@ def newProposalContext(data, proposal, to_emails):
 
   message_properties = {
       'proposal_notification_url': proposal_notification_url,
-      'proposer_name': data.profile.name(),
+      'proposer_name': data.ndb_profile.public_name,
       'proposal_name': proposal.title,
       'proposal_content': proposal.content,
       'org': org.name,
@@ -99,13 +99,13 @@ def updatedProposalContext(data, proposal, to_emails):
   assert isSet(data.organization)
 
   proposal_notification_url = links.ABSOLUTE_LINKER.userId(
-      data.profile.key(), proposal.key().id(), url_names.PROPOSAL_REVIEW)
+      data.ndb_profile.key, proposal.key().id(), url_names.PROPOSAL_REVIEW)
   edit_profile_url = links.ABSOLUTE_LINKER.program(
       data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
 
   message_properties = {
       'proposal_notification_url': proposal_notification_url,
-      'proposer_name': data.profile.name(),
+      'proposer_name': data.ndb_profile.public_name,
       'proposal_name': proposal.title,
       'proposal_content': proposal.content,
       'org': data.organization.name,
@@ -160,7 +160,7 @@ def newReviewContext(data, comment, to_emails):
 
   template = DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE
 
-  if (data.url_profile.key() != data.profile.key() and
+  if (data.url_profile.key() != data.ndb_profile.key and
       data.url_profile.notify_public_comments and not comment.is_private):
     to_emails.append(data.url_profile.email)
 

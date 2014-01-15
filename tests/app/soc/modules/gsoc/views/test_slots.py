@@ -40,8 +40,8 @@ class SlotsTest(GSoCDjangoTestCase):
         'modules/gsoc/admin/_accepted_orgs_list.html')
 
   def testAllocateSlots(self):
-    user = profile_utils.seedUser(host_for=[self.sponsor.key()])
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     url = '/gsoc/admin/slots/' + self.gsoc.key().name()
     response = self.get(url)
@@ -78,7 +78,9 @@ class SlotsTest(GSoCDjangoTestCase):
     """
     self.org.slot_allocation = 0
     self.org.put()
-    self.profile_helper.createHost()
+
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     url = '/gsoc/admin/slots/' + self.gsoc.key().name()
     response = self.getListData(url, 0)

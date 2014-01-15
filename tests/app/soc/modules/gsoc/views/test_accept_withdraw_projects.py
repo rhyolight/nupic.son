@@ -72,14 +72,17 @@ class AcceptProposalsTest(test_utils.GSoCDjangoTestCase):
 
   def testHostAccessGranted(self):
     """Tests that a program admin can access the page."""
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     response = self.get(self.url)
     self.assertResponseOK(response)
     self._assertTemplatesUsed(response)
 
   def testAcceptProposal(self):
     """Tests that a proposal is correctly accepted."""
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     mentor = profile_utils.GSoCProfileHelper(
         self.gsoc, False).createMentor(self.org)
@@ -112,8 +115,8 @@ class AcceptProposalsTest(test_utils.GSoCDjangoTestCase):
 
   def testAcceptTwoProposals(self):
     """Tests that two proposals can be accepted in the same request."""
-
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     mentor = profile_utils.GSoCProfileHelper(
         self.gsoc, False).createMentor(self.org)

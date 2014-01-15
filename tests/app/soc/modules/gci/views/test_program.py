@@ -20,6 +20,7 @@ from soc.models import program as soc_program_model
 
 from soc.modules.gci.models import program as program_model
 
+from tests import profile_utils
 from tests import test_utils
 from tests.test_utils import GCIDjangoTestCase
 
@@ -116,14 +117,16 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testHostAccessGranted(self):
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
     url = self._getCreateProgramUrl()
-    self.profile_helper.createHost()
     response = self.get(url)
     self.assertProgramTemplatesUsed(response)
 
   def testCreateProgramWithRequiredProperties(self):
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
     url = self._getCreateProgramUrl()
-    self.profile_helper.createHost()
 
     properties = self._getCreateProgramFormRequiredProperties()
 
@@ -139,8 +142,9 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
     self.assertPropertiesEqual(properties, program)
 
   def testCreateProgramWithInsufficientData(self):
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
     url = self._getCreateProgramUrl()
-    self.profile_helper.createHost()
 
     properties = self._getCreateProgramFormRequiredProperties()
 
@@ -157,8 +161,9 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
       properties[k] = v
 
   def testCreateProgramWithAllData(self):
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
     url = self._getCreateProgramUrl()
-    self.profile_helper.createHost()
 
     properties = self._getCreateProgramFormRequiredProperties()
     properties.update(self._getCreateProgramFormOptionalProperties())
@@ -201,9 +206,10 @@ class EditProgramTest(GCIDjangoTestCase):
     self.assertProgramTemplatesUsed(response)
 
   def testEditProgram(self):
-    from soc.models.document import Document
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
     url = '/gci/program/edit/' + self.gci.key().name()
+
     response = self.get(url)
     self.assertProgramTemplatesUsed(response)
 

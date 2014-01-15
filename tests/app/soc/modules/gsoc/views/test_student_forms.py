@@ -46,7 +46,8 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
     self._assertAccessForbiddenForUrl(self._getTaxFormUrl())
 
   def testHostAccessForbidden(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     self._assertAccessForbiddenForUrl(self._getEnrollmentFormUrl())
     self._assertAccessForbiddenForUrl(self._getTaxFormUrl())
@@ -128,9 +129,10 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
 
   def testEnrollmentFormSubmissionByAdmin(self):
     """Tests that enrollment form is submitted properly by an admin."""
-    self.timeline_helper.formSubmission()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
-    self.profile_helper.createHost()
+    self.timeline_helper.formSubmission()
 
     mentor = self._createNewMentor()
 
@@ -155,9 +157,10 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
 
   def testTaxFormSubmissionByAdmin(self):
     """Tests that tax form is submitted properly by an admin."""
-    self.timeline_helper.formSubmission()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
-    self.profile_helper.createHost()
+    self.timeline_helper.formSubmission()
 
     mentor = self._createNewMentor()
 

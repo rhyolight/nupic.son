@@ -20,6 +20,7 @@ import logging
 from django import http
 from django.utils.translation import ugettext
 
+from melange.logic import user as user_logic
 from melange.request import access
 from melange.request import exception
 from soc.logic import org_app as org_app_logic
@@ -133,10 +134,10 @@ class GSoCOrgAppEditPage(base.GSoCRequestHandler):
     if not form.is_valid():
       return None
 
-    form.cleaned_data['modified_by'] = data.user
+    form.cleaned_data['modified_by'] = data.ndb_user.key.to_old_key()
 
     if not data.org_app:
-      form.cleaned_data['created_by'] = data.user
+      form.cleaned_data['created_by'] = data.ndb_user.key.to_old_key()
       form.cleaned_data['program'] = data.program
       key_name = 'gsoc_program/%s/orgapp' % data.program.key().name()
       entity = form.create(key_name=key_name, commit=True)
@@ -382,7 +383,7 @@ class GSoCOrgAppShowPage(base.GSoCRequestHandler):
       context['record'] = OrgAppReadOnlyTemplate(record)
 
       # admin info should be available only to the hosts
-      if data.is_host:
+      if user_logic.isHostForProgram(data.ndb_user, data.program.key()):
         context['main_admin_url'] = data.redirect.profile(
             record.main_admin.link_id).urlOf(url_names.GSOC_PROFILE_SHOW_ADMIN)
         context['backup_admin_url'] = data.redirect.profile(

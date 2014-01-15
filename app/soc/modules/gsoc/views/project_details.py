@@ -22,6 +22,7 @@ from django import http
 from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
+from melange.logic import user as user_logic
 from melange.request import exception
 from melange.request import links
 
@@ -427,7 +428,7 @@ def _isUpdateLinkVisible(data):
   Returns: True if the update link should be visible, False otherwise.
   """
   # program hosts are able to edit project details
-  if data.is_host:
+  if user_logic.isHostForProgram(data.ndb_user, data.program.key()):
     return True
 
   # users without active profiles cannot definitely update projects

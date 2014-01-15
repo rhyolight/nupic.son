@@ -19,6 +19,7 @@ import json
 from soc.modules.gci.models import task as task_model
 from soc.modules.gci.views import dashboard as dashboard_view
 
+from tests import profile_utils
 from tests import task_utils
 from tests import test_utils
 
@@ -51,7 +52,9 @@ class DashboardTest(test_utils.GCIDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testDashboardAsHost(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     response = self.get(self._getDashboardUrl())
     self.assertResponseForbidden(response)
 

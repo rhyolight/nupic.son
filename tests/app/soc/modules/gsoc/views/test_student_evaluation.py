@@ -207,7 +207,8 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testCreateEvaluationForHost(self):
-    host = self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
     link_id = LinkIDProvider(ProjectSurvey).getValue()
     suffix = "%s/%s" % (self.gsoc.key().name(), link_id)
@@ -238,10 +239,10 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     # conversion is done.
     override = {
         'survey_content': None,
-        'author': host.key(),
-        'created_by': host.key(),
+        'author': user.key.to_old_key(),
+        'created_by': user.key.to_old_key(),
         'program': self.gsoc.key(),
-        'modified_by': host.key(),
+        'modified_by': user.key.to_old_key(),
         'schema': self.evaluation.evalSchemaString(),
         }
     response, _ = self.modelPost(url, ProjectSurvey, override)
@@ -728,14 +729,18 @@ class GSoCStudentEvaluationPreviewPageTest(test_utils.GSoCDjangoTestCase):
 
   def testProgramAdminAccessGranted(self):
     """Tests that program administrators can access the page."""
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     response = self.get(self._getUrl())
     self.assertResponseOK(response)
     self._assertTemplatesUsed(response)
 
   def testForNonExistingSurvey(self):
     """Tests that error response is returned for non-existing surveys."""
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     response = self.get('/gsoc/eval/student/preview/%s/fakesurvey' %
         self.program.key().name())
     self.assertResponseNotFound(response)

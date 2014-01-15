@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for lists of GCITask entities.
-"""
+"""Unit tests for lists of GCITask entities."""
 
-
+from tests import profile_utils
 from tests.test_utils import GCIDjangoTestCase
 
 
@@ -61,7 +60,9 @@ class AllOrganizationTasksPageTest(GCIDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testHostCanAccess(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     response = self.get(self.url)
     self.assertPageTemplatesUsed(response)
     self.assertResponseOK(response);

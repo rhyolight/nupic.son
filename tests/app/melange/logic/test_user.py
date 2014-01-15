@@ -16,9 +16,12 @@
 
 import unittest
 
+from google.appengine.ext import ndb
+
 from melange.logic import user as user_logic
 
 from tests import profile_utils
+from tests import program_utils
 
 
 TEST_ACCOUNT_ID = 'test_account_id'
@@ -30,13 +33,20 @@ class CreateUserTest(unittest.TestCase):
 
   def testUserCreated(self):
     """Tests that user entity is created."""
+    program = program_utils.seedProgram()
     # sign in a user with an account but with no user entity
     profile_utils.signInToGoogleAccount(TEST_EMAIL, TEST_ACCOUNT_ID)
 
-    result = user_logic.createUser(TEST_USERNAME)
+    result = ndb.transaction(
+        lambda: user_logic.createUser(
+            TEST_USERNAME,
+            host_for=[ndb.Key.from_old_key(program.key())]))
+
     self.assertTrue(result)
     self.assertEqual(result.extra.key.id(), TEST_USERNAME)
     self.assertEqual(result.extra.account_id, TEST_ACCOUNT_ID)
+    self.assertIn(
+        ndb.Key.from_old_key(program.key()), result.extra.host_for)
 
   def testUserExists(self):
     """Tests that user entity is not existed for a taken username."""
@@ -46,15 +56,15 @@ class CreateUserTest(unittest.TestCase):
     # sign in a user with an account but with no user entity
     profile_utils.signInToGoogleAccount(TEST_EMAIL, TEST_ACCOUNT_ID)
 
-    result = user_logic.createUser(TEST_USERNAME)
+    result = ndb.transaction(lambda: user_logic.createUser(TEST_USERNAME))
     self.assertFalse(result)
 
   def testForNonLoggedInAccount(self):
-    """Tests that user is not craeted when no account is logged in."""
+    """Tests that user is not created when no account is logged in."""
     # make sure that nobody is logged in
     profile_utils.logout()
 
-    result = user_logic.createUser(TEST_USERNAME)
+    result = ndb.transaction(lambda: user_logic.createUser(TEST_USERNAME))
     self.assertFalse(result)
 
 
@@ -90,9 +100,46 @@ class GetByCurrentAccountTest(unittest.TestCase):
     self.assertIsNone(result)
 
 
-class GetByAccountTest(unittest.TestCase):
-  """Unit tests for getByAccount function."""
+class IsHostForProgramTest(unittest.TestCase):
+  """Unit tests for isHostForProgram function."""
 
-  def testUserEntityExists(self):
-    """Tests that user entity is returned if it exists for the account."""
-    
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.user = profile_utils.seedNDBUser()
+
+  def testIsHostForProgram(self):
+    """Tests that True is returned for a program host."""
+    # seed a couple of programs
+    program_one = program_utils.seedProgram()
+    program_two = program_utils.seedProgram()
+
+    # make the user a host for the first program but not for the other
+    self.user.host_for = [ndb.Key.from_old_key(program_one.key())]
+    self.user.put()
+
+    # check that the user is a host only for the first program
+    self.assertTrue(user_logic.isHostForProgram(self.user, program_one.key()))
+    self.assertFalse(user_logic.isHostForProgram(self.user, program_two.key()))
+
+
+class GetHostsForProgramTest(unittest.TestCase):
+  """Unit tests for getHostsForProgram function."""
+
+  def testGetHostsForProgram(self):
+    """Tests if a correct user entities are returned."""
+    program_one = program_utils.seedProgram()
+    program_two = program_utils.seedProgram()
+
+    # seed hosts for the program one
+    hosts = set()
+    for _ in range(3):
+      user_entity = profile_utils.seedNDBUser(host_for=[program_one])
+      hosts.add(user_entity.key)
+
+    # seed hosts for the program two
+    for _ in range(2):
+      user_entity = profile_utils.seedNDBUser(host_for=[program_two])
+
+    # check that correct hosts for program one are returned
+    actual_hosts = user_logic.getHostsForProgram(program_one.key())
+    self.assertSetEqual(hosts, set(host.key for host in actual_hosts))

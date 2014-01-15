@@ -47,7 +47,9 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
         'modules/gsoc/accept_withdraw_projects/base.html')
 
   def testWithdrawProjects(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     self.timeline_helper.studentsAnnounced()
 
     url = '/gsoc/withdraw_projects/' + self.gsoc.key().name()
@@ -74,7 +76,9 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
 
   def testWithdrawProject(self):
     """Test if withdrawing a project updates all the datastore properties."""
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     self.timeline_helper.studentsAnnounced()
 
     # list response with projects

@@ -19,16 +19,14 @@ import unittest
 
 from melange.request import exception
 
-from soc.models import program as program_model
-
-from soc.modules.gsoc.models import profile as profile_model
-from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import profile_utils
 from tests import program_utils
+from tests.utils import project_utils
+from tests.utils import proposal_utils
 
 
 class UrlProjectTest(unittest.TestCase):
@@ -90,25 +88,15 @@ class UrlProjectTest(unittest.TestCase):
   def testProjectExists(self):
     """Tests that project is returned correctly if exists."""
     sponsor = program_utils.seedSponsor()
+    program = program_utils.seedProgram(sponsor_key=sponsor.key())
 
-    program_properties = {
-        'scope': sponsor,
-        'sponsor': sponsor,
-        }
-    program = seeder_logic.seed(
-        program_model.Program, properties=program_properties)
-    program.program_id = program.link_id
-    program.put()
-
-    profile = profile_utils.seedGSoCStudent(program)
-    project_properties = {'parent': profile}
-    project = seeder_logic.seed(project_model.GSoCProject,
-        properties=project_properties)
+    profile = profile_utils.seedSOCStudent(program)
+    project = project_utils.seedProject(profile, program.key())
 
     kwargs = {
         'sponsor': sponsor.link_id,
         'program': program.program_id,
-        'user': profile.link_id,
+        'user': profile.profile_id,
         'id': str(project.key().id())
         }
     data = request_data.RequestData(None, None, kwargs)
@@ -175,23 +163,15 @@ class UrlProposalTest(unittest.TestCase):
   def testProposalExists(self):
     """Tests that proposal is returned correctly if exists."""
     sponsor = program_utils.seedSponsor()
-    program = seeder_logic.seed(program_model.Program)
-    user = profile_utils.seedUser()
-    profile_properties = {
-        'key_name': '%s/%s/%s' % 
-            (sponsor.link_id, program.program_id, user.link_id),
-        'parent': user,
-        'link_id': user.link_id
-        }
-    profile = seeder_logic.seed(profile_model.GSoCProfile, profile_properties)
-    proposal_properties = {'parent': profile}
-    proposal = seeder_logic.seed(proposal_model.GSoCProposal,
-        properties=proposal_properties)
+    program = program_utils.seedProgram(sponsor_key=sponsor.key())
+
+    profile = profile_utils.seedSOCStudent(program)
+    proposal = proposal_utils.seedProposal(profile.key, program.key())
 
     kwargs = {
         'sponsor': sponsor.link_id,
         'program': program.program_id,
-        'user': profile.link_id,
+        'user': profile.profile_id,
         'id': str(proposal.key().id())
         }
     data = request_data.RequestData(None, None, kwargs)

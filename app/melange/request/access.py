@@ -16,6 +16,7 @@
 
 from django.utils import translation
 
+from melange.logic import user as user_logic
 from melange.models import profile as profile_model
 from melange.request import exception
 from melange.request import links
@@ -129,7 +130,7 @@ class ProgramAdministratorAccessChecker(AccessChecker):
       return
     elif not data.gae_user:
       raise exception.LoginRequired()
-    elif not data.is_host:
+    elif not user_logic.isHostForProgram(data.ndb_user, data.program.key()):
       raise exception.Forbidden(message=_MESSAGE_NOT_PROGRAM_ADMINISTRATOR)
 
 PROGRAM_ADMINISTRATOR_ACCESS_CHECKER = ProgramAdministratorAccessChecker()
@@ -189,10 +190,11 @@ class NonStudentProfileAccessChecker(AccessChecker):
 
   def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
-    if not data.profile or data.profile.status != 'active':
+    if (not data.ndb_profile
+        or data.ndb_profile.status != profile_model.Status.ACTIVE):
       raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
 
-    if data.profile.is_student:
+    if data.ndb_profile.is_student:
       raise exception.Forbidden(message=_MESSAGE_STUDENTS_DENIED)
 
 NON_STUDENT_PROFILE_ACCESS_CHECKER = NonStudentProfileAccessChecker()

@@ -16,6 +16,7 @@
 
 from soc.models.document import Document
 
+from tests import profile_utils
 from tests import test_utils
 
 # TODO: perhaps we should move this out?
@@ -29,7 +30,8 @@ class ListDocumentTest(test_utils.GCIDjangoTestCase):
 
   def setUp(self):
     self.init()
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
   def testListDocument(self):
     url = '/gci/documents/' + self.gci.key().name()
@@ -48,11 +50,12 @@ class EditProgramTest(test_utils.GCIDjangoTestCase):
 
   def setUp(self):
     self.init()
-    self.profile_helper.createUser()
+    self.user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(self.user)
 
     properties = {
-        'modified_by': self.profile_helper.user,
-        'author': self.profile_helper.user,
+        'modified_by': self.user.key.to_old_key(),
+        'author': self.user.key.to_old_key(),
         'home_for': None,
         'prefix': 'gci_program',
         'scope': self.program,
@@ -71,7 +74,6 @@ class EditProgramTest(test_utils.GCIDjangoTestCase):
     pass
 
   def testCreateDocumentWithDashboardVisibility(self):
-    self.profile_helper.createHost()
     url = '/gci/document/edit/gci_program/%s/doc' % self.gci.key().name()
     response = self.get(url)
     self.assertGCITemplatesUsed(response)
@@ -79,12 +81,12 @@ class EditProgramTest(test_utils.GCIDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gci/_form.html')
 
     # test POST
+    key_name = string_provider.DocumentKeyNameProvider()
     override = {
         'prefix': 'gci_program', 'scope': self.gci, 'link_id': 'doc',
-        'key_name': string_provider.DocumentKeyNameProvider(),
-        'modified_by': self.profile_helper.user,
+        'key_name': key_name, 'modified_by': self.user.key.to_old_key(),
         'home_for': None,
-        'author': self.profile_helper.user, 'is_featured': None,
+        'author': self.user.key.to_old_key(), 'is_featured': None,
         'write_access': 'admin', 'read_access': 'public',
         'dashboard_visibility': ['student', 'mentor'],
     }
@@ -94,7 +96,12 @@ class EditProgramTest(test_utils.GCIDjangoTestCase):
 
     key_name = properties['key_name']
     document = Document.get_by_key_name(key_name)
-    self.assertPropertiesEqual(properties, document)
+
+    self.assertEqual(document.scope.key(), self.gci.key())
+    self.assertEqual(document.link_id, 'doc')
+    self.assertEqual(document.key().name(), key_name)
+    self.assertIn('student', document.dashboard_visibility)
+    self.assertIn('mentor', document.dashboard_visibility)
 
 
 class EventsPageTest(test_utils.GCIDjangoTestCase):

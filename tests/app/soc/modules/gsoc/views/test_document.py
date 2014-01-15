@@ -16,6 +16,7 @@
 
 from soc.models.document import Document
 
+from tests import profile_utils
 from tests.test_utils import GSoCDjangoTestCase
 
 # TODO: perhaps we should move this out?
@@ -28,7 +29,8 @@ class ListDocumentTest(GSoCDjangoTestCase):
 
   def setUp(self):
     self.init()
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
 
   def testListDocument(self):
     url = '/gsoc/documents/' + self.gsoc.key().name()
@@ -61,7 +63,9 @@ class EditProgramTest(GSoCDjangoTestCase):
     pass
 
   def testCreateDocumentWithDashboardVisibility(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     url = '/gsoc/document/edit/gsoc_program/%s/doc' % self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
@@ -73,9 +77,9 @@ class EditProgramTest(GSoCDjangoTestCase):
     override = {
         'prefix': 'gsoc_program', 'scope': self.gsoc, 'link_id': 'doc',
         'key_name': DocumentKeyNameProvider(),
-        'modified_by': self.profile_helper.user,
+        'modified_by': user.key.to_old_key(),
         'home_for': None,
-        'author': self.profile_helper.user, 'is_featured': None,
+        'author': user.key.to_old_key(), 'is_featured': None,
         'write_access': 'admin', 'read_access': 'public',
         'dashboard_visibility': ['student', 'mentor'],
     }
@@ -85,10 +89,12 @@ class EditProgramTest(GSoCDjangoTestCase):
 
     key_name = properties['key_name']
     document = Document.get_by_key_name(key_name)
-    self.assertPropertiesEqual(properties, document)
+    self.assertEqual(document.key().name(), key_name)
 
   def testCreateDocumentNoDashboardVisibility(self):
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     url = '/gsoc/document/edit/gsoc_program/%s/doc' % self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
@@ -100,9 +106,9 @@ class EditProgramTest(GSoCDjangoTestCase):
     override = {
         'prefix': 'gsoc_program', 'scope': self.gsoc, 'link_id': 'doc',
         'key_name': DocumentKeyNameProvider(),
-        'modified_by': self.profile_helper.user,
+        'modified_by': user.key.to_old_key(),
         'home_for': None,
-        'author': self.profile_helper.user, 'is_featured': None,
+        'author': user.key.to_old_key(), 'is_featured': None,
         'write_access': 'admin', 'read_access': 'public',
         'dashboard_visibility': [],
     }
@@ -112,7 +118,7 @@ class EditProgramTest(GSoCDjangoTestCase):
 
     key_name = properties['key_name']
     document = Document.get_by_key_name(key_name)
-    self.assertPropertiesEqual(properties, document)
+    self.assertEqual(document.key().name(), key_name)
 
 
 class EventsPageTest(GSoCDjangoTestCase):

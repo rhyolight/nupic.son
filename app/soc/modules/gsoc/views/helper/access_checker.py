@@ -28,6 +28,7 @@ from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 
 from melange.logic import connection as connection_logic
+from melange.logic import user as user_logic
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import slot_transfer as slot_transfer_logic
 from soc.modules.gsoc.models import proposal as proposal_model
@@ -269,7 +270,7 @@ class AccessChecker(access_checker.AccessChecker):
     # check how many proposals the student has already submitted
     # TODO(daniel): replace this query with checking on number_of_proposals
     query = proposal_model.GSoCProposal.all()
-    query.ancestor(self.data.profile)
+    query.ancestor(self.data.ndb_profile.key.to_old_key())
     query.filter(proposal_model.GSoCProposal.status.name, 'pending')
 
     if query.count() >= self.data.program.apps_tasks_limit:
@@ -280,14 +281,12 @@ class AccessChecker(access_checker.AccessChecker):
   def isStudentForSurvey(self):
     """Checks if the student can take survey for the project.
     """
-    assert access_checker.isSet(self.data.profile)
-
     self.isProjectInURLValid()
 
     # check if the project belongs to the current user and if so he
     # can access the survey
     expected_profile_key = self.data.url_project.parent_key()
-    if expected_profile_key != self.data.profile.key():
+    if expected_profile_key != self.data.ndb_profile.key.to_old_key():
       raise exception.Forbidden(
           message=DEF_STUDENT_EVAL_DOES_NOT_BELONG_TO_YOU)
 
@@ -335,7 +334,7 @@ class AccessChecker(access_checker.AccessChecker):
 
     # check if the currently logged in user is the mentor or co-mentor
     # for the project in request or the org admin for the org
-    if self.data.profile.key() not in self.data.url_project.mentors:
+    if self.data.profile.key.to_old_key() not in self.data.url_project.mentors:
       raise exception.Forbidden(message=DEF_MENTOR_EVAL_DOES_NOT_BELONG_TO_YOU)
 
   def canApplyStudent(self, edit_url):
@@ -343,12 +342,12 @@ class AccessChecker(access_checker.AccessChecker):
     """
     self.isLoggedIn()
 
-    if self.data.profile and self.data.profile.student_info:
+    if self.data.ndb_profile and self.data.ndb_profile.is_student:
       raise exception.Redirect(edit_url)
 
     self.studentSignupActive()
 
-    if not self.data.profile:
+    if not self.data.ndb_profile:
       return
 
     raise exception.Forbidden(message=
@@ -376,11 +375,9 @@ class AccessChecker(access_checker.AccessChecker):
     """Checks if the user can download the forms.
     """
     self.isProfileActive()
-    si = self.data.profile.student_info
-    if si:
-      if si.number_of_projects > 0:
-        return
-    raise exception.Forbidden(message=DEF_NOT_ALLOWED_TO_DOWNLOAD_FORM)
+    if not (self.data.ndb_profile.is_student
+        and self.data.ndb_profile.student_data.number_of_projects):
+      raise exception.Forbidden(message=DEF_NOT_ALLOWED_TO_DOWNLOAD_FORM)
 
   def canTakeOrgApp(self):
     """A user can take the GSoC org app if he has org admin profile in the
@@ -443,8 +440,8 @@ class AccessChecker(access_checker.AccessChecker):
       self.canStudentUpdateProposalPostSignup()
 
     # check if the proposal belongs to the current user
-    expected_profile = self.data.url_proposal.parent()
-    if expected_profile.key().name() != self.data.profile.key().name():
+    expected_profile_key = self.data.url_proposal.parent_key()
+    if expected_profile_key != self.data.ndbprofile.key.to_old_key():
       error_msg = access_checker.DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'name': 'proposal'
           }
@@ -482,7 +479,7 @@ class AccessChecker(access_checker.AccessChecker):
 
     # check if the project belongs to the current user
     expected_profile_key = self.data.url_project.parent_key()
-    if expected_profile_key != self.data.profile.key():
+    if expected_profile_key != self.data.ndb_profile.key.to_old_key():
       error_msg = access_checker.DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'name': 'project'
           }
@@ -522,9 +519,10 @@ class AccessChecker(access_checker.AccessChecker):
   def canUpdateProject(self):
     """Checks if the current user is allowed to update project details."""
     self.isLoggedIn()
-    if not self.data.is_host:
+    if not user_logic.isHostForProgram(
+        self.data.ndb_user, self.data.program.key()):
       self.hasProfile()
-      if self.data.profile.is_student:
+      if self.data.ndb_profile.is_student:
         # check if this is a student trying to update their project
         self.canStudentUpdateProject()
       elif self.data.is_org_admin:

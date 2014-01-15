@@ -23,6 +23,7 @@ from django.utils.translation import ugettext
 from soc.views import survey
 from soc.views.helper import lists
 
+from melange.logic import user as user_logic
 from melange.request import access
 from melange.request import exception
 
@@ -124,12 +125,12 @@ class GSoCStudentEvaluationEditPage(base.GSoCRequestHandler):
     if not form.is_valid():
       return None
 
-    form.cleaned_data['modified_by'] = data.user
+    form.cleaned_data['modified_by'] = data.ndb_user.key.to_old_key()
 
     if not data.student_evaluation:
       form.cleaned_data['link_id'] = data.kwargs.get('survey')
       form.cleaned_data['prefix'] = 'gsoc_program'
-      form.cleaned_data['author'] = data.user
+      form.cleaned_data['author'] = data.ndb_user.key.to_old_key()
       form.cleaned_data['scope'] = data.program
       # kwargs which defines an evaluation
       fields = ['sponsor', 'program', 'survey']
@@ -174,7 +175,7 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
 
     assert isSet(data.student_evaluation)
 
-    if data.is_host:
+    if user_logic.isHostForProgram(data.ndb_user, data.program.key()):
       return
 
     show_url = data.redirect.survey_record(
