@@ -72,6 +72,10 @@ DEF_NO_MORE_WORK = ugettext(
     'be submitted. The submitted work should be reviewed.')
 
 
+DEF_PUBLISHED_TITLE = ugettext('Task Published')
+DEF_PUBLISHED = ugettext('This task is open. It can be claimed')
+
+
 DEF_REOPENED_TITLE = ugettext('Task Reopened')
 DEF_REOPENED = ugettext(
     'Melange has detected that the final deadline has passed and it has '
@@ -90,6 +94,10 @@ DEF_UNASSIGNED = ugettext('This task has been Reopened.')
 DEF_UNCLAIMED_TITLE = ugettext('Claim Removed')
 DEF_UNCLAIMED = ugettext(
     'The claim on this task has been removed, someone else can claim it now.')
+
+
+DEF_UNPUBLISHED_TITLE = ugettext('Task Unublished')
+DEF_UNPUBLISHED = ugettext('The task is unpublished.')
 
 
 DELETE_EXPIRATION = datetime.timedelta(minutes=10)
@@ -149,6 +157,66 @@ def canSubmitWork(task, profile):
           datetime.datetime.utcnow() <= task.deadline and
           isOwnerOfTask(task, profile) and
           task.status in task_model.TASK_IN_PROGRESS)
+
+
+def publishTask(task, publisher):
+  """Publishes the task.
+
+  This will put the task in the Open state. A comment will also be generated
+  to record this event.
+
+  Args:
+    task: GCITask entity.
+    publisher: GCIProfile of the user that publishes the task.
+  """
+  task.status = 'Open'
+
+  comment_props = {
+      'parent': task,
+      'title': DEF_PUBLISHED_TITLE,
+      'content': DEF_PUBLISHED,
+      'created_by': publisher.user,
+  }
+  comment = GCIComment(**comment_props)
+
+  comment_txn = comment_logic.storeAndNotifyTxn(comment)
+
+  def publishTaskTxn():
+    task.put()
+    comment_txn()
+    _spawnUpdateTask(task, transactional=True)
+
+  return db.run_in_transaction(publishTaskTxn)
+
+
+def unpublishTask(task, publisher):
+  """Unpublishes the task.
+
+  This will put the task in the Unpublished state. A comment will also be
+  generated to record this event.
+
+  Args:
+    task: GCITask entity.
+    publisher: GCIProfile of the user that publishes the task.
+  """
+  task.status = 'Unpublished'
+
+  comment_props = {
+      'parent': task,
+      'title': DEF_UNPUBLISHED_TITLE,
+      'content': DEF_UNPUBLISHED,
+      'created_by': publisher.user,
+  }
+  comment = GCIComment(**comment_props)
+
+  comment_txn = comment_logic.storeAndNotifyTxn(comment)
+
+  def unpublishTaskTxn():
+    task.put()
+    comment_txn()
+    _spawnUpdateTask(task, transactional=True)
+
+  return db.run_in_transaction(unpublishTaskTxn)
 
 
 def assignTask(task, student, assigner):
