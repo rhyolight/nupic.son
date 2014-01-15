@@ -219,16 +219,19 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertTrue(proposal.accept_as_project)
 
   def testProposalModificationButton(self):
-    student = profile_utils.seedGSoCStudent(self.program)
-
-    proposal = self.createProposal({'scope': student, 'parent': student})
+    student = profile_utils.seedSOCStudent(self.program)
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), org_key=self.org.key)
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        student.user.key().name(),
+        student.key.parent().id(),
         proposal.key().id())
 
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
 
     url = '/gsoc/proposal/modification/' + suffix
     postdata = {'value': 'unchecked'}

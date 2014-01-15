@@ -473,7 +473,7 @@ class RequestData(request_data.RequestData):
     if not self.ndb_profile:
       return False
 
-    return org_key in self.profile.mentor_for
+    return org_key in self.ndb_profile.mentor_for
 
   def isPossibleMentorForProposal(self, mentor_profile=None):
     """Checks if the user is a possible mentor for the proposal in the data.

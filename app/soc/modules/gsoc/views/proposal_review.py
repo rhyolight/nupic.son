@@ -232,7 +232,7 @@ class UserActions(Template):
     self.toggle_buttons.append(wish_to_mentor)
 
     proposal_modifications_url = links.LINKER.userId(
-        self.data.url_profile.key(), self.data.kwargs['id'],
+        self.data.url_ndb_profile.key, self.data.kwargs['id'],
         'gsoc_proposal_modification')
 
     if self.data.timeline.afterStudentSignupEnd():
@@ -254,7 +254,7 @@ class UserActions(Template):
     context = {}
 
     ignore_proposal_url = links.LINKER.userId(
-        self.data.url_profile.key(), self.data.kwargs['id'],
+        self.data.url_ndb_profile.key, self.data.kwargs['id'],
         url_names.PROPOSAL_IGNORE)
 
     ignore_button_checked = False
@@ -292,11 +292,13 @@ class UserActions(Template):
         all_mentors_keys = []
 
       current_mentors = []
-      if self.data.url_proposal.mentor:
-        current_mentors.append(self.data.url_proposal.mentor.key())
+      mentor_key = (
+          GSoCProposal.mentor.get_value_for_datastore(self.data.url_proposal))
+      if mentor_key:
+        current_mentors.append(mentor_key)
 
       assign_mentor_url = links.LINKER.userId(
-          self.data.url_profile.key(), self.data.kwargs['id'],
+          self.data.url_ndb_profile.key, self.data.kwargs['id'],
           'gsoc_proposal_assign_mentor')
 
       context['assign_mentor'] = assign_mentor.AssignMentorFields(
@@ -309,7 +311,7 @@ class UserActions(Template):
     """Construct the context needed for proposer actions.
     """
     publicly_visible_url = links.LINKER.userId(
-        self.data.url_profile.key(), self.data.kwargs['id'],
+        self.data.url_ndb_profile.key, self.data.kwargs['id'],
         'gsoc_proposal_publicly_visible')
 
     publicly_visible = ToggleButtonTemplate(
@@ -329,7 +331,7 @@ class UserActions(Template):
         checked = False
 
       withdraw_proposal_url = links.LINKER.userId(
-          self.data.url_profile.key(), self.data.kwargs['id'],
+          self.data.url_ndb_profile.key, self.data.kwargs['id'],
           url_names.PROPOSAL_STATUS)
       withdraw_proposal = ToggleButtonTemplate(
           self.data, 'on_off', 'Withdraw Proposal', 'withdraw-proposal',
@@ -437,14 +439,15 @@ class ReviewProposal(base.GSoCRequestHandler):
     result = []
 
     for mentor in possible_mentors:
-      org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-          data.url_proposal)
+      org_key = ndb.Key.from_old_key(
+              proposal_model.GSoCProposal.org.get_value_for_datastore(
+                  data.url_proposal))
       if org_key in mentor.mentor_for:
         result.append(mentor)
         continue
 
       changed = True
-      data.url_proposal.possible_mentors.remove(mentor.key())
+      data.url_proposal.possible_mentors.remove(mentor.key.to_old_key())
 
     if changed:
       data.url_proposal.put()
@@ -505,7 +508,8 @@ class ReviewProposal(base.GSoCRequestHandler):
             data.url_ndb_profile.key(), data.url_proposal.key().id(),
             'update_gsoc_proposal')
 
-    possible_mentors = db.get(data.url_proposal.possible_mentors)
+    possible_mentors = ndb.get_multi(
+        map(ndb.Key.from_old_key, data.url_proposal.possible_mentors))
     possible_mentors = self.sanitizePossibleMentors(data, possible_mentors)
     possible_mentors_names = ', '.join([m.name() for m in possible_mentors])
 
@@ -575,8 +579,9 @@ class PostComment(base.GSoCRequestHandler):
     check.isProfileActive()
 
     # private comments may be posted only by organization members
-    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-        data.url_proposal)
+    org_key = ndb.Key.from_old_key(
+        proposal_model.GSoCProposal.org.get_value_for_datastore(
+            data.url_proposal))
     if not _isProposer(data):
       check.isMentorForOrganization(org_key)
 
@@ -640,7 +645,7 @@ class PostComment(base.GSoCRequestHandler):
       # in Melange.
       # TODO (Madhu): Replace this in favor of PJAX for loading comments.
       redirect_url = links.LINKER.userId(
-          data.url_profile.key(), data.url_proposal.key().id(),
+          data.url_ndb_profile.key, data.url_proposal.key().id(),
           url_names.PROPOSAL_REVIEW)
       proposal_match = resolve(redirect_url)
       proposal_view = proposal_match[0]
@@ -662,10 +667,11 @@ class PostScore(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-        data.url_proposal)
+    org_key = ndb.Key.from_old_key(
+        proposal_model.GSoCProposal.org.get_value_for_datastore(
+            data.url_proposal))
 
-    org = ndb.Key.from_old_key(org_key).get()
+    org = org_key.get()
     if not org:
       raise exception.BadRequest(
           message='Organization for key %s does not exist for proposal %s' %
@@ -756,8 +762,9 @@ class WishToMentor(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-        data.url_proposal)
+    org_key = ndb.Key.from_old_key(
+        proposal_model.GSoCProposal.org.get_value_for_datastore(
+            data.url_proposal))
     check.isMentorForOrganization(org_key)
 
   def addToPotentialMentors(self, data, value):
@@ -883,7 +890,7 @@ class AssignMentor(base.GSoCRequestHandler):
       self.unassignMentor(data)
 
     url = links.LINKER.userId(
-        data.url_profile.key(), data.url_proposal.key().id(),
+        data.url_ndb_profile.key, data.url_proposal.key().id(),
         url_names.PROPOSAL_REVIEW)
     return http.HttpResponseRedirect(url)
 
@@ -959,8 +966,9 @@ class ProposalModificationPostDeadline(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-        data.url_proposal)
+    org_key = ndb.Key.from_old_key(
+        proposal_model.GSoCProposal.org.get_value_for_datastore(
+            data.url_proposal))
     check.isMentorForOrganization(org_key)
 
   def toggleModificationPermission(self, data, value):

@@ -521,8 +521,6 @@ class AccessChecker(BaseAccessChecker):
     if self.data.mentorFor(org_key):
       return
 
-    if isinstance(org_key, ndb.Key):
-      org_key = org_key.to_old_key()
     raise exception.Forbidden(message=DEF_NOT_MENTOR % org_key.name())
 
   def isOrganizationInURLActive(self):
