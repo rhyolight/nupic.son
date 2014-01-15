@@ -480,6 +480,40 @@ def run_js_dev():
     env=get_js_tests_environment(), shell=True)
 
 
+# TODO(nathaniel): Deduplicate the code that is shared with js tests.
+def run_functional_tests(run_browsers_gui):
+  """Run Functional Tests.
+
+  Args:
+    run_browsers_gui: Boolean to specify whether or not to run all functional tests in
+      the browser UI.
+  """
+  os.environ['SERVER_SOFTWARE'] = 'Development'
+  os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+  if run_browsers_gui:
+    argv = ['-W', 'tests/functional/']
+    nose.run(argv=argv)
+    return
+
+  try:
+    # start() assigns the DISPLAY environment variable to the virtual display.
+    virtual_display = pyvirtualdisplay.Display().start()
+  except easyprocess.EasyProcessCheckInstalledError:
+    virtual_display = None
+
+  if virtual_display:
+    argv = ['-W', 'tests/functional/']
+    nose.run(argv=argv)
+    virtual_display.stop()
+  else:
+    print ('WARNING: You don\'t have Xvfb installed. This is required in order'
+           ' to run tests in browsers headlessly')
+    print ('You can either install xvfb ("sudo apt-get install xvfb" in Ubuntu)'
+           ' or run tests with --browsers-gui switch')
+    argv = ['-W', 'tests/functional/']
+    nose.run(argv=argv)
+
+
 def main():
   tests = set()
   if '-js-dev' in sys.argv:
@@ -490,8 +524,15 @@ def main():
       tests.update(sys.argv[i+1].split(','))
       del sys.argv[i:i+2]
     else:
-      tests = set(['js', 'pyunit', 'pylint'])
+      tests = set(['js', 'pyunit', 'pylint', 'functional'])
 
+    if 'functional' in tests:
+      run_browsers_gui = False
+      if '--browsers-gui' in sys.argv:
+        i = sys.argv.index('--browsers-gui')
+        del sys.argv[i]
+        run_browsers_gui = True
+      run_functional_tests(run_browsers_gui)
     if 'pylint' in tests:
       run_pylint()
     if 'pyunit' in tests:
