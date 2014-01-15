@@ -80,8 +80,10 @@
     this.sortSlices(slices);
 
     var last_slice = slices[slices.length -1];
+
     for (var a = 0; a < slices.length; a++) {
       var current_slice = slices[a];
+
       var grades_boundaries = this.datesToGrades(
         current_slice.from, current_slice.to, last_slice.to);
       current_slice.from_grade = grades_boundaries.from_grade;
