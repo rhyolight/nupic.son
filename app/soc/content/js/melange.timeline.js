@@ -251,41 +251,50 @@
 
       // Empty array
       this.slices = [];
-    },
+    }
+  };
 
-    datesToGrades: function (slices) {
-      var that = this,
-        time_start = null,
-        time_end = null,
-        time_zero_grade,
-        millisecondsInOneGrade = 1000 * 60 * 60 * 24 * 365 / 360;
+  Timeline.prototype.datesToGrades = function (slices) {
+    var that = this;
+    var time_start = null;
+    var time_end = null;
+    var time_zero_grade;
+    var millisecondsInOneGrade = 1000 * 60 * 60 * 24 * 365 / 360;
 
-      // Find minimax and maximal time intervals
-      $.each(slices, function (index, slice) {
-        if (time_start === null || time_start > that.dateToUTCMilliseconds(slice.from)) {
-          time_start = that.dateToUTCMilliseconds(slice.from);
-        }
-        if (time_end === null || time_end < that.dateToUTCMilliseconds(slice.to)) {
-          time_end = that.dateToUTCMilliseconds(slice.to);
-        }
-      });
-
-      // 90 grades is first day of last year
-      // 0 grades will be first day of last year minus 3 months
-      time_zero_grade = Date.UTC(new Date(time_end).getFullYear() - 1, 9, 1);
-
-      // Store current year
-      this.year = new Date(time_end).getFullYear();
-
-      // Transform dates to grades
-      for (var index in slices) {
-        slices[index].from_grade = (that.dateToUTCMilliseconds(slices[index].from) - time_zero_grade) / millisecondsInOneGrade;
-        slices[index].to_grade = (that.dateToUTCMilliseconds(slices[index].to) - time_zero_grade) / millisecondsInOneGrade;
+    // Find minimax and maximal time intervals
+    $.each(slices, function (index, slice) {
+      if (
+        time_start === null ||
+        time_start > that.dateToUTCMilliseconds(slice.from)
+      ) {
+        time_start = that.dateToUTCMilliseconds(slice.from);
       }
+      if (time_end === null || time_end < that.dateToUTCMilliseconds(slice.to)) {
+        time_end = that.dateToUTCMilliseconds(slice.to);
+      }
+    });
 
-      return slices;
-    },
+    // 90 grades is first day of last year
+    // 0 grades will be first day of last year minus 3 months
+    time_zero_grade = Date.UTC(new Date(time_end).getFullYear() - 1, 9, 1);
 
+    // Store current year
+    this.year = new Date(time_end).getFullYear();
+
+    // Transform dates to grades
+    for (var index in slices) {
+      slices[index].from_grade =
+        (
+          (that.dateToUTCMilliseconds(slices[index].from) - time_zero_grade)
+          / millisecondsInOneGrade
+        );
+      slices[index].to_grade =
+        (
+          (that.dateToUTCMilliseconds(slices[index].to) - time_zero_grade)
+          / millisecondsInOneGrade
+        );
+    }
+    return slices;
   };
 
   Timeline.prototype.addMissingSlices = function (slices) {
