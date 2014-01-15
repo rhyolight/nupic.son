@@ -109,6 +109,17 @@
       }
     }
     Array.prototype.push.apply(slices, missing_slices);
+
+    // TODO(Mario): this has to be done after all slices are done, but will
+    // refactor everything in order to be more efficient.
+    for (var a = 0; a < slices.length; a++) {
+      var current_slice = slices[a];
+
+      var readable_range = this.toReadableTimeRange(current_slice.from,
+                                                    current_slice.to);
+      current_slice.timerange = readable_range;
+    }
+
   };
 
   Timeline.prototype.sortSlices = function(slices) {
@@ -160,8 +171,6 @@
     var options = this.options;
     var that = this;
     var i;
-
-    slices = this.computeTimeRanges(slices);
 
     slices = this.setActiveSlice(slices, this.options.now);
 
@@ -413,8 +422,8 @@
     return null;
   };
 
-  Timeline.prototype.computeTimeRanges = function (slices) {
-    var month_names = [
+  Timeline.prototype.toReadableTimeRange = function (from, to) {
+    var MONTH_NAMES = [
       "January",
       "February",
       "March",
@@ -429,34 +438,33 @@
       "December"
     ];
 
-    for (var i = slices.length - 1; i >= 0; i--) {
-      if (slices[i].timerange === undefined) {
-        var date_from = new Date(this.dateToUTCMilliseconds(slices[i].from));
-        var date_to = new Date(this.dateToUTCMilliseconds(slices[i].to));
+    var date_from = new Date(this.dateToUTCMilliseconds(from));
+    var date_to = new Date(this.dateToUTCMilliseconds(to));
 
-        if (date_from.getUTCMonth() == date_to.getUTCMonth()) {
-          slices[i].timerange = [
-            month_names[date_from.getUTCMonth()],
-            ' ',
-            date_from.getUTCDate(),
-            ' - ',
-            date_to.getUTCDate()
-          ].join('');
-        } else {
-          slices[i].timerange = [
-            month_names[date_from.getUTCMonth()],
-            ' ',
-            date_from.getUTCDate(),
-            ' - ',
-            month_names[date_to.getUTCMonth()],
-            ' ',
-            date_to.getUTCDate()
-          ].join('');
-        }
-      }
+    var date_from_day = date_from.getUTCDate();
+    var date_from_month = date_from.getUTCMonth();
+    var date_to_day = date_to.getUTCDate();
+    var date_to_month = date_to.getUTCMonth();
+
+    if (date_from_month == date_to_month) {
+      return [
+        MONTH_NAMES[date_from_month],
+        ' ',
+        date_from_day,
+        ' - ',
+        date_to_day
+      ].join('');
+    } else {
+      return [
+        MONTH_NAMES[date_from_month],
+        ' ',
+        date_from_day,
+        ' - ',
+        MONTH_NAMES[date_to_month],
+        ' ',
+        date_to_day
+      ].join('');
     }
-
-    return slices;
   };
 
   /*
