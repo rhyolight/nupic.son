@@ -450,9 +450,11 @@
     return slices;
   };
 
-  // Parse yyyy-mm-dd hh:mm:ss
-  // Parse using custom function as standart parse function is implementation dependant
-  // Returns number of milliseconds from midnight January 1 1970
+  /*
+    Parse yyyy-mm-dd hh:mm:ss using custom function, since standard parse
+    function is implementation dependent.
+    Returns number of milliseconds from midnight January 1 1970.
+  */
   Timeline.prototype.dateToUTCMilliseconds = function (date) {
     var parts = date.match(/(\d+)/g);
     return Date.UTC(
