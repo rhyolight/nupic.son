@@ -232,17 +232,18 @@
       return slice;
     },
 
-    clean: function () {
-      $.each(this.slices, function (index, slice) {
-        // Remove each Raphael object and set
-        slice._wires.remove();
-        slice._arc.remove();
-        slice._piece.remove();
-      });
+  };
 
-      // Empty array
-      this.slices = [];
-    }
+  Timeline.prototype.clean = function () {
+    $.each(this.slices, function (index, slice) {
+      // Remove each Raphael object and set
+      slice._wires.remove();
+      slice._arc.remove();
+      slice._piece.remove();
+    });
+
+    // Empty array
+    this.slices = [];
   };
 
   Timeline.prototype.datesToGrades = function (slices) {
