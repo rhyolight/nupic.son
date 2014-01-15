@@ -73,6 +73,57 @@
   };
 
   /*
+    Parse yyyy-mm-dd hh:mm:ss using custom function, since standard parse
+    function is implementation dependent.
+    Returns number of milliseconds from midnight January 1 1970.
+  */
+  Timeline.prototype.dateToUTCMilliseconds = function (date) {
+    var parts = date.match(/(\d+)/g);
+    return Date.UTC(
+      parts[0],
+      parts[1] - 1, // months are 0-based
+      parts[2],
+      parts[3],
+      parts[4],
+      parts[5] || 0
+    );
+  };
+
+  Timeline.prototype.enrichRaphaelObjectWithCustomAttributes = function (R) {
+    R.customAttributes.segment = function (x, y, r, a1, a2) {
+      var flag = (a2 - a1) > 180;
+
+      a1 = (a1 % 360) * Math.PI / 180;
+      a2 = (a2 % 360) * Math.PI / 180;
+
+      return {
+        path: [
+          ["M", x, y],
+          ["l", r * Math.cos(a1), r * Math.sin(a1)],
+          ["A", r, r, 0, +flag, 1, x + r * Math.cos(a2), y + r * Math.sin(a2)],
+          ["z"]
+        ]
+      };
+    };
+
+    R.customAttributes.arc = function (x, y, r, a1, a2) {
+      var flag = (a2 - a1) > 180;
+
+      a1 = (a1 % 360) * Math.PI / 180;
+      a2 = (a2 % 360) * Math.PI / 180;
+
+      return {
+        path: [
+          ["M", x + r * Math.cos(a1), y + r * Math.sin(a1)],
+          ["A", r, r, 0, +flag, 1, x + r * Math.cos(a2), y + r * Math.sin(a2)]
+        ]
+      };
+    };
+
+    return R;
+  };
+
+  /*
      The purpose of this function is to enrich the array of slices objects
      passed as parameters, so it has side effects over every object by design.
   */
@@ -183,6 +234,22 @@
       };
     }
     return null;
+  };
+
+  Timeline.prototype.shadeColor = function(color, percent) {
+    // Source http://stackoverflow.com/a/13542669/1194327
+    var num = parseInt(color.slice(1), 16);
+    var amt = Math.round(2.55 * percent);
+    var R = (num >> 16) + amt;
+    var B = (num >> 8 & 0x00FF) + amt;
+    var G = (num & 0x0000FF) + amt;
+
+    return "#" + (
+      0x1000000 +
+      (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+      (B < 255 ? B < 1 ? 0 : B : 255) * 0x100 +
+      (G < 255 ? G < 1 ? 0 : G : 255)
+    ).toString(16).slice(1);
   };
 
   Timeline.prototype.toReadableTimeRange = function (from, to) {
@@ -466,23 +533,6 @@
     this.slices = [];
   };
 
-  /*
-    Parse yyyy-mm-dd hh:mm:ss using custom function, since standard parse
-    function is implementation dependent.
-    Returns number of milliseconds from midnight January 1 1970.
-  */
-  Timeline.prototype.dateToUTCMilliseconds = function (date) {
-    var parts = date.match(/(\d+)/g);
-    return Date.UTC(
-      parts[0],
-      parts[1] - 1, // months are 0-based
-      parts[2],
-      parts[3],
-      parts[4],
-      parts[5] || 0
-    );
-  };
-
   Timeline.prototype.setActiveSlice = function (slices, now) {
     var slices_count = slices.length;
 
@@ -499,56 +549,6 @@
 
     return slices;
   }
-
-  Timeline.prototype.shadeColor = function(color, percent) {
-    // Source http://stackoverflow.com/a/13542669/1194327
-    var num = parseInt(color.slice(1), 16);
-    var amt = Math.round(2.55 * percent);
-    var R = (num >> 16) + amt;
-    var B = (num >> 8 & 0x00FF) + amt;
-    var G = (num & 0x0000FF) + amt;
-
-    return "#" + (
-      0x1000000 +
-      (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-      (B < 255 ? B < 1 ? 0 : B : 255) * 0x100 +
-      (G < 255 ? G < 1 ? 0 : G : 255)
-    ).toString(16).slice(1);
-  };
-
-  Timeline.prototype.enrichRaphaelObjectWithCustomAttributes = function (R) {
-    R.customAttributes.segment = function (x, y, r, a1, a2) {
-      var flag = (a2 - a1) > 180;
-
-      a1 = (a1 % 360) * Math.PI / 180;
-      a2 = (a2 % 360) * Math.PI / 180;
-
-      return {
-        path: [
-          ["M", x, y],
-          ["l", r * Math.cos(a1), r * Math.sin(a1)],
-          ["A", r, r, 0, +flag, 1, x + r * Math.cos(a2), y + r * Math.sin(a2)],
-          ["z"]
-        ]
-      };
-    };
-
-    R.customAttributes.arc = function (x, y, r, a1, a2) {
-      var flag = (a2 - a1) > 180;
-
-      a1 = (a1 % 360) * Math.PI / 180;
-      a2 = (a2 % 360) * Math.PI / 180;
-
-      return {
-        path: [
-          ["M", x + r * Math.cos(a1), y + r * Math.sin(a1)],
-          ["A", r, r, 0, +flag, 1, x + r * Math.cos(a2), y + r * Math.sin(a2)]
-        ]
-      };
-    };
-
-    return R;
-  };
 
  /* Timeline PLUGIN DEFINITION
   * ===================== */
