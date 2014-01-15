@@ -107,6 +107,31 @@
     );
   }
 
+  Timeline.prototype.datesToGrades = function (from, to, time_end) {
+    var time_zero_grade;
+    var millisecondsInOneGrade = 1000 * 60 * 60 * 24 * 365 / 360;
+
+    // 90 grades is first day of last year
+    // 0 grades will be first day of last year minus 3 months
+    time_zero_grade = Date.UTC(new Date(time_end).getFullYear() - 1, 9, 1);
+
+    // Store current year
+    this.year = new Date(time_end).getFullYear();
+
+    return {
+      from_grade:
+        (
+          (this.dateToUTCMilliseconds(from) - time_zero_grade)
+          / millisecondsInOneGrade
+        ),
+      to_grade:
+        (
+          (this.dateToUTCMilliseconds(to) - time_zero_grade)
+          / millisecondsInOneGrade
+        )
+     };
+  };
+
   Timeline.prototype.assignColors = function(index, colors) {
     return colors[index % colors.length];
   };
@@ -350,31 +375,6 @@
 
     // Empty array
     this.slices = [];
-  };
-
-  Timeline.prototype.datesToGrades = function (from, to, time_end) {
-    var time_zero_grade;
-    var millisecondsInOneGrade = 1000 * 60 * 60 * 24 * 365 / 360;
-
-    // 90 grades is first day of last year
-    // 0 grades will be first day of last year minus 3 months
-    time_zero_grade = Date.UTC(new Date(time_end).getFullYear() - 1, 9, 1);
-
-    // Store current year
-    this.year = new Date(time_end).getFullYear();
-
-    return {
-      from_grade:
-        (
-          (this.dateToUTCMilliseconds(from) - time_zero_grade)
-          / millisecondsInOneGrade
-        ),
-      to_grade:
-        (
-          (this.dateToUTCMilliseconds(to) - time_zero_grade)
-          / millisecondsInOneGrade
-        )
-     };
   };
 
   Timeline.prototype.addMissingSlices = function (slices) {
