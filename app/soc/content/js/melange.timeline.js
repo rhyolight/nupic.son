@@ -107,62 +107,67 @@
         text: that.R.text(94, 78, that.year).attr({font: '700 18px "Helvetica Neue", Helvetica, "Arial Unicode MS", Arial, sans-serif', fill: options.color_blue}),
         line: that.R.path('M94 91L94 111').attr({stroke: options.color_gray})
       };
-    },
-
-    draw_wires: function (x, y, r, a1, a2, color_w1, color_w2) {
-      var wires = this.R.set(),
-        a_middle = (((a1 + a2) / 2) + (a2 < a1 ? 180 : 0)) % 360,
-        a_middle_rad = (a_middle % 360) * Math.PI / 180,
-        is_bottom = a_middle <= 180,
-        is_left = a_middle > 90 && a_middle < 270;
-
-      color_w1 = color_w1 || this.options.color_blue;
-      color_w2 = color_w2 || this.options.color_blue_light;
-
-      if (is_bottom) {
-        // First line
-        wires.push(this.R.path().attr({
-          path: [
-            ["M", ~~((is_left ? 6 : -6) + x + r * Math.cos(a_middle_rad)), ~~(y + 2 + r * Math.sin(a_middle_rad)) + 0.5],
-            ["l", ~~(is_left ? (-r - 10 - r * Math.cos(a_middle_rad)) : (r + 10 - r * Math.cos(a_middle_rad))) + 0.5, 0],
-            ["l", 0, -~~(y + 2 + r * Math.sin(a_middle_rad)) - 0.5]
-          ],
-          stroke: color_w1
-        }));
-
-        // Second line
-        wires.push(this.R.path().attr({
-          path: [
-            ["M", ~~((is_left ? 6 : -6) + x + r * Math.cos(a_middle_rad)), ~~(y + 2 + r * Math.sin(a_middle_rad)) + 1.5],
-            ["l", ~~(is_left ? (-r - 11 - r * Math.cos(a_middle_rad)) : (r + 11 - r * Math.cos(a_middle_rad))) + 0.5, 0],
-            ["l", 0, -~~(y + 2 + r * Math.sin(a_middle_rad)) - 0.5]
-          ],
-          stroke: color_w2
-        }));
-      } else {
-        // First line
-        wires.push(this.R.path().attr({
-          path: [
-            ["M", ~~(x + r * Math.cos(a_middle_rad)) + 0.5, ~~(y + 4 + r * Math.sin(a_middle_rad))],
-            ["L", ~~(x + r * Math.cos(a_middle_rad)) + 0.5, 0]
-          ],
-          stroke: color_w1
-        }));
-
-        // Second line
-        wires.push(this.R.path().attr({
-          path: [
-            ["M", ~~(x + r * Math.cos(a_middle_rad)) + 0.5 - (is_left ? 1 : -1), ~~(y + 4 + r * Math.sin(a_middle_rad))],
-            ["L", ~~(x + r * Math.cos(a_middle_rad)) + 0.5 - (is_left ? 1 : -1), 1]
-          ],
-          stroke: color_w2
-        }));
-      }
-
-      return wires;
     }
 
   };
+
+  Timeline.prototype.draw_wires = function (x, y, r, a1, a2, color_w1,
+                                            color_w2) {
+    var wires = this.R.set();
+    var a_middle = (((a1 + a2) / 2) + (a2 < a1 ? 180 : 0)) % 360;
+    var a_middle_rad = (a_middle % 360) * Math.PI / 180;
+    var is_bottom = a_middle <= 180;
+    var is_left = a_middle > 90 && a_middle < 270;
+
+    color_w1 = color_w1 || this.options.color_blue;
+    color_w2 = color_w2 || this.options.color_blue_light;
+
+    if (is_bottom) {
+      // First line
+      wires.push(this.R.path().attr({
+        path: [
+          [
+            "M",
+            ~~((is_left ? 6 : -6) + x + r * Math.cos(a_middle_rad)),
+            ~~(y + 2 + r * Math.sin(a_middle_rad)) + 0.5
+          ],
+          ["l", ~~(is_left ? (-r - 10 - r * Math.cos(a_middle_rad)) : (r + 10 - r * Math.cos(a_middle_rad))) + 0.5, 0],
+          ["l", 0, -~~(y + 2 + r * Math.sin(a_middle_rad)) - 0.5]
+        ],
+        stroke: color_w1
+      }));
+
+      // Second line
+      wires.push(this.R.path().attr({
+        path: [
+          ["M", ~~((is_left ? 6 : -6) + x + r * Math.cos(a_middle_rad)), ~~(y + 2 + r * Math.sin(a_middle_rad)) + 1.5],
+          ["l", ~~(is_left ? (-r - 11 - r * Math.cos(a_middle_rad)) : (r + 11 - r * Math.cos(a_middle_rad))) + 0.5, 0],
+          ["l", 0, -~~(y + 2 + r * Math.sin(a_middle_rad)) - 0.5]
+        ],
+        stroke: color_w2
+      }));
+    } else {
+      // First line
+      wires.push(this.R.path().attr({
+        path: [
+          ["M", ~~(x + r * Math.cos(a_middle_rad)) + 0.5, ~~(y + 4 + r * Math.sin(a_middle_rad))],
+          ["L", ~~(x + r * Math.cos(a_middle_rad)) + 0.5, 0]
+        ],
+        stroke: color_w1
+      }));
+
+      // Second line
+      wires.push(this.R.path().attr({
+        path: [
+          ["M", ~~(x + r * Math.cos(a_middle_rad)) + 0.5 - (is_left ? 1 : -1), ~~(y + 4 + r * Math.sin(a_middle_rad))],
+          ["L", ~~(x + r * Math.cos(a_middle_rad)) + 0.5 - (is_left ? 1 : -1), 1]
+        ],
+        stroke: color_w2
+      }));
+    }
+
+    return wires;
+  }
 
   Timeline.prototype.draw_slice = function (slice) {
     var options = this.options;
