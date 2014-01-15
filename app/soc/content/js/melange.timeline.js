@@ -548,7 +548,7 @@
     }
 
     return slices;
-  }
+  };
 
  /* Timeline PLUGIN DEFINITION
   * ===================== */
