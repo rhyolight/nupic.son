@@ -39,7 +39,9 @@ class User(ndb.Model):
   #: A Google Account associated with this user entity.
   account = ndb.UserProperty()
 
-  #: Unique and permanent identifier associated with the Google Account.
+  #: Unique and permanent identifier associated with the Google Account. This
+  #: should be assigned to the value of User.user_id() where User is the
+  #: User entity referenced in account field.
   account_id = ndb.StringProperty(required=True)
 
   #: Field storing the status of the user.
