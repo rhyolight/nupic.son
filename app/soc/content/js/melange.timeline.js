@@ -21,14 +21,15 @@
   * ==================== */
 
   var Timeline = function (element, options) {
-    this.init(element, options);
+    this.init(element);
+    this.setOptionsAndDraw(options);
   };
 
   Timeline.prototype = {
 
     constructor: Timeline,
 
-    options: {
+    options_defaults: {
       color_blue: '#3089b6',
       color_blue_light: '#bff2ff',
       color_gray: '#e7e7ea',
@@ -51,42 +52,10 @@
     },
 
     slice_active: null,
-    slices: []
   };
 
-  Timeline.prototype.init = function (element, options) {
-    // transform date into milliseconds
-    if (
-      (typeof(options.now) !== 'undefined') &&
-      (isNaN(parseInt(options.now, 10)) || !isFinite(options.now))
-    ) {
-      options.now = this.dateToUTCMilliseconds(options.now);
-    }
-
-    $.extend(this.options, options);
-
+  Timeline.prototype.init = function (element) {
     this.R = this.enrichRaphaelObjectWithCustomAttributes(Raphael(element));
-
-    this.enrichSlices(this.options.slices);
-
-    this.draw(this.options.slices);
-  };
-
-  /*
-    Parse yyyy-mm-dd hh:mm:ss using custom function, since standard parse
-    function is implementation dependent.
-    Returns number of milliseconds from midnight January 1 1970.
-  */
-  Timeline.prototype.dateToUTCMilliseconds = function (date) {
-    var parts = date.match(/(\d+)/g);
-    return Date.UTC(
-      parts[0],
-      parts[1] - 1, // months are 0-based
-      parts[2],
-      parts[3],
-      parts[4],
-      parts[5] || 0
-    );
   };
 
   Timeline.prototype.enrichRaphaelObjectWithCustomAttributes = function (R) {
@@ -121,6 +90,44 @@
     };
 
     return R;
+  };
+
+  Timeline.prototype.setOptionsAndDraw = function (options) {
+    // transform date into milliseconds
+    if (
+      (typeof(options.now) !== 'undefined') &&
+      (isNaN(parseInt(options.now, 10)) || !isFinite(options.now))
+    ) {
+      options.now = this.dateToUTCMilliseconds(options.now);
+    }
+
+    options.title_element = $(options.title_selector);
+    options.timerange_element = $(options.timerange_selector);
+
+    this.options = $.extend({}, this.options_defaults, options);
+
+    this.enrichSlices(this.options.slices);
+
+    this.R.clear();
+
+    this.draw(this.options.slices);
+  };
+
+  /*
+    Parse yyyy-mm-dd hh:mm:ss using custom function, since standard parse
+    function is implementation dependent.
+    Returns number of milliseconds from midnight January 1 1970.
+  */
+  Timeline.prototype.dateToUTCMilliseconds = function (date) {
+    var parts = date.match(/(\d+)/g);
+    return Date.UTC(
+      parts[0],
+      parts[1] - 1, // months are 0-based
+      parts[2],
+      parts[3],
+      parts[4],
+      parts[5] || 0
+    );
   };
 
   /*
@@ -297,8 +304,6 @@
   };
 
   Timeline.prototype.draw = function (slices) {
-    this.clean();
-
     var options = this.options;
     var that = this;
     var i;
@@ -308,8 +313,7 @@
     this.R.path('M0 1.5L187 1.5').attr({stroke: options.color_blue_light});
 
     for (i in slices) {
-      // Draw
-      this.slices.push(this.draw_slice(slices[i]));
+      this.draw_slice(slices[i]);
     }
 
     // Draw inner circle
@@ -335,18 +339,6 @@
             }),
       line: that.R.path('M94 91L94 111').attr({stroke: options.color_gray})
     };
-  };
-
-  Timeline.prototype.clean = function () {
-    $.each(this.slices, function (index, slice) {
-      // Remove each Raphael object and set
-      slice._wires.remove();
-      slice._arc.remove();
-      slice._piece.remove();
-    });
-
-    // Empty array
-    this.slices = [];
   };
 
   Timeline.prototype.draw_slice = function (slice) {
@@ -387,8 +379,8 @@
         // change opacity
         this.attr({opacity: 1});
         // change html contents
-        options.title_element.innerHTML = slice.title;
-        options.timerange_element.innerHTML = slice.timerange;
+        options.title_element.html(slice.title);
+        options.timerange_element.html(slice.timerange);
         slice._wires.attr({opacity: 1});
         slice._arc.attr({opacity: 1});
 
@@ -401,9 +393,8 @@
         // change opacity
         this.attr({opacity: options.slice_faded_opacity});
         // change html contents
-        options.title_element.innerHTML = options.timeline_title_default;
-        options.timerange_element.innerHTML =
-             options.timeline_timerange_default;
+        options.title_element.html(options.timeline_title_default);
+        options.timerange_element.html(options.timeline_timerange_default);
         slice._wires.attr({opacity: 0});
         slice._arc.attr({opacity: options.slice_faded_opacity});
 
@@ -423,8 +414,8 @@
       options.timeline_timerange_default = slice.timerange;
 
       // Set default title and timeline
-      options.title_element.innerHTML = slice.title;
-      options.timerange_element.innerHTML = slice.timerange;
+      options.title_element.html(slice.title);
+      options.timerange_element.html(slice.timerange);
     }
 
     return slice;
