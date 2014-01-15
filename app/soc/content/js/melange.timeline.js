@@ -71,6 +71,8 @@
     },
 
     draw: function (slices) {
+      this.clean();
+
       var options = this.options,
         that = this,
         i;
@@ -228,14 +230,6 @@
       }
 
       return slice;
-    },
-
-    redraw: function (slices) {
-      // Delete previously drawn objects
-      this.clean();
-
-      // Draw
-      this.draw(slices);
     },
 
     clean: function () {
