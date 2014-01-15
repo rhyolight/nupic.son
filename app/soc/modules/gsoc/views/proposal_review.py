@@ -116,7 +116,7 @@ class Duplicate(Template):
     """The context for this template used in render()."""
     orgs = []
     for org in db.get(self.duplicate.orgs):
-      admins = profile_logic.getOrgAdmins(org.key.to_old_key())
+      admins = profile_logic.getOrgAdmins(org.key)
 
       data = {
           'name': org.name,
@@ -143,7 +143,7 @@ def _isProposer(data):
   Args:
     data: request_data.RequestData for the current request.
   """
-  return data.url_user.key() == data.user.key()
+  return data.url_ndb_org.key == data.ndb_user.key
 
 
 def _getApplyingCommentType(data):
@@ -218,7 +218,7 @@ class UserActions(Template):
     """
 
     wish_to_mentor_url = links.LINKER.userId(
-        self.data.url_profile.key(), self.data.kwargs['id'],
+        self.data.url_ndb_profile.key, self.data.kwargs['id'],
         'gsoc_proposal_wish_to_mentor')
 
     wish_to_mentor = ToggleButtonTemplate(
@@ -400,7 +400,7 @@ class ReviewProposal(base.GSoCRequestHandler):
       number += 1
 
       author_key = GSoCScore.author.get_value_for_datastore(score)
-      if author_key == data.profile.key():
+      if author_key == data.ndb_profile.key:
         user_score = score.value
 
     return {
@@ -602,19 +602,21 @@ class PostComment(base.GSoCRequestHandler):
 
     if _isProposer(data):
       comment_form.cleaned_data['is_private'] = False
-    comment_form.cleaned_data['author'] = data.profile
+    comment_form.cleaned_data['author'] = data.ndb_profile
 
-    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-        data.url_proposal)
-    q = GSoCProfile.all().filter('mentor_for', org_key)
-    q = q.filter('status', 'active')
-    if comment_form.cleaned_data.get('is_private'):
-      q.filter('notify_private_comments', True)
-    else:
-      q.filter('notify_public_comments', True)
-    mentors = q.fetch(1000)
+    # TODO(daniel): re-enable notifications
+    #org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+    #    data.url_proposal)
+    #q = GSoCProfile.all().filter('mentor_for', org_key)
+    #q = q.filter('status', 'active')
+    #if comment_form.cleaned_data.get('is_private'):
+    #  q.filter('notify_private_comments', True)
+    #else:
+    #  q.filter('notify_public_comments', True)
+    #mentors = q.fetch(1000)
 
-    to_emails = [i.email for i in mentors if i.key() != data.profile.key()]
+    #to_emails = [i.email for i in mentors if i.key() != data.profile.key()]
+    to_emails = []
 
     def create_comment_txn():
       comment = comment_form.create(commit=True, parent=data.url_proposal)
@@ -698,7 +700,7 @@ class PostScore(base.GSoCRequestHandler):
           message="Score must not be higher than %d" % max_score)
 
     query = db.Query(GSoCScore)
-    query.filter('author = ', data.profile)
+    query.filter('author = ', data.ndb_profile.key.to_old_key())
     query.ancestor(data.url_proposal)
 
     def update_score_trx():
@@ -712,7 +714,7 @@ class PostScore(base.GSoCRequestHandler):
         old_value = 0
         score = GSoCScore(
             parent=data.url_proposal,
-            author=data.profile,
+            author=data.ndb_profile.key.to_old_key(),
             value=value)
         score.put()
         delta = 1
@@ -765,7 +767,6 @@ class WishToMentor(base.GSoCRequestHandler):
       data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(data.profile)
     assert isSet(data.url_proposal)
 
     if value != 'checked' and value != 'unchecked':
@@ -777,7 +778,7 @@ class WishToMentor(base.GSoCRequestHandler):
       raise exception.BadRequest(message="Invalid post data.")
 
     proposal_key = data.url_proposal.key()
-    profile_key = data.profile.key()
+    profile_key = data.ndb_profile.key.to_old_key()
 
     def update_possible_mentors_trx():
       # transactionally get latest version of the proposal
@@ -1139,7 +1140,7 @@ class WithdrawProposalHandler(form_handler.FormHandler):
   def handle(self, data, check, mutator):
     """See form_handler.FormHandler.handle for specification."""
     is_withdrawn = withdrawProposalTxn(
-        data.url_proposal.key(), data.profile.student_info.key())
+        data.url_proposal.key(), data.ndb_profile.student_data.key)
     if is_withdrawn:
       if self._url is not None:
         return http.HttpResponseRedirect(self._url)
@@ -1155,36 +1156,39 @@ class ResubmitProposalHandler(form_handler.FormHandler):
   def handle(self, data, check, mutator):
     """See form_handler.FormHandler.handle for specification."""
     is_resubmitted = resubmitProposalTxn(
-        data.url_proposal.key(), data.profile.student_info.key(),
+        data.url_proposal.key(), data.ndb_profile.key,
         data.program, data.program.timeline)
     if is_resubmitted:
       return http.HttpResponse()
     else:
       raise exception.Forbidden(PROPOSAL_CANNOT_BE_RESUBMITTED)
 
-
-@db.transactional
-def withdrawProposalTxn(proposal_key, student_info_key):
+# TODO(daniel): it should be transactional when when proposal updated to NDB
+#@db.transactional
+def withdrawProposalTxn(proposal_key, profile_key):
   """Withdraws the specified proposal in a transaction.
 
   Args:
     proposal_key: Proposal key.
     student_info_key: Student info key of the student who owns the proposal.
   """
-  proposal, student_info = db.get([proposal_key, student_info_key])
-  return proposal_logic.withdrawProposal(proposal, student_info)
+  proposal = db.get(proposal_key)
+  profile = profile_key.get()
+  return proposal_logic.withdrawProposal(proposal, profile)
 
 
-@db.transactional
-def resubmitProposalTxn(proposal_key, student_info_key, program, timeline):
+# TODO(daniel): it should be transactional when when proposal updated to NDB
+#@db.transactional
+def resubmitProposalTxn(proposal_key, profile_key, program, timeline):
   """Resubmits the specified proposal in a transaction.
 
   Args:
     proposal_key: Proposal key.
-    student_info_key: Student info key of the student who owns the proposal.
+    student_info_key: Profile key
     program: Program entity.
     timeline: Timeline enity.
   """
-  proposal, student_info = db.get([proposal_key, student_info_key])
+  proposal = db.get(proposal_key)
+  profile = profile_key.get()
   return proposal_logic.resubmitProposal(
-      proposal, student_info, program, timeline)
+      proposal, profile, program, timeline)

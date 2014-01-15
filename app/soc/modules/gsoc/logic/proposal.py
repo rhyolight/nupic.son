@@ -167,15 +167,15 @@ def canProposalBeWithdrawn(proposal):
   return proposal.status == proposal_model.STATUS_PENDING
 
 
-def canProposalBeResubmitted(proposal, student_info, program, timeline):
+def canProposalBeResubmitted(proposal, profile, program, timeline):
   """Tells whether the specified proposal can be resubmitted by the specified
   student for the given program.
 
   Args:
-    proposal: proposal entity
-    student_info: student info entity
-    program: program entity
-    timeline: timeline entity for the program
+    proposal: Proposal entity.
+    profile: Profile entity.
+    program: Program entity.
+    timeline: Timeline entity for the program.
 
   Returns:
     True, if the proposal can be resubmitted; False otherwise
@@ -192,19 +192,19 @@ def canProposalBeResubmitted(proposal, student_info, program, timeline):
   elif proposal.status != proposal_model.STATUS_WITHDRAWN:
     # only withdrawn proposals can be resubmitted
     return False
-  elif student_info.number_of_proposals >= program.apps_tasks_limit:
+  elif profile.student_data.number_of_proposals >= program.apps_tasks_limit:
     # student has not reached the limit of proposals per program
     return False
   else:
     return True
 
 
-def withdrawProposal(proposal, student_info):
+def withdrawProposal(proposal, profile):
   """Withdraws proposal for the specified student profile.
 
   Args:
-    proposal: proposal entity
-    student_info: student info entity
+    proposal: Proposal entity.
+    profile: Profile entity.
 
   Returns:
     True, if the proposal is withdrawn upon returning from this function;
@@ -215,15 +215,18 @@ def withdrawProposal(proposal, student_info):
     return proposal.status == proposal_model.STATUS_WITHDRAWN
 
   proposal.status = proposal_model.STATUS_WITHDRAWN
-  student_info.number_of_proposals -= 1
+  profile.student_data.number_of_proposals -= 1
 
   # student info and proposal are in the same entity group
-  db.put([proposal, student_info])
+  db.put(proposal)
+
+  # TODO(daniel): it should be persisted along with proposal
+  profile.put()
 
   return True
 
 
-def resubmitProposal(proposal, student_info, program, timeline):
+def resubmitProposal(proposal, profile, program, timeline):
   """Resubmits (changes status from 'withdrawn' to 'pending')
   the specified proposal for the specified student and program.
 
@@ -244,14 +247,16 @@ def resubmitProposal(proposal, student_info, program, timeline):
             timeline.key().name(), program.key().name()))
 
   if not canProposalBeResubmitted(
-      proposal, student_info, program, timeline):
+      proposal, profile, program, timeline):
     # check if the proposal is not already pending
     return proposal.status == proposal_model.STATUS_PENDING
 
   proposal.status = proposal_model.STATUS_PENDING
-  student_info.number_of_proposals += 1
+  profile.student_data.number_of_proposals += 1
 
-  db.put([proposal, student_info])
+  # TODO(daniel): it should be persisted along with proposal
+  proposal.put()
+  profile.put()
 
   return True
 

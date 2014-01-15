@@ -32,6 +32,7 @@ from soc.modules.gsoc.views.helper import request_data
 from tests import profile_utils
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
+from tests.utils import proposal_utils
 
 
 class ProposalReviewTest(GSoCDjangoTestCase):
@@ -457,9 +458,12 @@ class ResubmitProposalHandlerTest(GSoCDjangoTestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.init()
-    self.profile = self.profile_helper.createStudentWithProposal(
-        self.org, None)
-    self.proposal = GSoCProposal.all().get()
+    user = profile_utils.seedNDBUser()
+    self.profile = profile_utils.seedSOCStudent(self.program, user=user)
+    profile_utils.loginNDB(user)
+
+    self.proposal = proposal_utils.seedProposal(
+        self.profile.key, self.program.key(), org_key=self.org.key)
 
   def testCannotResubmitProposal(self):
     """Tests that an error occurs when proposal cannot be withdrawn."""
@@ -470,7 +474,7 @@ class ResubmitProposalHandlerTest(GSoCDjangoTestCase):
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
         'program': self.program.program_id,
-        'user': self.profile.link_id,
+        'user': self.profile.profile_id,
         'id': self.proposal.key().id()
         }
 
@@ -486,11 +490,11 @@ class ResubmitProposalHandlerTest(GSoCDjangoTestCase):
 
   def testResubmitProposal(self):
     """Tests that a proposal is successfully resubmitted if possible."""
-    old_number_of_proposals = self.profile.student_info.number_of_proposals
+    old_number_of_proposals = self.profile.student_data.number_of_proposals
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
         'program': self.program.program_id,
-        'user': self.profile.link_id,
+        'user': self.profile.profile_id,
         'id': self.proposal.key().id()
         }
 
@@ -508,7 +512,6 @@ class ResubmitProposalHandlerTest(GSoCDjangoTestCase):
     self.assertEqual(proposal.status, proposal_model.STATUS_PENDING)
 
     # check that number of proposals is updated
-    student_info = profile_model.GSoCStudentInfo.all(
-        ).ancestor(self.profile).get()
+    profile = self.profile.key.get()
     self.assertEqual(
-        old_number_of_proposals, student_info.number_of_proposals - 1)
+        old_number_of_proposals, profile.student_data.number_of_proposals - 1)
