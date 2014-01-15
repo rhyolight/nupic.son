@@ -27,26 +27,26 @@ from tests import program_utils
 TEST_ACCOUNT_ID = 'test_account_id'
 TEST_EMAIL = 'test@example.com'
 TEST_USERNAME = 'test_username'
-TEST_PROGRAM = program_utils.seedProgram()
 
 class CreateUserTest(unittest.TestCase):
   """Unit tests for createUser function."""
 
   def testUserCreated(self):
     """Tests that user entity is created."""
+    program = program_utils.seedProgram()
     # sign in a user with an account but with no user entity
     profile_utils.signInToGoogleAccount(TEST_EMAIL, TEST_ACCOUNT_ID)
 
     result = ndb.transaction(
         lambda: user_logic.createUser(
             TEST_USERNAME,
-            host_for=[ndb.Key.from_old_key(TEST_PROGRAM.key())]))
+            host_for=[ndb.Key.from_old_key(program.key())]))
 
     self.assertTrue(result)
     self.assertEqual(result.extra.key.id(), TEST_USERNAME)
     self.assertEqual(result.extra.account_id, TEST_ACCOUNT_ID)
     self.assertIn(
-        ndb.Key.from_old_key(TEST_PROGRAM.key()), result.extra.host_for)
+        ndb.Key.from_old_key(program.key()), result.extra.host_for)
 
   def testUserExists(self):
     """Tests that user entity is not existed for a taken username."""
