@@ -67,7 +67,7 @@ def seed(request, *args, **kwargs):
   site_properties = {
       'key_name': 'site',
       'latest_gsoc': 'google/gsoc2014',
-      'latest_gci': 'google/gci2009',
+      'latest_gci': 'google/gci2013',
       }
   site = Site(**site_properties)
   site.put()
@@ -160,8 +160,8 @@ def seed(request, *args, **kwargs):
   gsoc2010.put()
 
   timeline_properties = {
-        'key_name': 'google/gci2009',
-        'link_id': 'gci2009',
+        'key_name': 'google/gci2013',
+        'link_id': 'gci2013',
         'scope': google,
         'program_start': before,
         'program_end': after,
@@ -172,31 +172,31 @@ def seed(request, *args, **kwargs):
         'task_claim_deadline': after,
         'stop_all_work_deadline': after,
   }
-  gci2009_timeline = GCITimeline(**timeline_properties)
-  gci2009_timeline.put()
+  gci2013_timeline = GCITimeline(**timeline_properties)
+  gci2013_timeline.put()
 
   program_properties.update({
-      'key_name': 'google/gci2009',
-      'link_id': 'gci2009',
-      'program_id': 'gci2009',
-      'name': 'Google Code In Contest 2009',
+      'key_name': 'google/gci2013',
+      'link_id': 'gci2013',
+      'program_id': 'gci2013',
+      'name': 'Google Code In Contest 2013',
       'short_name': 'GCI 2009',
-      'description': 'This is the program for GCI 2009.',
-      'timeline': gci2009_timeline,
+      'description': 'This is the program for GCI 2013.',
+      'timeline': gci2013_timeline,
       })
-  gci2009 = GCIProgram(**program_properties)
-  gci2009.put()
+  gci2013 = GCIProgram(**program_properties)
+  gci2013.put()
 
-  site.active_program = gci2009
+  site.active_program = gci2013
   site.put()
 
   group_properties.update({
-    'key_name': 'google/gci2009/melange',
+    'key_name': 'google/gci2013/melange',
     'link_id': 'melange',
     'name': 'Melange Development Team',
     'short_name': 'Melange',
-    'scope': gci2009,
-    'program': gci2009,
+    'scope': gci2013,
+    'program': gci2013,
     'sponsor': google,
     'home_page': 'http://code.google.com/p/soc',
     'description': 'Melange, share the love!',
@@ -271,9 +271,9 @@ def seed(request, *args, **kwargs):
       profile.put()
 
   profile_properties.update({
-      'id': gci2009.key().name() + '/' + current_user.key.id(),
+      'id': gci2013.key().name() + '/' + current_user.key.id(),
       'parent': current_user.key,
-      'program': ndb.Key.from_old_key(gci2009.key()),
+      'program': ndb.Key.from_old_key(gci2013.key()),
       'admin_for': [ndb.Key.from_old_key(melange.key())],
       'mentor_for': [ndb.Key.from_old_key(melange.key())],
       })
@@ -288,7 +288,7 @@ def seed(request, *args, **kwargs):
       'title': 'Awesomeness',
       'created_by': melange_admin.key.to_old_key(),
       'created_on': now,
-      'program': gci2009,
+      'program': gci2013,
       'time_to_complete': 1337,
       'modified_on': now,
       'org': melange.key(),
@@ -414,16 +414,16 @@ def seed(request, *args, **kwargs):
 
   student_id = 'student'
   student_properties.update({
-      'id': gci2009.key().name() + '/' + student_id,
+      'id': gci2013.key().name() + '/' + student_id,
       'parent': student_user.key,
-      'program': ndb.Key.from_old_key(gci2009.key()),
+      'program': ndb.Key.from_old_key(gci2013.key()),
   })
   gci_student = profile_model.Profile(**student_properties)
   gci_student.put()
 
   score_properties = {
       'parent': gci_student.key.to_old_key(),
-      'program': gci2009,
+      'program': gci2013,
       'points': 5,
       'tasks': [gci_task.key()]
       }
