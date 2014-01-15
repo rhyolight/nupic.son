@@ -541,7 +541,4 @@
       }
     });
   };
-
-  $.fn.timeline.Constructor = Timeline;
-
 }(window.jQuery);
