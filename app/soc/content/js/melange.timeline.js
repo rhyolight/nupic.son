@@ -50,24 +50,21 @@
       now: new Date().getTime()
     },
 
+    slice_active: null,
+    slices: [],
+
     init: function (element, options) {
-      this.R = Raphael(element);
-      this.R = this.enrichRaphaelObjectWithCustomAttributes(this.R);
+      // transform date into milliseconds
+      if (
+        (typeof(options.now) !== 'undefined') &&
+        (isNaN(parseInt(options.now, 10)) || !isFinite(options.now))
+      ) {
+        options.now = this.dateToUTCMilliseconds(options.now);
+      }
 
       $.extend(this.options, options);
 
-      // transform date into milliseconds
-      if (
-        isNaN(parseInt(this.options.now, 10)) || !isFinite(this.options.now)
-      ) {
-        this.options.now = this.dateToUTCMilliseconds(this.options.now);
-      }
-
-      // Default active slice
-      this.slice_active = null;
-
-      // Init slices set
-      this.slices = [];
+      this.R = this.enrichRaphaelObjectWithCustomAttributes(Raphael(element));
 
       // Draw slices
       this.draw(this.options.slices);
