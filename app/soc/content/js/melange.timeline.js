@@ -169,8 +169,12 @@
       var readable_range = this.toReadableTimeRange(current_slice.from,
                                                     current_slice.to);
       current_slice.timerange = readable_range;
-    }
 
+      var is_active_slice = this.isDateWithinRange(current_slice.from,
+                                                   current_slice.to,
+                                                   this.options.now);
+      current_slice.active = is_active_slice;
+    }
   };
 
   Timeline.prototype.sortSlices = function(slices) {
@@ -303,8 +307,6 @@
     var options = this.options;
     var that = this;
     var i;
-
-    slices = this.setActiveSlice(slices, this.options.now);
 
     // Add top lines
     this.R.path('M0 0.5L187 0.5').attr({stroke: options.color_blue});
@@ -533,21 +535,16 @@
     this.slices = [];
   };
 
-  Timeline.prototype.setActiveSlice = function (slices, now) {
-    var slices_count = slices.length;
-
-    // Find active slice and set it as active
-    for (var index = 0; index < slices_count; index++) {
-      if (
-        this.dateToUTCMilliseconds(slices[index].from) < this.options.now &&
-        this.dateToUTCMilliseconds(slices[index].to) > this.options.now
-      ) {
-        slices[index].active = true;
-        break;
+  Timeline.prototype.isDateWithinRange = function (from, to, now) {
+    if (
+      this.dateToUTCMilliseconds(from) < now &&
+      this.dateToUTCMilliseconds(to) > now
+    ) {
+        return true;
       }
+    else {
+      return false;
     }
-
-    return slices;
   };
 
  /* Timeline PLUGIN DEFINITION
