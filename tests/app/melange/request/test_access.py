@@ -409,7 +409,7 @@ class IsUrlUserAccessCheckerTest(unittest.TestCase):
   def setUp(self):
     """See unittest.setUp for specification."""
     self.data = request_data.RequestData(None, None, {})
-    self.data._user = profile_utils.seedUser()
+    self.data._ndb_user = profile_utils.seedNDBUser()
 
   def testForMissingUserData(self):
     """Tests for URL data that does not contain any user data."""
@@ -429,8 +429,8 @@ class IsUrlUserAccessCheckerTest(unittest.TestCase):
 
   def testNonUserAccessDenied(self):
     """Tests that access is denied for a user with no User entity."""
-    self.data.kwargs['user'] = self.data._user.link_id
-    self.data._user = None
+    self.data.kwargs['user'] = self.data._ndb_user.user_id
+    self.data._ndb_user = None
     access_checker = access.IsUrlUserAccessChecker()
     with self.assertRaises(exception.UserError) as context:
       access_checker.checkAccess(self.data, None)
@@ -446,7 +446,7 @@ class IsUrlUserAccessCheckerTest(unittest.TestCase):
 
   def testSameUserAccessGranted(self):
     """Tests that access is granted for a user who is defined in URL."""
-    self.data.kwargs['user'] = self.data._user.link_id
+    self.data.kwargs['user'] = self.data._ndb_user.user_id
     access_checker = access.IsUrlUserAccessChecker()
     access_checker.checkAccess(self.data, None)
 

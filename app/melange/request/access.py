@@ -227,13 +227,13 @@ class IsUrlUserAccessChecker(AccessChecker):
 
   def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
-    key_name = data.kwargs.get('user')
-    if not key_name:
+    key_id = data.kwargs.get('user')
+    if not key_id:
       raise exception.BadRequest('The request does not contain user data.')
 
     ensureLoggedIn(data)
 
-    if not data.user or data.user.key().name() != key_name:
+    if not data.ndb_user or data.ndb_user.key.id() != key_id:
       raise exception.Forbidden(message=_MESSAGE_NOT_USER_IN_URL)
 
 IS_URL_USER_ACCESS_CHECKER = IsUrlUserAccessChecker()
