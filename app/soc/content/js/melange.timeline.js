@@ -135,8 +135,11 @@
     for (var a = 0; a < slices.length; a++) {
       var current_slice = slices[a];
 
+      current_slice.from_in_ms = this.dateToUTCMilliseconds(current_slice.from);
+      current_slice.to_in_ms = this.dateToUTCMilliseconds(current_slice.to);
+
       var grades_boundaries = this.datesToGrades(
-        current_slice.from, current_slice.to, last_slice.to);
+        current_slice.from_in_ms, current_slice.to_in_ms, last_slice.to);
       current_slice.from_grade = grades_boundaries.from_grade;
       current_slice.to_grade = grades_boundaries.to_grade;
 
@@ -166,31 +169,26 @@
     for (var a = 0; a < slices.length; a++) {
       var current_slice = slices[a];
 
-      var readable_range = this.toReadableTimeRange(current_slice.from,
-                                                    current_slice.to);
+      var readable_range = this.toReadableTimeRange(current_slice.from_in_ms,
+                                                    current_slice.to_in_ms);
       current_slice.timerange = readable_range;
 
-      var is_active_slice = this.isDateWithinRange(current_slice.from,
-                                                   current_slice.to,
-                                                   this.options.now);
+      var is_active_slice = this.isDateInMsWithinRange(current_slice.from,
+                                                       current_slice.to,
+                                                       this.options.now);
       current_slice.active = is_active_slice;
     }
   };
 
   Timeline.prototype.sortSlices = function(slices) {
-    var _timeline = this;
-    // Sort slices
     slices.sort(
       function (a, b) {
-        return (
-          _timeline.dateToUTCMilliseconds(a.from) -
-          _timeline.dateToUTCMilliseconds(b.from)
-        );
+        return a.from_in_ms - b.from_in_ms;
       }
     );
   };
 
-  Timeline.prototype.datesToGrades = function (from, to, time_end) {
+  Timeline.prototype.datesToGrades = function (from_in_ms, to_in_ms, time_end) {
     var time_zero_grade;
     var millisecondsInOneGrade = 1000 * 60 * 60 * 24 * 365 / 360;
 
@@ -202,16 +200,8 @@
     this.year = new Date(time_end).getFullYear();
 
     return {
-      from_grade:
-        (
-          (this.dateToUTCMilliseconds(from) - time_zero_grade)
-          / millisecondsInOneGrade
-        ),
-      to_grade:
-        (
-          (this.dateToUTCMilliseconds(to) - time_zero_grade)
-          / millisecondsInOneGrade
-        )
+      from_grade: (from_in_ms - time_zero_grade) / millisecondsInOneGrade,
+      to_grade: (to_in_ms - time_zero_grade) / millisecondsInOneGrade
      };
   };
 
@@ -222,14 +212,14 @@
   Timeline.prototype.computeMissingSlice = function (current_slice, next_slice,
                                                      slice_title_append,
                                                      slice_missing_shade) {
-    if (
-      this.dateToUTCMilliseconds(current_slice.to) !=
-      this.dateToUTCMilliseconds(next_slice.from)
-    ) {
+
+    if (current_slice.to_in_ms != next_slice.from_in_ms) {
       return {
         title: next_slice.title + slice_title_append,
         from: current_slice.to,
         to: next_slice.from,
+        from_in_ms: current_slice.to_in_ms,
+        to_in_ms: next_slice.from_in_ms,
         from_grade: current_slice.to_grade,
         to_grade: next_slice.from_grade,
         color: (
@@ -256,7 +246,7 @@
     ).toString(16).slice(1);
   };
 
-  Timeline.prototype.toReadableTimeRange = function (from, to) {
+  Timeline.prototype.toReadableTimeRange = function (from_in_ms, to_in_ms) {
     var MONTH_NAMES = [
       "January",
       "February",
@@ -272,8 +262,8 @@
       "December"
     ];
 
-    var date_from = new Date(this.dateToUTCMilliseconds(from));
-    var date_to = new Date(this.dateToUTCMilliseconds(to));
+    var date_from = new Date(from_in_ms);
+    var date_to = new Date(to_in_ms);
 
     var date_from_day = date_from.getUTCDate();
     var date_from_month = date_from.getUTCMonth();
@@ -301,16 +291,9 @@
     }
   };
 
-  Timeline.prototype.isDateWithinRange = function (from, to, now) {
-    if (
-      this.dateToUTCMilliseconds(from) < now &&
-      this.dateToUTCMilliseconds(to) > now
-    ) {
-        return true;
-      }
-    else {
-      return false;
-    }
+  Timeline.prototype.isDateInMsWithinRange = function (from_in_ms, to_in_ms,
+                                                       now) {
+    return from_in_ms < now && to_in_ms > now;
   };
 
   Timeline.prototype.draw = function (slices) {
