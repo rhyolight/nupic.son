@@ -79,7 +79,7 @@ def seed(request, *args, **kwargs):
 
   user_properties = {
       'id': 'test',
-      'account_id': 'test',
+      'account_id': account.user_id(),
       'account': account,
       }
   current_user = user.User(**user_properties)
@@ -224,7 +224,7 @@ def seed(request, *args, **kwargs):
   gsoc_delta = datetime.timedelta(days=(365 * 18))
 
   profile_properties = {
-      'id': 'google/gsoc2014/test',
+      'id': gsoc2014.key().name() + '/' + current_user.key.id(),
       'parent': current_user.key,
       'public_name': 'test',
       'program': ndb.Key.from_old_key(gsoc2014.key()),
@@ -271,7 +271,7 @@ def seed(request, *args, **kwargs):
       profile.put()
 
   profile_properties.update({
-      'id': 'google/gci2009/test',
+      'id': gci2009.key().name() + '/' + current_user.key.id(),
       'parent': current_user.key,
       'program': ndb.Key.from_old_key(gci2009.key()),
       'admin_for': [ndb.Key.from_old_key(melange.key())],
@@ -301,7 +301,7 @@ def seed(request, *args, **kwargs):
 
   user_properties = {
       'id': 'student',
-      'account_id': 'student',
+      'account_id': '12345',
       'account': users.User(email='student@example.com'),
       }
   student_user = user.User(**user_properties)
@@ -349,15 +349,15 @@ def seed(request, *args, **kwargs):
   melange_student = profile_model.Profile(**student_properties)
   melange_student.put()
 
+  student_id = 'student2'
   user_properties = {
-      'id': 'student2',
+      'id': student_id,
       'account_id': 'student2',
       'account': users.User(email='student@example.com'),
       }
   student_user2 = user.User(**user_properties)
   student_user2.put()
 
-  student_id = 'student2'
   student_properties.update({
       'id': gsoc2014.key().name() + "/" + student_id,
       'parent': student_user2.key,
