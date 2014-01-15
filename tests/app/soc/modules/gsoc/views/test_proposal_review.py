@@ -150,17 +150,13 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertEqual(0, proposal.nr_scores)
 
   def testReviewProposalPublicView(self):
-    student = profile_utils.seedGSoCStudent(self.program)
-
-    proposal = self.createProposal({
-        'is_publicly_visible': True,
-        'scope': student,
-        'parent': student
-        })
+    student = profile_utils.seedSOCStudent(self.program)
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), is_publicly_visible=True)
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        student.user.key().name(),
+        student.key.parent().id(),
         proposal.key().id())
 
     # test review GET

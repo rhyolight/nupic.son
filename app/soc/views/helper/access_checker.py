@@ -635,18 +635,16 @@ class AccessChecker(BaseAccessChecker):
   def canAccessProposalEntity(self):
     """Checks if the current user is allowed to access a Proposal entity.
     """
-    assert isSet(self.data.url_user)
-
     # if the proposal is public, everyone may access it
     if self.data.url_proposal.is_publicly_visible:
       return
 
-    if not self.data.user:
+    if not self.data.ndb_user:
       raise exception.Forbidden(message=DEF_PROPOSAL_NOT_PUBLIC)
 
     self.isProfileActive()
     # if the current user is the proposer, he or she may access it
-    if self.data.user.key() == self.data.url_user.key():
+    if self.data.ndb_user.key == self.data.url_ndb_user.key:
       return
 
     # all the mentors and org admins from the organization may access it

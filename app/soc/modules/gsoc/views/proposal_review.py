@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from soc.modules.gsoc.models.proposal import GSoCProposal
 
 """Module for the GSoC proposal page."""
 
@@ -451,9 +452,6 @@ class ReviewProposal(base.GSoCRequestHandler):
     return result
 
   def context(self, data, check, mutator):
-    assert isSet(data.url_profile)
-    assert isSet(data.url_user)
-
     context = {}
 
     user_role = None
@@ -493,7 +491,8 @@ class ReviewProposal(base.GSoCRequestHandler):
 
     # to keep the blocks as simple as possible, the if branches have
     # been broken down into several if blocks
-    user_is_proposer = data.user and (data.user.key() == data.url_user.key())
+    user_is_proposer = (
+        data.user and (data.ndb_user.key == data.url_ndb_user.key()))
     if user_is_proposer:
       user_role = 'proposer'
 
@@ -503,7 +502,7 @@ class ReviewProposal(base.GSoCRequestHandler):
           data.url_proposal.is_editable_post_deadline
       if data.timeline.studentSignup() or is_editable:
         context['update_link'] = links.LINKER.userId(
-            data.url_profile.key(), data.url_proposal.key().id(),
+            data.url_ndb_profile.key(), data.url_proposal.key().id(),
             'update_gsoc_proposal')
 
     possible_mentors = db.get(data.url_proposal.possible_mentors)
@@ -539,7 +538,8 @@ class ReviewProposal(base.GSoCRequestHandler):
         'comment_box': comment_box,
         'duplicate': duplicate,
         'max_score': org.max_score,
-        'mentor': data.url_proposal.mentor,
+        'mentor': ndb.Key.from_old_key(
+            GSoCProposal.mentor.get_value_for_datastore(data.url_proposal)),
         'page_name': data.url_proposal.title,
         'possible_mentors': possible_mentors_names,
         'private_comments': private_comments,
@@ -553,8 +553,8 @@ class ReviewProposal(base.GSoCRequestHandler):
         'score_action': score_action,
         'scores': scores,
         'scoring_visible': scoring_visible,
-        'student_email': data.url_profile.email,
-        'student_name': data.url_profile.name(),
+        'student_email': data.url_ndb_profile.contact.email,
+        'student_name': data.url_ndb_profile.public_name,
         'user_role': user_role,
         })
 
