@@ -286,33 +286,46 @@
       return slices;
     },
 
-    addMissingSlices: function (slices) {
-      var that = this,
-        slices_count = slices.length,
-        slice_prev,
-        slice_next;
+  };
 
-      // Sort slices
-      slices.sort(function (a, b) {return that.dateToUTCMilliseconds(a.from) - that.dateToUTCMilliseconds(b.from); });
+  Timeline.prototype.addMissingSlices = function (slices) {
+    var that = this;
+    var slices_count = slices.length;
+    var slice_prev;
+    var slice_next;
 
-      for (var index = 0; index < slices_count; index++) {
-        slice_prev = slices[index];
-        slice_next = slices[(index + 1) % slices_count];
-
-        if (this.dateToUTCMilliseconds(slice_prev.to) != this.dateToUTCMilliseconds(slice_next.from)) {
-          slices.push({
-            title: slice_next.title + that.options.slice_title_append,
-            from: slice_prev.to,
-            to: slice_next.from,
-            from_grade: slice_prev.to_grade,
-            to_grade: slice_next.from_grade,
-            color: that.shadeColor(slice_next.color, that.options.slice_missing_shade)
-          });
-        }
+    // Sort slices
+    slices.sort(
+      function (a, b) {
+        return (
+          that.dateToUTCMilliseconds(a.from) -
+          that.dateToUTCMilliseconds(b.from)
+        );
       }
+    );
 
-      return slices;
+    for (var index = 0; index < slices_count; index++) {
+      slice_prev = slices[index];
+      slice_next = slices[(index + 1) % slices_count];
+
+      if (
+        this.dateToUTCMilliseconds(slice_prev.to) !=
+        this.dateToUTCMilliseconds(slice_next.from)
+      ) {
+        slices.push({
+          title: slice_next.title + that.options.slice_title_append,
+          from: slice_prev.to,
+          to: slice_next.from,
+          from_grade: slice_prev.to_grade,
+          to_grade: slice_next.from_grade,
+          color: (
+            that.shadeColor(slice_next.color, that.options.slice_missing_shade)
+          )
+        });
+      }
     }
+
+    return slices;
   };
 
   Timeline.prototype.computeTimeRanges = function (slices) {
