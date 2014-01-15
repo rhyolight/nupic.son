@@ -24,6 +24,7 @@ from google.appengine.ext import ndb
 from melange.logic import user as user_logic
 from melange.models import connection as connection_model
 from melange.models import organization as org_model
+from melange.models import profile as profile_model
 from melange.request import exception
 from melange.request import links
 
@@ -301,7 +302,7 @@ class BaseAccessChecker(object):
     """
     self.isLoggedIn()
 
-    if self.data.profile:
+    if self.data.ndb_profile:
       return
 
     raise exception.Forbidden(message=DEF_NO_PROFILE)
@@ -311,10 +312,8 @@ class BaseAccessChecker(object):
     """
     self.hasProfile()
 
-    if self.data.profile.status == 'active':
-      return
-
-    raise exception.Forbidden(message=DEF_PROFILE_INACTIVE)
+    if self.data.ndb_profile.status != profile_model.Status.ACTIVE:
+      raise exception.Forbidden(message=DEF_PROFILE_INACTIVE)
 
   def canAccessGoogleDocs(self):
     """Checks if user has a valid access token to access Google Documents."""
@@ -428,7 +427,7 @@ class AccessChecker(BaseAccessChecker):
     """
     self.isLoggedIn()
 
-    if self.data.profile and not self.data.profile.student_info:
+    if self.data.ndb_profile and not self.data.ndb_profile.is_student:
       raise exception.Redirect(edit_url)
 
     if role == 'org_admin' and self.data.timeline.beforeOrgSignupStart():
@@ -439,11 +438,9 @@ class AccessChecker(BaseAccessChecker):
       period = self.data.timeline.orgsAnnouncedOn()
       raise exception.Forbidden(message=DEF_PAGE_INACTIVE_BEFORE % period)
 
-    if not self.data.profile:
-      return
-
-    raise exception.Forbidden(message=DEF_ALREADY_PARTICIPATING_AS_STUDENT % (
-        role, self.data.program.name))
+    if self.data.ndb_profile:
+      raise exception.Forbidden(message=DEF_ALREADY_PARTICIPATING_AS_STUDENT % (
+          role, self.data.program.name))
 
   def isActiveStudent(self):
     """Checks if the user is an active student.
@@ -511,7 +508,7 @@ class AccessChecker(BaseAccessChecker):
     """
     self.isProfileActive()
 
-    if org_key in self.data.profile.org_admin_for:
+    if org_key in self.data.ndb_profile.admin_for:
       return
 
     raise exception.Forbidden(message=DEF_NOT_ADMIN % org_key.name())
@@ -612,8 +609,8 @@ class AccessChecker(BaseAccessChecker):
       self.canStudentUpdateProposalPostSignup()
 
     # check if the proposal belongs to the current user
-    expected_profile = self.data.url_proposal.parent()
-    if expected_profile.key().name() != self.data.profile.key().name():
+    expected_profile_key = self.data.url_proposal.parent_key()
+    if expected_profile_key != self.data.ndb_profile.key.to_old_key():
       error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'model': 'GSoCProposal',
           'name': 'request'
@@ -685,10 +682,8 @@ class AccessChecker(BaseAccessChecker):
     self.isProgramVisible()
     self.isProfileActive()
 
-    if self.data.url_profile.key() == self.data.profile.key():
-      return
-
-    raise exception.Forbidden(message=DEF_NOT_PROPOSER)
+    if self.data.url_profile.key() != self.data.profile.key:
+      raise exception.Forbidden(message=DEF_NOT_PROPOSER)
 
   def isSlotTransferActive(self):
     """Checks if the slot transfers are active at the time.
@@ -734,7 +729,7 @@ class AccessChecker(BaseAccessChecker):
 
     # check if the project belongs to the current user
     expected_profile_key = self.data.url_project.parent_key()
-    if expected_profile_key != self.data.profile.key():
+    if expected_profile_key != self.data.ndb_profile.key.to_old_key():
       error_msg = DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'name': 'project'
           }
