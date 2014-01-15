@@ -106,11 +106,16 @@
 
     this.options = $.extend({}, this.options_defaults, options);
 
+    /* We calculate the year to be printed at the center of the widget here,
+       before enrichSlides() kicks in and adds slices for the gaps. */
+    var last_slice = this.options.slices[this.options.slices.length -1];
+    var year_to_print = new Date(last_slice.to).getFullYear();
+
     this.enrichSlices(this.options.slices);
 
     this.R.clear();
 
-    this.draw(this.options.slices);
+    this.draw(this.options.slices, year_to_print);
   };
 
   /*
@@ -202,9 +207,6 @@
     // 90 grades is first day of last year
     // 0 grades will be first day of last year minus 3 months
     time_zero_grade = Date.UTC(new Date(time_end).getFullYear() - 1, 9, 1);
-
-    // Store current year
-    this.year = new Date(time_end).getFullYear();
 
     return {
       from_grade: (from_in_ms - time_zero_grade) / millisecondsInOneGrade,
@@ -303,7 +305,7 @@
     return from_in_ms < now && to_in_ms > now;
   };
 
-  Timeline.prototype.draw = function (slices) {
+  Timeline.prototype.draw = function (slices, year_to_print) {
     var options = this.options;
     var that = this;
     var i;
@@ -322,7 +324,7 @@
               .circle(94, 78, 33)
               .attr({fill: "#ffffff", "stroke-width": 0}),
       text: that.R
-            .text(94, 78, that.year)
+            .text(94, 78, year_to_print)
             .attr({
               font: [
                 '700',
