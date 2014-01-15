@@ -416,7 +416,7 @@ class RequestData(request_data.RequestData):
             message='The request does not contain proposal id.')
       else:
         self._url_proposal = proposal_model.GSoCProposal.get_by_id(
-            int(self.kwargs['id']), self.url_profile)
+            int(self.kwargs['id']), self.url_ndb_profile.key.to_old_key())
 
         if not self._url_proposal:
           raise exception.NotFound(
