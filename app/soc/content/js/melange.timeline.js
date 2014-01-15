@@ -311,7 +311,7 @@
     R.path('M0 1.5L187 1.5').attr({stroke: options.color_blue_light});
 
     for (var i in slices) {
-      this.draw_slice(slices[i]);
+      this.draw_slice(R, slices[i], options);
     }
 
     // Draw inner circle
@@ -343,8 +343,7 @@
     .attr({stroke: options.color_gray})
   };
 
-  Timeline.prototype.draw_slice = function (slice) {
-    var options = this.options;
+  Timeline.prototype.draw_slice = function (R, slice, options) {
     var that = this;
 
     // Create wires
@@ -361,7 +360,7 @@
       .attr({opacity: 0});
 
     // Create arc
-    slice._arc = this.R.path()
+    slice._arc = R.path()
       .attr({
         arc: [94, 78, 64, slice.from_grade, slice.to_grade],
         "stroke-width": 3,
@@ -370,7 +369,7 @@
       });
 
     // Create slice
-    slice._piece = this.R.path()
+    slice._piece = R.path()
       .attr({
         segment: [94, 78, 59, slice.from_grade, slice.to_grade],
         "stroke-width": 0,
