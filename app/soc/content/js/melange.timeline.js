@@ -164,6 +164,71 @@
     return colors[index % colors.length];
   };
 
+  Timeline.prototype.computeMissingSlice = function (current_slice, next_slice,
+                                                     slice_title_append,
+                                                     slice_missing_shade) {
+    if (
+      this.dateToUTCMilliseconds(current_slice.to) !=
+      this.dateToUTCMilliseconds(next_slice.from)
+    ) {
+      return {
+        title: next_slice.title + slice_title_append,
+        from: current_slice.to,
+        to: next_slice.from,
+        from_grade: current_slice.to_grade,
+        to_grade: next_slice.from_grade,
+        color: (
+          this.shadeColor(next_slice.color, slice_missing_shade)
+        )
+      };
+    }
+    return null;
+  };
+
+  Timeline.prototype.toReadableTimeRange = function (from, to) {
+    var MONTH_NAMES = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ];
+
+    var date_from = new Date(this.dateToUTCMilliseconds(from));
+    var date_to = new Date(this.dateToUTCMilliseconds(to));
+
+    var date_from_day = date_from.getUTCDate();
+    var date_from_month = date_from.getUTCMonth();
+    var date_to_day = date_to.getUTCDate();
+    var date_to_month = date_to.getUTCMonth();
+
+    if (date_from_month == date_to_month) {
+      return [
+        MONTH_NAMES[date_from_month],
+        ' ',
+        date_from_day,
+        ' - ',
+        date_to_day
+      ].join('');
+    } else {
+      return [
+        MONTH_NAMES[date_from_month],
+        ' ',
+        date_from_day,
+        ' - ',
+        MONTH_NAMES[date_to_month],
+        ' ',
+        date_to_day
+      ].join('');
+    }
+  };
 
   Timeline.prototype.draw = function (slices) {
     this.clean();
@@ -399,72 +464,6 @@
 
     // Empty array
     this.slices = [];
-  };
-
-  Timeline.prototype.computeMissingSlice = function (current_slice, next_slice,
-                                                     slice_title_append,
-                                                     slice_missing_shade) {
-    if (
-      this.dateToUTCMilliseconds(current_slice.to) !=
-      this.dateToUTCMilliseconds(next_slice.from)
-    ) {
-      return {
-        title: next_slice.title + slice_title_append,
-        from: current_slice.to,
-        to: next_slice.from,
-        from_grade: current_slice.to_grade,
-        to_grade: next_slice.from_grade,
-        color: (
-          this.shadeColor(next_slice.color, slice_missing_shade)
-        )
-      };
-    }
-    return null;
-  };
-
-  Timeline.prototype.toReadableTimeRange = function (from, to) {
-    var MONTH_NAMES = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December"
-    ];
-
-    var date_from = new Date(this.dateToUTCMilliseconds(from));
-    var date_to = new Date(this.dateToUTCMilliseconds(to));
-
-    var date_from_day = date_from.getUTCDate();
-    var date_from_month = date_from.getUTCMonth();
-    var date_to_day = date_to.getUTCDate();
-    var date_to_month = date_to.getUTCMonth();
-
-    if (date_from_month == date_to_month) {
-      return [
-        MONTH_NAMES[date_from_month],
-        ' ',
-        date_from_day,
-        ' - ',
-        date_to_day
-      ].join('');
-    } else {
-      return [
-        MONTH_NAMES[date_from_month],
-        ' ',
-        date_from_day,
-        ' - ',
-        MONTH_NAMES[date_to_month],
-        ' ',
-        date_to_day
-      ].join('');
-    }
   };
 
   /*
