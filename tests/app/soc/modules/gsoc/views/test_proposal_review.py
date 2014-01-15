@@ -310,16 +310,19 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertTrue(proposal.is_publicly_visible)
 
   def testWithdrawProposalButton(self):
-    self.profile_helper.createStudentWithProposal(self.org, None)
     self.timeline_helper.studentSignup()
 
-    proposal = GSoCProposal.all().ancestor(self.profile_helper.profile).get()
-    number_of_proposals = (
-        self.profile_helper.profile.student_info.number_of_proposals)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedSOCStudent(self.program, user=user)
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), org_key=self.org.key)
+
+    number_of_proposals = student.student_data.number_of_proposals
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        self.profile_helper.user.key().name(),
+        student.key.parent().id(),
         proposal.key().id())
 
     # withdraw the proposal
@@ -331,12 +334,12 @@ class ProposalReviewTest(GSoCDjangoTestCase):
 
     # check that the student proposal is withdrawn
     proposal = GSoCProposal.get(proposal.key())
-    self.assertEqual(proposal.status, 'withdrawn')
+    self.assertEqual(proposal.status, proposal_model.STATUS_WITHDRAWN)
 
     # check that number of proposals is updated
-    student_info = profile_model.GSoCStudentInfo.get(
-        self.profile_helper.profile.student_info.key())
-    self.assertEqual(number_of_proposals - 1, student_info.number_of_proposals)
+    student = student.key.get()
+    self.assertEqual(
+        number_of_proposals - 1, student.student_data.number_of_proposals)
 
     # try withdrawing the proposal once more time
     url = '/gsoc/proposal/status/' + suffix
@@ -347,12 +350,12 @@ class ProposalReviewTest(GSoCDjangoTestCase):
 
     # check that the student proposal is still withdrawn
     proposal = GSoCProposal.get(proposal.key())
-    self.assertEqual(proposal.status, 'withdrawn')
+    self.assertEqual(proposal.status, proposal_model.STATUS_WITHDRAWN)
 
     # check that number of proposals is still the same
-    student_info = profile_model.GSoCStudentInfo.get(
-        self.profile_helper.profile.student_info.key())
-    self.assertEqual(number_of_proposals - 1, student_info.number_of_proposals)
+    student = student.key.get()
+    self.assertEqual(
+        number_of_proposals - 1, student.student_data.number_of_proposals)
 
     # resubmit the proposal
     url = '/gsoc/proposal/status/' + suffix
@@ -363,12 +366,12 @@ class ProposalReviewTest(GSoCDjangoTestCase):
 
     # check that the student proposal is pending
     proposal = GSoCProposal.get(proposal.key())
-    self.assertEqual(proposal.status, 'pending')
+    self.assertEqual(proposal.status, proposal_model.STATUS_PENDING)
 
     # check that number of proposals is increased again
-    student_info = profile_model.GSoCStudentInfo.get(
-        self.profile_helper.profile.student_info.key())
-    self.assertEqual(number_of_proposals, student_info.number_of_proposals)
+    student = student.key.get()
+    self.assertEqual(
+        number_of_proposals, student.student_data.number_of_proposals)
 
   def testAssignMentor(self):
     student = profile_utils.seedGSoCStudent(self.program)
