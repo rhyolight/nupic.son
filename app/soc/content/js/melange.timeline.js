@@ -67,18 +67,47 @@
 
     this.R = this.enrichRaphaelObjectWithCustomAttributes(Raphael(element));
 
-    // Draw slices
+    this.enrichSlices(this.options.slices);
+
     this.draw(this.options.slices);
   };
 
-  Timeline.prototype.draw = function (slices) {
+  /*
+     The purpose of this function is to enrich the array of slices objects
+     passed as parameters, so it has side effects over every object by design.
+  */
+  Timeline.prototype.enrichSlices = function(slices) {
+    this.sortSlices(slices);
+
+    var last_slice = slices[slices.length -1];
+    for (var a = 0; a < slices.length; a++) {
+      var current_slice = slices[a];
+      var grades_boundaries = this.datesToGrades(
+        current_slice.from, current_slice.to, last_slice.to);
+      current_slice.from_grade = grades_boundaries.from_grade;
+      current_slice.to_grade = grades_boundaries.to_grade;
+    }
+  };
+
+  Timeline.prototype.sortSlices = function(slices) {
+    var _timeline = this;
+    // Sort slices
+    slices.sort(
+      function (a, b) {
+        return (
+          _timeline.dateToUTCMilliseconds(a.from) -
+          _timeline.dateToUTCMilliseconds(b.from)
+        );
+      }
+    );
+  }
+
+Timeline.prototype.draw = function (slices) {
     this.clean();
 
     var options = this.options;
     var that = this;
     var i;
-
-    slices = this.datesToGrades(slices);
 
     for (i in slices) {
       // Check for colors. Set default if missing
@@ -321,25 +350,9 @@
     this.slices = [];
   };
 
-  Timeline.prototype.datesToGrades = function (slices) {
-    var that = this;
-    var time_start = null;
-    var time_end = null;
+  Timeline.prototype.datesToGrades = function (from, to, time_end) {
     var time_zero_grade;
     var millisecondsInOneGrade = 1000 * 60 * 60 * 24 * 365 / 360;
-
-    // Find minimax and maximal time intervals
-    $.each(slices, function (index, slice) {
-      if (
-        time_start === null ||
-        time_start > that.dateToUTCMilliseconds(slice.from)
-      ) {
-        time_start = that.dateToUTCMilliseconds(slice.from);
-      }
-      if (time_end === null || time_end < that.dateToUTCMilliseconds(slice.to)) {
-        time_end = that.dateToUTCMilliseconds(slice.to);
-      }
-    });
 
     // 90 grades is first day of last year
     // 0 grades will be first day of last year minus 3 months
@@ -348,20 +361,18 @@
     // Store current year
     this.year = new Date(time_end).getFullYear();
 
-    // Transform dates to grades
-    for (var index in slices) {
-      slices[index].from_grade =
+    return {
+      from_grade:
         (
-          (that.dateToUTCMilliseconds(slices[index].from) - time_zero_grade)
+          (this.dateToUTCMilliseconds(from) - time_zero_grade)
           / millisecondsInOneGrade
-        );
-      slices[index].to_grade =
+        ),
+      to_grade:
         (
-          (that.dateToUTCMilliseconds(slices[index].to) - time_zero_grade)
+          (this.dateToUTCMilliseconds(to) - time_zero_grade)
           / millisecondsInOneGrade
-        );
-    }
-    return slices;
+        )
+     };
   };
 
   Timeline.prototype.addMissingSlices = function (slices) {
@@ -370,15 +381,6 @@
     var slice_prev;
     var slice_next;
 
-    // Sort slices
-    slices.sort(
-      function (a, b) {
-        return (
-          that.dateToUTCMilliseconds(a.from) -
-          that.dateToUTCMilliseconds(b.from)
-        );
-      }
-    );
 
     for (var index = 0; index < slices_count; index++) {
       slice_prev = slices[index];
