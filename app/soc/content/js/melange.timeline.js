@@ -115,7 +115,7 @@
 
     this.R.clear();
 
-    this.draw(this.options.slices, year_to_print);
+    this.draw(this.R, this.options.slices, year_to_print, this.options);
   };
 
   /*
@@ -305,42 +305,42 @@
     return from_in_ms < now && to_in_ms > now;
   };
 
-  Timeline.prototype.draw = function (slices, year_to_print) {
-    var options = this.options;
-    var that = this;
-    var i;
-
+  Timeline.prototype.draw = function (R, slices, year_to_print, options) {
     // Add top lines
-    this.R.path('M0 0.5L187 0.5').attr({stroke: options.color_blue});
-    this.R.path('M0 1.5L187 1.5').attr({stroke: options.color_blue_light});
+    R.path('M0 0.5L187 0.5').attr({stroke: options.color_blue});
+    R.path('M0 1.5L187 1.5').attr({stroke: options.color_blue_light});
 
-    for (i in slices) {
+    for (var i in slices) {
       this.draw_slice(slices[i]);
     }
 
     // Draw inner circle
-    this.inner = {
-      circle: that.R
-              .circle(94, 78, 33)
-              .attr({fill: "#ffffff", "stroke-width": 0}),
-      text: that.R
-            .text(94, 78, year_to_print)
-            .attr({
-              font: [
-                '700',
-                '18px',
-                [
-                  '"Helvetica Neue"',
-                  'Helvetica',
-                  '"Arial Unicode MS"',
-                  'Arial',
-                  'sans-serif'
-                ].join(',')
-              ].join(' '),
-              fill: options.color_blue
-            }),
-      line: that.R.path('M94 91L94 111').attr({stroke: options.color_gray})
-    };
+    R
+    .circle(94, 78, 33)
+    .attr({fill: "#ffffff", "stroke-width": 0}),
+
+    // Draw inner text
+    R
+    .text(94, 78, year_to_print)
+    .attr({
+      font: [
+        '700',
+        '18px',
+        [
+          '"Helvetica Neue"',
+          'Helvetica',
+          '"Arial Unicode MS"',
+          'Arial',
+          'sans-serif'
+        ].join(',')
+      ].join(' '),
+      fill: options.color_blue
+    }),
+
+    // Draw inner line
+    R
+    .path('M94 91L94 111')
+    .attr({stroke: options.color_gray})
   };
 
   Timeline.prototype.draw_slice = function (slice) {
