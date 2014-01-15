@@ -1481,7 +1481,6 @@ class RawQueryContentResponseBuilder(object):
 
     count = content_response.limit
     cursor = datastore_query.Cursor(urlsafe=start) if start else None
-    logging.error(cursor)
 
     entities, next_cursor, _ = self._query.fetch_page(
         count, start_cursor=cursor)
@@ -1492,7 +1491,6 @@ class RawQueryContentResponseBuilder(object):
     args = list(args) + list(extra_args)
     kwargs.update(extra_kwargs)
 
-    logging.error(next_cursor)
     for entity in entities:
       if self._skipper(entity, start):
         continue
