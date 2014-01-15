@@ -113,10 +113,10 @@ def hasMentorProposalAssigned(profile, org_key=None):
     True, if the profile has at least one proposal assigned; False otherwise.
   """
   query = proposal_model.GSoCProposal.all(keys_only=True)
-  query.filter('mentor', profile)
+  query.filter('mentor', profile.key.to_old_key())
 
   if org_key:
-    query.filter('org', org_key)
+    query.filter('org', org_key.to_old_key())
 
   return query.count() > 0
 

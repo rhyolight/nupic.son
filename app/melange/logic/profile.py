@@ -18,6 +18,7 @@ from google.appengine.api import datastore_errors
 from google.appengine.ext import ndb
 
 from melange import types
+from melange.models import profile as profile_model
 from melange.utils import rich_bool
 from melange.appengine import db as melange_db
 
@@ -49,18 +50,18 @@ def canResignAsOrgAdminForOrg(profile, org_key, models=types.MELANGE_MODELS):
     and extra part is a string that represents the reason why the user
     is not allowed to resign.
   """
-  if org_key not in profile.org_admin_for:
+  if org_key not in profile.admin_for:
     raise ValueError(
         'The specified profile is not an organization administrator for %s' %
-        org_key.name())
+        org_key.id())
 
   # retrieve keys of other org admins
   org_admin_keys = getOrgAdmins(org_key, keys_only=True, models=models)
-  org_admin_keys.remove(profile.key())
+  org_admin_keys.remove(profile.key)
 
   # try to retrieve the first org admin from the list
   # therefore, it can be safely used within a XG transaction
-  if org_admin_keys and models.profile_model.get(org_admin_keys[0]):
+  if org_admin_keys and org_admin_keys[0].get():
     return rich_bool.TRUE
   else:
     return rich_bool.RichBool(False, extra=ONLY_ORG_ADMIN)
@@ -87,13 +88,13 @@ def getOrgAdmins(org_key, keys_only=False, extra_attrs=None,
   Returns:
     list of profiles entities or keys of organization administrators
   """
-  query = models.profile_model.all(keys_only=keys_only)
-  query.filter('org_admin_for', org_key)
-  query.filter('status', 'active')
+  query = profile_model.Profile.query(
+      profile_model.Profile.admin_for == org_key,
+      profile_model.Profile.status == profile_model.Status.ACTIVE)
 
   _handleExtraAttrs(query, extra_attrs)
 
-  return query.fetch(limit=1000)
+  return query.fetch(limit=1000, keys_only=keys_only)
 
 
 def assignNoRoleForOrg(profile, org_key):
@@ -178,7 +179,7 @@ def _handleExtraAttrs(query, extra_attrs):
   """
   if extra_attrs:
     for prop, value in extra_attrs.iteritems():
-      melange_db.addFilterToQuery(query, prop, value)
+      melange_db.addFilterToNDBQuery(query, prop, value)
 
 
 def getProfileKey(sponsor_id, program_id, user_id, models=None):
