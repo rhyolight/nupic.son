@@ -104,7 +104,7 @@
     );
   }
 
-Timeline.prototype.draw = function (slices) {
+  Timeline.prototype.draw = function (slices) {
     this.clean();
 
     var options = this.options;
