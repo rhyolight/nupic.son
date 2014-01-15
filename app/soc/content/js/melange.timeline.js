@@ -301,6 +301,18 @@
     }
   };
 
+  Timeline.prototype.isDateWithinRange = function (from, to, now) {
+    if (
+      this.dateToUTCMilliseconds(from) < now &&
+      this.dateToUTCMilliseconds(to) > now
+    ) {
+        return true;
+      }
+    else {
+      return false;
+    }
+  };
+
   Timeline.prototype.draw = function (slices) {
     this.clean();
 
@@ -533,18 +545,6 @@
 
     // Empty array
     this.slices = [];
-  };
-
-  Timeline.prototype.isDateWithinRange = function (from, to, now) {
-    if (
-      this.dateToUTCMilliseconds(from) < now &&
-      this.dateToUTCMilliseconds(to) > now
-    ) {
-        return true;
-      }
-    else {
-      return false;
-    }
   };
 
  /* Timeline PLUGIN DEFINITION
