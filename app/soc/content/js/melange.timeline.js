@@ -92,6 +92,23 @@
       var color = this.assignColors(a, this.options.colors_default);
       current_slice.color = color;
     }
+
+    // TODO(Mario): this deserves to be in a separate aptly named function,
+    // instead of being part of "enrichSlices".
+    var missing_slices = [];
+    for (var a = 0; a < slices.length; a++) {
+      var current_slice = slices[a];
+      var next_slice = slices[(a + 1) % slices.length];
+
+      var missing_slice = this
+          .computeMissingSlice(current_slice, next_slice,
+                               this.options.slice_title_append,
+                               this.options.slice_missing_shade);
+      if (missing_slice !== null) {
+        missing_slices.push(missing_slice);
+      }
+    }
+    Array.prototype.push.apply(slices, missing_slices);
   };
 
   Timeline.prototype.sortSlices = function(slices) {
@@ -143,8 +160,6 @@
     var options = this.options;
     var that = this;
     var i;
-
-    slices = this.addMissingSlices(slices);
 
     slices = this.computeTimeRanges(slices);
 
@@ -377,35 +392,25 @@
     this.slices = [];
   };
 
-  Timeline.prototype.addMissingSlices = function (slices) {
-    var that = this;
-    var slices_count = slices.length;
-    var slice_prev;
-    var slice_next;
-
-
-    for (var index = 0; index < slices_count; index++) {
-      slice_prev = slices[index];
-      slice_next = slices[(index + 1) % slices_count];
-
-      if (
-        this.dateToUTCMilliseconds(slice_prev.to) !=
-        this.dateToUTCMilliseconds(slice_next.from)
-      ) {
-        slices.push({
-          title: slice_next.title + that.options.slice_title_append,
-          from: slice_prev.to,
-          to: slice_next.from,
-          from_grade: slice_prev.to_grade,
-          to_grade: slice_next.from_grade,
-          color: (
-            that.shadeColor(slice_next.color, that.options.slice_missing_shade)
-          )
-        });
-      }
+  Timeline.prototype.computeMissingSlice = function (current_slice, next_slice,
+                                                     slice_title_append,
+                                                     slice_missing_shade) {
+    if (
+      this.dateToUTCMilliseconds(current_slice.to) !=
+      this.dateToUTCMilliseconds(next_slice.from)
+    ) {
+      return {
+        title: next_slice.title + slice_title_append,
+        from: current_slice.to,
+        to: next_slice.from,
+        from_grade: current_slice.to_grade,
+        to_grade: next_slice.from_grade,
+        color: (
+          this.shadeColor(next_slice.color, slice_missing_shade)
+        )
+      };
     }
-
-    return slices;
+    return null;
   };
 
   Timeline.prototype.computeTimeRanges = function (slices) {
