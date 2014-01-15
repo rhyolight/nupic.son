@@ -337,6 +337,99 @@
     };
   };
 
+  Timeline.prototype.clean = function () {
+    $.each(this.slices, function (index, slice) {
+      // Remove each Raphael object and set
+      slice._wires.remove();
+      slice._arc.remove();
+      slice._piece.remove();
+    });
+
+    // Empty array
+    this.slices = [];
+  };
+
+  Timeline.prototype.draw_slice = function (slice) {
+    var options = this.options;
+    var that = this;
+
+    // Create wires
+    slice._wires = this
+      .draw_wires(
+        94,
+        78,
+        67,
+        slice.from_grade,
+        slice.to_grade,
+        options.color_blue,
+        options.color_blue_light
+      )
+      .attr({opacity: 0});
+
+    // Create arc
+    slice._arc = this.R.path()
+      .attr({
+        arc: [94, 78, 64, slice.from_grade, slice.to_grade],
+        "stroke-width": 3,
+        stroke: options.color_blue,
+        opacity: options.slice_faded_opacity
+      });
+
+    // Create slice
+    slice._piece = this.R.path()
+      .attr({
+        segment: [94, 78, 59, slice.from_grade, slice.to_grade],
+        "stroke-width": 0,
+        fill: slice.color,
+        opacity: options.slice_faded_opacity
+      })
+      .mouseover(function () {
+        // change opacity
+        this.attr({opacity: 1});
+        // change html contents
+        options.title_element.innerHTML = slice.title;
+        options.timerange_element.innerHTML = slice.timerange;
+        slice._wires.attr({opacity: 1});
+        slice._arc.attr({opacity: 1});
+
+        if (slice != that.slice_active) {
+          that.slice_active._piece.attr({opacity: options.slice_faded_opacity});
+          that.slice_active._wires.attr({opacity: 0});
+          that.slice_active._arc.attr({opacity: options.slice_faded_opacity});
+        }
+      }).mouseout(function () {
+        // change opacity
+        this.attr({opacity: options.slice_faded_opacity});
+        // change html contents
+        options.title_element.innerHTML = options.timeline_title_default;
+        options.timerange_element.innerHTML =
+             options.timeline_timerange_default;
+        slice._wires.attr({opacity: 0});
+        slice._arc.attr({opacity: options.slice_faded_opacity});
+
+        that.slice_active._piece.attr({opacity: 1});
+        that.slice_active._wires.attr({opacity: 1});
+        that.slice_active._arc.attr({opacity: 1});
+      });
+
+    if (slice.active === true) {
+      this.slice_active = slice;
+      slice._piece.attr({opacity: 1});
+      slice._wires.attr({opacity: 1});
+      slice._arc.attr({opacity: 1});
+
+      // Store default title and timeline
+      options.timeline_title_default = slice.title;
+      options.timeline_timerange_default = slice.timerange;
+
+      // Set default title and timeline
+      options.title_element.innerHTML = slice.title;
+      options.timerange_element.innerHTML = slice.timerange;
+    }
+
+    return slice;
+  };
+
   Timeline.prototype.draw_wires = function (x, y, r, a1, a2, color_w1,
                                             color_w2) {
     var wires = this.R.set();
@@ -436,99 +529,6 @@
 
     return wires;
   }
-
-  Timeline.prototype.draw_slice = function (slice) {
-    var options = this.options;
-    var that = this;
-
-    // Create wires
-    slice._wires = this
-      .draw_wires(
-        94,
-        78,
-        67,
-        slice.from_grade,
-        slice.to_grade,
-        options.color_blue,
-        options.color_blue_light
-      )
-      .attr({opacity: 0});
-
-    // Create arc
-    slice._arc = this.R.path()
-      .attr({
-        arc: [94, 78, 64, slice.from_grade, slice.to_grade],
-        "stroke-width": 3,
-        stroke: options.color_blue,
-        opacity: options.slice_faded_opacity
-      });
-
-    // Create slice
-    slice._piece = this.R.path()
-      .attr({
-        segment: [94, 78, 59, slice.from_grade, slice.to_grade],
-        "stroke-width": 0,
-        fill: slice.color,
-        opacity: options.slice_faded_opacity
-      })
-      .mouseover(function () {
-        // change opacity
-        this.attr({opacity: 1});
-        // change html contents
-        options.title_element.innerHTML = slice.title;
-        options.timerange_element.innerHTML = slice.timerange;
-        slice._wires.attr({opacity: 1});
-        slice._arc.attr({opacity: 1});
-
-        if (slice != that.slice_active) {
-          that.slice_active._piece.attr({opacity: options.slice_faded_opacity});
-          that.slice_active._wires.attr({opacity: 0});
-          that.slice_active._arc.attr({opacity: options.slice_faded_opacity});
-        }
-      }).mouseout(function () {
-        // change opacity
-        this.attr({opacity: options.slice_faded_opacity});
-        // change html contents
-        options.title_element.innerHTML = options.timeline_title_default;
-        options.timerange_element.innerHTML =
-             options.timeline_timerange_default;
-        slice._wires.attr({opacity: 0});
-        slice._arc.attr({opacity: options.slice_faded_opacity});
-
-        that.slice_active._piece.attr({opacity: 1});
-        that.slice_active._wires.attr({opacity: 1});
-        that.slice_active._arc.attr({opacity: 1});
-      });
-
-    if (slice.active === true) {
-      this.slice_active = slice;
-      slice._piece.attr({opacity: 1});
-      slice._wires.attr({opacity: 1});
-      slice._arc.attr({opacity: 1});
-
-      // Store default title and timeline
-      options.timeline_title_default = slice.title;
-      options.timeline_timerange_default = slice.timerange;
-
-      // Set default title and timeline
-      options.title_element.innerHTML = slice.title;
-      options.timerange_element.innerHTML = slice.timerange;
-    }
-
-    return slice;
-  };
-
-  Timeline.prototype.clean = function () {
-    $.each(this.slices, function (index, slice) {
-      // Remove each Raphael object and set
-      slice._wires.remove();
-      slice._arc.remove();
-      slice._piece.remove();
-    });
-
-    // Empty array
-    this.slices = [];
-  };
 
  /* Timeline PLUGIN DEFINITION
   * ===================== */
