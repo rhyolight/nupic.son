@@ -349,6 +349,7 @@
     // Create wires
     slice._wires = this
       .draw_wires(
+        R,
         94,
         78,
         67,
@@ -422,20 +423,17 @@
     return slice;
   };
 
-  Timeline.prototype.draw_wires = function (x, y, r, a1, a2, color_w1,
+  Timeline.prototype.draw_wires = function (R, x, y, r, a1, a2, color_w1,
                                             color_w2) {
-    var wires = this.R.set();
+    var wires = R.set();
     var a_middle = (((a1 + a2) / 2) + (a2 < a1 ? 180 : 0)) % 360;
     var a_middle_rad = (a_middle % 360) * Math.PI / 180;
     var is_bottom = a_middle <= 180;
     var is_left = a_middle > 90 && a_middle < 270;
 
-    color_w1 = color_w1 || this.options.color_blue;
-    color_w2 = color_w2 || this.options.color_blue_light;
-
     if (is_bottom) {
       // First line
-      wires.push(this.R.path().attr({
+      wires.push(R.path().attr({
         path: [
           [
             "M",
@@ -460,7 +458,7 @@
       }));
 
       // Second line
-      wires.push(this.R.path().attr({
+      wires.push(R.path().attr({
         path: [
           [
             "M",
@@ -485,7 +483,7 @@
       }));
     } else {
       // First line
-      wires.push(this.R.path().attr({
+      wires.push(R.path().attr({
         path: [
           [
             "M",
@@ -502,7 +500,7 @@
       }));
 
       // Second line
-      wires.push(this.R.path().attr({
+      wires.push(R.path().attr({
         path: [
           [
             "M",
