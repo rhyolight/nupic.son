@@ -1020,8 +1020,9 @@ class AcceptProposal(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-        data.url_proposal)
+    org_key = ndb.Key.from_old_key(
+        proposal_model.GSoCProposal.org.get_value_for_datastore(
+            data.url_proposal))
     check.isOrgAdminForOrganization(org_key)
 
   def toggleStatus(self, data, value):

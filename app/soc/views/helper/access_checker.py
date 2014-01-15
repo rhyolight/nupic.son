@@ -511,7 +511,7 @@ class AccessChecker(BaseAccessChecker):
     if org_key in self.data.ndb_profile.admin_for:
       return
 
-    raise exception.Forbidden(message=DEF_NOT_ADMIN % org_key.name())
+    raise exception.Forbidden(message=DEF_NOT_ADMIN % org_key.id())
 
   def isMentorForOrganization(self, org_key):
     """Checks if the user is a mentor for the specified organiztaion.
