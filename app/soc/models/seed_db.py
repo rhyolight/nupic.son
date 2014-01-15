@@ -218,7 +218,7 @@ def seed(request, *args, **kwargs):
       postal_code='12345')
   address_properties.put()
 
-  contact_info = Contact(email='test@example.com')
+  contact_info = contact.Contact(email='test@example.com')
   contact_info.put()
 
   gsoc_delta = datetime.timedelta(days=(365 * 18))
