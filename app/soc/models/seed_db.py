@@ -491,6 +491,7 @@ def clear(*args, **kwargs):
       # use .query() to return all instances instead of .all().
       soc_org_model.SOCOrganization.query(),
       profile_model.Profile.query(),
+      soc_profile.SOCStudentData.query(),
       user.User.query(),
       address.Address.query(),
       contact.Contact.query()
