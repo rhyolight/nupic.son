@@ -28,6 +28,7 @@ from summerofcode.views import project_manage as project_manage_view
 from tests import profile_utils
 from tests import survey_utils
 from tests import test_utils
+from tests.utils import project_utils
 
 
 class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
@@ -38,15 +39,14 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
 
   def _seedProjectData(self):
     # create a mentor
-    self.mentor = profile_utils.GSoCProfileHelper(
-        self.gsoc, False).createMentor(self.org)
+    self.mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
     # create a student with a project
-    self.student = profile_utils.GSoCProfileHelper(
-        self.gsoc, False).createStudentWithProject(self.org, self.mentor)
-
-    # get the project
-    self.project = project_model.GSoCProject.all().get()
+    self.student = profile_utils.seedSOCStudent(self.program)
+    self.project = project_utils.seedProject(
+        self.student, self.program.key(), org_key=self.org.key,
+        mentor_key=self.mentor.key)
 
   def _getUrl(self, project):
     return '/gsoc/project/manage/admin/%s/%s' % (
@@ -80,14 +80,14 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
 
   def testMentorAccessForbidden(self):
     """Tests that mentors cannot access the page."""
-    # try to access the page as a mentor for the project
-    self.profile_helper.createMentor(self.org)
-
     # create a student with a project
     student = profile_utils.GSoCProfileHelper(
         self.gsoc, False).createStudentWithProject(
             self.org, self.profile_helper.profile)
     project = project_model.GSoCProject.all().get()
+
+    # try to access the page as a mentor for the project
+    self.profile_helper.createMentor(self.org)
 
     response = self.get(self._getUrl(project))
     self.assertResponseForbidden(response)
@@ -96,8 +96,8 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
   def testOrgAdminAccessForbidden(self):
     """Tests that org admins cannot access the page."""
     # try to access the page as org admin for organization project
-    self.profile_helper.createOrgAdmin(self.org)
     self._seedProjectData()
+    self.profile_helper.createOrgAdmin(self.org)
 
     response = self.get(self._getUrl(self.project))
     self.assertResponseForbidden(response)
@@ -105,20 +105,20 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
 
   def testProgramAdminAccessGranted(self):
     """Tests that program hosts can access the page."""
+    self._seedProjectData()
+
     user = profile_utils.seedNDBUser(host_for=[self.program])
     profile_utils.loginNDB(user)
-
-    self._seedProjectData()
 
     response = self.get(self._getUrl(self.project))
     self.assertResponseOK(response)
 
   def testExtensionForms(self):
     """Tests that the response contains extension adequate forms."""
+    self._seedProjectData()
+
     user = profile_utils.seedNDBUser(host_for=[self.program])
     profile_utils.loginNDB(user)
-
-    self._seedProjectData()
 
     # check that no forms are present if there are no evaluations
     response = self.get(self._getUrl(self.project))
@@ -157,10 +157,10 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
 
   def testPersonalExtensionIsSet(self):
     """Tests that personal extension is set for an evaluation."""
+    self._seedProjectData()
+
     user = profile_utils.seedNDBUser(host_for=[self.program])
     profile_utils.loginNDB(user)
-
-    self._seedProjectData()
 
     # seed midterm evaluation
     properties = {'link_id': project_survey_model.MIDTERM_EVAL}
@@ -180,17 +180,17 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
 
     # check if personal extension is set properly
     extension = survey_logic.getPersonalExtension(
-        self.student.key(), survey.key())
+        self.student.key, survey.key())
     self.assertIsNotNone(extension)
     self.assertEqual(start_date, extension.start_date.date())
     self.assertEqual(end_date, extension.end_date.date())
 
   def testPersonalExtensionIsSetWithEmptyDate(self):
     """Tests that personal extension is set even if a date is empty."""
+    self._seedProjectData()
+
     user = profile_utils.seedNDBUser(host_for=[self.program])
     profile_utils.loginNDB(user)
-
-    self._seedProjectData()
 
     # seed midterm evaluation
     properties = {'link_id': project_survey_model.MIDTERM_EVAL}
@@ -209,7 +209,7 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
 
     # check if personal extension is set properly
     extension = survey_logic.getPersonalExtension(
-        self.student.key(), survey.key())
+        self.student.key, survey.key())
     self.assertIsNotNone(extension)
     self.assertEqual(start_date, extension.start_date.date())
     self.assertIsNone(extension.end_date)
@@ -226,7 +226,7 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
 
     # check if personal extension is set properly
     updated_extension = survey_logic.getPersonalExtension(
-        self.student.key(), survey.key())
+        self.student.key, survey.key())
     self.assertIsNotNone(updated_extension)
     self.assertIsNone(updated_extension.start_date)
     self.assertEqual(end_date, updated_extension.end_date.date())
