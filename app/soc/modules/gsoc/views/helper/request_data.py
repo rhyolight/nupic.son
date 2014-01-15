@@ -387,7 +387,7 @@ class RequestData(request_data.RequestData):
             message='The request does not contain project id.')
       else:
         self._url_project = project_model.GSoCProject.get_by_id(
-            int(self.kwargs['id']), self.url_profile)
+            int(self.kwargs['id']), self.url_ndb_profile.key.to_old_key())
 
         if not self._url_project:
           raise exception.NotFound(
