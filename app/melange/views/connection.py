@@ -15,7 +15,6 @@
 """Module with Code In specific connection views."""
 
 from google.appengine.ext import db
-from google.appengine.ext import ndb
 
 from melange.logic import connection as connection_logic
 from melange.logic import profile as profile_logic
@@ -23,8 +22,6 @@ from melange.models import connection as connection_model
 from melange.request import exception
 
 from soc.logic.helper import notifications
-from soc.models import organization as org_model
-from soc.models import profile as profile_model
 from soc.tasks import mailer
 
 

@@ -28,6 +28,7 @@ from soc.views.helper import url_patterns
 from soc.models.universities import UNIVERSITIES
 
 from soc.modules.gsoc.logic import profile as profile_logic
+from soc.modules.gsoc.logic import conversation_updater
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.views import base
@@ -51,7 +52,8 @@ def _handleAnonymousConnection(data, profile, token):
   """
   new_connection = connection_logic.activateAnonymousConnection(
       profile=profile, token=token)
-  connection_view.handleUserRoleSelectionTxn(data, new_connection)
+  connection_view.handleUserRoleSelectionTxn(
+      data, new_connection, conversation_updater.CONVERSATION_UPDATER)
   return new_connection
 
 

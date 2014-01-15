@@ -15,14 +15,11 @@
 """Module for the profile page."""
 
 from google.appengine.ext import db
-from google.appengine.ext import ndb
 
 from django.forms import fields
 
 from soc.logic import accounts
 from soc.logic import cleaning
-
-from soc.models import profile as profile_model
 
 from soc.views import forms
 from soc.views.helper import url_patterns
