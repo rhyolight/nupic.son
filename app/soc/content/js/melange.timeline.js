@@ -360,6 +360,7 @@
 
     return slices;
   };
+
   // Parse yyyy-mm-dd hh:mm:ss
   // Parse using custom function as standart parse function is implementation dependant
   // Returns number of milliseconds from midnight January 1 1970
