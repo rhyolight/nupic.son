@@ -68,47 +68,64 @@
 
       // Draw slices
       this.draw(this.options.slices);
-    },
+    }
+  };
 
-    draw: function (slices) {
-      this.clean();
+  Timeline.prototype.draw = function (slices) {
+    this.clean();
 
-      var options = this.options,
-        that = this,
-        i;
+    var options = this.options;
+    var that = this;
+    var i;
 
-      slices = this.datesToGrades(slices);
+    slices = this.datesToGrades(slices);
 
-      for (i in slices) {
-        // Check for colors. Set default if missing
-        if (slices[i].color === undefined) {
-          slices[i].color = options.colors_default[i % options.colors_default.length];
-        }
+    for (i in slices) {
+      // Check for colors. Set default if missing
+      if (slices[i].color === undefined) {
+        slices[i].color =
+            options.colors_default[i % options.colors_default.length];
       }
-
-      slices = this.addMissingSlices(slices);
-
-      slices = this.computeTimeRanges(slices);
-
-      slices = this.setActiveSlice(slices, this.options.now);
-
-      // Add top lines
-      this.R.path('M0 0.5L187 0.5').attr({stroke: options.color_blue});
-      this.R.path('M0 1.5L187 1.5').attr({stroke: options.color_blue_light});
-
-      for (i in slices) {
-        // Draw
-        this.slices.push(this.draw_slice(slices[i]));
-      }
-
-      // Draw inner circle
-      this.inner = {
-        circle: that.R.circle(94, 78, 33).attr({fill: "#ffffff", "stroke-width": 0}),
-        text: that.R.text(94, 78, that.year).attr({font: '700 18px "Helvetica Neue", Helvetica, "Arial Unicode MS", Arial, sans-serif', fill: options.color_blue}),
-        line: that.R.path('M94 91L94 111').attr({stroke: options.color_gray})
-      };
     }
 
+    slices = this.addMissingSlices(slices);
+
+    slices = this.computeTimeRanges(slices);
+
+    slices = this.setActiveSlice(slices, this.options.now);
+
+    // Add top lines
+    this.R.path('M0 0.5L187 0.5').attr({stroke: options.color_blue});
+    this.R.path('M0 1.5L187 1.5').attr({stroke: options.color_blue_light});
+
+    for (i in slices) {
+      // Draw
+      this.slices.push(this.draw_slice(slices[i]));
+    }
+
+    // Draw inner circle
+    this.inner = {
+      circle: that.R
+              .circle(94, 78, 33)
+              .attr({fill: "#ffffff", "stroke-width": 0}),
+      text: that.R
+            .text(94, 78, that.year)
+            .attr({
+              font: [
+                '700',
+                '18px',
+                [
+                  '"Helvetica Neue"',
+                  'Helvetica',
+                  '"Arial Unicode MS"',
+                  'Arial',
+                  'sans-serif'
+                ].join(',')
+              ].join(' '),
+              fill: options.color_blue
+            }),
+      line: that.R.path('M94 91L94 111').attr({stroke: options.color_gray})
+    };
   };
 
   Timeline.prototype.draw_wires = function (x, y, r, a1, a2, color_w1,
@@ -131,8 +148,19 @@
             ~~((is_left ? 6 : -6) + x + r * Math.cos(a_middle_rad)),
             ~~(y + 2 + r * Math.sin(a_middle_rad)) + 0.5
           ],
-          ["l", ~~(is_left ? (-r - 10 - r * Math.cos(a_middle_rad)) : (r + 10 - r * Math.cos(a_middle_rad))) + 0.5, 0],
-          ["l", 0, -~~(y + 2 + r * Math.sin(a_middle_rad)) - 0.5]
+          [
+            "l",
+            (
+              ~~(is_left ? (-r - 10 - r * Math.cos(a_middle_rad)) :
+              (r + 10 - r * Math.cos(a_middle_rad))) + 0.5
+            ),
+            0
+          ],
+          [
+            "l",
+            0,
+            -~~(y + 2 + r * Math.sin(a_middle_rad)) - 0.5
+          ]
         ],
         stroke: color_w1
       }));
@@ -140,9 +168,24 @@
       // Second line
       wires.push(this.R.path().attr({
         path: [
-          ["M", ~~((is_left ? 6 : -6) + x + r * Math.cos(a_middle_rad)), ~~(y + 2 + r * Math.sin(a_middle_rad)) + 1.5],
-          ["l", ~~(is_left ? (-r - 11 - r * Math.cos(a_middle_rad)) : (r + 11 - r * Math.cos(a_middle_rad))) + 0.5, 0],
-          ["l", 0, -~~(y + 2 + r * Math.sin(a_middle_rad)) - 0.5]
+          [
+            "M",
+            ~~((is_left ? 6 : -6) + x + r * Math.cos(a_middle_rad)),
+            ~~(y + 2 + r * Math.sin(a_middle_rad)) + 1.5
+          ],
+          [
+            "l",
+            (
+              ~~(is_left ? (-r - 11 - r * Math.cos(a_middle_rad)) :
+              (r + 11 - r * Math.cos(a_middle_rad))) + 0.5
+            ),
+            0
+          ],
+          [
+            "l",
+            0,
+            -~~(y + 2 + r * Math.sin(a_middle_rad)) - 0.5
+          ]
         ],
         stroke: color_w2
       }));
@@ -150,8 +193,16 @@
       // First line
       wires.push(this.R.path().attr({
         path: [
-          ["M", ~~(x + r * Math.cos(a_middle_rad)) + 0.5, ~~(y + 4 + r * Math.sin(a_middle_rad))],
-          ["L", ~~(x + r * Math.cos(a_middle_rad)) + 0.5, 0]
+          [
+            "M",
+            ~~(x + r * Math.cos(a_middle_rad)) + 0.5,
+            ~~(y + 4 + r * Math.sin(a_middle_rad))
+          ],
+          [
+            "L",
+            ~~(x + r * Math.cos(a_middle_rad)) + 0.5,
+            0
+          ]
         ],
         stroke: color_w1
       }));
@@ -159,8 +210,16 @@
       // Second line
       wires.push(this.R.path().attr({
         path: [
-          ["M", ~~(x + r * Math.cos(a_middle_rad)) + 0.5 - (is_left ? 1 : -1), ~~(y + 4 + r * Math.sin(a_middle_rad))],
-          ["L", ~~(x + r * Math.cos(a_middle_rad)) + 0.5 - (is_left ? 1 : -1), 1]
+          [
+            "M",
+            ~~(x + r * Math.cos(a_middle_rad)) + 0.5 - (is_left ? 1 : -1),
+            ~~(y + 4 + r * Math.sin(a_middle_rad))
+          ],
+          [
+            "L",
+            ~~(x + r * Math.cos(a_middle_rad)) + 0.5 - (is_left ? 1 : -1),
+            1
+          ]
         ],
         stroke: color_w2
       }));
