@@ -190,10 +190,11 @@ class NonStudentProfileAccessChecker(AccessChecker):
 
   def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
-    if not data.profile or data.profile.status != 'active':
+    if (not data.ndb_profile
+        or data.ndb_profile.status != profile_model.Status.ACTIVE):
       raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
 
-    if data.profile.is_student:
+    if data.ndb_profile.is_student:
       raise exception.Forbidden(message=_MESSAGE_STUDENTS_DENIED)
 
 NON_STUDENT_PROFILE_ACCESS_CHECKER = NonStudentProfileAccessChecker()

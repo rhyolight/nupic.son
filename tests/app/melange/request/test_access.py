@@ -304,24 +304,18 @@ class NonStudentProfileAccessCheckerTest(unittest.TestCase):
   def setUp(self):
     """See unittest.setUp for specification."""
     sponsor = program_utils.seedSponsor()
-
-    program_properties = {
-        'sponsor': sponsor,
-        'scope': sponsor,
-        }
-    program = seeder_logic.seed(
-        program_model.Program, properties=program_properties)
+    self.program = program_utils.seedProgram(sponsor_key=sponsor.key())
 
     kwargs = {
         'sponsor': sponsor.key().name(),
-        'program': program.link_id,
+        'program': self.program.link_id,
         }
     self.data = request_data.RequestData(None, None, kwargs)
 
   def testUserWithNoProfileAccessDenied(self):
     """Tests that access is denied if current user has no profile"""
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
 
     access_checker = access.NON_STUDENT_PROFILE_ACCESS_CHECKER
     with self.assertRaises(exception.UserError) as context:
@@ -330,15 +324,9 @@ class NonStudentProfileAccessCheckerTest(unittest.TestCase):
 
   def testUserWithStudentProfileAccessDenied(self):
     """Tests that access is denied if current user has student profile."""
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-
-    profile_properties = {
-        'is_student': True,
-        'parent': user,
-        'status': 'active',
-        }
-    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedSOCStudent(self.program, user=user)
 
     access_checker = access.NON_STUDENT_PROFILE_ACCESS_CHECKER
     with self.assertRaises(exception.UserError) as context:
@@ -346,18 +334,10 @@ class NonStudentProfileAccessCheckerTest(unittest.TestCase):
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
 
   def testUserWithNonStudentProfileAccessGranted(self):
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-
-    profile_properties = {
-        'is_student': False,
-        'parent': user,
-        'status': 'active',
-        'program': self.data.program,
-        'scope': self.data.program,
-        'link_id': user.link_id,
-        }
-    seeder_logic.seed(profile_model.Profile, properties=profile_properties)
+    """Tests that access is granted if current user has non-student profile."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     access_checker = access.NON_STUDENT_PROFILE_ACCESS_CHECKER
     access_checker.checkAccess(self.data, None)
