@@ -182,10 +182,13 @@ class ProposalReviewTest(GSoCDjangoTestCase):
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        student.user.key().name(),
+        student.profile_id,
         proposal.key().id())
 
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
 
     url = '/gsoc/proposal/ignore/' + suffix
     postdata = {'value': 'unchecked'}
