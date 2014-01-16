@@ -182,7 +182,7 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
           data.student_evaluation.link_id).urlOf(
           'gsoc_show_student_evaluation')
     check.isStudentSurveyActive(
-        data.student_evaluation, data.url_profile, show_url=show_url)
+        data.student_evaluation, data.url_ndb_profile, show_url=show_url)
 
     check.isProfileActive()
     org_key = project_model.GSoCProject.org.get_value_for_datastore(
