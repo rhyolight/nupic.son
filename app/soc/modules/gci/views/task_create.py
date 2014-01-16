@@ -28,6 +28,7 @@ from soc.views.helper import url_patterns
 from soc.views.template import Template
 
 from soc.modules.gci.logic import profile as profile_logic
+from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.task import DifficultyLevel
 from soc.modules.gci.views import forms as gci_forms
@@ -305,7 +306,7 @@ class TaskCreatePage(GCIRequestHandler):
       check.checkTimelineAllowsTaskEditing()
 
       # Set full_edit status depending on the task status
-      mutator.fullEdit(check.hasTaskEditableStatus())
+      mutator.fullEdit(task_logic.hasTaskEditableStatus(data.task))
     else:
       check.canCreateTask()
 

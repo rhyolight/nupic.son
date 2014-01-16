@@ -30,6 +30,7 @@ from soc.logic import dicts
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 
+from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.task import GCITask
@@ -413,22 +414,12 @@ class AccessChecker(access_checker.AccessChecker):
       raise exception.Forbidden(
           message=DEF_NO_TASK_EDIT_PRIV % (self.data.task.org.name))
 
-  # TODO(nathaniel): Pull out into a function.
-  def hasTaskEditableStatus(self):
-    """Returns True/False depending on whether the task is in one of the
-    editable states.
-    """
-    assert access_checker.isSet(self.data.task)
-
-    return self.data.task.status in (
-        task_model.UNAVAILABLE + [task_model.OPEN])
-
   def checkHasTaskEditableStatus(self):
     """Checks whether the task is in one of the editable states.
 
     We specifically do not allow editing of tasks which are already claimed.
     """
-    if not self.hasTaskEditableStatus():
+    if not task_logic.hasTaskEditableStatus(self.data.task):
       raise exception.Forbidden(message=DEF_TASK_UNEDITABLE_STATUS)
 
   def timelineAllowsTaskEditing(self):
