@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains the GCI Task Model.
-"""
-
+"""This module contains the GCI Task Model."""
 
 from google.appengine.ext import db
 
@@ -41,7 +39,7 @@ CLOSED = 'Closed'
 # TODO(piyush.devel): Define constants for the rest of the statuses.
 
 # states in which a task does not show up publicly
-UNPUBLISHED = ['Unpublished', UNAPPROVED]
+UNAVAILABLE = ['Unpublished', UNAPPROVED]
 # states in which a student can claim a task
 CLAIMABLE = [OPEN, REOPENED]
 # States in which we consider the task to count towards the task quota of
@@ -225,14 +223,13 @@ class GCITask(db.Model):
 
     return "".join(result)
 
+  # TODO(nathaniel): Rename this "isAvailable".
   def isPublished(self):
-    """Returns True if the task is published.
-    """
-    return self.status not in UNPUBLISHED
+    """Returns True if the task is published."""
+    return self.status not in UNAVAILABLE
 
   def workSubmissions(self):
-    """Returns the GCIWorksubmissions that have the given task as parent.
-    """
+    """Returns the GCIWorksubmissions that have the given task as parent."""
     q = GCIWorkSubmission.all()
     q.ancestor(self)
     return q.fetch(1000)

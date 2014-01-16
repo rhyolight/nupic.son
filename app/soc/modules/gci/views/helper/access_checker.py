@@ -31,8 +31,8 @@ from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 
 from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.task import UNPUBLISHED
 from soc.modules.gci.models import conversation as gciconversation_model
 from soc.modules.gci.logic import conversation as gciconversation_logic
 from soc.modules.gci.views.helper import url_names
@@ -413,18 +413,15 @@ class AccessChecker(access_checker.AccessChecker):
       raise exception.Forbidden(
           message=DEF_NO_TASK_EDIT_PRIV % (self.data.task.org.name))
 
+  # TODO(nathaniel): Pull out into a function.
   def hasTaskEditableStatus(self):
     """Returns True/False depending on whether the task is in one of the
     editable states.
     """
     assert access_checker.isSet(self.data.task)
 
-    task = self.data.task
-
-    if task.status not in (UNPUBLISHED + ['Open']):
-      return False
-
-    return True
+    return self.data.task.status in (
+        task_model.UNAVAILABLE + [task_model.OPEN])
 
   def checkHasTaskEditableStatus(self):
     """Checks whether the task is in one of the editable states.

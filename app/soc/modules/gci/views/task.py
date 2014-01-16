@@ -36,12 +36,12 @@ from soc.modules.gci.logic import comment as comment_logic
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.logic.helper import timeline as timeline_helper
+from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
 from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import SEND_FOR_REVIEW_ALLOWED
 from soc.modules.gci.models.task import TASK_IN_PROGRESS
-from soc.modules.gci.models.task import UNPUBLISHED
 from soc.modules.gci.models.work_submission import GCIWorkSubmission
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.base import GCIRequestHandler
@@ -508,14 +508,14 @@ class TaskInformation(Template):
       can_unpublish = task.status == 'Open' and not task.student
       context['button_unpublish'] = can_unpublish
 
-      can_publish = task.status in UNPUBLISHED
+      can_publish = task.status in task_model.UNAVAILABLE
       context['button_publish'] = can_publish
 
       context['button_delete'] = not task.student
 
     if is_mentor:
       context['button_edit'] = task.status in \
-          UNPUBLISHED + CLAIMABLE + ACTIVE_CLAIMED_TASK
+          task_model.UNAVAILABLE + CLAIMABLE + ACTIVE_CLAIMED_TASK
       context['button_assign'] = task.status == 'ClaimRequested'
       context['button_unassign'] = task.status in ACTIVE_CLAIMED_TASK
       context['button_close'] = task.status == 'NeedsReview'

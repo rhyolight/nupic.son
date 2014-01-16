@@ -39,8 +39,8 @@ from soc.modules.gci.logic import document as gsoc_document_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.task import UNPUBLISHED
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_names
 from soc.modules.gci.views.helper.url_patterns import url
@@ -796,14 +796,14 @@ class MyOrgsTaskList(Component):
           return
 
         if publish:
-          if task.status in UNPUBLISHED:
-            task.status = 'Open'
+          if task.status in task_model.UNAVAILABLE:
+            task.status = task_model.OPEN
             task.put()
           else:
             logging.warning(
                 'Trying to publish task with %s status.', task.status)
         else:
-          if task.status == 'Open':
+          if task.status == task_model.OPEN:
             task.status = 'Unpublished'
             task.put()
           else:
