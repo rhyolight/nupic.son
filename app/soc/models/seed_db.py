@@ -103,9 +103,6 @@ def seed(request, *args, **kwargs):
   google = Sponsor(**group_properties)
   google.put()
 
-  current_user.host_for = [google.key()]
-  current_user.put()
-
   now = datetime.datetime.now()
   before = now - datetime.timedelta(365)
   after = now + datetime.timedelta(365)
@@ -189,6 +186,12 @@ def seed(request, *args, **kwargs):
 
   site.active_program = gci2013
   site.put()
+
+  current_user.host_for = [
+      ndb.Key.from_old_key(gsoc2010.key()),
+      ndb.Key.from_old_key(gsoc2014.key()),
+      ndb.Key.from_old_key(gci2013.key())]
+  current_user.put()
 
   group_properties.update({
     'key_name': 'google/gci2013/melange',
