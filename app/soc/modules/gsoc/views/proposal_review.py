@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from soc.modules.gsoc.models.proposal import GSoCProposal
-
 """Module for the GSoC proposal page."""
 
 from google.appengine.ext import db
@@ -43,7 +41,6 @@ from soc.modules.gsoc.logic.helper import notifications
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.models.comment import GSoCComment
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
-from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.score import GSoCScore
 from soc.modules.gsoc.views import assign_mentor
 from soc.modules.gsoc.views import base
@@ -294,7 +291,8 @@ class UserActions(Template):
 
       current_mentors = []
       mentor_key = (
-          GSoCProposal.mentor.get_value_for_datastore(self.data.url_proposal))
+          proposal_model.GSoCProposal.mentor.get_value_for_datastore(
+              self.data.url_proposal))
       if mentor_key:
         current_mentors.append(mentor_key)
 
@@ -544,7 +542,8 @@ class ReviewProposal(base.GSoCRequestHandler):
         'duplicate': duplicate,
         'max_score': org.max_score,
         'mentor': ndb.Key.from_old_key(
-            GSoCProposal.mentor.get_value_for_datastore(data.url_proposal)),
+            proposal_model.GSoCProposal.mentor.get_value_for_datastore(
+                data.url_proposal)),
         'page_name': data.url_proposal.title,
         'possible_mentors': possible_mentors_names,
         'private_comments': private_comments,
