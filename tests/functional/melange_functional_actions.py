@@ -1,4 +1,4 @@
-# Copyright 2012 the Melange authors.
+# Copyright 2014 the Melange authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -98,8 +98,10 @@ class FunctionalTestCase(unittest.TestCase):
     """	
     if program == "gsoc":
       self.url = self.obj_id["Url"] + self.gsoc.key().name()
-    else:
+    elif program =="gci":
       self.url = self.obj_id["Url"] + self.gci.key().name()
+    else:
+      self.fail("No program found")
     time.sleep(2)
     # Start the firefox.
     self.Browser = webdriver.Firefox(timeout=20)
@@ -360,14 +362,11 @@ class FunctionalTestCase(unittest.TestCase):
     """Take screenshot."""
     # If there is a results directory then store snapshots there or create a new one.
     results_directory = "./tests/functional/results"
-    random_string= ''.join(random.sample(string.letters*5,5))
-    name_of_screenshot = random_string + ".png"
+    name_of_screenshot = time.strftime("%c") + ".png"
     screenshot = results_directory + "/" + name_of_screenshot
-    if os.path.isdir(results_directory):
-      self.Browser.save_screenshot(screenshot)
-    else:
+    if not os.path.isdir(results_directory):
       os.makedirs(results_directory)
-      self.Browser.save_screenshot(screenshot)
+    self.Browser.save_screenshot(screenshot)
 
   def scrollDown(self):
     """Scroll Down."""
