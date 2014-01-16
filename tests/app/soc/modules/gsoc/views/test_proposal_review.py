@@ -394,11 +394,11 @@ class ProposalReviewTest(GSoCDjangoTestCase):
   def testAssignMentor(self):
     student = profile_utils.seedSOCStudent(self.program)
     proposal = proposal_utils.seedProposal(
-        student.key, self.program.key(), org_key=self.org.key)
+        student.key, self.program.key(), org_key=self.org.key, mentor=None)
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        student.user.key().name(),
+        student.profile_id,
         proposal.key().id())
 
     user = profile_utils.seedNDBUser()
@@ -413,7 +413,9 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
     proposal = GSoCProposal.all().get()
-    self.assertIsNone(proposal.mentor)
+
+    mentor_key = GSoCProposal.mentor.get_value_for_datastore(proposal)
+    self.assertIsNone(mentor_key)
 
 
 class WithdrawProposalHandlerTest(GSoCDjangoTestCase):
