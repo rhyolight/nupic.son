@@ -379,7 +379,8 @@ def seed(request, *args, **kwargs):
       'mentor': profile.key.to_old_key(),
       'status': 'accepted',
       'has_mentor': True,
-      'org': ndb_orgs[1].key.to_old_key(),
+      'org': ndb_orgs[0].key.to_old_key(),
+      'possible_mentors': [profile.key.to_old_key()]
       }
   melange_proposal = GSoCProposal(**proposal_properties)
   melange_proposal.put()
@@ -391,7 +392,7 @@ def seed(request, *args, **kwargs):
       'parent': melange_student.key.to_old_key(),
       'mentors': [profile.key.to_old_key()],
       'program':  gsoc2014,
-      'org': ndb_orgs[1].key.to_old_key(),
+      'org': ndb_orgs[0].key.to_old_key(),
       'proposal' : melange_proposal.key(),
        }
   melange_project = GSoCProject(**project_properties)
