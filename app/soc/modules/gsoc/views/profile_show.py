@@ -133,24 +133,22 @@ class GSoCProfileAdminPage(base.GSoCRequestHandler):
     return 'modules/gsoc/profile_show/base.html'
 
   def context(self, data, check, mutator):
-    assert isSet(data.program)
-
-    user = data.url_user
     profile = data.url_profile
     program = data.program
 
     context = {
         'program_name': program.name,
-        'user': GSoCUserReadOnlyTemplate(user),
+        'user': GSoCUserReadOnlyTemplate(data.url_ndb_user),
         'css_prefix': GSoCProfileReadOnlyTemplate.Meta.css_prefix,
         }
 
     if profile:
       urls = []
-      for project_key in GSoCProject.all(keys_only=True).ancestor(profile):
+      for project_key in GSoCProject.all(keys_only=True).ancestor(
+            data.url_profile.key.to_old_key()):
         urls.append(
             links.ABSOLUTE_LINKER.userId(
-                data.url_profile.key(), project_key.id(),
+                data.url_ndb_profile.key, project_key.id(),
                 url_names.GSOC_PROJECT_DETAILS))
 
       # TODO(nathaniel): Eliminate this state-setting call.
@@ -168,7 +166,8 @@ class GSoCProfileAdminPage(base.GSoCRequestHandler):
           })
     else:
       context.update({
-          'page_name': '%s Profile - %s' % (program.short_name, user.account),
+          'page_name': '%s Profile - %s' % (
+              program.short_name, data.url_ndb_user.user_id),
           })
 
     return context
