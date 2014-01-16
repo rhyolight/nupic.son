@@ -353,7 +353,7 @@ def seed(request, *args, **kwargs):
   user_properties = {
       'id': student_id,
       'account_id': 'student2',
-      'account': users.User(email='student@example.com'),
+      'account': users.User(email='student2@example.com'),
       }
   student_user2 = user.User(**user_properties)
   student_user2.put()
