@@ -289,6 +289,7 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     proposal = GSoCProposal.get(proposal.key())
     self.assertNotIn(mentor.key.to_old_key(), proposal.possible_mentors)
 
+    # TODO(daniel): this section (mentor retires) should go to another test
     other_mentor.mentor_for = []
     other_mentor.put()
 
@@ -298,10 +299,8 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     url = '/gsoc/proposal/review/' + suffix
     self.get(url)
 
-    # TODO(daniel): I have no idea what is tested. Why would the line above
-    # remove other_mentor from the list of possible mentors?
-    #proposal = GSoCProposal.get(proposal.key())
-    #self.assertNotIn(other_mentor.key.to_old_key(), proposal.possible_mentors)
+    proposal = GSoCProposal.get(proposal.key())
+    self.assertNotIn(other_mentor.key.to_old_key(), proposal.possible_mentors)
 
   def testPubliclyVisibleButton(self):
     self.profile_helper.createStudent()

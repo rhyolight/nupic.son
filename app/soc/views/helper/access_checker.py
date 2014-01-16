@@ -646,7 +646,7 @@ class AccessChecker(BaseAccessChecker):
       return
 
     # all the mentors and org admins from the organization may access it
-    org_key = (
+    org_key = ndb.Key.from_old_key(
         proposal_model.GSoCProposal.org
             .get_value_for_datastore(self.data.url_proposal))
     if self.data.mentorFor(org_key):

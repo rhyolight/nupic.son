@@ -436,7 +436,6 @@ class ReviewProposal(base.GSoCRequestHandler):
     changed = False
 
     result = []
-
     for mentor in possible_mentors:
       org_key = ndb.Key.from_old_key(
               proposal_model.GSoCProposal.org.get_value_for_datastore(
