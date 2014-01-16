@@ -678,7 +678,7 @@ class AccessChecker(BaseAccessChecker):
     self.isProgramVisible()
     self.isProfileActive()
 
-    if self.data.url_profile.key() != self.data.profile.key:
+    if self.data.url_ndb_profile.key != self.data.ndb_profile.key:
       raise exception.Forbidden(message=DEF_NOT_PROPOSER)
 
   def isSlotTransferActive(self):

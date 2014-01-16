@@ -303,14 +303,16 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertNotIn(other_mentor.key.to_old_key(), proposal.possible_mentors)
 
   def testPubliclyVisibleButton(self):
-    self.profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
 
-    proposal = self.createProposal({'scope': self.profile_helper.profile,
-                                    'parent': self.profile_helper.profile})
+    student = profile_utils.seedSOCStudent(self.program, user=user)
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), org_key=self.org.key)
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        self.profile_helper.user.key().name(),
+        user.key.id(),
         proposal.key().id())
 
     url = '/gsoc/proposal/publicly_visible/' + suffix
