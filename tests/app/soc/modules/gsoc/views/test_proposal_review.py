@@ -18,12 +18,13 @@
 import httplib
 import mock
 
+from google.appengine.ext import ndb
+
 from django import http
 
 from melange.request import exception
 
 from soc.modules.gsoc.logic import proposal as proposal_logic
-from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.views import proposal_review as proposal_review_view
@@ -72,20 +73,22 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     return self.seed(GSoCProposal, properties)
 
   def testReviewProposal(self):
-    mentor = self.createMentorWithSettings('mentor@example.com',
-        {'notify_new_proposals' :True, 'notify_public_comments': True,
-         'notify_private_comments' :True})
-
-    self.profile_helper.createStudent()
-    self.profile_helper.notificationSettings()
     self.timeline_helper.studentSignup()
+    # TODO(daniel): Re-seed settings when they are added.
+    #  {'notify_new_proposals' :True, 'notify_public_comments': True,
+    #   'notify_private_comments' :True}
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
-    proposal = self.createProposal({'scope': self.profile_helper.profile,
-                                    'parent': self.profile_helper.profile})
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedSOCStudent(self.program, user=user)
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), org_key=self.org.key)
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        self.profile_helper.user.key().name(),
+        student.key.parent().id(),
         proposal.key().id())
 
     # test review GET
@@ -101,31 +104,37 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     # test comment POST
     from soc.modules.gsoc.models.comment import GSoCComment
     url = '/gsoc/proposal/comment/' + suffix
-    override = {'author': self.profile_helper.profile, 'is_private': False}
+    override = {'author': student.key.to_old_key(), 'is_private': False}
     response, properties = self.modelPost(url, GSoCComment, override)
     self.assertResponseRedirect(response)
 
     comment = GSoCComment.all().ancestor(proposal).get()
-    self.assertPropertiesEqual(properties, comment)
+    author_key = ndb.Key.from_old_key(
+        GSoCComment.author.get_value_for_datastore(comment))
+    self.assertEqual(author_key, student.key)
 
-    self.assertEmailSent(to=mentor.email)
+    # TODO(daniel): notifications
+    # self.assertEmailSent(to=mentor.email)
 
     # TODO(daniel): add assertEmailNotSent to DjangoTestCase
     # self.assertEmailNotSent(to=self.profile_helper.profile.email)
 
-    self.profile_helper.deleteProfile()
-    self.profile_helper.createMentor(self.org)
+    # login as a mentor
+    profile_utils.loginNDB(mentor.key.parent().get())
 
     # test score POST
     from soc.modules.gsoc.models.score import GSoCScore
     url = '/gsoc/proposal/score/' + suffix
     override = {
-        'author': self.profile_helper.profile, 'parent': proposal, 'value': 1}
+        'author': mentor.key.to_old_key(), 'parent': proposal, 'value': 1}
     response, properties = self.modelPost(url, GSoCScore, override)
     self.assertResponseOK(response)
 
     score = GSoCScore.all().ancestor(proposal).get()
-    self.assertPropertiesEqual(properties, score)
+    author_key = ndb.Key.from_old_key(
+        GSoCScore.author.get_value_for_datastore(score))
+    self.assertEqual(author_key, mentor.key)
+    self.assertEqual(1, score.value)
 
     proposal = GSoCProposal.all().get()
     self.assertEqual(1, proposal.score)
@@ -379,19 +388,22 @@ class ProposalReviewTest(GSoCDjangoTestCase):
         number_of_proposals, student.student_data.number_of_proposals)
 
   def testAssignMentor(self):
-    student = profile_utils.seedGSoCStudent(self.program)
-
-    proposal = self.createProposal({'scope': student, 'parent': student})
+    student = profile_utils.seedSOCStudent(self.program)
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), org_key=self.org.key)
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
         student.user.key().name(),
         proposal.key().id())
 
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
 
     url = '/gsoc/proposal/assign_mentor/' + suffix
-    postdata = {'assign_mentor': self.profile_helper.profile.key()}
+    postdata = {'assign_mentor': mentor.key}
     response = self.post(url, postdata)
 
     self.assertResponseForbidden(response)

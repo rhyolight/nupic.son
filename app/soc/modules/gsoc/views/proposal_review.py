@@ -144,7 +144,7 @@ def _isProposer(data):
   Args:
     data: request_data.RequestData for the current request.
   """
-  return data.url_ndb_org.key == data.ndb_user.key
+  return data.url_ndb_user.key == data.ndb_user.key
 
 
 def _getApplyingCommentType(data):
@@ -158,13 +158,14 @@ def _getApplyingCommentType(data):
     Type of comments that are available to the current user. The value is
     one of PRIVATE_COMMENTS, PUBLIC_COMMENTS or NO_COMMENTS.
   """
-  if not data.user:
+  if not data.ndb_user:
     return NO_COMMENTS
   elif _isProposer(data):
     return PUBLIC_COMMENTS
   else:
-    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-        data.url_proposal)
+    org_key = ndb.Key.from_old_key(
+        proposal_model.GSoCProposal.org.get_value_for_datastore(
+            data.url_proposal))
     if data.mentorFor(org_key):
       return PRIVATE_COMMENTS
     else:
@@ -594,8 +595,6 @@ class PostComment(base.GSoCRequestHandler):
     Returns:
       a newly created comment entity or None
     """
-    assert isSet(data.url_proposal)
-
     if _isProposer(data):
       comment_form = CommentForm(data=data.request.POST)
     else:
@@ -607,7 +606,7 @@ class PostComment(base.GSoCRequestHandler):
 
     if _isProposer(data):
       comment_form.cleaned_data['is_private'] = False
-    comment_form.cleaned_data['author'] = data.ndb_profile
+    comment_form.cleaned_data['author'] = data.ndb_profile.key.to_old_key()
 
     # TODO(daniel): re-enable notifications
     #org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
@@ -633,8 +632,6 @@ class PostComment(base.GSoCRequestHandler):
     return db.run_in_transaction(create_comment_txn)
 
   def post(self, data, check, mutator):
-    assert isSet(data.url_proposal)
-
     comment = self.createCommentFromForm(data)
     if comment:
       data.redirect.program()

@@ -459,7 +459,7 @@ class RequestData(request_data.RequestData):
     if not self.ndb_profile:
       return False
 
-    return org_key in self.profile.admin_for
+    return org_key in self.ndb_profile.admin_for
 
   def mentorFor(self, org_key):
     """Returns true iff the user is mentor for the specified organization.
