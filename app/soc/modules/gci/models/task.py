@@ -25,6 +25,8 @@ import soc.models.profile
 import soc.modules.gci.models.organization
 import soc.modules.gci.models.program
 
+# state that the task is in when it is not yet available
+UNPUBLISHED = 'Unpublished'
 # state that the task is in when it is open
 OPEN = 'Open'
 # state that the task is in when it is claimed
@@ -39,7 +41,7 @@ CLOSED = 'Closed'
 # TODO(piyush.devel): Define constants for the rest of the statuses.
 
 # states in which a task does not show up publicly
-UNAVAILABLE = ['Unpublished', UNAPPROVED]
+UNAVAILABLE = [UNPUBLISHED, UNAPPROVED]
 # states in which a student can claim a task
 CLAIMABLE = [OPEN, REOPENED]
 # States in which we consider the task to count towards the task quota of
@@ -149,7 +151,7 @@ class GCITask(db.Model):
   #: Invalid: The Task is deleted either by an Org Admin/Mentor
   status = db.StringProperty(
       required=True, verbose_name=ugettext('Status'),
-      choices=[UNAPPROVED, 'Unpublished', OPEN, REOPENED,
+      choices=[UNAPPROVED, UNPUBLISHED, OPEN, REOPENED,
                'ClaimRequested', CLAIMED, 'ActionNeeded',
                CLOSED, 'NeedsWork', 'NeedsReview', 'Invalid'],
       default=UNAPPROVED)

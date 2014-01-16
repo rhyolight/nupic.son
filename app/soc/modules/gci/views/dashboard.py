@@ -804,7 +804,7 @@ class MyOrgsTaskList(Component):
                 'Trying to publish task with %s status.', task.status)
         else:
           if task.status == task_model.OPEN:
-            task.status = 'Unpublished'
+            task.status = task_model.UNPUBLISHED
             task.put()
           else:
             logging.warning(

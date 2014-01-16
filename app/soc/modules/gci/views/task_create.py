@@ -191,7 +191,7 @@ class TaskCreateForm(TaskEditPostClaimForm):
       entity.put()
 
     if organization.key() in self.request_data.org_admin_for:
-      entity.status = 'Unpublished'
+      entity.status = task_model.UNPUBLISHED
     elif organization.key() in self.request_data.mentor_for:
       entity.status = task_model.UNAPPROVED
 

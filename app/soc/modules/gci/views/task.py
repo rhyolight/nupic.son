@@ -322,9 +322,9 @@ class TaskViewPage(GCIRequestHandler):
     task_key = task.key()
 
     if button_name == 'button_unpublish':
-      task_logic.setTaskStatus(task.key(), 'Unpublished')
+      task_logic.setTaskStatus(task.key(), task_model.UNPUBLISHED)
     elif button_name == 'button_publish':
-      task_logic.setTaskStatus(task.key(), 'Open')
+      task_logic.setTaskStatus(task.key(), task_model.OPEN)
     elif button_name == 'button_edit':
       data.redirect.id(id=task.key().id_or_name())
       return data.redirect.to('gci_edit_task')
@@ -505,7 +505,7 @@ class TaskInformation(Template):
     is_owner = task_logic.isOwnerOfTask(task, profile)
 
     if is_org_admin:
-      can_unpublish = task.status == 'Open' and not task.student
+      can_unpublish = task.status == task_model.OPEN and not task.student
       context['button_unpublish'] = can_unpublish
 
       can_publish = task.status in task_model.UNAVAILABLE
