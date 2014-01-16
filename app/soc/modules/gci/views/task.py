@@ -37,14 +37,14 @@ from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.logic.helper import timeline as timeline_helper
 from soc.modules.gci.models import task as task_model
+from soc.modules.gci.models import work_submission as work_submission_model
 from soc.modules.gci.models.comment import GCIComment
 from soc.modules.gci.models.task import ACTIVE_CLAIMED_TASK
 from soc.modules.gci.models.task import CLAIMABLE
 from soc.modules.gci.models.task import SEND_FOR_REVIEW_ALLOWED
 from soc.modules.gci.models.task import TASK_IN_PROGRESS
-from soc.modules.gci.models.work_submission import GCIWorkSubmission
+from soc.modules.gci.views import base
 from soc.modules.gci.views import forms as gci_forms
-from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper import url_patterns
 from soc.modules.gci.views.helper.url_patterns import url
 from soc.modules.gci.views.helper import url_names
@@ -106,11 +106,10 @@ class CommentForm(gci_forms.GCIModelForm):
 
 
 class WorkSubmissionFileForm(gci_forms.GCIModelForm):
-  """Django form for submitting work as file.
-  """
+  """Django form for submitting work as file."""
 
   class Meta:
-    model = GCIWorkSubmission
+    model = work_submission_model.GCIWorkSubmission
     css_prefix = 'gci_work_submission'
     fields = ['upload_of_work']
 
@@ -143,28 +142,25 @@ class WorkSubmissionFileForm(gci_forms.GCIModelForm):
 
 
 class WorkSubmissionURLForm(gci_forms.GCIModelForm):
-  """Django form for submitting work as URL.
-  """
+  """Django form for submitting work as URL."""
 
   class Meta:
-    model = GCIWorkSubmission
+    model = work_submission_model.GCIWorkSubmission
     css_prefix = 'gci_work_submission'
     fields = ['url_to_work']
 
   def clean_url_to_work(self):
-    """Ensure that at least one of the fields has data.
-    """
+    """Ensure that at least one of the fields has data."""
     cleaned_data = self.cleaned_data
 
-    url = cleaned_data.get('url_to_work')
-
-    if not url:
+    url = self.cleaned_data.get('url_to_work')
+    if url:
+      return url
+    else:
       raise gci_forms.ValidationError(DEF_NO_URL)
 
-    return url
 
-
-class TaskViewPage(GCIRequestHandler):
+class TaskViewPage(base.GCIRequestHandler):
   """View for the GCI Task view page where all the actions happen."""
 
   def djangoURLPatterns(self):
@@ -223,8 +219,9 @@ class TaskViewPage(GCIRequestHandler):
 
       if 'delete_submission' in data.GET:
         check.isBeforeAllWorkStopped()
-        id = self._submissionId(data)
-        work = GCIWorkSubmission.get_by_id(id, parent=data.task)
+        task_id = self._submissionId(data)
+        work = work_submission_model.GCIWorkSubmission.get_by_id(
+            task_id, parent=data.task)
 
         if not work:
           check.fail(DEF_NO_WORK_FOUND %id)
@@ -421,7 +418,8 @@ class TaskViewPage(GCIRequestHandler):
   def _postDeleteSubmission(self, data):
     """POST handler to delete a GCIWorkSubmission."""
     submission_id = self._submissionId(data)
-    work = GCIWorkSubmission.get_by_id(submission_id, parent=data.task)
+    work = work_submission_model.GCIWorkSubmission.get_by_id(
+        submission_id, parent=data.task)
 
     if not work:
       raise exception.BadRequest(message=DEF_NO_WORK_FOUND % submission_id)
@@ -694,7 +692,7 @@ class CommentsTemplate(Template):
     return 'modules/gci/task/_comments.html'
 
 
-class WorkSubmissionDownload(GCIRequestHandler):
+class WorkSubmissionDownload(base.GCIRequestHandler):
   """Request handler for downloading blobs from a GCIWorkSubmission."""
 
   def djangoURLPatterns(self):
@@ -716,7 +714,8 @@ class WorkSubmissionDownload(GCIRequestHandler):
     id_string = data.request.GET.get('id', '')
     submission_id = int(id_string) if id_string.isdigit() else -1
 
-    work = GCIWorkSubmission.get_by_id(submission_id, data.task)
+    work = work_submission_model.GCIWorkSubmission.get_by_id(
+        submission_id, data.task)
 
     if work and work.upload_of_work:
       return bs_helper.sendBlob(work.upload_of_work)
