@@ -54,7 +54,7 @@ def siteMenuContext(data):
   else:
     context['login_link'] = links.LINKER.login(data.request)
 
-  if data.profile:
+  if data.ndb_profile:
     context['dashboard_link'] = links.LINKER.program(
         data.program, 'gsoc_dashboard')
 

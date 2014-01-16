@@ -117,14 +117,17 @@ class HomepageViewTest(test_utils.GSoCDjangoTestCase):
     self.assertIn('profile_link', apply_context)
 
   def testHomepageDuringSignupExistingUser(self):
-    """Tests the student hompepage during the signup period with an existing user.
-    """
-    self.profile_helper.createProfile()
+    """Tests student hompepage at the signup period with an existing user."""
     self.timeline_helper.studentSignup()
+
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
+
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertHomepageTemplatesUsed(response)
     apply_tmpl = response.context['apply']
-    self.assertTrue(apply_tmpl.data.profile)
+    self.assertTrue(apply_tmpl.data.ndb_profile)
     self.assertNotIn('profile_link', apply_tmpl.context())
