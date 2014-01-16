@@ -272,7 +272,9 @@ class UserActions(Template):
     if not self.proposal_ignored:
       accept_proposal = ToggleButtonTemplate(
           self.data, 'on_off', 'Accept proposal', 'accept-proposal',
-          self.data.redirect.urlOf('gsoc_proposal_accept'),
+          links.LINKER.userId(
+              self.data.url_ndb_profile.key, self.data.kwargs['id'],
+              'gsoc_proposal_accept'),
           checked=self.data.url_proposal.accept_as_project,
           help_text=self.DEF_ACCEPT_PROPOSAL_HELP,
           labels={
@@ -509,7 +511,8 @@ class ReviewProposal(base.GSoCRequestHandler):
     possible_mentors = ndb.get_multi(
         map(ndb.Key.from_old_key, data.url_proposal.possible_mentors))
     possible_mentors = self.sanitizePossibleMentors(data, possible_mentors)
-    possible_mentors_names = ', '.join([m.name() for m in possible_mentors])
+    possible_mentors_names = ', '.join([
+        m.public_name for m in possible_mentors])
 
     org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
         data.url_proposal)
