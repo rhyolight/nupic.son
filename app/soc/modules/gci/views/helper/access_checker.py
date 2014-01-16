@@ -210,7 +210,7 @@ class AccessChecker(access_checker.AccessChecker):
       raise exception.Forbidden(
           message=access_checker.DEF_PAGE_INACTIVE_BEFORE % period)
 
-    if not self.data.task.isPublished():
+    if not self.data.task.isAvailable():
       if can_edit:
         return False
       raise exception.Forbidden(message=access_checker.DEF_PAGE_INACTIVE)

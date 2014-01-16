@@ -225,8 +225,7 @@ class GCITask(db.Model):
 
     return "".join(result)
 
-  # TODO(nathaniel): Rename this "isAvailable".
-  def isPublished(self):
+  def isAvailable(self):
     """Returns True if the task is published."""
     return self.status not in UNAVAILABLE
 
