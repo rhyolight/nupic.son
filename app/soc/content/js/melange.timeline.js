@@ -150,10 +150,10 @@
       current_slice.from_in_ms = this.dateToUTCMilliseconds(current_slice.from);
       current_slice.to_in_ms = this.dateToUTCMilliseconds(current_slice.to);
 
-      var grades_boundaries = this.datesToGrades(
+      var degrees_boundaries = this.datesToDegrees(
         current_slice.from_in_ms, current_slice.to_in_ms, last_slice.to);
-      current_slice.from_grade = grades_boundaries.from_grade;
-      current_slice.to_grade = grades_boundaries.to_grade;
+      current_slice.from_degree = degrees_boundaries.from_degree;
+      current_slice.to_degree = degrees_boundaries.to_degree;
 
       if (typeof (current_slice.color) === 'undefined') {
         var color = this.assignColors(a, this.options.colors_default);
@@ -202,17 +202,17 @@
     );
   };
 
-  Timeline.prototype.datesToGrades = function (from_in_ms, to_in_ms, time_end) {
-    var time_zero_grade;
-    var millisecondsInOneGrade = 1000 * 60 * 60 * 24 * 365 / 360;
+  Timeline.prototype.datesToDegrees = function (from_in_ms, to_in_ms, time_end) {
+    var time_zero_degrees;
+    var millisecondsInOneDegree = 1000 * 60 * 60 * 24 * 365 / 360;
 
-    // 90 grades is first day of last year
-    // 0 grades will be first day of last year minus 3 months
-    time_zero_grade = Date.UTC(new Date(time_end).getFullYear() - 1, 9, 1);
+    // 90 degrees is first day of last year
+    // 0 degrees will be first day of last year minus 3 months
+    time_zero_degrees = Date.UTC(new Date(time_end).getFullYear() - 1, 9, 1);
 
     return {
-      from_grade: (from_in_ms - time_zero_grade) / millisecondsInOneGrade,
-      to_grade: (to_in_ms - time_zero_grade) / millisecondsInOneGrade
+      from_degree: (from_in_ms - time_zero_degrees) / millisecondsInOneDegree,
+      to_degree: (to_in_ms - time_zero_degrees) / millisecondsInOneDegree
      };
   };
 
@@ -231,8 +231,8 @@
         to: next_slice.from,
         from_in_ms: current_slice.to_in_ms,
         to_in_ms: next_slice.from_in_ms,
-        from_grade: current_slice.to_grade,
-        to_grade: next_slice.from_grade,
+        from_degree: current_slice.to_degree,
+        to_degree: next_slice.from_degree,
         color: (
           this.shadeColor(next_slice.color, slice_missing_shade)
         )
@@ -355,8 +355,8 @@
         94,
         78,
         67,
-        slice.from_grade,
-        slice.to_grade,
+        slice.from_degree,
+        slice.to_degree,
         options.color_blue,
         options.color_blue_light
       )
@@ -365,7 +365,7 @@
     // Create arc
     slice._arc = R.path()
       .attr({
-        arc: [94, 78, 64, slice.from_grade, slice.to_grade],
+        arc: [94, 78, 64, slice.from_degree, slice.to_degree],
         "stroke-width": 3,
         stroke: options.color_blue,
         opacity: options.slice_faded_opacity
@@ -374,7 +374,7 @@
     // Create slice
     slice._piece = R.path()
       .attr({
-        segment: [94, 78, 59, slice.from_grade, slice.to_grade],
+        segment: [94, 78, 59, slice.from_degree, slice.to_degree],
         "stroke-width": 0,
         fill: slice.color,
         opacity: options.slice_faded_opacity
