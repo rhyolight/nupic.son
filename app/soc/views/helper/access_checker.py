@@ -447,7 +447,7 @@ class AccessChecker(BaseAccessChecker):
     """
     self.isProfileActive()
 
-    if self.data.student_info:
+    if self.data.ndb_profile.student_data:
       return
 
     raise exception.Forbidden(message=DEF_IS_NOT_STUDENT)
