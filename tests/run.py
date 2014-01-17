@@ -506,9 +506,9 @@ def run_functional_tests(run_browsers_gui):
     nose.run(argv=argv)
     virtual_display.stop()
   else:
-    print ('WARNING: You don\'t have Xvfb installed. This is required in order'
+    logging.warning('WARNING: You don\'t have Xvfb installed. This is required in order'
            ' to run tests in browsers headlessly')
-    print ('You can either install xvfb ("sudo apt-get install xvfb" in Ubuntu)'
+    logging.warning('You can either install xvfb ("sudo apt-get install xvfb" in Ubuntu)'
            ' or run tests with --browsers-gui switch')
     argv = ['-W', 'tests/functional/']
     nose.run(argv=argv)
