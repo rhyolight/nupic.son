@@ -139,7 +139,7 @@
      The purpose of this function is to enrich the array of slices objects
      passed as parameters, so it has side effects over every object by design.
   */
-  Timeline.prototype.enrichSlices = function(slices) {
+  Timeline.prototype.enrichSlices = function (slices) {
     this.sortSlices(slices);
 
     var last_slice = slices[slices.length -1];
@@ -194,7 +194,7 @@
     }
   };
 
-  Timeline.prototype.sortSlices = function(slices) {
+  Timeline.prototype.sortSlices = function (slices) {
     slices.sort(
       function (a, b) {
         return a.from_in_ms - b.from_in_ms;
@@ -216,7 +216,7 @@
      };
   };
 
-  Timeline.prototype.assignColors = function(index, colors) {
+  Timeline.prototype.assignColors = function (index, colors) {
     return colors[index % colors.length];
   };
 
@@ -241,7 +241,7 @@
     return null;
   };
 
-  Timeline.prototype.shadeColor = function(color, percent) {
+  Timeline.prototype.shadeColor = function (color, percent) {
     // Source http://stackoverflow.com/a/13542669/1194327
     var num = parseInt(color.slice(1), 16);
     var amt = Math.round(2.55 * percent);
