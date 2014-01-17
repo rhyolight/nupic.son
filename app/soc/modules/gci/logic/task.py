@@ -209,7 +209,7 @@ def unpublishTask(task, unpublisher):
     task: GCITask entity.
     publisher: GCIProfile of the user that unpublishes the task.
   """
-  task.status = 'Unpublished'
+  task.status = task_model.UNPUBLISHED
 
   comment_props = {
       'parent': task,
