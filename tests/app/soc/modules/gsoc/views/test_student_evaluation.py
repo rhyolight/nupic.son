@@ -189,19 +189,9 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     link_id = LinkIDProvider(ProjectSurvey).getValue()
     suffix = "%s/%s" % (self.gsoc.key().name(), link_id)
 
-    student_data = soc_profile.SOCStudentData(
-        number_of_projects=0,
-        education=education.Education(
-            school_id='Some ID',
-            school_country='United States',
-            expected_graduation=2018)
-        )
-    student_data.put()
-
     other_user = profile_utils.seedNDBUser(
         user_id='student_with_proj@example.com')
-    student = profile_utils.seedSOCStudent(self.program, user=other_user,
-        student_data=student_data)
+    student = profile_utils.seedSOCStudent(self.program, user=other_user)
 
     mentor = profile_utils.seedNDBProfile(
         self.program.key(), mentor_for=[self.org.key])
@@ -435,21 +425,11 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     url, evaluation, _ = self.getStudentEvalRecordProperties()
     other_org = self.createOrg()
 
-    student_data = soc_profile.SOCStudentData(
-        number_of_projects=0,
-        education=education.Education(
-            school_id='Melange Univeristy',
-            school_country='United States',
-            expected_graduation=2018)
-        )
-    student_data.put()
-
     project = GSoCProject.all().get()
 
     mentor = profile_utils.seedNDBProfile(
         self.program.key(), mentor_for=[other_org.key])
-    other_student = profile_utils.seedSOCStudent(
-        self.program, student_data=student_data)
+    other_student = profile_utils.seedSOCStudent(self.program)
     other_project = project_utils.seedProject(other_student,
         self.program.key(), org_key=other_org.key, mentor_key=mentor.key)
 
@@ -491,14 +471,12 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     # response is forbidden as the evaluation period has yet to start
     self.assertResponseForbidden(response)
 
-    # create personal extension
-    ndb_profile_key = student.key
     # TODO(daniel): NDB migration
     ndb_survey_key = ndb.Key.from_old_key(evaluation.key())
     start_date = timeline_utils.past()
 
     extension = survey_model.PersonalExtension(
-        parent=ndb_profile_key, survey=ndb_survey_key, start_date=start_date)
+        parent=student.key, survey=ndb_survey_key, start_date=start_date)
     extension.put()
 
     response = self.get(url)

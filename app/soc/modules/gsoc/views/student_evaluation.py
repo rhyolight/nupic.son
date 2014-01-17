@@ -38,7 +38,6 @@ from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_patterns
 
-from summerofcode.models import organization
 from summerofcode.request import links
 
 
@@ -240,14 +239,12 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
     if not form.is_valid():
       return None
 
-    user_key = data.ndb_user.key.to_old_key()
-
     if not data.student_evaluation_record:
       org_key = project_model.GSoCProject.org.get_value_for_datastore(
           data.url_project)
       form.cleaned_data['project'] = data.url_project
       form.cleaned_data['org'] = org_key
-      form.cleaned_data['user'] = user_key
+      form.cleaned_data['user'] = data.ndb_user.key.to_old_key()
       form.cleaned_data['survey'] = data.student_evaluation
       entity = form.create(commit=True)
     else:
