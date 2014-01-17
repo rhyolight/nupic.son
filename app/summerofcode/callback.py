@@ -46,6 +46,7 @@ class Callback(object):
     self.views.append(profile.ProfileRegisterAsOrgMemberPage())
     self.views.append(profile.ProfileRegisterAsStudentPage())
     self.views.append(profile.ProfileShowPage())
+    self.views.append(profile.ProfileAdminPage())
     self.views.append(project_manage.ManageProjectProgramAdminView())
 
   def registerWithSitemap(self):

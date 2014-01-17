@@ -119,6 +119,18 @@ def _getShowProfileUrl(program_key):
   return '/gsoc/profile/show/%s' % program_key.name()
 
 
+def _getAdminProfileUrl(profile_key):
+  """Returns URL to Admin Profile page.
+
+  Args:
+    profile_key: Profile key.
+
+  Returns:
+    A string containing the URL to Admin Profile page.
+  """
+  return '/gsoc/profile/admin/%s' % profile_key.id()
+
+
 class ProfileOrgMemberCreatePageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for ProfileOrgMemberCreatePage class."""
 
@@ -512,3 +524,23 @@ class ProfileShowPageTest(test_utils.GSoCDjangoTestCase):
     # check that tab to "Edit Profile" page is the selected one
     self.assertEqual(response.context['tabs'].selected_tab_id,
         tabs.VIEW_PROFILE_TAB_ID)
+
+
+class ProfileAdminPageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for ProfileAdminPage class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
+
+    # seed a profile to show
+    profile = profile_utils.seedNDBProfile(self.program.key())
+
+    response = self.get(_getAdminProfileUrl(profile.key))
+    self.assertResponseOK(response)

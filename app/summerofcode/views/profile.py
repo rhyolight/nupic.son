@@ -1201,69 +1201,112 @@ class ProfileShowPage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """See soc.views.base.RequestHandler.context for specification."""
-    program = data.program
-
-    groups = []
-
-    fields = collections.OrderedDict()
-    fields[USER_ID_LABEL] = data.ndb_user.user_id
-    fields[PUBLIC_NAME_LABEL] = data.ndb_profile.public_name
-    fields[WEB_PAGE_LABEL] = data.ndb_profile.contact.web_page
-    fields[BLOG_LABEL] = data.ndb_profile.contact.blog
-    fields[PHOTO_URL_LABEL] = data.ndb_profile.photo_url
-    groups.append(readonly.Group(_PUBLIC_INFORMATION_GROUP, fields.items()))
-
-    fields = collections.OrderedDict()
-    fields[FIRST_NAME_LABEL] = data.ndb_profile.first_name
-    fields[LAST_NAME_LABEL] = data.ndb_profile.last_name
-    fields[EMAIL_LABEL] = data.ndb_profile.contact.email
-    fields[PHONE_LABEL] = data.ndb_profile.contact.phone
-    groups.append(readonly.Group(_CONTACT_GROUP, fields.items()))
-
-    fields = collections.OrderedDict()
-    fields[RESIDENTIAL_STREET_LABEL] = (
-        data.ndb_profile.residential_address.street)
-    fields[RESIDENTIAL_CITY_LABEL] = data.ndb_profile.residential_address.city
-    fields[RESIDENTIAL_PROVINCE_LABEL] = (
-        data.ndb_profile.residential_address.province)
-    fields[RESIDENTIAL_POSTAL_CODE_LABEL] = (
-        data.ndb_profile.residential_address.postal_code)
-    fields[RESIDENTIAL_COUNTRY_LABEL] = (
-        data.ndb_profile.residential_address.country)
-    groups.append(readonly.Group(_RESIDENTIAL_ADDRESS_GROUP, fields.items()))
-
-    if data.ndb_profile.shipping_address:
-      fields = collections.OrderedDict()
-      fields[SHIPPING_STREET_LABEL] = (
-          data.ndb_profile.shipping_address.street)
-      fields[SHIPPING_CITY_LABEL] = data.ndb_profile.shipping_address.city
-      fields[SHIPPING_PROVINCE_LABEL] = (
-          data.ndb_profile.shipping_address.province)
-      fields[SHIPPING_POSTAL_CODE_LABEL] = (
-          data.ndb_profile.shipping_address.postal_code)
-      fields[SHIPPING_COUNTRY_LABEL] = (
-          data.ndb_profile.shipping_address.country)
-      groups.append(readonly.Group(_SHIPPING_ADDRESS_GROUP, fields.items()))
-
-    fields = collections.OrderedDict()
-    fields[BIRTH_DATE_LABEL] = data.ndb_profile.birth_date
-    fields[TEE_STYLE_LABEL] = data.ndb_profile.tee_style
-    fields[TEE_SIZE_LABEL] = data.ndb_profile.tee_size
-    fields[GENDER_LABEL] = data.ndb_profile.gender
-    fields[PROGRAM_KNOWLEDGE_LABEL] = data.ndb_profile.program_knowledge
-    groups.append(readonly.Group(_CONTACT_GROUP, fields.items()))
-
-    profile_template = readonly.Readonly(
-        data, 'summerofcode/_readonly_template.html', groups)
+    profile_template = _getShowProfileTemplate(data, data.ndb_profile)
 
     return {
         'page_name': '%s Profile - %s' % (
              data.program.short_name, data.ndb_profile.public_name),
-        'program_name': program.name,
+        'program_name': data.program.name,
         'profile_template': profile_template,
         'tabs': tabs.profileTabs(
-        data, selected_tab_id=tabs.VIEW_PROFILE_TAB_ID)
+            data, selected_tab_id=tabs.VIEW_PROFILE_TAB_ID)
         }
+
+
+class ProfileAdminPage(base.GSoCRequestHandler):
+  """View to display the read-only profile page to program administrators."""
+
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.djangoURLPatterns for specification."""
+    return [
+        soc_url_patterns.url(
+            r'profile/admin/%s$' % url_patterns.PROFILE,
+            self, name=urls.UrlNames.PROFILE_ADMIN)]
+
+  def templatePath(self):
+    """See base.RequestHandler.templatePath for specification."""
+    return 'summerofcode/profile/profile_show.html'
+
+  def context(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.context for specification."""
+    profile_template = _getShowProfileTemplate(data, data.url_ndb_profile)
+
+    return {
+        'page_name': '%s Profile - %s' % (
+             data.program.short_name, data.url_ndb_profile.public_name),
+        'program_name': data.program.name,
+        'profile_template': profile_template,
+        'submit_tax_link': links.LINKER.profile(
+            data.url_ndb_profile, 'gsoc_tax_form_admin'),
+        'submit_enrollment_link': links.LINKER.profile(
+            data.url_ndb_profile, 'gsoc_enrollment_form_admin')
+        }
+
+
+def _getShowProfileTemplate(data, profile):
+  """Returns a template to show the specified profile.
+
+  Args:
+    data: request_data.RequestData object for the current request.
+    profile: Profile entity.
+
+  Returns:
+    Instance of readonly.Readonly to show the specified project.
+  """
+  groups = []
+
+  fields = collections.OrderedDict()
+  fields[USER_ID_LABEL] = profile.key.parent().id()
+  fields[PUBLIC_NAME_LABEL] = profile.public_name
+  fields[WEB_PAGE_LABEL] = profile.contact.web_page
+  fields[BLOG_LABEL] = profile.contact.blog
+  fields[PHOTO_URL_LABEL] = profile.photo_url
+  groups.append(readonly.Group(_PUBLIC_INFORMATION_GROUP, fields.items()))
+
+  fields = collections.OrderedDict()
+  fields[FIRST_NAME_LABEL] = profile.first_name
+  fields[LAST_NAME_LABEL] = profile.last_name
+  fields[EMAIL_LABEL] = profile.contact.email
+  fields[PHONE_LABEL] = profile.contact.phone
+  groups.append(readonly.Group(_CONTACT_GROUP, fields.items()))
+
+  fields = collections.OrderedDict()
+  fields[RESIDENTIAL_STREET_LABEL] = (
+      profile.residential_address.street)
+  fields[RESIDENTIAL_CITY_LABEL] = profile.residential_address.city
+  fields[RESIDENTIAL_PROVINCE_LABEL] = (
+      profile.residential_address.province)
+  fields[RESIDENTIAL_POSTAL_CODE_LABEL] = (
+      profile.residential_address.postal_code)
+  fields[RESIDENTIAL_COUNTRY_LABEL] = (
+      profile.residential_address.country)
+  groups.append(readonly.Group(_RESIDENTIAL_ADDRESS_GROUP, fields.items()))
+
+  if profile.shipping_address:
+    fields = collections.OrderedDict()
+    fields[SHIPPING_STREET_LABEL] = (
+        profile.shipping_address.street)
+    fields[SHIPPING_CITY_LABEL] = profile.shipping_address.city
+    fields[SHIPPING_PROVINCE_LABEL] = (
+        profile.shipping_address.province)
+    fields[SHIPPING_POSTAL_CODE_LABEL] = (
+        profile.shipping_address.postal_code)
+    fields[SHIPPING_COUNTRY_LABEL] = (
+        profile.shipping_address.country)
+    groups.append(readonly.Group(_SHIPPING_ADDRESS_GROUP, fields.items()))
+
+  fields = collections.OrderedDict()
+  fields[BIRTH_DATE_LABEL] = profile.birth_date
+  fields[TEE_STYLE_LABEL] = profile.tee_style
+  fields[TEE_SIZE_LABEL] = profile.tee_size
+  fields[GENDER_LABEL] = profile.gender
+  fields[PROGRAM_KNOWLEDGE_LABEL] = profile.program_knowledge
+  groups.append(readonly.Group(_CONTACT_GROUP, fields.items()))
+
+  return readonly.Readonly(
+      data, 'summerofcode/_readonly_template.html', groups)
 
 
 def _getProfileEntityPropertiesFromForm(form):
