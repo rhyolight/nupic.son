@@ -118,8 +118,8 @@ class ComponentsDashboard(Dashboard):
     super(ComponentsDashboard, self).__init__(data)
     self.name = component_property.get('name')
     self.title = component_property.get('title')
-    self.components = [component_property.get('component'),]
-    self.backlinks = [component_property.get('backlinks'),]
+    self.components = [component_property.get('component')]
+    self.backlinks = [component_property.get('backlinks')]
 
   def context(self):
     """Returns the context of components dashboard."""
@@ -748,7 +748,7 @@ class SubmittedProposalsComponent(Component):
       if not ent.nr_scores:
         return ''
 
-      average = float(ent.score)/float(ent.nr_scores)
+      average = float(ent.score) / float(ent.nr_scores)
       return float("%.2f" % average)
 
     list_config.addNumericalColumn(

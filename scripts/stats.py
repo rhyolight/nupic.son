@@ -732,7 +732,6 @@ def main():
   from soc.modules.gsoc.models.profile import GSoCStudentInfo
   from soc.modules.gsoc.models.proposal import GSoCProposal
   from soc.modules.gsoc.models.project import GSoCProject
-  from soc.modules.gsoc.tasks.accept_proposals import ProposalAcceptanceTask
 
   from soc.modules.gci.models.task import GCITask
   from soc.modules.gci.models.comment import GCIComment
@@ -794,7 +793,6 @@ def main():
       'p': getGSoC2012Profile,
       'o': getGSoC2012Proposal,
       'r': getGSoC2012Project,
-      'accepter': ProposalAcceptanceTask(),
       'withdrawProject': withdrawProject,
       'GSoCOrganization': GSoCOrganization,
       'User': User,

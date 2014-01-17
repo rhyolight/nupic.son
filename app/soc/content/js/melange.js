@@ -171,7 +171,7 @@
   $m.loadGoogleApi = function (modulename, moduleversion, settings, callback) {
 
     if (!modulename || !moduleversion) {
-      throw new TypeError("modulename must be defined");
+      throw new TypeError("modulename and moduleversion must be defined");
     }
 
     /** Options to be sent to google.load constructor
