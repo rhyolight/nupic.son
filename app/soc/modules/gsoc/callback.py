@@ -33,7 +33,6 @@ from soc.modules.gsoc.views import org_app
 from soc.modules.gsoc.views import org_home
 from soc.modules.gsoc.views import participants
 from soc.modules.gsoc.views import profile
-from soc.modules.gsoc.views import profile_show
 from soc.modules.gsoc.views import program
 from soc.modules.gsoc.views import project_details
 from soc.modules.gsoc.views import projects_list
@@ -98,8 +97,6 @@ class Callback(object):
     self.views.append(org_home.GSoCBanOrgPost())
     self.views.append(participants.MentorsListAdminPage())
     self.views.append(profile.GSoCProfilePage())
-    self.views.append(profile_show.GSoCBanProfilePost())
-    self.views.append(profile_show.GSoCProfileAdminPage())
     self.views.append(program.GSoCCreateProgramPage())
     self.views.append(program.GSoCEditProgramPage())
     self.views.append(program.GSoCProgramMessagesPage())

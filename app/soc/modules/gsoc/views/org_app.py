@@ -23,6 +23,8 @@ from django.utils.translation import ugettext
 from melange.logic import user as user_logic
 from melange.request import access
 from melange.request import exception
+from melange.request import links
+
 from soc.logic import org_app as org_app_logic
 from soc.mapreduce.helper import control as mapreduce_control
 from soc.models.org_app_record import OrgAppRecord
@@ -36,6 +38,8 @@ from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
+
+from summerofcode.views.helper import urls
 
 
 class GSoCOrgAppEditForm(org_app.OrgAppEditForm):
@@ -384,11 +388,10 @@ class GSoCOrgAppShowPage(base.GSoCRequestHandler):
 
       # admin info should be available only to the hosts
       if user_logic.isHostForProgram(data.ndb_user, data.program.key()):
-        context['main_admin_url'] = data.redirect.profile(
-            record.main_admin.link_id).urlOf(url_names.GSOC_PROFILE_SHOW_ADMIN)
-        context['backup_admin_url'] = data.redirect.profile(
-            record.backup_admin.link_id).urlOf(
-                url_names.GSOC_PROFILE_SHOW_ADMIN)
+        context['main_admin_url'] = links.LINKER.profile(
+            record.main_admin, urls.UrlNames.PROFILE_ADMIN)
+        context['backup_admin_url'] = links.LINKER.profile(
+            record.backup_admin, urls.UrlNames.PROFILE_ADMIN)
 
     if data.timeline.surveyPeriod(data.org_app):
       if record:
