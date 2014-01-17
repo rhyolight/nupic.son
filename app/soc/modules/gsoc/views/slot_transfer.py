@@ -19,6 +19,7 @@ from google.appengine.ext import db
 from django import forms as django_forms
 from django import http
 
+from melange.logic import user as user_logic
 from melange.request import exception
 from melange.request import links
 
@@ -202,7 +203,7 @@ class UpdateSlotTransferPage(base.GSoCRequestHandler):
         break
 
     # TODO(daniel): send actual emails when we have email address in User model.
-    host_users = host_logic.getHostsForProgram(data.program.key())
+    host_users = user_logic.getHostsForProgram(data.program.key())
     to_emails = []
 
     def create_or_update_slot_transfer_trx():
