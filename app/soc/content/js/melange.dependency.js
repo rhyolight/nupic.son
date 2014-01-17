@@ -332,6 +332,10 @@
     mpjs + "melange.autocomplete.js"
   ];
 
+  s.melange.analytics = [
+    mpjs + "melange.analytics.js"
+  ];
+
   s.melange.uploadform = [
     s.fileupload,
     null,
