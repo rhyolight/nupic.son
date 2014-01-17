@@ -188,8 +188,8 @@
                                                     current_slice.to_in_ms);
       current_slice.timerange = readable_range;
 
-      var is_active_slice = this.isDateInMsWithinRange(current_slice.from,
-                                                       current_slice.to,
+      var is_active_slice = this.isDateInMsWithinRange(current_slice.from_in_ms,
+                                                       current_slice.to_in_ms,
                                                        this.options.now);
       current_slice.active = is_active_slice;
     }
