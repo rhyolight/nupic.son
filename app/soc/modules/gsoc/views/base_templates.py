@@ -126,7 +126,7 @@ class MainMenu(template.Template):
         'search_link': links.LINKER.program(self.data.program, 'search_gsoc'),
     })
 
-    if (self.data.ndb_profile 
+    if (self.data.ndb_profile
         and self.data.ndb_profile.status == profile_model.Status.ACTIVE):
       self.data.redirect.program()
       context['profile_link'] = links.LINKER.program(
