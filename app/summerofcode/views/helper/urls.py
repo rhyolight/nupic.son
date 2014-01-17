@@ -28,4 +28,5 @@ class UrlNames(object):
   PROFILE_EDIT = 'soc_profile_edit'
   PROFILE_REGISTER_AS_ORG_MEMBER = 'soc_profile_register_as_org_member'
   PROFILE_REGISTER_AS_STUDENT = 'soc_profile_register_as_student'
+  PROFILE_SHOW = 'soc_profile_show'
   PROJECT_MANAGE_ADMIN = 'project_manage_admin'

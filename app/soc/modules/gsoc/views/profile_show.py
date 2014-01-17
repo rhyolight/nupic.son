@@ -21,7 +21,6 @@ from melange.request import links
 
 from soc.views import profile_show
 from soc.views.helper import url_patterns
-from soc.views.helper.access_checker import isSet
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
@@ -29,8 +28,6 @@ from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import readonly_template
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
-
-from summerofcode.templates import tabs
 
 
 class GSoCProfileReadOnlyTemplate(readonly_template.GSoCModelReadOnlyTemplate):
@@ -84,38 +81,6 @@ class GSoCBanProfilePost(profile_show.BanProfilePost, base.GSoCRequestHandler):
 
   def _getProfileModel(self):
     return GSoCProfile
-
-
-class GSoCProfileShowPage(profile_show.ProfileShowPage, base.GSoCRequestHandler):
-  """View to display the read-only profile page."""
-
-  def djangoURLPatterns(self):
-    """See base.GSoCRequestHandler.djangoURLPatterns for specification."""
-    return [
-        url(r'profile/show/%s$' % url_patterns.PROGRAM,
-            self, name=url_names.GSOC_PROFILE_SHOW),
-    ]
-
-  def templatePath(self):
-    """See base.GSoCRequestHandler.templatePath for specification."""
-    return 'modules/gsoc/profile_show/base.html'
-
-  def _getProfileReadOnlyTemplate(self, profile):
-    """See profile_show.ProfileShowPage._getProfileReadOnlyTemplate
-    for specification.
-    """
-    return GSoCProfileReadOnlyTemplate(profile)
-
-  def _getUserReadOnlyTemplate(self, user):
-    """See profile_show.ProfileShowPage._getUserReadOnlyTemplate
-    for specification.
-    """
-    return GSoCUserReadOnlyTemplate(user)
-
-  def _getTabs(self, data):
-    """See profile_show.ProfileShowPage._getTabs for specification."""
-    return tabs.profileTabs(
-        data, selected_tab_id=tabs.VIEW_PROFILE_TAB_ID)
 
 
 class GSoCProfileAdminPage(base.GSoCRequestHandler):
