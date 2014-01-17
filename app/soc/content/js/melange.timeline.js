@@ -155,8 +155,10 @@
       current_slice.from_grade = grades_boundaries.from_grade;
       current_slice.to_grade = grades_boundaries.to_grade;
 
-      var color = this.assignColors(a, this.options.colors_default);
-      current_slice.color = color;
+      if (typeof (current_slice.color) === 'undefined') {
+        var color = this.assignColors(a, this.options.colors_default);
+        current_slice.color = color;
+      }
     }
 
     // TODO(Mario): this deserves to be in a separate aptly named function,
