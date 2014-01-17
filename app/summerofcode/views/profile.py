@@ -293,7 +293,7 @@ _USER_PROPERTIES_FORM_KEYS = ['user_id']
 
 _PROFILE_PROPERTIES_FORM_KEYS = [
     'public_name', 'photo_url', 'first_name', 'last_name', 'birth_date',
-    'tee_style', 'tee_size', 'gender', 'terms_of_service']
+    'tee_style', 'tee_size', 'gender', 'terms_of_service', 'program_knowledge']
 
 _CONTACT_PROPERTIES_FORM_KEYS = ['web_page', 'blog', 'email', 'phone']
 
@@ -395,9 +395,6 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
 
   photo_url = django_forms.URLField(
       required=False, label=PHOTO_URL_LABEL, help_text=PHOTO_URL_HELP_TEXT)
-
-  public_name = django_forms.CharField(
-      required=True, label=PUBLIC_NAME_LABEL, help_text=PUBLIC_NAME_HELP_TEXT)
 
   first_name = django_forms.CharField(
       required=True, label=FIRST_NAME_LABEL, help_text=FIRST_NAME_HELP_TEXT)
@@ -794,6 +791,8 @@ def _adaptProfilePropertiesForDatastore(form_data):
       profile_model.Profile.last_name._name: form_data.get('last_name'),
       profile_model.Profile.photo_url._name: form_data.get('photo_url'),
       profile_model.Profile.birth_date._name: form_data.get('birth_date'),
+      profile_model.Profile.program_knowledge._name:
+          form_data.get('program_knowledge'),
       }
 
   if 'tee_style' in form_data:
@@ -945,7 +944,8 @@ def _adoptProfilePropertiesForForm(profile_properties):
   """
   form_data = {
       key: profile_properties.get(key) for key in
-      ['first_name', 'last_name', 'photo_url', 'birth_date']}
+      ['first_name', 'last_name', 'photo_url', 'birth_date',
+          'public_name', 'program_knowledge']}
 
   # residential address information
   form_data.update(
@@ -962,10 +962,13 @@ def _adoptProfilePropertiesForForm(profile_properties):
     form_data.update(_adoptContactPropertiesForForm(
         profile_properties[profile_model.Profile.contact._name]))
 
-  form_data['tee_style'] = (
-      _TEE_STYLE_ENUM_TO_ID_MAP[profile_properties['tee_style']])
-  form_data['tee_size'] = (
-      _TEE_SIZE_ENUM_TO_ID_MAP[profile_properties['tee_size']])
+  if profile_properties.get('tee_style') is not None:
+    form_data['tee_style'] = (
+        _TEE_STYLE_ENUM_TO_ID_MAP[profile_properties['tee_style']])
+
+  if profile_properties.get('tee_size') is not None:
+    form_data['tee_size'] = (
+        _TEE_SIZE_ENUM_TO_ID_MAP[profile_properties['tee_size']])
   form_data['gender'] = _GENDER_ENUM_TO_ID_MAP[profile_properties['gender']]
 
   return form_data
