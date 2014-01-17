@@ -118,7 +118,7 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertEqual(len(data['data']['']), 2)
 
   def testDashboardAsOrgAdmin(self):
-    self.profile_helper.createNDBOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     self.timeline_helper.studentsAnnounced()
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
@@ -128,7 +128,7 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardAsMentor(self):
-    self.profile_helper.createNDBMentor(self.org)
+    self.profile_helper.createMentor(self.org)
     self.timeline_helper.studentsAnnounced()
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
@@ -158,7 +158,7 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardRequest(self):
-    self.profile_helper.createNDBOrgAdmin(self.org)
+    self.profile_helper.createOrgAdmin(self.org)
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.getListResponse(url, 7)
     self.assertIsJsonResponse(response)

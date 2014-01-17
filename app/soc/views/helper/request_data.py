@@ -27,6 +27,8 @@ from melange.logic import profile as profile_logic
 from melange.logic import settings as settings_logic
 from melange.logic import user as ndb_user_logic
 from melange.models import connection as connection_model
+from melange.models import profile as ndb_profile
+from melange.models import user as ndb_user
 from melange.request import exception
 from melange.request import links
 from melange.utils import time
@@ -716,9 +718,8 @@ class RequestData(object):
     try:
       fields = ['sponsor', 'program', 'user']
       profile_key_name = '/'.join(self.kwargs[i] for i in fields)
-      return ndb.Key(
-          'User', self.kwargs['user'],
-          self.models.ndb_profile_model._get_kind(), profile_key_name)
+      return ndb.Key(ndb_user.User._get_kind(), self.kwargs['user'],
+          ndb_profile.Profile._get_kind(), profile_key_name)
     except KeyError:
       raise exception.BadRequest(
           message='The request does not contain full profile data.')

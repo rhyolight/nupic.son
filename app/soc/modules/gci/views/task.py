@@ -319,9 +319,9 @@ class TaskViewPage(base.GCIRequestHandler):
     task_key = task.key()
 
     if button_name == 'button_unpublish':
-      task_logic.setTaskStatus(task.key(), task_model.UNPUBLISHED)
+      task_logic.unpublishTask(task, data.profile)
     elif button_name == 'button_publish':
-      task_logic.setTaskStatus(task.key(), task_model.OPEN)
+      task_logic.publishTask(task, data.profile)
     elif button_name == 'button_edit':
       data.redirect.id(id=task.key().id_or_name())
       return data.redirect.to('gci_edit_task')

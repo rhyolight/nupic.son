@@ -160,6 +160,11 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'Unpublished')
 
+    # check if a comment has been created
+    comments = self.task.comments()
+    self.assertEqual(len(comments), 1)
+    self.assertMailSentToSubscribers(comments[0])
+
   def testPostButtonUnpublishReopenedTaskForbidden(self):
     """Tests the unpublish button on.
     """
@@ -221,6 +226,11 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, task_model.OPEN)
+
+    # check if a comment has been created
+    comments = self.task.comments()
+    self.assertEqual(len(comments), 1)
+    self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonPublishUnapprovedTask(self):
     """Tests the publish button.
@@ -314,8 +324,6 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
 
     # check if the update task has been enqueued
     self.assertTasksInQueue(n=1, url=self._taskUpdateUrl(task))
-
-
 
   def testPostButtonUnassign(self):
     """Tests the unassign button.

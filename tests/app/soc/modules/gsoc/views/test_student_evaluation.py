@@ -27,6 +27,10 @@ from tests import timeline_utils
 from tests.profile_utils import GSoCProfileHelper
 from tests.survey_utils import SurveyHelper
 from tests import test_utils
+from tests.utils import project_utils
+
+from melange.models import education
+from melange.models import user
 
 from soc.views import forms
 
@@ -35,6 +39,7 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 
 from soc.modules.seeder.logic.providers.string import LinkIDProvider
 
+from summerofcode.models import profile as soc_profile
 from summerofcode.models import survey as survey_model
 
 
@@ -118,18 +123,16 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
   def getStudentEvalRecordProperties(self, show=False):
     evaluation = self.evaluation.createStudentEvaluation()
 
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    self.mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
-    student_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student_profile.createOtherUser('student_with_proj@example.com')
-    student_profile.createStudentWithProject(self.org, mentor)
-
-    project = GSoCProject.all().get()
+    self.student = profile_utils.seedSOCStudent(self.program)
+    project = project_utils.seedProject(self.student, self.program.key(),
+        org_key=self.org.key, mentor_key=self.mentor.key)
 
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
-        project.parent().link_id, project.key().id())
+        self.student.profile_id, project.key().id())
 
     base_url = '/gsoc/eval/student'
     if show:
@@ -137,7 +140,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     else:
       url = '%s/%s' % (base_url, suffix)
 
-    return (url, evaluation, mentor)
+    return (url, evaluation, self.mentor)
 
   def ffPastEval(self, evaluation):
     evaluation.survey_start = timeline_utils.past(20)
@@ -186,11 +189,15 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     link_id = LinkIDProvider(ProjectSurvey).getValue()
     suffix = "%s/%s" % (self.gsoc.key().name(), link_id)
 
-    student_profile = GSoCProfileHelper(self.gsoc, self.dev_test)
-    student_profile.createOtherUser('student_with_proj@example.com')
-    student = student_profile.createStudent()
+    other_user = profile_utils.seedNDBUser(
+        user_id='student_with_proj@example.com')
+    student = profile_utils.seedSOCStudent(self.program, user=other_user)
 
-    self.profile_helper.createMentorWithProject(self.org, student)
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
+    project_utils.seedProject(
+        student, self.program.key(), mentor_key=mentor.key)
+
     # test review GET
     url = '/gsoc/eval/student/edit/' + suffix
     response = self.get(url)
@@ -274,7 +281,8 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
   def testTakeEvaluationForMentor(self):
     url, _, _ = self.getStudentEvalRecordProperties()
 
-    mentor = self.profile_helper.createMentor(self.org)
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
     # test student evaluation take GET for a mentor of the same organization
     response = self.get(url)
@@ -284,7 +292,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
     project = GSoCProject.all().get()
-    project.mentors.append(mentor.key())
+    project.mentors.append(mentor.key.to_old_key())
     project.put()
     # test student evaluation take GET for the mentor of the project
     response = self.get(url)
@@ -309,24 +317,34 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testTakeEvaluationForOrgAdmin(self):
+    """Test that if an org admin attempts to visit a student evaluation,
+    they are redirected.
+    """
     url, evaluation, _ = self.getStudentEvalRecordProperties()
 
     project = GSoCProject.all().get()
 
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
-        project.parent().link_id, project.key().id())
+        self.student.profile_id, project.key().id())
 
     base_url = '/gsoc/eval/student'
 
     show_url = '%s/show/%s' % (base_url, suffix)
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.seedNDBProfile(
+        self.program.key(), admin_for=[self.org.key], user=user)
+    profile_utils.loginNDB(user)
+
     response = self.get(url)
     self.assertResponseRedirect(response, show_url)
 
   def testTakeEvalForStudentWithNoProject(self):
-    self.profile_helper.createStudent()
+    """Test that if a student without a project attempts to visit the
+    evaluation page, they will be redirected.
+    """
 
+    student = profile_utils.seedSOCStudent(self.program)
     # test student evaluation show GET for a for a student who
     # does not have a project in the program
     url, evaluation, _ = self.getStudentEvalRecordProperties()
@@ -337,7 +355,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
 
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
-        project.parent().link_id, project.key().id())
+        self.student.profile_id, project.key().id())
 
     base_url = '/gsoc/eval/student'
 
@@ -349,7 +367,9 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
   def testTakeEvalForAnotherStudentWithProject(self):
     url, evaluation, mentor = self.getStudentEvalRecordProperties()
 
-    self.profile_helper.createStudentWithProject(self.org, mentor)
+    student = profile_utils.seedSOCStudent(self.program)
+    project_utils.seedProject(
+        student, self.program.key(), mentor_key=mentor.key)
     # test student evaluation show GET for a for a student who
     # has another project in the same org and whose mentor is
     # same as the student whose survey is being accessed
@@ -360,7 +380,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
 
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
-        project.parent().link_id, project.key().id())
+        self.student.profile_id, project.key().id())
 
     base_url = '/gsoc/eval/student'
 
@@ -370,15 +390,18 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseRedirect(response, show_url)
 
   def testTakeEvalForStudentProjectWithAnotherMentor(self):
+    """Test that a student with a project in the same org but with a
+    different mentor than the current mentor will be redirected.
+    """
     url, evaluation, _ = self.getStudentEvalRecordProperties()
 
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
-    self.profile_helper.createStudentWithProject(self.org, mentor)
-    # test student evaluation show GET for a for a student who
-    # has another project whose mentor is different than the current
-    # mentor but the project is in the same org
+    student = profile_utils.seedSOCStudent(self.program)
+    project_utils.seedProject(
+        student, self.program.key(), mentor_key=mentor.key)
+
     response = self.get(url)
     self.assertResponseForbidden(response)
 
@@ -386,7 +409,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
 
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
-        project.parent().link_id, project.key().id())
+        self.student.profile_id, project.key().id())
 
     base_url = '/gsoc/eval/student'
 
@@ -396,29 +419,30 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseRedirect(response, show_url)
 
   def testTakeEvalForStudentProjectWithAnotherOrg(self):
+    """Test that if a student with a project for an org attempts to take
+    an evaluation for a different org, they will be redirected.
+    """
     url, evaluation, _ = self.getStudentEvalRecordProperties()
     other_org = self.createOrg()
 
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[other_org.key.to_old_key()])
+    project = GSoCProject.all().get()
 
-    self.profile_helper.createStudentWithProject(other_org, mentor)
-    # test student evaluation show GET for a for a student who
-    # has another project in a different organization
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[other_org.key])
+    other_student = profile_utils.seedSOCStudent(self.program)
+    other_project = project_utils.seedProject(other_student,
+        self.program.key(), org_key=other_org.key, mentor_key=mentor.key)
+
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    project = GSoCProject.all().get()
-
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
-        project.parent().link_id, project.key().id())
-
-    base_url = '/gsoc/eval/student'
+        self.student.profile_id, project.key().id())
 
     self.ffPastEval(evaluation)
     response = self.get(url)
-    show_url = '%s/show/%s' % (base_url, suffix)
+    show_url = '/gsoc/eval/student/show/%s' % suffix
     self.assertResponseRedirect(response, show_url)
 
   def testAccessBeforeEvaluationStarts(self):
@@ -426,17 +450,20 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     evaluation = self.evaluation.createStudentEvaluation()
     self.setEvaluationPeriodToFuture(evaluation)
 
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
-    self.profile_helper.createStudentWithProject(self.org, mentor)
+    user = profile_utils.seedNDBUser()
 
-    project = GSoCProject.all().get()
+    student = profile_utils.seedSOCStudent(self.program, user=user)
+    project = project_utils.seedProject(student, self.program.key(),
+        org_key=self.org.key, mentor_key=mentor.key)
+    profile_utils.loginNDB(user)
 
     base_url = '/gsoc/eval/student'
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
-        project.parent().link_id, project.key().id())
+        student.profile_id, project.key().id())
 
     url = '%s/%s' % (base_url, suffix)
     response = self.get(url)
@@ -444,14 +471,12 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     # response is forbidden as the evaluation period has yet to start
     self.assertResponseForbidden(response)
 
-    # create personal extension
     # TODO(daniel): NDB migration
-    ndb_profile_key = ndb.Key.from_old_key(self.profile_helper.profile.key())
     ndb_survey_key = ndb.Key.from_old_key(evaluation.key())
     start_date = timeline_utils.past()
 
     extension = survey_model.PersonalExtension(
-        parent=ndb_profile_key, survey=ndb_survey_key, start_date=start_date)
+        parent=student.key, survey=ndb_survey_key, start_date=start_date)
     extension.put()
 
     response = self.get(url)
@@ -460,21 +485,29 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseOK(response)
 
   def testTakeEvalForStudent(self):
+    """Test that given that the current student is the student for the
+    current project and mentor then they can take the evaluation.
+    """
     evaluation = self.evaluation.createStudentEvaluation()
 
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
-    self.profile_helper.createStudentWithProject(self.org, mentor)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
 
-    project = GSoCProject.all().get()
+    student = profile_utils.seedSOCStudent(self.program, user=user)
+    project = project_utils.seedProject(
+        student, self.program.key(), mentor_key=mentor.key)
 
     base_url = '/gsoc/eval/student'
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
-        project.parent().link_id, project.key().id())
+        student.profile_id, project.key().id())
 
     url = '%s/%s' % (base_url, suffix)
+
+    project = GSoCProject.all().get()
 
     # test student evaluation show GET for a for a student who
     # has another project in a different organization
@@ -581,26 +614,22 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testShowEvalForStudent(self):
+    """Test that a student can view their mentor evaluation."""
     evaluation = self.evaluation.createStudentEvaluation()
 
     mentor = profile_utils.seedGSoCProfile(
         self.program, mentor_for=[self.org.key.to_old_key()])
 
-    self.profile_helper.createStudentWithProject(self.org, mentor)
-
-    project = GSoCProject.all().get()
+    user = profile_utils.seedNDBUser()
+    student = profile_utils.seedSOCStudent(self.program, user=user)
+    project = project_utils.seedProject(student, self.program.key())
+    profile_utils.loginNDB(user)
 
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
-        project.parent().link_id, project.key().id())
+        student.profile_id, project.key().id())
 
-    url = '/gsoc/eval/student/show/%s' % (suffix,)
-
-    # test student evaluation show GET for a for a student who
-    # has another project in a different organization
-    response = self.get(url)
-    self.assertResponseOK(response)
-    self.assertEvaluationShowTemplateUsed(response)
+    url = '/gsoc/eval/student/show/%s' % suffix
 
     self.ffPastEval(evaluation)
     response = self.get(url)
@@ -616,7 +645,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     project = GSoCProject.all().get()
 
     project_mentors = project.mentors
-    project.mentors.append(mentor.key())
+    project.mentors.append(mentor.key.to_old_key())
     project.put()
     # test student evaluation show GET for the mentor of the project
     response = self.get(url)
@@ -629,7 +658,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    project.mentors.append(mentor.key())
+    project.mentors.append(mentor.key.to_old_key())
     project.put()
 
     response = self.get(url)
@@ -662,10 +691,15 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testShowEvaluationForOrgAdmin(self):
-    self.profile_helper.createOrgAdmin(self.org)
+    """Test that an org admin can access a project for the org of
+    which they are an admin.
+    """
+    user = profile_utils.seedNDBUser()
+    org_admin = profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+    profile_utils.loginNDB(user)
+
     url, evaluation, _ = self.getStudentEvalRecordProperties(show=True)
-    # test student evaluation show GET for an org admin of the org
-    # to which project belongs to
     response = self.get(url)
     self.assertResponseForbidden(response)
 
