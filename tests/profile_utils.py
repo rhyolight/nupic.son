@@ -737,6 +737,7 @@ class GSoCProfileHelper(ProfileHelper):
     project_utils.seedProject(
         student, self.program.key(), proposal.key(), org.key, mentor_key)
 
+    self.profile = student
     return self.profile
 
   def createMentorWithProject(self, org, student):

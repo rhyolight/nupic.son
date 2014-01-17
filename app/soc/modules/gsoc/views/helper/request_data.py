@@ -194,7 +194,6 @@ class RequestData(request_data.RequestData):
     is_org_admin: is the current user an org admin in the program
     org_admin_for: the organizations the current user is an admin for
     mentor_for: the organizations the current user is a mentor for
-    student_info: the StudentInfo for the current user and program
     organization: the organization for the current url
 
   Raises:
@@ -224,7 +223,6 @@ class RequestData(request_data.RequestData):
     self._is_org_admin = self._unset
     self._mentor_for = self._unset
     self._org_admin_for = self._unset
-    self._student_info = self._unset
     self._organization = self._unset
 
     self._url_project = self._unset
@@ -344,18 +342,6 @@ class RequestData(request_data.RequestData):
     if not self._isSet(self._redirect):
       self._redirect = RedirectHelper(self)
     return self._redirect
-
-  @property
-  def student_info(self):
-    """Returns the student_info field."""
-    if not self._isSet(self._student_info):
-      if not self.is_student:
-        self._student_info = None
-      else:
-        student_info_key = profile_model.GSoCProfile.student_info \
-            .get_value_for_datastore(self.profile)
-        self._student_info = db.get(student_info_key)
-    return self._student_info
 
   @property
   def timeline(self):

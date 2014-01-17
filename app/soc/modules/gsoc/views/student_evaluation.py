@@ -182,11 +182,15 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
           data.student_evaluation.link_id).urlOf(
           'gsoc_show_student_evaluation')
     check.isStudentSurveyActive(
-        data.student_evaluation, data.url_profile, show_url=show_url)
+        data.student_evaluation, data.url_ndb_profile, show_url=show_url)
 
     check.isProfileActive()
+    # TODO(dcrodman): When GSoCProject is converted to NDB, this Key
+    # conversion will need to be removed.
     org_key = project_model.GSoCProject.org.get_value_for_datastore(
         data.url_project)
+    org_key = ndb.Key.from_old_key(org_key)
+
     if data.orgAdminFor(org_key):
       raise exception.Redirect(show_url)
 
@@ -240,7 +244,7 @@ class GSoCStudentEvaluationTakePage(base.GSoCRequestHandler):
           data.url_project)
       form.cleaned_data['project'] = data.url_project
       form.cleaned_data['org'] = org_key
-      form.cleaned_data['user'] = data.user
+      form.cleaned_data['user'] = data.ndb_user.key.to_old_key()
       form.cleaned_data['survey'] = data.student_evaluation
       entity = form.create(commit=True)
     else:
@@ -375,8 +379,9 @@ class GSoCStudentEvaluationShowPage(base.GSoCRequestHandler):
     assert isSet(data.student_evaluation)
 
     check.isProfileActive()
-    org_key = project_model.GSoCProject.org.get_value_for_datastore(
+    old_entity = project_model.GSoCProject.org.get_value_for_datastore(
         data.url_project)
+    org_key = ndb.Key.from_old_key(old_entity)
     if data.orgAdminFor(org_key):
       data.role = 'org_admin'
       if data.timeline.afterSurveyEnd(data.student_evaluation):
@@ -396,15 +401,15 @@ class GSoCStudentEvaluationShowPage(base.GSoCRequestHandler):
     assert isSet(data.student_evaluation_record)
 
     record = data.student_evaluation_record
-    student = data.url_profile
+    student = data.url_ndb_profile
 
     org_key = project_model.GSoCProject.org.get_value_for_datastore(
         data.url_project)
     org = ndb.Key.from_old_key(org_key).get()
 
     context = {
-        'page_name': 'Student evaluation - %s' % (student.name()),
-        'student': student.name(),
+        'page_name': 'Student evaluation - %s' % (student.public_name),
+        'student': student.public_name,
         'organization': org.name,
         'project': data.url_project.title,
         'css_prefix': GSoCStudentEvaluationReadOnlyTemplate.Meta.css_prefix,
