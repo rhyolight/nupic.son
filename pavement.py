@@ -59,7 +59,7 @@ easy.options(
                  'mapreduce.yaml', 'main.py', 'settings.py', 'urls.py',
                  'gae_django.py', 'profiler.py', 'appengine_config.py'],
     app_dirs =  ["melange", "soc", "feedparser", "djangoforms", "ranklist",
-                 "shell", "html5lib", "gviz", "webmaster", "gdata", "atom",
+                 "shell", "html5lib", "gviz", "webmaster",
                  "mapreduce", "summerofcode", "codein", "apiclient",
                  "httplib2", "oauth2client", "uritemplate"],
     css_dirs = ["soc/content/css/gsoc/", "soc/content/css/gci"],

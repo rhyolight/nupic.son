@@ -17,7 +17,6 @@
 from melange.appengine import system
 from soc.logic.helper import xsrfutil
 from soc.logic import site
-from soc.views.helper.gdata_apis import oauth as oauth_helper
 
 
 def default(data):
@@ -32,7 +31,6 @@ def default(data):
       ga_tracking_num: the google tracking number for this website
       ds_write_disabled: if datastore writes are disabled
       css_path: part of the path to the css files to distinguish modules
-      gdata_is_logged_in: the string "true" or "false" as appropriate
   """
   app_version = system.getMelangeVersion()
 
@@ -49,8 +47,6 @@ def default(data):
   css_path = '/'.join([
       'soc', 'content', app_version, 'css', data.css_path])
 
-  gdata_is_logged_in = data.user and oauth_helper.getAccessToken(data.user)
-
   return {
       'app_version': app_version,
       'is_local': system.isLocal(),
@@ -60,6 +56,5 @@ def default(data):
       'ga_tracking_num': data.site.ga_tracking_num,
       'ds_write_disabled': data.ds_write_disabled,
       'css_path': css_path,
-      'gdata_is_logged_in': str(bool(gdata_is_logged_in)).lower(),
       'site_description': data.site.description,
   }

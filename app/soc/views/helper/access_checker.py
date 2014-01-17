@@ -32,8 +32,6 @@ from soc.models import org_app_record
 from soc.models import program as program_model
 from soc.modules.gsoc.models import proposal as proposal_model
 
-from soc.views.helper.gdata_apis import oauth as oauth_helper
-
 from summerofcode.logic import survey as survey_logic
 
 DEF_AGREE_TO_TOS = ugettext(
@@ -314,16 +312,6 @@ class BaseAccessChecker(object):
 
     if self.data.ndb_profile.status != profile_model.Status.ACTIVE:
       raise exception.Forbidden(message=DEF_PROFILE_INACTIVE)
-
-  def canAccessGoogleDocs(self):
-    """Checks if user has a valid access token to access Google Documents."""
-    self.isUser()
-    access_token = oauth_helper.getAccessToken(self.data.user)
-    if not access_token: #TODO(orc.avs):check token is valid
-      # TODO(nathaniel): This is complicated - add it to links.Linker?
-      raise exception.Redirect('%s?%s' % (
-          self.data.redirect.urlOf('gdata_oauth_redirect'),
-          urllib.urlencode({'next': self.data.request.get_full_path()})))
 
   def isMessagingEnabled(self):
     """Checks whether the program has messaging enabled. If not, accessing

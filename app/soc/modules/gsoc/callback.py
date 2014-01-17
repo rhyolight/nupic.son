@@ -44,7 +44,6 @@ from soc.modules.gsoc.views import slot_transfer
 from soc.modules.gsoc.views import slot_transfer_admin
 from soc.modules.gsoc.views import student_evaluation
 from soc.modules.gsoc.views import student_forms
-from soc.modules.gsoc.views import oauth
 
 
 class Callback(object):
@@ -135,8 +134,6 @@ class Callback(object):
     self.views.append(student_evaluation.GSoCStudentEvaluationTakePage())
     self.views.append(student_forms.DownloadForm())
     self.views.append(student_forms.FormPage())
-    self.views.append(oauth.OAuthRedirectPage())
-    self.views.append(oauth.OAuthVerifyToken())
 
     # Appengine Task related views
     self.views.append(grading_survey_group_tasks.GradingRecordTasks())

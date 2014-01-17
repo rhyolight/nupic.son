@@ -16,7 +16,6 @@
 
 from soc.views import legacy
 from soc.tasks import mailer
-from soc.views import oauth
 from soc.views import site
 from soc.views import user
 from soc.views import warmup
@@ -39,8 +38,6 @@ class Callback(object):
     """Instantiates all view objects."""
     self.views.append(legacy.Legacy())
     self.views.append(mailer.MailerTask())
-    self.views.append(oauth.PopupOAuthRedirectPage())
-    self.views.append(oauth.PopupOAuthVerified())
     self.views.append(site.EditSitePage())
     self.views.append(site.SiteHomepage())
     self.views.append(site.LandingPage())

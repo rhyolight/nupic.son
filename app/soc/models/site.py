@@ -87,41 +87,6 @@ class Site(db.Model):
       'embedding Google services into the website when '
       'accessed through the "hostname" url.')
 
-  #: Optional field storing the consumer key for GData APIs
-  gdata_consumer_key = db.StringProperty(
-      verbose_name=ugettext('GData Consumer Key'),
-      multiline=False)
-  gdata_consumer_key.help_text = ugettext(
-      'OAuth Consumer Key that is provided by Google after '
-      'registering your domain. This is used in authentication '
-      'that is required to use particular GData APIs.')
-
-  #: Optional field storing the consumer secret for GData APIs
-  gdata_consumer_secret = db.StringProperty(
-      verbose_name=ugettext('GData Consumer Secret'),
-      multiline=False)
-  gdata_consumer_secret.help_text = ugettext(
-      'OAuth Consumer Secret that is also provided by Google after '
-      'registering your domain.')
-
-  #: Secondary consumer key to be used with multiple domains
-  secondary_gdata_consumer_key = db.StringProperty(
-      verbose_name=ugettext('Secondary GData Consumer Key'),
-      multiline=False)
-  secondary_gdata_consumer_key.help_text = ugettext(
-      'Same with "GData Consumer Key" except this is used when '
-      'not accessed through the "hostname" url. To be used with '
-      'multiple domains.')
-
-  #: Secondary consumer secret to be used with multiple domains
-  secondary_gdata_consumer_secret = db.StringProperty(
-      verbose_name=ugettext('Secondary GData Consumer Secret'),
-      multiline=False)
-  secondary_gdata_consumer_secret.help_text = ugettext(
-      'Same with "GData Consumer Secret" except this is used when '
-      'not accessed through the "hostname" url. To be used with '
-      'multiple domains.')
-
   #: No Reply Email address used for sending notification emails to site users
   noreply_email = db.EmailProperty(verbose_name=ugettext('No reply email'))
   noreply_email.help_text = ugettext(
