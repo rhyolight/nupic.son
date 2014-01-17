@@ -14,6 +14,8 @@
 
 """Module containing the profile related views for Summer Of Code."""
 
+import collections
+
 from google.appengine.ext import ndb
 
 from django import http
@@ -31,6 +33,7 @@ from melange.models import profile as profile_model
 from melange.request import access
 from melange.request import exception
 from melange.request import links
+from melange.templates import readonly
 from melange.utils import countries
 from melange.views.helper import form_handler
 
@@ -43,6 +46,7 @@ from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_patterns as soc_url_patterns
 
+from summerofcode.templates import tabs
 from summerofcode.views.helper import urls
 
 
@@ -1176,6 +1180,90 @@ class ProfileEditPage(base.GSoCRequestHandler):
 
       return http.HttpResponseRedirect(
           links.LINKER.program(data.program, urls.UrlNames.PROFILE_EDIT))
+
+
+class ProfileShowPage(base.GSoCRequestHandler):
+  """View to display the read-only profile page."""
+
+  # TODO(daniel): implement actual access checker
+  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.djangoURLPatterns for specification."""
+    return [
+        soc_url_patterns.url(
+            r'profile/show/%s$' % url_patterns.PROGRAM,
+            self, name=urls.UrlNames.PROFILE_SHOW)]
+
+  def templatePath(self):
+    """See base.RequestHandler.templatePath for specification."""
+    return 'summerofcode/profile/profile_show.html'
+
+  def context(self, data, check, mutator):
+    """See soc.views.base.RequestHandler.context for specification."""
+    program = data.program
+
+    groups = []
+
+    fields = collections.OrderedDict()
+    fields[USER_ID_LABEL] = data.ndb_user.user_id
+    fields[PUBLIC_NAME_LABEL] = data.ndb_profile.public_name
+    fields[WEB_PAGE_LABEL] = data.ndb_profile.contact.web_page
+    fields[BLOG_LABEL] = data.ndb_profile.contact.blog
+    fields[PHOTO_URL_LABEL] = data.ndb_profile.photo_url
+    groups.append(readonly.Group(_PUBLIC_INFORMATION_GROUP, fields.items()))
+
+    fields = collections.OrderedDict()
+    fields[FIRST_NAME_LABEL] = data.ndb_profile.first_name
+    fields[LAST_NAME_LABEL] = data.ndb_profile.last_name
+    fields[EMAIL_LABEL] = data.ndb_profile.contact.email
+    fields[PHONE_LABEL] = data.ndb_profile.contact.phone
+    groups.append(readonly.Group(_CONTACT_GROUP, fields.items()))
+
+    fields = collections.OrderedDict()
+    fields[RESIDENTIAL_STREET_LABEL] = (
+        data.ndb_profile.residential_address.street)
+    fields[RESIDENTIAL_CITY_LABEL] = data.ndb_profile.residential_address.city
+    fields[RESIDENTIAL_PROVINCE_LABEL] = (
+        data.ndb_profile.residential_address.province)
+    fields[RESIDENTIAL_POSTAL_CODE_LABEL] = (
+        data.ndb_profile.residential_address.postal_code)
+    fields[RESIDENTIAL_COUNTRY_LABEL] = (
+        data.ndb_profile.residential_address.country)
+    groups.append(readonly.Group(_RESIDENTIAL_ADDRESS_GROUP, fields.items()))
+
+    if data.ndb_profile.shipping_address:
+      fields = collections.OrderedDict()
+      fields[SHIPPING_STREET_LABEL] = (
+          data.ndb_profile.shipping_address.street)
+      fields[SHIPPING_CITY_LABEL] = data.ndb_profile.shipping_address.city
+      fields[SHIPPING_PROVINCE_LABEL] = (
+          data.ndb_profile.shipping_address.province)
+      fields[SHIPPING_POSTAL_CODE_LABEL] = (
+          data.ndb_profile.shipping_address.postal_code)
+      fields[SHIPPING_COUNTRY_LABEL] = (
+          data.ndb_profile.shipping_address.country)
+      groups.append(readonly.Group(_SHIPPING_ADDRESS_GROUP, fields.items()))
+
+    fields = collections.OrderedDict()
+    fields[BIRTH_DATE_LABEL] = data.ndb_profile.birth_date
+    fields[TEE_STYLE_LABEL] = data.ndb_profile.tee_style
+    fields[TEE_SIZE_LABEL] = data.ndb_profile.tee_size
+    fields[GENDER_LABEL] = data.ndb_profile.gender
+    fields[PROGRAM_KNOWLEDGE_LABEL] = data.ndb_profile.program_knowledge
+    groups.append(readonly.Group(_CONTACT_GROUP, fields.items()))
+
+    profile_template = readonly.Readonly(
+        data, 'summerofcode/_readonly_template.html', groups)
+
+    return {
+        'page_name': '%s Profile - %s' % (
+             data.program.short_name, data.ndb_profile.public_name),
+        'program_name': program.name,
+        'profile_template': profile_template,
+        'tabs': tabs.profileTabs(
+        data, selected_tab_id=tabs.VIEW_PROFILE_TAB_ID)
+        }
 
 
 def _getProfileEntityPropertiesFromForm(form):

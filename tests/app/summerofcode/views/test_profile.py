@@ -25,6 +25,7 @@ from melange.models import address as address_model
 from melange.models import profile as profile_model
 from melange.models import user as user_model
 
+from summerofcode.templates import tabs
 from summerofcode.views import profile as profile_view
 
 from tests import profile_utils
@@ -104,6 +105,18 @@ def _getEditProfileUrl(program_key):
     A string containing the URL to Edit Profile page.
   """
   return '/gsoc/profile/edit/%s' % program_key.name()
+
+
+def _getShowProfileUrl(program_key):
+  """Returns URL to Show Profile page.
+
+  Args:
+    program_key: Program key.
+
+  Returns:
+    A string containing the URL to Show Profile page.
+  """
+  return '/gsoc/profile/show/%s' % program_key.name()
 
 
 class ProfileOrgMemberCreatePageTest(test_utils.GSoCDjangoTestCase):
@@ -465,3 +478,37 @@ class CleanShippingAddressPartTest(unittest.TestCase):
     # Actual values is returned upon clearing
     result = profile_view._cleanShippingAddressPart(True, 'a value', False)
     self.assertEqual(result, 'a value')
+
+
+class ProfileShowPageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for ProfileShowPage class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
+
+    response = self.get(_getShowProfileUrl(self.program.key()))
+    self.assertResponseOK(response)
+
+  def testProfileTabs(self):
+    """Tests that correct profile related tabs are present in context."""
+    self.timeline_helper.orgsAnnounced()
+
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
+
+    response = self.get(_getShowProfileUrl(self.program.key()))
+
+    # check that tabs are present in context
+    self.assertIn('tabs', response.context)
+
+    # check that tab to "Edit Profile" page is the selected one
+    self.assertEqual(response.context['tabs'].selected_tab_id,
+        tabs.VIEW_PROFILE_TAB_ID)
