@@ -56,12 +56,16 @@ class FunctionalTestCase(unittest.TestCase):
     # Select a random port to start a dev server.
     # Random ports and a seperate datastore file is for running of tests in multiple processes.
     self.port = random.randrange(50000, 60000, 2)
-    # Start the dev server as a process running in background.
+    self.datastore_path = "tests/functional/datastore_files/"
+    if not os.path.isdir(self.datastore_path):
+      os.makedirs(self.datastore_path)
+    self.datastore_file = tempfile.NamedTemporaryFile(dir=self.datastore_path)
 
+    # Start the dev server as a process running in background.
     # TODO(nathaniel): Reflow these few lines.
     self.server_process = subprocess.Popen(('nohup thirdparty/google_appengine/dev_appserver.py\
                --clear_datastore --datastore_path=%s --port=%s build >/dev/null 2>&1&' 
-               %(tempfile.mktemp(), self.port)), stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True, preexec_fn=os.setsid)    
+               %(self.datastore_file.name, self.port)), stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True, preexec_fn=os.setsid)    
     if not self.server_process:
       self.fail("Server cannot be started: %s" % self.server_process)    
     self.setupLocalRemote()
@@ -383,17 +387,14 @@ class FunctionalTestCase(unittest.TestCase):
     # Kill the server
     os.killpg(self.server_process.pid, signal.SIGTERM)        
     # Delete *.pyc files
-    subprocess.call('find . -name "*.pyc" -delete', shell=True)   
-    # Delete temporary files.
-    self.deleteTemporaryFiles()
+    subprocess.call('find . -name "*.pyc" -delete', shell=True)
 
   def clearDatastore(self):
     """Clear the datastore."""
     seed_db.clear()
 
-  def deleteTemporaryFiles(self):
-    """Delete the temporary files."""  
-    pattern = "/tmp/tmp*"
+  def deleteTemporaryFiles(self, pattern):
+    """Delete the temporary files."""
     tmpdir = glob.glob(pattern)
     for temporary_file in tmpdir:
       if os.path.isdir(temporary_file):
