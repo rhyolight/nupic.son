@@ -149,8 +149,8 @@ class GradingRecordsOverviewTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(0, len(data))
 
     # list response with projects
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
     self.profile_helper.createStudentWithProposal(self.org, mentor)
     self.profile_helper.createStudentWithProject(self.org, mentor)

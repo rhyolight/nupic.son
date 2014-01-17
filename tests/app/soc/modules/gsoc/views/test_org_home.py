@@ -30,8 +30,8 @@ class OrgHomeProjectListTest(GSoCDjangoTestCase):
 
   def createStudentProjects(self):
     """Creates two student projects."""
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
     student = GSoCProfileHelper(self.gsoc, self.dev_test)
     student.createOtherUser('student@example.com')

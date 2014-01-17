@@ -51,8 +51,8 @@ class ProposalDuplicatesTest(GSoCDjangoTestCase, TaskQueueTestCase):
 
   def createMentor(self):
     """Creates a new mentor."""
-    self.mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    self.mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
   def createStudent(self):
     """Creates two new students the first one has a duplicate the second one has

@@ -115,8 +115,8 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
   def getOrgAppTakePostData(self):
     """Returns the post data dictionary for applying as an organization.
     """
-    backup_admin = profile_utils.seedGSoCProfile(
-        self.program, org_admin_for=[self.org.key.to_old_key()])
+    backup_admin = profile_utils.seedNDBProfile(
+        self.program.key(), admin_for=[self.org.key])
 
     return {
         'org_id': 'testorg',

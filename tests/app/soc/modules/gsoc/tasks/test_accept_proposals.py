@@ -61,8 +61,8 @@ class AcceptProposalsTest(
 
   def _createMentor(self):
     """Creates a mentor for default organization."""
-    self.mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    self.mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
   def _createStudent(self, email, n_proposals):
     """Creates a student with proposals."""

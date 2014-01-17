@@ -351,27 +351,6 @@ def seedGCIProfile(program, user=None, **kwargs):
       program, model=gci_profile_model.GCIProfile, user=user, **kwargs)
 
 
-def seedGSoCProfile(program, user=None, **kwargs):
-  """Seeds a new profile for GSoC.
-
-  Args:
-    program: Program entity for which the profile is seeded.
-    user: User entity corresponding to the profile.
-
-  Returns:
-    A newly seeded GSoCProfile entity.
-  """
-  properties = {
-      'notify_new_proposals': False,
-      'notify_proposal_updates': False,
-      'notify_public_comments': False,
-      'notify_private_comments': False,
-      }
-  properties.update(**kwargs)
-  return seedProfile(
-      program, model=gsoc_profile_model.GSoCProfile, user=user, **properties)
-
-
 def seedStudent(program, model=profile_model.Profile,
     student_info_model=profile_model.StudentInfo, user=None, **kwargs):
   """Seeds a new profile who is registered as a student.

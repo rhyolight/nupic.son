@@ -38,13 +38,14 @@ class ProposalTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gsoc/_form.html')
 
   def testSubmitProposal(self):
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()],
-        notify_new_proposals=True, notify_public_comments=True,
-        notify_private_comments=True)
+    profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
+    # TODO(daniel): take care of notifications
+    #    notify_new_proposals=True, notify_public_comments=True,
+    #    notify_private_comments=True)
 
-    profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
     self.profile_helper.createStudent()
     self.profile_helper.notificationSettings()
@@ -84,13 +85,14 @@ class ProposalTest(GSoCDjangoTestCase):
     self.gsoc.apps_tasks_limit = 5
     self.gsoc.put()
 
-    profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()],
-        notify_new_proposals=True, notify_public_comments=True,
-        notify_private_comments=True)
+    profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
+    # TODO(daniel): take care of notifications
+    #    notify_new_proposals=True, notify_public_comments=True,
+    #    notify_private_comments=True)
 
-    profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
     self.profile_helper.createStudent()
     self.profile_helper.notificationSettings()
@@ -147,9 +149,9 @@ class ProposalTest(GSoCDjangoTestCase):
 
   def testUpdateProposal(self):
     """Test update proposals."""
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()],
-        notify_proposal_updates=True)
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
+    # TODO(daniel): take care of notifications: notify_proposal_updates=True
 
     self.profile_helper.createStudentWithProposal(self.org, mentor)
     self.profile_helper.notificationSettings()
@@ -197,8 +199,8 @@ class ProposalTest(GSoCDjangoTestCase):
 
   def testUpdateProposalAfterDeadline(self):
     """Tests attempting to update a proposal after the deadline has passed."""
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
     self.profile_helper.createStudentWithProposal(self.org, mentor)
     self.timeline_helper.studentsAnnounced()
@@ -220,9 +222,9 @@ class ProposalTest(GSoCDjangoTestCase):
     self.assertResponseNotFound(response)
 
   def testWithdrawProposal(self):
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()],
-        notify_proposal_updates=True)
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
+    # TODO(daniel): take care of notifications: notify_proposal_updates=True
 
     self.profile_helper.createStudentWithProposal(self.org, mentor)
     self.profile_helper.notificationSettings()
@@ -250,9 +252,9 @@ class ProposalTest(GSoCDjangoTestCase):
     self.assertEqual(0, student_info.number_of_proposals)
 
   def testResubmitProposal(self):
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()],
-        notify_proposal_updates=True)
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
+    # TODO(daniel): take care of notifications: notify_proposal_updates=True
 
     self.profile_helper.createStudentWithProposal(self.org, mentor)
     self.profile_helper.notificationSettings()
