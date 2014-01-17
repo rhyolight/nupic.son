@@ -203,16 +203,17 @@
   };
 
   Timeline.prototype.datesToDegrees = function (from_in_ms, to_in_ms, time_end) {
+    var MILLISECONDS_IN_ONE_DEGREE = 87600000 // 1000 * 60 * 60 * 24 * 365 / 360
     var time_zero_degrees;
-    var millisecondsInOneDegree = 1000 * 60 * 60 * 24 * 365 / 360;
 
     // 90 degrees is first day of last year
     // 0 degrees will be first day of last year minus 3 months
     time_zero_degrees = Date.UTC(new Date(time_end).getFullYear() - 1, 9, 1);
 
     return {
-      from_degree: (from_in_ms - time_zero_degrees) / millisecondsInOneDegree,
-      to_degree: (to_in_ms - time_zero_degrees) / millisecondsInOneDegree
+      from_degree: ((from_in_ms - time_zero_degrees) /
+          MILLISECONDS_IN_ONE_DEGREE),
+      to_degree: (to_in_ms - time_zero_degrees) / MILLISECONDS_IN_ONE_DEGREE
      };
   };
 
