@@ -111,20 +111,19 @@ class ProposalPage(base.GSoCRequestHandler):
     proposal_properties['org'] = data.url_ndb_org.key.to_old_key()
     proposal_properties['program'] = data.program
 
-    student_info_key = data.student_info.key()
-
-    extra_attrs = {
-        GSoCProfile.notify_new_proposals: [True]
-        }
+    # TODO(daniel): take care of notifications
+    #extra_attrs = {
+    #    GSoCProfile.notify_new_proposals: [True]
+    #    }
     mentors = profile_logic.getMentors(
-        data.url_ndb_org.key, extra_attrs=extra_attrs)
+        data.url_ndb_org.key, extra_attrs=None)
 
-    to_emails = [i.email for i in mentors]
+    to_emails = [mentor.contact.email for mentor in mentors]
 
     def create_proposal_trx():
-      student_info = db.get(student_info_key)
-      student_info.number_of_proposals += 1
-      student_info.put()
+      profile = data.ndb_profile.key.get()
+      profile.student_data.number_of_proposals += 1
+      profile.put()
 
       proposal = GSoCProposal(
           parent=data.ndb_profile.key.to_old_key(),
@@ -137,14 +136,16 @@ class ProposalPage(base.GSoCRequestHandler):
 
       return proposal
 
-    return db.run_in_transaction(create_proposal_trx)
+    # return db.run_in_transaction(create_proposal_trx)
+    return create_proposal_trx()
 
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     proposal = self.createFromForm(data)
     if proposal:
       url = links.LINKER.userId(
-          data.profile.key(), proposal.key().id(), url_names.PROPOSAL_REVIEW)
+          data.ndb_profile.key,
+          proposal.key().id(), url_names.PROPOSAL_REVIEW)
       return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-use.
@@ -227,13 +228,15 @@ class UpdateProposal(base.GSoCRequestHandler):
     if not proposal_form.is_valid():
       return None
 
-    org_key = GSoCProposal.org.get_value_for_datastore(data.url_proposal)
-    extra_attrs = {
-        GSoCProfile.notify_proposal_updates: [True]
-        }
-    mentors = profile_logic.getMentors(org_key, extra_attrs=extra_attrs)
+    org_key = ndb.Key.from_old_key(
+        GSoCProposal.org.get_value_for_datastore(data.url_proposal))
+    # TODO(daniel): handle hotifications
+    #extra_attrs = {
+    #    GSoCProfile.notify_proposal_updates: [True]
+    #    }
+    mentors = profile_logic.getMentors(org_key, extra_attrs=None)
 
-    to_emails = [i.email for i in mentors]
+    to_emails = [i.contact.email for i in mentors]
 
     proposal_key = data.url_proposal.key()
 
@@ -242,6 +245,7 @@ class UpdateProposal(base.GSoCRequestHandler):
       proposal_form.instance = proposal
       proposal = proposal_form.save(commit=True)
 
+      print to_emails
       context = notifications.updatedProposalContext(data, proposal, to_emails)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=proposal)
       sub_txn()
@@ -253,7 +257,7 @@ class UpdateProposal(base.GSoCRequestHandler):
   def post(self, data, check, mutator):
     """Handler for HTTP POST request."""
     url = links.LINKER.userId(
-        data.profile.key(), data.url_proposal.key().id(),
+        data.ndb_profile.key, data.url_proposal.key().id(),
         url_names.PROPOSAL_REVIEW)
 
     if data.POST[ACTION_POST_KEY] == self.ACTIONS['update']:
