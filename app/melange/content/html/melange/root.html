@@ -22,11 +22,6 @@ limitations under the License.
 
   {% block stylesheets %}
   {% endblock stylesheets %}
-
-  <!-- Include analytics tracking -->
-  {% if ga_tracking_num %}
-    {% include 'soc/site/ga.html' %}
-  {% endif %}
 </head>
 <body>
 {% block body %}
@@ -111,7 +106,13 @@ limitations under the License.
           melange.dependency.loadScripts([
             {% block default_dependencies %}
             [
-              // List eventual default dependencies here
+              {% if ga_tracking_num %}
+              dep.melange.analytics,
+              null,
+              function() {
+                melange.analytics.initAnalytics('{{ ga_tracking_num }}');
+              }
+              {% endif %}
             ],
             {% endblock default_dependencies %}
             {% block dependencies %}
