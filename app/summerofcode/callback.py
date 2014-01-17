@@ -35,18 +35,18 @@ class Callback(object):
 
   def registerViews(self):
     """Instantiates all view objects."""
-    self.views.append(org_app.OrgApplicationSubmitPage())
     self.views.append(org_app.OrgAppShowPage())
+    self.views.append(org_app.OrgApplicationSubmitPage())
     self.views.append(org_app.OrgPreferencesEditPage())
     self.views.append(org_app.OrgProfileCreatePage())
     self.views.append(org_app.OrgProfileEditPage())
     self.views.append(org_app.PublicOrganizationListPage())
     self.views.append(org_home.OrgHomePage())
+    self.views.append(profile.ProfileAdminPage())
     self.views.append(profile.ProfileEditPage())
     self.views.append(profile.ProfileRegisterAsOrgMemberPage())
     self.views.append(profile.ProfileRegisterAsStudentPage())
     self.views.append(profile.ProfileShowPage())
-    self.views.append(profile.ProfileAdminPage())
     self.views.append(project_manage.ManageProjectProgramAdminView())
 
   def registerWithSitemap(self):

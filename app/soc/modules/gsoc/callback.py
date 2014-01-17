@@ -15,8 +15,8 @@
 """Module containing the GSoC Callback."""
 
 from soc.modules.gsoc.models import program as program_model
-from soc.modules.gsoc.tasks import grading_survey_group as grading_survey_group_tasks
 from soc.modules.gsoc.tasks import accept_proposals as accept_proposals_tasks
+from soc.modules.gsoc.tasks import grading_survey_group as grading_survey_group_tasks
 from soc.modules.gsoc.tasks import proposal_duplicates as proposal_duplicates_tasks
 from soc.modules.gsoc.tasks import survey_reminders as survey_reminders_tasks
 from soc.modules.gsoc.views import accept_proposals
@@ -73,8 +73,8 @@ class Callback(object):
     self.views.append(admin.StudentsListPage())
     self.views.append(admin.SurveyReminderPage())
     self.views.append(dashboard.DashboardPage())
-    self.views.append(document.DocumentPage())
     self.views.append(document.DocumentListPage())
+    self.views.append(document.DocumentPage())
     self.views.append(document.EditDocumentPage())
     self.views.append(document.EventsPage())
     self.views.append(duplicates.DuplicatesPage())
@@ -92,15 +92,15 @@ class Callback(object):
     self.views.append(org_app.GSoCOrgAppRecordsList())
     self.views.append(org_app.GSoCOrgAppShowPage())
     self.views.append(org_app.GSoCOrgAppTakePage())
-    self.views.append(org_home.OrgHome())
     self.views.append(org_home.GSoCBanOrgPost())
+    self.views.append(org_home.OrgHome())
     self.views.append(participants.MentorsListAdminPage())
     self.views.append(profile.GSoCProfilePage())
+    self.views.append(program.DownloadSchoolsHandler())
     self.views.append(program.GSoCCreateProgramPage())
     self.views.append(program.GSoCEditProgramPage())
     self.views.append(program.GSoCProgramMessagesPage())
     self.views.append(program.TimelinePage())
-    self.views.append(program.DownloadSchoolsHandler())
     self.views.append(program.UploadSchoolsPage())
     self.views.append(project_details.AssignMentors())
     self.views.append(project_details.CodeSampleDeleteFilePost())
@@ -111,6 +111,7 @@ class Callback(object):
     self.views.append(project_details.ProjectDetailsUpdate())
     self.views.append(projects_list.ListProjects())
     self.views.append(proposal.ProposalPage())
+    self.views.append(proposal.UpdateProposal())
     self.views.append(proposal_review.AcceptProposal())
     self.views.append(proposal_review.AssignMentor())
     self.views.append(proposal_review.IgnoreProposal())
@@ -118,15 +119,14 @@ class Callback(object):
     self.views.append(proposal_review.PostScore())
     self.views.append(proposal_review.ProposalModificationPostDeadline())
     self.views.append(proposal_review.ProposalPubliclyVisible())
+    self.views.append(proposal_review.ProposalStatusSetter())
     self.views.append(proposal_review.ReviewProposal())
     self.views.append(proposal_review.WishToMentor())
-    self.views.append(proposal_review.ProposalStatusSetter())
-    self.views.append(proposal.UpdateProposal())
     self.views.append(search.SearchGsocPage())
     self.views.append(slot_allocation.SlotsPage())
-    self.views.append(slot_transfer_admin.SlotsTransferAdminPage())
     self.views.append(slot_transfer.SlotTransferPage())
     self.views.append(slot_transfer.UpdateSlotTransferPage())
+    self.views.append(slot_transfer_admin.SlotsTransferAdminPage())
     self.views.append(student_evaluation.GSoCStudentEvaluationEditPage())
     self.views.append(student_evaluation.GSoCStudentEvaluationPreviewPage())
     self.views.append(student_evaluation.GSoCStudentEvaluationRecordsList())
@@ -136,8 +136,8 @@ class Callback(object):
     self.views.append(student_forms.FormPage())
 
     # Appengine Task related views
-    self.views.append(grading_survey_group_tasks.GradingRecordTasks())
     self.views.append(accept_proposals_tasks.ProposalAcceptanceTask())
+    self.views.append(grading_survey_group_tasks.GradingRecordTasks())
     self.views.append(proposal_duplicates_tasks.ProposalDuplicatesTask())
     self.views.append(survey_reminders_tasks.SurveyReminderTask())
 
