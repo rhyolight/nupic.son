@@ -64,5 +64,10 @@ def seedProposal(
   proposal = proposal_model.GSoCProposal(**properties)
   proposal.put()
 
+  if proposal.status != proposal_model.STATUS_WITHDRAWN:
+    student = student_key.get()
+    student.student_data.number_of_proposals += 1
+    student.put()
+
   return proposal
 
