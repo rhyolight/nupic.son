@@ -145,7 +145,7 @@ class FunctionalTestCase(unittest.TestCase):
     """Toggle a check box.
 
     Args:
-      chk_box: particular check box which will be selected/not selected.
+      chk_box: id of the check box to toggle.
     """
     web_element=self.obj_id[chk_box]
     if web_element.startswith("//"):
