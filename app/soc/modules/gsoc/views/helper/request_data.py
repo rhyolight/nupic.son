@@ -29,10 +29,8 @@ from melange.models import organization as melange_org_model
 from melange.request import exception
 from melange.utils import time
 
-from soc.views.helper.access_checker import isSet
 from soc.views.helper import request_data
 
-from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models import proposal as proposal_model

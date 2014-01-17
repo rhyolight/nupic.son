@@ -14,8 +14,6 @@
 
 """GSoC logic for profiles."""
 
-from google.appengine.ext import ndb
-
 from melange.appengine import db as melange_db
 from melange.logic import profile as profile_logic
 from melange.models import profile as profile_model

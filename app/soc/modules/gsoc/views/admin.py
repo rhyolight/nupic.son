@@ -28,7 +28,6 @@ from melange.request import access
 from melange.request import exception
 
 from soc.logic import cleaning
-from soc.models.user import User
 from soc.views.dashboard import Dashboard
 from soc.views.helper import addresses
 from soc.views.helper import lists

@@ -17,7 +17,8 @@
 from google.appengine.ext import db
 
 from soc.logic import mail_dispatcher
-from soc.logic.helper import notifications
+# TODO(daniel): Uncomment this line when fixing seed_status below.
+# from soc.logic.helper import notifications
 from soc.models import org_app_survey
 from soc.models import org_app_record as org_app_record_model
 
@@ -55,7 +56,8 @@ def setStatus(data, record, new_status, accept_url):
 
   context = None
 
-  # TODO(daniel): update this function below to work with new org apps and users
+  # TODO(daniel): update this function below to work with new org apps
+  # and users. (Uncomment import line above).
   #if new_status in ['accepted', 'rejected']:
   #  context = notifications.orgAppContext(
   #      data, record, new_status, accept_url)

@@ -21,7 +21,6 @@ from melange.request import links
 
 from soc.views import profile_show
 from soc.views.helper import url_patterns
-from soc.views.helper.access_checker import isSet
 
 from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.project import GSoCProject
