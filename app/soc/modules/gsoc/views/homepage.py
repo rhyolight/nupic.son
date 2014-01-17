@@ -115,10 +115,14 @@ class Apply(Template):
     context['student_signup'] = self.data.timeline.studentSignup()
     context['mentor_signup'] = self.data.timeline.mentorSignup()
 
+    is_active_student = (self.data.ndb_profile and
+        self.data.ndb_profile.student_data)
+ 
     signup_active = (
         self.data.timeline.orgSignup() or
         self.data.timeline.studentSignup() or
-        (self.data.timeline.mentorSignup() and not self.data.student_info)
+        (self.data.timeline.mentorSignup() and not
+            is_active_student)
     )
 
     # signup block
@@ -162,7 +166,7 @@ class Apply(Template):
       context['apply_link'] = accepted_orgs
 
     if self.data.ndb_profile:
-      if self.data.student_info:
+      if self.data.ndb_profile.student_data:
         context['profile_role'] = 'student'
       else:
         context['profile_role'] = 'mentor'
