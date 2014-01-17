@@ -30,11 +30,11 @@ from soc.logic import dicts
 from soc.models.org_app_record import OrgAppRecord
 from soc.views.helper import access_checker
 
-from soc.modules.gci.models.profile import GCIProfile
-from soc.modules.gci.models.task import GCITask
-from soc.modules.gci.models.task import UNPUBLISHED
-from soc.modules.gci.models import conversation as gciconversation_model
 from soc.modules.gci.logic import conversation as gciconversation_logic
+from soc.modules.gci.logic import task as task_logic
+from soc.modules.gci.models import conversation as gciconversation_model
+from soc.modules.gci.models import profile as profile_model
+from soc.modules.gci.models import task as task_model
 from soc.modules.gci.views.helper import url_names
 
 
@@ -111,14 +111,14 @@ class Mutator(access_checker.Mutator):
       work_submissions: If true the work submissions on this task are added to
                         RequestData
     """
-    id = long(self.data.kwargs['id'])
-    task = GCITask.get_by_id(id)
+    task_id = long(self.data.kwargs['id'])
+    task = task_model.GCITask.get_by_id(task_id)
 
     if not task or (task.program.key() != self.data.program.key()) or \
         task.status == 'invalid':
       error_msg = access_checker.DEF_ID_BASED_ENTITY_NOT_EXISTS % {
           'model': 'GCITask',
-          'id': id,
+          'id': task_id,
           }
       raise exception.NotFound(message=error_msg)
 
@@ -131,13 +131,11 @@ class Mutator(access_checker.Mutator):
       self.data.work_submissions = task.workSubmissions()
 
   def taskFromKwargsIfId(self):
-    """Sets the GCITask entity in RequestData object if ID exists or None.
-    """
-    if not 'id' in self.data.kwargs:
+    """Sets the GCITask entity in RequestData object if ID exists or None."""
+    if 'id' in self.data.kwargs:
+      self.taskFromKwargs()
+    else:
       self.data.task = None
-      return
-
-    self.taskFromKwargs()
 
   def conversationFromKwargs(self):
     """Sets the GCIConversation entity in the RequestData object.
@@ -146,14 +144,14 @@ class Mutator(access_checker.Mutator):
       messages: If true, the messages for this conversation are added to
                 RequestData
     """
-    id = long(self.data.kwargs['id'])
-    conversation = gciconversation_model.GCIConversation.get_by_id(id)
+    task_id = long(self.data.kwargs['id'])
+    conversation = gciconversation_model.GCIConversation.get_by_id(task_id)
 
     if (not conversation or
         ndb.Key.to_old_key(conversation.program) != self.data.program.key()):
       error_msg = access_checker.DEF_ID_BASED_ENTITY_NOT_EXISTS % {
           'model': 'GCIConversation',
-          'id': id
+          'id': task_id
           }
       raise exception.NotFound(message=error_msg)
 
@@ -176,14 +174,12 @@ class Mutator(access_checker.Mutator):
           message="There is no org_app for the org_id %s" % org_id)
 
   def fullEdit(self, full_edit=False):
-    """Sets full_edit to True/False depending on the status of the task.
-    """
+    """Sets full_edit to True/False depending on the status of the task."""
     self.data.full_edit = full_edit
 
 
 class AccessChecker(access_checker.AccessChecker):
-  """Access checker for GCI specific methods.
-  """
+  """Access checker for GCI specific methods."""
 
   def isTaskVisible(self):
     """Checks if the task is visible to the public.
@@ -210,7 +206,7 @@ class AccessChecker(access_checker.AccessChecker):
       raise exception.Forbidden(
           message=access_checker.DEF_PAGE_INACTIVE_BEFORE % period)
 
-    if not self.data.task.isPublished():
+    if not self.data.task.isAvailable():
       if can_edit:
         return False
       raise exception.Forbidden(message=access_checker.DEF_PAGE_INACTIVE)
@@ -240,8 +236,7 @@ class AccessChecker(access_checker.AccessChecker):
       raise exception.Forbidden(message=DEF_TASK_MAY_NOT_BE_IN_STATES % states)
 
   def canApplyStudent(self, edit_url):
-    """Checks if a user may apply as a student to the program.
-    """
+    """Checks if a user may apply as a student to the program."""
     if self.data.ndb_profile:
       if self.data.ndb_profile.is_student:
         raise exception.Redirect(edit_url)
@@ -268,6 +263,7 @@ class AccessChecker(access_checker.AccessChecker):
     This checks if the user has at least one non-student profile in previous
     programs.
     """
+    # TODO(nathaniel): GSoC reference in GCI code.
     from soc.modules.gsoc.models.profile import GSoCProfile
 
     if not self.data.user:
@@ -279,7 +275,7 @@ class AccessChecker(access_checker.AccessChecker):
     q.filter('user', self.data.user)
     gsoc_profile = q.get()
 
-    q = GCIProfile.all(keys_only=True)
+    q = profile_model.GCIProfile.all(keys_only=True)
     q.filter('is_mentor', True)
     q.filter('status', 'active')
     q.filter('user', self.data.user)
@@ -301,8 +297,7 @@ class AccessChecker(access_checker.AccessChecker):
     self.hasProfileOrRedirectToCreate('org_admin')
 
   def isOrgAppAccepted(self):
-    """Checks if the org app stored in request data is accepted.
-    """
+    """Checks if the org app stored in request data is accepted."""
     assert self.data.org_app_record
 
     if self.data.org_app_record.status != 'accepted':
@@ -357,13 +352,11 @@ class AccessChecker(access_checker.AccessChecker):
     raise exception.Forbidden(message=DEF_COMMENTING_NOT_ALLOWED)
 
   def canCreateTask(self):
-    """Checks whether the currently logged in user can edit the task.
-    """
+    """Checks whether the currently logged in user can edit the task."""
     return self.canCreateTaskWithRequiredRole('mentor')
 
   def canBulkCreateTask(self):
-    """Checks whether the currently logged in user can bulk create tasks.
-    """
+    """Checks whether the currently logged in user can bulk create tasks."""
     return self.canCreateTaskWithRequiredRole('org_admin')
 
   def canCreateTaskWithRequiredRole(self, required_role):
@@ -399,50 +392,30 @@ class AccessChecker(access_checker.AccessChecker):
     task = self.data.task
 
     valid_org_keys = [o.key() for o in self.data.mentor_for]
-    if task.org.key() not in valid_org_keys:
-      return False
-
-    return True
+    return task.org.key() in valid_org_keys
 
   def checkCanUserEditTask(self):
-    """Checks whether the currently logged in user can edit the task.
-    """
+    """Checks whether the currently logged in user can edit the task."""
     assert access_checker.isSet(self.data.task)
 
     if not self.canUserEditTask():
       raise exception.Forbidden(
           message=DEF_NO_TASK_EDIT_PRIV % (self.data.task.org.name))
 
-  def hasTaskEditableStatus(self):
-    """Returns True/False depending on whether the task is in one of the
-    editable states.
-    """
-    assert access_checker.isSet(self.data.task)
-
-    task = self.data.task
-
-    if task.status not in (UNPUBLISHED + ['Open']):
-      return False
-
-    return True
-
   def checkHasTaskEditableStatus(self):
     """Checks whether the task is in one of the editable states.
 
     We specifically do not allow editing of tasks which are already claimed.
     """
-    if not self.hasTaskEditableStatus():
+    if not task_logic.hasTaskEditableStatus(self.data.task):
       raise exception.Forbidden(message=DEF_TASK_UNEDITABLE_STATUS)
 
   def timelineAllowsTaskEditing(self):
     """Returns True/False depending on whether orgs can edit task depending
     on where in the program timeline we are currently in.
     """
-    if (time.isBefore(self.data.timeline.orgsAnnouncedOn()) \
-        or self.data.timeline.tasksClaimEnded()):
-      return False
-
-    return True
+    return not (time.isBefore(self.data.timeline.orgsAnnouncedOn()) or
+                self.data.timeline.tasksClaimEnded())
 
   def checkTimelineAllowsTaskEditing(self):
     """Checks if organizations can edit tasks at the current time in
@@ -452,8 +425,7 @@ class AccessChecker(access_checker.AccessChecker):
       raise exception.Forbidden(message=access_checker.DEF_PAGE_INACTIVE)
 
   def isUserInConversation(self):
-    """Checks if the user is part of a conversation.
-    """
+    """Checks if the user is part of a conversation."""
     assert access_checker.isSet(self.data.conversation)
     assert access_checker.isSet(self.data.user)
 
@@ -465,7 +437,7 @@ class AccessChecker(access_checker.AccessChecker):
 
 
 class DeveloperAccessChecker(access_checker.DeveloperAccessChecker):
-  """Developer access checker for GCI specific methods.
-  """
+  """Developer access checker for GCI specific methods."""
+
   def isTaskVisible(self):
     return True
