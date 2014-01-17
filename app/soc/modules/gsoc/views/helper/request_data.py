@@ -23,6 +23,7 @@ from google.appengine.ext import ndb
 from melange.logic import user as user_logic
 from melange.models import connection as connection_model
 from melange.models import organization as melange_org_model
+from melange.models import profile as ndb_profile
 # TODO(nathaniel): I'm not sure how I feel about the exception module
 # being important here, but that just goes hand-in-hand with my skepticism
 # about the RequestData object raising exceptions generally.
@@ -348,13 +349,12 @@ class RequestData(request_data.RequestData):
   @property
   def student_info(self):
     """Returns the student_info field."""
+    # TODO(dcrodman): This property should be changed to student_data.
     if not self._isSet(self._student_info):
       if not self.is_student:
         self._student_info = None
       else:
-        student_info_key = profile_model.GSoCProfile.student_info \
-            .get_value_for_datastore(self.profile)
-        self._student_info = db.get(student_info_key)
+        self._student_info = self.ndb_profile.student_data
     return self._student_info
 
   @property
