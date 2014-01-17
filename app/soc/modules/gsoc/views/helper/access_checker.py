@@ -441,7 +441,7 @@ class AccessChecker(access_checker.AccessChecker):
 
     # check if the proposal belongs to the current user
     expected_profile_key = self.data.url_proposal.parent_key()
-    if expected_profile_key != self.data.ndbprofile.key.to_old_key():
+    if expected_profile_key != self.data.ndb_profile.key.to_old_key():
       error_msg = access_checker.DEF_ENTITY_DOES_NOT_BELONG_TO_YOU % {
           'name': 'proposal'
           }

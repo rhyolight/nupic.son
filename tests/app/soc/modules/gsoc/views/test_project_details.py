@@ -41,8 +41,9 @@ def _createProjectForStudent(program, org, dev_test, student=None):
   if not student:
     student = profile_utils.seedGSoCStudent(program)
 
-  mentor = profile_utils.seedGSoCProfile(
-      program, mentor_for=[org.key.to_old_key()])
+  mentor = profile_utils.seedNDBProfile(
+      program.key(), mentor_for=[org.key])
+
 
   project_properties = {
       'parent': student.key(),
@@ -70,8 +71,8 @@ def _createProjectForMentor(program, org, dev_test, mentor=None):
     the newly created GSoCProject instance
   """
   if not mentor:
-    mentor = profile_utils.seedGSoCProfile(
-        program, mentor_for=[org.key.to_old_key()])
+    mentor = profile_utils.seedNDBProfile(
+        program.key(), mentor_for=[org.key])
 
   student = profile_utils.seedGSoCStudent(program)
 
@@ -103,8 +104,8 @@ class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
         response, 'modules/gsoc/project_details/base.html')
 
   def createProject(self):
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
     student = profile_utils.seedGSoCStudent(self.program)
 
     project_properties = {
@@ -137,8 +138,8 @@ class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
   def testFeaturedProjectButton(self):
     user = profile_utils.seedUser()
     profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     self.timeline_helper.studentsAnnounced()
 
@@ -184,8 +185,8 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
 
     user = profile_utils.seedUser()
     profile_utils.login(user)
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, user=user, mentor_for=[self.org.key.to_old_key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
 
     project = _createProjectForMentor(
         self.gsoc, self.org, self.dev_test, mentor=mentor)
@@ -200,8 +201,8 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
 
     user = profile_utils.seedUser()
     profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
@@ -216,8 +217,8 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
 
     user = profile_utils.seedUser()
     profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user=user, org_admin_for=[other_org.key.to_old_key()])
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
@@ -321,8 +322,8 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
   def testForProjectMentor(self):
     user = profile_utils.seedUser()
     profile_utils.login(user)
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, user=user, mentor_for=[self.org.key.to_old_key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
 
     project = _createProjectForMentor(
         self.gsoc, self.org, self.dev_test, mentor=mentor)
@@ -341,8 +342,8 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
   def testForOtherMentor(self):
     user = profile_utils.seedUser()
     profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user=user, mentor_for=[self.org.key.to_old_key()])
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
 
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
@@ -360,8 +361,8 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
   def testForProjectOrgAdmin(self):
     user = profile_utils.seedUser()
     profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
@@ -381,8 +382,8 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
 
     user = profile_utils.seedUser()
     profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user=user, org_admin_for=[self.org.key.to_old_key()])
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     project = _createProjectForMentor(self.gsoc, other_org, self.dev_test)
 

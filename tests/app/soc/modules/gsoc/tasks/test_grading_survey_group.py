@@ -47,8 +47,8 @@ class GradingSurveyGroupTest(
 
   def createMentor(self):
     """Creates a new mentor."""
-    self.mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    self.mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
   def createStudent(self):
     """Creates a Student with a project.
@@ -140,8 +140,8 @@ class GradingSurveyGroupTest(
 
   def testDoesNotCreateGradingRecordForWithdrawnProject(self):
     # list response with projects
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
     # create another project and mark it withdrawn
     student_profile_helper = profile_utils.GSoCProfileHelper(

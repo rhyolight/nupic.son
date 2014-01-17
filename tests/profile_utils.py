@@ -26,6 +26,7 @@ from datetime import timedelta
 
 from melange.models import address as address_model
 from melange.models import connection as connection_model
+from melange.models import contact as contact_model
 from melange.models import education as education_model
 from melange.models import profile as ndb_profile_model
 from melange.models import user as ndb_user_model
@@ -192,6 +193,9 @@ def seedNDBProfile(program_key, model=ndb_profile_model.Profile,
       street=TEST_STREET, city=TEST_CITY, province=TEST_PROVINCE,
       country=TEST_COUNTRY, postal_code=TEST_POSTAL_CODE)
 
+  contact = contact_model.Contact(
+      email='%s@example.com' % user.user_id)
+
   properties = {
       'program': ndb.Key.from_old_key(program_key),
       'status': ndb_profile_model.Status.ACTIVE,
@@ -204,6 +208,7 @@ def seedNDBProfile(program_key, model=ndb_profile_model.Profile,
       'tee_size': ndb_profile_model.TeeSize.M,
       'mentor_for': list(set(mentor_for + admin_for)),
       'admin_for': admin_for,
+      'contact': contact,
       }
   properties.update(**kwargs)
   profile = model(id='%s/%s' % (program_key.name(), user.key.id()),
@@ -349,27 +354,6 @@ def seedGCIProfile(program, user=None, **kwargs):
   """
   return seedProfile(
       program, model=gci_profile_model.GCIProfile, user=user, **kwargs)
-
-
-def seedGSoCProfile(program, user=None, **kwargs):
-  """Seeds a new profile for GSoC.
-
-  Args:
-    program: Program entity for which the profile is seeded.
-    user: User entity corresponding to the profile.
-
-  Returns:
-    A newly seeded GSoCProfile entity.
-  """
-  properties = {
-      'notify_new_proposals': False,
-      'notify_proposal_updates': False,
-      'notify_public_comments': False,
-      'notify_private_comments': False,
-      }
-  properties.update(**kwargs)
-  return seedProfile(
-      program, model=gsoc_profile_model.GSoCProfile, user=user, **properties)
 
 
 def seedStudent(program, model=profile_model.Profile,

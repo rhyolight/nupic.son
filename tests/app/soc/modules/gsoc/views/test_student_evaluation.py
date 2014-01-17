@@ -176,8 +176,8 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     link_id = LinkIDProvider(ProjectSurvey).getValue()
     suffix = "%s/%s" % (self.gsoc.key().name(), link_id)
 
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
     self.profile_helper.createStudentWithProject(self.org, mentor)
     # test review GET
@@ -582,8 +582,8 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
   def testShowEvalForStudentProjectWithAnotherMentor(self):
     url, evaluation, _ = self.getStudentEvalRecordProperties(show=True)
 
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
     self.profile_helper.createStudentWithProject(self.org, mentor)
     # test student evaluation show GET for a for a student who
@@ -600,8 +600,8 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     url, evaluation, _ = self.getStudentEvalRecordProperties(show=True)
     other_org = self.createOrg()
 
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[other_org.key.to_old_key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
     self.profile_helper.createStudentWithProject(other_org, mentor)
     # test student evaluation show GET for a for a student who
@@ -617,8 +617,8 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     """Test that a student can view their mentor evaluation."""
     evaluation = self.evaluation.createStudentEvaluation()
 
-    mentor = profile_utils.seedGSoCProfile(
-        self.program, mentor_for=[self.org.key.to_old_key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
     user = profile_utils.seedNDBUser()
     student = profile_utils.seedSOCStudent(self.program, user=user)

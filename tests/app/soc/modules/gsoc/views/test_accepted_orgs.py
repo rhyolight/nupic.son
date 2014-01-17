@@ -52,8 +52,8 @@ class AcceptedOrgsAdminPageTest(test_utils.GSoCDjangoTestCase):
   def testPageForbiddenForMentors(self):
     user = profile_utils.seedUser()
     profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user, mentor_for=[self.org.key.to_old_key()])
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
 
     response = self.get(self.url)
     self.assertResponseForbidden(response)
@@ -62,8 +62,8 @@ class AcceptedOrgsAdminPageTest(test_utils.GSoCDjangoTestCase):
   def testPageForbiddenForOrgAdmins(self):
     user = profile_utils.seedUser()
     profile_utils.login(user)
-    profile_utils.seedGSoCProfile(
-        self.program, user, org_admin_for=[self.org.key.to_old_key()])
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     response = self.get(self.url)
     self.assertResponseForbidden(response)

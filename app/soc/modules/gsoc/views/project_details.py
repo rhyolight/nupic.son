@@ -16,6 +16,7 @@
 
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import forms as django_forms
 from django import http
@@ -385,7 +386,7 @@ class UserActions(Template):
   def context(self):
     """See template.Template.context for specification."""
     featured_project_url = links.LINKER.userId(
-        self.data.url_profile.key(), self.data.url_project.key().id(),
+        self.data.url_ndb_profile.key, self.data.url_project.key().id(),
         'gsoc_featured_project')
 
     featured_project = ToggleButtonTemplate(
@@ -403,9 +404,10 @@ class UserActions(Template):
         }
 
     assign_mentor_url = links.LINKER.userId(
-        self.data.url_profile.key(), self.data.url_project.key().id(),
+        self.data.url_ndb_profile.key, self.data.url_project.key().id(),
         'gsoc_project_assign_mentors')
-    org_key = GSoCProject.org.get_value_for_datastore(self.data.url_project)
+    org_key = ndb.Key.from_old_key(
+        GSoCProject.org.get_value_for_datastore(self.data.url_project))
     all_mentors_keys = profile_logic.queryAllMentorsKeysForOrg(org_key)
     context['assign_mentor'] = assign_mentor.AssignMentorFields(
         self.data, self.data.url_project.mentors, assign_mentor_url,
@@ -491,6 +493,7 @@ class ProjectDetails(base.GSoCRequestHandler):
     org_key = GSoCProject.org.get_value_for_datastore(data.url_project)
     org_home_link = links.LINKER.organization(org_key, urls.UrlNames.ORG_HOME)
     context = {
+        'student_name': data.url_ndb_profile.public_name,
         'page_name': 'Project details',
         'project': data.url_project,
         'org_home_link': org_home_link,
