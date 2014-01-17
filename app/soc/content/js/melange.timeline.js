@@ -116,7 +116,8 @@
 
     this.R.clear();
 
-    this.draw(this.R, this.options.slices, year_to_print, this.options);
+    this.draw(this.R, this.options.slices, year_to_print, this.options,
+              this.slice_active);
   };
 
   /*
@@ -192,6 +193,9 @@
                                                        current_slice.to_in_ms,
                                                        this.options.now);
       current_slice.active = is_active_slice;
+      if (is_active_slice === true) {
+        this.slice_active = current_slice;
+      }
     }
   };
 
@@ -309,13 +313,14 @@
     return from_in_ms < now && to_in_ms > now;
   };
 
-  Timeline.prototype.draw = function (R, slices, year_to_print, options) {
+  Timeline.prototype.draw = function (R, slices, year_to_print, options,
+                                      slice_active) {
     // Add top lines
     R.path('M0 0.5L187 0.5').attr({stroke: options.color_blue});
     R.path('M0 1.5L187 1.5').attr({stroke: options.color_blue_light});
 
     for (var i in slices) {
-      this.draw_slice(R, slices[i], options);
+      this.draw_slice(R, slices[i], options, slice_active);
     }
 
     // Draw inner circle
@@ -347,7 +352,7 @@
     .attr({stroke: options.color_gray})
   };
 
-  Timeline.prototype.draw_slice = function (R, slice, options) {
+  Timeline.prototype.draw_slice = function (R, slice, options, slice_active) {
     var that = this;
 
     // Create wires
@@ -390,10 +395,10 @@
         slice._wires.attr({opacity: 1});
         slice._arc.attr({opacity: 1});
 
-        if (slice != that.slice_active) {
-          that.slice_active._piece.attr({opacity: options.slice_faded_opacity});
-          that.slice_active._wires.attr({opacity: 0});
-          that.slice_active._arc.attr({opacity: options.slice_faded_opacity});
+        if (slice != slice_active) {
+          slice_active._piece.attr({opacity: options.slice_faded_opacity});
+          slice_active._wires.attr({opacity: 0});
+          slice_active._arc.attr({opacity: options.slice_faded_opacity});
         }
       }).mouseout(function () {
         // change opacity
@@ -404,13 +409,12 @@
         slice._wires.attr({opacity: 0});
         slice._arc.attr({opacity: options.slice_faded_opacity});
 
-        that.slice_active._piece.attr({opacity: 1});
-        that.slice_active._wires.attr({opacity: 1});
-        that.slice_active._arc.attr({opacity: 1});
+        slice_active._piece.attr({opacity: 1});
+        slice_active._wires.attr({opacity: 1});
+        slice_active._arc.attr({opacity: 1});
       });
 
     if (slice.active === true) {
-      this.slice_active = slice;
       slice._piece.attr({opacity: 1});
       slice._wires.attr({opacity: 1});
       slice._arc.attr({opacity: 1});
