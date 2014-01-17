@@ -126,7 +126,9 @@ class ProposalPage(base.GSoCRequestHandler):
       student_info.number_of_proposals += 1
       student_info.put()
 
-      proposal = GSoCProposal(parent=data.profile, **proposal_properties)
+      proposal = GSoCProposal(
+          parent=data.ndb_profile.key.to_old_key(),
+          **proposal_properties)
       proposal.put()
 
       context = notifications.newProposalContext(data, proposal, to_emails)

@@ -96,3 +96,19 @@ def addFilterToQuery(query, prop, values):
     query.filter(prop.name, values[0])
   else:
     query.filter('%s IN' % prop.name, values)
+
+
+def addFilterToNDBQuery(query, prop, values):
+  """Extends the specified query by adding a filter on the specified property
+  with the specified value.
+
+  Args:
+    query: query object to extend.
+    prop: property of the query model on which to add a filter.
+    values: sequence of values to compare with the property value.
+  """
+  if len(values) == 1:
+    return query.filter(prop == values[0])
+  else:
+    return query.filter(prop.IN(values))
+

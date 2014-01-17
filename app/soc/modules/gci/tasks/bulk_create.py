@@ -39,6 +39,7 @@ from soc.modules.gci.logic.organization import getRemainingTaskQuota
 from soc.modules.gci.logic.helper import notifications
 from soc.modules.gci.models.bulk_create_data import GCIBulkCreateData
 from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.task import DifficultyLevel
 from soc.modules.gci.models.task import GCITask
 
@@ -137,7 +138,7 @@ class BulkCreateTask(object):
 
         # TODO(daniel): access program in more efficient way
         task['program'] = org_admin.program
-        task['status'] = 'Unpublished'
+        task['status'] = task_model.UNPUBLISHED
         task['created_by'] = org_admin
         task['modified_by'] = org_admin
         # TODO(ljv): Remove difficulty level completely if needed.

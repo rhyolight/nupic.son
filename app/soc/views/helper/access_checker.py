@@ -511,7 +511,7 @@ class AccessChecker(BaseAccessChecker):
     if org_key in self.data.ndb_profile.admin_for:
       return
 
-    raise exception.Forbidden(message=DEF_NOT_ADMIN % org_key.name())
+    raise exception.Forbidden(message=DEF_NOT_ADMIN % org_key.id())
 
   def isMentorForOrganization(self, org_key):
     """Checks if the user is a mentor for the specified organiztaion.
@@ -521,8 +521,6 @@ class AccessChecker(BaseAccessChecker):
     if self.data.mentorFor(org_key):
       return
 
-    if isinstance(org_key, ndb.Key):
-      org_key = org_key.to_old_key()
     raise exception.Forbidden(message=DEF_NOT_MENTOR % org_key.name())
 
   def isOrganizationInURLActive(self):
@@ -635,22 +633,20 @@ class AccessChecker(BaseAccessChecker):
   def canAccessProposalEntity(self):
     """Checks if the current user is allowed to access a Proposal entity.
     """
-    assert isSet(self.data.url_user)
-
     # if the proposal is public, everyone may access it
     if self.data.url_proposal.is_publicly_visible:
       return
 
-    if not self.data.user:
+    if not self.data.ndb_user:
       raise exception.Forbidden(message=DEF_PROPOSAL_NOT_PUBLIC)
 
     self.isProfileActive()
     # if the current user is the proposer, he or she may access it
-    if self.data.user.key() == self.data.url_user.key():
+    if self.data.ndb_user.key == self.data.url_ndb_user.key:
       return
 
     # all the mentors and org admins from the organization may access it
-    org_key = (
+    org_key = ndb.Key.from_old_key(
         proposal_model.GSoCProposal.org
             .get_value_for_datastore(self.data.url_proposal))
     if self.data.mentorFor(org_key):
@@ -682,7 +678,7 @@ class AccessChecker(BaseAccessChecker):
     self.isProgramVisible()
     self.isProfileActive()
 
-    if self.data.url_profile.key() != self.data.profile.key:
+    if self.data.url_ndb_profile.key != self.data.ndb_profile.key:
       raise exception.Forbidden(message=DEF_NOT_PROPOSER)
 
   def isSlotTransferActive(self):

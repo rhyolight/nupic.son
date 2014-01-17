@@ -192,9 +192,9 @@ def hasMentorProjectAssigned(profile, org_key=None):
     True, if the profile has at least one project assigned; False otherwise.
   """
   query = project_model.GSoCProject.all()
-  query.filter('mentors', profile)
+  query.filter('mentors', profile.key.to_old_key())
 
   if org_key:
-    query.filter('org', org_key)
+    query.filter('org', org_key.to_old_key())
 
   return query.count() > 0

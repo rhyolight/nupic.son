@@ -243,20 +243,20 @@ class RequestData(request_data.RequestData):
   def is_mentor(self):
     """Returns the is_mentor field."""
     if not self._isSet(self._is_mentor):
-      if not self.profile:
+      if not self.ndb_profile:
         self._is_mentor = False
       else:
-        self._is_mentor = bool(self.profile.mentor_for) or self.is_org_admin
+        self._is_mentor = self.ndb_profile.is_mentor or self.is_org_admin
     return self._is_mentor
 
   @property
   def is_org_admin(self):
     """Returns the is_org_admin field."""
     if not self._isSet(self._is_org_admin):
-      if not self.profile:
+      if not self.ndb_profile:
         self._is_org_admin = False
       else:
-        self._is_org_admin = (bool(self.profile.org_admin_for) or
+        self._is_org_admin = (self.ndb_profile.is_admin or
             user_logic.isHostForProgram(self.ndb_user, self.program.key()))
     return self._is_org_admin
 
@@ -264,11 +264,10 @@ class RequestData(request_data.RequestData):
   def is_student(self):
     """Returns the is_student field."""
     if not self._isSet(self._is_student):
-      if not self.profile:
+      if not self.ndb_profile:
         self._is_student = False
       else:
-        self._is_student = bool(profile_model.GSoCProfile.student_info \
-            .get_value_for_datastore(self.profile))
+        self._is_student = self.ndb_profile.is_student
     return self._is_student
 
   @property
@@ -310,11 +309,10 @@ class RequestData(request_data.RequestData):
   def org_admin_for(self):
     """Returns the org_admin_for field."""
     if not self._isSet(self._org_admin_for):
-      if self.profile:
+      if self.ndb_profile:
         self._initOrgMap()
         self._org_admin_for = [
-            self._org_map[i] for i in
-            map(ndb.Key.from_old_key, self.profile.org_admin_for)]
+            self._org_map[i] for i in self.profile.org_admin_for]
       else:
         self._org_admin_for = []
     return self._org_admin_for
@@ -429,10 +427,9 @@ class RequestData(request_data.RequestData):
     the current user is either a mentor or org admin.
     """
     if not self._isSet(self._org_map):
-      if self.profile:
-        org_keys = set()
-        org_keys.update(map(ndb.Key.from_old_key, self.profile.mentor_for))
-        org_keys.update(map(ndb.Key.from_old_key, self.profile.org_admin_for))
+      if self.ndb_profile:
+        org_keys = set(self.ndb_profile.mentor_for)
+        org_keys.update(self.ndb_profile.admin_for)
 
         orgs = ndb.get_multi(org_keys)
 
@@ -459,14 +456,10 @@ class RequestData(request_data.RequestData):
     if user_logic.isHostForProgram(self.ndb_user, self.program.key()):
       return True
 
-    if not self.profile:
+    if not self.ndb_profile:
       return False
 
-    # TODO(daniel): remove when all models are converted to NDB
-    if isinstance(org_key, ndb.Key):
-      org_key = org_key.to_old_key()
-
-    return org_key in self.profile.org_admin_for
+    return org_key in self.ndb_profile.admin_for
 
   def mentorFor(self, org_key):
     """Returns true iff the user is mentor for the specified organization.
@@ -477,23 +470,17 @@ class RequestData(request_data.RequestData):
     if user_logic.isHostForProgram(self.ndb_user, self.program.key()):
       return True
 
-    if not self.profile:
+    if not self.ndb_profile:
       return False
 
-    # TODO(daniel): remove when all models are converted to NDB
-    if isinstance(org_key, ndb.Key):
-      org_key = org_key.to_old_key()
-
-    return org_key in self.profile.mentor_for
+    return org_key in self.ndb_profile.mentor_for
 
   def isPossibleMentorForProposal(self, mentor_profile=None):
     """Checks if the user is a possible mentor for the proposal in the data.
     """
-    assert isSet(self.profile)
+    profile = mentor_profile if mentor_profile else self.ndb_profile
 
-    profile = mentor_profile if mentor_profile else self.profile
-
-    return profile.key() in self.url_proposal.possible_mentors
+    return profile.key.to_old_key() in self.url_proposal.possible_mentors
 
 
 class RedirectHelper(request_data.RedirectHelper):

@@ -243,6 +243,7 @@ class RequestData(object):
     self._url_ndb_profile = self._unset
     self._url_student_info = self._unset
     self._url_user = self._unset
+    self._url_ndb_user = self._unset
     self._document = self._unset
 
     # explicitly copy POST and GET dictionaries so they can be modified
@@ -621,6 +622,33 @@ class RequestData(object):
       if not self._url_user:
         raise exception.NotFound(message='Requested user does not exist.')
     return self._url_user
+
+  @property
+  def url_ndb_user(self):
+    """Returns url_user property.
+
+    This property represents user entity for a person whose identifier
+    is a part of the URL of the processed request.
+
+    Returns:
+      Retrieved user entity.
+
+    Raises:
+      exception.BadRequest: if the current request does not contain
+        any user data.
+      exception.NotFound: if the user is not found.
+    """
+    if not self._isSet(self._url_ndb_user):
+      key_id = self.kwargs.get('user')
+      if not key_id:
+        raise exception.BadRequest(
+            message='The request does not contain user data.')
+
+      self._url_ndb_user = self.models.user_model.get_by_id(key_id)
+
+      if not self._url_ndb_user:
+        raise exception.NotFound(message='Requested user does not exist.')
+    return self._url_ndb_user
 
   # TODO(daniel): rename it to url_document
   @property

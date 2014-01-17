@@ -18,11 +18,10 @@ from google.appengine.ext import ndb
 
 from melange.appengine import db as melange_db
 from melange.logic import profile as profile_logic
+from melange.models import profile as profile_model
 
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
-
-from soc.modules.gsoc.models import profile as profile_model
 
 from summerofcode import types
 
@@ -37,11 +36,10 @@ def queryAllMentorsKeysForOrg(org_key, limit=1000):
   returns:
     List of db.Key of all the mentors for the organization.
   """
-
   # get all mentors keys first
-  query = profile_model.GSoCProfile.all(keys_only=True)
-  query.filter('mentor_for', org_key)
-  return query.fetch(limit=limit)
+  query = profile_model.Profile.query(
+      profile_model.Profile.mentor_for == org_key)
+  return query.fetch(limit=limit, keys_only=True)
 
 
 def queryProfilesForUser(user):
@@ -55,7 +53,7 @@ def queryProfilesForUser(user):
   if not user:
     raise ValueError('User cannot be set to None')
 
-  return profile_model.GSoCProfile.all().ancestor(user)
+  return profile_model.Profile.query(ancestor=user.key)
 
 
 def _handleExtraAttrs(query, extra_attrs):
@@ -71,7 +69,8 @@ def _handleExtraAttrs(query, extra_attrs):
   """
   if extra_attrs:
     for prop, value in extra_attrs.iteritems():
-      melange_db.addFilterToQuery(query, prop, value)
+      query = melange_db.addFilterToNDBQuery(query, prop, value)
+  return query
 
 
 def canBecomeMentor(profile):
@@ -85,7 +84,8 @@ def canBecomeMentor(profile):
   """
   # TODO(daniel): take into account and simplify somehow checking if
   # the profile has signed mentor agreement
-  return profile.status == 'active' and not profile.is_student
+  return (profile.status == profile_model.Status.ACTIVE
+      and not profile.is_student)
 
 
 def becomeMentorForOrg(profile, org_key):
@@ -101,7 +101,6 @@ def becomeMentorForOrg(profile, org_key):
   # the operation is idempotent: adding a mentor more than once has no effect
   if org_key not in profile.mentor_for:
     profile.mentor_for.append(org_key)
-    profile.is_mentor = True
     profile.put()
 
 
@@ -117,7 +116,8 @@ def canBecomeOrgAdmin(profile):
   """
   # TODO(daniel): take into account and simplify somehow checking if
   # the profile has signed mentor agreement
-  return profile.status == 'active' and not profile.is_student
+  return (profile.status == profile_model.Status.ACTIVE
+      and not profile.is_student)
 
 
 def becomeOrgAdminForOrg(profile, org_key):
@@ -132,12 +132,10 @@ def becomeOrgAdminForOrg(profile, org_key):
     return
 
   # the operation is idempotent: adding more than once has no effect
-  if org_key not in profile.org_admin_for:
-    profile.org_admin_for.append(org_key)
-    profile.is_org_admin = True
+  if org_key not in profile.admin_for:
+    profile.admin_for.append(org_key)
     profile.mentor_for.append(org_key)
     profile.mentor_for = list(set(profile.mentor_for))
-    profile.is_mentor = True
     profile.put()
 
 
@@ -169,9 +167,9 @@ def canResignAsMentorForOrg(profile, org_key):
 
   if org_key not in profile.mentor_for:
     raise ValueError(
-        'The specified profile is not a mentor for %s' % org_key.name())
+        'The specified profile is not a mentor for %s' % org_key.id())
 
-  if org_key in profile.org_admin_for:
+  if org_key in profile.admin_for:
     return False
 
   if proposal_logic.hasMentorProposalAssigned(profile, org_key=org_key):
@@ -204,8 +202,6 @@ def resignAsMentorForOrg(profile, org_key):
   if canResignAsMentorForOrg(profile, org_key):
     profile.mentor_for = [
         key for key in profile.mentor_for if key != org_key]
-    if not profile.mentor_for:
-      profile.is_mentor = False
     profile.put()
 
 
@@ -241,14 +237,12 @@ def resignAsOrgAdminForOrg(profile, org_key):
     profile: profile entity
     org_key: organization key
   """
-  if org_key not in profile.org_admin_for:
+  if org_key not in profile.admin_for:
     return
 
   if canResignAsOrgAdminForOrg(profile, org_key):
-    profile.org_admin_for = [
-        key for key in profile.org_admin_for if key != org_key]
-    if not profile.org_admin_for:
-      profile.is_org_admin = False
+    profile.admin_for = [
+        key for key in profile.admin_for if key != org_key]
     profile.put()
 
 
@@ -271,15 +265,12 @@ def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
   Returns:
     list of profiles entities or keys of organization administrators
   """
-  if isinstance(org_key, ndb.Key):
-    org_key = org_key.to_old_key()
-
   return profile_logic.getOrgAdmins(
       org_key, keys_only=keys_only, extra_attrs=extra_attrs,
       models=types.SOC_MODELS)
 
 
-def countOrgAdmins(organization):
+def countOrgAdmins(org_key):
   """Returns the number of organization administrators for the specified
   organization.
 
@@ -287,15 +278,14 @@ def countOrgAdmins(organization):
   be safely used within transactions.
 
   Args:
-    organization: organization entity or key
+    org_key: Organization key.
 
   Returns:
     number of organization administrators
   """
-  query = profile_model.GSoCProfile.all()
-  query.filter('org_admin_for', organization)
-  query.filter('status', 'active')
-  return query.count()
+  return profile_model.Profile.query(
+      profile_model.Profile.admin_for == org_key,
+      profile_model.Profile.status == profile_model.Status.ACTIVE).count()
 
 
 def getMentors(org_key, keys_only=False, extra_attrs=None):
@@ -317,28 +307,25 @@ def getMentors(org_key, keys_only=False, extra_attrs=None):
   Returns:
     list of profiles entities or keys of mentors
   """
-  if isinstance(org_key, ndb.Key):
-    org_key = org_key.to_old_key()
+  query = profile_model.Profile.query(
+      profile_model.Profile.status == profile_model.Status.ACTIVE,
+      profile_model.Profile.mentor_for == org_key)
 
-  query = profile_model.GSoCProfile.all(keys_only=keys_only)
-  query.filter('mentor_for', org_key)
-  query.filter('status', 'active')
+  query = _handleExtraAttrs(query, extra_attrs)
 
-  _handleExtraAttrs(query, extra_attrs)
-
-  return query.fetch(1000)
+  return query.fetch(1000, keys_only=keys_only)
 
 
-def allFormsSubmitted(student_info):
+def allFormsSubmitted(student_data):
   """Tells whether the specified student has submitted all required forms.
 
   Args:
-    student_info: student info entity.
+    student_data: Student data object.
 
   Returns:
     True if all forms has been submitted; False otherwise.
   """
-  return student_info.getTaxFormKey() and student_info.getEnrollmentFormKey()
+  return student_data.tax_form and student_data.enrollment_form
 
 
 def hasProject(student_info):

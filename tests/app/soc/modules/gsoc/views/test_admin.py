@@ -111,13 +111,12 @@ class LookupProfileTest(GSoCDjangoTestCase):
     self.assertTrue(response.context['error'])
 
     # valid post data submitted to lookup form
-    self.profile_helper.createProfile()
-    postdata.update({
-        'email': self.profile_helper.profile.email
-        })
+    profile = profile_utils.seedNDBProfile(self.program.key())
+    postdata = {'user_id': profile.profile_id}
     response = self.post(post_url, postdata)
+
     new_url = '/gsoc/profile/admin/%s/%s' % (
-        self.gsoc.key().name(),self.profile_helper.profile.link_id)
+        self.gsoc.key().name(), profile.profile_id)
     self.assertResponseRedirect(response, new_url)
 
     response = self.post(post_url, {})
@@ -128,7 +127,7 @@ class LookupProfileTest(GSoCDjangoTestCase):
     # submit valid data to lookup form
     response = self.post(post_url, postdata)
     new_url = '/gsoc/profile/admin/%s/%s' % (
-        self.gsoc.key().name(),self.profile_helper.profile.link_id)
+        self.gsoc.key().name(), profile.profile_id)
     self.assertResponseRedirect(response, new_url)
 
 

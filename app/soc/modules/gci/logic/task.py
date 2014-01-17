@@ -110,6 +110,16 @@ def _spawnUpdateTask(entity, transactional=False):
   new_task = taskqueue.Task(eta=entity.deadline, url=update_url)
   new_task.add('gci-update', transactional=transactional)
 
+
+def hasTaskEditableStatus(task):
+  """Reports whether or not a task is in one of the editable states.
+
+  Args:
+    task: Any task_model.GCITask.
+  """
+  return task.status in (task_model.UNPUBLISHED + task_model.OPEN)
+
+
 def isOwnerOfTask(task, profile):
   """Returns true if the given profile is owner/student of the task.
 

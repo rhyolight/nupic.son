@@ -18,12 +18,13 @@
 import httplib
 import mock
 
+from google.appengine.ext import ndb
+
 from django import http
 
 from melange.request import exception
 
 from soc.modules.gsoc.logic import proposal as proposal_logic
-from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.models.proposal import GSoCProposal
 from soc.modules.gsoc.views import proposal_review as proposal_review_view
@@ -32,6 +33,7 @@ from soc.modules.gsoc.views.helper import request_data
 from tests import profile_utils
 from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
+from tests.utils import proposal_utils
 
 
 class ProposalReviewTest(GSoCDjangoTestCase):
@@ -71,20 +73,22 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     return self.seed(GSoCProposal, properties)
 
   def testReviewProposal(self):
-    mentor = self.createMentorWithSettings('mentor@example.com',
-        {'notify_new_proposals' :True, 'notify_public_comments': True,
-         'notify_private_comments' :True})
-
-    self.profile_helper.createStudent()
-    self.profile_helper.notificationSettings()
     self.timeline_helper.studentSignup()
+    # TODO(daniel): Re-seed settings when they are added.
+    #  {'notify_new_proposals' :True, 'notify_public_comments': True,
+    #   'notify_private_comments' :True}
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
-    proposal = self.createProposal({'scope': self.profile_helper.profile,
-                                    'parent': self.profile_helper.profile})
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedSOCStudent(self.program, user=user)
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), org_key=self.org.key)
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        self.profile_helper.user.key().name(),
+        student.key.parent().id(),
         proposal.key().id())
 
     # test review GET
@@ -100,31 +104,37 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     # test comment POST
     from soc.modules.gsoc.models.comment import GSoCComment
     url = '/gsoc/proposal/comment/' + suffix
-    override = {'author': self.profile_helper.profile, 'is_private': False}
+    override = {'author': student.key.to_old_key(), 'is_private': False}
     response, properties = self.modelPost(url, GSoCComment, override)
     self.assertResponseRedirect(response)
 
     comment = GSoCComment.all().ancestor(proposal).get()
-    self.assertPropertiesEqual(properties, comment)
+    author_key = ndb.Key.from_old_key(
+        GSoCComment.author.get_value_for_datastore(comment))
+    self.assertEqual(author_key, student.key)
 
-    self.assertEmailSent(to=mentor.email)
+    # TODO(daniel): notifications
+    # self.assertEmailSent(to=mentor.email)
 
     # TODO(daniel): add assertEmailNotSent to DjangoTestCase
     # self.assertEmailNotSent(to=self.profile_helper.profile.email)
 
-    self.profile_helper.deleteProfile()
-    self.profile_helper.createMentor(self.org)
+    # login as a mentor
+    profile_utils.loginNDB(mentor.key.parent().get())
 
     # test score POST
     from soc.modules.gsoc.models.score import GSoCScore
     url = '/gsoc/proposal/score/' + suffix
     override = {
-        'author': self.profile_helper.profile, 'parent': proposal, 'value': 1}
+        'author': mentor.key.to_old_key(), 'parent': proposal, 'value': 1}
     response, properties = self.modelPost(url, GSoCScore, override)
     self.assertResponseOK(response)
 
     score = GSoCScore.all().ancestor(proposal).get()
-    self.assertPropertiesEqual(properties, score)
+    author_key = ndb.Key.from_old_key(
+        GSoCScore.author.get_value_for_datastore(score))
+    self.assertEqual(author_key, mentor.key)
+    self.assertEqual(1, score.value)
 
     proposal = GSoCProposal.all().get()
     self.assertEqual(1, proposal.score)
@@ -149,17 +159,13 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertEqual(0, proposal.nr_scores)
 
   def testReviewProposalPublicView(self):
-    student = profile_utils.seedGSoCStudent(self.program)
-
-    proposal = self.createProposal({
-        'is_publicly_visible': True,
-        'scope': student,
-        'parent': student
-        })
+    student = profile_utils.seedSOCStudent(self.program)
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), is_publicly_visible=True)
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        student.user.key().name(),
+        student.key.parent().id(),
         proposal.key().id())
 
     # test review GET
@@ -170,16 +176,19 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gsoc/proposal/review.html')
 
   def testIgnoreProposalButton(self):
-    student = profile_utils.seedGSoCStudent(self.program)
-
-    proposal = self.createProposal({'scope': student, 'parent': student})
+    student = profile_utils.seedSOCStudent(self.program)
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), org_key=self.org.key)
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        student.user.key().name(),
+        student.profile_id,
         proposal.key().id())
 
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
 
     url = '/gsoc/proposal/ignore/' + suffix
     postdata = {'value': 'unchecked'}
@@ -191,16 +200,19 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertNotEqual(proposal.status, 'ignored')
 
   def testAcceptProposalButton(self):
-    student = profile_utils.seedGSoCStudent(self.program)
-
-    proposal = self.createProposal({'scope': student, 'parent': student})
+    student = profile_utils.seedSOCStudent(self.program)
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), org_key=self.org.key)
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        student.user.key().name(),
+        student.key.parent().id(),
         proposal.key().id())
 
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
 
     url = '/gsoc/proposal/accept/' + suffix
     postdata = {'value': 'unchecked'}
@@ -214,7 +226,11 @@ class ProposalReviewTest(GSoCDjangoTestCase):
 
     # accept the proposal as project when the org admin tries to accept
     # the proposal
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
     response = self.post(url, postdata)
     self.assertResponseOK(response)
 
@@ -222,16 +238,19 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertTrue(proposal.accept_as_project)
 
   def testProposalModificationButton(self):
-    student = profile_utils.seedGSoCStudent(self.program)
-
-    proposal = self.createProposal({'scope': student, 'parent': student})
+    student = profile_utils.seedSOCStudent(self.program)
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), org_key=self.org.key)
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        student.user.key().name(),
+        student.key.parent().id(),
         proposal.key().id())
 
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
 
     url = '/gsoc/proposal/modification/' + suffix
     postdata = {'value': 'unchecked'}
@@ -243,54 +262,60 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertTrue(proposal.is_editable_post_deadline)
 
   def testWishToMentorButton(self):
-    student = profile_utils.seedGSoCStudent(self.program)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
 
-    self.profile_helper.createMentor(self.org)
+    student = profile_utils.seedSOCStudent(self.program)
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), org_key=self.org.key)
 
-    other_mentor = self.createMentorWithSettings('other_mentor@example.com')
-
-    proposal = self.createProposal({'scope': student, 'parent': student})
-
-    suffix = "%s/%s/%d" % (
-    self.gsoc.key().name(),
-    student.user.key().name(),
-    proposal.key().id())
-
-    url = '/gsoc/proposal/wish_to_mentor/' + suffix
-    postdata = {'value': 'unchecked'}
-    response = self.post(url, postdata)
-
-    proposal = GSoCProposal.get(proposal.key())
-    self.assertIn(self.profile_helper.profile.key(), proposal.possible_mentors)
-
-    postdata = {'value': 'checked'}
-    response = self.post(url, postdata)
-
-    proposal = GSoCProposal.get(proposal.key())
-    self.assertNotIn(
-        self.profile_helper.profile.key(), proposal.possible_mentors)
-
-    other_mentor.mentor_for = []
-    other_mentor.put()
-
-    proposal.possible_mentors.append(other_mentor.key())
-    proposal.put()
-
-    url = '/gsoc/proposal/review/' + suffix
-    response = self.get(url)
-
-    proposal = GSoCProposal.get(proposal.key())
-    self.assertNotIn(other_mentor.key(), proposal.possible_mentors)
-
-  def testPubliclyVisibleButton(self):
-    self.profile_helper.createStudent()
-
-    proposal = self.createProposal({'scope': self.profile_helper.profile,
-                                    'parent': self.profile_helper.profile})
+    other_mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        self.profile_helper.user.key().name(),
+        student.key.parent().id(),
+        proposal.key().id())
+
+    url = '/gsoc/proposal/wish_to_mentor/' + suffix
+    postdata = {'value': 'unchecked'}
+    self.post(url, postdata)
+
+    proposal = GSoCProposal.get(proposal.key())
+    self.assertIn(mentor.key.to_old_key(), proposal.possible_mentors)
+
+    postdata = {'value': 'checked'}
+    self.post(url, postdata)
+
+    proposal = GSoCProposal.get(proposal.key())
+    self.assertNotIn(mentor.key.to_old_key(), proposal.possible_mentors)
+
+    # TODO(daniel): this section (mentor retires) should go to another test
+    other_mentor.mentor_for = []
+    other_mentor.put()
+
+    proposal.possible_mentors.append(other_mentor.key.to_old_key())
+    proposal.put()
+
+    url = '/gsoc/proposal/review/' + suffix
+    self.get(url)
+
+    proposal = GSoCProposal.get(proposal.key())
+    self.assertNotIn(other_mentor.key.to_old_key(), proposal.possible_mentors)
+
+  def testPubliclyVisibleButton(self):
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+
+    student = profile_utils.seedSOCStudent(self.program, user=user)
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), org_key=self.org.key)
+
+    suffix = "%s/%s/%d" % (
+        self.gsoc.key().name(),
+        user.key.id(),
         proposal.key().id())
 
     url = '/gsoc/proposal/publicly_visible/' + suffix
@@ -303,16 +328,19 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertTrue(proposal.is_publicly_visible)
 
   def testWithdrawProposalButton(self):
-    self.profile_helper.createStudentWithProposal(self.org, None)
     self.timeline_helper.studentSignup()
 
-    proposal = GSoCProposal.all().ancestor(self.profile_helper.profile).get()
-    number_of_proposals = (
-        self.profile_helper.profile.student_info.number_of_proposals)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedSOCStudent(self.program, user=user)
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), org_key=self.org.key)
+
+    number_of_proposals = student.student_data.number_of_proposals
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        self.profile_helper.user.key().name(),
+        student.key.parent().id(),
         proposal.key().id())
 
     # withdraw the proposal
@@ -324,12 +352,12 @@ class ProposalReviewTest(GSoCDjangoTestCase):
 
     # check that the student proposal is withdrawn
     proposal = GSoCProposal.get(proposal.key())
-    self.assertEqual(proposal.status, 'withdrawn')
+    self.assertEqual(proposal.status, proposal_model.STATUS_WITHDRAWN)
 
     # check that number of proposals is updated
-    student_info = profile_model.GSoCStudentInfo.get(
-        self.profile_helper.profile.student_info.key())
-    self.assertEqual(number_of_proposals - 1, student_info.number_of_proposals)
+    student = student.key.get()
+    self.assertEqual(
+        number_of_proposals - 1, student.student_data.number_of_proposals)
 
     # try withdrawing the proposal once more time
     url = '/gsoc/proposal/status/' + suffix
@@ -340,12 +368,12 @@ class ProposalReviewTest(GSoCDjangoTestCase):
 
     # check that the student proposal is still withdrawn
     proposal = GSoCProposal.get(proposal.key())
-    self.assertEqual(proposal.status, 'withdrawn')
+    self.assertEqual(proposal.status, proposal_model.STATUS_WITHDRAWN)
 
     # check that number of proposals is still the same
-    student_info = profile_model.GSoCStudentInfo.get(
-        self.profile_helper.profile.student_info.key())
-    self.assertEqual(number_of_proposals - 1, student_info.number_of_proposals)
+    student = student.key.get()
+    self.assertEqual(
+        number_of_proposals - 1, student.student_data.number_of_proposals)
 
     # resubmit the proposal
     url = '/gsoc/proposal/status/' + suffix
@@ -356,33 +384,38 @@ class ProposalReviewTest(GSoCDjangoTestCase):
 
     # check that the student proposal is pending
     proposal = GSoCProposal.get(proposal.key())
-    self.assertEqual(proposal.status, 'pending')
+    self.assertEqual(proposal.status, proposal_model.STATUS_PENDING)
 
     # check that number of proposals is increased again
-    student_info = profile_model.GSoCStudentInfo.get(
-        self.profile_helper.profile.student_info.key())
-    self.assertEqual(number_of_proposals, student_info.number_of_proposals)
+    student = student.key.get()
+    self.assertEqual(
+        number_of_proposals, student.student_data.number_of_proposals)
 
   def testAssignMentor(self):
-    student = profile_utils.seedGSoCStudent(self.program)
-
-    proposal = self.createProposal({'scope': student, 'parent': student})
+    student = profile_utils.seedSOCStudent(self.program)
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), org_key=self.org.key, mentor=None)
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        student.user.key().name(),
+        student.profile_id,
         proposal.key().id())
 
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
 
     url = '/gsoc/proposal/assign_mentor/' + suffix
-    postdata = {'assign_mentor': self.profile_helper.profile.key()}
+    postdata = {'assign_mentor': mentor.key}
     response = self.post(url, postdata)
 
     self.assertResponseForbidden(response)
 
     proposal = GSoCProposal.all().get()
-    self.assertIsNone(proposal.mentor)
+
+    mentor_key = GSoCProposal.mentor.get_value_for_datastore(proposal)
+    self.assertIsNone(mentor_key)
 
 
 class WithdrawProposalHandlerTest(GSoCDjangoTestCase):
@@ -391,9 +424,12 @@ class WithdrawProposalHandlerTest(GSoCDjangoTestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.init()
-    self.profile = self.profile_helper.createStudentWithProposal(
-        self.org, None)
-    self.proposal = GSoCProposal.all().get()
+    user = profile_utils.seedNDBUser()
+    self.profile = profile_utils.seedSOCStudent(self.program, user=user)
+    profile_utils.loginNDB(user)
+
+    self.proposal = proposal_utils.seedProposal(
+        self.profile.key, self.program.key(), org_key=self.org.key)
 
     # view used as a callback for handler
     self.view = proposal_review_view.ProposalStatusSetter()
@@ -407,7 +443,7 @@ class WithdrawProposalHandlerTest(GSoCDjangoTestCase):
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
         'program': self.program.program_id,
-        'user': self.profile.link_id,
+        'user': self.profile.profile_id,
         'id': self.proposal.key().id()
         }
 
@@ -423,11 +459,11 @@ class WithdrawProposalHandlerTest(GSoCDjangoTestCase):
 
   def testWithdrawProposal(self):
     """Tests that a proposal is successfully withdrawn if possible."""
-    old_number_of_proposals = self.profile.student_info.number_of_proposals
+    old_number_of_proposals = self.profile.student_data.number_of_proposals
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
         'program': self.program.program_id,
-        'user': self.profile.link_id,
+        'user': self.profile.profile_id,
         'id': self.proposal.key().id()
         }
 
@@ -445,10 +481,9 @@ class WithdrawProposalHandlerTest(GSoCDjangoTestCase):
     self.assertEqual(proposal.status, proposal_model.STATUS_WITHDRAWN)
 
     # check that number of proposals is updated
-    student_info = profile_model.GSoCStudentInfo.all(
-        ).ancestor(self.profile).get()
+    profile = self.profile.key.get()
     self.assertEqual(
-        old_number_of_proposals, student_info.number_of_proposals + 1)
+        old_number_of_proposals, profile.student_data.number_of_proposals + 1)
 
 
 class ResubmitProposalHandlerTest(GSoCDjangoTestCase):
@@ -457,9 +492,12 @@ class ResubmitProposalHandlerTest(GSoCDjangoTestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.init()
-    self.profile = self.profile_helper.createStudentWithProposal(
-        self.org, None)
-    self.proposal = GSoCProposal.all().get()
+    user = profile_utils.seedNDBUser()
+    self.profile = profile_utils.seedSOCStudent(self.program, user=user)
+    profile_utils.loginNDB(user)
+
+    self.proposal = proposal_utils.seedProposal(
+        self.profile.key, self.program.key(), org_key=self.org.key)
 
   def testCannotResubmitProposal(self):
     """Tests that an error occurs when proposal cannot be withdrawn."""
@@ -470,7 +508,7 @@ class ResubmitProposalHandlerTest(GSoCDjangoTestCase):
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
         'program': self.program.program_id,
-        'user': self.profile.link_id,
+        'user': self.profile.profile_id,
         'id': self.proposal.key().id()
         }
 
@@ -486,11 +524,11 @@ class ResubmitProposalHandlerTest(GSoCDjangoTestCase):
 
   def testResubmitProposal(self):
     """Tests that a proposal is successfully resubmitted if possible."""
-    old_number_of_proposals = self.profile.student_info.number_of_proposals
+    old_number_of_proposals = self.profile.student_data.number_of_proposals
     self.kwargs = {
         'sponsor': self.sponsor.link_id,
         'program': self.program.program_id,
-        'user': self.profile.link_id,
+        'user': self.profile.profile_id,
         'id': self.proposal.key().id()
         }
 
@@ -508,7 +546,6 @@ class ResubmitProposalHandlerTest(GSoCDjangoTestCase):
     self.assertEqual(proposal.status, proposal_model.STATUS_PENDING)
 
     # check that number of proposals is updated
-    student_info = profile_model.GSoCStudentInfo.all(
-        ).ancestor(self.profile).get()
+    profile = self.profile.key.get()
     self.assertEqual(
-        old_number_of_proposals, student_info.number_of_proposals - 1)
+        old_number_of_proposals, profile.student_data.number_of_proposals - 1)

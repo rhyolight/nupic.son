@@ -16,7 +16,7 @@
 and Projects.
 """
 
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from soc.views import template
 
@@ -38,12 +38,11 @@ def getMentorsChoicesToAssign(mentors, current_mentor=None):
   # construct a choice list for all the mentors in possible mentors list
   mentors_choices = []
   for mentor in mentors:
-    mentor_key = mentor.key()
     choice = {
-        'key': mentor_key,
-        'name': mentor.name(),
+        'key': mentor.key,
+        'name': mentor.public_name,
         }
-    if current_mentor and mentor_key == current_mentor:
+    if current_mentor and mentor.key == current_mentor:
       choice['selected'] = True
 
     mentors_choices.append(choice)
@@ -84,7 +83,8 @@ class AssignMentorFields(template.Template):
     """
     mentor_context = {}
     if self.possible_mentors:
-      possible_mentors = db.get(self.possible_mentors)
+      possible_mentors = ndb.get_multi(
+          map(ndb.Key.from_old_key, self.possible_mentors))
       possible_mentor_choices = getMentorsChoicesToAssign(
           possible_mentors, current_mentor=current_mentor)
       mentor_context['possible_mentors'] = sorted(
@@ -93,7 +93,7 @@ class AssignMentorFields(template.Template):
     if self.all_mentors:
       if self.possible_mentors:
         self.all_mentors = set(self.all_mentors) - set(self.possible_mentors)
-      all_mentors = db.get(self.all_mentors)
+      all_mentors = ndb.get_multi(self.all_mentors)
       all_mentor_choices = getMentorsChoicesToAssign(
           all_mentors, current_mentor=current_mentor)
       mentor_context['all_mentors'] = sorted(

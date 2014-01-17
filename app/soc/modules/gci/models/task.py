@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""This module contains the GCI Task Model.
-"""
-
+"""This module contains the GCI Task Model."""
 
 from google.appengine.ext import db
 
@@ -27,6 +25,8 @@ import soc.models.profile
 import soc.modules.gci.models.organization
 import soc.modules.gci.models.program
 
+# state that the task is in when it is not yet available
+UNPUBLISHED = 'Unpublished'
 # state that the task is in when it is open
 OPEN = 'Open'
 # state that the task is in when it is claimed
@@ -41,7 +41,7 @@ CLOSED = 'Closed'
 # TODO(piyush.devel): Define constants for the rest of the statuses.
 
 # states in which a task does not show up publicly
-UNPUBLISHED = ['Unpublished', UNAPPROVED]
+UNAVAILABLE = [UNPUBLISHED, UNAPPROVED]
 # states in which a student can claim a task
 CLAIMABLE = [OPEN, REOPENED]
 # States in which we consider the task to count towards the task quota of
@@ -151,7 +151,7 @@ class GCITask(db.Model):
   #: Invalid: The Task is deleted either by an Org Admin/Mentor
   status = db.StringProperty(
       required=True, verbose_name=ugettext('Status'),
-      choices=[UNAPPROVED, 'Unpublished', OPEN, REOPENED,
+      choices=[UNAPPROVED, UNPUBLISHED, OPEN, REOPENED,
                'ClaimRequested', CLAIMED, 'ActionNeeded',
                CLOSED, 'NeedsWork', 'NeedsReview', 'Invalid'],
       default=UNAPPROVED)
@@ -225,14 +225,12 @@ class GCITask(db.Model):
 
     return "".join(result)
 
-  def isPublished(self):
-    """Returns True if the task is published.
-    """
-    return self.status not in UNPUBLISHED
+  def isAvailable(self):
+    """Returns True if the task is published."""
+    return self.status not in UNAVAILABLE
 
   def workSubmissions(self):
-    """Returns the GCIWorksubmissions that have the given task as parent.
-    """
+    """Returns the GCIWorksubmissions that have the given task as parent."""
     q = GCIWorkSubmission.all()
     q.ancestor(self)
     return q.fetch(1000)

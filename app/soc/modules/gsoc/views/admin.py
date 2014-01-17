@@ -15,7 +15,6 @@
 """Module for the admin pages."""
 
 from google.appengine.api import taskqueue
-from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
@@ -23,10 +22,11 @@ from django import forms as djangoforms
 from django import http
 from django.utils.translation import ugettext
 
+from melange.models import profile as profile_model
+from melange.models import user as user_model
 from melange.request import access
 from melange.request import exception
 
-from soc.logic import accounts
 from soc.logic import cleaning
 from soc.models.user import User
 from soc.views.dashboard import Dashboard
@@ -66,33 +66,31 @@ class LookupForm(gsoc_forms.GSoCModelForm):
     super(LookupForm, self).__init__(**kwargs)
     self.request_data = request_data
 
-  email = djangoforms.CharField(label='Email')
+  user_id = djangoforms.CharField(label='Username')
 
-  def clean_email(self):
-    email_cleaner = cleaning.clean_email('email')
+  def clean_user_id(self):
+    user_id_cleaner = cleaning.clean_link_id('user_id')
 
     try:
-      email_address = email_cleaner(self)
+      user_id = user_id_cleaner(self)
     except djangoforms.ValidationError as e:
       if e.code != 'invalid':
         raise
-      msg = ugettext(u'Enter a valid email address.')
+      msg = ugettext(u'Enter a valid username.')
       raise djangoforms.ValidationError(msg, code='invalid')
 
-    account = users.User(email_address)
-    user_account = accounts.normalizeAccount(account)
-    user = User.all().filter('account', user_account).get()
-
+    user = user_model.User.get_by_id(user_id)
     if not user:
       raise djangoforms.ValidationError(
-          "There is no user with that email address")
+          'There is no user with that email address')
 
     self.cleaned_data['user'] = user
 
-    q = GSoCProfile.all()
-    q.filter('scope', self.request_data.program)
-    q.ancestor(user)
-    self.cleaned_data['profile'] = q.get()
+    query = profile_model.Profile.query(
+        profile_model.Profile.program == ndb.Key.from_old_key(
+            self.request_data.program.key()),
+        ancestor=user.key)
+    self.cleaned_data['profile'] = query.get()
 
 
 class DashboardPage(base.GSoCRequestHandler):
@@ -838,7 +836,7 @@ class LookupLinkIdPage(base.GSoCRequestHandler):
     if profile:
       # TODO(nathaniel): Find a cleaner way to do this rather than
       # generating a response and then tossing it.
-      data.redirect.profile(profile.link_id)
+      data.redirect.profile(profile.profile_id)
       response = data.redirect.to(
           url_names.GSOC_PROFILE_SHOW_ADMIN, secure=True)
       raise exception.Redirect(response['Location'])

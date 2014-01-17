@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Notifications for the GSoC module."""
 
 from google.appengine.ext import ndb
@@ -22,6 +21,7 @@ from melange.request import links
 
 from soc.logic.helper.notifications import getContext
 from soc.views.helper.access_checker import isSet
+from soc.modules.gsoc.models import comment as comment_model
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.views.helper import url_names
 
@@ -131,7 +131,7 @@ def newReviewContext(data, comment, to_emails):
   # a utility class
   review_notification_url = '%s#c%s' % (
       links.ABSOLUTE_LINKER.userId(
-          data.url_profile.key(), data.url_proposal.key().id(),
+          data.url_ndb_profile.key, data.url_proposal.key().id(),
           url_names.PROPOSAL_REVIEW),
       comment.key().id())
   edit_profile_url = links.ABSOLUTE_LINKER.program(
@@ -144,13 +144,15 @@ def newReviewContext(data, comment, to_emails):
       data.url_proposal)
   org = ndb.Key.from_old_key(org_key).get()
 
+  author = ndb.Key.from_old_key(
+      comment_model.GSoCComment.author.get_value_for_datastore(comment)).get()
   message_properties = {
       'review_notification_url': review_notification_url,
-      'reviewer_name': comment.author.name(),
+      'reviewer_name': author.public_name,
       'reviewed_name': reviewed_name,
       'review_content': comment.content,
       'review_visibility': review_type,
-      'proposer_name': data.url_profile.name(),
+      'proposer_name': data.url_ndb_profile.public_name,
       'org': org.name,
       'profile_edit_link': edit_profile_url,
       }
@@ -160,9 +162,10 @@ def newReviewContext(data, comment, to_emails):
 
   template = DEF_NEW_REVIEW_NOTIFICATION_TEMPLATE
 
-  if (data.url_profile.key() != data.ndb_profile.key and
-      data.url_profile.notify_public_comments and not comment.is_private):
-    to_emails.append(data.url_profile.email)
+  # TODO(daniel): notification settings
+  if (data.url_ndb_profile.key != data.ndb_profile.key and
+      not comment.is_private):
+    to_emails.append(data.url_ndb_profile.email)
 
   return getContext(
       data.site, data.program, to_emails, message_properties, subject, template)

@@ -21,6 +21,7 @@ from google.appengine.ext import ndb
 from django.core.urlresolvers import reverse
 from django.utils import translation
 
+from melange.models import profile as profile_model
 from melange.request import links
 
 from soc.logic import accounts
@@ -60,7 +61,7 @@ def siteMenuContext(data):
   redirect.program()
   context['static_content_list_link'] = redirect.urlOf(url_names.GCI_CONTENT_LIST)
 
-  if data.profile:
+  if data.ndb_profile:
     context['dashboard_link'] = links.LINKER.program(
         data.program, 'gci_dashboard')
 
@@ -132,7 +133,8 @@ class MainMenu(Template):
         'home_link': links.LINKER.program(self.data.program, 'gci_homepage'),
     })
 
-    if self.data.profile and self.data.profile.status == 'active':
+    if (self.data.ndb_profile
+        and self.data.ndb_profile.status == profile_model.Status.ACTIVE):
       self.data.redirect.program()
       if self.data.timeline.programActive():
         context['profile_link'] = self.data.redirect.urlOf(
@@ -204,10 +206,12 @@ class Status(Template):
             self.data.program, 'gci_dashboard')
     }
 
-    if self.data.profile:
-      if self.data.is_student and self.data.profile.status == 'active':
+    # TODO(daniel): simplify this if statement
+    if self.data.ndb_profile:
+      if (self.data.ndb_profile.is_student
+          and self.data.ndb_profile.status == profile_model.Status.ACTIVE):
         q = GCITask.all()
-        q.filter('student', self.data.profile)
+        q.filter('student', self.data.ndb_profile.key.to_old_key())
         q.filter('status IN', ACTIVE_CLAIMED_TASK)
         task = q.get()
         if task:

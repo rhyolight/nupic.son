@@ -126,7 +126,8 @@ class Apply(Template):
       # Show a login link
       context['login_link'] = links.LINKER.login(self.data.request)
 
-    if signup_active and not self.data.profile:
+    # TODO(daniel): links to new profile registration pages must be provided!!
+    if signup_active and not self.data.ndb_profile:
       # Show a registration link for a relevant profile type.
       redirector.createProfile('mentor')
       context['mentor_profile_link'] = redirector.urlOf(
@@ -150,17 +151,17 @@ class Apply(Template):
         context['show_student_link'] = True
         context['show_profile_link'] = True
 
-    if self.data.timeline.orgSignup() and self.data.profile:
+    if self.data.timeline.orgSignup() and self.data.ndb_profile:
       context['org_apply_link'] = redirector.program().urlOf(
           'gsoc_take_org_app')
       context['dashboard_link'] = links.LINKER.program(
           self.data.program, 'gsoc_dashboard')
 
     if ((self.data.timeline.studentSignup() or
-        self.data.timeline.mentorSignup()) and self.data.profile):
+        self.data.timeline.mentorSignup()) and self.data.ndb_profile):
       context['apply_link'] = accepted_orgs
 
-    if self.data.profile:
+    if self.data.ndb_profile:
       if self.data.student_info:
         context['profile_role'] = 'student'
       else:

@@ -29,8 +29,8 @@ def process(task):
   program = GCIProgram.get_by_key_name(program_key)
 
   if (task.program.key() == program.key() and
-      (task.status == task_model.UNAPPROVED or task.status == 'Unpublished')):
-    task.status = 'Open'
+      (task.status in task_model.UNAVAILABLE)):
+    task.status = task_model.OPEN
     yield operation.db.Put(task)
 
     yield operation.counters.Increment("task_updated")

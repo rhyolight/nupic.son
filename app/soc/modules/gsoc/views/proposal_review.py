@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Module for the GSoC proposal page."""
 
 from google.appengine.ext import db
@@ -42,7 +41,6 @@ from soc.modules.gsoc.logic.helper import notifications
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.models.comment import GSoCComment
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
-from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models.score import GSoCScore
 from soc.modules.gsoc.views import assign_mentor
 from soc.modules.gsoc.views import base
@@ -116,7 +114,7 @@ class Duplicate(Template):
     """The context for this template used in render()."""
     orgs = []
     for org in db.get(self.duplicate.orgs):
-      admins = profile_logic.getOrgAdmins(org.key.to_old_key())
+      admins = profile_logic.getOrgAdmins(org.key)
 
       data = {
           'name': org.name,
@@ -143,7 +141,7 @@ def _isProposer(data):
   Args:
     data: request_data.RequestData for the current request.
   """
-  return data.url_user.key() == data.user.key()
+  return data.url_ndb_user.key == data.ndb_user.key
 
 
 def _getApplyingCommentType(data):
@@ -157,13 +155,14 @@ def _getApplyingCommentType(data):
     Type of comments that are available to the current user. The value is
     one of PRIVATE_COMMENTS, PUBLIC_COMMENTS or NO_COMMENTS.
   """
-  if not data.user:
+  if not data.ndb_user:
     return NO_COMMENTS
   elif _isProposer(data):
     return PUBLIC_COMMENTS
   else:
-    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-        data.url_proposal)
+    org_key = ndb.Key.from_old_key(
+        proposal_model.GSoCProposal.org.get_value_for_datastore(
+            data.url_proposal))
     if data.mentorFor(org_key):
       return PRIVATE_COMMENTS
     else:
@@ -218,7 +217,7 @@ class UserActions(Template):
     """
 
     wish_to_mentor_url = links.LINKER.userId(
-        self.data.url_profile.key(), self.data.kwargs['id'],
+        self.data.url_ndb_profile.key, self.data.kwargs['id'],
         'gsoc_proposal_wish_to_mentor')
 
     wish_to_mentor = ToggleButtonTemplate(
@@ -231,7 +230,7 @@ class UserActions(Template):
     self.toggle_buttons.append(wish_to_mentor)
 
     proposal_modifications_url = links.LINKER.userId(
-        self.data.url_profile.key(), self.data.kwargs['id'],
+        self.data.url_ndb_profile.key, self.data.kwargs['id'],
         'gsoc_proposal_modification')
 
     if self.data.timeline.afterStudentSignupEnd():
@@ -253,7 +252,7 @@ class UserActions(Template):
     context = {}
 
     ignore_proposal_url = links.LINKER.userId(
-        self.data.url_profile.key(), self.data.kwargs['id'],
+        self.data.url_ndb_profile.key, self.data.kwargs['id'],
         url_names.PROPOSAL_IGNORE)
 
     ignore_button_checked = False
@@ -273,7 +272,9 @@ class UserActions(Template):
     if not self.proposal_ignored:
       accept_proposal = ToggleButtonTemplate(
           self.data, 'on_off', 'Accept proposal', 'accept-proposal',
-          self.data.redirect.urlOf('gsoc_proposal_accept'),
+          links.LINKER.userId(
+              self.data.url_ndb_profile.key, self.data.kwargs['id'],
+              'gsoc_proposal_accept'),
           checked=self.data.url_proposal.accept_as_project,
           help_text=self.DEF_ACCEPT_PROPOSAL_HELP,
           labels={
@@ -291,11 +292,14 @@ class UserActions(Template):
         all_mentors_keys = []
 
       current_mentors = []
-      if self.data.url_proposal.mentor:
-        current_mentors.append(self.data.url_proposal.mentor.key())
+      mentor_key = (
+          proposal_model.GSoCProposal.mentor.get_value_for_datastore(
+              self.data.url_proposal))
+      if mentor_key:
+        current_mentors.append(mentor_key)
 
       assign_mentor_url = links.LINKER.userId(
-          self.data.url_profile.key(), self.data.kwargs['id'],
+          self.data.url_ndb_profile.key, self.data.kwargs['id'],
           'gsoc_proposal_assign_mentor')
 
       context['assign_mentor'] = assign_mentor.AssignMentorFields(
@@ -308,7 +312,7 @@ class UserActions(Template):
     """Construct the context needed for proposer actions.
     """
     publicly_visible_url = links.LINKER.userId(
-        self.data.url_profile.key(), self.data.kwargs['id'],
+        self.data.url_ndb_profile.key, self.data.kwargs['id'],
         'gsoc_proposal_publicly_visible')
 
     publicly_visible = ToggleButtonTemplate(
@@ -328,7 +332,7 @@ class UserActions(Template):
         checked = False
 
       withdraw_proposal_url = links.LINKER.userId(
-          self.data.url_profile.key(), self.data.kwargs['id'],
+          self.data.url_ndb_profile.key, self.data.kwargs['id'],
           url_names.PROPOSAL_STATUS)
       withdraw_proposal = ToggleButtonTemplate(
           self.data, 'on_off', 'Withdraw Proposal', 'withdraw-proposal',
@@ -400,7 +404,7 @@ class ReviewProposal(base.GSoCRequestHandler):
       number += 1
 
       author_key = GSoCScore.author.get_value_for_datastore(score)
-      if author_key == data.profile.key():
+      if author_key == data.ndb_profile.key:
         user_score = score.value
 
     return {
@@ -434,16 +438,16 @@ class ReviewProposal(base.GSoCRequestHandler):
     changed = False
 
     result = []
-
     for mentor in possible_mentors:
-      org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-          data.url_proposal)
+      org_key = ndb.Key.from_old_key(
+              proposal_model.GSoCProposal.org.get_value_for_datastore(
+                  data.url_proposal))
       if org_key in mentor.mentor_for:
         result.append(mentor)
         continue
 
       changed = True
-      data.url_proposal.possible_mentors.remove(mentor.key())
+      data.url_proposal.possible_mentors.remove(mentor.key.to_old_key())
 
     if changed:
       data.url_proposal.put()
@@ -451,9 +455,6 @@ class ReviewProposal(base.GSoCRequestHandler):
     return result
 
   def context(self, data, check, mutator):
-    assert isSet(data.url_profile)
-    assert isSet(data.url_user)
-
     context = {}
 
     user_role = None
@@ -493,7 +494,8 @@ class ReviewProposal(base.GSoCRequestHandler):
 
     # to keep the blocks as simple as possible, the if branches have
     # been broken down into several if blocks
-    user_is_proposer = data.user and (data.user.key() == data.url_user.key())
+    user_is_proposer = (
+        data.user and (data.ndb_user.key == data.url_ndb_user.key()))
     if user_is_proposer:
       user_role = 'proposer'
 
@@ -503,12 +505,14 @@ class ReviewProposal(base.GSoCRequestHandler):
           data.url_proposal.is_editable_post_deadline
       if data.timeline.studentSignup() or is_editable:
         context['update_link'] = links.LINKER.userId(
-            data.url_profile.key(), data.url_proposal.key().id(),
+            data.url_ndb_profile.key(), data.url_proposal.key().id(),
             'update_gsoc_proposal')
 
-    possible_mentors = db.get(data.url_proposal.possible_mentors)
+    possible_mentors = ndb.get_multi(
+        map(ndb.Key.from_old_key, data.url_proposal.possible_mentors))
     possible_mentors = self.sanitizePossibleMentors(data, possible_mentors)
-    possible_mentors_names = ', '.join([m.name() for m in possible_mentors])
+    possible_mentors_names = ', '.join([
+        m.public_name for m in possible_mentors])
 
     org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
         data.url_proposal)
@@ -539,7 +543,9 @@ class ReviewProposal(base.GSoCRequestHandler):
         'comment_box': comment_box,
         'duplicate': duplicate,
         'max_score': org.max_score,
-        'mentor': data.url_proposal.mentor,
+        'mentor': ndb.Key.from_old_key(
+            proposal_model.GSoCProposal.mentor.get_value_for_datastore(
+                data.url_proposal)),
         'page_name': data.url_proposal.title,
         'possible_mentors': possible_mentors_names,
         'private_comments': private_comments,
@@ -553,8 +559,8 @@ class ReviewProposal(base.GSoCRequestHandler):
         'score_action': score_action,
         'scores': scores,
         'scoring_visible': scoring_visible,
-        'student_email': data.url_profile.email,
-        'student_name': data.url_profile.name(),
+        'student_email': data.url_ndb_profile.contact.email,
+        'student_name': data.url_ndb_profile.public_name,
         'user_role': user_role,
         })
 
@@ -575,8 +581,9 @@ class PostComment(base.GSoCRequestHandler):
     check.isProfileActive()
 
     # private comments may be posted only by organization members
-    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-        data.url_proposal)
+    org_key = ndb.Key.from_old_key(
+        proposal_model.GSoCProposal.org.get_value_for_datastore(
+            data.url_proposal))
     if not _isProposer(data):
       check.isMentorForOrganization(org_key)
 
@@ -589,8 +596,6 @@ class PostComment(base.GSoCRequestHandler):
     Returns:
       a newly created comment entity or None
     """
-    assert isSet(data.url_proposal)
-
     if _isProposer(data):
       comment_form = CommentForm(data=data.request.POST)
     else:
@@ -602,19 +607,21 @@ class PostComment(base.GSoCRequestHandler):
 
     if _isProposer(data):
       comment_form.cleaned_data['is_private'] = False
-    comment_form.cleaned_data['author'] = data.profile
+    comment_form.cleaned_data['author'] = data.ndb_profile.key.to_old_key()
 
-    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-        data.url_proposal)
-    q = GSoCProfile.all().filter('mentor_for', org_key)
-    q = q.filter('status', 'active')
-    if comment_form.cleaned_data.get('is_private'):
-      q.filter('notify_private_comments', True)
-    else:
-      q.filter('notify_public_comments', True)
-    mentors = q.fetch(1000)
+    # TODO(daniel): re-enable notifications
+    #org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
+    #    data.url_proposal)
+    #q = GSoCProfile.all().filter('mentor_for', org_key)
+    #q = q.filter('status', 'active')
+    #if comment_form.cleaned_data.get('is_private'):
+    #  q.filter('notify_private_comments', True)
+    #else:
+    #  q.filter('notify_public_comments', True)
+    #mentors = q.fetch(1000)
 
-    to_emails = [i.email for i in mentors if i.key() != data.profile.key()]
+    #to_emails = [i.email for i in mentors if i.key() != data.profile.key()]
+    to_emails = []
 
     def create_comment_txn():
       comment = comment_form.create(commit=True, parent=data.url_proposal)
@@ -626,8 +633,6 @@ class PostComment(base.GSoCRequestHandler):
     return db.run_in_transaction(create_comment_txn)
 
   def post(self, data, check, mutator):
-    assert isSet(data.url_proposal)
-
     comment = self.createCommentFromForm(data)
     if comment:
       data.redirect.program()
@@ -638,7 +643,7 @@ class PostComment(base.GSoCRequestHandler):
       # in Melange.
       # TODO (Madhu): Replace this in favor of PJAX for loading comments.
       redirect_url = links.LINKER.userId(
-          data.url_profile.key(), data.url_proposal.key().id(),
+          data.url_ndb_profile.key, data.url_proposal.key().id(),
           url_names.PROPOSAL_REVIEW)
       proposal_match = resolve(redirect_url)
       proposal_view = proposal_match[0]
@@ -660,10 +665,11 @@ class PostScore(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-        data.url_proposal)
+    org_key = ndb.Key.from_old_key(
+        proposal_model.GSoCProposal.org.get_value_for_datastore(
+            data.url_proposal))
 
-    org = ndb.Key.from_old_key(org_key).get()
+    org = org_key.get()
     if not org:
       raise exception.BadRequest(
           message='Organization for key %s does not exist for proposal %s' %
@@ -698,7 +704,7 @@ class PostScore(base.GSoCRequestHandler):
           message="Score must not be higher than %d" % max_score)
 
     query = db.Query(GSoCScore)
-    query.filter('author = ', data.profile)
+    query.filter('author = ', data.ndb_profile.key.to_old_key())
     query.ancestor(data.url_proposal)
 
     def update_score_trx():
@@ -712,7 +718,7 @@ class PostScore(base.GSoCRequestHandler):
         old_value = 0
         score = GSoCScore(
             parent=data.url_proposal,
-            author=data.profile,
+            author=data.ndb_profile.key.to_old_key(),
             value=value)
         score.put()
         delta = 1
@@ -754,8 +760,9 @@ class WishToMentor(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-        data.url_proposal)
+    org_key = ndb.Key.from_old_key(
+        proposal_model.GSoCProposal.org.get_value_for_datastore(
+            data.url_proposal))
     check.isMentorForOrganization(org_key)
 
   def addToPotentialMentors(self, data, value):
@@ -765,7 +772,6 @@ class WishToMentor(base.GSoCRequestHandler):
       data: A RequestData describing the current request.
       value: can be either "checked" or "unchecked".
     """
-    assert isSet(data.profile)
     assert isSet(data.url_proposal)
 
     if value != 'checked' and value != 'unchecked':
@@ -777,7 +783,7 @@ class WishToMentor(base.GSoCRequestHandler):
       raise exception.BadRequest(message="Invalid post data.")
 
     proposal_key = data.url_proposal.key()
-    profile_key = data.profile.key()
+    profile_key = data.ndb_profile.key.to_old_key()
 
     def update_possible_mentors_trx():
       # transactionally get latest version of the proposal
@@ -882,7 +888,7 @@ class AssignMentor(base.GSoCRequestHandler):
       self.unassignMentor(data)
 
     url = links.LINKER.userId(
-        data.url_profile.key(), data.url_proposal.key().id(),
+        data.url_ndb_profile.key, data.url_proposal.key().id(),
         url_names.PROPOSAL_REVIEW)
     return http.HttpResponseRedirect(url)
 
@@ -958,8 +964,9 @@ class ProposalModificationPostDeadline(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-        data.url_proposal)
+    org_key = ndb.Key.from_old_key(
+        proposal_model.GSoCProposal.org.get_value_for_datastore(
+            data.url_proposal))
     check.isMentorForOrganization(org_key)
 
   def toggleModificationPermission(self, data, value):
@@ -1011,8 +1018,9 @@ class AcceptProposal(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(
-        data.url_proposal)
+    org_key = ndb.Key.from_old_key(
+        proposal_model.GSoCProposal.org.get_value_for_datastore(
+            data.url_proposal))
     check.isOrgAdminForOrganization(org_key)
 
   def toggleStatus(self, data, value):
@@ -1139,7 +1147,7 @@ class WithdrawProposalHandler(form_handler.FormHandler):
   def handle(self, data, check, mutator):
     """See form_handler.FormHandler.handle for specification."""
     is_withdrawn = withdrawProposalTxn(
-        data.url_proposal.key(), data.profile.student_info.key())
+        data.url_proposal.key(), data.ndb_profile.key)
     if is_withdrawn:
       if self._url is not None:
         return http.HttpResponseRedirect(self._url)
@@ -1155,36 +1163,39 @@ class ResubmitProposalHandler(form_handler.FormHandler):
   def handle(self, data, check, mutator):
     """See form_handler.FormHandler.handle for specification."""
     is_resubmitted = resubmitProposalTxn(
-        data.url_proposal.key(), data.profile.student_info.key(),
+        data.url_proposal.key(), data.ndb_profile.key,
         data.program, data.program.timeline)
     if is_resubmitted:
       return http.HttpResponse()
     else:
       raise exception.Forbidden(PROPOSAL_CANNOT_BE_RESUBMITTED)
 
-
-@db.transactional
-def withdrawProposalTxn(proposal_key, student_info_key):
+# TODO(daniel): it should be transactional when when proposal updated to NDB
+#@db.transactional
+def withdrawProposalTxn(proposal_key, profile_key):
   """Withdraws the specified proposal in a transaction.
 
   Args:
     proposal_key: Proposal key.
     student_info_key: Student info key of the student who owns the proposal.
   """
-  proposal, student_info = db.get([proposal_key, student_info_key])
-  return proposal_logic.withdrawProposal(proposal, student_info)
+  proposal = db.get(proposal_key)
+  profile = profile_key.get()
+  return proposal_logic.withdrawProposal(proposal, profile)
 
 
-@db.transactional
-def resubmitProposalTxn(proposal_key, student_info_key, program, timeline):
+# TODO(daniel): it should be transactional when when proposal updated to NDB
+#@db.transactional
+def resubmitProposalTxn(proposal_key, profile_key, program, timeline):
   """Resubmits the specified proposal in a transaction.
 
   Args:
     proposal_key: Proposal key.
-    student_info_key: Student info key of the student who owns the proposal.
+    student_info_key: Profile key
     program: Program entity.
     timeline: Timeline enity.
   """
-  proposal, student_info = db.get([proposal_key, student_info_key])
+  proposal = db.get(proposal_key)
+  profile = profile_key.get()
   return proposal_logic.resubmitProposal(
-      proposal, student_info, program, timeline)
+      proposal, profile, program, timeline)
