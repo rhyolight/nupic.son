@@ -51,6 +51,7 @@
       now: new Date().getTime()
     },
 
+    //TODO(Mario): This global state variable needs to be removed.
     slice_active: null,
   };
 
