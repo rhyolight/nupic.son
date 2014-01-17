@@ -28,7 +28,6 @@ from melange.request import access
 from melange.request import exception
 
 from soc.logic import cleaning
-from soc.models.user import User
 from soc.views.dashboard import Dashboard
 from soc.views.helper import addresses
 from soc.views.helper import lists
@@ -853,17 +852,27 @@ class ProposalsList(Template):
   """Template for listing all the proposals sent to org.
   """
 
-  def __init__(self, request, data):
+  def __init__(self, data):
     """Initializes this proposals list."""
     self.data = data
+
+    def getStudentEmail(entity, *args):
+      """Helper function to get a value for Student Email column."""
+      profile = ndb.Key.from_old_key(entity.parent_key()).get()
+      return profile.contact.email
+
+    def getStudent(entity, *args):
+      """Helper function to get a value for Student column."""
+      profile = ndb.Key.from_old_key(entity.parent_key()).get()
+      return profile.public_name
 
     list_config = lists.ListConfiguration()
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn(
-        'email', 'Student Email',
-        (lambda ent, *args: ent.parent().email), hidden=True)
+        'email', 'Student Email', getStudentEmail, hidden=True)
     list_config.addSimpleColumn('score', 'Score')
     list_config.addSimpleColumn('nr_scores', '#scores', hidden=True)
+
     def getAverage(ent):
       if not ent.nr_scores:
         return float(0)
@@ -912,9 +921,7 @@ class ProposalsList(Template):
                                 column_type=lists.DATE)
     list_config.addSimpleColumn('created_on', 'Created on',
                                 column_type=lists.DATE, hidden=True)
-    list_config.addPlainTextColumn(
-        'student', 'Student',
-        lambda ent, *args: ent.parent().name())
+    list_config.addPlainTextColumn('student', 'Student', getStudent)
     list_config.addSimpleColumn('accept_as_project', 'Should accept')
 
     # hidden keys
@@ -972,11 +979,11 @@ class ProposalsList(Template):
 
     starter = lists.keyStarter
 
-    # TODO(daniel): enable prefetching from ndb models ('org')
-    prefetcher = lists.ModelPrefetcher(GSoCProposal, [], parent=True)
+    # TODO(daniel): enable prefetching from ndb models ('org', 'parent')
+    # prefetcher = lists.ModelPrefetcher(GSoCProposal, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.data.request, self._list_config, q, starter, prefetcher=prefetcher)
+        self.data.request, self._list_config, q, starter, prefetcher=None)
     return response_builder.build(accepted, duplicates)
 
 
@@ -995,7 +1002,7 @@ class ProposalsPage(base.GSoCRequestHandler):
     return 'modules/gsoc/admin/list.html'
 
   def jsonContext(self, data, check, mutator):
-    list_content = ProposalsList(data.request, data).getListData()
+    list_content = ProposalsList(data).getListData()
     if list_content:
       return list_content.content()
     else:
@@ -1003,7 +1010,7 @@ class ProposalsPage(base.GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """Handler for POST requests."""
-    proposals_list = ProposalsList(data.request, data)
+    proposals_list = ProposalsList(data)
     if proposals_list.post():
       return http.HttpResponse()
     else:
@@ -1011,9 +1018,8 @@ class ProposalsPage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     return {
-      'page_name': 'Proposal page',
-      # TODO(nathaniel): Drop the first parameter of ProposalsList.
-      'list': ProposalsList(data.request, data),
+        'page_name': 'Proposal page',
+        'list': ProposalsList(data),
     }
 
 

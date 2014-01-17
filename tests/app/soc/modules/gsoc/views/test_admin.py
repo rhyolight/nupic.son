@@ -15,8 +15,8 @@
 """Tests for admin dashboard view."""
 
 from tests import profile_utils
-from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
+from tests.utils import proposal_utils
 
 
 class AdminDashboardTest(GSoCDjangoTestCase):
@@ -168,10 +168,10 @@ class ProposalsPageTest(GSoCDjangoTestCase):
     self.assertEqual(0, len(data))
 
     # test list with student's proposal
-    self.mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    self.mentor.createMentor(self.org)
-    self.profile_helper.createStudentWithProposals(
-        self.org, self.mentor.profile, 1)
+    student = profile_utils.seedSOCStudent(self.program)
+    proposal_utils.seedProposal(
+        student.key, self.program.key(), org_key=self.org.key)
+
     response = self.getListResponse(url, 0)
     self.assertIsJsonResponse(response)
     data = response.context['data']['']
