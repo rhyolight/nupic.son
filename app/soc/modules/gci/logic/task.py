@@ -73,7 +73,7 @@ DEF_NO_MORE_WORK = ugettext(
 
 
 DEF_PUBLISHED_TITLE = ugettext('Task Published')
-DEF_PUBLISHED = ugettext('This task is open. It can be claimed')
+DEF_PUBLISHED = ugettext('This task is open and can be claimed.')
 
 
 DEF_REOPENED_TITLE = ugettext('Task Reopened')
@@ -96,7 +96,7 @@ DEF_UNCLAIMED = ugettext(
     'The claim on this task has been removed, someone else can claim it now.')
 
 
-DEF_UNPUBLISHED_TITLE = ugettext('Task Unublished')
+DEF_UNPUBLISHED_TITLE = ugettext('Task Unpublished')
 DEF_UNPUBLISHED = ugettext('The task is unpublished.')
 
 
@@ -169,7 +169,7 @@ def publishTask(task, publisher):
     task: GCITask entity.
     publisher: GCIProfile of the user that publishes the task.
   """
-  task.status = 'Open'
+  task.status = task_model.OPEN
 
   comment_props = {
       'parent': task,
@@ -189,7 +189,7 @@ def publishTask(task, publisher):
   return db.run_in_transaction(publishTaskTxn)
 
 
-def unpublishTask(task, publisher):
+def unpublishTask(task, unpublisher):
   """Unpublishes the task.
 
   This will put the task in the Unpublished state. A comment will also be
@@ -197,7 +197,7 @@ def unpublishTask(task, publisher):
 
   Args:
     task: GCITask entity.
-    publisher: GCIProfile of the user that publishes the task.
+    publisher: GCIProfile of the user that unpublishes the task.
   """
   task.status = 'Unpublished'
 
@@ -205,7 +205,7 @@ def unpublishTask(task, publisher):
       'parent': task,
       'title': DEF_UNPUBLISHED_TITLE,
       'content': DEF_UNPUBLISHED,
-      'created_by': publisher.user,
+      'created_by': unpublisher.user,
   }
   comment = GCIComment(**comment_props)
 
