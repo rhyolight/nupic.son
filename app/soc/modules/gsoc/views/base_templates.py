@@ -17,13 +17,15 @@
 from django.core.urlresolvers import reverse
 
 from melange.logic import user as user_logic
+from melange.models import profile as profile_model
 from melange.request import links
 
 from soc.views import template
 
 from soc.modules.gci.logic.program import getMostRecentProgram
 from soc.modules.gsoc.models import program as program_model
-from soc.modules.gsoc.views.helper import url_names
+
+from summerofcode.views.helper import urls
 
 
 def siteMenuContext(data):
@@ -124,10 +126,11 @@ class MainMenu(template.Template):
         'search_link': links.LINKER.program(self.data.program, 'search_gsoc'),
     })
 
-    if self.data.profile and self.data.profile.status == 'active':
+    if (self.data.ndb_profile 
+        and self.data.ndb_profile.status == profile_model.Status.ACTIVE):
       self.data.redirect.program()
-      context['profile_link'] = self.data.redirect.urlOf(
-          url_names.GSOC_PROFILE_SHOW, secure=True)
+      context['profile_link'] = links.LINKER.program(
+          self.data.program, urls.UrlNames.PROFILE_SHOW)
 
     if user_logic.isHostForProgram(self.data.ndb_user, self.data.program.key()):
       self.data.redirect.program()

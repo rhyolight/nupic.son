@@ -45,7 +45,7 @@ def profileTabs(data, selected_tab_id=None):
   tabs_list = []
 
   # add View Profile tab
-  url = links.LINKER.program(data.program, url_names.GSOC_PROFILE_SHOW)
+  url = links.LINKER.program(data.program, urls.UrlNames.PROFILE_SHOW)
   tabs_list.append(tabs.Tab(VIEW_PROFILE_TAB_ID, VIEW_PROFILE_NAME, url))
 
   # add Edit Profile tab
