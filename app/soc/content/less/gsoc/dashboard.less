@@ -23,7 +23,9 @@
 @image_report: "@{images_dashboard_location}/report.png";
 @image_requests: "@{images_dashboard_location}/requests.png";
 @image_settings: "@{images_dashboard_location}/settings.png";
+@image_sync_data: "@{images_dashboard_location}/sync_data.png";
 @image_todo: "@{images_dashboard_location}/todo.png";
+@image_shipment_tracking: "@{images_dashboard_location}/shipment_tracking.png";
 @image_transfer: "@{images_dashboard_location}/transfer.png";
 @image_users: "@{images_dashboard_location}/users.png";
 @image_view: "@{images_dashboard_location}/view.png";
@@ -219,6 +221,20 @@
     background-image: url(@image_requests);
   }
 
+  &.shipment_tracking,
+  &.shipment_infos {
+    background-image: url(@image_shipment_tracking);
+  }
+
+  &.create_shipment_info {
+    background-image: url(@image_proposals);
+  }
+  &.edit_shipment_infos {
+    background-image: url(@image_edit);
+  }
+  &.sync_data {
+    background-image: url(@image_sync_data);
+  }
   .notificon {
     /* notify icon */
     background-color: #F03D25;
