@@ -1122,7 +1122,8 @@ class CreateProfileFormHandler(form_handler.FormHandler):
       # TODO(nathaniel): problematic self-use.
       return self._view.get(data, check, mutator)
     else:
-      profile_properties = _getProfileEntityPropertiesFromForm(self.form)
+      profile_properties = _getProfileEntityPropertiesFromForm(
+          self.form, data.models)
 
       user = data.ndb_user
       if not user:
@@ -1178,7 +1179,8 @@ class ProfileEditPage(base.GSoCRequestHandler):
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
     else:
-      profile_properties = _getProfileEntityPropertiesFromForm(form)
+      profile_properties = _getProfileEntityPropertiesFromForm(
+          form, data.models)
       editProfileTxn(data.ndb_profile.key, profile_properties)
 
       return http.HttpResponseRedirect(
@@ -1312,11 +1314,12 @@ def _getShowProfileTemplate(data, profile):
       data, 'summerofcode/_readonly_template.html', groups)
 
 
-def _getProfileEntityPropertiesFromForm(form):
+def _getProfileEntityPropertiesFromForm(form, models):
   """Extracts properties for a profile entity from the specified form.
 
   Args:
     form: Instance of _UserProfileForm.
+    models: instance of types.Models that represent appropriate models.
 
   Returns:
     A dict with complete set of properties of profile entity.
@@ -1363,7 +1366,8 @@ def _getProfileEntityPropertiesFromForm(form):
   student_data_properties = form.getStudentDataProperties()
   if student_data_properties:
     profile_properties['student_data'] = profile_logic.createStudentData(
-        _adaptStudentDataPropertiesForDatastore(student_data_properties))
+        _adaptStudentDataPropertiesForDatastore(student_data_properties),
+        models=models)
 
   return profile_properties
 

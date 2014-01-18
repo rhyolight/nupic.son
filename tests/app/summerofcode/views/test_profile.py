@@ -22,6 +22,7 @@ from google.appengine.ext import ndb
 from django import forms as django_forms
 
 from melange.models import address as address_model
+from melange.models import education as education_model
 from melange.models import profile as profile_model
 from melange.models import user as user_model
 
@@ -303,6 +304,21 @@ class ProfileRegisterAsStudentPageTest(test_utils.GSoCDjangoTestCase):
     self.assertIsNotNone(profile.student_data)
     self.assertTrue(profile.is_student)
 
+    # check student data properties
+    self.assertEqual(
+        profile.student_data.education.school_country, TEST_SCHOOL_COUNTRY)
+    self.assertEqual(
+        profile.student_data.education.school_id, TEST_SCHOOL_NAME)
+    self.assertEqual(profile.student_data.education.major, TEST_MAJOR)
+    self.assertEqual(
+        profile.student_data.education.degree, education_model.Degree.MASTERS)
+    self.assertEqual(profile.student_data.number_of_proposals, 0)
+    self.assertEqual(profile.student_data.number_of_projects, 0)
+    self.assertEqual(profile.student_data.number_of_passed_evaluations, 0)
+    self.assertEqual(profile.student_data.number_of_failed_evaluations, 0)
+    self.assertListEqual(profile.student_data.project_for_orgs, [])
+    self.assertIsNone(profile.student_data.tax_form)
+    self.assertIsNone(profile.student_data.enrollment_form)
 
 class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for ProfileEditPage class."""
