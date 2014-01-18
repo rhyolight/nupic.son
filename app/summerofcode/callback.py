@@ -18,6 +18,8 @@ from summerofcode.views import org_app
 from summerofcode.views import org_home
 from summerofcode.views import profile
 from summerofcode.views import project_manage
+from summerofcode.views import shipment_tracking
+from summerofcode.tasks import shipment_tracking as shipment_tracking_tasks
 
 
 class Callback(object):
@@ -48,6 +50,14 @@ class Callback(object):
     self.views.append(profile.ProfileRegisterAsStudentPage())
     self.views.append(profile.ProfileShowPage())
     self.views.append(project_manage.ManageProjectProgramAdminView())
+    self.views.append(shipment_tracking.CallbackPage())
+    self.views.append(shipment_tracking.CreateShipmentInfo())
+    self.views.append(shipment_tracking.ShipmentInfoListPage())
+    self.views.append(shipment_tracking.ShipmentTrackingPage())
+    self.views.append(shipment_tracking.SyncData())
+
+    # Appengine Task related views
+    self.views.append(shipment_tracking_tasks.ShipmentSyncTask())
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered."""

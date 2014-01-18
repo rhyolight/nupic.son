@@ -62,6 +62,7 @@ from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 from summerofcode.logic import survey as survey_logic
+from summerofcode.models import shipment
 
 BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
 
@@ -247,6 +248,8 @@ class DashboardPage(base.GSoCRequestHandler):
 
     # Add all the proposals of this current user
     components.append(MyProposalsComponent(data))
+    # Add a component to show shipments
+    components.append(ShipmentComponent(data))
 
     return components
 
@@ -548,6 +551,57 @@ class MyProjectsComponent(Component):
         'title': 'Projects',
         'lists': [list_configuration_response],
         'description': ugettext('Projects'),
+    }
+
+
+class ShipmentComponent(Component):
+  """Component for listing all the shipments of the current Student.
+  """
+
+  def __init__(self, data):
+    """Initializes this component.
+    """
+    list_config = lists.ListConfiguration()
+    list_config.addPlainTextColumn(
+        'name', 'Name',
+        lambda entity, *args: entity.shipment_info.get().name)
+    list_config.addSimpleColumn('tracking', 'Tracking')
+    self._list_config = list_config
+
+    super(ShipmentComponent, self).__init__(data)
+
+  def templatePath(self):
+    """Returns the path to the template that should be used in render().
+    """
+    return 'modules/gsoc/dashboard/list_component.html'
+
+  def getListData(self):
+    """Returns the list data as requested by the current request.
+
+    If the lists as requested is not supported by this component None is
+    returned.
+    """
+    if lists.getListIndex(self.data.request) != 12:
+      return None
+
+    q = shipment.StudentShipment.query(ancestor=self.data.ndb_profile.key)
+
+    starter = lists.keyStarter
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.data.request, self._list_config, q, starter)
+    return response_builder.buildNDB()
+
+  def context(self):
+    """Returns the context of this component.
+    """
+    list = lists.ListConfigurationResponse(
+        self.data, self._list_config, idx=12)
+    return {
+        'name': 'shipment_tracking',
+        'title': 'Shipment tracking',
+        'description': ugettext('List of shipments'),
+        'lists': [list],
     }
 
 

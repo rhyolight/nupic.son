@@ -74,6 +74,18 @@ class Site(db.Model):
       'entered every page is going to have Google Analytics '
       'initialization code in footer.')
 
+  #: Valid Google Client ID. Used to embed Google services.
+  google_client_id = db.StringProperty(verbose_name=ugettext('Google Client ID'))
+  google_client_id.help_text = ugettext(
+      'Numerical part of a valid Google Client ID (e.g. 6813750723.project.googleusercontent.com).'
+      'Retrieved from https://cloud.google.com/console/')
+
+  #: Valid Google Client secret. Used to embed Google services.
+  google_client_secret = db.StringProperty(verbose_name=ugettext('Google Client Secret'))
+  google_client_secret.help_text = ugettext(
+      'Valid Google Client secret. Retrieved from https://cloud.google.com/console/'
+      'by creating a new client id for a web application.')
+
   #: Valid Google API Key. Used to embed Google services.
   google_api_key = db.StringProperty(verbose_name=ugettext('Google API'))
   google_api_key.help_text = ugettext(

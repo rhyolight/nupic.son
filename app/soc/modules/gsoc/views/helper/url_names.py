@@ -50,3 +50,13 @@ GSOC_SHOW_ORG_CONNECTION = 'gsoc_show_org_connection'
 GSOC_CONNECTION_MESSAGE = 'gsoc_connection_message'
 
 GSOC_ANONYMOUS_CONNECTION = 'create_gsoc_connected_profile'
+
+GSOC_PICKER_CALLBACK = 'gsoc_picker_callback'
+GSOC_SHIPMENT_INFO_POST = 'gsoc_shipment_info_post'
+GSOC_CREATE_SHIPMENT_INFO = 'gsoc_create_shipment_info'
+GSOC_EDIT_SHIPMENT_INFO = 'gsoc_edit_shipment_info'
+GSOC_SHIPMENT_INFO_RECORDS = 'gsoc_shipment_info_records'
+GSOC_SHIPMENT_LIST = 'gsoc_shipment_list'
+GSOC_SHIPMENT_SYNC = 'gsoc_shipment_sync'
+GSOC_SHIPMENT_TASK_START = 'gsoc_shipment_sync_task_start'
+GSOC_SHIPMENT_TASK_CONTINUE = 'gsoc_shipment_sync_task_continue'
