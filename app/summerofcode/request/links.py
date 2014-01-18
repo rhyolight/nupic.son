@@ -18,11 +18,30 @@ from django.core import urlresolvers
 
 from melange.request import links
 
+from soc.logic import program as program_logic
 from soc.models import survey as survey_model
 
 
 class SoCLinker(links.Linker):
   """URL creator for Summer Of Code."""
+
+  def shipmentInfo(self, program, entity_id, url_name):
+    """Returns the URL of a shipment info's named page.
+
+    Args:
+      program: A program.
+      entity_id: Numeric ID of entity.
+      url_name: The name with which a URL was registered with Django.
+
+    Returns:
+      The URL of the page matching the given name for the given survey.
+    """
+    kwargs = {
+        'program': program.link_id,
+        'sponsor': program_logic.getSponsorKey(program).name(),
+        'id': entity_id,
+        }
+    return urlresolvers.reverse(url_name, kwargs=kwargs)
 
   def survey(self, survey_key, url_name):
     """Returns the URL of a survey's named page.
