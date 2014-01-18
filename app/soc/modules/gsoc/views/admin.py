@@ -119,6 +119,9 @@ class DashboardPage(base.GSoCRequestHandler):
     dashboards.append(EvaluationGroupDashboard(data))
     dashboards.append(StudentsDashboard(data))
 
+    dashboards.append(ShipmentTrackingDashboard(data))
+    dashboards.append(ShipmentInfoDashboard(data))
+
     return {
         'dashboards': dashboards,
         'page_name': 'Admin dashboard',
@@ -154,6 +157,7 @@ class MainDashboard(Dashboard):
     evaluations = EvaluationsDashboard(self.data)
     participants = ParticipantsDashboard(self.data)
     students = StudentsDashboard(self.data)
+    shipment_tracking = ShipmentTrackingDashboard(self.data)
 
     subpages = [
         {
@@ -251,6 +255,14 @@ class MainDashboard(Dashboard):
             'title': 'Program settings',
             'link': '',
             'subpage_links': program_settings.getSubpagesLink(),
+        },
+        {
+            'name': 'shipment_tracking',
+            'description': ugettext(
+                'Shipment tracking for students'),
+            'title': 'Tracking Information',
+            'link': '',
+            'subpage_links': shipment_tracking.getSubpagesLink(),
         },
     ]
 
@@ -526,6 +538,7 @@ class MentorEvaluationsDashboard(Dashboard):
                 survey_key, 'gsoc_preview_mentor_evaluation')
         },
         {
+
             'name': 'view_mentor_evaluation',
             'description': ugettext('View final evaluation for mentors'),
             'title': 'View Final Evaluation Records',
@@ -803,6 +816,105 @@ class StudentsDashboard(Dashboard):
         'subpages': subpages
     }
 
+
+class ShipmentTrackingDashboard(Dashboard):
+  """Dashboard for shipment tracking.
+  """
+
+  def __init__(self, data):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    shipment_info = ShipmentInfoDashboard(data)
+
+    subpages = [
+        {
+            'name': 'shipment_infos',
+            'description': ugettext('Manage Shipment Information'),
+            'title': 'Shipment Information',
+            'link': '',
+            'subpage_links': shipment_info.getSubpagesLink(),
+        },
+        {
+            'name': 'sync_data',
+            'description': ugettext('Sync Data'),
+            'title': 'Sync Data',
+            'link': links.SOC_LINKER.program(
+                data.program, url_names.GSOC_SHIPMENT_LIST),
+        },
+    ]
+
+    super(ShipmentTrackingDashboard, self).__init__(data, subpages)
+
+  def context(self):
+    """Returns the context of shipment tracking dashboard.
+    """
+    subpages = self._divideSubPages(self.subpages)
+
+    return {
+        'title': 'Shipment Tracking Information',
+        'name': 'shipment_tracking',
+        'backlinks': [
+            {
+                'to': 'main',
+                'title': 'Admin dashboard'
+            },
+        ],
+        'subpages': subpages
+    }
+
+
+class ShipmentInfoDashboard(Dashboard):
+  """Dashboard for shipment infos.
+  """
+
+  def __init__(self, data):
+    """Initializes the dashboard.
+
+    Args:
+      request: The HTTPRequest object
+      data: The RequestData object
+    """
+    subpages = [
+        {
+            'name': 'create_shipment_info',
+            'description': ugettext('Create shipment information'),
+            'title': 'Create',
+            'link': links.SOC_LINKER.program(data.program, url_names.GSOC_CREATE_SHIPMENT_INFO),
+        },
+        {
+            'name': 'edit_shipment_infos',
+            'description': ugettext('Edit shipment informations'),
+            'title': 'Edit',
+            'link': links.SOC_LINKER.program(data.program, url_names.GSOC_SHIPMENT_INFO_RECORDS),
+        },
+    ]
+
+    super(ShipmentInfoDashboard, self).__init__(data, subpages)
+
+  def context(self):
+    """Returns the context of shipment infos dashboard.
+    """
+    subpages = self._divideSubPages(self.subpages)
+
+    return {
+        'title': 'Shipment Information',
+        'name': 'shipment_infos',
+        'backlinks': [
+            {
+                'to': 'main',
+                'title': 'Admin dashboard'
+            },
+            {
+                'to': 'shipment_tracking',
+                'title': 'Shipment Tracking Information'
+            }
+        ],
+        'subpages': subpages
+    }
 
 class LookupLinkIdPage(base.GSoCRequestHandler):
   """View for the participant profile."""
