@@ -224,8 +224,13 @@ class DashboardPage(base.GSoCRequestHandler):
 
     components.append(DocumentComponent(data))
 
-    if (data.ndb_profile.is_student
-        and data.ndb_profile.student_data.number_of_projects):
+    number_of_projects = 0
+    if data.ndb_profile.is_student:
+      # TODO(daniel): find a way to get at number_of_projects from the entity
+      student_data = data.ndb_profile.student_data.to_dict()
+      number_of_projects = student_data['number_of_projects']
+
+    if number_of_projects:
       components.append(TodoComponent(data))
       # Add a component to show the evaluations
       evals = dictForSurveyModel(
