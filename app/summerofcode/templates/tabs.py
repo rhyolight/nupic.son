@@ -19,8 +19,6 @@ from django.utils import translation
 from melange.request import links
 from melange.templates import tabs
 
-from soc.modules.gsoc.views.helper import url_names
-
 from summerofcode.views.helper import urls
 
 
@@ -49,7 +47,7 @@ def profileTabs(data, selected_tab_id=None):
   tabs_list.append(tabs.Tab(VIEW_PROFILE_TAB_ID, VIEW_PROFILE_NAME, url))
 
   # add Edit Profile tab
-  url = links.LINKER.program(data.program, url_names.GSOC_PROFILE_EDIT)
+  url = links.LINKER.program(data.program, urls.UrlNames.PROFILE_EDIT)
   tabs_list.append(tabs.Tab(EDIT_PROFILE_TAB_ID, EDIT_PROFILE_NAME, url))
 
   if selected_tab_id and selected_tab_id not in [
