@@ -133,15 +133,15 @@ class Apply(Template):
     # TODO(daniel): links to new profile registration pages must be provided!!
     if signup_active and not self.data.ndb_profile:
       # Show a registration link for a relevant profile type.
-      redirector.createProfile('mentor')
-      context['mentor_profile_link'] = redirector.urlOf(
-          'create_gsoc_profile', secure=True)
-      redirector.createProfile('org_admin')
-      context['org_admin_profile_link'] = redirector.urlOf(
-          'create_gsoc_profile', secure=True)
-      redirector.createProfile('student')
-      context['student_profile_link'] = redirector.urlOf(
-          'create_gsoc_profile', secure=True)
+      context['mentor_profile_link'] = links.ABSOLUTE_LINKER.program(
+          self.data.program, urls.UrlNames.PROFILE_REGISTER_AS_ORG_MEMBER,
+          secure=True)
+      context['org_admin_profile_link'] = links.ABSOLUTE_LINKER.program(
+          self.data.program, urls.UrlNames.PROFILE_REGISTER_AS_ORG_MEMBER,
+          secure=True)
+      context['student_profile_link'] = links.ABSOLUTE_LINKER.program(
+          self.data.program, urls.UrlNames.PROFILE_REGISTER_AS_STUDENT,
+          secure=True)
 
       context['show_profile_link'] = False
       if self.data.timeline.orgSignup():
