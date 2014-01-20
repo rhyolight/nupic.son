@@ -78,6 +78,30 @@ class StudentData(ndb.Model):
   #: Education information of the student.
   education = ndb.StructuredProperty(education_model.Education, required=True)
 
+  #: Number of proposals which have been submitted by the student.
+  number_of_proposals = ndb.IntegerProperty(required=True, default=0)
+
+  #: Number of projects which have been assigned to the student.
+  #: Note that right now at most one project per student is supported.
+  number_of_projects = ndb.IntegerProperty(required=True, default=0)
+
+  #: Total number of project evaluations that have been passed by the student
+  #: for all the projects that have been assigned to him or her.
+  number_of_passed_evaluations = ndb.IntegerProperty(required=True, default=0)
+
+  #: Total number of project evaluations that have been failed by the student
+  #: for all the projects that have been assigned to him or her.
+  number_of_failed_evaluations = ndb.IntegerProperty(required=True, default=0)
+
+  #: List of organizations for which the student have been assigned a project.
+  project_for_orgs = ndb.KeyProperty(repeated=True)
+
+  #: Property pointing to the Blob storing student's tax form.
+  tax_form = ndb.BlobKeyProperty()
+
+  #: Property pointing to the Blob storing student's enrollment form.
+  enrollment_form = ndb.BlobKeyProperty()
+
 
 class Profile(ndb.Model):
   """Model that represents profile that is registered on per-program basis
