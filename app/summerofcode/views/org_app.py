@@ -499,24 +499,13 @@ class OrgProfileCreatePage(base.GSoCRequestHandler):
         del org_properties['org_id']
 
         result = createOrganizationTxn(
-            org_id, data.program.key(), org_properties, data.models)
+            data, org_id, data.program.key(), org_properties,
+            [data.ndb_profile.key, form.cleaned_data['backup_admin'].key],
+            data.models)
 
         if not result:
           raise exception.BadRequest(message=result.extra)
         else:
-          # NOTE: this should rather be done within a transaction along with
-          # creating the organization. At least one admin is required for
-          # each organization: what if the code below fails and there are none?
-          # However, it should not be a practical problem.
-          admin_keys = [
-              data.ndb_profile.key, form.cleaned_data['backup_admin'].key]
-          for admin_key in admin_keys:
-            connection_view.createConnectionTxn(
-                data, admin_key, result.extra,
-                conversation_updater.CONVERSATION_UPDATER,
-                org_role=connection_model.ORG_ADMIN_ROLE,
-                user_role=connection_model.ROLE)
-
           url = links.LINKER.organization(
               result.extra.key, urls.UrlNames.ORG_APPLICATION_SUBMIT)
           return http.HttpResponseRedirect(url)
@@ -818,19 +807,22 @@ class PublicOrganizationListPage(base.GSoCRequestHandler):
     }
 
 
-@ndb.transactional
+@ndb.transactional(xg=True)
 def createOrganizationTxn(
-    org_id, program_key, org_properties, models):
+    data, org_id, program_key, org_properties, admin_keys, models):
   """Creates a new organization profile based on the specified properties.
 
   This function simply calls organization logic's function to do actual job
   but ensures that the entire operation is executed within a transaction.
 
   Args:
+    data: request_data.RequestData for the current request.
     org_id: Identifier of the new organization. Must be unique on
       'per program' basis.
     program_key: Program key.
     org_properties: A dict mapping organization properties to their values.
+    admin_keys: List of profile keys of organization administrators for
+      this organization.
     models: instance of types.Models that represent appropriate models.
 
   Returns:
@@ -839,8 +831,17 @@ def createOrganizationTxn(
     entity. Otherwise, RichBool whose value is set to False and extra part is
     a string that represents the reason why the action could not be completed.
   """
-  return org_logic.createOrganization(
+  result = org_logic.createOrganization(
       org_id, program_key, org_properties, models)
+
+  for admin_key in admin_keys:
+    connection_view.createConnectionTxn(
+        data, admin_key, result.extra,
+        conversation_updater.CONVERSATION_UPDATER,
+        org_role=connection_model.ORG_ADMIN_ROLE,
+        user_role=connection_model.ROLE)
+
+  return result
 
 
 @ndb.transactional
