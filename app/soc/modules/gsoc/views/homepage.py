@@ -112,6 +112,14 @@ class Apply(Template):
       context['participating_orgs'] = participating_orgs
 
     context['org_signup'] = self.data.timeline.orgSignup()
+    if context['org_signup']:
+      context['has_profile'] = self.data.ndb_profile is not None
+      context['org_member_profile_link'] = links.ABSOLUTE_LINKER.program(
+          self.data.program, urls.UrlNames.PROFILE_REGISTER_AS_ORG_MEMBER,
+          secure=True)
+      context['org_apply_link'] = links.LINKER.program(
+          self.data.program, urls.UrlNames.ORG_PROFILE_CREATE)
+
     context['student_signup'] = self.data.timeline.studentSignup()
     context['mentor_signup'] = self.data.timeline.mentorSignup()
 
@@ -156,8 +164,8 @@ class Apply(Template):
         context['show_profile_link'] = True
 
     if self.data.timeline.orgSignup() and self.data.ndb_profile:
-      context['org_apply_link'] = redirector.program().urlOf(
-          'gsoc_take_org_app')
+      context['org_apply_link'] = links.LINKER.program(
+          self.data.program, urls.UrlNames.ORG_PROFILE_CREATE)
       context['dashboard_link'] = links.LINKER.program(
           self.data.program, 'gsoc_dashboard')
 

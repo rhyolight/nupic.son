@@ -29,23 +29,22 @@ limitations under the License.
 {% if org_signup %}
   <div id="apply-orgs" class="block block-orgs">
     <img src="/soc/content/{{ app_version }}/images/gsoc/students-apply-now.jpg" height="107" width="429" alt="" id="block-apply-image" />
-    {% if profile_role == "mentor" %}
-       <h3 id="title-section-apply">Organizations: Apply now!</h3>
-    {% else %}
-      <h3 id="title-section-apply">Org Admins: Register now!</h3>
-    {% endif %}
-
-    <!-- begin in apply block -->
+    <h3 id="title-section-apply">Organizations apply now!</h3>
+    {% if has_profile %}
     <p id="block-apply-text-action" class="action">
-      {% if org_apply_link %}
-        <a href="{{ org_apply_link }}">Apply</a>
-        <p id="block-apply-text-small" class="small">as a new mentoring organization.</p>
-        <strong><a href="{{ dashboard_link }}">
-          Or edit your organization application from your dashboard
-        </a></strong>
-      {% endif %}
-  </div> <!-- end in apply block -->
-{% else %}
+      <a href="{{ org_apply_link }}">Begin registration</a>
+    </p>
+      <strong>
+        <a href="{{ dashboard_link }}">Or edit your existing application from your dashboard</a>
+      </strong>
+    {% else %}
+    <p id="block-apply-text-action" class="action">
+      In order to register your organization, you need to create <a href={{ org_member_profile_link }}>a profile</a> first.
+    {% endif %}
+    </p>
+  </div>
+{% endif %}
+
   {% if signup_active %}
     {% if student_signup and not profile_role == "mentor" and not profile_role == "org_admin" %}
       <div id="apply-students" class="block block-students">
@@ -91,6 +90,5 @@ limitations under the License.
         <strong><a href="{{ mentor_profile_link }}">Or register as a mentor</a></strong>
       {% endif %}
 
-  </div> <!-- end in apply block -->
 {% endif %}
-{% endif %}
+
