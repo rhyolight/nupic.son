@@ -24,6 +24,7 @@ from django import http
 from django.utils.translation import ugettext
 
 from melange.logic import connection as connection_logic
+from melange.logic import organization as org_logic
 from melange.models import connection as connection_model
 from melange.models import profile as profile_model
 from melange.request import access
@@ -62,6 +63,7 @@ from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 from summerofcode.logic import survey as survey_logic
+from summerofcode.views.helper import urls
 
 BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
 
@@ -251,7 +253,7 @@ class DashboardPage(base.GSoCRequestHandler):
 
     components.append(DocumentComponent(data))
 
-    component = self._getMyOrgApplicationsComponent(data)
+    component = self._getManagedOrganizationsComponent(data)
     if component:
       components.append(component)
 
@@ -309,32 +311,28 @@ class DashboardPage(base.GSoCRequestHandler):
 
     return components
 
-  def _getMyOrgApplicationsComponent(self, data):
-    """Returns MyOrgApplicationsComponent iff this user is main_admin or
-    backup_admin in an application.
+  def _getManagedOrganizationsComponent(self, data):
+    """Returns ManagedOrganizationsComponent, if this user is an administrator
+    for at least one organization.
+
+    Args:
+      data: request_data.RequestData object for the current request.
+
+    Returns:
+      An instance of ManagedOrganizationsComponent class, if the user is an
+      organization administrator; None otherwise.
     """
-    survey = org_app_logic.getForProgram(data.program)
-
-    # Test if this user is main admin or backup admin
-    q = OrgAppRecord.all()
-    q.filter('survey', survey)
-    q.filter('main_admin', data.user)
-
-    record = q.get()
-
-    q = OrgAppRecord.all()
-    q.filter('survey', survey)
-    q.filter('backup_admin', data.user)
-
-    if record or q.get():
+    if data.ndb_profile.is_admin:
       # add a component showing the organization application of the user
-      return MyOrgApplicationsComponent(data, survey)
+      survey = org_app_logic.getForProgram(data.program)
+      return ManagedOrganizationsComponent(data, survey)
     else:
       return None
 
 
-class MyOrgApplicationsComponent(Component):
-  """Component for listing the Organization Applications of the current user.
+class ManagedOrganizationsComponent(Component):
+  """Component for listing the organizations that are administered by
+  the current user.
   """
 
   IDX = 0
@@ -343,34 +341,31 @@ class MyOrgApplicationsComponent(Component):
     """Initializes the component.
 
     Args:
-      data: The RequestData object
-      survey: the OrgApplicationSurvey entity
+      data: request_data.RequestData object for the current request.
     """
     self.data = data
-    # passed in so we don't have to do double queries
-    self.survey = survey
 
     list_config = lists.ListConfiguration()
 
     list_config.addSimpleColumn('name', 'Name')
     list_config.addSimpleColumn('org_id', 'Organization ID')
-    list_config.addSimpleColumn('created', 'Created On',
-                                column_type=lists.DATE)
-    list_config.addSimpleColumn('modified', 'Last Modified On',
-                                column_type=lists.DATE)
 
-    if self.data.timeline.surveyPeriod(survey):
-      url_name = 'gsoc_retake_org_app'
-    else:
-      url_name = 'gsoc_show_org_app'
+    def getSurveyResponseCreatedOn(entity, *args):
+      """Helper function to get a value for Created On column."""
+      app_response = org_logic.getApplicationResponse(entity.key)
+      return app_response.created_on if app_response else ''
+
+    list_config.addDateColumn(
+        'app_response_created_on', 'Questionnaire Submitted On',
+        getSurveyResponseCreatedOn)
 
     list_config.setRowAction(
-        lambda e, *args: data.redirect.id(e.key().id()).
-            urlOf(url_name))
+        lambda entity, *args: links.LINKER.organization(
+            entity.key, urls.UrlNames.ORG_PROFILE_EDIT))
 
     self._list_config = list_config
 
-    super(MyOrgApplicationsComponent, self).__init__(data)
+    super(ManagedOrganizationsComponent, self).__init__(data)
 
   def templatePath(self):
     """Returns the path to the template that should be used in render()."""
@@ -383,9 +378,10 @@ class MyOrgApplicationsComponent(Component):
 
     return {
         'name': 'org_app',
-        'title': 'My organization applications',
+        'title': 'Managed organizations',
         'lists': [list_configuration_response],
-        'description': ugettext('My organization applications'),
+        'description': ugettext(
+            'Organizations for which you are an administrator.'),
         }
 
   def getListData(self):
@@ -397,22 +393,12 @@ class MyOrgApplicationsComponent(Component):
     if lists.getListIndex(self.data.request) != self.IDX:
       return None
 
-    q = OrgAppRecord.all()
-    q.filter('survey', self.survey)
-    q.filter('main_admin', self.data.user)
-
-    records = q.fetch(1000)
-
-    q = OrgAppRecord.all()
-    q.filter('survey', self.survey)
-    q.filter('backup_admin', self.data.user)
-
-    records.extend(q.fetch(1000))
+    orgs = ndb.get_multi(self.data.ndb_profile.admin_for)
 
     response = lists.ListContentResponse(self.data.request, self._list_config)
 
-    for record in records:
-      response.addRow(record)
+    for org in orgs:
+      response.addRow(org)
     response.next = 'done'
 
     return response
