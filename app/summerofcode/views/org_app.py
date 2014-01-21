@@ -35,6 +35,7 @@ from melange.utils import time as time_utils
 from melange.views import connection as connection_view
 
 from soc.logic import cleaning
+from soc.models import licenses
 
 from soc.views import readonly_template
 from soc.views import template
@@ -70,6 +71,9 @@ TAGS_HELP_TEXT = translation.ugettext(
 
 IDEAS_PAGE_HELP_TEXT = translation.ugettext(
     'The URL to a page with list of ideas for projects for this organization.')
+
+LICENSE_HELP_TEXT = translation.ugettext(
+    'The main license which is used by this organization.')
 
 LOGO_URL_HELP_TEXT = translation.ugettext(
     'URL to the logo of the organization. Please ensure that the provided '
@@ -131,6 +135,8 @@ DESCRIPTION_LABEL = translation.ugettext('Description')
 TAGS_LABEL = translation.ugettext('Tags')
 
 IDEAS_PAGE_LABEL = translation.ugettext('Ideas list')
+
+LICENSE_LABEL = translation.ugettext('Main license')
 
 LOGO_URL_LABEL = translation.ugettext('Logo URL')
 
@@ -194,11 +200,14 @@ _ORG_PREFERENCES_PROPERTIES_FORM_KEYS = [
     'max_score', 'slot_request_max', 'slot_request_min']
 
 _ORG_PROFILE_PROPERTIES_FORM_KEYS = [
-    'description', 'ideas_page', 'logo_url', 'name', 'org_id', 'tags']
+    'description', 'ideas_page', 'logo_url', 'name', 'org_id', 'tags',
+    'license']
 
 TAG_MAX_LENGTH = 30
 MAX_SCORE_MIN_VALUE = 1
 MAX_SCORE_MAX_VALUE = 12
+
+_LICENSE_CHOICES = ((_license, _license) for _license in licenses.LICENSES)
 
 
 def cleanOrgId(org_id):
@@ -282,6 +291,10 @@ class _OrgProfileForm(gsoc_forms.GSoCModelForm):
   tags = django_forms.CharField(
       required=False, label=TAGS_LABEL,
       help_text=TAGS_HELP_TEXT % TAG_MAX_LENGTH)
+
+  license = django_forms.CharField(
+      required=True, label=LICENSE_LABEL, help_text=LICENSE_HELP_TEXT,
+      widget=django_forms.Select(choices=_LICENSE_CHOICES))
 
   logo_url = django_forms.URLField(
       required=False, label=LOGO_URL_LABEL, help_text=LOGO_URL_HELP_TEXT)
@@ -458,7 +471,7 @@ class OrgProfileCreatePage(base.GSoCRequestHandler):
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""
-    return 'modules/gsoc/form_base.html'
+    return 'summerofcode/organization/org_profile_edit.html'
 
   def djangoURLPatterns(self):
     """See base.RequestHandler.djangoURLPatterns for specification."""

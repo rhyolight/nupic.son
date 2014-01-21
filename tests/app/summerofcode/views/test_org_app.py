@@ -14,12 +14,13 @@
 
 """Unit tests for organization application view."""
 
-from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from melange.models import connection as connection_model
 from melange.models import contact as contact_model
 from melange.models import survey as survey_model
+
+from soc.models import licenses
 
 from summerofcode.models import organization as soc_org_model
 from summerofcode.templates import tabs
@@ -34,6 +35,7 @@ TEST_ORG_NAME = u'Test Org Name'
 TEST_BLOG = 'http://www.test.blog.com/'
 TEST_DESCRIPTION = u'Test Organization Description'
 TEST_TAGS = u'tag one,tag_two,tag 3'
+TEST_LICENSE = licenses.LICENSES[0]
 TEST_FACEBOOK = u'http://www.test.facebook.com/'
 TEST_FEED_URL = u'http://www.test.feed.com/'
 TEST_GOOGLE_PLUS = u'http://www.test.google.plus.com/'
@@ -147,6 +149,7 @@ class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
         'facebook': TEST_FACEBOOK,
         'feed_url': TEST_FEED_URL,
         'google_plus': TEST_GOOGLE_PLUS,
+        'license': TEST_LICENSE,
         'logo_url': TEST_LOGO_URL,
         'ideas_page': TEST_IDEAS_PAGE,
         'irc_channel': TEST_IRC_CHANNEL,
@@ -174,6 +177,7 @@ class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(org.contact.web_page, TEST_WEB_PAGE)
     self.assertEqual(org.description, TEST_DESCRIPTION)
     self.assertEqual(org.ideas_page, TEST_IDEAS_PAGE)
+    self.assertEqual(org.license, TEST_LICENSE)
     self.assertEqual(org.logo_url, TEST_LOGO_URL)
     self.assertEqual(org.name, TEST_ORG_NAME)
     self.assertEqual(org.org_id, TEST_ORG_ID)
@@ -211,6 +215,7 @@ OTHER_TEST_FEED_URL = u'http://www.other.test.feed.com/'
 OTHER_TEST_GOOGLE_PLUS = 'http://www.other.test.google.plus.com/'
 OTHER_TEST_IDEAS_PAGE = 'http://www.other.ideas.page.com/'
 OTHER_TEST_IRC_CHANNEL = 'irc://irc.freenode.net/other'
+OTHER_TEST_LICENSE = licenses.LICENSES[-1]
 OTHER_TEST_LOGO_URL = 'http://www.other.test.logo.url.com/'
 OTHER_TEST_MAILING_LIST = 'othermailinglist@example.com'
 OTHER_TEST_TWITTER = u'http://www.other.test.twitter.com/'
@@ -256,6 +261,7 @@ class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
         'google_plus': OTHER_TEST_GOOGLE_PLUS,
         'ideas_page': OTHER_TEST_IDEAS_PAGE,
         'irc_channel': OTHER_TEST_IRC_CHANNEL,
+        'license': OTHER_TEST_LICENSE,
         'logo_url': OTHER_TEST_LOGO_URL,
         'mailing_list': OTHER_TEST_MAILING_LIST,
         'name': OTHER_TEST_NAME,
@@ -277,6 +283,7 @@ class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(org.contact.google_plus, OTHER_TEST_GOOGLE_PLUS)
     self.assertEqual(org.ideas_page, OTHER_TEST_IDEAS_PAGE)
     self.assertEqual(org.contact.irc_channel, OTHER_TEST_IRC_CHANNEL)
+    self.assertEqual(org.license, OTHER_TEST_LICENSE)
     self.assertEqual(org.logo_url, OTHER_TEST_LOGO_URL)
     self.assertEqual(org.name, OTHER_TEST_NAME)
     self.assertEqual(org.tags, OTHER_TEST_TAGS.split(','))
@@ -291,6 +298,7 @@ class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
         'feed_url': OTHER_TEST_FEED_URL,
         'google_plus': OTHER_TEST_GOOGLE_PLUS,
         'ideas_page': OTHER_TEST_IDEAS_PAGE,
+        'license': OTHER_TEST_LICENSE,
         'logo_url': OTHER_TEST_LOGO_URL,
         'org_id': 'other_org_id',
         'name': TEST_ORG_NAME,
