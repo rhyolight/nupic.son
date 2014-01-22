@@ -84,18 +84,24 @@ class ProjectList(Template):
     self.idx = self.DEFAULT_IDX if idx is None else idx
 
     def getOrganization(entity, *args):
-      """."""
+      """Helper function to get value for organization column."""
       org_key = GSoCProject.org.get_value_for_datastore(entity)
       return ndb.Key.from_old_key(org_key).get().name
 
+    def getStudent(entity, *args):
+      """Helper function to get value for student column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
+
     list_config = lists.ListConfiguration()
-    list_config.addPlainTextColumn('student', 'Student',
-        lambda entity, *args: entity.parent().name())
+    list_config.addPlainTextColumn('student', 'Student', getStudent)
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn('org', 'Organization', getOrganization)
     list_config.addSimpleColumn('status', 'Status', hidden=True)
-    list_config.addPlainTextColumn('mentors', 'Mentors',
-        lambda entity, *args: args[0][entity.key()], hidden=True)
+    list_config.addPlainTextColumn(
+        'mentors', 'Mentors',
+        lambda entity, *args: ', '.join(
+            mentor.public_name for mentor in entity.getMentors()))
+
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('student')
 
@@ -125,9 +131,9 @@ class ProjectList(Template):
     idx = lists.getListIndex(self.data.request)
     if idx == self.idx:
       starter = lists.keyStarter
-      # TODO(daniel): enable prefetching from ndb models ('org')
-      prefetcher = ProjectList.ListPrefetcher(
-          GSoCProject, [], ['mentors'], parent=True)
+      # TODO(daniel): enable prefetching from ndb models
+      # ('org', 'mentors', 'parent')
+      prefetcher = None
 
       response_builder = lists.RawQueryContentResponseBuilder(
           self.data.request, self._list_config, self.query,
