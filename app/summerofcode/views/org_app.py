@@ -30,6 +30,7 @@ from melange.models import organization as org_model
 from melange.request import access
 from melange.request import exception
 from melange.request import links
+from melange.templates import survey_response_list
 from melange.utils import lists as melange_lists
 from melange.utils import time as time_utils
 from melange.views import connection as connection_view
@@ -756,6 +757,84 @@ class PublicOrganizationList(template.Template):
         'lists': [list_configuration_response],
     }
 
+_STATUS_APPLYING_ID = translation.ugettext('Needs review')
+_STATUS_PRE_ACCEPTED_ID = translation.ugettext('Pre-accepted')
+_STATUS_PRE_REJECTED_ID = translation.ugettext('Pre-rejected')
+_STATUS_ACCEPTED_ID = translation.ugettext('Accepted')
+_STATUS_REJECTED_ID = translation.ugettext('Rejected')
+
+_STATUS_ID_TO_ENUM_LINK = (
+    (_STATUS_APPLYING_ID, org_model.Status.APPLYING),
+    (_STATUS_PRE_ACCEPTED_ID, org_model.Status.PRE_ACCEPTED),
+    (_STATUS_PRE_REJECTED_ID, org_model.Status.PRE_REJECTED),
+    (_STATUS_ACCEPTED_ID, org_model.Status.ACCEPTED),
+    (_STATUS_REJECTED_ID, org_model.Status.REJECTED),
+    )
+_STATUS_ID_TO_ENUM_MAP = dict(_STATUS_ID_TO_ENUM_LINK)
+_STATUS_ENUM_TO_ID_MAP = dict(
+    (v, k) for (k, v) in _STATUS_ID_TO_ENUM_LINK)
+
+class OrgApplicationList(survey_response_list.SurveyResponseList):
+  """List of organization applications that have been submitted for the program.
+  """
+
+  def __init__(self, data, survey):
+    super(OrgApplicationList, self).__init__(data, survey)
+
+    self.list_config.addSimpleColumn(
+        'created_on', 'Created On', column_type=lists.DATE)
+    self.list_config.addSimpleColumn(
+        'modified_on', 'Last Modified On', column_type=lists.DATE)
+    self.list_config.addPlainTextColumn(
+        'name', 'Name', lambda entity, *args: entity.key.parent().get().name)
+    self.list_config.addPlainTextColumn(
+        'org_id', 'Organization ID',
+        lambda entity, *args: entity.key.parent().get().org_id)
+    self.list_config.addPlainTextColumn(
+        'new_or_veteran', 'New/Veteran',
+        lambda entity, *args:
+            'Veteran' if entity.key.parent().get().is_veteran else 'New')
+
+    # TODO(ljvderijk): Poke Mario during all-hands to see if we can separate
+    # "search options" and in-line selection options.
+    options = [
+        ('', 'All'),
+        ('(%s)' % _STATUS_APPLYING_ID, _STATUS_APPLYING_ID),
+        ('(%s)' % _STATUS_PRE_ACCEPTED_ID, _STATUS_PRE_ACCEPTED_ID),
+        ('(%s)' % _STATUS_PRE_REJECTED_ID, _STATUS_PRE_ACCEPTED_ID),
+        # TODO(daniel): figure out how ignored state is used.
+        ('(ignored)', 'ignored'),
+    ]
+
+    self.list_config.addPlainTextColumn(
+        'status', 'Status',
+        lambda entity, *args:
+            _STATUS_ENUM_TO_ID_MAP[entity.key.parent().get().status],
+        options=options)
+    self.list_config.setColumnEditable('status', True, 'select')
+
+  def templatePath(self):
+    """See template.Template.templatePath for specification."""
+    return 'summerofcode/organization/_org_application_list.html'
+
+  def context(self):
+    """See template.Template.context for specification."""
+    description = ORGANIZATION_LIST_DESCRIPTION
+
+    list_configuration_response = lists.ListConfigurationResponse(
+        self.data, self.list_config, 0, description)
+
+    return {'lists': [list_configuration_response]}
+
+  def getListData(self):
+    """Returns data for the list."""
+    query = org_logic.getApplicationResponsesQuery(self.data.org_app.key())
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.data.request, self.list_config, query, lists.keyStarter,
+        prefetcher=None)
+    return response_builder.build()
+
 
 class PublicOrganizationListRowRedirect(melange_lists.RedirectCustomRow):
   """Class which provides redirects for rows of public organization list."""
@@ -819,6 +898,43 @@ class PublicOrganizationListPage(base.GSoCRequestHandler):
         'accepted_orgs_list': PublicOrganizationList(data),
     }
 
+
+class OrgApplicationListPage(base.GSoCRequestHandler):
+  """View to list all applications that have been submitted in the program."""
+
+  # TODO(daniel): This list should be active only when org application is set.
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
+  def templatePath(self):
+    """See base.GSoCRequestHandler.templatePath for specification."""
+    return 'soc/org_app/records.html'
+
+  def djangoURLPatterns(self):
+    """See base.GSoCRequestHandler.djangoURLPatterns for specification."""
+    return [
+        soc_url_patterns.url(
+            r'org/application/list/%s$' % url_patterns.PROGRAM, self,
+            name=urls.UrlNames.ORG_APPLICATION_LIST)]
+
+  def jsonContext(self, data, check, mutator):
+    """See base.GSoCRequestHandler.jsonContext for specification."""
+    idx = lists.getListIndex(data.request)
+    if idx == 0:
+      list_data = OrgApplicationList(data, data.org_app).getListData()
+      return list_data.content()
+    else:
+      raise exception.BadRequest(message='Invalid ID has been specified.')
+
+  def context(self, data, check, mutator):
+    """See base.GSoCRequestHandler.context for specification."""
+    record_list = OrgApplicationList(data, data.org_app)
+
+    page_name = translation.ugettext('Records - %s' % (data.org_app.title))
+    context = {
+        'page_name': page_name,
+        'record_list': record_list,
+        }
+    return context
 
 @ndb.transactional(xg=True)
 def createOrganizationTxn(

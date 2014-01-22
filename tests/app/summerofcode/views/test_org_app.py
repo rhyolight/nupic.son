@@ -119,6 +119,17 @@ def _getPublicOrgListUrl(program):
   return '/gsoc/org/list/public/%s' % program.key().name()
 
 
+def _getOrgApplicationListPageListUrl(program):
+  """Returns URL to Organization Application List page.
+
+  Args:
+    program: Program entity.
+
+  Returns:
+    A string containing the URL to Organization Application List page.
+  """
+  return '/gsoc/org/application/list/%s' % program.key().name()
+
 class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for OrgProfileCreatePage class."""
 
@@ -415,6 +426,22 @@ class PublicOrganizationListPageTest(test_utils.GSoCDjangoTestCase):
   def testPageLoads(self):
     """Tests that page loads properly."""
     response = self.get(_getPublicOrgListUrl(self.program))
+    self.assertResponseOK(response)
+
+
+class OrgApplicationListPageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for OrgApplicationListPage class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
+    response = self.get(_getOrgApplicationListPageListUrl(self.program))
     self.assertResponseOK(response)
 
 
