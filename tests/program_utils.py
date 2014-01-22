@@ -284,17 +284,18 @@ def seedApplicationSurvey(program_key, **kwargs):
 
   Args:
     program_key: Program key to create a survey for.
+    kwargs: Optional values for other properties of the seeded entity.
 
   Returns:
-    Newly seeded application survey.
+    Newly seeded survey entity.
   """
-  user = profile_utils.seedUser()
+  user = profile_utils.seedNDBUser()
   properties = {
       'scope': program_key,
       'program': program_key,
-      'modified_by': user,
-      'created_by': user,
-      'author': user,
+      'modified_by': user.key.to_old_key(),
+      'created_by': user.key.to_old_key(),
+      'author': user.key.to_old_key(),
       'schema': ('[["item"],{"item":{"field_type":"input_text",'
                  '"required":false, "label":"test"}}]'),
       'survey_content': None,
