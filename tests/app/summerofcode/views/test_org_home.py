@@ -15,12 +15,15 @@
 """Unit tests for organization homepage views."""
 
 from tests import org_utils
+from tests import profile_utils
 from tests import test_utils
-
+from tests.utils import project_utils
 
 TEST_BLOG = 'http://www.test.blog.com/'
 TEST_MAILING_LIST = 'mailinglist@example.com'
 TEST_TWITTER = u'http://www.test.twitter.com/'
+
+NUMBER_OF_PROJECTS = 3
 
 def _getOrgHomeUrl(org):
   """Returns URL to Organization Homepage.
@@ -96,3 +99,23 @@ class OrgHomePageTest(test_utils.GSoCDjangoTestCase):
     self.timeline_helper.studentsAnnounced()
     response = self.get(_getOrgHomeUrl(self.org))
     self.assertIn('project_list', response.context)
+
+  def testProjectList(self):
+    """Tests that project list shows projects for the organization."""
+    self.timeline_helper.studentsAnnounced()
+
+    # seed a few projects for the organization
+    for _ in range(NUMBER_OF_PROJECTS):
+      student = profile_utils.seedSOCStudent(self.program)
+      project_utils.seedProject(
+          student, self.program.key(), org_key=self.org.key)
+
+    # seed a project for another organization
+    other_org = org_utils.seedSOCOrganization(self.program.key())
+    student = profile_utils.seedSOCStudent(self.program)
+    project_utils.seedProject(
+        student, self.program.key(), org_key=other_org.key)
+
+    # check that only orgs for the first organization are listed
+    data = self.getListData(_getOrgHomeUrl(self.org), 0)
+    self.assertEqual(NUMBER_OF_PROJECTS, len(data))
