@@ -15,6 +15,7 @@
 """Module containing the views for Summer Of Code organization application."""
 
 import collections
+import json
 
 from google.appengine.ext import ndb
 
@@ -34,6 +35,7 @@ from melange.templates import survey_response_list
 from melange.utils import lists as melange_lists
 from melange.utils import time as time_utils
 from melange.views import connection as connection_view
+from melange.views.helper import form_handler
 
 from soc.logic import cleaning
 from soc.models import licenses
@@ -209,6 +211,8 @@ MAX_SCORE_MIN_VALUE = 1
 MAX_SCORE_MAX_VALUE = 12
 
 _LICENSE_CHOICES = ((_license, _license) for _license in licenses.LICENSES)
+
+_SET_STATUS_BUTTON_ID = 'save'
 
 
 def cleanOrgId(org_id):
@@ -781,6 +785,9 @@ class OrgApplicationList(survey_response_list.SurveyResponseList):
   def __init__(self, data, survey):
     super(OrgApplicationList, self).__init__(data, survey)
 
+    self.list_config.addPlainTextColumn(
+        'key', 'Key', lambda entity, *args: entity.key.parent().id(),
+        hidden=True)
     self.list_config.addSimpleColumn(
         'created_on', 'Created On', column_type=lists.DATE)
     self.list_config.addSimpleColumn(
@@ -801,7 +808,7 @@ class OrgApplicationList(survey_response_list.SurveyResponseList):
         ('', 'All'),
         ('(%s)' % _STATUS_APPLYING_ID, _STATUS_APPLYING_ID),
         ('(%s)' % _STATUS_PRE_ACCEPTED_ID, _STATUS_PRE_ACCEPTED_ID),
-        ('(%s)' % _STATUS_PRE_REJECTED_ID, _STATUS_PRE_ACCEPTED_ID),
+        ('(%s)' % _STATUS_PRE_REJECTED_ID, _STATUS_PRE_REJECTED_ID),
         # TODO(daniel): figure out how ignored state is used.
         ('(ignored)', 'ignored'),
     ]
@@ -812,6 +819,7 @@ class OrgApplicationList(survey_response_list.SurveyResponseList):
             _STATUS_ENUM_TO_ID_MAP[entity.key.parent().get().status],
         options=options)
     self.list_config.setColumnEditable('status', True, 'select')
+    self.list_config.addPostEditButton(_SET_STATUS_BUTTON_ID, 'Save')
 
   def templatePath(self):
     """See template.Template.templatePath for specification."""
@@ -935,6 +943,46 @@ class OrgApplicationListPage(base.GSoCRequestHandler):
         'record_list': record_list,
         }
     return context
+
+  def post(self, data, check, mutator):
+    """See base.GSoCRequestHandler.post for specification."""
+    button_id = data.POST.get('button_id')
+    if button_id is not None:
+      if button_id == _SET_STATUS_BUTTON_ID:
+        handler = SetOrganizationStatusHandler(self)
+        return handler.handle(data, check, mutator)
+      else:
+        raise exception.BadRequest(
+            message='Button id %s not supported.' % button_id)
+    else:
+      raise exception.BadRequest(message='Invalid POST data.')
+
+
+class SetOrganizationStatusHandler(form_handler.FormHandler):
+  """Form handler implementation to set status of organizations based on
+  data which is sent in a request.
+  """
+
+  def handle(self, data, check, mutator):
+    """See form_handler.FormHandler.handle for specification."""
+    post_data = data.POST.get('data')
+
+    if not post_data:
+      raise exception.BadRequest(message='Missing data.')
+
+    parsed_data = json.loads(post_data)
+    for org_key_id, properties in parsed_data.iteritems():
+      org_key = ndb.Key(
+          data.models.ndb_org_model._get_kind(), org_key_id)
+      new_status = _STATUS_ID_TO_ENUM_MAP.get(properties.get('status'))
+      if not new_status:
+        raise exception.BadRequest(
+            message='Missing or invalid new status in POST data.')
+      else:
+        organization = org_key.get()
+        org_logic.setStatus(organization, data.program, data.site, new_status)
+        return http.HttpResponse()
+
 
 @ndb.transactional(xg=True)
 def createOrganizationTxn(

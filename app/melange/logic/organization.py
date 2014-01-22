@@ -148,6 +148,7 @@ def setApplicationResponse(org_key, survey_key, properties):
   return app_response
 
 
+@ndb.transactional
 def setStatus(organization, program, site, new_status, recipients=None):
   """Sets status of the specified organization.
 
