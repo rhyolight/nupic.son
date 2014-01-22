@@ -265,6 +265,44 @@ class SetApplicationResponseTest(unittest.TestCase):
     self.assertEqual(application.bar, properties[BAR_ID])
 
 
+class GetApplicationResponsesQuery(unittest.TestCase):
+  """Unit tests for getApplicationResponsesQuery function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    sponsor = program_utils.seedSponsor()
+    program = program_utils.seedProgram(sponsor_key=sponsor.key())
+    self.survey = program_utils.seedApplicationSurvey(program.key())
+
+    # seed some organizations with survey responses
+    self.app_responses = set()
+    for _ in range(TEST_ORGS_NUMBER):
+      org = org_utils.seedOrganization(program.key())
+      self.app_responses.add(
+          org_utils.seedApplication(org.key, self.survey.key()).key)
+
+    # seed some organizations without survey responses
+    for _ in range(TEST_ORGS_NUMBER):
+      org_utils.seedOrganization(program.key())
+
+    other_program = program_utils.seedProgram(sponsor_key=sponsor.key())
+    other_survey = program_utils.seedApplicationSurvey(other_program.key())
+
+    # seed some organizations with survey responses for other survey
+    for _ in range(TEST_ORGS_NUMBER):
+      org = org_utils.seedOrganization(other_program.key())
+      org_utils.seedApplication(org.key, other_survey.key())
+
+  def testAppResponsesReturned(self):
+    """Tests that the returned query fetches correct application responses."""
+    query = org_logic.getApplicationResponsesQuery(self.survey.key())
+
+    app_responses = set(query.fetch(1000, keys_only=True))
+
+    # check that only applications for the first program are fetched
+    self.assertSetEqual(self.app_responses, app_responses)
+
+
 class SetStatusTest(test_utils.DjangoTestCase):
   """Unit tests for setStatus function."""
 
