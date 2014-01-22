@@ -893,13 +893,15 @@ class FakeBlobstoreMiddleware(object):
 
             # create a mock blob info and assign it to request data
             filename = field.disposition_options['filename']
-            blob_info = testbed.get_stub('blobstore').CreateBlob(
+            blob_entity = testbed.get_stub('blobstore').CreateBlob(
                 filename, 'fake content')
 
             # set other properties of blob info
-            blob_info['filename'] = filename
-            blob_info['content_type'] = field.headers['content-type']
-            datastore.Put(blob_info)
+            blob_entity['filename'] = filename
+            blob_entity['content_type'] = field.headers['content-type']
+            datastore.Put(blob_entity)
+
+            blob_info = blobstore.BlobInfo(blob_entity)
 
             # set request data
             request.file_uploads[key] = blob_info
@@ -907,4 +909,3 @@ class FakeBlobstoreMiddleware(object):
 
             # format blob info for Django by adding the name property.
             blob_info.name = field.disposition_options['filename']
-            blob_info.size = blob_info['size']

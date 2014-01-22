@@ -15,6 +15,7 @@
 """Module with Code In specific connection views."""
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from melange.logic import connection as connection_logic
 from melange.logic import profile as profile_logic
@@ -39,7 +40,7 @@ def sendMentorWelcomeMail(data, profile, message):
     mailer.getSpawnMailTaskTxn(mentor_mail, parent=profile)()
 
 
-@db.transactional
+@ndb.transactional
 def createConnectionTxn(
     data, profile_key, organization, conversation_updater, message=None,
     notification_context_provider=None, recipients=None,
@@ -138,7 +139,7 @@ def createAnonymousConnectionTxn(data, organization, org_role, email, message):
 
   return anonymous_connection
 
-@db.transactional
+@ndb.transactional
 def createConnectionMessageTxn(connection_key, profile_key, content):
   """Creates a new connection message with the specified content
   for the specified connection.
@@ -153,7 +154,7 @@ def createConnectionMessageTxn(connection_key, profile_key, content):
   """
   # connection is retrieved and stored in datastore so that its last_modified
   # property is automatically updated by AppEngine
-  connection = db.get(connection_key)
+  connection = connection_key.get()
 
   message = connection_logic.createConnectionMessage(
       connection_key, content, author_key=profile_key)
@@ -164,7 +165,7 @@ def createConnectionMessageTxn(connection_key, profile_key, content):
   return message
 
 
-@db.transactional
+@ndb.transactional
 def handleUserNoRoleSelectionTxn(connection, conversation_updater):
   """Updates user role of the specified connection and all corresponding
   entities with connection_model.NO_ROLE selection.
@@ -177,7 +178,7 @@ def handleUserNoRoleSelectionTxn(connection, conversation_updater):
     conversation_updater: A ConversationUpdater object to be called if the
                           profile's conversations need updating.
   """
-  connection = db.get(connection.key())
+  connection = connection.key.get()
 
   if connection.user_role != connection_model.NO_ROLE:
     old_user_role = connection.user_role
@@ -191,15 +192,13 @@ def handleUserNoRoleSelectionTxn(connection, conversation_updater):
 
     db.put([connection, message])
 
-    profile = db.get(connection.parent_key())
-    org_key = connection_model.Connection.organization.get_value_for_datastore(
-        connection)
-    profile_logic.assignNoRoleForOrg(profile, org_key)
+    profile = connection.key.parent().get()
+    profile_logic.assignNoRoleForOrg(profile, connection.organization)
 
     conversation_updater.updateConversationsForProfile(profile)
 
 
-@db.transactional
+@ndb.transactional
 def handleUserRoleSelectionTxn(data, connection, conversation_updater):
   """Updates user role of the specified connection and all corresponding
   entities with connection_model.ROLE selection.
@@ -213,7 +212,7 @@ def handleUserRoleSelectionTxn(data, connection, conversation_updater):
     conversation_updater: A ConversationUpdater object to be called if the
                           profile's conversations need updating.
   """
-  connection = db.get(connection.key())
+  connection = connection.key.get()
 
   if connection.user_role != connection_model.ROLE:
     old_user_role = connection.user_role
@@ -225,19 +224,17 @@ def handleUserRoleSelectionTxn(data, connection, conversation_updater):
     message = connection_logic.generateMessageOnUpdateByUser(
         connection, old_user_role)
 
-    db.put([connection, message])
+    ndb.put_multi([connection, message])
 
-    profile = db.get(connection.parent_key())
-    org_key = connection_model.Connection.organization.get_value_for_datastore(
-        connection)
+    profile = connection.key.parent().get()
 
     if connection.orgOfferedMentorRole():
       send_email = not profile.is_mentor
-      profile_logic.assignMentorRoleForOrg(profile, org_key)
+      profile_logic.assignMentorRoleForOrg(profile, connection.organization)
       # TODO(daniel): generate connection message
     elif connection.orgOfferedOrgAdminRole():
       send_email = not profile.is_mentor
-      profile_logic.assignOrgAdminRoleForOrg(profile, org_key)
+      profile_logic.assignOrgAdminRoleForOrg(profile, connection.organization)
       # TODO(daniel): generate connection message
     else:
       # no role has been offered by organization
@@ -250,7 +247,7 @@ def handleUserRoleSelectionTxn(data, connection, conversation_updater):
     conversation_updater.updateConversationsForProfile(profile)
 
 
-@db.transactional
+@ndb.transactional
 def handleOrgNoRoleSelection(connection, org_admin, conversation_updater):
   """Updates organization role of the specified connection and all
   corresponding entities with connection_model.NO_ROLE selection.
@@ -265,7 +262,7 @@ def handleOrgNoRoleSelection(connection, org_admin, conversation_updater):
     conversation_updater: A ConversationUpdater object to be called if the
                           profile's conversations need updating.
   """
-  connection = db.get(connection.key())
+  connection = connection.key.get()
 
   if connection.org_role != connection_model.NO_ROLE:
     old_org_role = connection.org_role
@@ -279,18 +276,16 @@ def handleOrgNoRoleSelection(connection, org_admin, conversation_updater):
 
     db.put([connection, message])
 
-    profile = db.get(connection.parent_key())
-    org_key = connection_model.Connection.organization.get_value_for_datastore(
-        connection)
-    profile_logic.assignNoRoleForOrg(profile, org_key)
+    profile = connection.key.parent().get()
+    profile_logic.assignNoRoleForOrg(profile, connection.organization)
 
     conversation_updater.updateConversationsForProfile(profile)
 
     # TODO(daniel): generate connection message
 
 
-@db.transactional
-def handleMentorRoleSelection(connection, org_admin, conversation_updater):
+@ndb.transactional
+def handleMentorRoleSelection(connection, admin, conversation_updater):
   """Updates organization role of the specified connection and all
   corresponding entities with connection_model.MENTOR_ROLE selection.
 
@@ -298,14 +293,14 @@ def handleMentorRoleSelection(connection, org_admin, conversation_updater):
   have no role for the organization prior to calling this function.
 
   Args:
-    connection: connection entity.
-    org_admin: profile entity of organization administrator who updates
-               organization role for the connection.
+    connection: Connection entity.
+    admin: Profile entity of organization administrator who updates
+      organization role for the connection.
     conversation_updater: A ConversationUpdater object to be called if the
-                          profile's conversations need updating.
+      profile's conversations need updating.
   """
 
-  connection = db.get(connection.key())
+  connection = connection.key.get()
 
   if connection.org_role != connection_model.MENTOR_ROLE:
     old_org_role = connection.org_role
@@ -315,18 +310,15 @@ def handleMentorRoleSelection(connection, org_admin, conversation_updater):
         connection, connection_logic.ORG_ACTION_ORIGIN)
 
     message = connection_logic.generateMessageOnUpdateByOrg(
-        connection, org_admin, old_org_role)
+        connection, admin, old_org_role)
 
     db.put([connection, message])
 
     if connection.userRequestedRole():
-      profile = db.get(connection.parent_key())
+      profile = connection.key.parent().get()
       send_email = not profile.is_mentor
 
-      org_key = (
-          connection_model.Connection.organization.get_value_for_datastore(
-              connection))
-      profile_logic.assignMentorRoleForOrg(profile, org_key)
+      profile_logic.assignMentorRoleForOrg(profile, connection.organizaion)
 
       conversation_updater.updateConversationsForProfile(profile)
 
@@ -335,8 +327,8 @@ def handleMentorRoleSelection(connection, org_admin, conversation_updater):
         # TODO(daniel): send actual welcome email
 
 
-@db.transactional
-def handleOrgAdminRoleSelection(connection, org_admin, conversation_updater):
+@ndb.transactional
+def handleOrgAdminRoleSelection(connection, admin, conversation_updater):
   """Updates organization role of the specified connection and all
   corresponding entities with connection_model.ORG_ADMIN_ROLE selection.
 
@@ -344,13 +336,13 @@ def handleOrgAdminRoleSelection(connection, org_admin, conversation_updater):
   have no role for the organization prior to calling this function.
 
   Args:
-    connection: connection entity.
-    org_admin: profile entity of organization administrator who updates
-               organization role for the connection.
+    connection: Connection entity.
+    admin: Profile entity of organization administrator who updates
+      organization role for the connection.
     conversation_updater: A ConversationUpdater object to be called if the
-                          profile's conversations need updating.
+      profile's conversations need updating.
   """
-  connection = db.get(connection.key())
+  connection = connection.key.get()
 
   if connection.org_role != connection_model.ORG_ADMIN_ROLE:
     old_org_role = connection.org_role
@@ -360,18 +352,15 @@ def handleOrgAdminRoleSelection(connection, org_admin, conversation_updater):
         connection, connection_logic.ORG_ACTION_ORIGIN)
 
     message = connection_logic.generateMessageOnUpdateByOrg(
-        connection, org_admin, old_org_role)
+        connection, admin, old_org_role)
 
-    db.put([connection, message])
+    ndb.put_multi([connection, message])
 
     if connection.userRequestedRole():
-      profile = db.get(connection.parent_key())
+      profile = connection.key.parent().get()
       send_email = not profile.is_mentor
 
-      org_key = (
-          connection_model.Connection.organization.get_value_for_datastore(
-              connection))
-      profile_logic.assignOrgAdminRoleForOrg(profile, org_key)
+      profile_logic.assignOrgAdminRoleForOrg(profile, connection.organization)
 
       conversation_updater.updateConversationsForProfile(profile)
 
@@ -380,25 +369,25 @@ def handleOrgAdminRoleSelection(connection, org_admin, conversation_updater):
         # TODO(daniel): send actual welcome email
 
 
-@db.transactional
+@ndb.transactional
 def markConnectionAsSeenByOrg(connection_key):
   """Marks the specified connection as seen by organization.
 
   Args:
     connection: Connection key.
   """
-  connection = db.get(connection_key)
+  connection = connection_key.get()
   connection.seen_by_org = True
   connection.put()
 
 
-@db.transactional
+@ndb.transactional
 def markConnectionAsSeenByUser(connection_key):
   """Marks the specified connection as seen by organization.
 
   Args:
     connection: Connection key.
   """
-  connection = db.get(connection_key)
+  connection = connection_key.get()
   connection.seen_by_user = True
   connection.put()

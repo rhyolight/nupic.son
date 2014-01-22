@@ -33,6 +33,8 @@ from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+from summerofcode.views.helper import urls
+
 
 class DuplicatesPage(base.GSoCRequestHandler):
   """View for the host to see duplicates."""
@@ -117,7 +119,7 @@ class Duplicate(Template):
     for org in orgs:
       orgs_details[org.key().id_or_name()] = {
           'name': org.name,
-          'link': links.LINKER.organization(org.key, url_names.GSOC_ORG_HOME),
+          'link': links.LINKER.organization(org.key, urls.UrlNames.ORG_HOME),
           }
       org_admins = profile_logic.getOrgAdmins(org.key())
 

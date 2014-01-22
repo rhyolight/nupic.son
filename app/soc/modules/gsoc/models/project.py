@@ -15,6 +15,7 @@
 """This module contains the GSoCProject Model."""
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django.utils.translation import ugettext
 
@@ -95,7 +96,8 @@ class GSoCProject(db.Model):
     Returns:
       list of mentors for this project
     """
-    return [m for m in profile_model.GSoCProfile.get(self.mentors) if m]
+    mentor_ndb_keys = map(ndb.Key.from_old_key, self.mentors)
+    return [mentor for mentor in ndb.get_multi(mentor_ndb_keys) if mentor]
 
   #: The status of this project
   status = db.StringProperty(required=True, default=STATUS_ACCEPTED,

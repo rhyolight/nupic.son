@@ -15,6 +15,7 @@
 """Module containing the views for Summer Of Code organization application."""
 
 import collections
+import json
 
 from google.appengine.ext import ndb
 
@@ -30,11 +31,14 @@ from melange.models import organization as org_model
 from melange.request import access
 from melange.request import exception
 from melange.request import links
+from melange.templates import survey_response_list
 from melange.utils import lists as melange_lists
 from melange.utils import time as time_utils
 from melange.views import connection as connection_view
+from melange.views.helper import form_handler
 
 from soc.logic import cleaning
+from soc.models import licenses
 
 from soc.views import readonly_template
 from soc.views import template
@@ -45,7 +49,6 @@ from soc.views.helper import lists
 from soc.modules.gsoc.logic import conversation_updater
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper import url_patterns as soc_url_patterns
 
 from summerofcode.templates import tabs
@@ -70,6 +73,9 @@ TAGS_HELP_TEXT = translation.ugettext(
 
 IDEAS_PAGE_HELP_TEXT = translation.ugettext(
     'The URL to a page with list of ideas for projects for this organization.')
+
+LICENSE_HELP_TEXT = translation.ugettext(
+    'The main license which is used by this organization.')
 
 LOGO_URL_HELP_TEXT = translation.ugettext(
     'URL to the logo of the organization. Please ensure that the provided '
@@ -131,6 +137,8 @@ DESCRIPTION_LABEL = translation.ugettext('Description')
 TAGS_LABEL = translation.ugettext('Tags')
 
 IDEAS_PAGE_LABEL = translation.ugettext('Ideas list')
+
+LICENSE_LABEL = translation.ugettext('Main license')
 
 LOGO_URL_LABEL = translation.ugettext('Logo URL')
 
@@ -194,11 +202,16 @@ _ORG_PREFERENCES_PROPERTIES_FORM_KEYS = [
     'max_score', 'slot_request_max', 'slot_request_min']
 
 _ORG_PROFILE_PROPERTIES_FORM_KEYS = [
-    'description', 'ideas_page', 'logo_url', 'name', 'org_id', 'tags']
+    'description', 'ideas_page', 'logo_url', 'name', 'org_id', 'tags',
+    'license']
 
 TAG_MAX_LENGTH = 30
 MAX_SCORE_MIN_VALUE = 1
 MAX_SCORE_MAX_VALUE = 12
+
+_LICENSE_CHOICES = ((_license, _license) for _license in licenses.LICENSES)
+
+_SET_STATUS_BUTTON_ID = 'save'
 
 
 def cleanOrgId(org_id):
@@ -282,6 +295,10 @@ class _OrgProfileForm(gsoc_forms.GSoCModelForm):
   tags = django_forms.CharField(
       required=False, label=TAGS_LABEL,
       help_text=TAGS_HELP_TEXT % TAG_MAX_LENGTH)
+
+  license = django_forms.CharField(
+      required=True, label=LICENSE_LABEL, help_text=LICENSE_HELP_TEXT,
+      widget=django_forms.Select(choices=_LICENSE_CHOICES))
 
   logo_url = django_forms.URLField(
       required=False, label=LOGO_URL_LABEL, help_text=LOGO_URL_HELP_TEXT)
@@ -458,7 +475,7 @@ class OrgProfileCreatePage(base.GSoCRequestHandler):
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""
-    return 'modules/gsoc/form_base.html'
+    return 'summerofcode/organization/org_profile_edit.html'
 
   def djangoURLPatterns(self):
     """See base.RequestHandler.djangoURLPatterns for specification."""
@@ -499,24 +516,13 @@ class OrgProfileCreatePage(base.GSoCRequestHandler):
         del org_properties['org_id']
 
         result = createOrganizationTxn(
-            org_id, data.program.key(), org_properties, data.models)
+            data, org_id, data.program.key(), org_properties,
+            [data.ndb_profile.key, form.cleaned_data['backup_admin'].key],
+            data.models)
 
         if not result:
           raise exception.BadRequest(message=result.extra)
         else:
-          # NOTE: this should rather be done within a transaction along with
-          # creating the organization. At least one admin is required for
-          # each organization: what if the code below fails and there are none?
-          # However, it should not be a practical problem.
-          admin_keys = [
-              data.ndb_profile.key, form.cleaned_data['backup_admin'].key]
-          for admin_key in admin_keys:
-            connection_view.createConnectionTxn(
-                data, admin_key, result.extra,
-                conversation_updater.CONVERSATION_UPDATER,
-                org_role=connection_model.ORG_ADMIN_ROLE,
-                user_role=connection_model.ROLE)
-
           url = links.LINKER.organization(
               result.extra.key, urls.UrlNames.ORG_APPLICATION_SUBMIT)
           return http.HttpResponseRedirect(url)
@@ -754,6 +760,88 @@ class PublicOrganizationList(template.Template):
         'lists': [list_configuration_response],
     }
 
+_STATUS_APPLYING_ID = translation.ugettext('Needs review')
+_STATUS_PRE_ACCEPTED_ID = translation.ugettext('Pre-accepted')
+_STATUS_PRE_REJECTED_ID = translation.ugettext('Pre-rejected')
+_STATUS_ACCEPTED_ID = translation.ugettext('Accepted')
+_STATUS_REJECTED_ID = translation.ugettext('Rejected')
+
+_STATUS_ID_TO_ENUM_LINK = (
+    (_STATUS_APPLYING_ID, org_model.Status.APPLYING),
+    (_STATUS_PRE_ACCEPTED_ID, org_model.Status.PRE_ACCEPTED),
+    (_STATUS_PRE_REJECTED_ID, org_model.Status.PRE_REJECTED),
+    (_STATUS_ACCEPTED_ID, org_model.Status.ACCEPTED),
+    (_STATUS_REJECTED_ID, org_model.Status.REJECTED),
+    )
+_STATUS_ID_TO_ENUM_MAP = dict(_STATUS_ID_TO_ENUM_LINK)
+_STATUS_ENUM_TO_ID_MAP = dict(
+    (v, k) for (k, v) in _STATUS_ID_TO_ENUM_LINK)
+
+class OrgApplicationList(survey_response_list.SurveyResponseList):
+  """List of organization applications that have been submitted for the program.
+  """
+
+  def __init__(self, data, survey):
+    super(OrgApplicationList, self).__init__(data, survey)
+
+    self.list_config.addPlainTextColumn(
+        'key', 'Key', lambda entity, *args: entity.key.parent().id(),
+        hidden=True)
+    self.list_config.addSimpleColumn(
+        'created_on', 'Created On', column_type=lists.DATE)
+    self.list_config.addSimpleColumn(
+        'modified_on', 'Last Modified On', column_type=lists.DATE)
+    self.list_config.addPlainTextColumn(
+        'name', 'Name', lambda entity, *args: entity.key.parent().get().name)
+    self.list_config.addPlainTextColumn(
+        'org_id', 'Organization ID',
+        lambda entity, *args: entity.key.parent().get().org_id)
+    self.list_config.addPlainTextColumn(
+        'new_or_veteran', 'New/Veteran',
+        lambda entity, *args:
+            'Veteran' if entity.key.parent().get().is_veteran else 'New')
+
+    # TODO(ljvderijk): Poke Mario during all-hands to see if we can separate
+    # "search options" and in-line selection options.
+    options = [
+        ('', 'All'),
+        ('(%s)' % _STATUS_APPLYING_ID, _STATUS_APPLYING_ID),
+        ('(%s)' % _STATUS_PRE_ACCEPTED_ID, _STATUS_PRE_ACCEPTED_ID),
+        ('(%s)' % _STATUS_PRE_REJECTED_ID, _STATUS_PRE_REJECTED_ID),
+        # TODO(daniel): figure out how ignored state is used.
+        ('(ignored)', 'ignored'),
+    ]
+
+    self.list_config.addPlainTextColumn(
+        'status', 'Status',
+        lambda entity, *args:
+            _STATUS_ENUM_TO_ID_MAP[entity.key.parent().get().status],
+        options=options)
+    self.list_config.setColumnEditable('status', True, 'select')
+    self.list_config.addPostEditButton(_SET_STATUS_BUTTON_ID, 'Save')
+
+  def templatePath(self):
+    """See template.Template.templatePath for specification."""
+    return 'summerofcode/organization/_org_application_list.html'
+
+  def context(self):
+    """See template.Template.context for specification."""
+    description = ORGANIZATION_LIST_DESCRIPTION
+
+    list_configuration_response = lists.ListConfigurationResponse(
+        self.data, self.list_config, 0, description)
+
+    return {'lists': [list_configuration_response]}
+
+  def getListData(self):
+    """Returns data for the list."""
+    query = org_logic.getApplicationResponsesQuery(self.data.org_app.key())
+
+    response_builder = lists.RawQueryContentResponseBuilder(
+        self.data.request, self.list_config, query, lists.keyStarter,
+        prefetcher=None)
+    return response_builder.build()
+
 
 class PublicOrganizationListRowRedirect(melange_lists.RedirectCustomRow):
   """Class which provides redirects for rows of public organization list."""
@@ -773,7 +861,7 @@ class PublicOrganizationListRowRedirect(melange_lists.RedirectCustomRow):
     """See lists.RedirectCustomRow.getLink for specification."""
     org_key = ndb.Key(
         self.data.models.ndb_org_model._get_kind(), item['columns']['key'])
-    return links.LINKER.organization(org_key, url_names.GSOC_ORG_HOME)
+    return links.LINKER.organization(org_key, urls.UrlNames.ORG_HOME)
 
 
 class PublicOrganizationListPage(base.GSoCRequestHandler):
@@ -818,19 +906,99 @@ class PublicOrganizationListPage(base.GSoCRequestHandler):
     }
 
 
-@ndb.transactional
+class OrgApplicationListPage(base.GSoCRequestHandler):
+  """View to list all applications that have been submitted in the program."""
+
+  # TODO(daniel): This list should be active only when org application is set.
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
+
+  def templatePath(self):
+    """See base.GSoCRequestHandler.templatePath for specification."""
+    return 'soc/org_app/records.html'
+
+  def djangoURLPatterns(self):
+    """See base.GSoCRequestHandler.djangoURLPatterns for specification."""
+    return [
+        soc_url_patterns.url(
+            r'org/application/list/%s$' % url_patterns.PROGRAM, self,
+            name=urls.UrlNames.ORG_APPLICATION_LIST)]
+
+  def jsonContext(self, data, check, mutator):
+    """See base.GSoCRequestHandler.jsonContext for specification."""
+    idx = lists.getListIndex(data.request)
+    if idx == 0:
+      list_data = OrgApplicationList(data, data.org_app).getListData()
+      return list_data.content()
+    else:
+      raise exception.BadRequest(message='Invalid ID has been specified.')
+
+  def context(self, data, check, mutator):
+    """See base.GSoCRequestHandler.context for specification."""
+    record_list = OrgApplicationList(data, data.org_app)
+
+    page_name = translation.ugettext('Records - %s' % (data.org_app.title))
+    context = {
+        'page_name': page_name,
+        'record_list': record_list,
+        }
+    return context
+
+  def post(self, data, check, mutator):
+    """See base.GSoCRequestHandler.post for specification."""
+    button_id = data.POST.get('button_id')
+    if button_id is not None:
+      if button_id == _SET_STATUS_BUTTON_ID:
+        handler = SetOrganizationStatusHandler(self)
+        return handler.handle(data, check, mutator)
+      else:
+        raise exception.BadRequest(
+            message='Button id %s not supported.' % button_id)
+    else:
+      raise exception.BadRequest(message='Invalid POST data.')
+
+
+class SetOrganizationStatusHandler(form_handler.FormHandler):
+  """Form handler implementation to set status of organizations based on
+  data which is sent in a request.
+  """
+
+  def handle(self, data, check, mutator):
+    """See form_handler.FormHandler.handle for specification."""
+    post_data = data.POST.get('data')
+
+    if not post_data:
+      raise exception.BadRequest(message='Missing data.')
+
+    parsed_data = json.loads(post_data)
+    for org_key_id, properties in parsed_data.iteritems():
+      org_key = ndb.Key(
+          data.models.ndb_org_model._get_kind(), org_key_id)
+      new_status = _STATUS_ID_TO_ENUM_MAP.get(properties.get('status'))
+      if not new_status:
+        raise exception.BadRequest(
+            message='Missing or invalid new status in POST data.')
+      else:
+        organization = org_key.get()
+        org_logic.setStatus(organization, data.program, data.site, new_status)
+        return http.HttpResponse()
+
+
+@ndb.transactional(xg=True)
 def createOrganizationTxn(
-    org_id, program_key, org_properties, models):
+    data, org_id, program_key, org_properties, admin_keys, models):
   """Creates a new organization profile based on the specified properties.
 
   This function simply calls organization logic's function to do actual job
   but ensures that the entire operation is executed within a transaction.
 
   Args:
+    data: request_data.RequestData for the current request.
     org_id: Identifier of the new organization. Must be unique on
       'per program' basis.
     program_key: Program key.
     org_properties: A dict mapping organization properties to their values.
+    admin_keys: List of profile keys of organization administrators for
+      this organization.
     models: instance of types.Models that represent appropriate models.
 
   Returns:
@@ -839,8 +1007,17 @@ def createOrganizationTxn(
     entity. Otherwise, RichBool whose value is set to False and extra part is
     a string that represents the reason why the action could not be completed.
   """
-  return org_logic.createOrganization(
+  result = org_logic.createOrganization(
       org_id, program_key, org_properties, models)
+
+  for admin_key in admin_keys:
+    connection_view.createConnectionTxn(
+        data, admin_key, result.extra,
+        conversation_updater.CONVERSATION_UPDATER,
+        org_role=connection_model.ORG_ADMIN_ROLE,
+        user_role=connection_model.ROLE)
+
+  return result
 
 
 @ndb.transactional

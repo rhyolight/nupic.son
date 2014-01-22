@@ -61,12 +61,12 @@ limitations under the License.
       <p>{{ organization.description|safe }}</p>
     </div>
     <div id="block-organization-description-readmore" class="org-home-readmore">
-      {% if ideas_link %}
-        <a href="{{ ideas_link}}">Ideas page &raquo;</a>
+      {% if organization.ideas_page %}
+        <a href="{{ organization.ideas_page|safe }}">Ideas page &raquo;</a>
       {% else %}
         No ideas page URL given
       {% endif %}&nbsp;&nbsp;
-      <a href="{{ organization.home_page|safe }}">Homepage &raquo;</a>
+      <a href="{{ organization.contact.web_page|safe }}">Homepage &raquo;</a>
     </div>
   </div>
   <!-- end block -->

@@ -765,7 +765,7 @@ class StudentColumn(Column):
   """Column object to represent the student"""
   def getValue(self, entity):
     """See Column.getValue for specification"""
-    return entity.parent_key().name()
+    return ndb.Key.from_old_key(entity.parent_key()).get().public_name
 
 
 class OrganizationColumn(Column):
@@ -777,6 +777,13 @@ class OrganizationColumn(Column):
     org_key = project_model.GSoCProject.org.get_value_for_datastore(entity)
     return ndb.Key.from_old_key(org_key).get().name
 
+
+class MentorsColumn(Column):
+  """Column object to represent the mentors of a project."""
+  def getValue(self, entity):
+    """See Column.getValue for specification"""
+    return ', '.join(
+            mentor.public_name for mentor in entity.getMentors())
 
 class TagsColumn(Column):
   """Column class to represent tags for organization."""
@@ -799,6 +806,7 @@ student = StudentColumn('student', 'Student')
 title = SimpleColumn('title', 'Title')
 org = OrganizationColumn('org', 'Organization')
 status = SimpleColumn('status', 'Status')
+mentors = MentorsColumn('mentors', 'Mentors')
 
 cache_reader = CacheReader()
 datastore_reader = DatastoreReaderForDB()
@@ -807,7 +815,7 @@ ndb_datastore_reader = DatastoreReaderForNDB()
 valid_period = datetime.timedelta(0, 60)
 
 GSOC_PROJECTS_LIST = List(GSOC_PROJECTS_LIST_ID, 0, project.GSoCProject,
-                          [key, student, title, org, status], datastore_reader,
+                          [key, student, title, org, mentors], datastore_reader,
                           valid_period=valid_period)
 
 # TODO(daniel): move this part to a separate module

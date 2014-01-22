@@ -19,6 +19,7 @@ import datetime
 
 from google.appengine.api import datastore_errors
 from google.appengine.api import memcache
+from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from melange import types
@@ -87,6 +88,23 @@ def updateOrganization(org, org_properties):
   org.put()
 
 
+def getApplicationResponsesQuery(survey_key):
+  """Returns a query to fetch all application responses for the specified
+  survey.
+
+  Args:
+    survey_key: Survey key.
+
+  Returns:
+    ndb.Query instance to fetch all responses for the specified survey.
+  """
+  if isinstance(survey_key, db.Key):
+    survey_key = ndb.Key.from_old_key(survey_key)
+
+  return survey_model.SurveyResponse.query(
+      survey_model.SurveyResponse.survey == survey_key)
+
+
 def getApplicationResponse(org_key):
   """Returns application response for the specified organization.
 
@@ -130,6 +148,7 @@ def setApplicationResponse(org_key, survey_key, properties):
   return app_response
 
 
+@ndb.transactional
 def setStatus(organization, program, site, new_status, recipients=None):
   """Sets status of the specified organization.
 

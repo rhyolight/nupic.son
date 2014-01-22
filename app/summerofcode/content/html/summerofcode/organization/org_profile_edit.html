@@ -26,3 +26,14 @@ limitations under the License.
   {% endif %}
   {{ block.super }}
 {% endblock %}
+
+{% block dependencies %}
+  [
+    dep.uniform,
+    dep.melange.main,
+    dep.jqueryui.datepicker,
+    dep.jqueryui.autocomplete,
+    null,
+    tc("/summerofcode/content/{{ app_version }}/js/templates/organization/org_profile_form.js")
+  ]
+{% endblock dependencies %}

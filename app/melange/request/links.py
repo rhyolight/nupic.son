@@ -19,6 +19,7 @@ from google.appengine.ext import ndb
 
 from django.core import urlresolvers
 
+from melange.appengine import system
 from melange.models import organization as org_model
 from melange.models import profile as profile_model
 
@@ -38,7 +39,7 @@ def getAbsoluteUrl(relative_url, hostname, secure=False):
     A full path to the resource.
   """
   # TODO(nathaniel): consider using scheme-relative urls here?
-  protocol = 'https' if secure else 'http'
+  protocol = 'https' if secure and not system.isLocal() else 'http'
 
   return '%s://%s%s' % (protocol, hostname, relative_url)
 

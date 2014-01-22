@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for dashboard view.
-"""
+"""Tests for the view with a list of projects."""
+
+from tests import profile_utils
+from tests import test_utils
+from tests.utils import project_utils
 
 
-from tests.profile_utils import GSoCProfileHelper
-from tests.test_utils import GSoCDjangoTestCase
-
-
-class ProjectListTest(GSoCDjangoTestCase):
-  """Tests project list page.
-  """
+class ProjectListTest(test_utils.GSoCDjangoTestCase):
+  """Tests project list page."""
 
   def setUp(self):
     self.init()
@@ -32,7 +30,8 @@ class ProjectListTest(GSoCDjangoTestCase):
     """
     self.assertGSoCTemplatesUsed(response)
     self.assertTemplateUsed(response, 'modules/gsoc/projects_list/base.html')
-    self.assertTemplateUsed(response, 'modules/gsoc/projects_list/_project_list.html')
+    self.assertTemplateUsed(
+        response, 'modules/gsoc/projects_list/_project_list.html')
 
   def testListProjects(self):
     self.timeline_helper.studentsAnnounced()
@@ -46,9 +45,9 @@ class ProjectListTest(GSoCDjangoTestCase):
     data = response.context['data']['']
     self.assertEqual(0, len(data))
 
-    self.mentor = GSoCProfileHelper(self.gsoc, self.dev_test)
-    self.mentor.createMentor(self.org)
-    self.profile_helper.createStudentWithProject(self.org, self.mentor.profile)
+    student = profile_utils.seedSOCStudent(self.program)
+    project_utils.seedProject(student, self.program.key(), org_key=self.org.key)
+
     response = self.getListResponse(url, 0)
     self.assertIsJsonResponse(response)
     data = response.context['data']['']

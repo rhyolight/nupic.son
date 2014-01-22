@@ -77,9 +77,6 @@ class Header(template.Template):
     return "modules/gsoc/header.html"
 
   def context(self):
-    # Need this import to make sponsor visible for sponsor link_id
-    from soc.models.sponsor import Sponsor
-
     gci_link = ''
     key_name = getMostRecentProgram(self.data)
 
@@ -106,8 +103,8 @@ class Header(template.Template):
       context['logout_link'] = links.LINKER.logout(self.data.request)
       context['user_email'] = self.data.gae_user.email()
 
-      if self.data.user:
-        context['username'] = self.data.user.link_id
+      if self.data.ndb_user:
+        context['username'] = self.data.ndb_user.user_id
 
     return context
 

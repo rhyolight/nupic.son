@@ -32,8 +32,9 @@ from soc.modules.gsoc.models.slot_transfer import GSoCSlotTransfer
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms
 from soc.modules.gsoc.views import readonly_template
-from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
+
+from summerofcode.views.helper import urls
 
 
 class SlotTransferForm(forms.GSoCModelForm):
@@ -172,7 +173,7 @@ class UpdateSlotTransferPage(base.GSoCRequestHandler):
         }
 
     context['org_home_page_link'] = links.LINKER.organization(
-        data.url_ndb_org.key, url_names.GSOC_ORG_HOME)
+        data.url_ndb_org.key, urls.UrlNames.ORG_HOME)
     context['slot_transfer_page_link'] = links.LINKER.organization(
         data.url_ndb_org.key, 'gsoc_slot_transfer')
 

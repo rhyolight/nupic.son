@@ -15,6 +15,7 @@
 """Module containing views for the Summer Of Code organization homepage."""
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django.utils import translation
 
@@ -38,6 +39,8 @@ ORG_HOME_PAGE_TITLE = translation.ugettext('%s')
 
 PROJECT_LIST_DESCRIPTION = translation.ugettext(
     'List of projects accepted into %s.')
+
+_ACCEPTED_PROJECTS_LIST_TITLE = translation.ugettext('Accepted Projects')
 
 CONTACT_TEMPLATE_PATH = 'modules/gsoc/_connect_with_us.html'
 
@@ -95,25 +98,34 @@ class ProjectList(template.Template):
     """See template.Template.__init__ for specification."""
     super(ProjectList, self).__init__(data)
     self._list_config = lists.ListConfiguration()
-    self._list_config.addPlainTextColumn('student', 'Student',
-        lambda entity, *args: entity.parent().name())
+
+    def getStudent(entity, *args):
+      """Helper function to get value for student column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
+
+    self._list_config.addPlainTextColumn('student', 'Student', getStudent)
+
     self._list_config.addSimpleColumn('title', 'Title')
     self._list_config.addPlainTextColumn(
-        'mentors', 'Mentor',
-        lambda entity, m, *args: ", ".join(
-            [m[i].name() for i in entity.mentors]))
+        'mentors', 'Mentors',
+        lambda entity, m, *args: ', '.join(
+            mentor.public_name for mentor in entity.getMentors()))
+
     self._list_config.setDefaultSort('student')
     self._description = description
 
   def templatePath(self):
     """See template.Template.templatePath for specification."""
-    return 'modules/gsoc/admin/_accepted_orgs_list.html'
+    return 'summerofcode/_list_component.html'
 
   def context(self):
     """See template.Template.context for specification."""
     list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, 0, self._description)
-    return {'lists': [list_configuration_response]}
+    return {
+        'lists': [list_configuration_response],
+        'list_title': _ACCEPTED_PROJECTS_LIST_TITLE,
+        }
 
 
 class OrgHomePage(base.GSoCRequestHandler):

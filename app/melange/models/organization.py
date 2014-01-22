@@ -24,6 +24,8 @@ from protorpc import messages
 from melange.appengine import db
 from melange.models import contact as contact_model
 
+from soc.models import licenses
+
 
 class Status(messages.Enum):
   """Class that enumerates possible statuses of organizations."""
@@ -129,3 +131,6 @@ class Organization(ndb.Model):
 
   #: Collection of tags that describe the organization.
   tags = ndb.StringProperty(repeated=True)
+
+  #: Main license that is used by the organization.
+  license = ndb.StringProperty(choices=licenses.LICENSES)
