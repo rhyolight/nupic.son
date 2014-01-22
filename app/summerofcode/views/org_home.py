@@ -15,6 +15,7 @@
 """Module containing views for the Summer Of Code organization homepage."""
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django.utils import translation
 
@@ -97,13 +98,19 @@ class ProjectList(template.Template):
     """See template.Template.__init__ for specification."""
     super(ProjectList, self).__init__(data)
     self._list_config = lists.ListConfiguration()
-    self._list_config.addPlainTextColumn('student', 'Student',
-        lambda entity, *args: entity.parent().name())
+
+    def getStudent(entity, *args):
+      """Helper function to get value for student column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
+
+    self._list_config.addPlainTextColumn('student', 'Student', getStudent)
+
     self._list_config.addSimpleColumn('title', 'Title')
     self._list_config.addPlainTextColumn(
-        'mentors', 'Mentor',
-        lambda entity, m, *args: ", ".join(
-            [m[i].name() for i in entity.mentors]))
+        'mentors', 'Mentors',
+        lambda entity, m, *args: ', '.join(
+            mentor.public_name for mentor in entity.getMentors()))
+
     self._list_config.setDefaultSort('student')
     self._description = description
 

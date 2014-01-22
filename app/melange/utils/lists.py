@@ -765,7 +765,7 @@ class StudentColumn(Column):
   """Column object to represent the student"""
   def getValue(self, entity):
     """See Column.getValue for specification"""
-    return entity.parent_key().name()
+    return ndb.Key.from_old_key(entity.parent_key()).get().public_name
 
 
 class OrganizationColumn(Column):
