@@ -20,6 +20,7 @@ import unittest
 from google.appengine.ext import ndb
 
 from django import forms as django_forms
+from django.utils import html
 
 from melange.models import address as address_model
 from melange.models import education as education_model
@@ -240,6 +241,40 @@ class ProfileOrgMemberCreatePageTest(test_utils.GSoCDjangoTestCase):
     self.assertIsNotNone(profile)
     self.assertEqual(
         profile.key.id(), '%s/%s' % (self.program.key().name(), user.key.id()))
+
+  def testSanitization(self):
+    """Tests that possible malicious content is sanitized properly."""
+    self.timeline_helper.orgsAnnounced()
+
+    xss_payload = '><img src=http://www.google.com/images/srpr/logo4w.png>'
+
+    postdata = {
+        'user_id': xss_payload,
+        'public_name': xss_payload,
+        'web_page': xss_payload,
+        'blog': xss_payload,
+        'photo_url': xss_payload,
+        'first_name': xss_payload,
+        'last_name': xss_payload,
+        'email': xss_payload,
+        'phone': xss_payload,
+        'residential_street': xss_payload,
+        'residential_city': xss_payload,
+        'residential_province': xss_payload,
+        'residential_country': xss_payload,
+        'residential_postal_code': xss_payload,
+        'birth_date': xss_payload,
+        'tee_style': xss_payload,
+        'tee_size': xss_payload,
+        'gender': xss_payload,
+        'program_knowledge': xss_payload,
+        }
+
+    response = self.post(
+        _getProfileRegisterAsOrgMemberUrl(self.program.key()),
+        postdata=postdata)
+    self.assertNotIn(xss_payload, response.content)
+    self.assertIn(html.escape(xss_payload), response.content)
 
 
 class ProfileRegisterAsStudentPageTest(test_utils.GSoCDjangoTestCase):

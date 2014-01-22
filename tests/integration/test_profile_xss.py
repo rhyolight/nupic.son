@@ -58,9 +58,5 @@ class ProfileXSSTest(object):
     self.assertIn(html.escape(xss_payload), response.content)
 
 
-class GSoCProfileXSSTest(ProfileXSSTest, test_utils.GSoCDjangoTestCase):
-  pass
-
-
 class GCIProfileXSSTest(ProfileXSSTest, test_utils.GCIDjangoTestCase):
   pass
