@@ -279,6 +279,30 @@ def seedGCIProgramMessages(program_key=None, **kwargs):
       models=ci_types.CI_MODELS, program_key=program_key)
 
 
+def seedApplicationSurvey(program_key, **kwargs):
+  """Seeds a new organization application survey for the specified program.
+
+  Args:
+    program_key: Program key to create a survey for.
+
+  Returns:
+    Newly seeded application survey.
+  """
+  user = profile_utils.seedUser()
+  properties = {
+      'scope': program_key,
+      'program': program_key,
+      'modified_by': user,
+      'created_by': user,
+      'author': user,
+      'schema': ('[["item"],{"item":{"field_type":"input_text",'
+                 '"required":false, "label":"test"}}]'),
+      'survey_content': None,
+      }
+  properties.update(kwargs)
+  return seeder_logic.seed(OrgAppSurvey, properties)
+
+
 class ProgramHelper(object):
   """Helper class to aid in manipulating program data.
   """
