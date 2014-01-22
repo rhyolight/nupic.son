@@ -75,11 +75,7 @@ class TaxForm(forms.GSoCModelForm):
 class EnrollmentForm(forms.GSoCModelForm):
   """Django form for the student enrollment form."""
 
-  class Meta:
-    model = profile_model.GSoCStudentInfo
-    css_prefix = 'student_form'
-    fields = ['enrollment_form']
-    widgets = {}
+  Meta = object
 
   enrollment_form = fields.FileField(
       label='Upload new enrollment form', required=True)
@@ -150,8 +146,7 @@ class FormPage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     Form = self._form(data)
-    form = Form(request_data=data, data=data.POST or None,
-        instance=self._studentInfo(data))
+    form = Form(request_data=data, data=data.POST or None)
 
     if 'error' in data.GET:
       error = data.GET['error']
@@ -169,11 +164,11 @@ class FormPage(base.GSoCRequestHandler):
   def _form(self, data):
     return TaxForm if self._tax(data) else EnrollmentForm
 
-  def _studentInfo(self, data):
+  def _profile(self, data):
     if self._admin(data):
-      return data.url_student_info
+      return data.url_ndb_profile
     else:
-      return data.student_info
+      return data.ndb_profile
 
   def _admin(self, data):
     return data.kwargs['admin']
@@ -209,7 +204,9 @@ class FormPage(base.GSoCRequestHandler):
   def post(self, data, check, mutator):
     Form = self._form(data)
     form = Form(request_data=data, data=data.POST,
-        files=data.request.file_uploads, instance=self._studentInfo(data))
+        files=data.request.file_uploads)
+
+    profile = self._profile(data)
 
     if not form.is_valid():
       # we are not storing this form, remove the uploaded blob from the cloud
@@ -222,12 +219,16 @@ class FormPage(base.GSoCRequestHandler):
           self._urlName(data), extra=['error=%s' % error.as_text()])
 
     # delete the old blob, if it exists
-    oldBlob = getattr(self._studentInfo(data), form.fileFieldName())
-    if oldBlob:
-      oldBlob.delete()
+    old_blob_key = getattr(profile.student_data, form.fileFieldName())
+    if old_blob_key:
+      blob_info = blobstore.get(old_blob_key)
+      if blob_info:
+        blob_info.delete()
 
     # write information about the new blob to the datastore
-    form.save()
+    blob_key = form.cleaned_data[form.fileFieldName()].key()
+    setattr(profile.student_data, form.fileFieldName(), blob_key)
+    profile.put()
 
     return self._r(data).to(self._urlName(data), validated=True)
 

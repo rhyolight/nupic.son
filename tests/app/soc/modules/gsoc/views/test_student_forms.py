@@ -21,6 +21,7 @@ from soc.modules.gsoc.models import profile as profile_model
 
 from tests import profile_utils
 from tests import test_utils
+from tests.utils import project_utils
 
 
 class FormPageTest(test_utils.GSoCDjangoTestCase):
@@ -34,13 +35,19 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
     self._assertAccessForbiddenForUrl(self._getTaxFormUrl())
 
   def testMentorAccessForbidden(self):
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
 
     self._assertAccessForbiddenForUrl(self._getEnrollmentFormUrl())
     self._assertAccessForbiddenForUrl(self._getTaxFormUrl())
 
   def testOrgAdminAccessForbidden(self):
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     self._assertAccessForbiddenForUrl(self._getEnrollmentFormUrl())
     self._assertAccessForbiddenForUrl(self._getTaxFormUrl())
@@ -57,8 +64,11 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
     # permitted to upload their forms
     self.timeline_helper.studentsAnnounced()
 
-    mentor = self._createNewMentor()
-    self.profile_helper.createStudentWithProject(self.org, mentor)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedSOCStudent(self.program, user=user)
+    project_utils.seedProject(
+        student, self.program.key(), org_key=self.org.key)
 
     self._assertAccessForbiddenForUrl(self._getEnrollmentFormUrl())
     self._assertAccessForbiddenForUrl(self._getTaxFormUrl())
@@ -66,8 +76,11 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
   def testStudentAccessGranted(self):
     self.timeline_helper.formSubmission()
 
-    mentor = self._createNewMentor()
-    self.profile_helper.createStudentWithProject(self.org, mentor)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedSOCStudent(self.program, user=user)
+    project_utils.seedProject(
+        student, self.program.key(), org_key=self.org.key)
 
     # check for enrollment form
     url = self._getEnrollmentFormUrl()
@@ -85,11 +98,14 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
     """Tests that enrollment form is submitted properly by a student."""
     self.timeline_helper.formSubmission()
 
-    mentor = self._createNewMentor()
-    self.profile_helper.createStudentWithProject(self.org, mentor)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedSOCStudent(self.program, user=user)
+    project_utils.seedProject(
+        student, self.program.key(), org_key=self.org.key)
 
     # check that there is no enrollment form at this stage
-    self.assertIsNone(self.profile_helper.profile.student_info.enrollment_form)
+    self.assertIsNone(student.student_data.enrollment_form)
 
     with tempfile.NamedTemporaryFile() as test_file:
       # check for the enrollment form
@@ -100,19 +116,21 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
           response, self._getEnrollmentFormUrl(validated=True))
 
       # check if the form has been submitted
-      student_info = profile_model.GSoCStudentInfo.get(
-          self.profile_helper.profile.student_info.key())
-      self.assertIsNotNone(student_info.enrollment_form)
+      student = student.key.get()
+      self.assertIsNotNone(student.student_data.enrollment_form)
 
   def testTaxFormSubmissionByStudent(self):
     """Tests that enrollment form is submitted properly by a student."""
     self.timeline_helper.formSubmission()
 
-    mentor = self._createNewMentor()
-    self.profile_helper.createStudentWithProject(self.org, mentor)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedSOCStudent(self.program, user=user)
+    project_utils.seedProject(
+        student, self.program.key(), org_key=self.org.key)
 
     # check that there is no tax form at this stage
-    self.assertIsNone(self.profile_helper.profile.student_info.tax_form)
+    self.assertIsNone(student.student_data.tax_form)
 
     with tempfile.NamedTemporaryFile() as test_file:
       # check for the enrollment form
@@ -123,77 +141,71 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
           response, self._getTaxFormUrl(validated=True))
 
       # check if the form has been submitted
-      student_info = profile_model.GSoCStudentInfo.get(
-          self.profile_helper.profile.student_info.key())
-      self.assertIsNotNone(student_info.tax_form)
+      student = student.key.get()
+      self.assertIsNotNone(student.student_data.tax_form)
 
   def testEnrollmentFormSubmissionByAdmin(self):
     """Tests that enrollment form is submitted properly by an admin."""
+    self.timeline_helper.formSubmission()
+
     user = profile_utils.seedNDBUser(host_for=[self.program])
     profile_utils.loginNDB(user)
 
-    self.timeline_helper.formSubmission()
-
-    mentor = self._createNewMentor()
-
-    profile_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
-    profile_helper.createOtherUser('student@example.com')
-    profile = profile_helper.createStudentWithProject(self.org, mentor)    
+    student = profile_utils.seedSOCStudent(self.program)
+    project_utils.seedProject(student, self.program.key(), org_key=self.org.key)
 
     # check that there is no enrollment form at this stage
-    self.assertIsNone(profile.student_info.enrollment_form)
+    self.assertIsNone(student.student_data.enrollment_form)
 
     with tempfile.NamedTemporaryFile() as test_file:
-      url = self._getAdminEnrollmentForm(profile)
+      url = self._getAdminEnrollmentForm(student)
       postdata = {'enrollment_form': test_file}
       response = self.post(url, postdata)
       self.assertResponseRedirect(
-          response, self._getAdminEnrollmentForm(profile, validated=True))
+          response, self._getAdminEnrollmentForm(student, validated=True))
 
       # check if the form has been submitted
-      student_info = profile_model.GSoCStudentInfo.get(
-          profile.student_info.key())
-      self.assertIsNotNone(student_info.enrollment_form)
+      student = student.key.get()
+      self.assertIsNotNone(student.student_data.enrollment_form)
 
   def testTaxFormSubmissionByAdmin(self):
     """Tests that tax form is submitted properly by an admin."""
+    self.timeline_helper.formSubmission()
+
     user = profile_utils.seedNDBUser(host_for=[self.program])
     profile_utils.loginNDB(user)
 
-    self.timeline_helper.formSubmission()
-
-    mentor = self._createNewMentor()
-
-    profile_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
-    profile_helper.createOtherUser('student@example.com')
-    profile = profile_helper.createStudentWithProject(self.org, mentor)    
+    student = profile_utils.seedSOCStudent(self.program)
+    project_utils.seedProject(student, self.program.key(), org_key=self.org.key)
 
     # check that there is no tax form at this stage
-    self.assertIsNone(profile.student_info.tax_form)
+    self.assertIsNone(student.student_data.tax_form)
 
     with tempfile.NamedTemporaryFile() as test_file:
-      url = self._getAdminTaxForm(profile)
+      url = self._getAdminTaxForm(student)
       postdata = {'tax_form': test_file}
       response = self.post(url, postdata)
       self.assertResponseRedirect(
-          response, self._getAdminTaxForm(profile, validated=True))
+          response, self._getAdminTaxForm(student, validated=True))
 
       # check if the form has been submitted
-      student_info = profile_model.GSoCStudentInfo.get(
-          profile.student_info.key())
-      self.assertIsNotNone(student_info.tax_form)
+      student = student.key.get()
+      self.assertIsNotNone(student.student_data.tax_form)
 
   def testSubmitAnotherForm(self):
     """Tests that another form may be resubmitted by a student."""
     self.timeline_helper.formSubmission()
 
-    mentor = self._createNewMentor()
-    self.profile_helper.createStudentWithProject(self.org, mentor)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedSOCStudent(self.program, user=user)
+    project_utils.seedProject(
+        student, self.program.key(), org_key=self.org.key)
 
     # set initial tax form
     blob_key = self.createBlob('initial_tax_form.pdf')
-    self.profile_helper.profile.student_info.tax_form = blob_key
-    self.profile_helper.profile.student_info.put()
+    student.student_data.tax_form = blob_key
+    student.put()
 
     # submit a new tax form
     with tempfile.NamedTemporaryFile() as test_file:
@@ -205,11 +217,10 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
           response, self._getTaxFormUrl(validated=True))
 
       # check if the form has been submitted
-      student_info = profile_model.GSoCStudentInfo.get(
-          self.profile_helper.profile.student_info.key())
-      self.assertIsNotNone(student_info.tax_form)
+      student = student.key.get()
+      self.assertIsNotNone(student.student_data.tax_form)
       self.assertEqual(os.path.basename(test_file.name),
-          student_info.tax_form.key())
+          student.student_data.tax_form)
 
   def _getEnrollmentFormUrl(self, validated=False):
     """Returns URL for the student enrollment form upload."""
@@ -223,12 +234,12 @@ class FormPageTest(test_utils.GSoCDjangoTestCase):
 
   def _getAdminEnrollmentForm(self, profile, validated=False):
     """Returns URL for the student enrollment form upload by admin."""
-    url = '/gsoc/student_forms/admin/enrollment/%s' % profile.key().name()
+    url = '/gsoc/student_forms/admin/enrollment/%s' % profile.key.id()
     return url if not validated else url + '?validated'
 
   def _getAdminTaxForm(self, profile, validated=False):
     """Returns URL for the student tax form upload by admin."""
-    url = '/gsoc/student_forms/admin/tax/%s' % profile.key().name()
+    url = '/gsoc/student_forms/admin/tax/%s' % profile.key.id()
     return url if not validated else url + '?validated'
 
   def _assertAccessForbiddenForUrl(self, url):
