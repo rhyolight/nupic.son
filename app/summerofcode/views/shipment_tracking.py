@@ -14,6 +14,7 @@
 
 """Module for the shipment tracking views."""
 
+import json
 import logging
 
 import httplib2
@@ -26,7 +27,6 @@ from apiclient.discovery import build
 from django import forms as django_forms
 from django import http
 from django.conf.urls import url as django_url
-from django.utils import simplejson
 from django.utils.dateformat import format
 from oauth2client.appengine import OAuth2Decorator
 
@@ -383,7 +383,7 @@ class ShipmentTrackingPageImpl(webapp.RequestHandler):
     #start task for USA students
     params = {
         'program_key': str(self.data.program.key()),
-        'sheet_content': simplejson.dumps(usa_sheet_content),
+        'sheet_content': json.dumps(usa_sheet_content),
         'sheet_type': 'usa',
         'shipment_info_id': shipment_info_id,
     }
@@ -392,7 +392,7 @@ class ShipmentTrackingPageImpl(webapp.RequestHandler):
     #start task for international students
     params = {
         'program_key': str(self.data.program.key()),
-        'sheet_content': simplejson.dumps(intl_sheet_content),
+        'sheet_content': json.dumps(intl_sheet_content),
         'sheet_type': 'intl',
         'shipment_info_id': shipment_info_id,
     }
