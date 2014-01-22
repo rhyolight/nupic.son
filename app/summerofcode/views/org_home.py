@@ -39,6 +39,8 @@ ORG_HOME_PAGE_TITLE = translation.ugettext('%s')
 PROJECT_LIST_DESCRIPTION = translation.ugettext(
     'List of projects accepted into %s.')
 
+_ACCEPTED_PROJECTS_LIST_TITLE = translation.ugettext('Accepted Projects')
+
 CONTACT_TEMPLATE_PATH = 'modules/gsoc/_connect_with_us.html'
 
 class Contact(template.Template):
@@ -107,13 +109,16 @@ class ProjectList(template.Template):
 
   def templatePath(self):
     """See template.Template.templatePath for specification."""
-    return 'modules/gsoc/admin/_accepted_orgs_list.html'
+    return 'summerofcode/_list_component.html'
 
   def context(self):
     """See template.Template.context for specification."""
     list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, 0, self._description)
-    return {'lists': [list_configuration_response]}
+    return {
+        'lists': [list_configuration_response],
+        'list_title': _ACCEPTED_PROJECTS_LIST_TITLE,
+        }
 
 
 class OrgHomePage(base.GSoCRequestHandler):
