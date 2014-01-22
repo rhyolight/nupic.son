@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tasks related to syncing shipment tracking data.
-"""
+"""Tasks related to syncing shipment tracking data."""
 
 import StringIO
 import csv
@@ -22,7 +21,6 @@ import json
 import logging
 import re
 
-from django import http
 from django.conf.urls import url as django_url
 
 from google.appengine.api import taskqueue
@@ -31,7 +29,6 @@ from google.appengine.ext import ndb
 from google.appengine.runtime import DeadlineExceededError
 
 from melange.logic import profile as profile_logic
-from melange.models import profile
 from summerofcode.models.shipment import StudentShipment
 from summerofcode.models.shipment_tracking import ShipmentInfo
 from summerofcode.request import links
@@ -41,21 +38,16 @@ from soc.tasks import responses
 from soc.tasks.helper.timekeeper import Timekeeper
 from soc.modules.gsoc.views.helper import url_names
 
-
-
 DATE_SHIPPED_FORMAT = '%d/%m/%Y'
 
 
 class ColumnNotFoundError(Exception):
-  """Error to be raised when an expected column is not found in the row.
-  """
-
+  """Error to be raised when an expected column is not found in the row."""
   pass
 
 
 class SyncTask(object):
-  """Base class for sync tasks.
-  """
+  """Base class for sync tasks."""
 
   def findColumnIndexes(self, first_row, expected_columns):
     """Find column indexes in the first row for expected columns.
@@ -170,19 +162,19 @@ class ShipmentSyncTask(SyncTask):
     params = dicts.merge(request.POST, request.GET)
 
     if 'program_key' not in params:
-      logging.error("missing program_key in params: '%s'" % params)
+      logging.error("missing program_key in params: '%s'", params)
       return responses.terminateTask()
 
     if 'sheet_content' not in params:
-      logging.error("missing sheet_content in params: '%s'" % params)
+      logging.error("missing sheet_content in params: '%s'", params)
       return responses.terminateTask()
 
     if 'sheet_type' not in params:
-      logging.error("missing sheet_type in params: '%s'" % params)
+      logging.error("missing sheet_type in params: '%s'", params)
       return responses.terminateTask()
 
     if 'shipment_info_id' not in params:
-      logging.error("missing shipment_info_id in params: '%s'" % params)
+      logging.error("missing shipment_info_id in params: '%s'", params)
       return responses.terminateTask()
 
     self.setProgram(params['program_key'])
@@ -239,22 +231,22 @@ class ShipmentSyncTask(SyncTask):
     params = dicts.merge(request.POST, request.GET)
 
     if 'program_key' not in params:
-      logging.error("missing program_key in params: '%s'" % params)
+      logging.error("missing program_key in params: '%s'", params)
       return responses.terminateTask()
 
     if 'shipment_info_id' not in params:
-      logging.error("missing shipment_info_id in params: '%s'" % params)
+      logging.error("missing shipment_info_id in params: '%s'", params)
       return responses.terminateTask()
 
     self.setProgram(params['program_key'])
     self.setShipmentInfo(int(params['shipment_info_id']))
 
     if 'sheet_rows' not in params:
-      logging.error("missing sheet_rows data in params: '%s'" % params)
+      logging.error("missing sheet_rows data in params: '%s'", params)
       return responses.terminateTask()
 
     if 'column_indexes' not in params:
-      logging.error("missing column_indexes data in params: '%s'" % params)
+      logging.error("missing column_indexes data in params: '%s'", params)
       return responses.terminateTask()
 
     column_indexes = json.loads(params['column_indexes'])
@@ -271,13 +263,12 @@ class ShipmentSyncTask(SyncTask):
         profile = profile_logic.getProfileForUsername(username, self.program_key)
 
         if not profile:
-          logging.error("Profile with username '%s' for program '%s' is not found" %
-                        (username, self.ndb_program_key.id()))
+          logging.error("Profile with username '%s' for program '%s' is not found",
+                        username, self.ndb_program_key.id())
           continue #continue to next row
 
         if not profile.is_student:
-          logging.error("Profile with username '%s' is not a student" %
-                        username)
+          logging.error("Profile with username '%s' is not a student", username)
           continue
 
         tracking = data['tracking']
@@ -313,7 +304,8 @@ class ShipmentSyncTask(SyncTask):
   def updateShipmentDataForStudent(self, profile, tracking):
 
     q = StudentShipment.query(
-        StudentShipment.shipment_info==self.shipment_info.key, ancestor=profile.key)
+        StudentShipment.shipment_info == self.shipment_info.key,
+        ancestor=profile.key)
     student_shipment = q.get()
 
     if not student_shipment:

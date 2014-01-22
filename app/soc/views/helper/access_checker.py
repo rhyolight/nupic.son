@@ -11,16 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Module containing the AccessChecker class that contains helper functions
 for checking access.
 """
 
-import urllib
-
 from django.utils.translation import ugettext
 
 from google.appengine.ext import ndb
-
 
 from melange.logic import user as user_logic
 from melange.models import organization as org_model

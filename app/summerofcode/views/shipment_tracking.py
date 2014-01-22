@@ -14,38 +14,31 @@
 
 """Module for the shipment tracking views."""
 
-import os
+import json
+import logging
+
 import httplib2
 
-from google.appengine.api import users
 from google.appengine.api import taskqueue
 from google.appengine.ext import ndb
 from google.appengine.ext import webapp
 
 from apiclient.discovery import build
-from apiclient import errors
 from django import forms as django_forms
 from django import http
 from django.conf.urls import url as django_url
-from django.forms import widgets as django_widgets
-from django.utils import simplejson
 from django.utils.dateformat import format
-from django.utils.translation import ugettext
 from oauth2client.appengine import OAuth2Decorator
 
 from melange.request import access
 from melange.request import exception
 
-from soc.logic import cleaning
 from soc.logic import site as site_logic
-from soc.models import document
 from soc.models import site
-from soc.views import forms as views_forms
 from soc.views import template
 from soc.views.helper import context as context_helper
 from soc.views.helper import lists
 from soc.views.helper import url_patterns as soc_url_patterns
-from soc.views.helper import request_data
 
 from soc.modules.gsoc.views import forms
 from soc.modules.gsoc.views.helper import url_names
@@ -105,12 +98,12 @@ SPREADSHEET_HELP_TEXT = (
 
 
 class ShipmentInfoForm(forms.GSoCModelForm):
-  """Form for editing ShipmentInfo objects.
-  """
+  """Form for editing ShipmentInfo objects."""
+
   Meta = object()
   name = django_forms.CharField(
       required=True, label=NAME_LABEL_, help_text=NAME_HELP_TEXT)
-  spreadsheet_id= django_forms.CharField(
+  spreadsheet_id = django_forms.CharField(
       required=True, label=SPREADSHEET_ID_LABEL, help_text=SPREADSHEET_HELP_TEXT)
 
 
@@ -174,14 +167,17 @@ class CreateShipmentInfo(base.GSoCRequestHandler):
 
 
 class CreateShipmentInfoHandler(webapp.RequestHandler):
-  """Implementation of the view with the document picker.
-  """
+  """Implementation of the view with the document picker."""
+
   def __init__(self, renderer, data, shipment_info):
     self.renderer = renderer
     self.data = data
     self.shipment_info = shipment_info
 
-  def redirect(self, uri):
+  # TODO(nathaniel): Remove the lint suppression when
+  # https://code.google.com/p/googleappengine/issues/detail?id=10518 is
+  # resolved.
+  def redirect(self, uri, permanent=False):  # pylint: disable=arguments-differ
     raise exception.Redirect(uri)
 
   @decorator.oauth_required
@@ -354,7 +350,10 @@ class ShipmentTrackingPageImpl(webapp.RequestHandler):
     self.renderer = renderer
     self.data = data
 
-  def redirect(self, uri):
+  # TODO(nathaniel): Remove the disabled lint inspection when
+  # https://code.google.com/p/googleappengine/issues/detail?id=10518 is
+  # resolved.
+  def redirect(self, uri, permanent=False):  # pylint:disable=arguments-differ
     raise exception.Redirect(uri)
 
   @decorator.oauth_required
@@ -384,7 +383,7 @@ class ShipmentTrackingPageImpl(webapp.RequestHandler):
     #start task for USA students
     params = {
         'program_key': str(self.data.program.key()),
-        'sheet_content': simplejson.dumps(usa_sheet_content),
+        'sheet_content': json.dumps(usa_sheet_content),
         'sheet_type': 'usa',
         'shipment_info_id': shipment_info_id,
     }
@@ -393,7 +392,7 @@ class ShipmentTrackingPageImpl(webapp.RequestHandler):
     #start task for international students
     params = {
         'program_key': str(self.data.program.key()),
-        'sheet_content': simplejson.dumps(intl_sheet_content),
+        'sheet_content': json.dumps(intl_sheet_content),
         'sheet_type': 'intl',
         'shipment_info_id': shipment_info_id,
     }

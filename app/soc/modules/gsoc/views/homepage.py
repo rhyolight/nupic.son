@@ -125,7 +125,7 @@ class Apply(Template):
 
     is_active_student = (self.data.ndb_profile and
         self.data.ndb_profile.student_data)
- 
+
     signup_active = (
         self.data.timeline.orgSignup() or
         self.data.timeline.studentSignup() or
