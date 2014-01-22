@@ -34,7 +34,6 @@ from melange.request import links
 from soc.logic import cleaning
 from soc.logic import document as document_logic
 from soc.logic import org_app as org_app_logic
-from soc.models.org_app_record import OrgAppRecord
 from soc.models.universities import UNIVERSITIES
 from soc.views import base_templates
 from soc.views.dashboard import Component
@@ -1139,7 +1138,7 @@ class OrganizationsIParticipateInComponent(Component):
     list_config = lists.ListConfiguration()
     list_config.setRowAction(
         lambda e, *args:
-            links.LINKER.organization(e.key, url_names.GSOC_ORG_HOME))
+            links.LINKER.organization(e.key, urls.UrlNames.ORG_HOME))
 
     if not data.program.allocations_visible:
       list_config.addSimpleColumn('name', 'name')

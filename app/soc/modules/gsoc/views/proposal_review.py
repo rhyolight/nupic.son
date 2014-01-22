@@ -46,8 +46,9 @@ from soc.modules.gsoc.views import assign_mentor
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.forms import GSoCModelForm
 from soc.modules.gsoc.views.helper import url_names
-
 from soc.modules.gsoc.views.helper.url_patterns import url
+
+from summerofcode.views.helper import urls
 
 
 TOGGLE_BUTTON_IS_WITHDRAWN = 'checked'
@@ -118,7 +119,7 @@ class Duplicate(Template):
 
       data = {
           'name': org.name,
-          'link': links.LINKER.organization(org.key, url_names.GSOC_ORG_HOME),
+          'link': links.LINKER.organization(org.key, urls.UrlNames.ORG_HOME),
           'admins': admins
           }
 

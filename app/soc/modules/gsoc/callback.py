@@ -30,7 +30,6 @@ from soc.modules.gsoc.views import grading_record_details
 from soc.modules.gsoc.views import homepage
 from soc.modules.gsoc.views import mentor_evaluation
 from soc.modules.gsoc.views import org_app
-from soc.modules.gsoc.views import org_home
 from soc.modules.gsoc.views import participants
 from soc.modules.gsoc.views import program
 from soc.modules.gsoc.views import project_details
@@ -91,8 +90,6 @@ class Callback(object):
     self.views.append(org_app.GSoCOrgAppRecordsList())
     self.views.append(org_app.GSoCOrgAppShowPage())
     self.views.append(org_app.GSoCOrgAppTakePage())
-    self.views.append(org_home.GSoCBanOrgPost())
-    self.views.append(org_home.OrgHome())
     self.views.append(participants.MentorsListAdminPage())
     self.views.append(program.DownloadSchoolsHandler())
     self.views.append(program.GSoCCreateProgramPage())

@@ -31,6 +31,7 @@ from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
 from summerofcode.models import organization as org_model
+from summerofcode.views.helper import urls
 
 # TODO(daniel): update this class to fully work with NDB organizations
 class AcceptedOrgsAdminList(org_list.OrgList):
@@ -73,7 +74,7 @@ class AcceptedOrgsAdminList(org_list.OrgList):
 
     list_config.setRowAction(
         lambda e, *args: links.LINKER.organization(
-            e.key, url_names.GSOC_ORG_HOME))
+            e.key, urls.UrlNames.ORG_HOME))
 
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')

@@ -49,7 +49,6 @@ from soc.views.helper import lists
 from soc.modules.gsoc.logic import conversation_updater
 from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views import forms as gsoc_forms
-from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper import url_patterns as soc_url_patterns
 
 from summerofcode.templates import tabs
@@ -862,7 +861,7 @@ class PublicOrganizationListRowRedirect(melange_lists.RedirectCustomRow):
     """See lists.RedirectCustomRow.getLink for specification."""
     org_key = ndb.Key(
         self.data.models.ndb_org_model._get_kind(), item['columns']['key'])
-    return links.LINKER.organization(org_key, url_names.GSOC_ORG_HOME)
+    return links.LINKER.organization(org_key, urls.UrlNames.ORG_HOME)
 
 
 class PublicOrganizationListPage(base.GSoCRequestHandler):

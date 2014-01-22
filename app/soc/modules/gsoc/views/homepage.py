@@ -103,7 +103,7 @@ class Apply(Template):
           self.data.program.key(), models=self.data.models)
 
       for org in current_orgs:
-        link = links.LINKER.organization(org.key, url_names.GSOC_ORG_HOME)
+        link = links.LINKER.organization(org.key, urls.UrlNames.ORG_HOME)
         participating_orgs.append({
             'link': link,
             'logo': org.logo_url,
