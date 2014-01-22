@@ -31,7 +31,8 @@ from melange.models import organization as org_model
 from melange.request import access
 from melange.request import exception
 from melange.request import links
-from melange.templates import survey_response_list
+# TODO(daniel): Was survey_response_list accidentally left out of a commit?
+from melange.templates import survey_response_list  # pylint: disable=no-name-in-module
 from melange.utils import lists as melange_lists
 from melange.utils import time as time_utils
 from melange.views import connection as connection_view
@@ -983,7 +984,10 @@ class SetOrganizationStatusHandler(form_handler.FormHandler):
         return http.HttpResponse()
 
 
-@ndb.transactional(xg=True)
+# TODO(nathaniel): remove suppression when
+# https://bitbucket.org/logilab/pylint.org/issue/6/false-positive-no
+# is fixed.
+@ndb.transactional(xg=True)  # pylint: disable=no-value-for-parameter
 def createOrganizationTxn(
     data, org_id, program_key, org_properties, admin_keys, models):
   """Creates a new organization profile based on the specified properties.

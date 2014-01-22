@@ -20,7 +20,6 @@ from google.appengine.ext import ndb
 from django.utils.translation import ugettext
 
 from soc.modules.gsoc.models import code_sample as code_sample_model
-from soc.modules.gsoc.models import profile as profile_model
 
 import soc.modules.gsoc.models.proposal
 import soc.models.program
