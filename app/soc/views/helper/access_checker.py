@@ -443,7 +443,7 @@ class AccessChecker(BaseAccessChecker):
   def isStudentWithProject(self):
     self.isActiveStudent()
 
-    if self.data.student_info.number_of_projects > 0:
+    if self.data.ndb_profile.student_data.number_of_projects > 0:
       return
 
     raise exception.Forbidden(message=DEF_HAS_NO_PROJECT)
