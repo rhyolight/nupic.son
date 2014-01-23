@@ -469,7 +469,7 @@ class UploadSchoolsPage(base.GSoCRequestHandler):
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
     else:
-      data.program.schools = blobstore.BlobInfo(form.cleaned_data['schools'])
+      data.program.schools = form.cleaned_data['schools']
       data.program.put()
 
     # TODO(daniel): inform user about possible errors somehow
