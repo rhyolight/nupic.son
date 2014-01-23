@@ -40,9 +40,9 @@ def canResignAsOrgAdminForOrg(profile, org_key, models=types.MELANGE_MODELS):
   of an organization, if there is at least one other user with this role.
 
   Args:
-    profile: the specified profile entity.
-    org_key: the specified organization entity.
-    models: instance of types.Models that represent appropriate models.
+    profile: Profile entity.
+    org_key: Organization key.
+    models: Instance of types.Models that represent appropriate models.
 
   Returns:
     RichBool whose value is set to True, if the organization administrator
@@ -92,7 +92,7 @@ def getOrgAdmins(org_key, keys_only=False, extra_attrs=None,
       profile_model.Profile.admin_for == org_key,
       profile_model.Profile.status == profile_model.Status.ACTIVE)
 
-  _handleExtraAttrs(query, extra_attrs)
+  query = _handleExtraAttrs(query, extra_attrs)
 
   return query.fetch(limit=1000, keys_only=keys_only)
 
@@ -174,12 +174,16 @@ def _handleExtraAttrs(query, extra_attrs):
   be a sequence (list or tuple).
 
   Args:
-    query: query to extend.
-    extra_attrs: a dictionary containing additional constraints on the query.
+    query: Query to extend.
+    extra_attrs: A dict containing additional constraints on the query.
+
+  Returns:
+    A new query instance with additional filters applied.
   """
   if extra_attrs:
     for prop, value in extra_attrs.iteritems():
-      melange_db.addFilterToNDBQuery(query, prop, value)
+      query = melange_db.addFilterToNDBQuery(query, prop, value)
+  return query
 
 
 def getProfileKey(sponsor_id, program_id, user_id, models=None):
