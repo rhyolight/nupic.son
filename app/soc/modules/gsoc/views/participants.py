@@ -16,6 +16,7 @@
 
 from google.appengine.ext import ndb
 
+from melange.logic import profile as profile_logic
 from melange.request import access
 from melange.request import exception
 from soc.views.helper import addresses
@@ -23,7 +24,6 @@ from soc.views.helper import url_patterns
 from soc.views.helper import lists
 from soc.views.template import Template
 
-from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.views.base import GSoCRequestHandler
 from soc.modules.gsoc.views.helper.url_patterns import url
 
@@ -36,28 +36,33 @@ class MentorsList(Template):
 
     def getMentorFor(entity, *args):
       """Helper function to get value of mentor_for column."""
-      org_keys = map(ndb.Key.from_old_key, entity.mentor_for)
-      return ', '.join(org.name for org in ndb.get_multi(org_keys) if org)
+      return ', '.join(
+          org.name for org in ndb.get_multi(entity.mentor_for) if org)
 
-    def getOrgAdminFor(entity, *args):
-      """Helper function to get value of org_admin_for column."""
-      org_keys = map(ndb.Key.from_old_key, entity.org_admin_for)
-      return ', '.join(org.name for org in ndb.get_multi(org_keys) if org)
+    def getAdminFor(entity, *args):
+      """Helper function to get value of admin_for column."""
+      return ', '.join(
+          org.name for org in ndb.get_multi(entity.admin_for) if org)
 
 
     list_config = lists.ListConfiguration()
 
-    list_config.addPlainTextColumn('name', 'Name',
-                          lambda e, *args: e.name().strip())
-    list_config.addSimpleColumn('link_id', 'Username')
-    list_config.addPlainTextColumn('is_org_admin', 'Org Admin',
-        lambda e, *args: 'Yes' if e.is_org_admin else 'No', hidden=True)
-    list_config.addSimpleColumn('email', 'Email')
     list_config.addPlainTextColumn(
-        'org_admin_for', 'Org Admin For', getOrgAdminFor)
+        'name', 'Name', lambda entity, *args: entity.public_name.strip())
+    list_config.addSimpleColumn('profile_id', 'Username')
+    list_config.addPlainTextColumn('is_admin', 'Is Admin',
+        lambda entity, *args: 'Yes' if entity.is_admin else 'No', hidden=True)
+    list_config.addPlainTextColumn(
+        'email', 'Email', lambda entity, *args: entity.contact.email)
+    list_config.addPlainTextColumn(
+        'admin_for', 'Admin For', getAdminFor)
     list_config.addPlainTextColumn('mentor_for', 'Mentor For', getMentorFor)
 
     addresses.addAddressColumns(list_config)
+    list_config.addPlainTextColumn(
+        'tee_style', 'T-Shirt Style', lambda entity, *args: entity.tee_style)
+    list_config.addPlainTextColumn(
+        'tee_size', 'T-Shirt Size', lambda entity, *args: entity.tee_size)
 
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('name')
@@ -78,17 +83,15 @@ class MentorsList(Template):
     if lists.getListIndex(self.data.request) != 0:
       return None
 
-    q = GSoCProfile.all()
-    q.filter('program', self.data.program)
-    q.filter('is_mentor', True)
+    query = profile_logic.queryAllMentorsForProgram(self.data.program.key())
 
     starter = lists.keyStarter
     # TODO(daniel): enable prefetching from ndb models
     # ('mentor_for', 'org_admin_for')
-    prefetcher = lists.ListFieldPrefetcher(GSoCProfile, [])
+    prefetcher = None
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.data.request, self._list_config, q, starter,
+        self.data.request, self._list_config, query, starter,
         prefetcher=prefetcher)
 
     return response_builder.build()

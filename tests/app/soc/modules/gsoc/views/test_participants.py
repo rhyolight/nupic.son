@@ -18,6 +18,8 @@ from tests import profile_utils
 from tests import test_utils
 
 
+NUMBER_OF_MENTORS = 3
+
 class MentorsListAdminPageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for MentorsListAdminPage view."""
 
@@ -69,13 +71,13 @@ class MentorsListAdminPageTest(test_utils.GSoCDjangoTestCase):
     profile_utils.loginNDB(user)
 
     # seed a couple of mentors
-    profile_utils.GSoCProfileHelper(self.gsoc, False).createMentor(self.org)
-    profile_utils.GSoCProfileHelper(self.gsoc, False).createMentor(self.org)
-    profile_utils.GSoCProfileHelper(self.gsoc, False).createMentor(self.org)
+    for _ in range(NUMBER_OF_MENTORS):
+      profile_utils.seedNDBProfile(
+          self.program.key(), mentor_for=[self.org.key])
 
     response = self.get(self.url)
     self._assertPageTemplatesUsed(response)
     list_data = self.getListData(self.url, 0)
 
     #The only organization is self.gsoc
-    self.assertEqual(3, len(list_data))
+    self.assertEqual(NUMBER_OF_MENTORS, len(list_data))
