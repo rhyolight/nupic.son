@@ -945,7 +945,7 @@ class LookupLinkIdPage(base.GSoCRequestHandler):
       profile = form.cleaned_data.get('profile')
 
     if profile:
-      return http.HttpResponseRedirect(
+      raise exception.Redirect(
           links.SOC_LINKER.profile(profile, urls.UrlNames.PROFILE_ADMIN))
     else:
       return {
