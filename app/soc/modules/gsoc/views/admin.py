@@ -1405,6 +1405,10 @@ class StudentsList(Template):
         lambda ent, si, *args: formsSubmittedValue(ent, si))
 
     addresses.addAddressColumns(list_config)
+    list_config.addPlainTextColumn(
+        'tee_style', 'T-Shirt Style', lambda entity, *args: entity.tee_style)
+    list_config.addPlainTextColumn(
+        'tee_size', 'T-Shirt Size', lambda entity, *args: entity.tee_size)
 
     list_config.addPlainTextColumn('school_name', "school_name",
         (lambda ent, si, *args: si[ent.key()].school_name), hidden=True)

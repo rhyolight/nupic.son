@@ -19,50 +19,54 @@ def addAddressColumns(list_config):
   """Adds address columns to the specified list config.
 
   Columns added:
-    * res_street
-    * res_street_extra
-    * res_city
-    * res_state
-    * res_country
-    * res_postalcode
-    * phone
-    * ship_name
-    * ship_street
-    * ship_street_extra
-    * ship_city
-    * ship_state
-    * ship_country
-    * ship_postalcode
+    * residential_street
+    * residential_city
+    * residential_province
+    * residential_postal_code
+    * residential_country
+    * phone_number
+    * ship_to_name
+    * ship_to_street
+    * ship_to_city
+    * ship_to_province
+    * ship_to_postal_code
+    * ship_to_country
     * tshirt_style
     * tshirt_size
   """
-  list_config.addSimpleColumn('res_street', "res_street", hidden=True)
-  list_config.addSimpleColumn('res_street_extra', "res_street_extra", hidden=True)
-  list_config.addSimpleColumn('res_city', "res_city", hidden=True)
-  list_config.addSimpleColumn('res_state', "res_state", hidden=True)
-  list_config.addSimpleColumn('res_country', "res_country", hidden=True)
-  list_config.addSimpleColumn('res_postalcode', "res_postalcode", hidden=True)
-  list_config.addSimpleColumn('phone', "phone", hidden=True)
   list_config.addPlainTextColumn(
-      'ship_name', "ship_name",
-      (lambda e, *args: e.shipping_name()), hidden=True)
+      'residential_street', 'Residential Street',
+      lambda entity, *args: entity.residential_address.street, hidden=True)
   list_config.addPlainTextColumn(
-      'ship_street', "ship_street",
-      (lambda e, *args: e.shipping_street()), hidden=True)
+      'residential_city', 'Residential City',
+      lambda entity, *args: entity.residential_address.street, hidden=True)
   list_config.addPlainTextColumn(
-      'ship_street_extra', "ship_street_extra",
-      (lambda e, *args: e.shipping_street_extra()), hidden=True)
+      'residential_province', 'Residential State/Province',
+      lambda entity, *args: entity.residential_address.province, hidden=True)
   list_config.addPlainTextColumn(
-      'ship_city', "ship_city",
-      (lambda e, *args: e.shipping_city()), hidden=True)
+      'residential_postal_code', 'Residential Postal Code',
+      lambda entity, *args: entity.residential_address.postal_code, hidden=True)
   list_config.addPlainTextColumn(
-      'ship_state', "ship_state",
-      (lambda e, *args: e.shipping_state()), hidden=True)
+      'residential_country', 'Residential Country',
+      lambda entity, *args: entity.residential_address.country, hidden=True)
   list_config.addPlainTextColumn(
-      'ship_country', "ship_country",
-      (lambda e, *args: e.shipping_country()), hidden=True)
+      'phone_number', 'Phone Number',
+      lambda entity, *args: entity.contact.phone, hidden=True)
   list_config.addPlainTextColumn(
-      'ship_postalcode', "ship_postalcode",
-      (lambda e, *args: e.shipping_postalcode()), hidden=True)
-  list_config.addSimpleColumn('tshirt_style', "tshirt_style", hidden=True)
-  list_config.addSimpleColumn('tshirt_size', "tshirt_size", hidden=True)
+      'ship_to_name', 'Ship To Name',
+      lambda entity, *args: entity.ship_to_address.name, hidden=True)
+  list_config.addPlainTextColumn(
+      'ship_to_street', 'Ship To Street',
+      lambda entity, *args: entity.ship_to_address.street, hidden=True)
+  list_config.addPlainTextColumn(
+      'ship_to_city', 'Ship To City',
+      lambda entity, *args: entity.ship_to_address.city, hidden=True)
+  list_config.addPlainTextColumn(
+      'ship_to_province', 'Ship To State/Province',
+      lambda entity, *args: entity.ship_to_address.province, hidden=True)
+  list_config.addPlainTextColumn(
+      'ship_to_postal_code', 'Ship To Postal Code',
+      lambda entity, *args: entity.ship_to_address.postal_code, hidden=True)
+  list_config.addPlainTextColumn(
+      'ship_to_country', 'Ship To Country',
+      lambda entity, *args: entity.ship_to_address.country, hidden=True)
