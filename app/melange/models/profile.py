@@ -215,6 +215,15 @@ class Profile(ndb.Model):
     """
     return self.key.parent().id()
 
+  @property
+  def legal_name(self):
+    """Full, legal name associated with the profile."""
+    return '%s %s' % (self.first_name, self.last_name)
+
+  @property
+  def ship_to_address(self):
+    """Address to which all program packages should be shipped."""
+    return self.shipping_address or self.residential_address
 
 def getSponsorId(profile_key):
   """Returns sponsor ID based on the specified profile key.
