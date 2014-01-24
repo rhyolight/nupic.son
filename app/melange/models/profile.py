@@ -102,6 +102,30 @@ class StudentData(ndb.Model):
   #: Property pointing to the Blob storing student's enrollment form.
   enrollment_form = ndb.BlobKeyProperty()
 
+  #: Property telling whether the enrollment form is verified by
+  #: a program administrator.
+  is_enrollment_form_verified = ndb.BooleanProperty(default=False)
+
+  #: Number of tasks completed by the student.
+  number_of_completed_tasks = ndb.IntegerProperty(required=True, default=0)
+
+  #: Property telling whether the student has completed at least one task.
+  completed_task = ndb.ComputedProperty(
+      lambda self: bool(self.number_of_completed_tasks))
+
+  #: Property pointing to the Blob storing student's parental consent form.
+  consent_form = ndb.BlobKeyProperty()
+
+  #: Property telling whether the consent form is verified by
+  #: a program administrator.
+  is_consent_form_verified = ndb.BooleanProperty(default=False)
+
+  #: Organization for which the student is a winner.
+  winner_for = ndb.KeyProperty()
+
+  #: Property telling thether the student is a winner of the program.
+  is_winner = ndb.ComputedProperty(lambda self: self.winner_for is not None)
+
 
 class Profile(ndb.Model):
   """Model that represents profile that is registered on per-program basis
