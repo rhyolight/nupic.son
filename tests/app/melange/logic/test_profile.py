@@ -25,7 +25,6 @@ from melange.models import education as education_model
 from melange.models import profile as ndb_profile_model
 from melange.models import user as user_model
 
-from soc.models import profile as profile_model
 from soc.models import program as program_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
@@ -73,6 +72,34 @@ class CanResignAsOrgAdminForOrgTest(unittest.TestCase):
     with self.assertRaises(ValueError):
       profile_logic.canResignAsOrgAdminForOrg(
           self.org_admin, self.organization_two.key)
+
+_NUMBER_OF_MENTORS = 3
+
+class QueryAllMentorsForProgramTest(unittest.TestCase):
+  """Unit test for queryAllMentorsForProgram function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    # seed two programs for the same sponsor
+    sponsor = program_utils.seedSponsor()
+    self.program_one = program_utils.seedProgram(sponsor_key=sponsor.key())
+    program_two = program_utils.seedProgram(sponsor_key=sponsor.key())
+
+    org_one = org_utils.seedOrganization(self.program_one.key())
+    org_two = org_utils.seedOrganization(program_two.key())
+
+    self.mentor_keys = set()
+    # seed a few mentors for both programs
+    for _ in range(_NUMBER_OF_MENTORS):
+      self.mentor_keys.add(profile_utils.seedNDBProfile(
+          self.program_one.key(), mentor_for=[org_one.key]).key)
+      profile_utils.seedNDBProfile(program_two.key(), mentor_for=[org_two.key])
+
+  def testAllMentorsForProgramFetched(self):
+    """Tests that the returned query fetches all mentors for the program."""
+    query = profile_logic.queryAllMentorsForProgram(self.program_one.key())
+    result = query.fetch(1000)
+    self.assertEqual(self.mentor_keys, set(mentor.key for mentor in result))
 
 
 class GetOrgAdminsTest(unittest.TestCase):

@@ -67,6 +67,23 @@ def canResignAsOrgAdminForOrg(profile, org_key, models=types.MELANGE_MODELS):
     return rich_bool.RichBool(False, extra=ONLY_ORG_ADMIN)
 
 
+def queryAllMentorsForProgram(program_key):
+  """Returns a query that fetches all profiles of mentors for the specified
+  program.
+
+  Args:
+    program_key: Program key.
+
+  Returns:
+    A query instance that fetches all profiles of mentors for the specified
+    program.
+  """
+  program_key = ndb.Key.from_old_key(program_key)
+  return profile_model.Profile.query(
+      profile_model.Profile.program == program_key,
+      profile_model.Profile.is_mentor == True)
+
+
 def getOrgAdmins(org_key, keys_only=False, extra_attrs=None,
     models=types.MELANGE_MODELS):
   """Returns organization administrators for the specified organization.
