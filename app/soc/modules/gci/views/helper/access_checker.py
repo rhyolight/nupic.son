@@ -23,6 +23,7 @@ from google.appengine.ext import ndb
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
+from melange.models import profile as profile_model
 from melange.request import exception
 from melange.utils import time
 
@@ -33,7 +34,6 @@ from soc.views.helper import access_checker
 from soc.modules.gci.logic import conversation as gciconversation_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models import conversation as gciconversation_model
-from soc.modules.gci.models import profile as profile_model
 from soc.modules.gci.models import task as task_model
 from soc.modules.gci.views.helper import url_names
 
@@ -263,25 +263,15 @@ class AccessChecker(access_checker.AccessChecker):
     This checks if the user has at least one non-student profile in previous
     programs.
     """
-    # TODO(nathaniel): GSoC reference in GCI code.
-    from soc.modules.gsoc.models.profile import GSoCProfile
-
-    if not self.data.user:
+    if not self.data.ndb_user:
       raise exception.Forbidden(message=DEF_NO_PREV_ORG_MEMBER)
 
-    q = GSoCProfile.all(keys_only=True)
-    q.filter('is_mentor', True)
-    q.filter('status', 'active')
-    q.filter('user', self.data.user)
-    gsoc_profile = q.get()
+    query = profile_model.Profile.query(
+        profile_model.Profile.is_mentor == True,
+        profile_model.Profile.status == profile_model.Status.ACTIVE,
+        ancestor=self.data.ndb_user.key)
 
-    q = profile_model.GCIProfile.all(keys_only=True)
-    q.filter('is_mentor', True)
-    q.filter('status', 'active')
-    q.filter('user', self.data.user)
-    gci_profile = q.get()
-
-    if not (gsoc_profile or gci_profile):
+    if not query.get():
       raise exception.Forbidden(message=DEF_NO_PREV_ORG_MEMBER)
 
   def canTakeOrgApp(self):
