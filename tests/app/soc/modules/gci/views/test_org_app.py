@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 """Tests for organization applications."""
 
 import json
@@ -21,12 +20,14 @@ from datetime import datetime
 from datetime import timedelta
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from soc.models import org_app_survey
 from soc.models import org_app_record
 
 from soc.modules.gci.models import program as program_model
 
+from tests import org_utils
 from tests import test_utils
 from tests import survey_utils
 from tests import profile_utils
@@ -148,7 +149,10 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
 
   def testCodeInStudentAccessDenied(self):
     """Tests that Code-in student cannot access the page."""
-    self.profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
+
     response = self.get(self.take_url)
     self.assertResponseForbidden(response)
 
@@ -158,7 +162,9 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     soc_program = program_utils.seedGSoCProgram()
 
     # seed Summer Of Code student
-    profile_utils.GSoCProfileHelper(soc_program, False).createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(soc_program, user=user)
 
     response = self.get(self.take_url)
     self.assertResponseForbidden(response)
@@ -169,7 +175,9 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     soc_program = program_utils.seedGSoCProgram()
 
     # seed Summer Of Code student
-    profile_utils.GSoCProfileHelper(soc_program, False).createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(soc_program.key(), user=user)
 
     response = self.get(self.take_url)
     self.assertResponseForbidden(response)
@@ -177,19 +185,25 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
   def testSummerOfCodeOrgAdminAccessGranted(self):
     """Tests that Summer Of Code org admins need a new profile first."""
     # seed Summer Of Code program and organization
-    soc_program_helper = program_utils.GSoCProgramHelper()
-    soc_program = soc_program_helper.createProgram()
-    soc_org = soc_program_helper.createOrUpdateOrg()
+    soc_program = program_utils.seedGSoCProgram()
+    soc_org = org_utils.seedSOCOrganization(soc_program.key())
 
     # seed Summer Of Code org admin
-    profile_utils.GSoCProfileHelper(soc_program, False).createOrgAdmin(soc_org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        soc_program.key(), user=user, admin_for=[soc_org.key])
 
     response = self.get(self.take_url)
     self.assertResponseRedirect(response)
 
   def testCodeInOrgAdminAccessGranted(self):
     """Tests that Code In org admins can access the page."""
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     response = self.get(self.take_url)
     self.assertResponseOK(response)
@@ -202,8 +216,11 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     other_ci_org = ci_program_helper.createOrUpdateOrg()
 
     # seed Code In org admin for that program and organization
-    profile_utils.GCIProfileHelper(other_ci_program, False).createOrgAdmin(
-        other_ci_org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        other_ci_program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(other_ci_org.key())])
 
     # user must create profile for this program first
     response = self.get(self.take_url)
@@ -215,7 +232,11 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     self.updateOrgAppSurvey(survey_start=timeline_utils.future(delta=100),
         survey_end=timeline_utils.future(delta=150))
 
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     response = self.get(self.take_url)
     self.assertResponseForbidden(response)
@@ -226,7 +247,11 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     self.updateOrgAppSurvey(survey_start=timeline_utils.past(delta=150),
         survey_end=timeline_utils.past(delta=100))
 
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     response = self.get(self.take_url)
     self.assertResponseForbidden(response)
@@ -237,26 +262,37 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     response = self.get(self.take_url)
     self.assertResponseNotFound(response)
 
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
+
     response = self.get(self.take_url)
     self.assertResponseNotFound(response)
 
   def testOrgAppSurveyTakePage(self):
-    """Tests organizationn application survey take/retake page.
-    """
-    self.profile_helper.createOrgAdmin(self.org)
-    backup_admin = profile_utils.GCIProfileHelper(self.gci, self.dev_test)
-    backup_admin.createMentor(self.org)
+    """Tests organizationn application survey take/retake page."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    main_admin = profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
+
+    backup_admin = profile_utils.seedNDBProfile(
+        self.program.key(), admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     response = self.get(self.take_url)
     self.assertTemplatesUsed(response)
 
-    params = {'admin_id': self.profile_helper.user.link_id,
-              'backup_admin_id': backup_admin.user.link_id}
+    params = {
+        'admin_id': main_admin.key.parent().id(),
+        'backup_admin_id': backup_admin.key.parent().id()
+        }
     params.update(self.post_params)
     response = self.post(self.take_url, params)
     query = org_app_record.OrgAppRecord.all()
-    query.filter('main_admin = ', self.profile_helper.user)
+    query.filter('main_admin', main_admin.key.parent().to_old_key())
     self.assertEqual(query.count(), 1, 'Survey record is not created.')
 
     record = query.get()
@@ -264,8 +300,15 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     self.assertEqual(record.name, self.post_params['name'])
     self.assertEqual(record.description, self.post_params['description'])
     self.assertEqual(record.license, self.post_params['license'])
-    self.assertEqual(record.main_admin.key(), self.profile_helper.user.key())
-    self.assertEqual(record.backup_admin.key(), backup_admin.user.key())
+
+    main_admin_key = (
+        org_app_record.OrgAppRecord.main_admin.get_value_for_datastore(record))
+    self.assertEqual(main_admin_key, user.key.to_old_key())
+
+    backup_admin_key = (
+        org_app_record.OrgAppRecord.backup_admin
+            .get_value_for_datastore(record))
+    self.assertEqual(backup_admin_key, backup_admin.key.parent().to_old_key())
 
     retake_url = self.retake_url_raw % (self.gci.key().name(),
                                         record.key().id())
@@ -274,7 +317,7 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
     response = self.get(retake_url)
     self.assertResponseOK(response)
 
-    params = {'backup_admin_id': backup_admin.user.link_id}
+    params = {'backup_admin_id': backup_admin.key.parent().id()}
     params.update(self.post_params)
     params['name'] = 'New title'
 

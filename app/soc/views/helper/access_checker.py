@@ -268,7 +268,7 @@ class BaseAccessChecker(object):
     """
     self.isLoggedIn()
 
-    if self.data.user:
+    if self.data.ndb_user:
       return
 
     raise exception.Forbidden(message=DEF_NO_USER_LOGIN)
@@ -804,9 +804,12 @@ class AccessChecker(BaseAccessChecker):
 
     self.isUser()
 
-    allowed_keys = [self.data.org_app_record.main_admin.key(),
-                    self.data.org_app_record.backup_admin.key()]
-    if self.data.user.key() not in allowed_keys:
+    allowed_keys = [
+        org_app_record.OrgAppRecord.main_admin
+            .get_value_for_datastore(self.data.org_app_record),
+        org_app_record.OrgAppRecord.backup_admin
+            .get_value_for_datastore(self.data.org_app_record)]
+    if self.data.ndb_user.key.to_old_key() not in allowed_keys:
       raise exception.Forbidden(message=DEF_CANNOT_ACCESS_ORG_APP)
 
   def canViewOrgApp(self):
