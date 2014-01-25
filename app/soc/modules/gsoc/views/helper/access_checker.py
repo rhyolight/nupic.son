@@ -394,11 +394,12 @@ class AccessChecker(access_checker.AccessChecker):
           program.short_name,
           self.data.redirect.urlOf('create_gsoc_profile', secure=True))
 
-    if not self.data.user:
+    if not self.data.ndb_user:
       raise exception.Forbidden(message=msg)
 
     if not validate.hasNonStudentProfileForProgram(
-        self.data.user, program, GSoCProfile):
+        self.data.ndb_user.key, self.data.program.key(),
+        models=self.data.models):
       raise exception.Forbidden(message=msg)
 
   def canCreateOrgProfile(self):

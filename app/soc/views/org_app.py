@@ -105,7 +105,8 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
       django_forms.ValidationError if the backup admin does not have a profile.
     """
     if not validate.hasNonStudentProfileForProgram(
-        backup_admin_user, self.request_data.program, profile_model):
+        backup_admin_user.key, self.request_data.program.key(),
+        models=self.request_data.models):
       redirector = self.request_data.redirect.createProfile('org_admin')
 
       raise django_forms.ValidationError(

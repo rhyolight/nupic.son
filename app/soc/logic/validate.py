@@ -18,6 +18,10 @@ import feedparser
 
 from google.appengine.api import urlfetch
 from google.appengine.api import urlfetch_errors
+from google.appengine.ext import ndb
+
+from melange import types
+from melange.models import profile as profile_model
 
 from soc.models import linkable
 
@@ -100,23 +104,24 @@ def isAgeSufficientForProgram(birth_date, program):
   return True
 
 
-def hasNonStudentProfileForProgram(user, program, profile_model):
+def hasNonStudentProfileForProgram(
+    user_key, program_key, models=types.MELANGE_MODELS):
   """Returns True if the user has a non student profile for the given program.
 
   Args:
-    user: User entity for the user whose must have a profile in the program.
-    program: Program entity which must be checked for profile.
+    user_key: User key for the user whose must have a profile in the program.
+    program_key: Program key which must be checked for profile.
+    models: Instance of types.Models that represent appropriate models.
 
   Returns:
     True if the given user has a non student profile for the given program,
     False otherwise.
   """
-  q = profile_model.all(keys_only=True)
-  q.ancestor(user)
-  q.filter('program', program)
-  q.filter('is_student', False)
-  q.filter('status', 'active')
-
-  # There should be exactly one profile entity for the given link id per
+  query = models.ndb_profile_model.query(
+      models.ndb_profile_model.program == ndb.Key.from_old_key(program_key),
+      models.ndb_profile_model.is_student == False,
+      models.ndb_profile_model.status == profile_model.Status.ACTIVE,
+      ancestor=user_key)
+  # There should be exactly one profile entity for the given user id per
   # program, no more, no less
-  return q.count() == 1
+  return query.count() > 0

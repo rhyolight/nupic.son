@@ -15,13 +15,15 @@
 import datetime
 import unittest
 
+from melange.models import profile as profile_model
+
 from soc.logic import validate
-from soc.models import profile as profile_model
 from soc.models import program as program_model
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import profile_utils
+from tests import program_utils
 
 
 class ValidateTest(unittest.TestCase):
@@ -169,58 +171,43 @@ class ValidateTest(unittest.TestCase):
 class HasNonStudentProfileForProgramTest(unittest.TestCase):
 
   def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
     # seed a program
-    self.program = seeder_logic.seed(program_model.Program)
+    self.program = program_utils.seedProgram()
 
     # seed a user
-    self.user = profile_utils.seedUser()
-
-    # seed a profile
-    profile_properties = {
-        'is_student': False,
-        'program': self.program,
-        'parent': self.user,
-        'status': 'active',
-        }
-    self.profile = seeder_logic.seed(profile_model.Profile, profile_properties)
+    self.user = profile_utils.seedNDBUser()
 
   def testForNonStudentProfile(self):
     """Tests that True is returned if a non-student profile exists."""
+    # seed a non-student profile
+    profile_utils.seedNDBProfile(self.program.key(), user=self.user)
+
     result = validate.hasNonStudentProfileForProgram(
-        self.user, self.program, profile_model.Profile)
+        self.user.key, self.program.key())
     self.assertTrue(result)
 
   def testForStudentProfile(self):
     """Tests that False is returned if a student profile exists."""
-    # set the profile to be a student profile
-    self.profile.is_student = True
-    self.profile.put()
+    # seed a student profile
+    profile_utils.seedNDBStudent(self.program, user=self.user)
 
     result = validate.hasNonStudentProfileForProgram(
-        self.user, self.program, profile_model.Profile)
+        self.user.key, self.program.key())
     self.assertFalse(result)
 
   def testForNoProfile(self):
     """Tests that False is returned if no profile for the user exists."""
-    # seed another program for which the user does not have a profile
-    other_program = seeder_logic.seed(program_model.Program)
     result = validate.hasNonStudentProfileForProgram(
-        self.user, other_program, profile_model.Profile)
-    self.assertFalse(result)
-
-    # delete the existing profile and check for the that program
-    self.profile.delete()
-
-    result = validate.hasNonStudentProfileForProgram(
-        self.user, self.program, profile_model.Profile)
+        self.user.key, self.program.key())
     self.assertFalse(result)
 
   def testForNonActiveProfile(self):
     """Tests that False is returned if a profile is not active."""
-    # set the profile status to invalid
-    self.profile.status = 'invalid'
-    self.profile.put()
+    # seed a non-student, banned profile
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=self.user, status=profile_model.Status.BANNED)
 
     result = validate.hasNonStudentProfileForProgram(
-        self.user, self.program, profile_model.Profile)
+        self.user.key, self.program.key())
     self.assertFalse(result)
