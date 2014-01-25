@@ -198,7 +198,10 @@ def seedNDBProfile(program_key, model=ndb_profile_model.Profile,
       country=TEST_COUNTRY, postal_code=TEST_POSTAL_CODE)
 
   properties = {'email': '%s@example.com' % user.user_id}
-  properties.update(**kwargs)
+  contact_properties = dict(
+     (k, v) for k, v in kwargs.iteritems() 
+         if k in contact_model.Contact._properties)
+  properties.update(**contact_properties)
   contact = contact_model.Contact(**properties)
 
   properties = {
