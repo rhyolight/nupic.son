@@ -70,13 +70,17 @@ def login(user):
 
 
 # TODO(daniel): Change name to login and remove the function above
-def loginNDB(user):
+def loginNDB(user, is_admin=False):
   """Logs in the specified user by setting 'USER_ID' environmental variables.
 
   Args:
     user: user entity.
+    is_admin: A bool specifying whether the user is an administrator
+      of the application or not.
   """
   os.environ['USER_ID'] = user.account_id
+  if is_admin:
+    os.environ['USER_IS_ADMIN'] = '1'
 
 
 def logout():
