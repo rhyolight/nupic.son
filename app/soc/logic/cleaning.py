@@ -17,7 +17,7 @@
 import HTMLParser
 import re
 
-from google.appengine.api import users as appengine_users
+from google.appengine.api import users
 
 from django import forms
 from django.core import validators
@@ -28,9 +28,11 @@ import html5lib
 from html5lib import sanitizer
 from html5lib import html5parser
 
-from soc.models import user as user_model
+from melange.logic import user as user_logic
+from melange.models import user as user_model
+
 from soc.logic import validate
-from soc.logic import user as user_logic
+#from soc.logic import user as user_logic
 
 DEF_INVALID_EMAIL_ADDRESS = translation.ugettext(
     '"%s" is not a valid email address.')
@@ -200,18 +202,16 @@ def clean_existing_user(field_name):
 
   @check_field_is_empty(field_name)
   def wrapped(self):
-    """Decorator wrapper method.
-    """
-    link_id = clean_link_id(field_name)(self)
+    """Decorator wrapper method."""
+    user_id = clean_link_id(field_name)(self)
+    user = user_model.User.get_by_id(user_id)
 
-    user_entity = user_model.User.get_by_key_name(link_id)
-
-    if not user_entity:
+    if not user:
       # user does not exist
       raise forms.ValidationError(
-          USER_DOES_NOT_EXIST_ERROR_MSG % link_id)
+          USER_DOES_NOT_EXIST_ERROR_MSG % user_id)
 
-    return user_entity
+    return user
   return wrapped
 
 
@@ -222,17 +222,16 @@ def clean_user_is_current(field_name, as_user=True):
 
   @check_field_is_empty(field_name)
   def wrapped(self):
-    """Decorator wrapper method.
-    """
-    link_id = clean_link_id(field_name)(self)
+    """Decorator wrapper method."""
+    user_id = clean_link_id(field_name)(self)
 
-    user_entity = user_logic.current()
+    current_user = user_logic.getByCurrentAccount()
     # pylint: disable=E1103
-    if not user_entity or user_entity.link_id != link_id:
+    if not current_user or current_user.user_id != user_id:
       # this user is not the current user
       raise forms.ValidationError('This user is not you.')
 
-    return user_entity if as_user else link_id
+    return current_user if as_user else user_id
   return wrapped
 
 
@@ -243,17 +242,15 @@ def clean_user_not_exist(field_name):
 
   @check_field_is_empty(field_name)
   def wrapped(self):
-    """Decorator wrapper method.
-    """
-    link_id = clean_link_id(field_name)(self)
+    """Decorator wrapper method."""
+    user_id = clean_link_id(field_name)(self)
+    user = user_model.User.get_by_id(user_id)
 
-    user_entity = user_model.User.get_by_key_name(link_id)
-
-    if user_entity:
+    if user:
       # user exists already
       raise forms.ValidationError('There is already a user with this username.')
 
-    return link_id
+    return user_id
   return wrapped
 
 
@@ -267,11 +264,11 @@ def clean_users_not_same(field_name):
     """Decorator wrapper method.
     """
     clean_user_field = clean_existing_user(field_name)
-    user_entity = clean_user_field(self)
+    user = clean_user_field(self)
 
-    current_user_entity = user_logic.current()
+    current_user = user_logic.getByCurrentAccount()
     # pylint: disable=E1103
-    if user_entity.key() == current_user_entity.key():
+    if user.key == current_user.key:
       # users are equal
       raise forms.ValidationError('You cannot enter yourself here.')
 
@@ -422,9 +419,9 @@ def clean_html_content(field_name):
 
     # clean_html_content is called when writing data into GAE rather than
     # when reading data from GAE. This short-circuiting of the sanitizer
-    # only affects html authored by developers. The isDeveloper test for
+    # only affects html authored by developers. The test for
     # example allows developers to add javascript.
-    if user_logic.isDeveloper():
+    if users.is_current_user_admin():
       return content
 
     content = sanitize_html_string(content)

@@ -41,13 +41,11 @@ class CleaningTest(GSoCDjangoTestCase):
     """
     self.init()
     # Ensure that current user is created
-    self.user = profile_utils.seedUser(
-        key_name='current_user', link_id='current_user', name='Current User')
-    profile_utils.login(self.user)
+    self.user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(self.user)
 
     # Create another user
-    self.another_user = profile_utils.seedUser(
-        key_name='another_user', link_id='another_user', name='Another User')
+    self.another_user = profile_utils.seedNDBUser()
 
     # Create a dummy form object
     self.form = Form()
@@ -98,13 +96,12 @@ class CleaningTest(GSoCDjangoTestCase):
     self.assertEqual(self.form._errors, {})
 
   def testCleanLinkId(self):
-    """Tests that link_id field can be cleaned.
-    """
+    """Tests that link_id field can be cleaned."""
     field_name = 'test_link_id'
     clean_field = cleaning.clean_link_id(field_name)
     # Test that the value will be returned, the cleaned_data of form does not
     # change and there is no error message if the value of field has a valid
-    # link_id format
+    # format
     field_value = 'valid_link_id'
     cleaned_data_before = {field_name: field_value}
     self.form.cleaned_data = cleaned_data_before.copy()
@@ -113,7 +110,7 @@ class CleaningTest(GSoCDjangoTestCase):
     self.assertEqual(self.form._errors, {})
     # Test that forms.ValidationError will be raised, the cleaned_data of form
     # does not change and there is no error message if the value of field has
-    # not a valid link_id format
+    # not a valid format
     field_value = 'v1_@?'
     cleaned_data_before = {field_name: field_value}
     self.form.cleaned_data = cleaned_data_before.copy()
@@ -128,10 +125,10 @@ class CleaningTest(GSoCDjangoTestCase):
     clean_field = cleaning.clean_existing_user(field_name)
     # Test that the user will be returned if the value of field
     # is an existent user's link_id
-    field_value = self.user.link_id
+    field_value = self.user.user_id
     self.form.cleaned_data = {field_name: field_value}
     cleaned_data_after = clean_field(self.form)
-    self.assertEqual(cleaned_data_after.link_id, self.user.link_id)
+    self.assertEqual(cleaned_data_after.user_id, self.user.user_id)
     # Test that forms.ValidationError will be raised if the value of field
     # is not an existent user's link_id
     field_value = 'non_existent_user'
@@ -145,13 +142,13 @@ class CleaningTest(GSoCDjangoTestCase):
     clean_field = cleaning.clean_user_is_current(field_name)
     # Test that the user will be returned if the value of field is
     # an existent user's link_id
-    field_value = self.user.link_id
+    field_value = self.user.user_id
     self.form.cleaned_data = {field_name: field_value}
     cleaned_data_after = clean_field(self.form)
-    self.assertEqual(cleaned_data_after.link_id, self.user.link_id)
+    self.assertEqual(cleaned_data_after.user_id, self.user.user_id)
     # Test that forms.ValidationError will be raised if the value of field
     # is a user's link_id other than the current user's
-    field_value = self.another_user.link_id
+    field_value = self.another_user.user_id
     self.form.cleaned_data = {field_name: field_value}
     self.assertRaises(forms.ValidationError, clean_field, self.form)
     # Test that forms.ValidationError will be raised if the value of field
@@ -166,13 +163,13 @@ class CleaningTest(GSoCDjangoTestCase):
     field_name = 'test_user_not_exist'
     clean_field = cleaning.clean_user_not_exist(field_name)
     # Test that the value will be returned if the value of field
-    # is not an existent user's link_id
+    # is not an existent user's user_id
     field_value = 'non_existent_user'
     self.form.cleaned_data = {field_name: field_value}
     self.assertEqual(clean_field(self.form), field_value)
     # Test that forms.ValidationError will be raised if the value of field
-    # is an existent user's link_id
-    field_value = self.user.link_id
+    # is an existent user's user_id
+    field_value = self.user.user_id
     self.form.cleaned_data = {field_name: field_value}
     self.assertRaises(forms.ValidationError, clean_field, self.form)
 
@@ -182,17 +179,17 @@ class CleaningTest(GSoCDjangoTestCase):
     field_name = 'test_not_current_user'
     clean_field = cleaning.clean_users_not_same(field_name)
     # Test that forms.ValidationError will be raised if the value of field
-    # is the current user's link_id
-    field_value = self.user.link_id
+    # is the current user's user_id
+    field_value = self.user.user_id
     self.form.cleaned_data = {field_name: field_value}
     self.assertRaises(forms.ValidationError, clean_field, self.form)
     # Test that the user will be returned if the value of field is
-    # a user's link_id other than the current user
-    field_value = self.another_user.link_id
+    # a user's user_id other than the current user
+    field_value = self.another_user.user_id
     self.form.cleaned_data = {field_name: field_value}
-    self.assertEqual(clean_field(self.form).link_id, self.another_user.link_id)
+    self.assertEqual(clean_field(self.form).user_id, self.another_user.user_id)
     # Test that forms.ValidationError will be raised if the value of field
-    # is not an existent user's link_id
+    # is not an existent user's user_id
     field_value = 'non_existent_user'
     self.form.cleaned_data = {field_name: field_value}
     self.assertRaises(forms.ValidationError, clean_field, self.form)
@@ -309,8 +306,7 @@ class CleaningTest(GSoCDjangoTestCase):
     expected = html.replace('<', '&lt;').replace('>', '&gt;')
     self.assertEqual(actual, expected)
     # Test that input can contain scripts when the current user is a developer
-    self.user.is_developer = True
-    self.user.put()
+    profile_utils.loginNDB(self.user, is_admin=True)
     expected = html = '<script></script>'
     self.form.cleaned_data = {field_name: html}
     self.assertEqual(clean_field(self.form), expected)
