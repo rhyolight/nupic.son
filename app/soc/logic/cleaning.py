@@ -293,30 +293,6 @@ def clean_user_account(field_name):
   return wrapped
 
 
-def clean_user_account_not_in_use(field_name):
-  """Check if the field_name value contains an email
-     address that hasn't been used for an existing account.
-  """
-
-  @check_field_is_empty(field_name)
-  def wrapped(self):
-    """Decorator wrapper method.
-    """
-    email_adress = self.cleaned_data.get(field_name).lower()
-
-    # get the user account for this email and check if it's in use
-    user_account = appengine_users.User(email_adress)
-
-    user_entity = user_model.User.all().filter('account', user_account).get()
-
-    if user_entity or user_logic.isFormerAccount(user_account):
-      raise forms.ValidationError(
-          'There is already a user with this email address.')
-
-    return user_account
-  return wrapped
-
-
 def clean_valid_shipping_chars(field_name):
   """Clean method for cleaning a field that must comply with Google's character
   requirements for shipping.

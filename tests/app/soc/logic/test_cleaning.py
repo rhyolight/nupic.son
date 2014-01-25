@@ -221,29 +221,6 @@ class CleaningTest(GSoCDjangoTestCase):
     self.form.cleaned_data = {field_name: field_value}
     self.assertEqual(clean_field(self.form).email(), field_value)
 
-  def testCleanUserAccountNotInUse(self):
-    """Tests that user account can be cleaned for non-existent user accounts.
-    """
-    field_name = 'test_user_account_not_in_use'
-    clean_field = cleaning.clean_user_account_not_in_use(field_name)
-    # Test that a new account will be created and returned
-    # if the value of field is a valid new email address
-    field_value = 'user_name@email.com'
-    self.form.cleaned_data = {field_name: field_value}
-    cleaned_data_after = clean_field(self.form)
-    self.assertEqual(cleaned_data_after.email(), field_value)
-    # Test that forms.ValidationError will be raised if the value of field is
-    # an existent user's email address
-    field_value = self.user.account.email()
-    self.form.cleaned_data = {field_name: field_value}
-    self.assertRaises(forms.ValidationError, clean_field, self.form)
-    # Test that a new account will be created and returned
-    # even if the value of field is an invalid email address
-    field_value = 'invalid_*mail'
-    self.form.cleaned_data = {field_name: field_value}
-    cleaned_data_after = clean_field(self.form)
-    self.assertEqual(cleaned_data_after.email(), field_value)
-
   def testCleanValidShippingChars(self):
     """Tests that the shipping fields can be cleaned.
     """
