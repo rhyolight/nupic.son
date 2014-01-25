@@ -275,21 +275,7 @@ def clean_users_not_same(field_name):
       # users are equal
       raise forms.ValidationError('You cannot enter yourself here.')
 
-    return user_entity
-  return wrapped
-
-
-def clean_user_account(field_name):
-  """Returns the User with the given field_name value.
-  """
-
-  @check_field_is_empty(field_name)
-  def wrapped(self):
-    """Decorator wrapper method.
-    """
-    email_adress = self.cleaned_data[field_name]
-    return appengine_users.User(email_adress)
-
+    return user
   return wrapped
 
 
