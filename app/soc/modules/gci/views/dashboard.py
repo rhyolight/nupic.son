@@ -18,6 +18,7 @@ import json
 import logging
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 from django.utils.translation import ugettext
@@ -189,7 +190,7 @@ def _initConnectionDashboardSubpages(data):
       }]
 
   # add organization admin specific items
-  if data.profile.is_org_admin:
+  if data.ndb_profile.is_admin:
     subpages.append({
         'name': 'list_connections_for_org_admin',
         'description': ugettext(
@@ -197,7 +198,7 @@ def _initConnectionDashboardSubpages(data):
             'administrator role at this moment.'),
         'title': ugettext('See organization\'s connections'),
         'link': links.LINKER.profile(
-            data.profile, urls.UrlNames.CONNECTION_LIST_FOR_ORG_ADMIN)
+            data.ndb_profile, urls.UrlNames.CONNECTION_LIST_FOR_ORG_ADMIN)
         })
 
     for org in data.org_admin_for:
@@ -295,7 +296,7 @@ class DashboardPage(GCIRequestHandler):
     """Handler for default HTTP GET request."""
     context = {
         'page_name': data.program.name,
-        'user_name': data.user.name if data.user else None,
+        'user_name': data.ndb_user.user_id if data.ndb_user else None,
         }
 
     # Check if the student should submit either of the forms
@@ -335,7 +336,7 @@ class DashboardPage(GCIRequestHandler):
     """
     components = []
 
-    if data.student_info:
+    if data.ndb_profile.is_student:
       components += self._getStudentComponents(data)
     elif data.is_org_admin:
       components += self._getOrgAdminComponents(data)
@@ -403,13 +404,13 @@ class DashboardPage(GCIRequestHandler):
     # Test if this user is main admin or backup admin
     q = OrgAppRecord.all()
     q.filter('survey', survey)
-    q.filter('main_admin', data.user)
+    q.filter('main_admin', data.ndb_user.key.to_old_key())
 
     record = q.get()
 
     q = OrgAppRecord.all()
     q.filter('survey', survey)
-    q.filter('backup_admin', data.user)
+    q.filter('backup_admin', data.ndb_user.key.to_old_key())
 
     if record or q.get():
       # add a component showing the organization application of the user
@@ -446,7 +447,7 @@ class DashboardPage(GCIRequestHandler):
         self._getMySubscribedTasksLink(data)
         ]
 
-    current_task = task_logic.queryCurrentTaskForStudent(data.profile).get()
+    current_task = task_logic.queryCurrentTaskForStudent(data.ndb_profile).get()
     if current_task:
       links.append(self._getCurrentTaskLink(data, current_task))
 
@@ -462,7 +463,7 @@ class DashboardPage(GCIRequestHandler):
       A list of dicts, each of which describes a single link.
     """
     links = []
-    if data.profile:
+    if data.ndb_profile:
       if data.is_org_admin:
         links.extend(self._getOrgAdminLinks(data))
       if data.is_mentor:
@@ -500,7 +501,7 @@ class DashboardPage(GCIRequestHandler):
     who is currently logged in.
     """
     # TODO(nathaniel): Eliminate this state-setting call.
-    data.redirect.profile(data.user.link_id)
+    data.redirect.profile(data.ndb_user.user_id)
 
     return {
         'name': 'student_tasks',
@@ -529,7 +530,7 @@ class DashboardPage(GCIRequestHandler):
     is subscribed to.
     """
     # TODO(nathaniel): make this .profile call unnecessary.
-    data.redirect.profile(data.user.link_id)
+    data.redirect.profile(data.ndb_user.user_id)
 
     return {
         'name': 'subscribed_tasks',
@@ -621,13 +622,13 @@ class MyOrgApplicationsComponent(Component):
 
     q = OrgAppRecord.all()
     q.filter('survey', self.survey)
-    q.filter('main_admin', self.data.user)
+    q.filter('main_admin', self.data.ndb_user.key.to_old_key())
 
     records = q.fetch(1000)
 
     q = OrgAppRecord.all()
     q.filter('survey', self.survey)
-    q.filter('backup_admin', self.data.user)
+    q.filter('backup_admin', self.data.ndb_user.key.to_old_key())
 
     records.extend(q.fetch(1000))
 
@@ -668,26 +669,55 @@ class MyOrgsTaskList(Component):
         lambda entity, *args: entity.taskTimeToComplete())
 
 
+    def getMentors(entity, *args):
+      """Helper function to get value for mentors column."""
+      mentor_keys = map(ndb.Key.from_old_key, entity.mentors)
+      mentors = ndb.get_multi(mentor_keys)
+      return ', '.join(mentor.public_name for mentor in mentors)
+
     list_config.addPlainTextColumn(
-        'mentors', 'Mentors',
-        lambda entity, mentors, *args: ', '.join(
-            mentors[i].name() for i in entity.mentors))
+        'mentors', 'Mentors', getMentors)
 
     list_config.addSimpleColumn('description', 'Description', hidden=True)
+
+    def getStudent(entity, *args):
+      """Helper function to get value for student column."""
+      student_key = task_model.GCITask.student.get_value_for_datastore(entity)
+      if not student_key:
+        return ''
+      else:
+        student = ndb.Key.from_old_key(student_key).get()
+        return student.public_name
+
     list_config.addPlainTextColumn(
-        'student', 'Student',
-        lambda entity, *args: entity.student.name() if entity.student else '',
-        hidden=True)
+        'student', 'Student', getStudent, hidden=True)
+
+    def getCreatedBy(entity, *args):
+      """Helper function to get value for created_by column."""
+      profile_key = (
+          task_model.GCITask.created_by.get_value_for_datastore(entity))
+      if not profile_key:
+        return ''
+      else:
+        profile = ndb.Key.from_old_key(profile_key).get()
+        return profile.public_name
+
     list_config.addPlainTextColumn(
-        'created_by', 'Created by',
-        (lambda entity, *args:
-            entity.created_by.name() if entity.created_by else ''),
-        hidden=True)
+        'created_by', 'Created by', getCreatedBy, hidden=True)
+
+    def getModifiedBy(entity, *args):
+      """Helper function to get value for modified_by column."""
+      profile_key = (
+          task_model.GCITask.modified_by.get_value_for_datastore(entity))
+      if not profile_key:
+        return ''
+      else:
+        profile = ndb.Key.from_old_key(profile_key).get()
+        return profile.public_name
+
     list_config.addPlainTextColumn(
-        'modified_by', 'Modified by',
-        (lambda entity, *args:
-            entity.modified_by.name() if entity.modified_by else ''),
-        hidden=True)
+        'modified_by', 'Modified by', getModifiedBy, hidden=True)
+
     list_config.addSimpleColumn('created_on', 'Created on',
                                 column_type=lists.DATE, hidden=True)
     list_config.addSimpleColumn('modified_on', 'Modified on',
@@ -735,8 +765,7 @@ class MyOrgsTaskList(Component):
     return'modules/gci/dashboard/list_component.html'
 
   def post(self):
-    """Processes the form post data by checking what buttons were pressed.
-    """
+    """Processes the form post data by checking what buttons were pressed."""
     idx = lists.getListIndex(self.data.request)
     if idx != self.IDX:
       return None
@@ -784,14 +813,15 @@ class MyOrgsTaskList(Component):
         profile_key: profile key of the user who takes this action.
         """
         task = GCITask.get_by_id(int(task_key))
-        profile = GCIProfile.get(profile_key)
+        profile = profile_key.get()
 
         if not task:
           logging.warning("Task with task_id '%s' does not exist", task_key)
           return
 
-        org_key = GCITask.org.get_value_for_datastore(task)
-        if not org_key in profile.org_admin_for:
+        org_key = ndb.Key.from_old_key(
+            GCITask.org.get_value_for_datastore(task))
+        if not org_key in profile.admin_for:
           logging.warning('Not an org admin')
           return
 
@@ -810,7 +840,7 @@ class MyOrgsTaskList(Component):
             logging.warning(
                 'Trying to unpublish task with %s status.', task.status)
 
-      publish_task_txn(self.data.profile.key())
+      publish_task_txn(self.data.ndb_profile.key)
     return True
 
   def context(self):
@@ -836,15 +866,19 @@ class MyOrgsTaskList(Component):
 
     q = GCITask.all()
     q.filter('program', self.data.program)
-    q.filter('org IN', self.data.mentor_for)
+    q.filter(
+        'org IN',
+        map(lambda org_key: org_key.to_old_key(), 
+            self.data.ndb_profile.mentor_for))
 
     starter = lists.keyStarter
-    prefetcher = lists.ListModelPrefetcher(
-        GCITask, ['org', 'student', 'created_by', 'modified_by'], ['mentors'])
+    # TODO(daniel): enable prefetching
+    #prefetcher = lists.ListModelPrefetcher(
+    #    GCITask, ['org', 'student', 'created_by', 'modified_by'], ['mentors'])
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
-        prefetcher=prefetcher)
+        prefetcher=None)
 
     return response_builder.build()
 
@@ -1002,7 +1036,10 @@ class MyOrgsScoresList(MyOrgsList):
       return None
 
     q = GCIOrganization.all()
-    q.filter('__key__ IN', self.data.profile.org_admin_for)
+    q.filter(
+        '__key__ IN',
+        map(lambda org_key: org_key.to_old_key(),
+            self.data.ndb_profile.admin_for))
     q.filter('status IN', ['new', 'active'])
 
     response_builder = lists.RawQueryContentResponseBuilder(

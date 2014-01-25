@@ -41,7 +41,7 @@ def seedTask(program, org, mentors, student=None, **kwargs):
       'task_type': program.task_types[0],
       'mentors': mentors,
       'student': student,
-      'user': student.parent_key() if student else None,
+      'user': student.parent() if student else None,
       'created_by': mentors[0] if mentors else None,
       'modified_by': mentors[0] if mentors else None,
       'created_on': datetime.datetime.now() - datetime.timedelta(20),

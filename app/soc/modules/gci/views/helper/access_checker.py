@@ -364,10 +364,6 @@ class AccessChecker(access_checker.AccessChecker):
     """Checks whether the currently logged in user can create or edit
     a task, when the specified role is required.
     """
-    assert access_checker.isSet(self.data.organization)
-    assert access_checker.isSet(self.data.org_admin_for)
-    assert access_checker.isSet(self.data.mentor_for)
-
     if required_role == 'mentor':
       valid_org_keys = [o.key() for o in self.data.mentor_for]
     elif required_role == 'org_admin':
