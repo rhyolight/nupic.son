@@ -17,10 +17,14 @@
 
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from soc.tasks import mailer
 
+from melange.models import profile as profile_model
+
 from soc.modules.gci.logic.helper import notifications
+from soc.modules.gci.models import comment as comment_model
 from soc.modules.gci.models.profile import GCIProfile
 
 
@@ -45,12 +49,13 @@ def storeAndNotifyTxn(comment, task=None):
   elif task.key() != comment.parent_key():
     raise ValueError("The specified task must be the parent of the comment")
 
+  author_key = ndb.Key.from_old_key(
+      comment_model.GCIComment.created_by.get_value_for_datastore(comment))
   to_emails = []
-  profiles = GCIProfile.get(task.subscribers)
+  profiles = ndb.get_multi(map(ndb.Key.from_old_key, task.subscribers))
   for profile in profiles:
-    if profile and ((not comment.created_by) or
-        profile.user.key() != comment.created_by.key()):
-      to_emails.append(profile.email)
+    if profile and ((not author_key) or profile.key.parent() != author_key):
+      to_emails.append(profile.contact.email)
 
   # Send out an email to an entire organization when set.
   org = task.org

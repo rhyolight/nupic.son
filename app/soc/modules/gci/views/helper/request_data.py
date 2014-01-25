@@ -377,14 +377,14 @@ class RequestData(request_data.RequestData):
     if self.is_host:
       return True
 
-    if not self.profile:
+    if not self.ndb_profile:
       return False
 
     # TODO(daniel): remove when all models are converted to NDB
-    if isinstance(org_key, ndb.Key):
-      org_key = org_key.to_old_key()
+    if not isinstance(org_key, ndb.Key):
+      org_key = ndb.Key.from_old_key(org_key)
 
-    return org_key in self.profile.org_admin_for
+    return org_key in self.ndb_profile.admin_for
 
   def mentorFor(self, org_key):
     """Returns true iff the user is mentor for the specified organization.
@@ -395,14 +395,14 @@ class RequestData(request_data.RequestData):
     if self.is_host:
       return True
 
-    if not self.profile:
+    if not self.ndb_profile:
       return False
 
     # TODO(daniel): remove when all models are converted to NDB
-    if isinstance(org_key, ndb.Key):
-      org_key = org_key.to_old_key()
+    if not isinstance(org_key, ndb.Key):
+      org_key = ndb.Key.from_old_key(org_key)
 
-    return org_key in self.profile.mentor_for
+    return org_key in self.ndb_profile.mentor_for
 
 
 class RedirectHelper(request_data.RedirectHelper):

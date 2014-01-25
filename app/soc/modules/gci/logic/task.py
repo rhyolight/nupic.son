@@ -20,6 +20,7 @@ import logging
 from google.appengine.api import memcache
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django.utils.translation import ugettext
 
@@ -117,7 +118,9 @@ def hasTaskEditableStatus(task):
   Args:
     task: Any task_model.GCITask.
   """
-  return task.status in (task_model.UNPUBLISHED + task_model.OPEN)
+  editable_statuses = task_model.UNAVAILABLE[:]
+  editable_statuses.append(task_model.OPEN)
+  return task.status in editable_statuses
 
 
 def isOwnerOfTask(task, profile):
@@ -127,7 +130,12 @@ def isOwnerOfTask(task, profile):
     task: The task_model.GCITask entity
     profile: The GCIProfile which might be the owner of the task
   """
-  return profile and task.student and task.student.key() == profile.key()
+  if not (task_model.GCITask.student.get_value_for_datastore(task) and profile):
+    return False
+  else:
+    student_key = ndb.Key.from_old_key(
+        task_model.GCITask.student.get_value_for_datastore(task))
+    return student_key == profile.key
 
 
 def canClaimRequestTask(task, profile):
@@ -143,14 +151,14 @@ def canClaimRequestTask(task, profile):
 
   # check if the user is allowed to claim this task
   q = task_model.GCITask.all()
-  q.filter('student', profile)
+  q.filter('student', profile.key.to_old_key())
   q.filter('program', task.program)
   q.filter('status IN', task_model.ACTIVE_CLAIMED_TASK)
 
   max_tasks = task.program.nr_simultaneous_tasks
   count = q.count(max_tasks)
 
-  has_forms = profile_logic.hasStudentFormsUploaded(profile.student_info)
+  has_forms = profile_logic.hasStudentFormsUploaded(profile)
 
   return count < max_tasks and has_forms
 
@@ -185,7 +193,7 @@ def publishTask(task, publisher):
       'parent': task,
       'title': DEF_PUBLISHED_TITLE,
       'content': DEF_PUBLISHED,
-      'created_by': publisher.user,
+      'created_by': publisher.key.parent().to_old_key(),
   }
   comment = GCIComment(**comment_props)
 
@@ -215,7 +223,7 @@ def unpublishTask(task, unpublisher):
       'parent': task,
       'title': DEF_UNPUBLISHED_TITLE,
       'content': DEF_UNPUBLISHED,
-      'created_by': unpublisher.user,
+      'created_by': unpublisher.key.parent().to_old_key(),
   }
   comment = GCIComment(**comment_props)
 
@@ -229,7 +237,7 @@ def unpublishTask(task, unpublisher):
   return db.run_in_transaction(unpublishTaskTxn)
 
 
-def assignTask(task, student, assigner):
+def assignTask(task, student_key, assigner):
   """Assigns the task to the student.
 
   This will put the task in the Claimed state and set the student and deadline
@@ -237,20 +245,21 @@ def assignTask(task, student, assigner):
 
   Args:
     task: task_model.GCITask entity.
-    student: GCIProfile entity of a student.
+    student_key: Key of the student to assign
     assigner: GCIProfile of the user that assigns the student.
   """
-  task.student = student
+  task.student = student_key.to_old_key()
   task.status = 'Claimed'
   task.deadline = datetime.datetime.now() + \
       datetime.timedelta(hours=task.time_to_complete)
 
+  student = student_key.get()
   comment_props = {
       'parent': task,
       'title': DEF_ASSIGNED_TITLE,
       'content': DEF_ASSIGNED %(
           student.public_name, task.time_to_complete),
-      'created_by': assigner.user,
+      'created_by': assigner.key.parent().to_old_key(),
   }
   comment = GCIComment(**comment_props)
 
@@ -264,7 +273,7 @@ def assignTask(task, student, assigner):
   return db.run_in_transaction(assignTaskTxn)
 
 
-def unassignTask(task, user):
+def unassignTask(task, profile):
   """Unassigns a task.
 
   This will put the task in the Reopened state and reset the student and
@@ -272,7 +281,7 @@ def unassignTask(task, user):
 
   Args:
     task: task_model.GCITask entity.
-    user: GCIProfile of the user that unassigns the task.
+    profile: GCIProfile of the user that unassigns the task.
   """
   task.student = None
   task.status = task_model.REOPENED
@@ -282,7 +291,7 @@ def unassignTask(task, user):
       'parent': task,
       'title': DEF_UNASSIGNED_TITLE,
       'content': DEF_UNASSIGNED,
-      'created_by': user.user
+      'created_by': profile.key.parent().to_old_key()
   }
   comment = GCIComment(**comment_props)
 
@@ -312,13 +321,15 @@ def closeTask(task, profile):
       'parent': task,
       'title': DEF_CLOSED_TITLE,
       'content': DEF_CLOSED,
-      'created_by': profile.user
+      'created_by': profile.key.parent().to_old_key()
   }
   comment = GCIComment(**comment_props)
 
   comment_txn = comment_logic.storeAndNotifyTxn(comment)
 
-  student = task.student
+  student_key = ndb.Key.from_old_key(
+      task_model.GCITask.student.get_value_for_datastore(task))
+  student = student_key.get()
 
   # student, who worked on the task, should receive a confirmation
   # having submitted his or her first task
@@ -328,7 +339,7 @@ def closeTask(task, profile):
   else:
     confirmation = lambda: None
 
-  org_score_txn = org_score_logic.updateOrgScoreTxn(task)
+  org_score_txn = org_score_logic.updateOrgScoreTxn(task, student)
 
   @db.transactional(xg=True)
   def closeTaskTxn():
@@ -338,15 +349,20 @@ def closeTask(task, profile):
     confirmation()
     org_score_txn()
 
+  # TODO(daniel): move this to a transaction when other models are NDB
+  student = student_key.get()
+  student.student_data.number_of_completed_tasks += 1
+  student.put()
+
   return closeTaskTxn()
 
 
-def needsWorkTask(task, user):
+def needsWorkTask(task, profile):
   """Closes the task.
 
   Args:
     task: task_model.GCITask entity.
-    user: GCIProfile of the user that marks this task as needs more work.
+    profile: GCIProfile of the user that marks this task as needs more work.
   """
   task.status = 'NeedsWork'
 
@@ -354,7 +370,7 @@ def needsWorkTask(task, user):
       'parent': task,
       'title': DEF_NEEDS_WORK_TITLE,
       'content': DEF_NEEDS_WORK,
-      'created_by': user.user
+      'created_by': profile.key.parent().to_old_key()
   }
   comment = GCIComment(**comment_props)
 
@@ -367,13 +383,13 @@ def needsWorkTask(task, user):
   return db.run_in_transaction(needsWorkTaskTxn)
 
 
-def extendDeadline(task, delta, user):
+def extendDeadline(task, delta, profile):
   """Extends the deadline of a task.
 
   Args:
     task: The task to extend the deadline for.
     delta: The timedelta object to be added to the current deadline.
-    user: GCIProfile of the user that extends the deadline.
+    profile: GCIProfile of the user that extends the deadline.
   """
   if task.deadline:
     deadline = task.deadline + delta
@@ -386,7 +402,7 @@ def extendDeadline(task, delta, user):
       'parent': task,
       'title': DEF_EXTEND_DEADLINE_TITLE,
       'content': DEF_EXTEND_DEADLINE %(delta.days, delta.seconds/3600),
-      'created_by': user.user
+      'created_by': profile.key.parent().to_old_key()
   }
   comment = GCIComment(**comment_props)
 
@@ -407,19 +423,19 @@ def claimRequestTask(task, student):
 
   Args:
     task: The task to claim.
-    student: GCIProfile of the student that wants to claim the task.
+    student: Profile of the student that wants to claim the task.
   """
   task.status = 'ClaimRequested'
-  task.student = student
+  task.student = student.key.to_old_key()
 
-  if student.key() not in task.subscribers:
-    task.subscribers.append(student.key())
+  if student.key.to_old_key() not in task.subscribers:
+    task.subscribers.append(student.key.to_old_key())
 
   comment_props = {
       'parent': task,
       'title': DEF_CLAIM_REQUEST_TITLE,
       'content': DEF_CLAIM_REQUEST,
-      'created_by': student.user
+      'created_by': student.key.parent().to_old_key()
   }
   comment = GCIComment(**comment_props)
 
@@ -438,7 +454,7 @@ def unclaimTask(task):
   Args:
     task: The task to unclaim.
   """
-  student = task.student
+  student_key = task_model.GCITask.student.get_value_for_datastore(task)
 
   task.student = None
   task.status = task_model.REOPENED
@@ -448,7 +464,7 @@ def unclaimTask(task):
       'parent': task,
       'title': DEF_UNCLAIMED_TITLE,
       'content': DEF_UNCLAIMED,
-      'created_by': student.user
+      'created_by': student_key.parent()
   }
   comment = GCIComment(**comment_props)
 
@@ -465,8 +481,8 @@ def sendForReview(task, student):
   """Send in a task for review.
 
   Args:
-    task: the task to send for review
-    student: GCIProfile of the student that is sending in the work
+    task: The task to send for review.
+    student: Profile of the student that is sending in the work.
   """
   task.status = 'NeedsReview'
 
@@ -474,7 +490,7 @@ def sendForReview(task, student):
       'parent': task,
       'title': DEF_SEND_FOR_REVIEW_TITLE,
       'content': DEF_SEND_FOR_REVIEW,
-      'created_by': student.user
+      'created_by': student.key.parent().to_old_key(),
   }
   comment = GCIComment(**comment_props)
 
@@ -728,22 +744,22 @@ def queryAllTasksClosedByStudent(profile, keys_only=False):
   """Returns a query for all the tasks that have been closed by the
   specified profile.
   """
-  if not profile.student_info:
+  if not profile.is_student:
     raise ValueError('Only students can be queried for closed tasks.')
 
   return task_model.GCITask.all(keys_only=keys_only).filter(
-      'student', profile).filter('status', 'Closed')
+      'student', profile.key.to_old_key()).filter('status', 'Closed')
 
 
 def queryCurrentTaskForStudent(profile, keys_only=False):
   """Returns a query for the task that the specified student
   is currently working on.
   """
-  if not profile.student_info:
+  if not profile.is_student:
     raise ValueError('Only students can be queried for their current task.')
 
   return task_model.GCITask.all(keys_only=keys_only).filter(
-      'student', profile).filter('status != ', 'Closed')
+      'student', profile.key.to_old_key()).filter('status != ', 'Closed')
 
 
 def querySubscribedTasksForProfile(profile, keys_only=False):

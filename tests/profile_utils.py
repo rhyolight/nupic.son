@@ -193,8 +193,9 @@ def seedNDBProfile(program_key, model=ndb_profile_model.Profile,
       street=TEST_STREET, city=TEST_CITY, province=TEST_PROVINCE,
       country=TEST_COUNTRY, postal_code=TEST_POSTAL_CODE)
 
-  contact = contact_model.Contact(
-      email='%s@example.com' % user.user_id)
+  properties = {'email': '%s@example.com' % user.user_id}
+  properties.update(**kwargs)
+  contact = contact_model.Contact(**properties)
 
   properties = {
       'program': ndb.Key.from_old_key(program_key),

@@ -23,6 +23,8 @@ from django.core.urlresolvers import reverse
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext
 
+from melange.models import profile as profile_model
+
 from soc.logic import accounts
 from soc.logic import dicts
 from soc.logic import mail_dispatcher
@@ -30,6 +32,7 @@ from soc.logic import program as program_logic
 from soc.logic import site
 from soc.tasks import mailer
 
+from soc.modules.gci.models import comment as comment_model
 from soc.modules.gci.views.helper import url_names
 
 
@@ -167,18 +170,16 @@ def getFirstTaskConfirmationContext(student):
   Args:
     student: the student who should receive the confirmation
   """
-
-  user = student.parent()
-  to = accounts.denormalizeAccount(user.account).email()
+  to = student.contact.email
 
   subject = DEF_FIRST_TASK_CONFIRMATION_SUBJECT
 
-  program = student.program
+  program_key = student.program
 
   kwargs = {
-      'sponsor': program_logic.getSponsorKey(program).name(),
-      'program': program.link_id
-  }
+      'sponsor': profile_model.getSponsorId(student.key),
+      'program': profile_model.getProgramId(student.key)
+      }
   url = reverse('gci_student_form_upload', kwargs=kwargs)
 
   protocol = 'http'
@@ -211,7 +212,11 @@ def getTaskCommentContext(task, comment, to_emails):
       'host': site.getHostname(),
       'task': reverse('gci_view_task', kwargs=url_kwargs)}
 
-  commented_by = comment.created_by.name if comment.created_by else "Melange"
+  author_key = (
+      comment_model.GCIComment.created_by
+          .get_value_for_datastore(comment))
+  author = ndb.Key.from_old_key(author_key).get() if author_key else None
+  commented_by = author.user_id if author else 'Melange'
 
   message_properties = {
       'commented_by': commented_by,

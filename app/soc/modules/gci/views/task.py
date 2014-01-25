@@ -19,6 +19,7 @@ import logging
 
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import forms as django_forms
 from django import http
@@ -198,7 +199,7 @@ class TaskViewPage(base.GCIRequestHandler):
 
       if 'submit_work' in data.GET:
         check.isBeforeAllWorkStopped()
-        if not task_logic.canSubmitWork(data.task, data.profile):
+        if not task_logic.canSubmitWork(data.task, data.ndb_profile):
           check.fail(DEF_NOT_ALLOWED_TO_UPLOAD_WORK)
 
       if 'button' in data.GET:
@@ -212,7 +213,7 @@ class TaskViewPage(base.GCIRequestHandler):
 
       if 'send_for_review' in data.GET:
         check.isBeforeAllWorkStopped()
-        if not task_logic.isOwnerOfTask(data.task, data.profile) or \
+        if not task_logic.isOwnerOfTask(data.task, data.ndb_profile) or \
             not data.work_submissions or \
             data.task.status not in TASK_IN_PROGRESS:
           check.fail(DEF_CANT_SEND_FOR_REVIEW)
@@ -226,9 +227,11 @@ class TaskViewPage(base.GCIRequestHandler):
         if not work:
           check.fail(DEF_NO_WORK_FOUND %id)
 
+        user_key = ndb.Key.from_old_key(
+            task_model.GCIWorkSubmission.user.get_value_for_datastore(work))
         time_expired = work.submitted_on - datetime.datetime.now()
-        if work.user.key() != data.user.key() or \
-            time_expired > task_logic.DELETE_EXPIRATION:
+        if (user_key != data.ndb_user.key or
+            time_expired > task_logic.DELETE_EXPIRATION):
           check.fail(DEF_NOT_ALLOWED_TO_DELETE)
 
   def jsonContext(self, data, check, mutator):
@@ -264,7 +267,7 @@ class TaskViewPage(base.GCIRequestHandler):
       # the open cog when a task can be claimed.
       if task.status == 'Closed':
         block_type = 'completed'
-      elif task_logic.isOwnerOfTask(task, data.profile):
+      elif task_logic.isOwnerOfTask(task, data.ndb_profile):
         block_type = 'owned'
       elif task.status in ACTIVE_CLAIMED_TASK:
         block_type = 'claimed'
@@ -301,8 +304,8 @@ class TaskViewPage(base.GCIRequestHandler):
       return self.get(data, check, mutator)
 
     comment_form.cleaned_data['reply'] = reply
-    comment_form.cleaned_data['created_by'] = data.user
-    comment_form.cleaned_data['modified_by'] = data.user
+    comment_form.cleaned_data['created_by'] = data.ndb_user.key.to_old_key()
+    comment_form.cleaned_data['modified_by'] = data.ndb_user.key.to_old_key()
 
     comment = comment_form.create(commit=False, parent=data.task)
     comment_logic.storeAndNotify(comment)
@@ -319,9 +322,9 @@ class TaskViewPage(base.GCIRequestHandler):
     task_key = task.key()
 
     if button_name == 'button_unpublish':
-      task_logic.unpublishTask(task, data.profile)
+      task_logic.unpublishTask(task, data.ndb_profile)
     elif button_name == 'button_publish':
-      task_logic.publishTask(task, data.profile)
+      task_logic.publishTask(task, data.ndb_profile)
     elif button_name == 'button_edit':
       data.redirect.id(id=task.key().id_or_name())
       return data.redirect.to('gci_edit_task')
@@ -330,37 +333,37 @@ class TaskViewPage(base.GCIRequestHandler):
       url = links.LINKER.program(data.program, 'gci_homepage')
       return http.HttpResponseRedirect(url)
     elif button_name == 'button_assign':
-      task_logic.assignTask(task, task.student, data.profile)
+      student_key = ndb.Key.from_old_key(
+          task_model.GCITask.student.get_value_for_datastore(task))
+      task_logic.assignTask(task, student_key, data.ndb_profile)
     elif button_name == 'button_unassign':
-      task_logic.unassignTask(task, data.profile)
+      task_logic.unassignTask(task, data.ndb_profile)
     elif button_name == 'button_close':
-      task_logic.closeTask(task, data.profile)
+      task_logic.closeTask(task, data.ndb_profile)
     elif button_name == 'button_needs_work':
-      task_logic.needsWorkTask(task, data.profile)
+      task_logic.needsWorkTask(task, data.ndb_profile)
     elif button_name == 'button_extend_deadline':
       hours = data.POST.get('hours', '')
       hours = int(hours) if hours.isdigit() else 0
       if hours > 0:
         delta = datetime.timedelta(hours=hours)
-        task_logic.extendDeadline(task, delta, data.profile)
+        task_logic.extendDeadline(task, delta, data.ndb_profile)
     elif button_name == 'button_claim':
-      task_logic.claimRequestTask(task, data.profile)
+      task_logic.claimRequestTask(task, data.ndb_profile)
     elif button_name == 'button_unclaim':
       task_logic.unclaimTask(task)
     elif button_name == 'button_subscribe':
-      profile_key = data.profile.key()
       def txn():
         task = db.get(task_key)
-        if profile_key not in task.subscribers:
-          task.subscribers.append(profile_key)
+        if data.ndb_profile.key.to_old_key() not in task.subscribers:
+          task.subscribers.append(data.ndb_profile.key.to_old_key())
           task.put()
       db.run_in_transaction(txn)
     elif button_name == 'button_unsubscribe':
-      profile_key = data.profile.key()
       def txn():
         task = db.get(task_key)
-        if profile_key in task.subscribers:
-          task.subscribers.remove(profile_key)
+        if data.ndb_profile.key.to_old_key() in task.subscribers:
+          task.subscribers.remove(data.ndb_profile.key.to_old_key())
           task.put()
       db.run_in_transaction(txn)
 
@@ -400,7 +403,7 @@ class TaskViewPage(base.GCIRequestHandler):
 
     task = data.task
     # TODO(ljvderijk): Add a non-required profile property?
-    form.cleaned_data['user'] = data.user
+    form.cleaned_data['user'] = data.ndb_user.key.to_old_key()
     form.cleaned_data['org'] = task.org
     form.cleaned_data['program'] = task.program
 
@@ -411,7 +414,7 @@ class TaskViewPage(base.GCIRequestHandler):
 
   def _postSendForReview(self, data):
     """POST handler for the mark as complete button."""
-    task_logic.sendForReview(data.task, data.profile)
+    task_logic.sendForReview(data.task, data.ndb_profile)
 
     return data.redirect.id().to(url_names.GCI_VIEW_TASK)
 
@@ -455,7 +458,7 @@ class TaskInformation(Template):
     """
     task = self.data.task
     mentors = [m.public_name for m in db.get(task.mentors)]
-    profile = self.data.profile
+    profile = self.data.ndb_profile
 
     # We count everyone from the org as a mentor, the mentors property
     # is just who best to contact about this task
@@ -464,9 +467,9 @@ class TaskInformation(Template):
         'mentors': mentors,
         'is_mentor': self.data.mentorFor(task.org),
         'is_task_mentor': profile.key() in task.mentors if profile else None,
-        'is_owner': task_logic.isOwnerOfTask(task, self.data.profile),
+        'is_owner': task_logic.isOwnerOfTask(task, self.data.ndb_profile),
         'is_claimed': task.status in ACTIVE_CLAIMED_TASK,
-        'profile': self.data.profile,
+        'profile': self.data.ndb_profile,
     }
 
     if task.deadline:
@@ -486,8 +489,7 @@ class TaskInformation(Template):
     Args:
       context: Context dictionary which to write to.
     """
-    profile = self.data.profile
-    if not profile:
+    if not self.data.ndb_profile:
       # no buttons for someone without a profile
       return
 
@@ -499,8 +501,8 @@ class TaskInformation(Template):
 
     is_org_admin = self.data.orgAdminFor(task.org.key())
     is_mentor = self.data.mentorFor(task.org.key())
-    is_student = self.data.is_student
-    is_owner = task_logic.isOwnerOfTask(task, profile)
+    is_student = self.data.ndb_profile.is_student
+    is_owner = task_logic.isOwnerOfTask(task, self.data.ndb_profile)
 
     if is_org_admin:
       can_unpublish = task.status == task_model.OPEN and not task.student
@@ -522,24 +524,27 @@ class TaskInformation(Template):
 
     if is_student:
       if not self.data.timeline.tasksClaimEnded():
-        if not profile_logic.hasStudentFormsUploaded(profile.student_info):
+        if not profile_logic.hasStudentFormsUploaded(self.data.ndb_profile):
           # TODO(nathaniel): make this .program() call unnecessary.
           self.data.redirect.program()
 
           context['student_forms_link'] = self.data.redirect.urlOf(
               url_names.GCI_STUDENT_FORM_UPLOAD)
         # TODO(lennie): Separate the access check out in to different
-        # methods and add a context variable to show separate messages.
+        # methods and add a context variable to show separate messages.'
         context['button_claim'] = task_logic.canClaimRequestTask(
-            task, profile)
+            task, self.data.ndb_profile)
 
     if is_owner:
       if not self.data.timeline.tasksClaimEnded():
         context['button_unclaim'] = task.status in ACTIVE_CLAIMED_TASK
 
     if task.status != 'Closed':
-      context['button_subscribe'] = not profile.key() in task.subscribers
-      context['button_unsubscribe'] = profile.key() in task.subscribers
+      task_subscribers_keys = map(ndb.Key.from_old_key, task.subscribers)
+      context['button_subscribe'] = (
+          not self.data.ndb_profile.key in task_subscribers_keys)
+      context['button_unsubscribe'] = (
+          not self.data.ndb_profile.key in task.subscribers)
 
   def templatePath(self):
     """Returns the path to the template that should be used in render().
@@ -581,16 +586,18 @@ class WorkSubmissions(Template):
         }
 
     task = self.data.task
-    is_owner = task_logic.isOwnerOfTask(task, self.data.profile)
+    is_owner = task_logic.isOwnerOfTask(task, self.data.ndb_profile)
 
     if is_owner:
       context['send_for_review'] = self.data.work_submissions and \
           task.status in SEND_FOR_REVIEW_ALLOWED
 
     deleteable = []
-    if self.data.user:
+    if self.data.ndb_user:
       for work in self.data.work_submissions:
-        if work.user.key() == self.data.user.key():
+        work_key = ndb.Key.from_old_key(
+            task_model.GCIWorkSubmission.user.get_value_for_datastore(work))
+        if work_key == self.data.ndb_user.key:
           # Ensure that it is the work from the current user in case the task
           # got re-assigned.
           time_expired = work.submitted_on - datetime.datetime.now()
@@ -598,7 +605,7 @@ class WorkSubmissions(Template):
             deleteable.append(work)
     context['deleteable'] = deleteable
 
-    if task_logic.canSubmitWork(task, self.data.profile):
+    if task_logic.canSubmitWork(task, self.data.ndb_profile):
       if self.data.POST and 'submit_work' in self.data.GET:
         # File form doesn't have any POST parameters so it should not be
         # passed while reconstructing the form. So only URL form is
@@ -669,7 +676,7 @@ class CommentsTemplate(Template):
       comments.append(item)
 
     context = {
-        'profile': self.data.profile,
+        'profile': self.data.ndb_profile,
         'comments': comments,
     }
 

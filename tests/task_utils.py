@@ -65,11 +65,13 @@ def seedWorkSubmission(task, url_to_work=None):
   """
   url_to_work = url_to_work or 'http://www.example.com/'
 
+  student_key = (
+      task_model.GCITask.student.get_value_for_datastore(task).parent())
   work = work_submission.GCIWorkSubmission(
       parent=task,
       program=task.program,
       org=task.org,
-      user=task.student.parent(),
+      user=student_key,
       url_to_work=url_to_work)
   work.put()
   return work

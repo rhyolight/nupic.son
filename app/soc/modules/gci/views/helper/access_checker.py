@@ -346,7 +346,8 @@ class AccessChecker(access_checker.AccessChecker):
     """Raises exception.UserError if commenting is not allowed."""
     if not self.data.timeline.allWorkStopped() or (
         not self.data.timeline.allReviewsStopped() and
-        self.data.mentorFor(self.data.task.org.key())):
+        ndb.Key.from_old_key(self.data.task.org.key()) in 
+            self.data.ndb_profile.mentor_for):
       return
 
     raise exception.Forbidden(message=DEF_COMMENTING_NOT_ALLOWED)
@@ -386,13 +387,7 @@ class AccessChecker(access_checker.AccessChecker):
     """Returns True/False depending on whether the currently logged in user
     can edit the task.
     """
-    assert access_checker.isSet(self.data.task)
-    assert access_checker.isSet(self.data.mentor_for)
-
-    task = self.data.task
-
-    valid_org_keys = [o.key() for o in self.data.mentor_for]
-    return task.org.key() in valid_org_keys
+    return self.data.mentorFor(self.data.task.org.key())
 
   def checkCanUserEditTask(self):
     """Checks whether the currently logged in user can edit the task."""
