@@ -74,10 +74,16 @@ limitations under the License.
     dep.uniform,
     dep.melange.blog,
     dep.melange.program_select,
+    {% if new_widget %}
+    dep.melange.timeline,
+    {% endif %}
     null,
     tc(
       "/soc/content/{{ app_version }}/js/templates/modules/gsoc/homepage/base.js",
       {
+        {% if new_widget %}
+        timeline_data: {{ timeline_data|safe }},
+        {% endif %}
         feed_url: "{{ program.feed_url|safe }}"
       }
     )

@@ -14,6 +14,8 @@
 
 """Module containing the views for GSoC home page."""
 
+import json
+
 from django.conf.urls import url as django_url
 
 from melange.appengine import system
@@ -37,10 +39,11 @@ class Timeline(Template):
   """Timeline template.
   """
 
-  def __init__(self, data, current_timeline, next_deadline):
+  def __init__(self, data, current_timeline, next_deadline, new_widget):
     self.data = data
     self.current_timeline = current_timeline
     self.next_deadline_msg, self.next_deadline_datetime = next_deadline
+    self.new_widget = new_widget
 
   def context(self):
     if self.current_timeline == 'kickoff_period':
@@ -71,6 +74,8 @@ class Timeline(Template):
     if self.next_deadline_msg and self.next_deadline_datetime:
       context['next_deadline_msg'] = self.next_deadline_msg
       context['next_deadline_datetime'] = self.next_deadline_datetime
+
+    context['new_widget'] = self.new_widget
 
     return context
 
@@ -256,10 +261,49 @@ class Homepage(base.GSoCRequestHandler):
     current_timeline = data.timeline.currentPeriod()
     next_deadline = data.timeline.nextDeadline()
 
+    # TODO(mario): this is a temporary variable to switch between the old
+    # image-based timeline to the new dynamic one. To be removed when the switch
+    # is over: please remember to remove it from the Timeline widget class,
+    # too.
+    new_widget = True
+
     context = {
-        'timeline': Timeline(data, current_timeline, next_deadline),
+        'timeline': Timeline(data, current_timeline, next_deadline, new_widget),
+        'timeline_data': json.dumps({
+          'title_selector': '#timeline-head-title',
+          'timerange_selector': '#timeline-head-timerange',
+          'now': '2014-03-01 00:00',
+          'slices': [
+            {
+              'title': 'Off season',
+              'from': '2013-08-22 19:00',
+              'to': '2014-02-03 19:00'
+            },
+            {
+              'title': 'Organizations applications',
+              'from': '2014-02-03 19:00',
+              'to': '2014-02-14 19:00'
+            },
+            {
+              'title': 'Students Applications',
+              'from': '2014-03-10 19:00',
+              'to': '2014-03-21 19:00'
+            },
+            {
+              'title': 'Community bonding',
+              'from': '2014-04-21 19:00',
+              'to': '2014-05-19 19:00'
+            },
+            {
+              'title': 'Students coding',
+              'from': '2014-05-19 19:00',
+              'to': '2014-08-22 19:00'
+            }
+          ]
+        }),
         'apply': Apply(data),
         'connect_with_us': ConnectWithUs(data),
+        'new_widget': new_widget,
         'page_name': '%s - Home page' % (data.program.name),
         'program': data.program,
         'program_select': base_templates.ProgramSelect(

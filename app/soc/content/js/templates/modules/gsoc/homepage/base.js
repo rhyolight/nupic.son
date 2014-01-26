@@ -28,6 +28,7 @@ melange.templates.inherit(
     jQuery(
       function () {
         google.load("feeds","1", {callback:initialize});
+        jQuery('#timeline-body').timeline(context.timeline_data);
       }
     );
   }
