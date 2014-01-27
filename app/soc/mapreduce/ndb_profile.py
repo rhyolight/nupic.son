@@ -21,6 +21,7 @@ from google.appengine.ext import ndb
 
 from melange.models import address as address_model
 from melange.models import contact as contact_model
+from melange.models import education as education_model
 from melange.models import profile as profile_model
 
 # This MapReduce requires these models to have been imported.
@@ -140,6 +141,30 @@ def _statusToEnum(profile):
     return profile_model.Status.ACTIVE
 
 
+def _degreeToEnum(profile):
+  """Returns enum value for degree for the specified profile.
+
+  Args:
+    profile: Profile entity.
+
+  Returns:
+    Value of education_model.Degree type corresponding to the degree or None,
+    if the degree is not recognized.
+  """
+  if not profile.student_info:
+    raise ValueError('Profile is not a student.')
+  elif profile.student_info.degree == 'Undergraduate':
+    return education_model.Degree.UNDERGRADUATE
+  elif profile.student_info.degree == 'Master':
+    return education_model.Degree.MASTERS
+  elif profile.student_info.degree == 'PhD':
+    return education_model.Degree.PHD
+  else:
+    logging.warning(
+        'Degree %s is not recognized for %s',
+        profile.student_info.degree, profile.key().name())
+
+
 def _getStudentData(profile):
   """Gets student data for the specified profile.
 
@@ -153,8 +178,64 @@ def _getStudentData(profile):
   if not profile.student_info:
     return None
   else:
-    # TODO(daniel): implement this function
-    return profile_model.StudentData()
+    school_id = profile.student_info.school_name
+    school_country = profile.student_info.school_country
+    expected_graduation = profile.student_info.expected_graduation
+
+    if isinstance(profile, GSoCProfile):
+      properties = {
+          'number_of_proposals': profile.student_info.number_of_proposals,
+          'number_of_projects': profile.student_info.number_of_projects,
+          'number_of_passed_evaluations':
+              profile.student_info.passed_evaluations,
+          'number_of_failed_evaluations':
+              profile.student_info.failed_evaluations,
+          'project_for_orgs': [ndb.Key.from_old_key(org_key) for org_key
+              in profile.student_info.project_for_orgs]
+          }
+
+      if profile.student_info.tax_form:
+        properties['tax_form'] = profile.student_info.getTaxFormKey()
+
+      if profile.student_info.enrollment_form:
+        properties['enrollment_form'] = (
+            profile.student_info.getEnrollmentFormKey())
+
+      degree = _degreeToEnum(profile)
+      major = profile.student_info.major
+      properties['education'] = education_model.Education(
+          school_id=school_id, school_country=school_country,
+          expected_graduation=expected_graduation, major=major, degree=degree)
+
+      return profile_model.StudentData(**properties)
+    else:
+      properties = {
+          'number_of_completed_tasks':
+              profile.student_info.number_of_completed_tasks,
+          }
+
+      if profile.student_info.consent_form:
+        properties['consent_form'] = (
+            profile.student_info.consent_form.key())
+        properties['is_consent_form_verified'] = (
+            profile.student_info.consent_form_verified)
+
+      if profile.student_info.student_id_form:
+        properties['enrollment_form'] = (
+            profile.student_info.student_id_form.key())
+        properties['is_enrollment_form_verified'] = (
+            profile.student_info.student_id_form_verified)
+
+      if profile.student_info.winner_for:
+        properties['winner_for'] = ndb.Key.from_old_key(
+            profile.student_info.winner_for.key())
+
+      grade = profile.student_info.grade
+      properties['education'] = education_model.Education(
+          school_id=school_id, school_country=school_country,
+          expected_graduation=expected_graduation, grade=grade)
+
+      return profile_model.StudentData(**properties)
 
 
 def convertProfile(profile_key):
@@ -223,9 +304,9 @@ def convertProfile(profile_key):
 
   status = _statusToEnum(profile)
 
-  # TODO(daniel): get value for accepted_tos field
-
   new_profile = profile_model.Profile(
+      id=profile.key().name(),
+      parent=ndb.Key.from_old_key(profile.parent_key()),
       program=program, public_name=public_name, first_name=first_name,
       last_name=last_name, photo_url=photo_url, contact=contact,
       residential_address=residential_address,
