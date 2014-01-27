@@ -51,3 +51,6 @@ class Education(ndb.Model):
 
   #: Degree which is currently being pursued by the student.
   degree = msgprop.EnumProperty(Degree)
+
+  #: Grade of the student.
+  grade = ndb.IntegerProperty()
