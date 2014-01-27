@@ -37,7 +37,6 @@ from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
 from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
-from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \

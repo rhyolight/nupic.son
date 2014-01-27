@@ -21,11 +21,8 @@ from google.appengine.ext import ndb
 
 from soc.tasks import mailer
 
-from melange.models import profile as profile_model
-
 from soc.modules.gci.logic.helper import notifications
 from soc.modules.gci.models import comment as comment_model
-from soc.modules.gci.models.profile import GCIProfile
 
 
 def storeAndNotify(comment):

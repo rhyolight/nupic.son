@@ -51,7 +51,7 @@ def convertUser(user_key):
     status = user_model.Status.BANNED
   else:
     operation.counters.Increment('Bad status')
-    logging.warnings(
+    logging.warning(
         'Invalid status %s for user %s', user.status, user.key().name())
     return
 

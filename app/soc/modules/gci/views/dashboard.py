@@ -868,7 +868,7 @@ class MyOrgsTaskList(Component):
     q.filter('program', self.data.program)
     q.filter(
         'org IN',
-        map(lambda org_key: org_key.to_old_key(), 
+        map(lambda org_key: org_key.to_old_key(),
             self.data.ndb_profile.mentor_for))
 
     starter = lists.keyStarter

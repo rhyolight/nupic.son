@@ -336,7 +336,7 @@ class AccessChecker(access_checker.AccessChecker):
     """Raises exception.UserError if commenting is not allowed."""
     if not self.data.timeline.allWorkStopped() or (
         not self.data.timeline.allReviewsStopped() and
-        ndb.Key.from_old_key(self.data.task.org.key()) in 
+        ndb.Key.from_old_key(self.data.task.org.key()) in
             self.data.ndb_profile.mentor_for):
       return
 
