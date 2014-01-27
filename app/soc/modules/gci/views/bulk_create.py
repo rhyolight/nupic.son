@@ -90,7 +90,7 @@ class BulkCreate(GCIRequestHandler):
 
     bulk_create.spawnBulkCreateTasks(
         form.cleaned_data['task_data'], data.organization,
-        data.profile)
+        data.ndb_profile)
 
     # TODO(nathaniel): make this .organization call unnecessary.
     data.redirect.organization(organization=data.organization)
