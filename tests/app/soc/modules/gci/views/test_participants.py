@@ -14,9 +14,13 @@
 
 """Unit tests for participants view."""
 
+from google.appengine.ext import ndb
+
 from tests import profile_utils
 from tests import test_utils
 
+
+_NUMBER_OF_MENTORS = 3
 
 class MentorsListAdminPageTest(test_utils.GCIDjangoTestCase):
   """Unit tests for MentorsListAdminPage view."""
@@ -26,8 +30,7 @@ class MentorsListAdminPageTest(test_utils.GCIDjangoTestCase):
     self.url = '/gci/admin/list/mentors/%s' % self.gci.key().name()
 
   def _assertPageTemplatesUsed(self, response):
-    """Asserts that all the required templates to render the page were used.
-    """
+    """Asserts that all the required templates to render the page were used."""
     self.assertGCITemplatesUsed(response)
     self.assertTemplateUsed(response, 'modules/gci/participants/base.html')
     self.assertTemplateUsed(
@@ -40,19 +43,33 @@ class MentorsListAdminPageTest(test_utils.GCIDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testMentorAccessForbidden(self):
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
+
     self.profile_helper.createMentor(self.org)
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
     self.assertResponseForbidden(response)
 
   def testOrgAdminAccessForbidden(self):
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
+
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
     self.assertResponseForbidden(response)
 
   def testStudentAccessForbidden(self):
-    self.profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
+
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
     self.assertResponseForbidden(response)
@@ -69,13 +86,13 @@ class MentorsListAdminPageTest(test_utils.GCIDjangoTestCase):
     profile_utils.loginNDB(user)
 
     # seed a couple of mentors
-    profile_utils.GCIProfileHelper(self.gci, False).createMentor(self.org)
-    profile_utils.GCIProfileHelper(self.gci, False).createMentor(self.org)
-    profile_utils.GCIProfileHelper(self.gci, False).createMentor(self.org)
+    for _ in range(_NUMBER_OF_MENTORS):
+      profile_utils.seedNDBProfile(
+          self.program.key(), mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
     response = self.get(self.url)
     self._assertPageTemplatesUsed(response)
     list_data = self.getListData(self.url, 0)
 
     #The only organization is self.gci
-    self.assertEqual(3, len(list_data))
+    self.assertEqual(_NUMBER_OF_MENTORS, len(list_data))

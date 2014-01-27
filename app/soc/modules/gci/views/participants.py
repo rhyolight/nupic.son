@@ -14,14 +14,16 @@
 
 """Module containing the view for GCI tasks list page."""
 
+from melange.logic import profile as profile_logic
 from melange.request import access
 from melange.request import exception
+
 from soc.views.helper import addresses
 from soc.views.helper import url_patterns
 from soc.views.helper import lists
 from soc.views.template import Template
 
-from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models import organization as org_model
 from soc.modules.gci.views.base import GCIRequestHandler
 from soc.modules.gci.views.helper.url_patterns import url
 
@@ -34,20 +36,29 @@ class MentorsList(Template):
 
     list_config = lists.ListConfiguration()
 
-    list_config.addPlainTextColumn('name', 'Name',
-                          lambda e, *args: e.name().strip())
-    list_config.addSimpleColumn('link_id', 'Username')
-    list_config.addPlainTextColumn('is_org_admin', 'Org Admin',
-        lambda e, *args: 'Yes' if e.is_org_admin else 'No', hidden=True)
-    list_config.addSimpleColumn('email', 'Email')
     list_config.addPlainTextColumn(
-        'org_admin_for', 'Org Admin For',
-        lambda e, org_admin_for, *args: ', '.join(
-            [org_admin_for[k].name for k in e.org_admin_for]))
+        'name', 'Name', lambda e, *args: e.public_name.strip())
+    list_config.addSimpleColumn('profile_id', 'Username')
+    list_config.addPlainTextColumn('is_admin', 'Is Admin',
+        lambda e, *args: 'Yes' if e.is_admin else 'No', hidden=True)
     list_config.addPlainTextColumn(
-        'mentor_for', 'Mentor For',
-        lambda e, mentor_for, *args: ', '.join(
-            [mentor_for[k].name for k in e.mentor_for]))
+        'email', 'Email', lambda entity, *args: entity.contact.email)
+
+    def getMentorFor(entity, *args):
+      """Helper function to get value of mentor_for column."""
+      org_keys = [org_key.to_old_key() for org_key in entity.admin_for]
+      return ', '.join(
+          org.name for org in org_model.GCIOrganization.get(org_keys)
+              if org)
+
+    def getAdminFor(entity, *args):
+      """Helper function to get value of admin_for column."""
+      org_keys = [org_key.to_old_key() for org_key in entity.mentor_for]
+      return ', '.join(
+          org.name for org in org_model.GCIOrganization.get(org_keys) if org)
+
+    list_config.addPlainTextColumn('admin_for', 'Admin For', getAdminFor)
+    list_config.addPlainTextColumn('mentor_for', 'Mentor For', getMentorFor)
 
     addresses.addAddressColumns(list_config)
 
@@ -70,16 +81,17 @@ class MentorsList(Template):
     if lists.getListIndex(self.data.request) != 0:
       return None
 
-    q = GCIProfile.all()
-    q.filter('program', self.data.program)
-    q.filter('is_mentor', True)
+    query = profile_logic.queryAllMentorsForProgram(self.data.program.key())
+    import logging
+    logging.error(query.fetch(1000))
 
     starter = lists.keyStarter
-    prefetcher = lists.ListFieldPrefetcher(
-        GCIProfile, ['org_admin_for', 'mentor_for'])
+
+    # TODO(daniel): enable prefetching for the list (mentor_for, admin_for)
+    prefetcher = None
 
     response_builder = lists.RawQueryContentResponseBuilder(
-        self.data.request, self._list_config, q, starter,
+        self.data.request, self._list_config, query, starter,
         prefetcher=prefetcher)
 
     return response_builder.build()
