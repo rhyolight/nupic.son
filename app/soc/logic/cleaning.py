@@ -32,7 +32,7 @@ from melange.logic import user as user_logic
 from melange.models import user as user_model
 
 from soc.logic import validate
-#from soc.logic import user as user_logic
+
 
 DEF_INVALID_EMAIL_ADDRESS = translation.ugettext(
     '"%s" is not a valid email address.')
@@ -419,8 +419,8 @@ def clean_html_content(field_name):
 
     # clean_html_content is called when writing data into GAE rather than
     # when reading data from GAE. This short-circuiting of the sanitizer
-    # only affects html authored by developers. The test for
-    # example allows developers to add javascript.
+    # only affects html authored by developers. The is_current_user_admin test
+    # for example allows developers to add javascript.
     if users.is_current_user_admin():
       return content
 
