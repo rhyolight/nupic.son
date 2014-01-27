@@ -169,6 +169,7 @@ class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
         'tags': TEST_TAGS,
         'twitter': TEST_TWITTER,
         'web_page': TEST_WEB_PAGE,
+        'eligible_country': True
         }
     response = self.post(
         _getOrgProfileCreateUrl(self.program), postdata=postdata)
@@ -216,6 +217,43 @@ class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
     self.assertIsNotNone(connection)
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertEqual(connection.user_role, connection_model.ROLE)
+
+  def testInvalidData(self):
+    """Tests that organization is not created if data is not valid."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    backup_admin = profile_utils.seedNDBProfile(self.program.key())
+
+    # valid set of data
+    valid_postdata = {
+        'org_id': TEST_ORG_ID,
+        'name': TEST_ORG_NAME,
+        'blog': TEST_BLOG,
+        'description': TEST_DESCRIPTION,
+        'facebook': TEST_FACEBOOK,
+        'feed_url': TEST_FEED_URL,
+        'google_plus': TEST_GOOGLE_PLUS,
+        'license': TEST_LICENSE,
+        'logo_url': TEST_LOGO_URL,
+        'ideas_page': TEST_IDEAS_PAGE,
+        'irc_channel': TEST_IRC_CHANNEL,
+        'backup_admin': backup_admin.profile_id,
+        'mailing_list': TEST_MAILING_LIST,
+        'tags': TEST_TAGS,
+        'twitter': TEST_TWITTER,
+        'web_page': TEST_WEB_PAGE,
+        'eligible_country': True
+        }
+
+    # the organization is not from the eligible countries
+    postdata = valid_postdata.copy()
+    postdata['eligible_country'] = False
+    response = self.post(
+        _getOrgProfileCreateUrl(self.program), postdata=postdata)
+    self.assertTrue(response.context['error'])
 
 
 OTHER_TEST_BLOG = 'http://www.other.test.blog.com/'

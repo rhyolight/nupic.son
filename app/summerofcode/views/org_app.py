@@ -167,6 +167,12 @@ SLOTS_REQUEST_MAX_LABEL = translation.ugettext('Max slots requested')
 
 MAX_SCORE_LABEL = translation.ugettext('Max score')
 
+# TODO(daniel): list of countries should be program-specific
+ELIGIBLE_COUNTRY_LABEL = translation.ugettext(
+    'I hereby declare that the applying organization is not located in '
+    'any of the countries which are not eligible to participate in the '
+    'program: North Korea')
+
 ORG_APPLICATION_SUBMIT_PAGE_NAME = translation.ugettext(
     'Submit application')
 
@@ -336,6 +342,9 @@ class _OrgProfileForm(gsoc_forms.GSoCModelForm):
       required=True, label=BACKUP_ADMIN_LABEL,
       help_text=BACKUP_ADMIN_HELP_TEXT)
 
+  eligible_country = django_forms.BooleanField(
+      required=True, label=ELIGIBLE_COUNTRY_LABEL)
+
   Meta = object
 
   def __init__(self, request_data=None, **kwargs):
@@ -421,6 +430,9 @@ def _formToEditOrgProfile(**kwargs):
 
   # other organization admins are set only when organization profile is created
   del form.fields['backup_admin']
+
+  # the declaration is submitted only when organization profile is created
+  del form.fields['eligible_country']
 
   return form
 
