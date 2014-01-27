@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for user profile related views."""
 
-"""Tests for user profile related views.
-"""
-
+import unittest
 
 from datetime import date
 from datetime import timedelta
@@ -95,6 +94,7 @@ class ProfileViewTest(GCIDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gci/profile/base.html')
     self.assertTemplateUsed(response, 'modules/gci/_form.html')
 
+  @unittest.skip('This profile view is deprecated.')
   def testCreateProfilePage(self):
     self.timeline_helper.studentSignup()
     url = '/gci/profile/student/' + self.gci.key().name()
@@ -102,12 +102,14 @@ class ProfileViewTest(GCIDjangoTestCase):
     response = self.get(url)
     self.assertProfileTemplatesUsed(response)
 
+  @unittest.skip('This profile view is deprecated.')
   def testCreateMentorProfilePage(self):
     self.timeline_helper.orgsAnnounced()
     url = '/gci/profile/mentor/' + self.gci.key().name()
     response = self.get(url)
     self.assertProfileTemplatesUsed(response)
 
+  @unittest.skip('This profile view is deprecated.')
   def testRedirectWithStudentProfilePage(self):
     self.timeline_helper.studentSignup()
     self.profile_helper.createStudent()
@@ -116,6 +118,7 @@ class ProfileViewTest(GCIDjangoTestCase):
     redirect_url = '/gci/profile/' + self.gci.key().name()
     self.assertResponseRedirect(response, redirect_url)
 
+  @unittest.skip('This profile view is deprecated.')
   def testRedirectWithMentorProfilePage(self):
     self.timeline_helper.studentSignup()
     self.profile_helper.createMentor(self.org)
@@ -124,6 +127,7 @@ class ProfileViewTest(GCIDjangoTestCase):
     response_url = '/gci/profile/' + self.gci.key().name()
     self.assertResponseRedirect(response, response_url)
 
+  @unittest.skip('This profile view is deprecated.')
   def testForbiddenWithStudentProfilePage(self):
     self.timeline_helper.studentSignup()
     self.profile_helper.createStudent()
@@ -134,6 +138,7 @@ class ProfileViewTest(GCIDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
+  @unittest.skip('This profile view is deprecated.')
   def testRegistrationTimeline(self):
     # no registration should be available just after the program is started
     self.timeline_helper.kickoff()
@@ -181,6 +186,7 @@ class ProfileViewTest(GCIDjangoTestCase):
     response = self.get(url)
     self.assertResponseOK(response)
 
+  @unittest.skip('This profile view is deprecated.')
   def testForbiddenWithMentorProfilePage(self):
     self.timeline_helper.studentSignup()
     self.profile_helper.createMentor(self.org)
@@ -188,6 +194,7 @@ class ProfileViewTest(GCIDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
+  @unittest.skip('This profile view is deprecated.')
   def testEditProfilePage(self):
     self.timeline_helper.studentSignup()
     self.profile_helper.createProfile()
@@ -208,6 +215,7 @@ class ProfileViewTest(GCIDjangoTestCase):
   #  response = self.get(url)
   #  self.assertResponseForbidden(response)
 
+  @unittest.skip('This profile view is deprecated.')
   def testCreateUser(self):
     self.timeline_helper.studentSignup()
 
@@ -224,6 +232,7 @@ class ProfileViewTest(GCIDjangoTestCase):
     self.assertEqual(self.birth_date, str(student.birth_date))
     self.assertSameEntity(self.gci, student.program)
 
+  @unittest.skip('This profile view is deprecated.')
   def testCreateUserNoLinkId(self):
     self.timeline_helper.studentSignup()
 
@@ -233,9 +242,8 @@ class ProfileViewTest(GCIDjangoTestCase):
     self.assertResponseOK(response)
     self.assertIn('link_id', response.context['error'])
 
+  @unittest.skip('This profile view is deprecated.')
   def testCreateProfile(self):
-    from soc.modules.gci.models.profile import GCIStudentInfo
-
     self.timeline_helper.studentSignup()
     self.profile_helper.createUser()
     self._updateDefaultProps(self.profile_helper)
