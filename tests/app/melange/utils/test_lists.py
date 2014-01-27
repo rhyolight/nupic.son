@@ -21,13 +21,14 @@ from google.appengine.ext import ndb
 
 from melange.utils import lists
 
-from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models import project as project_model
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
-from tests import org_utils, program_utils
+from tests import org_utils
+from tests import program_utils
 from tests import profile_utils
+from tests.utils import project_utils
 
 
 NDB_TEST_LIST_ID = 'test_list_ndb'
@@ -96,18 +97,11 @@ class TestGSoCProjectsColumns(unittest.TestCase):
   def setUp(self):
     self.program = program_utils.seedGSoCProgram()
     self.organization = org_utils.seedSOCOrganization(self.program.key())
-    self.student = seeder_logic.seed(
-        profile_model.GSoCProfile, {'key_name': 'student'})
+    self.student = profile_utils.seedSOCStudent(self.program)
 
     # seed a project for above organization, program and student
-    project_properties = {
-        'parent': self.student,
-        'scope': self.program,
-        'org': self.organization.key.to_old_key()
-    }
-
-    self.project = seeder_logic.seed(
-        project_model.GSoCProject, project_properties)
+    self.project = project_utils.seedProject(
+        self.student, self.program.key(), org_key=self.organization.key)
 
   def testKeyColumn(self):
     """Tests KeyColumn class."""
@@ -119,7 +113,7 @@ class TestGSoCProjectsColumns(unittest.TestCase):
   def testStudentColumn(self):
     """Tests StudentColumn class."""
     student_column = lists.StudentColumn('student', 'Student')
-    expected_value = self.student.key().name()
+    expected_value = self.student.public_name
     self.assertEqual(expected_value, student_column.getValue(self.project))
 
   def testOrganizationColumn(self):

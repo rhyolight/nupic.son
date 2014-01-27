@@ -26,6 +26,7 @@ from html5lib import sanitizer
 from html5lib.html5parser import ParseError
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 from google.appengine.api import taskqueue
 from google.appengine.runtime import DeadlineExceededError
 
@@ -88,7 +89,8 @@ class BulkCreateTask(object):
                  'No valid data found for key: %s' % bulk_create_key)
 
     # note that we only query for the quota once
-    org_admin = bulk_data.created_by
+    org_admin = ndb.Key.from_old_key(
+        GCIBulkCreateData.created_by.get_value_for_datastore(bulk_data)).get()
     org = bulk_data.org
     task_quota = getRemainingTaskQuota(org)
 
@@ -137,10 +139,10 @@ class BulkCreateTask(object):
         task['org'] = org
 
         # TODO(daniel): access program in more efficient way
-        task['program'] = org_admin.program
+        task['program'] = org_admin.program.to_old_key()
         task['status'] = task_model.UNPUBLISHED
-        task['created_by'] = org_admin
-        task['modified_by'] = org_admin
+        task['created_by'] = org_admin.to_old_key()
+        task['modified_by'] = org_admin.to_old_key()
         # TODO(ljv): Remove difficulty level completely if needed.
         # Difficulty is hardcoded to easy since GCI2012 has no difficulty.
         task['difficulty_level'] = DifficultyLevel.EASY
@@ -167,8 +169,7 @@ class BulkCreateTask(object):
       task_params = {
           'bulk_create_key': bulk_data.key()
           }
-      new_task = taskqueue.Task(params=task_params,
-                                url=BULK_CREATE_URL)
+      new_task = taskqueue.Task(params=task_params, url=BULK_CREATE_URL)
       # add to the gci queue
       new_task.add(queue_name='gci-update')
 
@@ -286,7 +287,7 @@ def spawnBulkCreateTasks(data, org, org_admin):
     task_list.append(db.Text(json.dumps(task)))
 
   bulk_data = GCIBulkCreateData(
-      tasks=task_list, org=org, created_by=org_admin,
+      tasks=task_list, org=org, created_by=org_admin.key.to_old_key(),
       total_tasks=len(task_list))
   bulk_data.put()
 

@@ -52,10 +52,11 @@ MELANGE_DELETED_USER_PHONE = '0000000000'
 MELANGE_DELETED_USER_BIRTH_DATE = datetime.date(1, 1, 1)
 
 
-def hasStudentFormsUploaded(student):
-  """Whether the specified student has uploaded their forms.
-  """
-  return student.consent_form and student.student_id_form
+def hasStudentFormsUploaded(profile):
+  """Whether the specified student has uploaded their forms."""
+  return (
+      profile.student_data.consent_form and
+      profile.student_data.enrollment_form)
 
 
 def queryAllMentorsForOrg(org, keys_only=False, limit=1000):
@@ -97,7 +98,7 @@ def sendFirstTaskConfirmationTxn(profile, task):
   completes their first task.
   """
 
-  if not profile.student_info:
+  if not profile.is_student:
     raise ValueError('Only students can be queried for closed tasks.')
 
   context = notifications.getFirstTaskConfirmationContext(profile)

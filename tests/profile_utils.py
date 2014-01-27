@@ -70,13 +70,17 @@ def login(user):
 
 
 # TODO(daniel): Change name to login and remove the function above
-def loginNDB(user):
+def loginNDB(user, is_admin=False):
   """Logs in the specified user by setting 'USER_ID' environmental variables.
 
   Args:
     user: user entity.
+    is_admin: A bool specifying whether the user is an administrator
+      of the application or not.
   """
   os.environ['USER_ID'] = user.account_id
+  if is_admin:
+    os.environ['USER_IS_ADMIN'] = '1'
 
 
 def logout():
@@ -193,8 +197,12 @@ def seedNDBProfile(program_key, model=ndb_profile_model.Profile,
       street=TEST_STREET, city=TEST_CITY, province=TEST_PROVINCE,
       country=TEST_COUNTRY, postal_code=TEST_POSTAL_CODE)
 
-  contact = contact_model.Contact(
-      email='%s@example.com' % user.user_id)
+  properties = {'email': '%s@example.com' % user.user_id}
+  contact_properties = dict(
+     (k, v) for k, v in kwargs.iteritems() 
+         if k in contact_model.Contact._properties)
+  properties.update(**contact_properties)
+  contact = contact_model.Contact(**properties)
 
   properties = {
       'program': ndb.Key.from_old_key(program_key),

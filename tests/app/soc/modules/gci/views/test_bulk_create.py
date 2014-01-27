@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module with tests for task bulk create view.
-"""
+"""Module with tests for task bulk create view."""
 
+from google.appengine.ext import ndb
 
+from tests import profile_utils
 from tests.profile_utils import GCIProfileHelper
 from tests.test_utils import GCIDjangoTestCase
 
@@ -164,8 +165,9 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.tasksPubliclyVisible()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     url = '/gci/bulk/' + self.org.key().name()
     response = self.get(url)
@@ -179,8 +181,11 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.tasksPubliclyVisible()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     url = '/gci/bulk/' + self.org.key().name()
     response = self.get(url)
@@ -189,13 +194,14 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     self.assertFullEditTemplatesUsed(response)
 
   def testBulkTaskCreateDuringProgramForMentor(self):
-    """Tests the bulk task create view during the program
-    for mentors.
-    """
+    """Tests the bulk task create view during the program for mentors."""
     self.timeline_helper.tasksPubliclyVisible()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
     url = '/gci/bulk/' + self.org.key().name()
     response = self.get(url)
@@ -209,8 +215,9 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.tasksPubliclyVisible()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
 
     url = '/gci/bulk/' + self.org.key().name()
     response = self.get(url)

@@ -14,12 +14,11 @@
 
 """Tests for GCITask create/edit view."""
 
-from soc.modules.gci.logic.helper.notifications import (
-    DEF_NEW_TASK_COMMENT_SUBJECT)
+from google.appengine.ext import ndb
+
 from soc.modules.gci.models import task as task_model
 
 from tests import profile_utils
-from tests.profile_utils import GCIProfileHelper
 from tests import task_utils
 from tests.test_utils import GCIDjangoTestCase
 
@@ -36,11 +35,11 @@ class TaskCreateViewTest(GCIDjangoTestCase):
 
   def createTask(self, status=None, org=None, mentor=None, student=None):
     if not mentor:
-      mentor = profile_utils.seedGCIProfile(
-          self.program, mentor_for=[self.org.key()])
+      mentor = profile_utils.seedNDBProfile(
+          self.program.key(), mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
     if not student:
-      student = profile_utils.seedGCIStudent(self.program)
+      student = profile_utils.seedNDBStudent(self.program)
 
     if not org:
       org = self.org
@@ -49,7 +48,8 @@ class TaskCreateViewTest(GCIDjangoTestCase):
       status = 'Open'
 
     return task_utils.seedTask(
-        self.program, org, [mentor.key()], student=student, status=status)
+        self.program, org, [mentor.key.to_old_key()],
+        student=student.key.to_old_key(), status=status)
 
   def assertFullEditTemplatesUsed(self, response):
     """Asserts that all the task creation base templates along with full edit
@@ -75,8 +75,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.orgSignup()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     url = '/gci/task/create/' + self.org.key().name()
     response = self.get(url)
@@ -89,8 +90,11 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.orgSignup()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     url = '/gci/task/create/' + self.org.key().name()
     response = self.get(url)
@@ -103,8 +107,11 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.orgSignup()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
     url = '/gci/task/create/' + self.org.key().name()
     response = self.get(url)
@@ -117,8 +124,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.orgSignup()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
 
     url = '/gci/task/create/' + self.org.key().name()
     response = self.get(url)
@@ -132,8 +140,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.taskClaimEnded()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     url = '/gci/task/create/' + self.org.key().name()
     response = self.get(url)
@@ -146,8 +155,11 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.taskClaimEnded()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     url = '/gci/task/create/' + self.org.key().name()
     response = self.get(url)
@@ -160,8 +172,11 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.taskClaimEnded()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
     url = '/gci/task/create/' + self.org.key().name()
     response = self.get(url)
@@ -174,8 +189,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.taskClaimEnded()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
 
     url = '/gci/task/create/' + self.org.key().name()
     response = self.get(url)
@@ -189,8 +205,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.orgSignup()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     task = self.createTask()
 
@@ -206,8 +223,11 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.orgSignup()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     task = self.createTask()
 
@@ -223,8 +243,11 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.orgSignup()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
     task = self.createTask()
 
@@ -240,8 +263,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.orgSignup()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
 
     task = self.createTask()
 
@@ -257,8 +281,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.taskClaimEnded()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     task = self.createTask()
 
@@ -274,8 +299,11 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.taskClaimEnded()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     task = self.createTask()
 
@@ -291,10 +319,13 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.taskClaimEnded()
 
-    task = self.createTask()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createMentor(self.org)
+    task = self.createTask()
 
     url = '/gci/task/edit/%s/%s' % (self.gci.key().name(), task.key().id())
     response = self.get(url)
@@ -308,8 +339,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.taskClaimEnded()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
 
     task = self.createTask()
 
@@ -325,8 +357,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.orgSignup()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     task = self.createTask(status='ClaimRequested')
 
@@ -342,8 +375,11 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.orgSignup()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     task = self.createTask(status='Claimed')
 
@@ -359,8 +395,11 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.orgSignup()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
     task = self.createTask(status='ActionNeeded')
 
@@ -376,8 +415,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.orgSignup()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
 
     task = self.createTask(status='NeedsWork')
 
@@ -393,8 +433,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.taskClaimEnded()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     task = self.createTask(status='NeedsReview')
 
@@ -410,8 +451,11 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.taskClaimEnded()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     task = self.createTask(status='Closed')
 
@@ -429,8 +473,11 @@ class TaskCreateViewTest(GCIDjangoTestCase):
 
     task = self.createTask(status='Claimed')
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     url = '/gci/task/edit/%s/%s' % (self.gci.key().name(), task.key().id())
     response = self.get(url)
@@ -444,8 +491,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.taskClaimEnded()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
 
     task = self.createTask(status='ClaimRequested')
 
@@ -460,8 +508,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.tasksPubliclyVisible()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     url = '/gci/task/create/' + self.org.key().name()
     response = self.get(url)
@@ -470,12 +519,14 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testCreateTaskDuringProgramForOrgAdmin(self):
-    """Tests the task creation view during the program for org admin.
-    """
+    """Tests the task creation view during the program for org admin."""
     self.timeline_helper.tasksPubliclyVisible()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     url = '/gci/task/create/' + self.org.key().name()
     response = self.get(url)
@@ -484,12 +535,14 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     self.assertFullEditTemplatesUsed(response)
 
   def testCreateTaskDuringProgramForMentor(self):
-    """Tests the task creation view during the program for org admin.
-    """
+    """Tests the task creation view during the program for org admin."""
     self.timeline_helper.tasksPubliclyVisible()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
     url = '/gci/task/create/' + self.org.key().name()
     response = self.get(url)
@@ -498,12 +551,12 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     self.assertFullEditTemplatesUsed(response)
 
   def testCreateTaskDuringProgramForStudent(self):
-    """Tests the task creation view during the program for org admin.
-    """
+    """Tests the task creation view during the program for org admin."""
     self.timeline_helper.tasksPubliclyVisible()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
 
     url = '/gci/task/create/' + self.org.key().name()
     response = self.get(url)
@@ -517,8 +570,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.tasksPubliclyVisible()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     task = self.createTask(status='Open')
 
@@ -529,12 +583,14 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testFullEditTaskDuringProgramForOrgAdmin(self):
-    """Tests the task full editing view during the program for org admin.
-    """
+    """Tests the task full editing view during the program for org admin."""
     self.timeline_helper.tasksPubliclyVisible()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     task = self.createTask(status=task_model.REOPENED)
 
@@ -545,12 +601,14 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     self.assertPostClaimEditTemplatesUsed(response)
 
   def testFullEditTaskDuringProgramForMentor(self):
-    """Tests the task full editing view during the program for mentor.
-    """
+    """Tests the task full editing view during the program for mentor."""
     self.timeline_helper.tasksPubliclyVisible()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
     task = self.createTask('Unpublished')
 
@@ -565,8 +623,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.tasksPubliclyVisible()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
 
     task = self.createTask(task_model.UNAPPROVED)
 
@@ -582,8 +641,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.tasksPubliclyVisible()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     task = self.createTask(status='ClaimRequested')
 
@@ -598,8 +658,11 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.tasksPubliclyVisible()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     task = self.createTask(status='Claimed')
 
@@ -614,8 +677,11 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.tasksPubliclyVisible()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
     task = self.createTask(status='NeedsReview')
 
@@ -630,8 +696,9 @@ class TaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.tasksPubliclyVisible()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
 
     task = self.createTask(status='ActionNeeded')
 

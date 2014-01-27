@@ -41,7 +41,7 @@ def seedTask(program, org, mentors, student=None, **kwargs):
       'task_type': program.task_types[0],
       'mentors': mentors,
       'student': student,
-      'user': student.parent_key() if student else None,
+      'user': student.parent() if student else None,
       'created_by': mentors[0] if mentors else None,
       'modified_by': mentors[0] if mentors else None,
       'created_on': datetime.datetime.now() - datetime.timedelta(20),
@@ -65,11 +65,13 @@ def seedWorkSubmission(task, url_to_work=None):
   """
   url_to_work = url_to_work or 'http://www.example.com/'
 
+  student_key = (
+      task_model.GCITask.student.get_value_for_datastore(task).parent())
   work = work_submission.GCIWorkSubmission(
       parent=task,
       program=task.program,
       org=task.org,
-      user=task.student.parent(),
+      user=student_key,
       url_to_work=url_to_work)
   work.put()
   return work

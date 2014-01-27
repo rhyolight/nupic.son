@@ -257,8 +257,8 @@ class GCIOrgAppTakePage(GCIRequestHandler):
       return None
 
     if not data.org_app_record:
-      form.cleaned_data['user'] = data.user
-      form.cleaned_data['main_admin'] = data.user
+      form.cleaned_data['user'] = data.ndb_user.key.to_old_key()
+      form.cleaned_data['main_admin'] = data.ndb_user.key.to_old_key()
       form.cleaned_data['survey'] = data.org_app
       entity = form.create(commit=True)
     else:

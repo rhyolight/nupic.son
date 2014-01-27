@@ -23,6 +23,7 @@ from google.appengine.ext import ndb
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext
 
+from melange.models import profile as profile_model
 from melange.request import exception
 from melange.utils import time
 
@@ -33,7 +34,6 @@ from soc.views.helper import access_checker
 from soc.modules.gci.logic import conversation as gciconversation_logic
 from soc.modules.gci.logic import task as task_logic
 from soc.modules.gci.models import conversation as gciconversation_model
-from soc.modules.gci.models import profile as profile_model
 from soc.modules.gci.models import task as task_model
 from soc.modules.gci.views.helper import url_names
 
@@ -263,25 +263,15 @@ class AccessChecker(access_checker.AccessChecker):
     This checks if the user has at least one non-student profile in previous
     programs.
     """
-    # TODO(nathaniel): GSoC reference in GCI code.
-    from soc.modules.gsoc.models.profile import GSoCProfile
-
-    if not self.data.user:
+    if not self.data.ndb_user:
       raise exception.Forbidden(message=DEF_NO_PREV_ORG_MEMBER)
 
-    q = GSoCProfile.all(keys_only=True)
-    q.filter('is_mentor', True)
-    q.filter('status', 'active')
-    q.filter('user', self.data.user)
-    gsoc_profile = q.get()
+    query = profile_model.Profile.query(
+        profile_model.Profile.is_mentor == True,
+        profile_model.Profile.status == profile_model.Status.ACTIVE,
+        ancestor=self.data.ndb_user.key)
 
-    q = profile_model.GCIProfile.all(keys_only=True)
-    q.filter('is_mentor', True)
-    q.filter('status', 'active')
-    q.filter('user', self.data.user)
-    gci_profile = q.get()
-
-    if not (gsoc_profile or gci_profile):
+    if not query.get():
       raise exception.Forbidden(message=DEF_NO_PREV_ORG_MEMBER)
 
   def canTakeOrgApp(self):
@@ -346,7 +336,8 @@ class AccessChecker(access_checker.AccessChecker):
     """Raises exception.UserError if commenting is not allowed."""
     if not self.data.timeline.allWorkStopped() or (
         not self.data.timeline.allReviewsStopped() and
-        self.data.mentorFor(self.data.task.org.key())):
+        ndb.Key.from_old_key(self.data.task.org.key()) in
+            self.data.ndb_profile.mentor_for):
       return
 
     raise exception.Forbidden(message=DEF_COMMENTING_NOT_ALLOWED)
@@ -363,10 +354,6 @@ class AccessChecker(access_checker.AccessChecker):
     """Checks whether the currently logged in user can create or edit
     a task, when the specified role is required.
     """
-    assert access_checker.isSet(self.data.organization)
-    assert access_checker.isSet(self.data.org_admin_for)
-    assert access_checker.isSet(self.data.mentor_for)
-
     if required_role == 'mentor':
       valid_org_keys = [o.key() for o in self.data.mentor_for]
     elif required_role == 'org_admin':
@@ -386,13 +373,7 @@ class AccessChecker(access_checker.AccessChecker):
     """Returns True/False depending on whether the currently logged in user
     can edit the task.
     """
-    assert access_checker.isSet(self.data.task)
-    assert access_checker.isSet(self.data.mentor_for)
-
-    task = self.data.task
-
-    valid_org_keys = [o.key() for o in self.data.mentor_for]
-    return task.org.key() in valid_org_keys
+    return self.data.mentorFor(self.data.task.org.key())
 
   def checkCanUserEditTask(self):
     """Checks whether the currently logged in user can edit the task."""

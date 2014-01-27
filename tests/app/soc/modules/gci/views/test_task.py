@@ -16,15 +16,17 @@
 
 import datetime
 
+from google.appengine.ext import ndb
+
 from django.utils import html
 
 from soc.modules.gci.logic import org_score as org_score_logic
-from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.logic.helper.notifications import (
     DEF_NEW_TASK_COMMENT_SUBJECT)
+from soc.modules.gci.models import comment as comment_model
 from soc.modules.gci.models import task as task_model
-from soc.modules.gci.models.profile import GCIProfile
 
+from tests import forms_to_submit_utils
 from tests import profile_utils
 from tests import task_utils
 from tests.test_utils import GCIDjangoTestCase
@@ -53,29 +55,31 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
   def createSubscribersForTask(self):
     """Creates subscribers for the task.
     """
-    for i in range(4):
-      user = profile_utils.seedUser(email='subscriber%s@example.com' % str(i))
-      subscriber = profile_utils.seedGCIProfile(self.program, user=user)
-      self.task.subscribers.append(subscriber.key())
+    for _ in range(4):
+      subscriber = profile_utils.seedNDBProfile(self.program.key())
+      self.task.subscribers.append(subscriber.key.to_old_key())
     self.task.put()
 
   def assertMailSentToSubscribers(self, comment):
     """Check if a notification email sent to the subscribers of the task.
     """
-    subscribers = GCIProfile.get(self.task.subscribers)
+    subscribers = ndb.get_multi(
+        map(ndb.Key.from_old_key, self.task.subscribers))
+
+    author_key = ndb.Key.from_old_key(
+        comment_model.GCIComment.created_by.get_value_for_datastore(comment))
     subject = DEF_NEW_TASK_COMMENT_SUBJECT % {
-        'commented_by': comment.created_by.name,
+        'commented_by': author_key.id(),
         'program_name': self.task.program.name,
         'task_title': self.task.title
     }
     for subscriber in subscribers:
-      self.assertEmailSent(bcc=subscriber.email, subject=subject)
+      self.assertEmailSent(bcc=subscriber.contact.email, subject=subject)
 
   def testBasicTaskView(self):
-    """Tests the rendering of the task view.
-    """
+    """Tests the rendering of the task view."""
     # Use a non-logged-in request to the page for that task
-    self.profile_helper.clear()
+    profile_utils.logout()
 
     url = self._taskPageUrl(self.task)
     response = self.get(url)
@@ -86,9 +90,12 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertTemplateUsed(response, 'modules/gci/task/public.html')
 
   def testPostComment(self):
-    """Tests leaving a comment on a task.
-    """
-    self.profile_helper.createMentor(self.org)
+    """Tests leaving a comment on a task."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
     no_comments = self.task.comments()
     self.assertEqual(len(no_comments), 0)
@@ -112,15 +119,23 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     comment = one_comment[0]
     self.assertEqual(comment_title, comment.title)
     self.assertEqual(comment_content, comment.content)
-    self.assertEqual(self.profile_helper.user.key(), comment.created_by.key())
-    self.assertEqual(self.profile_helper.user.key(), comment.modified_by.key())
+    self.assertEqual(
+        user.key.to_old_key(),
+        comment_model.GCIComment.created_by.get_value_for_datastore(comment))
+    self.assertEqual(
+        user.key.to_old_key(),
+        comment_model.GCIComment.modified_by.get_value_for_datastore(comment))
     self.assertEqual(self.task.key(), comment.parent_key())
     self.assertIsNone(comment.reply)
     self.assertMailSentToSubscribers(comment)
 
   def testPostCommentWithEmptyTitle(self):
     """Tests leaving a comment with an empty title."""
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
     self.assertEqual(len(self.task.comments()), 0)
 
@@ -142,16 +157,23 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     comment = comments[0]
     self.assertIsNone(comment.title)
     self.assertEqual(comment_content, comment.content)
-    self.assertEqual(self.profile_helper.user.key(), comment.created_by.key())
-    self.assertEqual(self.profile_helper.user.key(), comment.modified_by.key())
+    self.assertEqual(
+        user.key.to_old_key(),
+        comment_model.GCIComment.created_by.get_value_for_datastore(comment))
+    self.assertEqual(
+        user.key.to_old_key(),
+        comment_model.GCIComment.modified_by.get_value_for_datastore(comment))
     self.assertEqual(self.task.key(), comment.parent_key())
     self.assertIsNone(comment.reply)
     self.assertMailSentToSubscribers(comment)
 
   def testPostButtonUnpublish(self):
-    """Tests the unpublish button.
-    """
-    self.profile_helper.createOrgAdmin(self.org)
+    """Tests the unpublish button."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_unpublish')
@@ -166,9 +188,12 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonUnpublishReopenedTaskForbidden(self):
-    """Tests the unpublish button on.
-    """
-    self.profile_helper.createOrgAdmin(self.org)
+    """Tests the unpublish button on."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     url = self._taskPageUrl(self.task)
 
@@ -193,9 +218,12 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertResponseForbidden(response)
 
   def testPostButtonUnpublishByMentor(self):
-    """Tests the unpublish button by a mentor.
-    """
-    self.profile_helper.createMentor(self.org)
+    """Tests the unpublish button by a mentor."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_unpublish')
@@ -203,9 +231,10 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertResponseForbidden(response)
 
   def testPostButtonUnpublishByStudent(self):
-    """Tests the unpublish button by a mentor.
-    """
-    self.profile_helper.createStudent()
+    """Tests the unpublish button by a mentor."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
 
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_unpublish')
@@ -213,9 +242,12 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertResponseForbidden(response)
 
   def testPostButtonPublishUnpublishedTask(self):
-    """Tests the publish button.
-    """
-    self.profile_helper.createOrgAdmin(self.org)
+    """Tests the publish button."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     self.task.status = 'Unpublished'
     self.task.put()
@@ -233,9 +265,12 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonPublishUnapprovedTask(self):
-    """Tests the publish button.
-    """
-    self.profile_helper.createOrgAdmin(self.org)
+    """Tests the publish button."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     self.task.status = task_model.UNAPPROVED
     self.task.put()
@@ -259,9 +294,12 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertResponseForbidden(response)
 
   def testPostButtonPublishByMentor(self):
-    """Tests the publish button pressed by a mentor.
-    """
-    self.profile_helper.createMentor(self.org)
+    """Tests the publish button pressed by a mentor."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
     self.task.status = 'Unpublished'
     self.task.put()
@@ -272,9 +310,10 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertResponseForbidden(response)
 
   def testPostButtonPublishByStudent(self):
-    """Tests the publish button pressed by a student.
-    """
-    self.profile_helper.createStudent()
+    """Tests the publish button pressed by a student."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
 
     self.task.status = 'Unpublished'
     self.task.put()
@@ -285,9 +324,12 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertResponseForbidden(response)
 
   def testPostButtonDelete(self):
-    """Tests the delete button.
-    """
-    self.profile_helper.createOrgAdmin(self.org)
+    """Tests the delete button."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
 
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_delete')
@@ -297,14 +339,17 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertIsNone(task)
 
   def testPostButtonAssign(self):
-    """Tests the assign button.
-    """
-    self.profile_helper.createMentor(self.org)
+    """Tests the assign button."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
-    student = profile_utils.seedGCIStudent(self.program)
+    student = profile_utils.seedNDBStudent(self.program)
 
     self.task.status = 'ClaimRequested'
-    self.task.student = student
+    self.task.student = student.key.to_old_key()
     self.task.put()
 
     url = self._taskPageUrl(self.task)
@@ -314,7 +359,9 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'Claimed')
-    self.assertEqual(task.student.key(), student.key())
+    self.assertEqual(
+        task_model.GCITask.student.get_value_for_datastore(task),
+        student.key.to_old_key())
     self.assertTrue(task.deadline)
 
     # check if a comment has been created
@@ -326,14 +373,17 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertTasksInQueue(n=1, url=self._taskUpdateUrl(task))
 
   def testPostButtonUnassign(self):
-    """Tests the unassign button.
-    """
-    self.profile_helper.createMentor(self.org)
+    """Tests the unassign button."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
-    student = profile_utils.seedGCIStudent(self.program)
+    student = profile_utils.seedNDBStudent(self.program)
 
     self.task.status = 'Claimed'
-    self.task.student = student
+    self.task.student = student.key.to_old_key()
     self.task.put()
 
     url = self._taskPageUrl(self.task)
@@ -352,14 +402,17 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonClose(self):
-    """Tests the close task button.
-    """
-    self.profile_helper.createMentor(self.org)
+    """Tests the close task button."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
-    student = profile_utils.seedGCIStudent(self.program)
+    student = profile_utils.seedNDBStudent(self.program)
 
     self.task.status = 'NeedsReview'
-    self.task.student = student
+    self.task.student = student.key.to_old_key()
     self.task.put()
 
     url = self._taskPageUrl(self.task)
@@ -369,7 +422,9 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'Closed')
-    self.assertEqual(task.student.key(), student.key())
+    self.assertEqual(
+        task_model.GCITask.student.get_value_for_datastore(task),
+        student.key.to_old_key())
     self.assertIsNone(task.deadline)
 
     # check if a comment has been created
@@ -379,26 +434,30 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
 
     # check if OrgScore has been updated
     org_score = org_score_logic.queryForAncestorAndOrg(
-        task.student, task.org).get()
+        task_model.GCITask.student.get_value_for_datastore(task),
+        task.org).get()
     self.assertIsNotNone(org_score)
     self.assertEqual(org_score.numberOfTasks(), 1)
     self.assertEqual(org_score.tasks[0], task.key())
 
     # check if number_of_completed_tasks has been updated
-    student_info = profile_logic.queryStudentInfoForParent(task.student).get()
-    self.assertEqual(student_info.number_of_completed_tasks, 1)
+    student = student.key.get()
+    self.assertEqual(student.student_data.number_of_completed_tasks, 1)
 
     self.assertTasksInQueue(n=1, url='/tasks/gci/ranking/update')
 
   def testPostButtonNeedsWork(self):
-    """Tests the needs more work for task button.
-    """
-    self.profile_helper.createMentor(self.org)
+    """Tests the needs more work for task button."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
-    student = profile_utils.seedGCIStudent(self.program)
+    student = profile_utils.seedNDBStudent(self.program)
 
     self.task.status = 'NeedsReview'
-    self.task.student = student
+    self.task.student = student.key.to_old_key()
     self.task.put()
 
     url = self._taskPageUrl(self.task)
@@ -408,7 +467,9 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'NeedsWork')
-    self.assertEqual(task.student.key(), student.key())
+    self.assertEqual(
+        task_model.GCITask.student.get_value_for_datastore(task),
+        student.key.to_old_key())
     self.assertIsNone(task.deadline)
 
     # check if a comment has been created
@@ -417,17 +478,20 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonExtendDeadline(self):
-    """Tests the extend deadline button.
-    """
-    self.profile_helper.createMentor(self.org)
+    """Tests the extend deadline button."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
-    student = profile_utils.seedGCIStudent(self.program)
+    student = profile_utils.seedNDBStudent(self.program)
 
     # set it in the future so that the auto state transfer doesn't trigger
     deadline = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
 
     self.task.status = 'Claimed'
-    self.task.student = student
+    self.task.student = student.key.to_old_key()
     self.task.deadline = deadline
     self.task.put()
 
@@ -447,10 +511,13 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonClaim(self):
-    """Tests the claim task button.
-    """
-    self.profile_helper.createStudentWithConsentForms(
-        consent_form=True, student_id_form=True)
+    """Tests the claim task button."""
+    form = forms_to_submit_utils.FormsToSubmitHelper().createBlobStoreForm()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedNDBStudent(
+        self.program, user=user,
+        student_data_properties={'enrollment_form': form, 'consent_form':form})
 
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_claim')
@@ -459,7 +526,9 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'ClaimRequested')
-    self.assertEqual(task.student.key(), self.profile_helper.profile.key())
+    self.assertEqual(
+        task_model.GCITask.student.get_value_for_datastore(task),
+        student.key.to_old_key())
 
     # check if a comment has been created
     comments = self.task.comments()
@@ -467,12 +536,13 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonUnclaim(self):
-    """Tests the unclaim task button.
-    """
-    self.profile_helper.createStudent()
+    """Tests the unclaim task button."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedNDBStudent(self.program, user=user)
 
     self.task.status = 'ClaimRequested'
-    self.task.student = self.profile_helper.profile
+    self.task.student = student.key.to_old_key()
     self.task.put()
 
     url = self._taskPageUrl(self.task)
@@ -491,28 +561,33 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertMailSentToSubscribers(comments[0])
 
   def testPostButtonSubscribe(self):
-    """Tests the subscribe button.
-    """
-    self.profile_helper.createMentor(self.org)
+    """Tests the subscribe button."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
-    profile = self.profile_helper.profile
-    self.assertNotIn(profile.key(), self.task.subscribers)
+    self.assertNotIn(profile.key.to_old_key(), self.task.subscribers)
 
     url = self._taskPageUrl(self.task)
     response = self.buttonPost(url, 'button_subscribe')
 
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
-    self.assertIn(profile.key(), task.subscribers)
+    self.assertIn(profile.key.to_old_key(), task.subscribers)
 
   def testPostButtonUnsubscribe(self):
     """Tests the unsubscribe button.
     """
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
     # subscribe to the task manually
-    profile = self.profile_helper.profile
-    self.task.subscribers.append(profile.key())
+    self.task.subscribers.append(profile.key.to_old_key())
     self.task.put()
 
     url = self._taskPageUrl(self.task)
@@ -520,15 +595,16 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
 
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
-    self.assertNotIn(profile.key(), task.subscribers)
+    self.assertNotIn(profile.key.to_old_key(), task.subscribers)
 
   def testPostSubmitWork(self):
-    """Tests for submitting work.
-    """
-    self.profile_helper.createStudent()
+    """Tests for submitting work."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedNDBStudent(self.program, user=user)
 
     self.task.status = 'Claimed'
-    self.task.student = self.profile_helper.profile
+    self.task.student = student.key.to_old_key()
     # set deadline to far future
     self.task.deadline = datetime.datetime.utcnow() + datetime.timedelta(days=1)
     self.task.put()
@@ -553,12 +629,13 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertEqual(work_url, work.url_to_work)
 
   def testPostSendForReview(self):
-    """Tests for submitting work.
-    """
-    self.profile_helper.createStudent()
+    """Tests for submitting work."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedNDBStudent(self.program, user=user)
 
     self.task.status = 'Claimed'
-    self.task.student = self.profile_helper.profile
+    self.task.student = student.key.to_old_key()
     # set deadline to far future
     self.task.deadline = datetime.datetime.utcnow() + \
         datetime.timedelta(days=1)
@@ -574,12 +651,13 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertEqual(task.status, 'NeedsReview')
 
   def testPostSendForReviewClosedTaskForbidden(self):
-    """Tests for submitting work for a task whose status is Closed.
-    """
-    self.profile_helper.createStudent()
+    """Tests for submitting work for a task whose status is Closed."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedNDBStudent(self.program, user=user)
 
     self.task.status = 'Closed'
-    self.task.student = self.profile_helper.profile
+    self.task.student = student.key.to_old_key()
     # set deadline to far future
     self.task.deadline = datetime.datetime.utcnow() + \
         datetime.timedelta(days=1)
@@ -596,12 +674,13 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertEqual(task.status, 'Closed')
 
   def testPostDeleteSubmission(self):
-    """Tests for deleting work.
-    """
-    self.profile_helper.createStudent()
+    """Tests for deleting work."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedNDBStudent(self.program, user=user)
 
     self.task.status = 'Claimed'
-    self.task.student = self.profile_helper.profile
+    self.task.student = student.key.to_old_key()
     self.task.put()
 
     work = task_utils.seedWorkSubmission(self.task)

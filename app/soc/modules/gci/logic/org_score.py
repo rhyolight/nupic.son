@@ -18,7 +18,6 @@
 
 from google.appengine.ext import db
 
-
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models.score import GCIOrgScore
 from soc.modules.gci.models.task import GCITask
@@ -30,28 +29,21 @@ from soc.modules.gci.models.task import GCITask
 POSSIBLE_WINNER_MAX_POSITION = 5
 
 
-def updateOrgScoreTxn(task):
+def updateOrgScoreTxn(task, student):
   """Returns a transactional function that updates GCIOrgScore for
   the specified task.
   """
   org_key = GCITask.org.get_value_for_datastore(task)
-  student_key = GCITask.student.get_value_for_datastore(task)
 
   def txn():
-    org_score_query = queryForAncestorAndOrg(student_key, org_key)
+    org_score_query = queryForAncestorAndOrg(student.key.to_old_key(), org_key)
 
     org_score = org_score_query.get()
     if not org_score:
-      org_score = GCIOrgScore(parent=student_key, org=org_key)
+      org_score = GCIOrgScore(parent=student.key.to_old_key(), org=org_key)
 
     org_score.tasks.append(task.key())
     org_score.put()
-
-    student_info_query = profile_logic.queryStudentInfoForParent(student_key)
-
-    student_info = student_info_query.get()
-    student_info.number_of_completed_tasks += 1
-    student_info.put()
 
   return txn
 

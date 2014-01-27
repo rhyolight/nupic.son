@@ -25,8 +25,6 @@ from melange.models import education as education_model
 from melange.models import profile as ndb_profile_model
 from melange.models import user as user_model
 
-from soc.models import organization as org_model
-from soc.models import profile as profile_model
 from soc.models import program as program_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
@@ -41,172 +39,160 @@ class CanResignAsOrgAdminForOrgTest(unittest.TestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     # seed a new program
-    self.program = seeder_logic.seed(program_model.Program)
+    self.program = program_utils.seedProgram()
 
     # seed a couple of organizations
-    self.organization_one = seeder_logic.seed(org_model.Organization,
-        {'program': self.program})
-    self.organization_two = seeder_logic.seed(org_model.Organization,
-        {'program': self.program})
+    self.organization_one = org_utils.seedOrganization(self.program.key())
+    self.organization_two = org_utils.seedOrganization(self.program.key())
 
     # seed a new org admin for organization one
-    org_admin_properties = {
-        'is_mentor': True,
-        'mentor_for': [self.organization_one.key()],
-        'is_org_admin': True,
-        'org_admin_for': [self.organization_one.key()],
-        'status': 'active',
-    }
-    self.org_admin = seeder_logic.seed(
-        profile_model.Profile, org_admin_properties)
+    self.org_admin = profile_utils.seedNDBProfile(
+        self.program.key(), admin_for=[self.organization_one.key])
 
   def testOnlyOrgAdmin(self):
     """Tests that the only org admin cannot resign."""
     can_resign = profile_logic.canResignAsOrgAdminForOrg(
-        self.org_admin, self.organization_one.key())
+        self.org_admin, self.organization_one.key)
     self.assertFalse(can_resign)
     self.assertEqual(can_resign.extra, profile_logic.ONLY_ORG_ADMIN)
 
   def testMoreOrgAdmins(self):
     """Tests that org admin can resign if there is another one."""
-    org_admin_properties = {
-        'is_mentor': True,
-        'mentor_for': [self.organization_one.key()],
-        'is_org_admin': True,
-        'org_admin_for': [self.organization_one.key()],
-        'status': 'active',
-    }
-    self.org_admin = seeder_logic.seed(
-        profile_model.Profile, org_admin_properties)
+    # seed another org admin
+    profile_utils.seedNDBProfile(
+        self.program.key(), admin_for=[self.organization_one.key])
 
     # now the org admin can resign, as there is another admin
     can_resign = profile_logic.canResignAsOrgAdminForOrg(
-        self.org_admin, self.organization_one.key())
+        self.org_admin, self.organization_one.key)
     self.assertTrue(can_resign)
 
   def testNotOrgAdminForOrg(self):
     """Tests that error is raised if the profile is not an org admin."""
     with self.assertRaises(ValueError):
       profile_logic.canResignAsOrgAdminForOrg(
-          self.org_admin, self.organization_two.key())
+          self.org_admin, self.organization_two.key)
+
+_NUMBER_OF_MENTORS = 3
+
+class QueryAllMentorsForProgramTest(unittest.TestCase):
+  """Unit test for queryAllMentorsForProgram function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    # seed two programs for the same sponsor
+    sponsor = program_utils.seedSponsor()
+    self.program_one = program_utils.seedProgram(sponsor_key=sponsor.key())
+    program_two = program_utils.seedProgram(sponsor_key=sponsor.key())
+
+    org_one = org_utils.seedOrganization(self.program_one.key())
+    org_two = org_utils.seedOrganization(program_two.key())
+
+    self.mentor_keys = set()
+    # seed a few mentors for both programs
+    for _ in range(_NUMBER_OF_MENTORS):
+      self.mentor_keys.add(profile_utils.seedNDBProfile(
+          self.program_one.key(), mentor_for=[org_one.key]).key)
+      profile_utils.seedNDBProfile(program_two.key(), mentor_for=[org_two.key])
+
+  def testAllMentorsForProgramFetched(self):
+    """Tests that the returned query fetches all mentors for the program."""
+    query = profile_logic.queryAllMentorsForProgram(self.program_one.key())
+    result = query.fetch(1000)
+    self.assertEqual(self.mentor_keys, set(mentor.key for mentor in result))
 
 
 class GetOrgAdminsTest(unittest.TestCase):
   """Unit tests for getOrgAdmins function."""
 
   def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
     # seed a new program
-    self.program = seeder_logic.seed(program_model.Program)
+    self.program = program_utils.seedProgram()
 
     # seed a couple of organizations
-    self.organization_one = seeder_logic.seed(org_model.Organization,
-        {'program': self.program})
-    self.organization_two = seeder_logic.seed(org_model.Organization,
-        {'program': self.program})
+    self.organization_one = org_utils.seedOrganization(self.program.key())
+    self.organization_two = org_utils.seedOrganization(self.program.key())
 
   def testNoOrgAdmin(self):
-    org_admins = profile_logic.getOrgAdmins(self.organization_one.key())
-    self.assertEqual(org_admins, [])
+    """Tests that the empty list is returned if no org admin exists."""
+    org_admins = profile_logic.getOrgAdmins(self.organization_one.key)
+    self.assertListEqual(org_admins, [])
 
   def testOneOrgAdmin(self):
+    """Tests that a list of size one is returned if one org admin exists."""
     # seed a new org admin for organization one
-    org_admin_properties = {
-        'is_mentor': True,
-        'mentor_for': [self.organization_one.key()],
-        'is_org_admin': True,
-        'org_admin_for': [self.organization_one.key()],
-        'status': 'active',
-    }
-    org_admin = seeder_logic.seed(profile_model.Profile, org_admin_properties)
+    org_admin = profile_utils.seedNDBProfile(
+        self.program.key(), admin_for=[self.organization_one.key])
 
     # the org admin should be returned
-    org_admins = profile_logic.getOrgAdmins(self.organization_one.key())
-    self.assertEqual(len(org_admins), 1)
-    self.assertEqual(org_admins[0].key(), org_admin.key())
+    results = profile_logic.getOrgAdmins(self.organization_one.key)
+    self.assertSetEqual(
+        set(result.key for result in results), set([org_admin.key]))
 
     # keys_only set to True should return only the key
-    org_admins_keys = profile_logic.getOrgAdmins(
-        self.organization_one.key(), keys_only=True)
-    self.assertEqual(len(org_admins_keys), 1)
-    self.assertEqual(org_admins_keys[0], org_admin.key())
+    org_admin_keys = profile_logic.getOrgAdmins(
+        self.organization_one.key, keys_only=True)
+    self.assertSetEqual(set(org_admin_keys), set([org_admin.key]))
 
     # there is still no org admin for organization two
-    org_admins = profile_logic.getOrgAdmins(self.organization_two.key())
-    self.assertEqual(org_admins, [])
+    org_admins = profile_logic.getOrgAdmins(self.organization_two.key)
+    self.assertListEqual(org_admins, [])
 
   def testManyOrgAdmins(self):
-    # seed  org admins for organization one
-    org_admin_properties = {
-        'is_mentor': True,
-        'mentor_for': [self.organization_one.key()],
-        'is_org_admin': True,
-        'org_admin_for': [self.organization_one.key()],
-        'status': 'active',
-    }
-    seeded_org_admins = set()
+    """Tests that all org admins are returned if many exist."""
+    # seed a few org admins for organization one
+    org_admin_keys = set()
     for _ in range(5):
-      seeded_org_admins.add(seeder_logic.seed(
-        profile_model.Profile, org_admin_properties).key())
+      org_admin_keys.add(profile_utils.seedNDBProfile(
+          self.program.key(), admin_for=[self.organization_one.key]).key)
 
     # all org admins should be returned
-    org_admins = profile_logic.getOrgAdmins(self.organization_one.key())
-    self.assertEqual(len(org_admins), 5)
-    self.assertEqual(seeded_org_admins,
-        set([org_admin.key() for org_admin in org_admins]))
+    results = profile_logic.getOrgAdmins(self.organization_one.key)
+    self.assertSetEqual(
+        set([result.key for result in results]), org_admin_keys),
 
     # all org admins keys should be returned if keys_only set
-    org_admins_keys = profile_logic.getOrgAdmins(
-        self.organization_one.key(), keys_only=True)
-    self.assertEqual(len(org_admins_keys), 5)
-    self.assertEqual(seeded_org_admins, set(org_admins_keys))
+    results = profile_logic.getOrgAdmins(
+        self.organization_one.key, keys_only=True)
+    self.assertSetEqual(set(results), org_admin_keys),
 
   def testNotActiveOrgAdmin(self):
-    # seed invalid org admins for organization one
-    org_admin_properties = {
-        'is_mentor': True,
-        'mentor_for': [self.organization_one.key()],
-        'is_org_admin': True,
-        'org_admin_for': [self.organization_one.key()],
-        'status': 'invalid',
-    }
-    seeder_logic.seed(
-        profile_model.Profile, org_admin_properties)
+    # seed non-active org admin for organization one
+    profile_utils.seedNDBProfile(
+        self.program.key(), admin_for=[self.organization_one.key],
+        status=ndb_profile_model.Status.BANNED)
 
     # not active org admin not returned
-    org_admins = profile_logic.getOrgAdmins(self.organization_one.key())
-    self.assertEqual(org_admins, [])
+    org_admins = profile_logic.getOrgAdmins(self.organization_one.key)
+    self.assertListEqual(org_admins, [])
 
     # keys_only set to True does not return any keys
-    org_admins_keys = profile_logic.getOrgAdmins(
-        self.organization_one.key(), keys_only=True)
-    self.assertEqual(org_admins_keys, [])
+    org_admin_keys = profile_logic.getOrgAdmins(
+        self.organization_one.key, keys_only=True)
+    self.assertListEqual(org_admin_keys, [])
 
   def testExtraAttrs(self):
     # seed male org admin for organization one
-    org_admin_properties = {
-        'is_mentor': True,
-        'mentor_for': [self.organization_one.key()],
-        'is_org_admin': True,
-        'org_admin_for': [self.organization_one.key()],
-        'status': 'active',
-        'gender': 'male',
-      }
-    org_admin = seeder_logic.seed(
-        profile_model.Profile, org_admin_properties)
+    org_admin = profile_utils.seedNDBProfile(
+        self.program.key(), admin_for=[self.organization_one.key],
+        gender=ndb_profile_model.Gender.MALE)
 
     # seed female org admin for organization one
-    org_admin_properties['gender'] = 'female'
-    seeder_logic.seed(
-        profile_model.Profile, org_admin_properties)
+    profile_utils.seedNDBProfile(
+        self.program.key(), admin_for=[self.organization_one.key],
+        gender=ndb_profile_model.Gender.FEMALE)
 
     # retrieve only org admins with extra attrs
-    extra_attrs = {profile_model.Profile.gender: ['male']}
-    org_admins = profile_logic.getOrgAdmins(self.organization_one.key(),
+    extra_attrs = {
+        ndb_profile_model.Profile.gender: [ndb_profile_model.Gender.MALE]
+        }
+    results = profile_logic.getOrgAdmins(self.organization_one.key,
         extra_attrs=extra_attrs)
 
     # only the male org admin should be returned
-    self.assertEqual(1, len(org_admins))
-    self.assertEqual(org_admins[0].key(), org_admin.key())
+    self.assertSetEqual(
+        set([result.key for result in results]), set([org_admin.key]))
 
 
 class AssignNoRoleForOrgTest(unittest.TestCase):

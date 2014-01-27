@@ -37,7 +37,6 @@ from soc.modules.gsoc.models.grading_project_survey_record import \
     GSoCGradingProjectSurveyRecord
 from soc.modules.gsoc.models.grading_survey_group import GSoCGradingSurveyGroup
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
-from soc.modules.gsoc.models.profile import GSoCProfile
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from soc.modules.gsoc.models.project_survey_record import \
@@ -394,11 +393,12 @@ class AccessChecker(access_checker.AccessChecker):
           program.short_name,
           self.data.redirect.urlOf('create_gsoc_profile', secure=True))
 
-    if not self.data.user:
+    if not self.data.ndb_user:
       raise exception.Forbidden(message=msg)
 
     if not validate.hasNonStudentProfileForProgram(
-        self.data.user, program, GSoCProfile):
+        self.data.ndb_user.key, self.data.program.key(),
+        models=self.data.models):
       raise exception.Forbidden(message=msg)
 
   def canCreateOrgProfile(self):

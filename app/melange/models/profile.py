@@ -31,6 +31,8 @@ class TeeStyle(messages.Enum):
   FEMALE = 1
   #: Male style T-Shirt.
   MALE = 2
+  #: The user opts not to receive any T-shirts.
+  NO_TEE = 3
 
 
 class TeeSize(messages.Enum):
@@ -51,6 +53,8 @@ class TeeSize(messages.Enum):
   XXL = 7
   #: XXXL size.
   XXXL = 8
+  #: The user opts not to receive any T-shirts.
+  NO_TEE = 9
 
 
 class Gender(messages.Enum):
@@ -61,6 +65,8 @@ class Gender(messages.Enum):
   MALE = 2
   #: Other gender.
   OTHER = 3
+  #: The user does not disclose their gender.
+  NOT_DISCLOSED = 4
 
 
 class Status(messages.Enum):
@@ -101,6 +107,30 @@ class StudentData(ndb.Model):
 
   #: Property pointing to the Blob storing student's enrollment form.
   enrollment_form = ndb.BlobKeyProperty()
+
+  #: Property telling whether the enrollment form is verified by
+  #: a program administrator.
+  is_enrollment_form_verified = ndb.BooleanProperty(default=False)
+
+  #: Number of tasks completed by the student.
+  number_of_completed_tasks = ndb.IntegerProperty(required=True, default=0)
+
+  #: Property telling whether the student has completed at least one task.
+  completed_task = ndb.ComputedProperty(
+      lambda self: bool(self.number_of_completed_tasks))
+
+  #: Property pointing to the Blob storing student's parental consent form.
+  consent_form = ndb.BlobKeyProperty()
+
+  #: Property telling whether the consent form is verified by
+  #: a program administrator.
+  is_consent_form_verified = ndb.BooleanProperty(default=False)
+
+  #: Organization for which the student is a winner.
+  winner_for = ndb.KeyProperty()
+
+  #: Property telling thether the student is a winner of the program.
+  is_winner = ndb.ComputedProperty(lambda self: self.winner_for is not None)
 
 
 class Profile(ndb.Model):
@@ -215,6 +245,15 @@ class Profile(ndb.Model):
     """
     return self.key.parent().id()
 
+  @property
+  def legal_name(self):
+    """Full, legal name associated with the profile."""
+    return '%s %s' % (self.first_name, self.last_name)
+
+  @property
+  def ship_to_address(self):
+    """Address to which all program packages should be shipped."""
+    return self.shipping_address or self.residential_address
 
 def getSponsorId(profile_key):
   """Returns sponsor ID based on the specified profile key.

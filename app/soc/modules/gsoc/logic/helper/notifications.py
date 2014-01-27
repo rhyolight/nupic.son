@@ -25,6 +25,8 @@ from soc.modules.gsoc.models import comment as comment_model
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.views.helper import url_names
 
+from summerofcode.views.helper import urls
+
 
 DEF_NEW_PROPOSAL_SUBJECT = ugettext(
     '[%(org)s] New proposal by %(proposer_name)s: %(proposal_name)s')
@@ -67,7 +69,7 @@ def newProposalContext(data, proposal, to_emails):
   proposal_notification_url = links.ABSOLUTE_LINKER.userId(
       data.ndb_profile.key, proposal.key().id(), url_names.PROPOSAL_REVIEW)
   edit_profile_url = links.ABSOLUTE_LINKER.program(
-      data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
+      data.program, urls.UrlNames.PROFILE_EDIT, secure=True)
 
   org_key = proposal_model.GSoCProposal.org.get_value_for_datastore(proposal)
   org = ndb.Key.from_old_key(org_key).get()
@@ -101,7 +103,7 @@ def updatedProposalContext(data, proposal, to_emails):
   proposal_notification_url = links.ABSOLUTE_LINKER.userId(
       data.ndb_profile.key, proposal.key().id(), url_names.PROPOSAL_REVIEW)
   edit_profile_url = links.ABSOLUTE_LINKER.program(
-      data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
+      data.program, urls.UrlNames.PROFILE_EDIT, secure=True)
 
   message_properties = {
       'proposal_notification_url': proposal_notification_url,
@@ -135,7 +137,7 @@ def newReviewContext(data, comment, to_emails):
           url_names.PROPOSAL_REVIEW),
       comment.key().id())
   edit_profile_url = links.ABSOLUTE_LINKER.program(
-      data.program, url_names.GSOC_PROFILE_EDIT, secure=True)
+      data.program, urls.UrlNames.PROFILE_EDIT, secure=True)
 
   review_type = 'private' if comment.is_private else 'public'
   reviewed_name = data.url_proposal.title

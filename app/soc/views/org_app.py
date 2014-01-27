@@ -14,11 +14,14 @@
 
 """Module for the org applications."""
 
+from google.appengine.ext import ndb
+
 from django import forms as django_forms
 from django.utils.translation import ugettext
 
 from melange.request import exception
 from soc.logic import validate
+from soc.models import org_app_record
 from soc.views import forms
 from soc.views import survey
 from soc.views.helper import access_checker
@@ -80,8 +83,10 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
     super(OrgAppTakeForm, self).__init__(
         bound_class_field, survey=self.request_data.org_app, **kwargs)
     if self.instance:
-      self.fields['backup_admin_id'].initial = \
-          self.instance.backup_admin.link_id
+      backup_admin_key = ndb.Key.from_old_key(
+          org_app_record.OrgAppRecord.backup_admin
+              .get_value_for_datastore(self.instance))
+      self.fields['backup_admin_id'].initial = backup_admin_key.get().user_id
 
     # not marked required by data model for backwards compatibility
     self.fields['org_id'].required = True
@@ -105,7 +110,8 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
       django_forms.ValidationError if the backup admin does not have a profile.
     """
     if not validate.hasNonStudentProfileForProgram(
-        backup_admin_user, self.request_data.program, profile_model):
+        backup_admin_user.key, self.request_data.program.key(),
+        models=self.request_data.models):
       redirector = self.request_data.redirect.createProfile('org_admin')
 
       raise django_forms.ValidationError(
@@ -139,11 +145,15 @@ class OrgAppTakeForm(forms.SurveyTakeForm):
 
     if not self.instance:
       cleaning.clean_users_not_same('backup_admin_id')(self)
-    elif self.instance.main_admin.key() == backup_admin.key():
-      raise django_forms.ValidationError(
-          'You cannot enter the person who created the application here.')
+    else:
+      main_admin_key = ndb.Key.from_old_key(
+          org_app_record.OrgAppRecord.main_admin
+              .get_value_for_datastore(self.instance))
+      if main_admin_key == backup_admin.key:
+        raise django_forms.ValidationError(
+            'You cannot enter the person who created the application here.')
 
-    self.cleaned_data['backup_admin'] = backup_admin
+    self.cleaned_data['backup_admin'] = backup_admin.key.to_old_key()
     return backup_admin
 
   def clean_new_org(self):

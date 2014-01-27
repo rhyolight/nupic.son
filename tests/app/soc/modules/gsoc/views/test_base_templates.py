@@ -14,6 +14,8 @@
 
 """Tests for base templates. All the templates are tested on homepage."""
 
+from google.appengine.ext import ndb
+
 from tests import profile_utils
 from tests.test_utils import GSoCDjangoTestCase
 
@@ -61,7 +63,10 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     self.assertNotIn('dashboard_link', mainmenu_context)
 
     # Create profile.
-    self.profile_helper.createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
+
     url = '/gsoc/homepage/' + self.gsoc.key().name()
     response = self.get(url)
     mainmenu_context = response.context['mainmenu'].context()
@@ -70,7 +75,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     self.assertIn('dashboard_link', mainmenu_context)
 
     # Make the current user the host.
-    user = profile_utils.seedNDBUser(host_for=[self.program])
+    user.host_for=[ndb.Key.from_old_key(self.program.key())]
     profile_utils.loginNDB(user)
 
     url = '/gsoc/homepage/' + self.gsoc.key().name()

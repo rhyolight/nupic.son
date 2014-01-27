@@ -224,20 +224,20 @@ class RequestData(request_data.RequestData):
   def is_mentor(self):
     """Returns the is_mentor field."""
     if not self._isSet(self._is_mentor):
-      if not self.profile:
+      if not self.ndb_profile:
         self._is_mentor = False
       else:
-        self._is_mentor = bool(self.profile.mentor_for) or self.is_org_admin
+        self._is_mentor = self.ndb_profile.is_mentor or self.is_org_admin
     return self._is_mentor
 
   @property
   def is_org_admin(self):
     """Returns the is_org_admin field."""
     if not self._isSet(self._is_org_admin):
-      if not self.profile:
+      if not self.ndb_profile:
         self._is_org_admin = False
       else:
-        self._is_org_admin = bool(self.profile.org_admin_for) or self.is_host
+        self._is_org_admin = self.ndb_profile.is_admin or self.is_host
     return self._is_org_admin
 
   @property
@@ -255,7 +255,7 @@ class RequestData(request_data.RequestData):
   def mentor_for(self):
     """Returns the mentor_for field."""
     if not self._isSet(self._mentor_for):
-      if self.profile:
+      if self.ndb_profile:
         self._initOrgMap()
         self._mentor_for = self._org_map.values()
       else:
@@ -291,10 +291,12 @@ class RequestData(request_data.RequestData):
   def org_admin_for(self):
     """Returns the org_admin_for field."""
     if not self._isSet(self._org_admin_for):
-      if self.profile:
+      if self.ndb_profile:
         self._initOrgMap()
         self._org_admin_for = [
-            self._org_map[i] for i in self.profile.org_admin_for]
+            self._org_map[i] for i in
+                map(lambda org_key: org_key.to_old_key(),
+                    self.ndb_profile.admin_for)]
       else:
         self._org_admin_for = []
     return self._org_admin_for
@@ -351,9 +353,11 @@ class RequestData(request_data.RequestData):
     the current user is either a mentor or org admin.
     """
     if not self._isSet(self._org_map):
-      if self.profile:
-        orgs = db.get(
-            set(self.profile.mentor_for + self.profile.org_admin_for))
+      if self.ndb_profile:
+        org_keys = set(
+            map(lambda org_key: org_key.to_old_key(),
+                self.ndb_profile.mentor_for + self.ndb_profile.admin_for))
+        orgs = db.get(org_keys)
         self._org_map = dict((i.key(), i) for i in orgs)
       else:
         self._org_map = {}
@@ -377,14 +381,14 @@ class RequestData(request_data.RequestData):
     if self.is_host:
       return True
 
-    if not self.profile:
+    if not self.ndb_profile:
       return False
 
     # TODO(daniel): remove when all models are converted to NDB
-    if isinstance(org_key, ndb.Key):
-      org_key = org_key.to_old_key()
+    if not isinstance(org_key, ndb.Key):
+      org_key = ndb.Key.from_old_key(org_key)
 
-    return org_key in self.profile.org_admin_for
+    return org_key in self.ndb_profile.admin_for
 
   def mentorFor(self, org_key):
     """Returns true iff the user is mentor for the specified organization.
@@ -395,14 +399,14 @@ class RequestData(request_data.RequestData):
     if self.is_host:
       return True
 
-    if not self.profile:
+    if not self.ndb_profile:
       return False
 
     # TODO(daniel): remove when all models are converted to NDB
-    if isinstance(org_key, ndb.Key):
-      org_key = org_key.to_old_key()
+    if not isinstance(org_key, ndb.Key):
+      org_key = ndb.Key.from_old_key(org_key)
 
-    return org_key in self.profile.mentor_for
+    return org_key in self.ndb_profile.mentor_for
 
 
 class RedirectHelper(request_data.RedirectHelper):
