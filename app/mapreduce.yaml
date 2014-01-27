@@ -307,3 +307,11 @@ mapreduce:
     params:
     - name: entity_kind
       value: soc.models.user.User
+
+- name: ConvertProfileToNdb
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_profile.convertProfile
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.models.profile.GSoCProfile
