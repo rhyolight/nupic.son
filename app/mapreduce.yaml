@@ -258,6 +258,13 @@ mapreduce:
     params:
     - name: entity_kind
 
+- name: NDBModelPacifier
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.model_pacifier.processNDB
+    params:
+    - name: entity_kind
+
 
 # organization conversion related scripts
 - name: ConvertProposal
