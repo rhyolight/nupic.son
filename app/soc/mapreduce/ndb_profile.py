@@ -16,6 +16,8 @@
 
 import logging
 
+from django.core import validators
+
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
@@ -252,12 +254,30 @@ def convertProfile(profile_key):
   public_name = profile.public_name
   first_name = profile.given_name
   last_name = profile.surname
-  photo_url = profile.photo_url
+
+  if profile.photo_url and len(profile.photo_url) < 500:
+    photo_url = profile.photo_url
+  else:
+    photo_url = None
 
   # create contact for profile
-  email = profile.email
-  web_page = profile.home_page
-  blog = profile.blog
+  try:
+    email = validators.validate_email(profile.email)
+  except Exception:
+    logging.warning(
+        'Invalid email %s for profile %s', profile.email, profile.key().name())
+    email = None
+
+  if profile.home_page and len(profile.home_page) < 500:
+    web_page = profile.home_page
+  else:
+    web_page = None
+
+  if profile.blog and len(profile.blog) < 500:
+    blog = profile.blog
+  else:
+    blog = None
+
   phone = profile.phone
   contact = contact_model.Contact(
       email=email, web_page=web_page, blog=blog, phone=phone)
@@ -283,7 +303,7 @@ def convertProfile(profile_key):
     city = profile.ship_city
     province = profile.ship_state
     country = profile.ship_country
-    postal_code = profile.ship_postal_code
+    postal_code = profile.ship_postalcode
     shipping_address = address_model.Address(
         name=name, street=street, street_extra=street_extra, city=city,
         province=province, country=country, postal_code=postal_code)
