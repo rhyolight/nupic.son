@@ -31,6 +31,8 @@ class TeeStyle(messages.Enum):
   FEMALE = 1
   #: Male style T-Shirt.
   MALE = 2
+  #: The user opts not to receive any T-shirts.
+  NO_TEE = 3
 
 
 class TeeSize(messages.Enum):
@@ -51,6 +53,8 @@ class TeeSize(messages.Enum):
   XXL = 7
   #: XXXL size.
   XXXL = 8
+  #: The user opts not to receive any T-shirts.
+  NO_TEE = 9
 
 
 class Gender(messages.Enum):
@@ -61,6 +65,8 @@ class Gender(messages.Enum):
   MALE = 2
   #: Other gender.
   OTHER = 3
+  #: The user does not disclose their gender.
+  NOT_DISCLOSED = 4
 
 
 class Status(messages.Enum):
