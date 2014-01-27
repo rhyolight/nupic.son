@@ -52,5 +52,7 @@ class Education(ndb.Model):
   #: Degree which is currently being pursued by the student.
   degree = msgprop.EnumProperty(Degree)
 
-  #: Grade of the student.
+  #: Grade of the student. This number may not have a consistent meaning across
+  #; jurisdictional boundaries (e.g. eighth grade in the United States may
+  #: not correspond to eighth standard in another nation).
   grade = ndb.IntegerProperty()
