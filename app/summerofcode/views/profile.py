@@ -924,9 +924,9 @@ def _adoptStudentDataPropertiesForForm(student_data_properties):
           education_model.Education.school_country._name),
       'school_name': education.get(education_model.Education.school_id._name),
       'major': education.get(
-          education_model.PostSecondaryEducation.major._name),
+          education_model.Education.major._name),
       'degree': _DEGREE_ENUM_TO_ID_MAP[
-          education.get(education_model.PostSecondaryEducation.degree._name)]
+          education.get(education_model.Education.degree._name)]
       }
 
 

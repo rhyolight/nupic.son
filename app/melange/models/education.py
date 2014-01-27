@@ -46,11 +46,6 @@ class Education(ndb.Model):
   #: Expected graduation year.
   expected_graduation = ndb.IntegerProperty()
 
-
-class PostSecondaryEducation(Education):
-  """Model that represents post-secondary education (e.g. university or college)
-  of a student.
-  """
   #: Major of the student.
   major = ndb.StringProperty()
 

@@ -322,7 +322,7 @@ def seed(request, *args, **kwargs):
   graduation_year = datetime.date.today() + datetime.timedelta(days=365)
 
   student_data = soc_profile.SOCStudentData(
-      education=education.PostSecondaryEducation(
+      education=education.Education(
           school_id="123",
           school_country="United States",
           expected_graduation=int(graduation_year.strftime('%Y')),

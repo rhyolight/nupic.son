@@ -40,7 +40,7 @@ def createPostSecondaryEducation(
   """
   try:
     return rich_bool.RichBool(
-        True, education_model.PostSecondaryEducation(
+        True, education_model.Education(
             school_id=school_id, school_country=school_country,
             expected_graduation=expected_graduation, major=major,
             degree=degree))
