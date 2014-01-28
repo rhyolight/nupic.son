@@ -1162,8 +1162,8 @@ class ProjectsIMentorComponent(Component):
       list_query.filter('mentors', self.data.ndb_profile.key.to_old_key())
 
     starter = lists.keyStarter
-    # TODO(daniel): enable prefetching from ndb models ('org')
-    prefetcher = lists.ModelPrefetcher(GSoCProject, [], parent=True)
+    # TODO(daniel): enable prefetching from ndb models ('org', 'parent')
+    prefetcher = None
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, list_query,
@@ -1769,14 +1769,15 @@ class StudentEvaluationComponent(Component):
     idx = lists.getListIndex(self.data.request)
     if idx == self.IDX:
       list_query = project_logic.getProjectsQueryForEvalForOrgs(
-          orgs=self.data.org_admin_for)
+          [org_key.to_old_key() for org_key in self.data.ndb_profile.admin_for])
 
       starter = lists.keyStarter
-      # TODO(daniel): enable prefetching from ndb models ('org')
+      # TODO(daniel): enable prefetching from ndb models
+      # ('org', 'mentors', 'failed_evaluations', 'parent')
       prefetcher = lists.ListModelPrefetcher(
           GSoCProject, [],
-          ['mentors', 'failed_evaluations'],
-          parent=True)
+          ['failed_evaluations'],
+          parent=False)
       row_adder = evaluationRowAdder(self.evals)
 
       response_builder = lists.RawQueryContentResponseBuilder(
