@@ -29,6 +29,7 @@ from melange.models import profile as profile_model
 # This MapReduce requires these models to have been imported.
 # pylint: disable=unused-import
 from soc.models.profile import Profile
+from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gsoc.models.profile import GSoCProfile
 # pylint: enable=unused-import
