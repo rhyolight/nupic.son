@@ -125,17 +125,16 @@ def getAcceptedProjectsForStudent(student, limit=1000):
   q = getAcceptedProjectsQuery(ancestor=student)
   return q.fetch(limit)
 
-def getProjectsQueryForOrgs(orgs):
+def getProjectsQueryForOrgs(org_keys):
   """Returns the query corresponding to projects for the given organization(s).
 
   Args:
-    orgs: The list of organization entities for which the projects
-        should be queried.
+    org_keys: The list of organization keys for which the projects
+      should be queried.
   """
-  q = getProjectsQuery()
-  orgs = list(orgs)
-  q.filter('org IN', orgs)
-  return q
+  query = getProjectsQuery()
+  query.filter('org IN', org_keys)
+  return query
 
 
 def getProjectsQueryForEval(keys_only=False, ancestor=None, **properties):
@@ -148,31 +147,32 @@ def getProjectsQueryForEval(keys_only=False, ancestor=None, **properties):
   return q
 
 
-def getProjectsQueryForEvalForOrgs(orgs):
+def getProjectsQueryForEvalForOrgs(org_keys):
   """Returns the query corresponding to projects for the given organization(s).
 
   This is a special query needed to build evaluation lists.
 
   Args:
-    orgs: The list of organization entities for which the projects
+    org_keys: The list of organization keys for which the projects
         should be queried.
   """
-  q = getProjectsQueryForOrgs(orgs)
-  q.filter('status IN', [project_model.STATUS_ACCEPTED, 'failed', 'completed'])
-  return q
+  query = getProjectsQueryForOrgs(org_keys)
+  query.filter(
+      'status IN', [project_model.STATUS_ACCEPTED, 'failed', 'completed'])
+  return query
 
 
-def getProjectsForOrgs(orgs, limit=1000):
+def getProjectsForOrgs(org_keys, limit=1000):
   """Returns all the projects for the given organization(s).
 
   Unlike getAcceptedProjectsForOrg function, this returns all the projects
   for all the orgs listed
 
   Args:
-    orgs: The list of organization entities for which the projects
+    org_keys: The list of organization keys for which the projects
         should be queried.
   """
-  q = getProjectsQueryForOrgs(orgs)
+  q = getProjectsQueryForOrgs(org_keys)
   return q.fetch(limit)
 
 
