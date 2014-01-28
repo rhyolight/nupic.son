@@ -1698,6 +1698,13 @@ class StudentEvaluationComponent(Component):
       """Helper function to get value of student column."""
       return ndb.Key.from_old_key(entity.parent_key()).get().public_name
 
+    def getMentors(entity, *args):
+      """Helper function to get value of mentors column."""
+      mentors = ndb.get_multi(
+          map(ndb.Key.from_old_key,
+              GSoCProject.mentors.get_value_for_datastore(entity)))
+      return ', '.join(mentor.public_name for mentor in mentors if mentor)
+
     list_config = lists.ListConfiguration(add_key_column=False)
 
     # key column must be added manually, as it must use evaluation_id
@@ -1713,10 +1720,7 @@ class StudentEvaluationComponent(Component):
     list_config.addPlainTextColumn('student', 'Student', getStudent)
     list_config.addSimpleColumn('title', 'Project Title')
     list_config.addPlainTextColumn('org', 'Organization', getOrganization)
-    list_config.addPlainTextColumn(
-        'mentors', 'Mentors',
-        lambda ent, eval, mentors, *args: ', '.join(
-            [mentors.get(m).name() for m in ent.mentors]))
+    list_config.addPlainTextColumn('mentors', 'Mentors', getMentors)
     list_config.addHtmlColumn(
         'status', 'Status', self._getStatus)
     list_config.addDateColumn(
