@@ -65,19 +65,18 @@ def siteMenuContext(data):
     context['dashboard_link'] = links.LINKER.program(
         data.program, 'gci_dashboard')
 
-  if data.program.messaging_enabled and data.user:
+  if data.program.messaging_enabled and data.ndb_user:
     redirect.program()
     context['messages_link'] = redirect.urlOf(url_names.GCI_CONVERSATIONS)
     context['num_unread_messages'] = (
         gciconversation_logic.numUnreadMessagesForProgramAndUser(
-            ndb.Key.from_old_key(data.program.key()),
-            ndb.Key.from_old_key(data.user.key())))
+            ndb.Key.from_old_key(data.program.key()), data.ndb_user.key))
 
   if data.timeline.tasksPubliclyVisible():
     # TODO(nathaniel): make this .program() call unnecessary.
     redirect.program()
     context['tasks_link'] = redirect.urlOf('gci_list_tasks')
-    if not data.user:
+    if not data.ndb_user:
       context['register_as_student_link'] = redirect.createProfile(
           'student').urlOf(url_names.GCI_PROFILE_CREATE, secure=True)
 
@@ -241,8 +240,8 @@ class LoggedInAs(Template):
       context['logged_in_as'] = self.data.gae_user.email()
       context['link_url'] = links.LINKER.logout(self.data.request)
       context['link_label'] = LOGOUT_LINK_LABEL
-      if self.data.user:
-        context['username'] = self.data.user.link_id
+      if self.data.ndb_user:
+        context['username'] = self.data.ndb_user.user_id
     else:
       context['logged_in_as'] = NOT_LOGGED_IN
       context['link_url'] = links.LINKER.login(self.data.request)
