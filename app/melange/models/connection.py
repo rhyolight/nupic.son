@@ -210,10 +210,10 @@ class ConnectionMessage(ndb.Model):
     if self.is_auto_generated:
       return "Automatically Generated"
     else:
-      return self.author.name()
+      return self.author.get().public_name
 
   def getAuthorId(self):
     if self.is_auto_generated:
       return ""
     else:
-      return self.author.link_id
+      return self.author.get().profile_id
