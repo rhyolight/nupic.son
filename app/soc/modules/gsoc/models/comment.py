@@ -15,6 +15,7 @@
 """This module contains the GSoC Comment Model."""
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django.utils import translation
 
@@ -53,3 +54,8 @@ class GSoCComment(db.Model):
 
   #: Date when the comment was added
   created = db.DateTimeProperty(auto_now_add=True)
+
+  def getAuthor(self):
+    """Returns author of the comment."""
+    return ndb.Key.from_old_key(
+        GSoCComment.author.get_value_for_datastore(self)).get()
