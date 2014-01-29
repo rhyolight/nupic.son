@@ -338,3 +338,26 @@ mapreduce:
     params:
     - name: entity_kind
       value: soc.modules.gsoc.models.profile.GSoCProfile
+
+- name: ConvertGCIProfileDBEntityGroup
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_profile.convertGCIProfileDBEntityGroup
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.profile.GCIProfile
+
+- name: ConvertGCIProfileNDBEntityGroup
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_profile.convertGCIProfileNDBEntityGroup
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.profile.GCIProfile
+
+- name: ModelCounter
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_profile.counter
+    params:
+    - name: entity_kind

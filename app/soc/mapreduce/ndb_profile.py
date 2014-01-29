@@ -16,13 +16,15 @@
 
 import logging
 
-from django.core import validators
-
 from google.appengine.api import datastore_errors
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
+from django.core import validators
+from mapreduce import operation
+
 from melange.models import address as address_model
+from melange.models import connection as connection_model
 from melange.models import contact as contact_model
 from melange.models import education as education_model
 from melange.models import profile as profile_model
@@ -32,6 +34,8 @@ from melange.models import user as user_model
 # pylint: disable=unused-import
 from soc.models.profile import Profile
 from soc.modules.gci.models.organization import GCIOrganization
+from soc.modules.gci.models.score import GCIOrgScore
+from soc.modules.gci.models.score import GCIScore
 from soc.modules.gci.models.profile import GCIProfile
 from soc.modules.gsoc.models.code_sample import GSoCCodeSample
 from soc.modules.gsoc.models.comment import GSoCComment
@@ -605,5 +609,80 @@ def convertGSoCProfileNDBEntityGroup(profile_key):
     new_extension = _convertNDBParent(extension)
     if do_put:
       new_extension.put()
-    logging.error(new_extension)
     to_delete.append(extension)
+
+
+@db.transactional
+def convertGCIProfileDBEntityGroup(profile_key):
+  """Converts DB based part of entity group associated with the specified
+  profile.
+
+  Args:
+    profile_key: db.Key of the profile to process.
+  """
+  to_delete = []
+  do_put = True
+
+  org_scores = GCIOrgScore.all().ancestor(profile_key).fetch(1000)
+  for org_score in org_scores:
+    new_org_score = _convertParent(org_score)
+    logging.error(new_org_score)
+    logging.error(repr(new_org_score.parent_key()))
+    if do_put:
+      new_org_score.put()
+    to_delete.append(org_score)
+
+  scores = GCIScore.all().ancestor(profile_key).fetch(1000)
+  for score in scores:
+    new_score = _convertParent(score)
+    logging.error(new_score)
+    logging.error(repr(new_score.parent_key()))
+    if do_put:
+      new_score.put()
+    to_delete.append(score)
+
+  db.delete(to_delete)
+
+
+@ndb.transactional
+def convertGCIProfileNDBEntityGroup(profile_key):
+  """Converts NDB based part of entity group associated with the specified
+  profile.
+
+  Args:
+    profile_key: db.Key of the profile to process.
+  """
+  # NOTE: profile_key will always be an instance of db.Key because NDB is not
+  # supported by MapReduce API.
+  profile_key = ndb.Key.from_old_key(profile_key)
+
+  to_delete = []
+  do_put = True
+
+  connections = connection_model.Connection.query(
+      ancestor=profile_key).fetch(1000)
+  for connection in connections:
+    # update Connection.parent
+    new_connection = _convertNDBParent(connection)
+    if do_put:
+      new_connection.put()
+      to_delete.append(connection.key)
+
+    messages = connection_model.ConnectionMessage.query(
+        ancestor=connection.key).fetch(1000)
+    for message in messages:
+      new_message = _convertNDBParent(message, parent=new_connection.key)
+      if do_put:
+        new_message.put()
+        to_delete.append(message.key)
+
+  ndb.delete_multi(to_delete)
+
+
+def counter(entity_key):
+  """Mapper that simply counts entities of the specified model.
+
+  Args:
+    entity_key: Entity key.
+  """
+  yield operation.counters.Increment('counter')
