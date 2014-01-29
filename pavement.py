@@ -97,7 +97,7 @@ easy.options(
   tinymce_zip = easy.options.build,
 
   pylint = easy.Bunch(
-    check_modules = [
+    app_folder_modules = [
         'codein',
         'melange',
         'soc',
@@ -106,6 +106,11 @@ easy.options(
         'urls.py',
         'main.py',
     ],
+    project_folder_modules = [
+        'pavement.py',
+        'setup.py',
+    ],
+    tests_folder = PROJECT_DIR / 'tests',
     verbose = False,
     verbose_args = [
       # In the rcfile(pylintrc) errors-only option is set. This is to enable
@@ -202,8 +207,12 @@ def pylint(options):
   if options.with_module:
     arguments.append(options.with_module)
   else:
-    arguments.extend(
-        str(options.app_folder / module) for module in options.check_modules)
+    arguments.extend(str(options.app_folder / module)
+                     for module in options.app_folder_modules)
+    arguments.extend(str(options.project_dir / module)
+                     for module in options.project_folder_modules)
+    # We should lint everything in the tests folder.
+    arguments.append(str(options.tests_folder))
 
   # By placing run_pylint into its own function, it allows us to do dry runs
   # without actually running PyLint.
