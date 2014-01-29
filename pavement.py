@@ -88,38 +88,7 @@ easy.options(
   )
 )
 
-# These inspections have too high a false positive rate to be useful for us.
-DISABLED_INSPECTIONS = (
-    'no-member',
-    'maybe-no-member',
 
-    # TODO(nathaniel): Re-enable this after the fix of
-    # https://bitbucket.org/logilab/pylint/issue/24. This appears to have
-    # affected us following our move from Django 1.4 to 1.5.
-    'super-on-old-class',
-)
-
-# Warnings, style issues, and other inspections as a matter of policy must not
-# be violated in Melange. At least not nakedly, anyway - an explanatory comment
-# must appear wherever these are suppressed.
-FORBIDDEN_IN_MELANGE = (
-    'arguments-differ',
-    'bad-indentation',
-    'cyclic-import',
-    'dangerous-default-value',
-    'logging-not-lazy',
-    'no-space-before-operator',
-    'pointless-statement',
-    'trailing-whitespace',
-    'unused-import',
-)
-
-# NOTE: these arguments should be passed after any --errors-only flags, since
-# that clobbers which messages are enabled/disabled.
-shared_pylint_args = [
-  '--disable=%s' % ','.join(DISABLED_INSPECTIONS),
-  '--enable=%s' % ','.join(FORBIDDEN_IN_MELANGE),
-]
 
 # The second call to options allows us to re-use some of the constants defined
 # in the first call.
@@ -139,6 +108,11 @@ easy.options(
     ],
     verbose = False,
     verbose_args = [
+      # In the rcfile(pylintrc) errors-only option is set. This is to enable
+      # other messages as well.
+      # R and C modules are just too chatty, we can however turn a few of the
+      # more useful ones on explicitly.
+      '--enable=W,F',
       '--reports=yes',
       # We may want to enable these in the future
       '--disable=protected-access,attribute-defined-outside-init',
@@ -148,15 +122,9 @@ easy.options(
       '--disable=fixme,unused-argument,star-args,bad-builtin,locally-disabled',
       # These are somewhat debatable, but not realistic for Melange
       '--disable=no-init,super-init-not-called',
-      # These modules are just too chatty, we can however turn a few of the
-      # more useful ones on explicitly.
-      '--disable=R,C',
-      # TODO(nathaniel): fix all occurences and move this to shared_pylint_args
+      # TODO(nathaniel): fix all occurences and move this to pylintrc file.
       '--enable=line-too-long',
-    ] + shared_pylint_args ,
-    quiet_args = [
-      '--errors-only',
-    ] + shared_pylint_args ,
+    ], 
     pylint_args = [],
     with_module = None,
     ignore = False,
@@ -226,8 +194,6 @@ def pylint(options):
 
   if options.verbose:
     arguments.extend(options.verbose_args)
-  else:
-    arguments.extend(options.quiet_args)
 
   if 'pylint_args' in options:
     arguments.extend(list(options.pylint_args))
@@ -239,7 +205,6 @@ def pylint(options):
     arguments.extend(
         str(options.app_folder / module) for module in options.check_modules)
 
-
   # By placing run_pylint into its own function, it allows us to do dry runs
   # without actually running PyLint.
   def run_pylint():
@@ -250,7 +215,7 @@ def pylint(options):
     sys.path.insert(0, path)
 
     # Specify PyLint RC file.
-    path = options.project_dir.abspath() / 'scripts' / 'pylint' / 'pylintrc'
+    path = options.project_dir.abspath() / 'pylintrc'
     arguments.append('--rcfile=' + path)
 
     # `lint.Run.__init__` runs the PyLint command.
