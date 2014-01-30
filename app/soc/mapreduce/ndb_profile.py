@@ -679,6 +679,53 @@ def convertGCIProfileNDBEntityGroup(profile_key):
   ndb.delete_multi(to_delete)
 
 
+@db.transactional
+def convertGCITask(task_key):
+  """Converts the specified task by changing values of its profile related
+  properties to the new NDB based profile entities.
+
+  Args:
+    task_key: Task key.
+  """
+  task = GCITask.get(task_key)
+  task.created_by = _convertReferenceProperty(GCITask.created_by, task)
+  task.modified_by = _convertReferenceProperty(GCITask.modified_by, task)
+  task.student = _convertReferenceProperty(GCITask.student, task)
+  task.mentors = _convertListProperty(GCITask.mentors, task)
+  task.subscribers = _convertListProperty(GCITask.subscribers, task)
+  task.put()
+
+
+@db.transactional
+def convertGCIOrg(org_key):
+  """Converts the specified organization by changing values of its profile
+  related properties to the new NDB based profile entities.
+
+  Args:
+    org_key: Organization key.
+  """
+  org = GCIOrganization.get(org_key)
+  org.proposed_winners = _convertListProperty(
+      GCIOrganization.proposed_winners, org)
+  org.backup_winner = _convertReferenceProperty(
+      GCIOrganization.backup_winner, org)
+  org.put()
+
+
+@db.transactional
+def convertGCIBulkCreateData(bulk_create_data_key):
+  """Converts the specified bulk create data by changing values of its profile
+  related properties to the new NDB based profile entities.
+
+  Args:
+    org_key: BulkCreateData key.
+  """
+  bulk_create_data = GCIBulkCreateData.get(bulk_create_data_key)
+  bulk_create_data.created_by = _convertReferenceProperty(
+      GCIBulkCreateData.created_by, bulk_create_data)
+  bulk_create_data.put()
+
+
 def counter(entity_key):
   """Mapper that simply counts entities of the specified model.
 

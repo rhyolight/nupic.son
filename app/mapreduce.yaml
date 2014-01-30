@@ -364,6 +364,30 @@ mapreduce:
     - name: entity_kind
       value: soc.modules.gci.models.profile.GCIProfile
 
+- name: ConvertGCITask
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_profile.convertGCITask
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.task.GCITask
+
+- name: ConvertGCIOrg
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_profile.convertGCIOrg
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.organization.GCIOrganization
+
+- name: ConvertGCIBulkCreateData
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_profile.convertGCIBulkCreateData
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.bulk_create_data.GCIBulkCreateData
+
 - name: ModelCounter
   mapper:
     input_reader: mapreduce.input_readers.DatastoreKeyInputReader
