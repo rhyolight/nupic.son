@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""Utils for manipulating profile data.
-"""
+"""Utils for manipulating profile data."""
 
 import datetime
 import os
@@ -36,15 +34,18 @@ from soc.models import user as user_model
 
 from soc.modules.gci.models import profile as gci_profile_model
 from soc.modules.gsoc.models import profile as gsoc_profile_model
+from soc.modules.gsoc.models import project as project_model
+from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.seeder.logic.providers import string as string_provider
 from soc.modules.seeder.logic.providers import user as user_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from summerofcode.models import profile as soc_profile_model
 
+from tests import forms_to_submit_utils
 from tests import task_utils
 from tests.utils import connection_utils
-
+from tests.utils import seed_utils
 
 DEFAULT_EMAIL = 'test@example.com'
 
@@ -199,7 +200,7 @@ def seedNDBProfile(program_key, model=ndb_profile_model.Profile,
 
   properties = {'email': '%s@example.com' % user.user_id}
   contact_properties = dict(
-     (k, v) for k, v in kwargs.iteritems() 
+     (k, v) for k, v in kwargs.iteritems()
          if k in contact_model.Contact._properties)
   properties.update(**contact_properties)
   contact = contact_model.Contact(**properties)
@@ -687,14 +688,13 @@ class GSoCProfileHelper(ProfileHelper):
     return self.createStudentWithProposals(org, mentor, 1)
 
   def createStudentWithProposals(self, org, mentor, n):
-    """Sets the current user to be a student with specified number of 
+    """Sets the current user to be a student with specified number of
     proposals for the current program.
     """
     self.createStudent()
     self.profile.student_info.number_of_proposals = n
     self.profile.put()
     self.profile.student_info.put()
-    from soc.modules.gsoc.models.proposal import GSoCProposal
     properties = {
         'scope': self.profile, 'score': 0, 'nr_scores': 0,
         'is_publicly_visible': False, 'accept_as_project': False,
@@ -702,48 +702,40 @@ class GSoCProfileHelper(ProfileHelper):
         'parent': self.profile, 'status': 'pending', 'has_mentor': True,
         'program': self.program, 'org': org.key.to_old_key(), 'mentor': mentor
     }
-    self.seedn(GSoCProposal, properties, n)
+    self.seedn(proposal_model.GSoCProposal, properties, n)
     return self.profile
 
   def createStudentWithProject(self, org, mentor):
-    """Sets the current user to be a student with a project for the 
+    """Sets the current user to be a student with a project for the
     current program.
     """
     return self.createStudentWithProjects(org, mentor, 1)
 
   def createStudentWithProjects(self, org, mentor, n):
-    """Sets the current user to be a student with specified number of 
+    """Sets the current user to be a student with specified number of
     projects for the current program.
     """
-    from soc.modules.gsoc.models import proposal as proposal_model
-    from tests.utils import project_utils
-    from tests.utils import proposal_utils
-    user = seedNDBUser()
-    student = seedSOCStudent(self.program, user=user)
+    student = seedSOCStudent(self.program, user=seedNDBUser())
+    mentor = seed_utils.seedNDBProfile(
+        self.program.key(), seedNDBUser(), mentor_for=[org.key])
 
-    proposal = proposal_utils.seedProposal(
-        student.key, self.program.key(), org.key)
-
-    mentor_key = ndb.Key.from_old_key(
-        proposal_model.GSoCProposal.mentor.get_value_for_datastore(proposal))
-    project_utils.seedProject(
-        student, self.program.key(), proposal.key(), org.key, mentor_key)
+    proposal = seed_utils.seedProposal(
+        student.key, self.program.key(), org.key, mentor.key)
+    seed_utils.seedProject(
+        student, self.program.key(), proposal.key(), org.key, mentor.key)
 
     self.profile = student
     return self.profile
 
   def createMentorWithProject(self, org, student):
-    """Creates an mentor profile with a project for the current user.
-    """
+    """Creates an mentor profile with a project for the current user."""
     self.createMentor(org)
-    from soc.modules.gsoc.models.proposal import GSoCProposal
-    proposal = GSoCProposal.all().ancestor(student).get()
+    proposal = proposal_model.GSoCProposal.all().ancestor(student).get()
 
-    from soc.modules.gsoc.models.project import GSoCProject
     properties = {'mentors': [self.profile.key()], 'program': self.program,
                   'parent': student, 'org': org.key.to_old_key(),
                   'status': 'accepted', 'proposal': proposal}
-    self.seed(GSoCProject, properties)
+    self.seed(project_model.GSoCProject, properties)
     return self.profile
 
   def createConnection(self, org):
@@ -774,11 +766,9 @@ class GCIProfileHelper(ProfileHelper):
     return self.user
 
   def createProfile(self):
-    """Creates a profile for the current user.
-    """
+    """Creates a profile for the current user."""
     if self.profile:
       return
-    from soc.modules.gci.models.profile import GCIProfile
     user = self.createUser()
     properties = {
         'link_id': user.link_id, 'student_info': None, 'user': user,
@@ -787,7 +777,7 @@ class GCIProfileHelper(ProfileHelper):
         'mentor_for': [], 'org_admin_for': [],
         'is_org_admin': False, 'is_mentor': False, 'is_student': False
     }
-    self.profile = self.seed(GCIProfile, properties)
+    self.profile = self.seed(gci_profile_model.GCIProfile, properties)
     return self.profile
 
   def createOrgAdmin(self, org):
@@ -849,10 +839,7 @@ class GCIProfileHelper(ProfileHelper):
     self.profile.put()
 
   def createStudent(self, **kwargs):
-    """Sets the current user to be a student for the current program.
-    """
-    from soc.modules.gci.models.profile import GCIStudentInfo
-
+    """Sets the current user to be a student for the current program."""
     self.createProfile()
 
     properties = {
@@ -866,19 +853,20 @@ class GCIProfileHelper(ProfileHelper):
     }
     properties.update(kwargs)
 
-    self.profile.student_info = self.seed(GCIStudentInfo, properties)
+    self.profile.student_info = self.seed(
+        gci_profile_model.GCIStudentInfo, properties)
     self.profile.is_student = True
     self.profile.put()
     return self.profile
 
   def createStudentWithTask(self, status, org, mentor):
-    """Sets the current user to be a student with a task for the 
+    """Sets the current user to be a student with a task for the
     current program.
     """
     return self.createStudentWithTasks(status, org, mentor, 1)[0]
 
   def createStudentWithTasks(self, status, org, mentor, n=1):
-    """Sets the current user to be a student with specified number of 
+    """Sets the current user to be a student with specified number of
     tasks for the current program.
     """
     student = self.createStudent()
@@ -895,8 +883,7 @@ class GCIProfileHelper(ProfileHelper):
     """Creates a student who might have submitted consent forms required
     by the program Terms of Service.
     """
-    from tests.forms_to_submit_utils import FormsToSubmitHelper
-    forms_helper = FormsToSubmitHelper()
+    forms_helper = forms_to_submit_utils.FormsToSubmitHelper()
 
     properties = {}
     if consent_form:
