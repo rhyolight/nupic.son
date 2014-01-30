@@ -215,8 +215,6 @@ class DashboardPage(base.GSoCRequestHandler):
     elif data.ndb_profile.is_mentor:
       components.append(TodoComponent(data))
       components += self._getOrgMemberComponents(data)
-    else:
-      components += self._getLoneUserComponents(data)
 
     return components
 
@@ -302,19 +300,6 @@ class DashboardPage(base.GSoCRequestHandler):
           ProjectSurvey, data.program, ['midterm', 'final'])
       components.append(MentorEvaluationComponent(data, mentor_evals))
       components.append(StudentEvaluationComponent(data, student_evals))
-
-    return components
-
-  def _getLoneUserComponents(self, data):
-    """Get the dashboard components for users without any role.
-    """
-    components = []
-
-    my_org_applications_component = self._getMyOrgApplicationsComponent(data)
-    if my_org_applications_component:
-      components.append(my_org_applications_component)
-
-    components.append(UserConnectionComponent(data))
 
     return components
 
