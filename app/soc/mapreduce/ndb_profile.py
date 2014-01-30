@@ -16,7 +16,6 @@
 
 import logging
 
-from google.appengine.api import datastore_errors
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
@@ -31,22 +30,22 @@ from melange.models import profile as profile_model
 from melange.models import user as user_model
 
 # This MapReduce requires these models to have been imported.
-# pylint: disable=unused-import
 from soc.models.profile import Profile
+from soc.modules.gci.models.bulk_create_data import GCIBulkCreateData
 from soc.modules.gci.models.organization import GCIOrganization
 from soc.modules.gci.models.score import GCIOrgScore
 from soc.modules.gci.models.score import GCIScore
 from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models.task import GCITask
 from soc.modules.gsoc.models.code_sample import GSoCCodeSample
 from soc.modules.gsoc.models.comment import GSoCComment
-from soc.modules.gsoc.models.profile import GSoCProfile
-from soc.modules.gsoc.models.project import GSoCProject
-from soc.modules.gsoc.models.proposal import GSoCProposal
-from soc.modules.gsoc.models.score import GSoCScore
 from soc.modules.gsoc.models.grading_project_survey_record import GSoCGradingProjectSurveyRecord
 from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
+from soc.modules.gsoc.models.profile import GSoCProfile
+from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey_record import GSoCProjectSurveyRecord
-# pylint: enable=unused-import
+from soc.modules.gsoc.models.proposal import GSoCProposal
+from soc.modules.gsoc.models.score import GSoCScore
 
 from summerofcode.models import survey as survey_model
 
@@ -552,23 +551,29 @@ def convertGSoCProfileDBEntityGroup(profile_key):
     for grading_record in grading_records:
       # update GSoCGradingProjectSurveyRecord.project
       # this is another entity group, but XG transaction does the thing
-      grading_project_survey_record = GSoCGradingProjectSurveyRecord.get(
+      grading_project_survey_record_key = (
           GSoCGradingRecord.mentor_record.get_value_for_datastore(
               grading_record))
-      if grading_project_survey_record:
-        grading_project_survey_record.project = new_project.key()
-        if do_put:
-          grading_project_survey_record.put()
+      if grading_project_survey_record_key:
+        grading_project_survey_record = GSoCGradingProjectSurveyRecord.get(
+            grading_project_survey_record_key)
+        if grading_project_survey_record:
+          grading_project_survey_record.project = new_project.key()
+          if do_put:
+            grading_project_survey_record.put()
 
       # update GSoCProjectSurveyRecord.project
       # this is another entity group, but XG transaction does the thing
-      project_survey_record = GSoCProjectSurveyRecord.get(
+      project_survey_record_key = (
           GSoCGradingRecord.student_record.get_value_for_datastore(
               grading_record))
-      if project_survey_record:
-        project_survey_record.project = new_project.key()
-        if do_put:
-          project_survey_record.put()
+      if project_survey_record_key:
+        project_survey_record = GSoCProjectSurveyRecord.get(
+            project_survey_record_key)
+        if project_survey_record:
+          project_survey_record.project = new_project.key()
+          if do_put:
+            project_survey_record.put()
 
       # update GSoCGradingRecord.parent
       new_grading_record = _convertParent(
@@ -584,8 +589,7 @@ def convertGSoCProfileDBEntityGroup(profile_key):
         new_code_sample.put()
       to_delete.append(code_sample)
 
-  # TODO(daniel): remove when the script is confirmed to work.
-  raise datastore_errors.Rollback()
+  db.delete(to_delete)
 
 
 @ndb.transactional
@@ -626,8 +630,6 @@ def convertGCIProfileDBEntityGroup(profile_key):
   org_scores = GCIOrgScore.all().ancestor(profile_key).fetch(1000)
   for org_score in org_scores:
     new_org_score = _convertParent(org_score)
-    logging.error(new_org_score)
-    logging.error(repr(new_org_score.parent_key()))
     if do_put:
       new_org_score.put()
     to_delete.append(org_score)
@@ -635,8 +637,6 @@ def convertGCIProfileDBEntityGroup(profile_key):
   scores = GCIScore.all().ancestor(profile_key).fetch(1000)
   for score in scores:
     new_score = _convertParent(score)
-    logging.error(new_score)
-    logging.error(repr(new_score.parent_key()))
     if do_put:
       new_score.put()
     to_delete.append(score)
