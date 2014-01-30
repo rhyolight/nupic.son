@@ -315,6 +315,15 @@ mapreduce:
     - name: entity_kind
       value: soc.models.user.User
 
+- name: NewUserToUser
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_user.newUserToUser
+    params:
+    - name: entity_kind
+      value: soc.mapreduce.ndb_user.NewUser
+
+
 - name: ConvertProfileToNdb
   mapper:
     input_reader: mapreduce.input_readers.DatastoreKeyInputReader
