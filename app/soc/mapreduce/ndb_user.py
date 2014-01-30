@@ -86,5 +86,5 @@ def newUserToUser(new_user_key):
   """
   new_user_key = ndb.Key.from_old_key(new_user_key)
   new_user = new_user_key.get()
-  user = user_model.User(**new_user.to_dict())
+  user = user_model.User(id=new_user.key.id(), **new_user.to_dict())
   user.put()
