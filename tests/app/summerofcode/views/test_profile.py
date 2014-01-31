@@ -364,6 +364,29 @@ class ProfileRegisterAsStudentPageTest(test_utils.GSoCDjangoTestCase):
     self.assertIsNone(profile.student_data.enrollment_form)
 
 
+VALID_POSTDATA = {
+    'public_name': TEST_PUBLIC_NAME,
+    'web_page': TEST_WEB_PAGE,
+    'blog': TEST_BLOG,
+    'photo_url': TEST_PHOTO_URL,
+    'first_name': TEST_FIRST_NAME,
+    'last_name': TEST_LAST_NAME,
+    'email': TEST_EMAIL,
+    'phone': TEST_PHONE,
+    'residential_street': TEST_RESIDENTIAL_STREET,
+    'residential_street_extra': TEST_RESIDENTIAL_STREET_EXTRA,
+    'residential_city': TEST_RESIDENTIAL_CITY,
+    'residential_province': TEST_RESIDENTIAL_PROVINCE,
+    'residential_country': TEST_RESIDENTIAL_COUNTRY,
+    'residential_postal_code': TEST_RESIDENTIAL_POSTAL_CODE,
+    'is_shipping_address_different': False,
+    'birth_date': TEST_BIRTH_DATE.strftime('%Y-%m-%d'),
+    'tee_style': TEST_TEE_STYLE,
+    'tee_size': TEST_TEE_SIZE,
+    'gender': TEST_GENDER,
+    'program_knowledge': TEST_PROGRAM_KNOWLEDGE,
+    }
+
 class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for ProfileEditPage class."""
 
@@ -516,6 +539,18 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
     form = response.context['forms'][0]
     self.assertFalse(form.data['is_shipping_address_different'])
 
+  def testInvalidData(self):
+    """Tests that organization is not updated if data is not valid."""
+    # the birth date is not eligible (the user is too young)
+    self.program.student_min_age = (
+        (datetime.date.today() - TEST_BIRTH_DATE).days / 365 + 2)
+    self.program.student_min_age_as_of = datetime.date.today()
+    self.program.put()
+
+    postdata = VALID_POSTDATA.copy()
+    response = self.post(
+        _getEditProfileUrl(self.program.key()), postdata=postdata)
+    self.assertTrue(response.context['error'])
 
 class CleanShippingAddressPartTest(unittest.TestCase):
   """Unit tests for _cleanShippingAddressPart function."""
