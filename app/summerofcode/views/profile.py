@@ -399,7 +399,7 @@ def cleanBirthDate(birth_date, program):
     the birth date does not permit to register or participate in the program.
   """
   if not validate.isAgeSufficientForProgram(birth_date, program):
-      raise django_forms.ValidationError(INSUFFICIENT_AGE)
+    raise django_forms.ValidationError(INSUFFICIENT_AGE)
   else:
     return birth_date
 
@@ -631,7 +631,7 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
     """
     return _cleanShippingAddressPart(
         self.cleaned_data['is_shipping_address_different'],
-        self.cleaned_data['shipping_name'], False)
+        self.cleaned_data['shipping_name'], True)
 
   def clean_shipping_street(self):
     """Cleans shipping_street field.
