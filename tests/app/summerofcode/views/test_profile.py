@@ -45,6 +45,7 @@ TEST_PHOTO_URL = u'http://www.test.photo.url.com/'
 TEST_PROGRAM_KNOWLEDGE = u'Test program knowledge'
 TEST_PUBLIC_NAME = 'Test Public Name'
 TEST_RESIDENTIAL_STREET = 'Test Street'
+TEST_RESIDENTIAL_STREET_EXTRA = 'Test Street Extra'
 TEST_RESIDENTIAL_CITY = 'Test City'
 TEST_RESIDENTIAL_PROVINCE = 'CA'
 TEST_RESIDENTIAL_POSTAL_CODE = '90000'
@@ -302,6 +303,7 @@ class ProfileRegisterAsStudentPageTest(test_utils.GSoCDjangoTestCase):
         'email': TEST_EMAIL,
         'phone': TEST_PHONE,
         'residential_street': TEST_RESIDENTIAL_STREET,
+        'residential_street_extra': TEST_RESIDENTIAL_STREET_EXTRA,
         'residential_city': TEST_RESIDENTIAL_CITY,
         'residential_province': TEST_RESIDENTIAL_PROVINCE,
         'residential_country': TEST_RESIDENTIAL_COUNTRY,
@@ -355,6 +357,7 @@ class ProfileRegisterAsStudentPageTest(test_utils.GSoCDjangoTestCase):
     self.assertIsNone(profile.student_data.tax_form)
     self.assertIsNone(profile.student_data.enrollment_form)
 
+
 class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for ProfileEditPage class."""
 
@@ -386,6 +389,7 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
         'email': TEST_EMAIL,
         'phone': TEST_PHONE,
         'residential_street': TEST_RESIDENTIAL_STREET,
+        'residential_street_extra': TEST_RESIDENTIAL_STREET_EXTRA,
         'residential_city': TEST_RESIDENTIAL_CITY,
         'residential_province': TEST_RESIDENTIAL_PROVINCE,
         'residential_country': TEST_RESIDENTIAL_COUNTRY,
@@ -421,6 +425,8 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
     # check residential address properties
     self.assertEqual(
         profile.residential_address.street, TEST_RESIDENTIAL_STREET)
+    self.assertEqual(
+        profile.residential_address.street_extra, TEST_RESIDENTIAL_STREET_EXTRA)
     self.assertEqual(
         profile.residential_address.city, TEST_RESIDENTIAL_CITY)
     self.assertEqual(

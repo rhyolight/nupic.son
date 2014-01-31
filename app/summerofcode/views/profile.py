@@ -193,7 +193,7 @@ EMAIL_LABEL = translation.ugettext('Email')
 
 PHONE_LABEL = translation.ugettext('Phone number')
 
-RESIDENTIAL_STREET_LABEL = translation.ugettext('Address')
+RESIDENTIAL_STREET_LABEL = translation.ugettext('Street address')
 
 RESIDENTIAL_CITY_LABEL = translation.ugettext('City')
 
@@ -298,8 +298,8 @@ _PROFILE_PROPERTIES_FORM_KEYS = [
 _CONTACT_PROPERTIES_FORM_KEYS = ['web_page', 'blog', 'email', 'phone']
 
 _RESIDENTIAL_ADDRESS_PROPERTIES_FORM_KEYS = [
-    'residential_street', 'residential_city', 'residential_province',
-    'residential_country', 'residential_postal_code']
+    'residential_street', 'residential_street_extra', 'residential_city',
+    'residential_province', 'residential_country', 'residential_postal_code']
 
 _SHIPPING_ADDRESS_PROPERTIES_FORM_KEYS = [
     'shipping_name', 'shipping_street', 'shipping_city', 'shipping_province',
@@ -409,8 +409,10 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
       required=True, label=PHONE_LABEL, help_text=PHONE_HELP_TEXT)
 
   residential_street = django_forms.CharField(
-      required=True, label=RESIDENTIAL_STREET_LABEL,
-      help_text=RESIDENTIAL_STREET_HELP_TEXT)
+      required=True, label=RESIDENTIAL_STREET_LABEL)
+
+  residential_street_extra = django_forms.CharField(
+      required=False, help_text=RESIDENTIAL_STREET_HELP_TEXT)
 
   residential_city = django_forms.CharField(
       required=True, label=RESIDENTIAL_CITY_LABEL,
@@ -534,6 +536,7 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
 
     # group residential address related fields together
     self.fields['residential_street'].group = _RESIDENTIAL_ADDRESS_GROUP
+    self.fields['residential_street_extra'].group = _RESIDENTIAL_ADDRESS_GROUP
     self.fields['residential_city'].group = _RESIDENTIAL_ADDRESS_GROUP
     self.fields['residential_province'].group = _RESIDENTIAL_ADDRESS_GROUP
     self.fields['residential_country'].group = _RESIDENTIAL_ADDRESS_GROUP
@@ -872,6 +875,7 @@ def _adoptResidentialAddressPropertiesForForm(address_properties):
   """
   return {
       'residential_street': address_properties['street'],
+      'residential_street_extra': address_properties['street_extra'],
       'residential_city': address_properties['city'],
       'residential_country': address_properties['country'],
       'residential_postal_code': address_properties['postal_code'],
@@ -1333,7 +1337,8 @@ def _getProfileEntityPropertiesFromForm(form, models):
       address_properties['residential_city'],
       address_properties['residential_country'],
       address_properties['residential_postal_code'],
-      province=address_properties.get('residential_province')
+      province=address_properties.get('residential_province'),
+      street_extra=address_properties.get('residential_street_extra')
       )
   if not result:
     raise exception.BadRequest(message=result.extra)
