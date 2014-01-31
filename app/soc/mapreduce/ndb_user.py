@@ -27,6 +27,9 @@ from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gsoc.models.program import GSoCProgram
 
 
+class NewUser(user_model.User):
+  pass
+
 @ndb.transactional
 def _createUserTxn(new_user):
   """Persists the specified user in the datastore."""
@@ -35,7 +38,7 @@ def _createUserTxn(new_user):
 
 def convertUser(user_key):
   """Converts the specified user by creating a new user entity that inherits
-  from the newly added NDB model.
+  from the newly added NewUser model.
 
   Args:
     user_key: User key.
@@ -43,7 +46,7 @@ def convertUser(user_key):
   user = User.get(user_key)
 
   entity_id = user.key().name()
-  account_id = user.user_id
+  account_id = user.user_id or 'unset'
 
   if user.status == 'valid':
     status = user_model.Status.ACTIVE
@@ -68,7 +71,20 @@ def convertUser(user_key):
 
   account = user.account
 
-  new_user = user_model.User(
+  new_user = NewUser(
       id=entity_id, account_id=account_id, status=status, host_for=host_for,
       account=account)
   _createUserTxn(new_user)
+
+
+@ndb.transactional(xg=True)
+def newUserToUser(new_user_key):
+  """Converts the specified new user to a user.
+
+  Args:
+    new_user_key: NewUser key.
+  """
+  new_user_key = ndb.Key.from_old_key(new_user_key)
+  new_user = new_user_key.get()
+  user = user_model.User(id=new_user.key.id(), **new_user.to_dict())
+  user.put()

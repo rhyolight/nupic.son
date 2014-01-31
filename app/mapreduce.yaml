@@ -315,6 +315,15 @@ mapreduce:
     - name: entity_kind
       value: soc.models.user.User
 
+- name: NewUserToUser
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_user.newUserToUser
+    params:
+    - name: entity_kind
+      value: soc.mapreduce.ndb_user.NewUser
+
+
 - name: ConvertProfileToNdb
   mapper:
     input_reader: mapreduce.input_readers.DatastoreKeyInputReader
@@ -322,3 +331,66 @@ mapreduce:
     params:
     - name: entity_kind
       value: soc.modules.gsoc.models.profile.GSoCProfile
+
+- name: ConvertGSoCProfileDBEntityGroup
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_profile.convertGSoCProfileDBEntityGroup
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.models.profile.GSoCProfile
+
+- name: ConvertGSoCProfileNDBEntityGroup
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_profile.convertGSoCProfileNDBEntityGroup
+    params:
+    - name: entity_kind
+      value: soc.modules.gsoc.models.profile.GSoCProfile
+
+- name: ConvertGCIProfileDBEntityGroup
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_profile.convertGCIProfileDBEntityGroup
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.profile.GCIProfile
+
+- name: ConvertGCIProfileNDBEntityGroup
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_profile.convertGCIProfileNDBEntityGroup
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.profile.GCIProfile
+
+- name: ConvertGCITask
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_profile.convertGCITask
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.task.GCITask
+
+- name: ConvertGCIOrg
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_profile.convertGCIOrg
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.organization.GCIOrganization
+
+- name: ConvertGCIBulkCreateData
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_profile.convertGCIBulkCreateData
+    params:
+    - name: entity_kind
+      value: soc.modules.gci.models.bulk_create_data.GCIBulkCreateData
+
+- name: ModelCounter
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.ndb_profile.counter
+    params:
+    - name: entity_kind

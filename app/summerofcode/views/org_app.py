@@ -171,7 +171,7 @@ MAX_SCORE_LABEL = translation.ugettext('Max score')
 ELIGIBLE_COUNTRY_LABEL = translation.ugettext(
     'I hereby declare that the applying organization is not located in '
     'any of the countries which are not eligible to participate in the '
-    'program: North Korea')
+    'program: Iran, Syria, Cuba, Sudan, North Korea and Myanmar (Burma).')
 
 ORG_APPLICATION_SUBMIT_PAGE_NAME = translation.ugettext(
     'Submit application')

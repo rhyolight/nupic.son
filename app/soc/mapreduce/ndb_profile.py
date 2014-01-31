@@ -16,23 +16,38 @@
 
 import logging
 
-from django.core import validators
-
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
+from django.core import validators
+from mapreduce import operation
+
 from melange.models import address as address_model
+from melange.models import connection as connection_model
 from melange.models import contact as contact_model
 from melange.models import education as education_model
 from melange.models import profile as profile_model
+from melange.models import user as user_model
 
 # This MapReduce requires these models to have been imported.
-# pylint: disable=unused-import
 from soc.models.profile import Profile
+from soc.modules.gci.models.bulk_create_data import GCIBulkCreateData
 from soc.modules.gci.models.organization import GCIOrganization
+from soc.modules.gci.models.score import GCIOrgScore
+from soc.modules.gci.models.score import GCIScore
 from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models.task import GCITask
+from soc.modules.gsoc.models.code_sample import GSoCCodeSample
+from soc.modules.gsoc.models.comment import GSoCComment
+from soc.modules.gsoc.models.grading_project_survey_record import GSoCGradingProjectSurveyRecord
+from soc.modules.gsoc.models.grading_record import GSoCGradingRecord
 from soc.modules.gsoc.models.profile import GSoCProfile
-# pylint: enable=unused-import
+from soc.modules.gsoc.models.project import GSoCProject
+from soc.modules.gsoc.models.project_survey_record import GSoCProjectSurveyRecord
+from soc.modules.gsoc.models.proposal import GSoCProposal
+from soc.modules.gsoc.models.score import GSoCScore
+
+from summerofcode.models import survey as survey_model
 
 
 @ndb.transactional
@@ -337,3 +352,384 @@ def convertProfile(profile_key):
       mentor_for=mentor_for, admin_for=admin_for, status=status)
 
   _createProfileTxn(new_profile)
+
+
+def _newKey(old_key):
+  """Constructs new Profile key based on the specified GSoCProfile or
+  GCIProfile key.
+
+  Args:
+    old_key: db.Key of GCIProfile or GSocProfile kind.
+
+  Returns:
+    db.Key of Profile kind.
+  """
+  return ndb.Key(
+      user_model.User._get_kind(), old_key.parent().name(),
+      profile_model.Profile._get_kind(), old_key.name()).to_old_key()
+
+
+def _newProfileNDBKey(old_key):
+  """Constructs new Profile key based on the specified GSoCProfile or
+  GCIProfile key.
+
+  Args:
+    old_key: ndb.Key of GCIProfile or GSocProfile kind.
+
+  Returns:
+    ndb.Key of Profile kind.
+  """
+  return ndb.Key(
+      user_model.User._get_kind(), old_key.parent().id(),
+      profile_model.Profile._get_kind(), old_key.id())
+
+
+def _convertReferenceProperty(model_property, entity):
+  """Converts the specified ReferenceProperty whose value is either a key
+  of GSoCProfile or GCIProfile type.
+
+  Args:
+    model_property: Property instance.
+    entity: Entity.
+
+  Returns:
+    The new value for the specified property which Profile key.
+  """
+  reference_key = model_property.get_value_for_datastore(entity)
+
+  if not reference_key:
+    return None
+  elif reference_key.kind() not in [GSoCProfile.kind(), GCIProfile.kind()]:
+    raise ValueError(
+        'Invalid kind %s for property %s',
+            (reference_key.kind(), model_property.name))
+  else:
+    return _newKey(reference_key)
+
+
+def _convertListProperty(model_property, entity):
+  """Converts the specified ListProperty whose values are keys of GSoCProfile
+  or GCIProfile type.
+
+  Args:
+    model_property: Property instance.
+    entity: Entity.
+
+  Returns:
+    The new value for the specified property which is a list of Profile keys.
+  """
+  return [
+      _newKey(old_key)
+      for old_key in model_property.get_value_for_datastore(entity) or []]
+
+
+def _convertParent(entity, parent=None):
+  """Clones the specified entity, i.e. a new entity is created, and replaces
+  its parent to either the specified one or a newly constructed one.
+
+  If parent is not specified, it is assumed that the current parent of
+  the specified entity is GSoCProfile or GCIProfile. A new one is constructed
+  for the corresponding Profile.
+
+  Args:
+    entity: The specified DB entity.
+    parent: Optional parent DB key.
+
+  Returns:
+    The newly created entity.
+  """
+  properties = dict(
+      (k, v.get_value_for_datastore(entity))
+      for k, v in entity.__class__.properties().iteritems())
+
+  if not parent:
+    parent = _newKey(entity.parent_key())
+  properties.update(parent=parent)
+
+  new_entity = entity.__class__(**properties)
+  return new_entity
+
+
+def _convertNDBParent(entity, parent=None):
+  """Clones the specified entity, i.e. a new entity is created, and replaces
+  its parent to either the specified one or a newly constructed one.
+
+  If parent is not specified, it is assumed that the current parent of
+  the specified entity is GSoCProfile or GCIProfile. A new one is constructed
+  for the corresponding Profile.
+
+  Args:
+    entity: The specified NDB entity.
+    parent: Optional parent NDB key.
+
+  Returns:
+    The newly created entity.
+  """
+  properties = entity.to_dict()
+  if not parent:
+    parent = _newProfileNDBKey(entity.key.parent())
+  properties.update(parent=parent)
+
+  new_entity = entity.__class__(**properties)
+  return new_entity
+
+
+@db.transactional(xg=True)
+def convertGSoCProfileDBEntityGroup(profile_key):
+  """Converts DB based part of entity group associated with the specified
+  profile.
+
+  Args:
+    profile_key: db.Key of the profile to process
+  """
+  # map that associate old keys with new ones which are created during
+  # the conversion
+  conversion_map = {}
+  to_delete = []
+  do_put = True
+
+  proposals = GSoCProposal.all().ancestor(profile_key).fetch(1000)
+  for proposal in proposals:
+    # update GSoCProposal.parent
+    new_proposal = _convertParent(proposal)
+
+    # update GSoCProposal.possible_mentors
+    new_proposal.possible_mentors = _convertListProperty(
+        GSoCProposal.possible_mentors, new_proposal)
+
+    # update GSoCProposal.mentor
+    new_proposal.mentor = _convertReferenceProperty(
+        GSoCProposal.mentor, new_proposal)
+    to_delete.append(proposal)
+    if do_put:
+      new_proposal.put()
+      conversion_map[proposal.key()] = new_proposal.key()
+
+    comments = GSoCComment.all().ancestor(proposal).fetch(1000)
+    for comment in comments:
+      # update GSoCComment.parent
+      new_comment = _convertParent(comment, parent=new_proposal.key())
+
+      # update GSoCComment.author
+      new_comment.author = _convertReferenceProperty(
+          GSoCComment.author, new_comment)
+      if do_put:
+        new_comment.put()
+      to_delete.append(comment)
+
+    scores = GSoCScore.all().ancestor(proposal).fetch(1000)
+    for score in scores:
+      # update GSoCScore.parent
+      new_score = _convertParent(score, parent=new_proposal.key())
+
+      # update GSoCScore.author
+      new_score.author = _convertReferenceProperty(GSoCScore.author, new_score)
+      if do_put:
+        new_score.put()
+      to_delete.append(score)
+
+  projects = GSoCProject.all().ancestor(profile_key).fetch(1000)
+  for project in projects:
+    # update GSoCProject.parent
+    new_project = _convertParent(project)
+
+    # update GSoCProject.mentors
+    new_project.mentors = _convertListProperty(GSoCProject.mentors, new_project)
+
+    # update GSoCProject.proposal
+    proposal_key = GSoCProject.proposal.get_value_for_datastore(project)
+    if proposal_key:
+      new_project.proposal = conversion_map.get(
+          GSoCProject.proposal.get_value_for_datastore(project))
+
+    if do_put:
+      new_project.put()
+      conversion_map[project.key()] = new_project.key()
+    to_delete.append(project)
+
+    grading_records = GSoCGradingRecord.all().ancestor(project.key())
+    for grading_record in grading_records:
+      # update GSoCGradingProjectSurveyRecord.project
+      # this is another entity group, but XG transaction does the thing
+      grading_project_survey_record_key = (
+          GSoCGradingRecord.mentor_record.get_value_for_datastore(
+              grading_record))
+      if grading_project_survey_record_key:
+        grading_project_survey_record = GSoCGradingProjectSurveyRecord.get(
+            grading_project_survey_record_key)
+        if grading_project_survey_record:
+          grading_project_survey_record.project = new_project.key()
+          if do_put:
+            grading_project_survey_record.put()
+
+      # update GSoCProjectSurveyRecord.project
+      # this is another entity group, but XG transaction does the thing
+      project_survey_record_key = (
+          GSoCGradingRecord.student_record.get_value_for_datastore(
+              grading_record))
+      if project_survey_record_key:
+        project_survey_record = GSoCProjectSurveyRecord.get(
+            project_survey_record_key)
+        if project_survey_record:
+          project_survey_record.project = new_project.key()
+          if do_put:
+            project_survey_record.put()
+
+      # update GSoCGradingRecord.parent
+      new_grading_record = _convertParent(
+          grading_record, parent=new_project.key())
+      if do_put:
+        new_grading_record.put()
+
+    code_samples = GSoCCodeSample.all().ancestor(project.key())
+    for code_sample in code_samples:
+      # update GSoCCodeSample.parent
+      new_code_sample = _convertParent(code_sample, parent=new_project.key())
+      if do_put:
+        new_code_sample.put()
+      to_delete.append(code_sample)
+
+  db.delete(to_delete)
+
+
+@ndb.transactional
+def convertGSoCProfileNDBEntityGroup(profile_key):
+  """Converts NDB based part of entity group associated with the specified
+  profile.
+
+  Args:
+    profile_key: db.Key of the profile to process
+  """
+  # NOTE: profile_key will always be an instance of db.Key because NDB is not
+  # supported by MapReduce API.
+  profile_key = ndb.Key.from_old_key(profile_key)
+
+  to_delete = []
+  do_put = True
+
+  extensions = survey_model.PersonalExtension.query(ancestor=profile_key)
+  for extension in extensions:
+    # update PersonalExtension.parent
+    new_extension = _convertNDBParent(extension)
+    if do_put:
+      new_extension.put()
+    to_delete.append(extension)
+
+
+@db.transactional
+def convertGCIProfileDBEntityGroup(profile_key):
+  """Converts DB based part of entity group associated with the specified
+  profile.
+
+  Args:
+    profile_key: db.Key of the profile to process.
+  """
+  to_delete = []
+  do_put = True
+
+  org_scores = GCIOrgScore.all().ancestor(profile_key).fetch(1000)
+  for org_score in org_scores:
+    new_org_score = _convertParent(org_score)
+    if do_put:
+      new_org_score.put()
+    to_delete.append(org_score)
+
+  scores = GCIScore.all().ancestor(profile_key).fetch(1000)
+  for score in scores:
+    new_score = _convertParent(score)
+    if do_put:
+      new_score.put()
+    to_delete.append(score)
+
+  db.delete(to_delete)
+
+
+@ndb.transactional
+def convertGCIProfileNDBEntityGroup(profile_key):
+  """Converts NDB based part of entity group associated with the specified
+  profile.
+
+  Args:
+    profile_key: db.Key of the profile to process.
+  """
+  # NOTE: profile_key will always be an instance of db.Key because NDB is not
+  # supported by MapReduce API.
+  profile_key = ndb.Key.from_old_key(profile_key)
+
+  to_delete = []
+  do_put = True
+
+  connections = connection_model.Connection.query(
+      ancestor=profile_key).fetch(1000)
+  for connection in connections:
+    # update Connection.parent
+    new_connection = _convertNDBParent(connection)
+    if do_put:
+      new_connection.put()
+      to_delete.append(connection.key)
+
+    messages = connection_model.ConnectionMessage.query(
+        ancestor=connection.key).fetch(1000)
+    for message in messages:
+      new_message = _convertNDBParent(message, parent=new_connection.key)
+      if do_put:
+        new_message.put()
+        to_delete.append(message.key)
+
+  ndb.delete_multi(to_delete)
+
+
+@db.transactional
+def convertGCITask(task_key):
+  """Converts the specified task by changing values of its profile related
+  properties to the new NDB based profile entities.
+
+  Args:
+    task_key: Task key.
+  """
+  task = GCITask.get(task_key)
+  task.created_by = _convertReferenceProperty(GCITask.created_by, task)
+  task.modified_by = _convertReferenceProperty(GCITask.modified_by, task)
+  task.student = _convertReferenceProperty(GCITask.student, task)
+  task.mentors = _convertListProperty(GCITask.mentors, task)
+  task.subscribers = _convertListProperty(GCITask.subscribers, task)
+  task.put()
+
+
+@db.transactional
+def convertGCIOrg(org_key):
+  """Converts the specified organization by changing values of its profile
+  related properties to the new NDB based profile entities.
+
+  Args:
+    org_key: Organization key.
+  """
+  org = GCIOrganization.get(org_key)
+  org.proposed_winners = _convertListProperty(
+      GCIOrganization.proposed_winners, org)
+  org.backup_winner = _convertReferenceProperty(
+      GCIOrganization.backup_winner, org)
+  org.put()
+
+
+@db.transactional
+def convertGCIBulkCreateData(bulk_create_data_key):
+  """Converts the specified bulk create data by changing values of its profile
+  related properties to the new NDB based profile entities.
+
+  Args:
+    org_key: BulkCreateData key.
+  """
+  bulk_create_data = GCIBulkCreateData.get(bulk_create_data_key)
+  bulk_create_data.created_by = _convertReferenceProperty(
+      GCIBulkCreateData.created_by, bulk_create_data)
+  bulk_create_data.put()
+
+
+def counter(entity_key):
+  """Mapper that simply counts entities of the specified model.
+
+  Args:
+    entity_key: Entity key.
+  """
+  yield operation.counters.Increment('counter')
