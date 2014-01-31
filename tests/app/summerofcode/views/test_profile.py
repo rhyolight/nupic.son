@@ -15,6 +15,7 @@
 """Unit tests for user profile related views."""
 
 import datetime
+import mock
 import unittest
 
 from google.appengine.ext import ndb
@@ -27,10 +28,13 @@ from melange.models import education as education_model
 from melange.models import profile as profile_model
 from melange.models import user as user_model
 
+from soc.logic import validate
+
 from summerofcode.templates import tabs
 from summerofcode.views import profile as profile_view
 
 from tests import profile_utils
+from tests import program_utils
 from tests import test_utils
 
 
@@ -553,6 +557,26 @@ class CleanShippingAddressPartTest(unittest.TestCase):
     # Actual values is returned upon clearing
     result = profile_view._cleanShippingAddressPart(True, 'a value', False)
     self.assertEqual(result, 'a value')
+
+
+class CleanBirthDateTest(unittest.TestCase):
+  """Unit tests for cleanBirthDate function."""
+
+  @mock.patch.object(
+      validate, 'isAgeSufficientForProgram', return_value=True)
+  def testForEligibleBirthDate(self, mock_func):
+    """Tests that an eligible birth date is cleaned properly."""
+    program = program_utils.seedGSoCProgram()
+    result = profile_view.cleanBirthDate(TEST_BIRTH_DATE, program)
+    self.assertEqual(result, TEST_BIRTH_DATE)
+
+  @mock.patch.object(
+      validate, 'isAgeSufficientForProgram', return_value=False)
+  def testForIneligibleBirthDate(self, mock_func):
+    """Tests that an error is raised for an ineligible birth date."""
+    program = program_utils.seedGSoCProgram()
+    with self.assertRaises(django_forms.ValidationError):
+      profile_view.cleanBirthDate(TEST_BIRTH_DATE, program)
 
 
 class ProfileShowPageTest(test_utils.GSoCDjangoTestCase):

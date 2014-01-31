@@ -38,6 +38,7 @@ from melange.utils import countries
 from melange.views.helper import form_handler
 
 from soc.logic import cleaning
+from soc.logic import validate
 
 from soc.views import forms as soc_forms
 from soc.views.helper import url_patterns
@@ -243,6 +244,9 @@ DEGREE_LABEL = translation.ugettext('Degree')
 TERMS_OF_SERVICE_NOT_ACCEPTED = translation.ugettext(
     'You cannot register without agreeing to the Terms of Service')
 
+INSUFFICIENT_AGE = translation.ugettext(
+    'Your age does not allow you to participate in the program.')
+
 _TEE_STYLE_FEMALE_ID = 'female'
 _TEE_STYLE_MALE_ID = 'male'
 
@@ -369,7 +373,7 @@ def cleanTermsOfService(is_accepted, terms_of_service):
     of a document entity that contains the accepted terms of service.
 
   Raises:
-    django_forms.ValidationError is the submitted value is not valid.
+    django_forms.ValidationError if the submitted value is not valid.
   """
   if not terms_of_service:
     return None
@@ -377,6 +381,27 @@ def cleanTermsOfService(is_accepted, terms_of_service):
     raise django_forms.ValidationError(TERMS_OF_SERVICE_NOT_ACCEPTED)
   else:
     return ndb.Key.from_old_key(terms_of_service.key())
+
+
+def cleanBirthDate(birth_date, program):
+  """Cleans birth_date field.
+
+  Args:
+    birth_date: datetime.date that represents the examined birth date.
+    program: Program entity for which the specified birth date is checked.
+
+  Returns:
+    Cleaned value of birth_date field. Specifically, datetime.date object
+    that represents the birth date.
+
+  Raises:
+    django_forms.ValidationError if the submitted value is not valid, i.e.
+    the birth date does not permit to register or participate in the program.
+  """
+  if not validate.isAgeSufficientForProgram(birth_date, program):
+      raise django_forms.ValidationError(INSUFFICIENT_AGE)
+  else:
+    return birth_date
 
 
 class _UserProfileForm(gsoc_forms.GSoCModelForm):
@@ -512,16 +537,19 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
 
   Meta = object
 
-  def __init__(self, terms_of_service=None, has_student_data=None, **kwargs):
+  def __init__(self, program, terms_of_service=None,
+      has_student_data=None, **kwargs):
     """Initializes a new form.
 
     Args:
+      program: Program entity for which a profile form is constructed.
       terms_of_service: Document with Terms of Service that has to be accepted
         by the user.
       has_student_data: If specified to True, the form will contain fields
         related to student data for the profile.
     """
     super(_UserProfileForm, self).__init__(**kwargs)
+    self.program = program
     self.terms_of_service = terms_of_service
     self.has_student_data = has_student_data
 
@@ -691,10 +719,23 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
       of a document entity that contains the accepted terms of service.
 
     Raises:
-      django_forms.ValidationError is the submitted value is not valid.
+      django_forms.ValidationError if the submitted value is not valid.
     """
     return cleanTermsOfService(
         self.cleaned_data['terms_of_service'], self.terms_of_service)
+
+  def clean_birth_date(self):
+    """Cleans birth_date field.
+
+    Returns:
+      Cleaned value of birth_date field. Specifically, datetime.date object
+    that represents the submitted birth date.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleanBirthDate(
+        self.cleaned_data['birth_date'], self.program)
 
   def getUserProperties(self):
     """Returns properties of the user that were submitted in this form.
@@ -997,12 +1038,13 @@ def _adoptProfilePropertiesForForm(profile_properties):
 
 
 def _profileFormToRegisterProfile(
-    register_user, terms_of_service, has_student_data=None, **kwargs):
+    register_user, program, terms_of_service, has_student_data=None, **kwargs):
   """Returns a Django form to register a new profile.
 
   Args:
     register_user: If set to True, the constructed form will also be used to
       create a new User entity along with a new Profile entity.
+    program: Program entity for which a profile form is constructed.
     terms_of_service: Document with Terms of Service that has to be accepted by
       the user.
     has_student_data: If specified to True, the form will contain fields
@@ -1012,7 +1054,7 @@ def _profileFormToRegisterProfile(
     _UserProfileForm adjusted to create a new profile.
   """
   form = _UserProfileForm(
-      terms_of_service=terms_of_service,
+      program, terms_of_service=terms_of_service,
       has_student_data=has_student_data, **kwargs)
 
   if not register_user:
@@ -1022,8 +1064,8 @@ def _profileFormToRegisterProfile(
 
 
 # TODO(daniel): should this function also handle student profiles?
-def _profileFormToEditProfile(**kwargs):
-  form = _UserProfileForm(**kwargs)
+def _profileFormToEditProfile(program, **kwargs):
+  form = _UserProfileForm(program, **kwargs)
 
   del form.fields['user_id']
 
@@ -1055,7 +1097,8 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
   def context(self, data, check, mutator):
     """See base.RequestHandler.context for specification."""
     form = _profileFormToRegisterProfile(
-        data.ndb_user is None, data.program.org_admin_agreement, data=data.POST)
+        data.ndb_user is None, data.program, data.program.org_admin_agreement,
+        data=data.POST)
 
     return {
         'page_name': PROFILE_ORG_MEMBER_CREATE_PAGE_NAME,
@@ -1066,7 +1109,8 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
   def post(self, data, check, mutator):
     """See base.RequestHandler.post for specification."""
     form = _profileFormToRegisterProfile(
-        data.ndb_user is None, data.program.org_admin_agreement, data=data.POST)
+        data.ndb_user is None, data.program,
+        data.program.org_admin_agreement, data=data.POST)
 
     # TODO(daniel): eliminate passing self object.
     handler = CreateProfileFormHandler(self, form)
@@ -1098,7 +1142,7 @@ class ProfileRegisterAsStudentPage(base.GSoCRequestHandler):
   def context(self, data, check, mutator):
     """See base.RequestHandler.context for specification."""
     form = _profileFormToRegisterProfile(
-        data.ndb_user is None, data.program.student_agreement,
+        data.ndb_user is None, data.program, data.program.student_agreement,
         has_student_data=True, data=data.POST)
 
     return {
@@ -1110,7 +1154,7 @@ class ProfileRegisterAsStudentPage(base.GSoCRequestHandler):
   def post(self, data, check, mutator):
     """See base.RequestHandler.post for specification."""
     form = _profileFormToRegisterProfile(
-        data.ndb_user is None, data.program.org_admin_agreement,
+        data.ndb_user is None, data.program, data.program.org_admin_agreement,
         has_student_data=True, data=data.POST)
 
     # TODO(daniel): eliminate passing self object.
@@ -1185,7 +1229,7 @@ class ProfileEditPage(base.GSoCRequestHandler):
   def context(self, data, check, mutator):
     """See base.RequestHandler.context for specification."""
     form_data = _adoptProfilePropertiesForForm(data.ndb_profile.to_dict())
-    form = _profileFormToEditProfile(data=data.POST or form_data)
+    form = _profileFormToEditProfile(data.program, data=data.POST or form_data)
 
     return {
         'page_name': PROFILE_EDIT_PAGE_NAME,
@@ -1195,7 +1239,7 @@ class ProfileEditPage(base.GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """See base.RequestHandler.post for specification."""
-    form = _profileFormToEditProfile(data=data.POST)
+    form = _profileFormToEditProfile(data.program, data=data.POST)
 
     if not form.is_valid():
       # TODO(nathaniel): problematic self-use.
