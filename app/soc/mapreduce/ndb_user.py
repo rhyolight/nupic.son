@@ -76,8 +76,10 @@ def convertUser(user_key):
       account=account)
   _createUserTxn(new_user)
 
-
-@ndb.transactional(xg=True)
+# TODO(nathaniel): Remove the suppression on the following line when
+# https://bitbucket.org/logilab/pylint.org/issue/6/false-positive-no
+# is fixed.
+@ndb.transactional(xg=True)  # pylint: disable=no-value-for-parameter
 def newUserToUser(new_user_key):
   """Converts the specified new user to a user.
 
