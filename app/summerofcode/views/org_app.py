@@ -107,6 +107,10 @@ FACEBOOK_HELP_TEXT = translation.ugettext(
 BLOG_HELP_TEXT = translation.ugettext(
     'URL to the blog page of the organization.')
 
+IS_VETERAN_HELP_TEXT = translation.ugettext(
+    'Check this field if the organization has participated in a previous '
+    'instance of the program.')
+
 BACKUP_ADMIN_HELP_TEXT = translation.ugettext(
     'Username of the user who will also serve as administrator for this '
     'organization. Please note that the user must have created '
@@ -159,6 +163,8 @@ BLOG_LABEL = translation.ugettext('Blog page')
 
 FACEBOOK_LABEL = translation.ugettext('Facebook URL')
 
+IS_VETERAN_LABEL = translation.ugettext('Veteran organization')
+
 BACKUP_ADMIN_LABEL = translation.ugettext('Backup administrator')
 
 SLOTS_REQUEST_MIN_LABEL = translation.ugettext('Min slots requested')
@@ -210,7 +216,7 @@ _ORG_PREFERENCES_PROPERTIES_FORM_KEYS = [
 
 _ORG_PROFILE_PROPERTIES_FORM_KEYS = [
     'description', 'ideas_page', 'logo_url', 'name', 'org_id', 'tags',
-    'license']
+    'license', 'is_veteran']
 
 TAG_MAX_LENGTH = 30
 MAX_SCORE_MIN_VALUE = 1
@@ -337,6 +343,9 @@ class _OrgProfileForm(gsoc_forms.GSoCModelForm):
 
   facebook = django_forms.URLField(
       required=False, label=FACEBOOK_LABEL, help_text=FACEBOOK_HELP_TEXT)
+
+  is_veteran = django_forms.BooleanField(
+      required=False, label=IS_VETERAN_LABEL, help_text=IS_VETERAN_HELP_TEXT)
 
   backup_admin = django_forms.CharField(
       required=True, label=BACKUP_ADMIN_LABEL,

@@ -45,6 +45,8 @@ TEST_LOGO_URL = u'http://www.test.logo.url.com/'
 TEST_MAILING_LIST = 'mailinglist@example.com'
 TEST_TWITTER = u'http://www.test.twitter.com/'
 TEST_WEB_PAGE = u'http://www.web.page.com/'
+TEST_IS_VETERAN = True
+TEST_ELIGIBLE_COUNTRY = True
 
 
 def _getOrgPreferencesEditUrl(org):
@@ -169,7 +171,8 @@ class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
         'tags': TEST_TAGS,
         'twitter': TEST_TWITTER,
         'web_page': TEST_WEB_PAGE,
-        'eligible_country': True
+        'is_veteran': TEST_IS_VETERAN,
+        'eligible_country': TEST_ELIGIBLE_COUNTRY,
         }
     response = self.post(
         _getOrgProfileCreateUrl(self.program), postdata=postdata)
@@ -194,6 +197,7 @@ class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(org.name, TEST_ORG_NAME)
     self.assertEqual(org.org_id, TEST_ORG_ID)
     self.assertEqual(org.tags, TEST_TAGS.split(','))
+    self.assertTrue(org.is_veteran)
 
     # check that the client is redirected to update page
     self.assertResponseRedirect(response, url=_getOrgApplicationSubmitUrl(org))
@@ -270,6 +274,7 @@ OTHER_TEST_MAILING_LIST = 'othermailinglist@example.com'
 OTHER_TEST_TWITTER = u'http://www.other.test.twitter.com/'
 OTHER_TEST_TAGS = u'other tag one,other_tag_two,other tag 3'
 OTHER_TEST_WEB_PAGE = u'http://www.other.web.page.com/'
+OTHER_TEST_IS_VETERAN = False
 
 class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for OrgProfileEditPage class."""
@@ -280,7 +285,8 @@ class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
     contact = contact_model.Contact(mailing_list=TEST_MAILING_LIST)
     self.org = org_utils.seedSOCOrganization(
         self.program.key(), org_id=TEST_ORG_ID, name=TEST_ORG_NAME,
-        ideas_page=TEST_IDEAS_PAGE, tags=TEST_TAGS.split(','), contact=contact)
+        ideas_page=TEST_IDEAS_PAGE, tags=TEST_TAGS.split(','), contact=contact,
+        is_veteran=not OTHER_TEST_IS_VETERAN)
     self.app_response = survey_model.SurveyResponse(parent=self.org.key)
     self.app_response.put()
 
@@ -317,6 +323,7 @@ class OrgProfileEditPageTest(test_utils.GSoCDjangoTestCase):
         'tags': OTHER_TEST_TAGS,
         'twitter': OTHER_TEST_TWITTER,
         'web_page': OTHER_TEST_WEB_PAGE,
+        'is_veteran': OTHER_TEST_IS_VETERAN,
         }
     response = self.post(_getOrgProfileEditUrl(self.org), postdata=postdata)
     self.assertResponseRedirect(response, url=_getOrgProfileEditUrl(self.org))
