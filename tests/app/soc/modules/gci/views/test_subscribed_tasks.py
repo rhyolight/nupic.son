@@ -38,6 +38,7 @@ class SubscribedTasksPageTest(test_utils.GCIDjangoTestCase):
 
   def assertSubscribedTasksTemplateUsed(self):
     self.profile_helper.createProfile()
+    response = self.get(self.url)
     self.assertResponseOK(response)
     self.assertGCITemplatesUsed(response)
     self.assertTemplateUsed(response,

@@ -30,7 +30,7 @@ from tests.utils import project_utils
 
 from soc.views import forms
 
-from soc.modules.gsoc.models.project import GSoCProject
+from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 
 from soc.modules.seeder.logic.providers.string import LinkIDProvider
@@ -113,7 +113,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
         'org': self.org,
         }
     properties.update(override_properties or {})
-    return self.seed(GSoCProject, properties)
+    return self.seed(project_model.GSoCProject, properties)
 
   def getStudentEvalRecordProperties(self, show=False):
     evaluation = self.evaluation.createStudentEvaluation()
@@ -286,7 +286,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response = self.client.post(url)
     self.assertResponseForbidden(response)
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
     project.mentors.append(mentor.key.to_old_key())
     project.put()
     # test student evaluation take GET for the mentor of the project
@@ -317,7 +317,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     """
     url, evaluation, _ = self.getStudentEvalRecordProperties()
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
 
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
@@ -346,7 +346,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
 
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
@@ -371,7 +371,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
 
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
@@ -400,7 +400,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
 
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
@@ -420,7 +420,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     url, evaluation, _ = self.getStudentEvalRecordProperties()
     other_org = self.createOrg()
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
 
     mentor = profile_utils.seedNDBProfile(
         self.program.key(), mentor_for=[other_org.key])
@@ -502,7 +502,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
 
     url = '%s/%s' % (base_url, suffix)
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
 
     # test student evaluation show GET for a for a student who
     # has another project in a different organization
@@ -637,7 +637,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
 
     project_mentors = project.mentors
     project.mentors.append(mentor.key.to_old_key())
