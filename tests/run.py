@@ -206,11 +206,11 @@ def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
   if _instantiate_plugins is not None:
     for pluginclass in _instantiate_plugins:
       plugin = pluginclass()
-      plugin.addOptions(dummy_parser,{})
+      plugin.addOptions(dummy_parser, {})
       config.plugins.addPlugin(plugin)
-  config.plugins.configure(config.options,config)
+  config.plugins.configure(config.options, config)
   config.plugins.begin()
-  log.debug("Worker %s executing, pid=%d", ix,os.getpid())
+  log.debug("Worker %s executing, pid=%d", ix, os.getpid())
   loader = loaderClass(config=config)
   loader.suiteClass.suiteClass = NoSharedFixtureContextSuite
 
@@ -251,7 +251,7 @@ def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
   setup_process_env()
   for test_addr, arg in iter(get, 'STOP'):
     if shouldStop.is_set():
-      log.exception('Worker %d STOPPED',ix)
+      log.exception('Worker %d STOPPED', ix)
       break
     result = makeResult()
     test = loader.loadTestsFromNames([test_addr])
@@ -273,21 +273,21 @@ def multiprocess_runner(ix, testQueue, resultQueue, currentaddr, currentstart,
       keyboardCaught.set()
       if len(currentaddr.value) > 0:
         log.exception('Worker %s keyboard interrupt, failing '
-                'current test %s',ix,test_addr)
+                'current test %s', ix, test_addr)
         currentaddr.value = bytes_('')
         failure.Failure(*sys.exc_info())(result)
         resultQueue.put((ix, test_addr, test.tasks, batch(result)))
       else:
-        log.debug('Worker %s test %s timed out',ix,test_addr)
+        log.debug('Worker %s test %s timed out', ix, test_addr)
         resultQueue.put((ix, test_addr, test.tasks, batch(result)))
     except SystemExit:
       currentaddr.value = bytes_('')
-      log.exception('Worker %s system exit',ix)
+      log.exception('Worker %s system exit', ix)
       raise
     except:
       currentaddr.value = bytes_('')
       log.exception("Worker %s error running test or returning "
-                    "results",ix)
+                    "results", ix)
       failure.Failure(*sys.exc_info())(result)
       resultQueue.put((ix, test_addr, test.tasks, batch(result)))
     if config.multiprocess_restartworker:

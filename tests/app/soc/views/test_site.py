@@ -57,7 +57,7 @@ class LandingPageTest(test_utils.DjangoTestCase):
     self.site.put()
 
     response = self.get('/')
-    self.assertResponseOK(response)    
+    self.assertResponseOK(response)
     self._assertPageTemplatesUsed(response)
 
   def testOneLatestProgram(self):

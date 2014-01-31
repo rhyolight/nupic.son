@@ -54,4 +54,4 @@ class TabsTest(unittest.TestCase):
   def testContext(self):
     """Tests that correct context is returned."""
     self.assertDictEqual(self.tabs.context(), {'tabs': self.tabs})
-    
+

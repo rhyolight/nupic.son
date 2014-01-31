@@ -75,7 +75,7 @@ class BaseTemplatesOnHomePageViewTest(GSoCDjangoTestCase):
     self.assertIn('dashboard_link', mainmenu_context)
 
     # Make the current user the host.
-    user.host_for=[ndb.Key.from_old_key(self.program.key())]
+    user.host_for = [ndb.Key.from_old_key(self.program.key())]
     profile_utils.loginNDB(user)
 
     url = '/gsoc/homepage/' + self.gsoc.key().name()

@@ -49,7 +49,7 @@ class ProfileTest(unittest.TestCase):
     self.assertEqual(expected_keys, actual_keys)
 
     actual_keys = profile_logic.queryAllMentorsKeysForOrg(self.bar_org)
-    self.assertEqual(expected_keys,actual_keys)
+    self.assertEqual(expected_keys, actual_keys)
 
     mentor_properties = {'mentor_for': [self.foo_org.key()], 'is_mentor': True}
     foo_mentors = seeder_logic.seedn(GCIProfile, 5, mentor_properties)

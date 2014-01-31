@@ -29,10 +29,10 @@ from tests import program_utils
 from tests import profile_utils
 
 # Constants for specifying a profile role in helper functions
-ADMIN   = 'Admin'
-MENTOR  = 'Mentor'
+ADMIN = 'Admin'
+MENTOR = 'Mentor'
 STUDENT = 'Student'
-WINNER  = 'Winner'
+WINNER = 'Winner'
 
 
 class ConversationHelper(object):
@@ -134,7 +134,7 @@ class ConversationHelper(object):
     """
     if time is None:
       time = datetime.utcnow()
-    
+
     message = self.message_model_class(
         conversation=conversation, author=user, content=content, sent_on=time)
     message.put()

@@ -64,7 +64,7 @@ class FunctionalTestCase(unittest.TestCase):
     # TODO(nathaniel): Reflow these few lines.
     self.server_process = subprocess.Popen(('nohup thirdparty/google_appengine/dev_appserver.py\
                --clear_datastore --datastore_path=%s --port=%s build >/dev/null 2>&1&'
-               %(self.datastore_file.name, self.port)), stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True, preexec_fn=os.setsid)
+               %(self.datastore_file.name, self.port)), stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, preexec_fn=os.setsid)
     if not self.server_process:
       self.fail("Server cannot be started: %s" % self.server_process)
     self.setupLocalRemote()
@@ -101,7 +101,7 @@ class FunctionalTestCase(unittest.TestCase):
     """
     if program == "gsoc":
       self.url = self.obj_id["Url"] + self.gsoc.key().name()
-    elif program =="gci":
+    elif program == "gci":
       self.url = self.obj_id["Url"] + self.gci.key().name()
     else:
       self.fail("No program found")
@@ -114,7 +114,7 @@ class FunctionalTestCase(unittest.TestCase):
   def setupLocalRemote(self):
     """It connects with the remote/dev server."""
     time.sleep(2)
-    remote_api_stub.ConfigureRemoteApi('dev~local-devel', '/_ah/remote_api', lambda: ('test@example.com', '') , "localhost:%d" % self.port)
+    remote_api_stub.ConfigureRemoteApi('dev~local-devel', '/_ah/remote_api', lambda: ('test@example.com', ''), "localhost:%d" % self.port)
 
   def loadProperties(self):
     """Load data from test cases."""
@@ -137,8 +137,8 @@ class FunctionalTestCase(unittest.TestCase):
     Args:
       element: Particular text field which will be written.
     """
-    web_element=self.obj_id[element]
-    value=self.obj_val[element]
+    web_element = self.obj_id[element]
+    value = self.obj_val[element]
     if web_element.startswith("//"):
       self.Browser.find_element_by_xpath(web_element).send_keys(value)
     else:
@@ -150,7 +150,7 @@ class FunctionalTestCase(unittest.TestCase):
     Args:
       chk_box: id of the check box to toggle.
     """
-    web_element=self.obj_id[chk_box]
+    web_element = self.obj_id[chk_box]
     if web_element.startswith("//"):
       self.Browser.find_element_by_xpath(web_element).click()
     else:
@@ -162,7 +162,7 @@ class FunctionalTestCase(unittest.TestCase):
     Args:
       select_opt: The option which should be selected from the drop down list.
     """
-    web_element=self.obj_id[select_opt]
+    web_element = self.obj_id[select_opt]
     time.sleep(2)
     if web_element.startswith("//"):
       selection = self.Browser.find_element_by_xpath(web_element)
@@ -183,8 +183,8 @@ class FunctionalTestCase(unittest.TestCase):
       sec: Number of seconds script should wait.
       element: The field in which we we want to enter some text.
     """
-    web_element=self.obj_id[element]
-    value=self.obj_val[element]
+    web_element = self.obj_id[element]
+    value = self.obj_val[element]
     time.sleep(sec)
     if web_element.startswith("//"):
       self.Browser.find_element_by_xpath(web_element).send_keys(value)
@@ -208,7 +208,7 @@ class FunctionalTestCase(unittest.TestCase):
     Args:
       clear_element: The field which we want to clear.
     """
-    web_element=self.obj_id[clear_element]
+    web_element = self.obj_id[clear_element]
     if web_element.startswith("//"):
       self.Browser.find_element_by_xpath(web_element).clear()
     else:
@@ -220,7 +220,7 @@ class FunctionalTestCase(unittest.TestCase):
     Args:
       click_element: The element which will be clicked.
     """
-    web_element=self.obj_id[click_element]
+    web_element = self.obj_id[click_element]
     if web_element.startswith("//"):
       self.Browser.find_element_by_xpath(web_element).click()
     else:
@@ -260,18 +260,18 @@ class FunctionalTestCase(unittest.TestCase):
     Args:
       text_element: The text which will be checked.
     """
-    web_element=self.obj_id[text_element]
+    web_element = self.obj_id[text_element]
     if web_element.startswith("//"):
       txt = self.Browser.find_element_by_xpath(web_element).text
     else:
       txt = self.Browser.find_element_by_id(web_element).text
     text_value = self.obj_val[text_element]
     if txt is None:
-        msg = "Element %s has no text %s " % (text_element, txt)
-        raise AssertionError(msg)
+      msg = "Element %s has no text %s " % (text_element, txt)
+      raise AssertionError(msg)
     if txt != self.obj_val[text_element]:
-        msg = "Element text should be %s. It is %s."% (text_value, txt)
-        raise AssertionError(msg)
+      msg = "Element text should be %s. It is %s."% (text_value, txt)
+      raise AssertionError(msg)
 
   def assertMessageAndEnterText(self, error_element=None, input_field=None):
     """Assert a message and enter value in the text field.
@@ -294,16 +294,16 @@ class FunctionalTestCase(unittest.TestCase):
     text_value = self.obj_val[text_element]
     text_msg = self.Browser.find_element_by_xpath(text_object).text
     if text_msg is None:
-        msg = "Element %s has no text %s " % (text_element, text_msg)
-        raise AssertionError(msg)
+      msg = "Element %s has no text %s " % (text_element, text_msg)
+      raise AssertionError(msg)
     if text_msg not in text_value:
-        msg = "Element text should be %s. It is %s." % (text_value, text_msg)
-        raise AssertionError(msg)
+      msg = "Element text should be %s. It is %s." % (text_value, text_msg)
+      raise AssertionError(msg)
     if text_msg in self.obj_val[text_element]:
       return True
 
   def isElementDisplayed(self, sec, element_displayed=None):
-    """ Wait and check if a particular element is displayed.
+    """Wait and check if a particular element is displayed.
 
     Args:
       sec: Number of seconds script should wait.
@@ -328,7 +328,7 @@ class FunctionalTestCase(unittest.TestCase):
       element: The element whose value will be changed by adding a random string
                at the end.
     """
-    range_number=5
+    range_number = 5
     val = self.obj_val[element] + ''.join(random.choice(string.ascii_lowercase\
                                              + string.digits) for x in range(range_number))
     time.sleep(1)
@@ -343,7 +343,7 @@ class FunctionalTestCase(unittest.TestCase):
       click_element: The element which we want to click.
     """
     time.sleep(sec)
-    web_element=self.obj_id[click_element]
+    web_element = self.obj_id[click_element]
     if web_element.startswith("//"):
       self.Browser.find_element_by_xpath(web_element).click()
     else:

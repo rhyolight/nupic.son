@@ -29,7 +29,7 @@ class SubscribedTasksPageTest(test_utils.GCIDjangoTestCase):
         self.gci, self.dev_test)
     user = self.profile_helper.createUser()
     self.url = "/gci/subscribed_tasks/%s/%s" % (
-        self.gci.key().name(), user.link_id )
+        self.gci.key().name(), user.link_id)
 
   def testSubscribedListAsLoneUser(self):
     response = self.get(self.url)

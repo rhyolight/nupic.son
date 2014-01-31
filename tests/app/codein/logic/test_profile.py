@@ -68,7 +68,7 @@ class CanResignAsMentorForOrgTest(unittest.TestCase):
 
   def testForNonClosedTask(self):
     self.task.mentors = [self.profile.key()]
-    statuses = [status for status in task_model.GCITask.status.choices 
+    statuses = [status for status in task_model.GCITask.status.choices
         if status != 'Closed']
     for status in statuses:
       self.task.status = status

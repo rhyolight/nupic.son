@@ -105,7 +105,7 @@ class TestDicts(unittest.TestCase):
     target = self.dummy_dict.copy()
     new_key = 'foo'
     new_value = {'k1': 'v1', 'k2': 'v2'}
-    target.update({new_key: new_value })
+    target.update({new_key: new_value})
     updates = {'h': '8', 'foo': {'a': '3', 'b': '11'}}
     temp = self.dummy_dict.copy()
     from copy import deepcopy
@@ -159,7 +159,7 @@ class TestDicts(unittest.TestCase):
   def testMergeRecursiveFalse(self):
     """Tests if dicts are updated.
     """
-    target = {'a':1, 'b': {'c': {"d": { "e": 2}}}}
+    target = {'a':1, 'b': {'c': {"d": {"e": 2}}}}
     updates = {'f': 3, 'b': {'c' :{"d": {"g": 5}}}}
 
     temp = target.copy()
@@ -171,18 +171,18 @@ class TestDicts(unittest.TestCase):
   def testMergeRecursiveTrue(self):
     """Tests if dicts are updated correctly when recursive is set True.
     """
-    target = {'a':1, 'b': {'c': {"d": { "e": 2}}}}
+    target = {'a':1, 'b': {'c': {"d": {"e": 2}}}}
     updates = {'f': 3, 'b': {'c' :{"d": {"g": 5}}}}
-    expected = {'a':1, 'f':3, 'b': {'c': {"d": { "e": 2, 'g':5}}}}
+    expected = {'a':1, 'f':3, 'b': {'c': {"d": {"e": 2, 'g':5}}}}
     self.assertEqual(dicts.merge(target, updates,
                                  sub_merge=True, recursive=True), expected)
 
   def testMergeRecursiveTrueSubMergeFalse(self):
     """Tests if dicts are updated correctly when recursive True, sub_merge False.
     """
-    target = {'a':1, 'b': {'c': {"d": { "e": 2}}}}
+    target = {'a':1, 'b': {'c': {"d": {"e": 2}}}}
     updates = {'f': 3, 'b': {'c' :{"d": {"g": 5}}}}
-    expected = {'a':1, 'f':3, 'b': {'c': {"d": { "e": 2}}}}
+    expected = {'a':1, 'f':3, 'b': {'c': {"d": {"e": 2}}}}
     self.assertEqual(dicts.merge(target, updates,
                                  sub_merge=False, recursive=True), expected)
 
@@ -255,7 +255,7 @@ class TestDicts(unittest.TestCase):
     """Tests if a dict with values equal to keys is returned
     """
     target = {'wan': 1, 'too': 2, 'tree': 3}
-    expected_dict = {'wan': 'wan' , 'too': 'too', 'tree': 'tree'}
+    expected_dict = {'wan': 'wan', 'too': 'too', 'tree': 'tree'}
     self.assertEqual(dicts.identity(target), expected_dict)
 
     target = {}

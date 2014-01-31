@@ -35,7 +35,7 @@ class ReadOnlyTemplateTest(unittest.TestCase):
     for item in items:
       template.addItem(item[0], item[1])
 
-    # check both content and order 
+    # check both content and order
     context = template.context()
     self.assertListEqual(context['items'].items(), items)
 

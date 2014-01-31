@@ -101,7 +101,7 @@ class UrlProfilePropertyTest(unittest.TestCase):
     with self.assertRaises(exception.UserError) as context:
       data.url_profile
     self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
-    
+
     # program data but no user identifier
     kwargs = {
         'sponsor': 'sponsor_id',
@@ -136,7 +136,7 @@ class UrlProfilePropertyTest(unittest.TestCase):
     program = seeder_logic.seed(program_model.Program)
     user = profile_utils.seedUser()
     profile_properties = {
-        'key_name': '%s/%s/%s' % 
+        'key_name': '%s/%s/%s' %
             (sponsor.link_id, program.program_id, user.link_id),
         'parent': user,
         'link_id': user.link_id
@@ -163,7 +163,7 @@ class UrlStudentInfoPropertyTest(unittest.TestCase):
     with self.assertRaises(exception.UserError) as context:
       data.url_student_info
     self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
-    
+
     # program data but no user identifier
     kwargs = {
         'sponsor': 'sponsor_id',
@@ -198,7 +198,7 @@ class UrlStudentInfoPropertyTest(unittest.TestCase):
     program = seeder_logic.seed(program_model.Program)
     user = profile_utils.seedUser()
     profile_properties = {
-        'key_name': '%s/%s/%s' % 
+        'key_name': '%s/%s/%s' %
             (sponsor.link_id, program.program_id, user.link_id),
         'parent': user,
         'link_id': user.link_id,
@@ -224,7 +224,7 @@ class UrlStudentInfoPropertyTest(unittest.TestCase):
     program = seeder_logic.seed(program_model.Program)
     user = profile_utils.seedUser()
     profile_properties = {
-        'key_name': '%s/%s/%s' % 
+        'key_name': '%s/%s/%s' %
             (sponsor.link_id, program.program_id, user.link_id),
         'parent': user,
         'link_id': user.link_id,
