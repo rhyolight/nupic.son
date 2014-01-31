@@ -21,6 +21,7 @@ from melange.logic import address as address_logic
 
 TEST_NAME = 'Test name'
 TEST_STREET = 'Test street'
+TEST_STREET_EXTRA = 'Test street extra'
 TEST_CITY = 'Test city'
 TEST_PROVINCE = 'CA'
 TEST_COUNTRY = 'United States'
@@ -33,12 +34,13 @@ class CreateAddressTest(unittest.TestCase):
     """Tests that address entity is created properly if all data is valid."""
     result = address_logic.createAddress(
         TEST_STREET, TEST_CITY, TEST_COUNTRY, TEST_POSTAL_CODE,
-        province=TEST_PROVINCE, name=TEST_NAME)
+        province=TEST_PROVINCE, name=TEST_NAME, street_extra=TEST_STREET_EXTRA)
     self.assertTrue(result)
 
     address = result.extra
     self.assertEqual(address.name, TEST_NAME)
     self.assertEqual(address.street, TEST_STREET)
+    self.assertEqual(address.street_extra, TEST_STREET_EXTRA)
     self.assertEqual(address.city, TEST_CITY)
     self.assertEqual(address.province, TEST_PROVINCE)
     self.assertEqual(address.country, TEST_COUNTRY)

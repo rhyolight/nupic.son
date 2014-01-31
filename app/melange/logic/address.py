@@ -20,7 +20,8 @@ from melange.models import address as address_model
 from melange.utils import rich_bool
 
 
-def createAddress(street, city, country, postal_code, province=None, name=None):
+def createAddress(street, city, country, postal_code,
+    province=None, name=None, street_extra=None):
   """Creates a new address based on the specified properties.
 
   Args:
@@ -30,6 +31,7 @@ def createAddress(street, city, country, postal_code, province=None, name=None):
     postal_code: Postal code information.
     province: Province (or state) information.
     name: Name of a specific person associated with the address.
+    street_extra: Additional street information.
 
   Returns:
     RichBool whose value is set to True if an address entity has been
@@ -39,7 +41,7 @@ def createAddress(street, city, country, postal_code, province=None, name=None):
   """
   try:
     return rich_bool.RichBool(True, address_model.Address(
-        name=name, street=street, city=city, province=province, country=country,
-        postal_code=postal_code))
+        name=name, street=street, street_extra=street_extra, city=city,
+        province=province, country=country, postal_code=postal_code))
   except datastore_errors.BadValueError as e:
     return rich_bool.RichBool(False, str(e))
