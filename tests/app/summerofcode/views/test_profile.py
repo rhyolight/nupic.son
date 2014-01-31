@@ -52,6 +52,7 @@ TEST_RESIDENTIAL_POSTAL_CODE = '90000'
 TEST_RESIDENTIAL_COUNTRY = 'United States'
 TEST_SHIPPING_NAME = 'Test Shipping Name'
 TEST_SHIPPING_STREET = 'Test Shipping Street'
+TEST_SHIPPING_STREET_EXTRA = 'Test Shipping Street Extra.'
 TEST_SHIPPING_CITY = 'Test Shipping City'
 TEST_SHIPPING_PROVINCE = 'DC'
 TEST_SHIPPING_POSTAL_CODE = '20000'
@@ -68,6 +69,7 @@ TEST_DEGREE = profile_view._DEGREE_MASTERS_ID
 
 OTHER_TEST_SHIPPING_NAME = 'Other Shipping Name'
 OTHER_TEST_SHIPPING_STREET = 'Other Shipping Street'
+OTHER_TEST_SHIPPING_STREET_EXTRA = 'Other Shipping Street Extra'
 OTHER_TEST_SHIPPING_CITY = 'Other Shipping City'
 OTHER_TEST_SHIPPING_PROVINCE = 'AL'
 OTHER_TEST_SHIPPING_POSTAL_CODE = '35005'
@@ -366,8 +368,9 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
     self.init()
     shipping_address = address_model.Address(
         name=TEST_SHIPPING_NAME, street=TEST_SHIPPING_STREET,
-        city=TEST_SHIPPING_CITY, province=TEST_SHIPPING_PROVINCE,
-        country=TEST_SHIPPING_COUNTRY, postal_code=TEST_SHIPPING_POSTAL_CODE)
+        street_extra=TEST_SHIPPING_STREET_EXTRA, city=TEST_SHIPPING_CITY,
+        province=TEST_SHIPPING_PROVINCE, country=TEST_SHIPPING_COUNTRY,
+        postal_code=TEST_SHIPPING_POSTAL_CODE)
     self.profile = profile_utils.seedNDBProfile(
         self.program.key(), shipping_address=shipping_address)
     profile_utils.loginNDB(self.profile.key.parent().get())
@@ -397,6 +400,7 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
         'is_shipping_address_different': True,
         'shipping_name': OTHER_TEST_SHIPPING_NAME,
         'shipping_street': OTHER_TEST_SHIPPING_STREET,
+        'shipping_street_extra': OTHER_TEST_SHIPPING_STREET_EXTRA,
         'shipping_city': OTHER_TEST_SHIPPING_CITY,
         'shipping_province': OTHER_TEST_SHIPPING_PROVINCE,
         'shipping_country': OTHER_TEST_SHIPPING_COUNTRY,
@@ -441,6 +445,8 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
         profile.shipping_address.name, OTHER_TEST_SHIPPING_NAME)
     self.assertEqual(
         profile.shipping_address.street, OTHER_TEST_SHIPPING_STREET)
+    self.assertEqual(
+        profile.shipping_address.street_extra, OTHER_TEST_SHIPPING_STREET_EXTRA)
     self.assertEqual(
         profile.shipping_address.city, OTHER_TEST_SHIPPING_CITY)
     self.assertEqual(

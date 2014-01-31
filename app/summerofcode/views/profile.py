@@ -208,7 +208,7 @@ IS_SHIPPING_ADDRESS_DIFFERENT_LABEL = translation.ugettext(
 
 SHIPPING_NAME_LABEL = translation.ugettext('Full recipient name')
 
-SHIPPING_STREET_LABEL = translation.ugettext('Address')
+SHIPPING_STREET_LABEL = translation.ugettext('Street address')
 
 SHIPPING_CITY_LABEL = translation.ugettext('City')
 
@@ -302,8 +302,9 @@ _RESIDENTIAL_ADDRESS_PROPERTIES_FORM_KEYS = [
     'residential_province', 'residential_country', 'residential_postal_code']
 
 _SHIPPING_ADDRESS_PROPERTIES_FORM_KEYS = [
-    'shipping_name', 'shipping_street', 'shipping_city', 'shipping_province',
-    'shipping_country', 'shipping_postal_code']
+    'shipping_name', 'shipping_street', 'shipping_street_extra',
+    'shipping_city', 'shipping_province', 'shipping_country',
+    'shipping_postal_code']
 
 _STUDENT_DATA_PROPERTIES_FORM_FIELDS = [
     'school_country', 'school_name', 'major', 'degree']
@@ -443,8 +444,10 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
       help_text=SHIPPING_NAME_HELP_TEXT)
 
   shipping_street = django_forms.CharField(
-      required=False, label=SHIPPING_STREET_LABEL,
-      help_text=SHIPPING_STREET_HELP_TEXT)
+      required=False, label=SHIPPING_STREET_LABEL)
+
+  shipping_street_extra = django_forms.CharField(
+      required=False, help_text=SHIPPING_STREET_HELP_TEXT)
 
   shipping_city = django_forms.CharField(
       required=False, label=SHIPPING_CITY_LABEL,
@@ -546,6 +549,7 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
     self.fields['is_shipping_address_different'].group = _SHIPPING_ADDRESS_GROUP
     self.fields['shipping_name'].group = _SHIPPING_ADDRESS_GROUP
     self.fields['shipping_street'].group = _SHIPPING_ADDRESS_GROUP
+    self.fields['shipping_street_extra'].group = _SHIPPING_ADDRESS_GROUP
     self.fields['shipping_city'].group = _SHIPPING_ADDRESS_GROUP
     self.fields['shipping_province'].group = _SHIPPING_ADDRESS_GROUP
     self.fields['shipping_country'].group = _SHIPPING_ADDRESS_GROUP
@@ -613,6 +617,19 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
     return _cleanShippingAddressPart(
         self.cleaned_data['is_shipping_address_different'],
         self.cleaned_data['shipping_street'], True)
+
+  def clean_shipping_street_extra(self):
+    """Cleans shipping_street_extra field.
+
+    Returns:
+      Cleaned value for shipping_street_extra field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return _cleanShippingAddressPart(
+        self.cleaned_data['is_shipping_address_different'],
+        self.cleaned_data['shipping_street_extra'], False)
 
   def clean_shipping_city(self):
     """Cleans shipping_city field.
@@ -901,6 +918,7 @@ def _adoptShippingAddressPropertiesForForm(address_properties):
       'is_shipping_address_different': bool(address_properties),
       'shipping_name': address_properties.get('name'),
       'shipping_street': address_properties.get('street'),
+      'shipping_street_extra': address_properties.get('street_extra'),
       'shipping_city': address_properties.get('city'),
       'shipping_country': address_properties.get('country'),
       'shipping_postal_code': address_properties.get('postal_code'),
@@ -1353,7 +1371,8 @@ def _getProfileEntityPropertiesFromForm(form, models):
         address_properties['shipping_country'],
         address_properties['shipping_postal_code'],
         province=address_properties.get('shipping_province'),
-        name=address_properties.get('shipping_name'))
+        name=address_properties.get('shipping_name'),
+        street_extra=address_properties.get('shipping_street_extra'))
     if not result:
       raise exception.BadRequest(message=result.extra)
     else:

@@ -29,6 +29,7 @@
     var shippingAddressElements = [
         ".shipping_name",
         ".shipping_street",
+        ".shipping_street_extra",
         ".shipping_city",
         ".shipping_province",
         ".shipping_country",
