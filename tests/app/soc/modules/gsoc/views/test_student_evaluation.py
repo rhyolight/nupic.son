@@ -104,7 +104,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
       self.assertEqual(field_dict['label'], form_field.label)
       self.assertEqual(field_dict['required'], form_field.required)
 
-  def createProject(self, override_properties={}):
+  def createProject(self, override_properties=None):
     properties = {
         'is_featured': False,
         'mentors': [],
@@ -112,7 +112,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
         'program': self.gsoc,
         'org': self.org,
         }
-    properties.update(override_properties)
+    properties.update(override_properties or {})
     return self.seed(GSoCProject, properties)
 
   def getStudentEvalRecordProperties(self, show=False):

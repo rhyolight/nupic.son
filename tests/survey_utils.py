@@ -61,7 +61,7 @@ class SurveyHelper(object):
         '[{"value":"Wa","checked":true},{"value":"Wa%20Wa","checked":false}]'
         ',"label":"Testing%20radio%20again%20%3A%29"}}]')
 
-  def createEvaluation(self, survey, host=None, override={}):
+  def createEvaluation(self, survey, host=None, override=None):
     if not host:
       host = profile_utils.seedNDBUser(host_for=[self.program])
 
@@ -80,18 +80,19 @@ class SurveyHelper(object):
         'survey_start': timeline_utils.past(),
         'survey_end': timeline_utils.future(),
         }
-    properties.update(override)
+    properties.update(override or {})
     return self.seed(survey, properties)
 
-  def createStudentEvaluation(self, host=None, override={}):
+  def createStudentEvaluation(self, host=None, override=None):
     return self.createEvaluation(project_survey.ProjectSurvey, host=host,
-                                 override=override)
+                                 override=override or {})
 
-  def createMentorEvaluation(self, host=None, override={}):
+  def createMentorEvaluation(self, host=None, override=None):
     return self.createEvaluation(grading_project_survey.GradingProjectSurvey,
-                                 host=host, override=override)
+                                 host=host, override=override or {})
 
-  def createOrgAppRecord(self, link_id, main_admin, backup_admin, override={}):
+  def createOrgAppRecord(
+      self, link_id, main_admin, backup_admin, override=None):
     """Creates a new OrgAppRecord for the specified link_id.
 
     Args:
@@ -110,6 +111,6 @@ class SurveyHelper(object):
       'status': 'accepted',
       'program': self.program,
     }
-    properties.update(override)
+    properties.update(override or {})
     entity = self.seed(org_app_record.OrgAppRecord, properties)
     return entity

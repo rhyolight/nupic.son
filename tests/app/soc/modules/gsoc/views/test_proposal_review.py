@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for proposal_review views.
-"""
+"""Tests for proposal_review views."""
 
 import httplib
 import mock
@@ -50,13 +49,13 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gsoc/proposal/review.html')
     self.assertTemplateUsed(response, 'modules/gsoc/proposal/_comment_form.html')
 
-  def createMentorWithSettings(self, email, notification_settings={}):
+  def createMentorWithSettings(self, email, notification_settings=None):
     # TODO(daniel): take care of notification settings
     user = profile_utils.seedUser(email=email)
     return profile_utils.seedNDBProfile(
         self.program.key(), user=user, mentor_for=[self.org.key])
 
-  def createProposal(self, override_properties={}):
+  def createProposal(self, override_properties=None):
     properties = {
         'score': 0,
         'nr_scores': 0,
@@ -68,7 +67,7 @@ class ProposalReviewTest(GSoCDjangoTestCase):
         'org': self.org.key.to_old_key(),
         'mentor': None
     }
-    properties.update(override_properties)
+    properties.update(override_properties or {})
     return self.seed(GSoCProposal, properties)
 
   def testReviewProposal(self):

@@ -164,7 +164,7 @@ class NonFailingFakePayload(object):
 
   def read(self, num_bytes=None):
     if num_bytes is None:
-        num_bytes = self.__len or 1
+      num_bytes = self.__len or 1
     assert self.__len >= num_bytes, \
       "Cannot read more than the available bytes from the HTTP incoming data."
     content = self.__content.read(num_bytes)
@@ -386,9 +386,8 @@ class DjangoTestCase(SoCTestCase, testcases.TestCase):
     # presence of this function is required by Django test runner
     pass
 
-  def createOrg(self, override={}):
-    """Creates an organization for the defined properties.
-    """
+  def createOrg(self, override=None):
+    """Creates an organization for the defined properties."""
     pass
 
   def seed(self, model, properties):
@@ -417,11 +416,20 @@ class DjangoTestCase(SoCTestCase, testcases.TestCase):
     response = self.client.get(url)
     return response
 
-  def post(self, url, postdata={}):
+  def post(self, url, postdata=None):
     """Performs a post to the specified url with postdata.
 
     Takes care of setting the xsrf_token.
+
+    Args:
+      url: The URL at which to perform the HTTP POST request.
+      postdata: A dictionary of POST data for the request.
+
+    Returns:
+      The client.Response object resulting from the HTTP POST
+        operation.
     """
+    postdata = postdata or {}
     self.gen_request_id()
     postdata['xsrf_token'] = self.getXsrfToken(url, site=self.site)
 
@@ -451,12 +459,12 @@ class DjangoTestCase(SoCTestCase, testcases.TestCase):
     response = self.post(url, combined_postdata)
     return response
 
-  def createDocumentForPrefix(self, prefix, override={}):
-    """Creates a document for the specified properties.
-    """
+  def createDocumentForPrefix(self, prefix, override=None):
+    """Creates a document for the specified properties."""
     from soc.models.document import Document
     from soc.modules.seeder.logic.providers.string import (
         DocumentKeyNameProvider)
+    override = override or {}
     properties = {
         'modified_by': self.profile_helper.user,
         'author': self.profile_helper.user,
@@ -470,7 +478,8 @@ class DjangoTestCase(SoCTestCase, testcases.TestCase):
     return self.seed(Document, properties)
 
   @classmethod
-  def getXsrfToken(cls, path=None, method='POST', data={}, site=None, **extra):
+  def getXsrfToken(
+      cls, path=None, method='POST', data=None, site=None, **extra):
     """Returns an XSRF token for request context.
 
     It is signed by Melange XSRF middleware.
@@ -478,6 +487,7 @@ class DjangoTestCase(SoCTestCase, testcases.TestCase):
     Melange XSRF middleware for HTTP POST.
     """
 
+    # TODO(nathaniel): What? Commented-out code?
     """
     request = HttpRequest()
     request.path = path
@@ -496,14 +506,12 @@ class DjangoTestCase(SoCTestCase, testcases.TestCase):
     return xsrf_token
 
   def getJsonResponse(self, url):
-    """Returns the list reponse for the specified url and index.
-    """
+    """Returns the list reponse for the specified url and index."""
     return self.client.get(url + '?fmt=json&marker=1')
 
   def getListResponse(self, url, idx, start=None, limit=None):
-    """Returns the list reponse for the specified url and index.
-    """
-    url = [url,'?fmt=json&marker=1&&idx=', str(idx)]
+    """Returns the list reponse for the specified url and index."""
+    url = [url, '?fmt=json&marker=1&&idx=', str(idx)]
     if limit:
       url += ["&limit=", str(limit)]
     if start:
@@ -781,13 +789,12 @@ class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
     # Initialize instances in the parent first
     super(GSoCDjangoTestCase, self).init()
 
-  def createOrg(self, override={}):
-    """Creates an organization for the defined properties.
-    """
-    return org_utils.seedSOCOrganization(self.program.key(), **override)
+  def createOrg(self, override=None):
+    """Creates an organization for the defined properties."""
+    return org_utils.seedSOCOrganization(self.program.key(), **override or {})
 
-  def createDocument(self, override={}):
-    return self.createDocumentForPrefix('gsoc_program', override)
+  def createDocument(self, override=None):
+    return self.createDocumentForPrefix('gsoc_program', override or {})
 
   def assertGSoCTemplatesUsed(self, response):
     """Asserts that all the templates from the base view were used.
@@ -802,12 +809,10 @@ class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
 
 
 class GCIDjangoTestCase(DjangoTestCase, GCITestCase):
-  """DjangoTestCase specifically for GCI view tests.
-  """
+  """DjangoTestCase specifically for GCI view tests."""
 
   def init(self):
-    """Performs test setup.
-    """
+    """Performs test setup."""
     # Initialize instances in the parent first
     super(GCIDjangoTestCase, self).init()
     super(GCIDjangoTestCase, self).init()
@@ -830,8 +835,8 @@ class GCIDjangoTestCase(DjangoTestCase, GCITestCase):
     self.assertTemplateUsed(response, 'modules/gci/_header.html')
     self.assertTemplateUsed(response, 'modules/gci/_mainmenu.html')
 
-  def createDocument(self, override={}):
-    return self.createDocumentForPrefix('gci_program', override)
+  def createDocument(self, override=None):
+    return self.createDocumentForPrefix('gci_program', override or {})
 
 
 class TaskQueueTestCase(gaetestbed.taskqueue.TaskQueueTestCase,
@@ -887,7 +892,7 @@ class FakeBlobstoreMiddleware(object):
       for key in fields:
         field = fields[key]
         if isinstance(field, cgi.FieldStorage):
-          if ('content-disposition' in field.headers and 
+          if ('content-disposition' in field.headers and
               'filename' in field.disposition_options):
 
             # create a mock blob info and assign it to request data
