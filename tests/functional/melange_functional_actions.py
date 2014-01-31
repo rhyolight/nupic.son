@@ -21,7 +21,6 @@ import shutil
 import signal
 import string
 import subprocess
-import sys
 import tempfile
 import time
 import unittest
@@ -38,21 +37,21 @@ from tests import program_utils
 
 
 # TODO(nathaniel): Eliminate sleep calls.
-class FunctionalTestCase(unittest.TestCase):  
+class FunctionalTestCase(unittest.TestCase):
   """Base class for all the Melange Functional Tests.
 
   Contains actions which will be used in writing Test scripts.
   """
 
   def init(self):
-    """This is the function to be called at the beginning of every test."""    
+    """This is the function to be called at the beginning of every test."""
     # Test case will send a list of dictionaries to this variable.
     self.properties = []
     # This variable will store the unique id of an element on a page.
     self.obj_id = {}
     # If there is a value that needs to be written to the text field, it will go here.
-    self.obj_val = {}    
-  
+    self.obj_val = {}
+
     # Select a random port to start a dev server.
     # Random ports and a seperate datastore file is for running of tests in multiple processes.
     self.port = random.randrange(50000, 60000, 2)
@@ -64,13 +63,13 @@ class FunctionalTestCase(unittest.TestCase):
     # Start the dev server as a process running in background.
     # TODO(nathaniel): Reflow these few lines.
     self.server_process = subprocess.Popen(('nohup thirdparty/google_appengine/dev_appserver.py\
-               --clear_datastore --datastore_path=%s --port=%s build >/dev/null 2>&1&' 
-               %(self.datastore_file.name, self.port)), stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True, preexec_fn=os.setsid)    
+               --clear_datastore --datastore_path=%s --port=%s build >/dev/null 2>&1&'
+               %(self.datastore_file.name, self.port)), stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True, preexec_fn=os.setsid)
     if not self.server_process:
-      self.fail("Server cannot be started: %s" % self.server_process)    
+      self.fail("Server cannot be started: %s" % self.server_process)
     self.setupLocalRemote()
-    
-  def createGSoCProgram(self):	  
+
+  def createGSoCProgram(self):
     """Create GSoC Program."""
     self.program_helper = program_utils.GSoCProgramHelper()
     self.gsoc = self.program_helper.createProgram(override={'name':'Google Summer of Code',
@@ -83,7 +82,7 @@ class FunctionalTestCase(unittest.TestCase):
     self.site = program_utils.seedSite(latest_gsoc=self.sponsor.key().name() + '/' + self.program, active_program=self.gsoc)
 
   def createGCIProgram(self):
-    """Create GCI Program."""  
+    """Create GCI Program."""
     self.program_helper = program_utils.GCIProgramHelper()
     self.gci = self.program = self.program_helper.createProgram(override={'name':'Google Code In',
       'short_name':'gci'})
@@ -99,7 +98,7 @@ class FunctionalTestCase(unittest.TestCase):
 
     Args:
       program: Specify which program gsoc/gci.
-    """	
+    """
     if program == "gsoc":
       self.url = self.obj_id["Url"] + self.gsoc.key().name()
     elif program =="gci":
@@ -109,9 +108,9 @@ class FunctionalTestCase(unittest.TestCase):
     time.sleep(2)
     # Start the firefox.
     self.Browser = webdriver.Firefox(timeout=20)
-    # Go to the url specified by self.url variable.  
+    # Go to the url specified by self.url variable.
     self.Browser.get(self.url)
-    
+
   def setupLocalRemote(self):
     """It connects with the remote/dev server."""
     time.sleep(2)
@@ -144,7 +143,7 @@ class FunctionalTestCase(unittest.TestCase):
       self.Browser.find_element_by_xpath(web_element).send_keys(value)
     else:
       self.Browser.find_element_by_id(web_element).send_keys(value)
-    
+
   def toggleCheckBox(self, chk_box=None):
     """Toggle a check box.
 
@@ -161,14 +160,14 @@ class FunctionalTestCase(unittest.TestCase):
     """Selects one option from the drop down list.
 
     Args:
-      select_opt: The option which should be selected from the drop down list.       
+      select_opt: The option which should be selected from the drop down list.
     """
     web_element=self.obj_id[select_opt]
     time.sleep(2)
     if web_element.startswith("//"):
       selection = self.Browser.find_element_by_xpath(web_element)
     else:
-      selection = self.Browser.find_element_by_id(web_element)    
+      selection = self.Browser.find_element_by_id(web_element)
     all_options = selection.find_elements_by_tag_name("option")
     for option in all_options:
       if option.get_attribute("value") == self.obj_val[select_opt]:
@@ -176,13 +175,13 @@ class FunctionalTestCase(unittest.TestCase):
         return
     else:
       self.fail("Could not find the option")
-    
+
   def waitAndEnterText(self, sec, element=None):
     """Wait and enter text in a particular field.
 
     Args:
       sec: Number of seconds script should wait.
-      element: The field in which we we want to enter some text.      
+      element: The field in which we we want to enter some text.
     """
     web_element=self.obj_id[element]
     value=self.obj_val[element]
@@ -190,19 +189,19 @@ class FunctionalTestCase(unittest.TestCase):
     if web_element.startswith("//"):
       self.Browser.find_element_by_xpath(web_element).send_keys(value)
     else:
-      self.Browser.find_element_by_id(web_element).send_keys(value)   
+      self.Browser.find_element_by_id(web_element).send_keys(value)
 
   def clearFieldAssertMessageEnterData(self, error_element=None, element=None):
     """Assert the error message , clear the input field and enter a new value.
 
     Args:
       error_element: It is the element which is showing error message.
-      element: The correct value for the input field.                 
+      element: The correct value for the input field.
     """
     self.assertTextIn(error_element)
     self.clearField(element)
     self.writeTextField(element)
- 
+
   def clearField(self, clear_element=None):
     """Wait and clear a particular field.
 
@@ -214,7 +213,7 @@ class FunctionalTestCase(unittest.TestCase):
       self.Browser.find_element_by_xpath(web_element).clear()
     else:
       self.Browser.find_element_by_id(web_element).clear()
- 
+
   def clickOn(self, click_element=None):
     """Click on the specified element.
 
@@ -235,7 +234,7 @@ class FunctionalTestCase(unittest.TestCase):
       text_in: The text message part that will be checked.
       text_element: Text element which will be checked.
       Returns True if concerned text is present.
-    """ 
+    """
     if text_in in text_element:
       return True
     else:
@@ -247,10 +246,10 @@ class FunctionalTestCase(unittest.TestCase):
     """Assert if a link is there.
 
     Args:
-      link_text: The link which will be tested.  
+      link_text: The link which will be tested.
     """
     try:
-      self.Browser.find_element_by_link_text(link_text)      
+      self.Browser.find_element_by_link_text(link_text)
     except exceptions.NoSuchElementException:
       msg = "The text %s is not part of a Link" % link_text
       raise AssertionError(msg)
@@ -259,7 +258,7 @@ class FunctionalTestCase(unittest.TestCase):
     """Assert a particular text.
 
     Args:
-      text_element: The text which will be checked. 
+      text_element: The text which will be checked.
     """
     web_element=self.obj_id[text_element]
     if web_element.startswith("//"):
@@ -289,7 +288,7 @@ class FunctionalTestCase(unittest.TestCase):
 
     Args:
       text_element : the message content which will be checked with the
-                     message from the application.      
+                     message from the application.
     """
     text_object = self.obj_id[text_element]
     text_value = self.obj_val[text_element]
@@ -308,15 +307,15 @@ class FunctionalTestCase(unittest.TestCase):
 
     Args:
       sec: Number of seconds script should wait.
-      element_displayed: A particular element which we want to check if it is 
-      displayed.Return True if it is present else return false. if it is not 
+      element_displayed: A particular element which we want to check if it is
+      displayed.Return True if it is present else return false. if it is not
       displayed just pass and continue the execution.
-    """   
+    """
     time.sleep(sec)
     display_element = self.obj_id[element_displayed]
     try:
       if self.Browser.find_element_by_xpath(display_element).is_displayed():
-        return True        
+        return True
     except exceptions.NoSuchElementException:
       msg = "The element %s is not displayed" % display_element
       raise AssertionError(msg)
@@ -326,7 +325,7 @@ class FunctionalTestCase(unittest.TestCase):
     """It takes a value , add random string at the end and fill it in the form.
 
     Args:
-      element: The element whose value will be changed by adding a random string 
+      element: The element whose value will be changed by adding a random string
                at the end.
     """
     range_number=5
@@ -342,7 +341,7 @@ class FunctionalTestCase(unittest.TestCase):
     Args:
       sec: Number of seconds script should wait.
       click_element: The element which we want to click.
-    """    
+    """
     time.sleep(sec)
     web_element=self.obj_id[click_element]
     if web_element.startswith("//"):
@@ -359,9 +358,9 @@ class FunctionalTestCase(unittest.TestCase):
     """
     if self.isElementDisplayed(5, flash_message) is True:
       text = self.Browser.find_element_by_xpath(self.obj_id[flash_message]).text
-      if text == self.obj_val[flash_message]:  
+      if text == self.obj_val[flash_message]:
         raise AssertionError(text)
-    
+
   def takeScreenshot(self):
     """Take screenshot."""
     # If there is a results directory then store snapshots there or create a new one.
@@ -378,14 +377,14 @@ class FunctionalTestCase(unittest.TestCase):
                                  scrollTo(0, document.body.scrollHeight);")
 
   def terminateInstance(self):
-    """Take a screenshot, clear the datastore and close the browser."""    
+    """Take a screenshot, clear the datastore and close the browser."""
     # Take a screenshot
     self.takeScreenshot()
     self.Browser.close()
     # Clear Datastore
     self.clearDatastore()
     # Kill the server
-    os.killpg(self.server_process.pid, signal.SIGTERM)        
+    os.killpg(self.server_process.pid, signal.SIGTERM)
     # Delete *.pyc files
     subprocess.call('find . -name "*.pyc" -delete', shell=True)
 
@@ -415,6 +414,5 @@ class FunctionalTestCase(unittest.TestCase):
       self.writeTextField("Google_account")
       time.sleep(2)
       self.writeTextField("Password_for_google_account")
-      time.sleep(2)    
+      time.sleep(2)
       self.clickOn("Sign_in")
-

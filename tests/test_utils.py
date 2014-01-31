@@ -40,7 +40,6 @@ from django.test import testcases
 from soc.logic.helper import xsrfutil
 from soc.middleware import xsrf as xsrf_middleware
 from soc.modules import callback
-from soc.modules.seeder.logic.providers import string as string_provider
 from soc.tasks import mailer
 from soc.views import template
 

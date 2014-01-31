@@ -19,17 +19,9 @@ import unittest
 from datetime import datetime
 from datetime import timedelta
 
-from google.appengine.ext import ndb
-
-from soc.models import user as user_model
-
 from tests.utils import conversation_utils
 
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
-
 from soc.modules.gci.logic import message as gcimessage_logic
-
-from soc.modules.gci.models import program as gciprogram_model
 
 
 class GCIMessage(unittest.TestCase):
@@ -80,7 +72,7 @@ class GCIMessage(unittest.TestCase):
     """Tests that getLastMessageForConversation returns the last GCIMessage
     in a conversation.
     """
-    
+
     last_msg = self.msg_keys[-1].get()
 
     # Make sure we get the last message

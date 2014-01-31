@@ -24,13 +24,9 @@ from django.utils import html
 
 from tests import profile_utils
 from tests import timeline_utils
-from tests.profile_utils import GSoCProfileHelper
 from tests.survey_utils import SurveyHelper
 from tests import test_utils
 from tests.utils import project_utils
-
-from melange.models import education
-from melange.models import user
 
 from soc.views import forms
 
@@ -39,7 +35,6 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 
 from soc.modules.seeder.logic.providers.string import LinkIDProvider
 
-from summerofcode.models import profile as soc_profile
 from summerofcode.models import survey as survey_model
 
 

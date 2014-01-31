@@ -19,7 +19,6 @@ import unittest
 from google.appengine.ext import ndb
 
 from tests import profile_utils
-from tests import program_utils
 from tests.utils import conversation_utils
 
 from soc.models import conversation as conversation_model

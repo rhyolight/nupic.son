@@ -31,7 +31,6 @@ from soc.modules.gsoc.views import proposal_review as proposal_review_view
 from soc.modules.gsoc.views.helper import request_data
 
 from tests import profile_utils
-from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 from tests.utils import proposal_utils
 

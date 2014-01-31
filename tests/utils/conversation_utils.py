@@ -22,8 +22,6 @@ from google.appengine.ext import ndb
 from soc.models import conversation as conversation_model
 from soc.models import message as message_model
 
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
-
 from soc.modules.gci.models import conversation as gciconversation_model
 from soc.modules.gci.models import message as gcimessage_model
 

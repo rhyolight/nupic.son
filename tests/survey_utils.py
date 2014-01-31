@@ -14,8 +14,6 @@
 
 """Utils for manipulating the survey."""
 
-from google.appengine.ext import ndb
-
 from soc.models import org_app_record
 
 from soc.modules.gsoc.models import grading_project_survey

@@ -27,9 +27,6 @@ from soc.modules.gsoc.models import program as program_model
 from tests import profile_utils
 from tests import test_utils
 
-# TODO: perhaps we should move this out?
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
-
 
 class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
   """Tests GSoCCreateProgramPage view."""

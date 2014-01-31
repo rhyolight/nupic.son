@@ -20,10 +20,7 @@ import urllib
 from melange.request import links
 from melange.views.helper import urls
 
-from soc.models import organization as org_model
-from soc.models import program as program_model
 from soc.modules.gci.views.helper import url_names as gci_url_names
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from summerofcode.views.helper import urls as soc_urls
 

@@ -19,7 +19,6 @@ import unittest
 
 from google.appengine.ext import ndb
 
-from melange.models import connection as connection_model
 from melange.models import settings as settings_model
 from melange.request import exception
 

@@ -18,8 +18,6 @@ import contextlib
 
 from django.conf import settings
 
-from soc.views import errors
-
 from tests import test_utils
 
 
