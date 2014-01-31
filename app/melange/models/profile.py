@@ -253,7 +253,15 @@ class Profile(ndb.Model):
   @property
   def ship_to_address(self):
     """Address to which all program packages should be shipped."""
-    return self.shipping_address or self.residential_address
+    if self.shipping_address:
+      address = address_model.Address(**self.shipping_address.to_dict())
+      if not address.name:
+        address.name = self.legal_name
+    else:
+      address = address_model.Address(**self.residential_address.to_dict())
+      address.name = self.legal_name
+    return address
+
 
 def getSponsorId(profile_key):
   """Returns sponsor ID based on the specified profile key.
