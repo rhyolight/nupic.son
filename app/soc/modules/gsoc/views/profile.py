@@ -148,8 +148,6 @@ class GSoCStudentProfileForm(GSoCProfileForm):
   class Meta(GSoCProfileForm.Meta):
     pass
 
-  clean_birth_date = cleaning.clean_birth_date('birth_date')
-
 
 class CreateGSoCProfileForm(GSoCProfileForm):
   """Django edit form for profiles.
@@ -191,8 +189,6 @@ class CreateGSoCStudentProfileForm(CreateGSoCProfileForm):
 
   class Meta(CreateGSoCProfileForm.Meta):
     pass
-
-  clean_birth_date = cleaning.clean_birth_date('birth_date')
 
 
 class GSoCStudentInfoForm(gsoc_forms.GSoCModelForm):

@@ -208,9 +208,6 @@ class GCIStudentProfileForm(GCIProfileForm):
     exclude = PREFILL_STUDENT_EXCLUDE
     widgets = GCIProfileForm.Meta.widgets
 
-  clean_birth_date = cleaning.clean_birth_date('birth_date')
-
-
 class GCICreateStudentProfileForm(GCICreateProfileForm):
   """Django edit form to edit GCI student profile page.
   """
@@ -220,8 +217,6 @@ class GCICreateStudentProfileForm(GCICreateProfileForm):
     css_prefix = GCICreateProfileForm.Meta.css_prefix
     exclude = STUDENT_EXCLUDE
     widgets = GCICreateProfileForm.Meta.widgets
-
-  clean_birth_date = cleaning.clean_birth_date('birth_date')
 
 
 class GCIShowCreateStudentProfileForm(GCICreateProfileForm):
