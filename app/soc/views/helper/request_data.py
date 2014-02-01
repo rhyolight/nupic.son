@@ -465,7 +465,7 @@ class RequestData(object):
   def timeline(self):
     """Returns the timeline field."""
     if not self._isSet(self._timeline):
-      self._timeline = TimelineHelper(self.program_timeline, None)
+      self._timeline = TimelineHelper(self.program_timeline, self.org_app)
     return self._timeline
 
   @property
