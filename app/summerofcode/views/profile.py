@@ -1080,8 +1080,9 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
   as administrators or mentors.
   """
 
-  # TODO(daniel): implement actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = access.ConjuctionAccessChecker([
+      access.HAS_NO_PROFILE_ACCESS_CHECKER,
+      access.ORG_SIGNUP_STARTED_ACCESS_CHECKER])
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""
