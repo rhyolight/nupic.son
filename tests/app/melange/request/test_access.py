@@ -20,6 +20,7 @@ from google.appengine.ext import ndb
 
 from django import http
 
+from melange.models import organization as ndb_org_model
 from melange.models import profile as ndb_profile_model
 from melange.request import access
 from melange.request import exception
@@ -601,6 +602,49 @@ class HasProfileAccessCheckerTest(unittest.TestCase):
     with self.assertRaises(exception.UserError) as context:
       access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+
+class UrlOrgStatusAccessCheckerTest(unittest.TestCase):
+  """Unit tests for UrlOrgStatusAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    sponsor = program_utils.seedSponsor()
+    program = program_utils.seedProgram(sponsor_key=sponsor.key())
+    self.org = org_utils.seedOrganization(program.key())
+
+    kwargs = {
+        'sponsor': sponsor.key().name(),
+        'program': program.program_id,
+        'organization': self.org.org_id,
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+  def testAccessDeniedForInvalidStatus(self):
+    """Tests that access is denied if the organization has an invalid status."""
+    self.org.status = ndb_org_model.Status.REJECTED
+    self.org.put()
+
+    # the access checkers passes only for non-rejected organizations
+    access_checker = access.UrlOrgStatusAccessChecker([
+        ndb_org_model.Status.ACCEPTED,
+        ndb_org_model.Status.PRE_ACCEPTED,
+        ndb_org_model.Status.PRE_REJECTED])
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testAccessGrantedForValidStatus(self):
+    """Tests that access is denied if the organization has an invalid status."""
+    self.org.status = ndb_org_model.Status.ACCEPTED
+    self.org.put()
+
+    # the access checkers passes only for non-rejected organizations
+    access_checker = access.UrlOrgStatusAccessChecker([
+        ndb_org_model.Status.ACCEPTED,
+        ndb_org_model.Status.PRE_ACCEPTED,
+        ndb_org_model.Status.PRE_REJECTED])
+    access_checker.checkAccess(self.data, None)
 
 
 class HasNoProfileAccessCheckerTest(unittest.TestCase):

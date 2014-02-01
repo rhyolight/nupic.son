@@ -60,6 +60,9 @@ _MESSAGE_INACTIVE_BEFORE = translation.ugettext(
 _MESSAGE_INACTIVE_OUTSIDE = translation.ugettext(
     'This page is inactive before %s and after %s.')
 
+_MESSAGE_INVALID_URL_ORG_STATUS = translation.ugettext(
+    'This page is not accessible to organizations with status %s.')
+
 def ensureLoggedIn(data):
   """Ensures that the user is logged in.
 
@@ -296,6 +299,26 @@ class HasProfileAccessChecker(AccessChecker):
       raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
 
 HAS_PROFILE_ACCESS_CHECKER = HasProfileAccessChecker()
+
+
+class UrlOrgStatusAccessChecker(AccessChecker):
+  """AccessChecker that ensures that the organization specified in the URL
+  has the required status.
+  """
+
+  def __init__(self, statuses):
+    """Initializes a new instance of this access checker.
+
+    Args:
+      statuses: List of org_model.Status options with the allowed statuses.
+    """
+    self.statuses = statuses
+
+  def checkAccess(self, data, check):
+    """See AccessChecker.checkAccess for specification."""
+    if data.url_ndb_org.status not in self.statuses:
+      raise exception.Forbidden(
+          message=_MESSAGE_INVALID_URL_ORG_STATUS % data.url_ndb_org.status)
 
 
 class HasNoProfileAccessChecker(AccessChecker):
