@@ -735,8 +735,7 @@ class OrgApplicationSubmitPage(base.GSoCRequestHandler):
 class OrgAppShowPage(base.GSoCRequestHandler):
   """Page to display organization application response."""
 
-  # TODO(daniel): implement actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.RequestHandler.djangoURLPatterns for specification."""

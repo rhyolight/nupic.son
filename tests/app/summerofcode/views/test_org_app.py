@@ -454,13 +454,17 @@ class OrgAppShowPageTest(test_utils.GSoCDjangoTestCase):
 
   def testPageLoads(self):
     """Tests that page loads properly."""
-    self.profile_helper.createProfile()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     response = self.get(_getOrgAppShowUrl(self.org))
     self.assertResponseOK(response)
 
   def testPostMethodNotAllowed(self):
     """Tests that POST method is not permitted."""
-    self.profile_helper.createProfile()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
     response = self.post(_getOrgAppShowUrl(self.org))
     self.assertResponseMethodNotAllowed(response)
 
