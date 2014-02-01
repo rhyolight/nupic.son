@@ -309,6 +309,20 @@ class HasNoProfileAccessChecker(AccessChecker):
 HAS_NO_PROFILE_ACCESS_CHECKER = HasNoProfileAccessChecker()
 
 
+class OrgSignupStartedAccessChecker(AccessChecker):
+  """AccessChecker that ensures that organization sign-up process has started
+  for the program specified in the URL.
+  """
+
+  def checkAccess(self, data, check):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.timeline.afterOrgSignupStart():
+      active_from = data.timeline.orgSignupStart()
+      raise exception.Forbidden(message=_MESSAGE_INACTIVE_BEFORE % active_from)
+
+ORG_SIGNUP_STARTED_ACCESS_CHECKER = OrgSignupStartedAccessChecker()
+
+
 class OrgsAnnouncedAccessChecker(AccessChecker):
   """AccessChecker that ensures that organizations have been announced for
   the program specified in the URL.

@@ -637,6 +637,51 @@ class HasNoProfileAccessCheckerTest(unittest.TestCase):
     access_checker.checkAccess(self.data, None)
 
 
+class OrgsSignupStartedAccessCheckerTest(unittest.TestCase):
+  """Unit tests for OrgsSignupStartedAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    sponsor = program_utils.seedSponsor()
+    program = program_utils.seedProgram(sponsor_key=sponsor.key())
+    self.app_survey = program_utils.seedApplicationSurvey(program.key())
+
+    kwargs = {
+        'sponsor': sponsor.key().name(),
+        'program': program.program_id
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+  def testBeforeOrgSignupStartedAccessDenied(self):
+    """Tests that access is denied before organization sign-up starts."""
+    self.app_survey.survey_start = timeline_utils.future(delta=100)
+    self.app_survey.survey_end = timeline_utils.future(delta=150)
+    self.app_survey.put()
+
+    access_checker = access.OrgSignupStartedAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testAfterOrgSignupStartedAccessGranted(self):
+    """Tests that access is granted after organization sign-up starts."""
+    self.app_survey.survey_start = timeline_utils.past()
+    self.app_survey.survey_end = timeline_utils.future()
+    self.app_survey.put()
+
+    access_checker = access.OrgSignupStartedAccessChecker()
+    access_checker.checkAccess(self.data, None)
+
+  def testAfterOrgSignupEndedAccessGranted(self):
+    """Tests that access is granted after organization sign-up ends."""
+    self.app_survey.survey_start = timeline_utils.past(delta=150)
+    self.app_survey.survey_end = timeline_utils.past(delta=100)
+    self.app_survey.put()
+
+    access_checker = access.OrgSignupStartedAccessChecker()
+    access_checker.checkAccess(self.data, None)
+
+
 class OrgsAnnouncedAccessCheckerTest(unittest.TestCase):
   """Unit tests for OrgsAnnouncedAccessChecker class."""
 
