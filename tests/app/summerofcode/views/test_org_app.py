@@ -18,6 +18,7 @@ from google.appengine.ext import ndb
 
 from melange.models import connection as connection_model
 from melange.models import contact as contact_model
+from melange.models import organization as org_model
 from melange.models import survey as survey_model
 
 from soc.models import licenses
@@ -504,7 +505,8 @@ class OrgPreferencesEditPageTest(test_utils.GSoCDjangoTestCase):
     """See unittest.TestCase.testUp for specification."""
     self.init()
     self.org = org_utils.seedSOCOrganization(
-        self.program.key(), name=TEST_ORG_NAME)
+        self.program.key(), name=TEST_ORG_NAME,
+        status=org_model.Status.ACCEPTED)
 
   def testPageLoads(self):
     """Tests that page loads properly."""

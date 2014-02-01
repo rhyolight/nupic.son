@@ -637,12 +637,14 @@ class OrgProfileEditPage(base.GSoCRequestHandler):
         return http.HttpResponseRedirect(url)
 
 
+ORG_PREFERENCES_EDIT_PAGE_ACCESS_CHECKER = access.ConjuctionAccessChecker([
+    access.IS_USER_ORG_ADMIN_FOR_NDB_ORG,
+    access.UrlOrgStatusAccessChecker([org_model.Status.ACCEPTED])])
+
 class OrgPreferencesEditPage(base.GSoCRequestHandler):
   """View to edit organization preferences."""
 
-  # TODO(daniel): implement actual access checker
-  # this should be allowed only for accepted organizations
-  access_checker = access.IS_USER_ORG_ADMIN_FOR_NDB_ORG
+  access_checker = ORG_PREFERENCES_EDIT_PAGE_ACCESS_CHECKER
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""
