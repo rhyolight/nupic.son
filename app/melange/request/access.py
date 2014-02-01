@@ -30,6 +30,9 @@ _MESSAGE_NOT_PROGRAM_ADMINISTRATOR = translation.ugettext(
 _MESSAGE_NOT_DEVELOPER = translation.ugettext(
     'This page is only accessible to developers.')
 
+_MESSAGE_HAS_PROFILE = translation.ugettext(
+    'This page is accessible only to users without a profile.')
+
 _MESSAGE_NO_PROFILE = translation.ugettext(
     'Active profile is required to access this page.')
 
@@ -286,4 +289,19 @@ class HasProfileAccessChecker(AccessChecker):
         or data.ndb_profile.status != profile_model.Status.ACTIVE):
       raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
 
+HAS_PROFILE_ACCESS_CHECKER = HasProfileAccessChecker()
+
+
+class HasNoProfileAccessChecker(AccessChecker):
+  """AccessChecker that ensures that the logged in user does not have a profile
+  for the program specified in the URL.
+  """
+
+  def checkAccess(self, data, check):
+    """See AccessChecker.checkAccess for specification."""
+    ensureLoggedIn(data)
+    if data.ndb_profile:
+      raise exception.Forbidden(message=_MESSAGE_HAS_PROFILE)
+
+HAS_NO_PROFILE_ACCESS_CHECKER = HasNoProfileAccessChecker()
 HAS_PROFILE_ACCESS_CHECKER = HasProfileAccessChecker()

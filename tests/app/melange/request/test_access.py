@@ -601,3 +601,37 @@ class HasProfileAccessCheckerTest(unittest.TestCase):
     with self.assertRaises(exception.UserError) as context:
       access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+
+class HasNoProfileAccessCheckerTest(unittest.TestCase):
+  """Unit tests for HasNoProfileAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.sponsor = program_utils.seedSponsor()
+    self.program = program_utils.seedProgram(sponsor_key=self.sponsor.key())
+
+    kwargs = {
+        'sponsor': self.sponsor.key().name(),
+        'program': self.program.program_id
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+  def testUserWithProfileAccessDenied(self):
+    """Tests that access is denied for a user with a profile."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
+
+    access_checker = access.HasNoProfileAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testUserWithNoProfileAccessGranted(self):
+    """Tests that access is granted for a user with no profile."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+
+    access_checker = access.HasNoProfileAccessChecker()
+    access_checker.checkAccess(self.data, None)
