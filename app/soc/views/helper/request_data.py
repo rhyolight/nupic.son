@@ -192,6 +192,7 @@ class RequestData(object):
     is_host: is the current user a host of the program
     gae_user: the Google Appengine user object
     timeline: the timeline helper
+    program_timeline: The timeline entity
     models: types.Models implementation defining model classes
 
   Optional fields (may not be specified for all requests):
@@ -227,6 +228,7 @@ class RequestData(object):
     self._profile = self._unset
     self._ndb_profile = self._unset
     self._program = self._unset
+    self._program_timeline = self._unset
 
     self._GET = self._unset
     self._POST = self._unset
@@ -456,6 +458,13 @@ class RequestData(object):
     if not self._isSet(self._timeline):
       self._timeline = TimelineHelper(self.program_timeline, None)
     return self._timeline
+
+  @property
+  def program_timeline(self):
+    """Returns the program_timeline field."""
+    if not self._isSet(self._program_timeline):
+      self._getProgramWideFields()
+    return self._program_timeline
 
   @property
   def url_connection(self):

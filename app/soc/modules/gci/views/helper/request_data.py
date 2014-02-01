@@ -172,7 +172,6 @@ class RequestData(request_data.RequestData):
     user: The user entity (if logged in)
     css_path: a part of the css to fetch the GCI specific CSS resources
     programs: All GCI programs.
-    program_timeline: The GCITimeline entity
     is_mentor: is the current user a mentor in the program
     is_student: is the current user a student in the program
     is_org_admin: is the current user an org admin in the program
@@ -198,7 +197,6 @@ class RequestData(request_data.RequestData):
     self.models = types.CI_MODELS
 
     # program wide fields
-    self._program_timeline = self._unset
     self._programs = self._unset
     self._org_app = self._unset
 
@@ -307,13 +305,6 @@ class RequestData(request_data.RequestData):
     if not self._isSet(self._org_app):
       self._getProgramWideFields()
     return self._org_app
-
-  @property
-  def program_timeline(self):
-    """Returns the program_timeline field."""
-    if not self._isSet(self._program_timeline):
-      self._getProgramWideFields()
-    return self._program_timeline
 
   @property
   def programs(self):
