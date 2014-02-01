@@ -593,7 +593,7 @@ class OrgProfileEditPage(base.GSoCRequestHandler):
     if data.url_ndb_org.contact:
       form_data.update(data.url_ndb_org.contact.to_dict())
 
-    form = _formToEditOrgProfile(data=data.POST or form_data)
+    form = _formToEditOrgProfile(request_data=data, data=data.POST or form_data)
 
     # add a reminder if no application has been submitted and it is still
     # before the deadline
@@ -616,7 +616,7 @@ class OrgProfileEditPage(base.GSoCRequestHandler):
 
   def post(self, data, check, mutator):
     """See base.RequestHandler.post for specification."""
-    form = _formToEditOrgProfile(data=data.POST)
+    form = _formToEditOrgProfile(request_data=data, data=data.POST)
     if not form.is_valid():
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
