@@ -635,3 +635,38 @@ class HasNoProfileAccessCheckerTest(unittest.TestCase):
 
     access_checker = access.HasNoProfileAccessChecker()
     access_checker.checkAccess(self.data, None)
+
+
+class OrgsAnnouncedAccessCheckerTest(unittest.TestCase):
+  """Unit tests for OrgsAnnouncedAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    sponsor = program_utils.seedSponsor()
+    self.program = program_utils.seedProgram(sponsor_key=sponsor.key())
+
+    kwargs = {
+        'sponsor': sponsor.key().name(),
+        'program': self.program.program_id
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+  def testBeforeOrgsAnnouncedAccessDenied(self):
+    """Tests that access is denied before orgs are announced."""
+    self.program.timeline.accepted_organization_announced_deadline = (
+        timeline_utils.future())
+    self.program.timeline.put()
+
+    access_checker = access.OrgsAnnouncedAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testAfterOrgsAnnouncedAccessGranted(self):
+    """Tests that access is granted after orgs are announced."""
+    self.program.timeline.accepted_organization_announced_deadline = (
+        timeline_utils.past())
+    self.program.timeline.put()
+
+    access_checker = access.OrgsAnnouncedAccessChecker()
+    access_checker.checkAccess(self.data, None)

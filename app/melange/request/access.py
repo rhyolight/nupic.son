@@ -54,6 +54,9 @@ _MESSAGE_NOT_USER_IN_URL = translation.ugettext(
 _MESSAGE_NOT_ORG_ADMIN_FOR_ORG = translation.ugettext(
     'You are not organization administrator for %s')
 
+_MESSAGE_INACTIVE_BEFORE = translation.ugettext(
+    'This page is inactive before %s.')
+
 def ensureLoggedIn(data):
   """Ensures that the user is logged in.
 
@@ -304,4 +307,15 @@ class HasNoProfileAccessChecker(AccessChecker):
       raise exception.Forbidden(message=_MESSAGE_HAS_PROFILE)
 
 HAS_NO_PROFILE_ACCESS_CHECKER = HasNoProfileAccessChecker()
-HAS_PROFILE_ACCESS_CHECKER = HasProfileAccessChecker()
+
+
+class OrgsAnnouncedAccessChecker(AccessChecker):
+  """AccessChecker that ensures that organizations have been announced for
+  the program specified in the URL.
+  """
+
+  def checkAccess(self, data, check):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.timeline.orgsAnnounced():
+      active_from = data.timeline.orgsAnnouncedOn()
+      raise exception.Forbidden(message=_MESSAGE_INACTIVE_BEFORE % active_from)
