@@ -193,6 +193,7 @@ class RequestData(object):
     gae_user: the Google Appengine user object
     timeline: the timeline helper
     program_timeline: The timeline entity
+    org_app: Org Application Survey entity.
     models: types.Models implementation defining model classes
 
   Optional fields (may not be specified for all requests):
@@ -229,6 +230,7 @@ class RequestData(object):
     self._ndb_profile = self._unset
     self._program = self._unset
     self._program_timeline = self._unset
+    self._org_app = self._unset
 
     self._GET = self._unset
     self._POST = self._unset
@@ -451,6 +453,13 @@ class RequestData(object):
       if not self._isSet(self._ds_write_disabled):
         self._ds_write_disabled = not db.WRITE_CAPABILITY.is_enabled()
     return self._ds_write_disabled
+
+  @property
+  def org_app(self):
+    """Returns the org_app field."""
+    if not self._isSet(self._org_app):
+      self._getProgramWideFields()
+    return self._org_app
 
   @property
   def timeline(self):

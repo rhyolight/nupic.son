@@ -211,7 +211,6 @@ class RequestData(request_data.RequestData):
 
     # program wide fields
     self._programs = self._unset
-    self._org_app = self._unset
 
     # user profile specific fields
     self._is_mentor = self._unset
@@ -310,13 +309,6 @@ class RequestData(request_data.RequestData):
       else:
         self._org_admin_for = []
     return self._org_admin_for
-
-  @property
-  def org_app(self):
-    """Returns the org_app field."""
-    if not self._isSet(self._org_app):
-      self._getProgramWideFields()
-    return self._org_app
 
   @property
   def programs(self):
