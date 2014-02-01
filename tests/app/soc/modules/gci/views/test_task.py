@@ -45,10 +45,10 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.timeline_helper.tasksPubliclyVisible()
 
     # Create a task, status open
-    mentor = profile_utils.seedGCIProfile(
-        self.program, mentor_for=[self.org.key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[ndb.Key.from_old_key(self.org.key())])
     self.task = task_utils.seedTask(
-        self.program, self.org, mentors=[mentor.key()])
+        self.program, self.org, mentors=[mentor.key.to_old_key()])
     self.createSubscribersForTask()
 
   #TODO(orc.avs): move notification tests to logic
@@ -696,7 +696,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
   def _taskPageUrl(self, task):
     """Returns the url of the task page.
     """
-    return '/gci/task/view/%s/%s' %(task.program.key().name(), task.key().id())
+    return '/gci/task/view/%s/%s' % (task.program.key().name(), task.key().id())
 
   def _taskUpdateUrl(self, task):
     """Returns the url to the task update GAE Task.

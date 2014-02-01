@@ -457,7 +457,9 @@ class TaskInformation(Template):
     """Returns the context for the current template.
     """
     task = self.data.task
-    mentors = [m.public_name for m in db.get(task.mentors)]
+    mentors = [
+        mentor.public_name for mentor in
+        ndb.get_multi(map(ndb.Key.from_old_key, task.mentors))]
     profile = self.data.ndb_profile
 
     # We count everyone from the org as a mentor, the mentors property
