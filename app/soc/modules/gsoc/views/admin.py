@@ -378,9 +378,11 @@ class ManageOrganizationsDashboard(Dashboard):
         {
             'name': 'org_app_records',
             'description': ugettext(
-                'List of submitted organization application'),
-            'title': 'Organization application records',
-            'link': data.redirect.urlOf('gsoc_list_org_app_records')
+                'List of organization application that have been '
+                'submitted to the program'),
+            'title': 'Submitted organization applications',
+            'link': links.SOC_LINKER.program(
+                data.program, urls.UrlNames.ORG_APPLICATION_LIST)
         },
         {
             'name': 'accepted_orgs',
