@@ -26,6 +26,7 @@ from django import http
 from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
+from melange.logic import profile as melange_profile_logic
 from melange.request import exception
 from melange.request import links
 
@@ -643,10 +644,11 @@ class CommentsTemplate(Template):
   """
 
   class CommentItem(object):
-    def __init__(self, entity, form, author_link):
+    def __init__(self, entity, form, author_link, author):
       self.entity = entity
       self.form = form
       self.author_link = author_link
+      self.author = author
 
   def context(self):
     """Returns the context for the current template.
@@ -666,15 +668,18 @@ class CommentsTemplate(Template):
 
       # generate author link, if comment sent by a student
       author_link = None
-      author = comment.created_by
-      if author:
-        profile = profile_logic.queryProfileForUserAndProgram(
-            author, self.data.program).get()
-        if profile and profile.is_student:
-          author_link = self.data.redirect.profile(profile.link_id).urlOf(
+      author_key = ndb.Key.from_old_key(
+          GCIComment.created_by.get_value_for_datastore(comment))
+      if author_key:
+        author = melange_profile_logic.getProfileForUsername(
+            author_key.id(), self.data.program.key())
+        if author and author.is_student:
+          author_link = self.data.redirect.profile(author.profile_id).urlOf(
               url_names.GCI_STUDENT_TASKS)
+      else:
+        author = None
 
-      item = self.CommentItem(comment, form, author_link)
+      item = self.CommentItem(comment, form, author_link, author)
       comments.append(item)
 
     context = {

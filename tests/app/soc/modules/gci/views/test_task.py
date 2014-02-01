@@ -129,6 +129,9 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertIsNone(comment.reply)
     self.assertMailSentToSubscribers(comment)
 
+    url = self._taskPageUrl(self.task)
+    response = self.get(url)
+
   def testPostCommentWithEmptyTitle(self):
     """Tests leaving a comment with an empty title."""
     user = profile_utils.seedNDBUser()

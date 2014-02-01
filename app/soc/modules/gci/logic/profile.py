@@ -117,6 +117,7 @@ def orgAdminsForOrg(org, limit=1000):
   return query.fetch(limit)
 
 
+# TODO(daniel): remove this function
 def queryProfileForUserAndProgram(user, program):
   """Returns the query to fetch GCIProfile entity for the specified user
   and program.

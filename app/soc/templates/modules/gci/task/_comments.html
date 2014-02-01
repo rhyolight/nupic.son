@@ -22,9 +22,9 @@
 
       <span class="single-comment-author">
       {% if comment_item.author_link %}
-      <a href="{{ comment_item.author_link }}">{{ comment_item.entity.created_by.name }}</a>
+      <a href="{{ comment_item.author_link }}">{{ comment_item.author.public_name }}</a>
       {% else %}
-        {% if comment_item.entity.created_by %}{{ comment_item.entity.created_by.name }}{% else %}Melange{% endif %}
+        {% if comment_item.author %}{{ comment_item.author.public_name }}{% else %}Melange{% endif %}
       {% endif %}</span>
       <span class="single-comment-meta">on
       {{ comment_item.entity.created_on|date:"F j Y H:i"}} UTC</span>
