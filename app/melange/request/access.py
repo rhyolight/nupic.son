@@ -30,6 +30,9 @@ _MESSAGE_NOT_PROGRAM_ADMINISTRATOR = translation.ugettext(
 _MESSAGE_NOT_DEVELOPER = translation.ugettext(
     'This page is only accessible to developers.')
 
+_MESSAGE_HAS_PROFILE = translation.ugettext(
+    'This page is accessible only to users without a profile.')
+
 _MESSAGE_NO_PROFILE = translation.ugettext(
     'Active profile is required to access this page.')
 
@@ -50,6 +53,12 @@ _MESSAGE_NOT_USER_IN_URL = translation.ugettext(
 
 _MESSAGE_NOT_ORG_ADMIN_FOR_ORG = translation.ugettext(
     'You are not organization administrator for %s')
+
+_MESSAGE_INACTIVE_BEFORE = translation.ugettext(
+    'This page is inactive before %s.')
+
+_MESSAGE_INACTIVE_OUTSIDE = translation.ugettext(
+    'This page is inactive before %s and after %s.')
 
 def ensureLoggedIn(data):
   """Ensures that the user is logged in.
@@ -174,11 +183,11 @@ class NonStudentUrlProfileAccessChecker(AccessChecker):
 
   def checkAccess(self, data, check):
     """See AccessChecker.checkAccess for specification."""
-    if data.url_profile.status != 'active':
+    if data.url_ndb_profile.status != profile_model.Status.ACTIVE:
       raise exception.Forbidden(
           message=_MESSAGE_NO_URL_PROFILE % data.kwargs['user'])
 
-    if data.url_profile.is_student:
+    if data.url_ndb_profile.is_student:
       raise exception.Forbidden(message=_MESSAGE_STUDENTS_DENIED)
 
 NON_STUDENT_URL_PROFILE_ACCESS_CHECKER = NonStudentUrlProfileAccessChecker()
@@ -287,3 +296,57 @@ class HasProfileAccessChecker(AccessChecker):
       raise exception.Forbidden(message=_MESSAGE_NO_PROFILE)
 
 HAS_PROFILE_ACCESS_CHECKER = HasProfileAccessChecker()
+
+
+class HasNoProfileAccessChecker(AccessChecker):
+  """AccessChecker that ensures that the logged in user does not have a profile
+  for the program specified in the URL.
+  """
+
+  def checkAccess(self, data, check):
+    """See AccessChecker.checkAccess for specification."""
+    ensureLoggedIn(data)
+    if data.ndb_profile:
+      raise exception.Forbidden(message=_MESSAGE_HAS_PROFILE)
+
+HAS_NO_PROFILE_ACCESS_CHECKER = HasNoProfileAccessChecker()
+
+
+class OrgSignupStartedAccessChecker(AccessChecker):
+  """AccessChecker that ensures that organization sign-up period has started
+  for the program specified in the URL.
+  """
+
+  def checkAccess(self, data, check):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.timeline.afterOrgSignupStart():
+      active_from = data.timeline.orgSignupStart()
+      raise exception.Forbidden(message=_MESSAGE_INACTIVE_BEFORE % active_from)
+
+ORG_SIGNUP_STARTED_ACCESS_CHECKER = OrgSignupStartedAccessChecker()
+
+
+class OrgsAnnouncedAccessChecker(AccessChecker):
+  """AccessChecker that ensures that organizations have been announced for
+  the program specified in the URL.
+  """
+
+  def checkAccess(self, data, check):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.timeline.orgsAnnounced():
+      active_from = data.timeline.orgsAnnouncedOn()
+      raise exception.Forbidden(message=_MESSAGE_INACTIVE_BEFORE % active_from)
+
+
+class StudentSignupActiveAccessChecker(AccessChecker):
+  """AccessChecker that ensures that student sign-up period has started
+  for the program specified in the URL.
+  """
+
+  def checkAccess(self, data, check):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.timeline.studentSignup():
+      raise exception.Forbidden(message=_MESSAGE_INACTIVE_OUTSIDE % (
+          data.timeline.studentsSignupBetween()))
+
+STUDENT_SIGNUP_ACTIVE_ACCESS_CHECKER = StudentSignupActiveAccessChecker()

@@ -40,6 +40,7 @@ from melange.views.helper import form_handler
 
 from soc.logic import cleaning
 from soc.models import licenses
+from soc.models import program as program_model
 
 from soc.views import readonly_template
 from soc.views import template
@@ -74,6 +75,11 @@ TAGS_HELP_TEXT = translation.ugettext(
 
 IDEAS_PAGE_HELP_TEXT = translation.ugettext(
     'The URL to a page with list of ideas for projects for this organization.')
+
+IDEAS_PAGE_HELP_TEXT_WITH_FAQ = translation.ugettext(
+    'The URL to a page with list of ideas for projects for this organization.'
+    'This is the most important part of your application. You can read about '
+    'ideas lists on the <a href="%s">FAQs</a>')
 
 LICENSE_HELP_TEXT = translation.ugettext(
     'The main license which is used by this organization.')
@@ -317,7 +323,7 @@ class _OrgProfileForm(gsoc_forms.GSoCModelForm):
       required=False, label=LOGO_URL_LABEL, help_text=LOGO_URL_HELP_TEXT)
 
   ideas_page = django_forms.URLField(
-      required=True, label=IDEAS_PAGE_LABEL, help_text=IDEAS_PAGE_HELP_TEXT)
+      required=True, label=IDEAS_PAGE_LABEL)
 
   mailing_list = django_forms.CharField(
       required=False, label=MAILING_LIST_LABEL,
@@ -364,6 +370,16 @@ class _OrgProfileForm(gsoc_forms.GSoCModelForm):
     """
     super(_OrgProfileForm, self).__init__(**kwargs)
     self.request_data = request_data
+
+    # set help text for ideas page.
+    help_page_key = program_model.Program.help_page.get_value_for_datastore(
+        self.request_data.program)
+    if help_page_key:
+      self.fields['ideas_page'].help_text = (
+          IDEAS_PAGE_HELP_TEXT_WITH_FAQ %
+              self.request_data.redirect.document(help_page_key).url())
+    else:
+      self.fields['ideas_page'].help_text = IDEAS_PAGE_HELP_TEXT
 
   def clean_org_id(self):
     """Cleans org_id field.

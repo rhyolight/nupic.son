@@ -1080,8 +1080,9 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
   as administrators or mentors.
   """
 
-  # TODO(daniel): implement actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = access.ConjuctionAccessChecker([
+      access.HAS_NO_PROFILE_ACCESS_CHECKER,
+      access.ORG_SIGNUP_STARTED_ACCESS_CHECKER])
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""
@@ -1125,8 +1126,9 @@ class ProfileRegisterAsStudentPage(base.GSoCRequestHandler):
   upon acceptance.
   """
 
-  # TODO(daniel): implement actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = access.ConjuctionAccessChecker([
+      access.HAS_NO_PROFILE_ACCESS_CHECKER,
+      access.STUDENT_SIGNUP_ACTIVE_ACCESS_CHECKER])
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""
@@ -1212,8 +1214,7 @@ class CreateProfileFormHandler(form_handler.FormHandler):
 class ProfileEditPage(base.GSoCRequestHandler):
   """View to edit user profiles."""
 
-  # TODO(daniel): implement actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = access.HAS_PROFILE_ACCESS_CHECKER
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""
@@ -1256,8 +1257,7 @@ class ProfileEditPage(base.GSoCRequestHandler):
 class ProfileShowPage(base.GSoCRequestHandler):
   """View to display the read-only profile page."""
 
-  # TODO(daniel): implement actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = access.HAS_PROFILE_ACCESS_CHECKER
 
   def djangoURLPatterns(self):
     """See base.RequestHandler.djangoURLPatterns for specification."""

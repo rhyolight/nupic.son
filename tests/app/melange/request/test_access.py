@@ -234,52 +234,35 @@ class NonStudentUrlProfileAccessCheckerTest(unittest.TestCase):
   def setUp(self):
     """See unittest.setUp for specification."""
     sponsor = program_utils.seedSponsor()
+    self.program = program_utils.seedProgram(sponsor_key=sponsor.key())
 
-    program_properties = {
-        'sponsor': sponsor,
-        'scope': sponsor,
-        }
-    program = seeder_logic.seed(
-        program_model.Program, properties=program_properties)
-
-    profile_properties = {
-        'status': 'active',
-        'is_student': False
-        }
-    self.url_profile = seeder_logic.seed(
-        profile_model.Profile, properties=profile_properties)
-
-    kwargs = {
+    self.kwargs = {
         'sponsor': sponsor.key().name(),
-        'program': program.link_id,
+        'program': self.program.program_id,
         }
-    self.data = request_data.RequestData(None, None, kwargs)
 
   def testUrlUserWithNoProfileAccessDenied(self):
     """Tests that access is denied for a user that does not have a profile."""
-    self.data.kwargs['user'] = 'non_existing_user'
+    self.kwargs['user'] = 'non_existing_user'
+    data = request_data.RequestData(None, None, self.kwargs)
 
     access_checker = access.NonStudentUrlProfileAccessChecker()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None)
+      access_checker.checkAccess(data, None)
     self.assertEqual(context.exception.status, httplib.NOT_FOUND)
 
   def testStudentAccessDenied(self):
     """Tests that access is denied for a user with a student profile."""
     # additionally, seed a profile who is not a student
     # access should be still denied as the check corresponds to URL profile
-    profile_properties = {
-        'status': 'active',
-        'is_student': False
-        }
-    profile = seeder_logic.seed(
-        profile_model.Profile, properties=profile_properties)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
-    self.url_profile.is_student = True
-
-    data = request_data.RequestData(None, None, None)
-    data._url_profile = self.url_profile
-    data._profile = profile
+    # seed URL profile who is a student
+    url_profile = profile_utils.seedNDBStudent(self.program)
+    self.kwargs['user'] = url_profile.profile_id
+    data = request_data.RequestData(None, None, self.kwargs)
 
     access_checker = access.NonStudentUrlProfileAccessChecker()
     with self.assertRaises(exception.UserError) as context:
@@ -289,10 +272,10 @@ class NonStudentUrlProfileAccessCheckerTest(unittest.TestCase):
 
   def testNonStudentAccessGranted(self):
     """Tests that access is granted for users with non-student accounts."""
-    self.url_profile.is_student = False
-
-    data = request_data.RequestData(None, None, None)
-    data._url_profile = self.url_profile
+    # seed URL profile who is not a student
+    url_profile = profile_utils.seedNDBProfile(self.program.key())
+    self.kwargs['user'] = url_profile.profile_id
+    data = request_data.RequestData(None, None, self.kwargs)
 
     access_checker = access.NonStudentUrlProfileAccessChecker()
     access_checker.checkAccess(data, None)
@@ -618,3 +601,163 @@ class HasProfileAccessCheckerTest(unittest.TestCase):
     with self.assertRaises(exception.UserError) as context:
       access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+
+class HasNoProfileAccessCheckerTest(unittest.TestCase):
+  """Unit tests for HasNoProfileAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.sponsor = program_utils.seedSponsor()
+    self.program = program_utils.seedProgram(sponsor_key=self.sponsor.key())
+
+    kwargs = {
+        'sponsor': self.sponsor.key().name(),
+        'program': self.program.program_id
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+  def testUserWithProfileAccessDenied(self):
+    """Tests that access is denied for a user with a profile."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
+
+    access_checker = access.HasNoProfileAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testUserWithNoProfileAccessGranted(self):
+    """Tests that access is granted for a user with no profile."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+
+    access_checker = access.HasNoProfileAccessChecker()
+    access_checker.checkAccess(self.data, None)
+
+
+class OrgsSignupStartedAccessCheckerTest(unittest.TestCase):
+  """Unit tests for OrgsSignupStartedAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    sponsor = program_utils.seedSponsor()
+    program = program_utils.seedProgram(sponsor_key=sponsor.key())
+    self.app_survey = program_utils.seedApplicationSurvey(program.key())
+
+    kwargs = {
+        'sponsor': sponsor.key().name(),
+        'program': program.program_id
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+  def testBeforeOrgSignupStartedAccessDenied(self):
+    """Tests that access is denied before organization sign-up starts."""
+    self.app_survey.survey_start = timeline_utils.future(delta=100)
+    self.app_survey.survey_end = timeline_utils.future(delta=150)
+    self.app_survey.put()
+
+    access_checker = access.OrgSignupStartedAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testAfterOrgSignupStartedAccessGranted(self):
+    """Tests that access is granted after organization sign-up starts."""
+    self.app_survey.survey_start = timeline_utils.past()
+    self.app_survey.survey_end = timeline_utils.future()
+    self.app_survey.put()
+
+    access_checker = access.OrgSignupStartedAccessChecker()
+    access_checker.checkAccess(self.data, None)
+
+  def testAfterOrgSignupEndedAccessGranted(self):
+    """Tests that access is granted after organization sign-up ends."""
+    self.app_survey.survey_start = timeline_utils.past(delta=150)
+    self.app_survey.survey_end = timeline_utils.past(delta=100)
+    self.app_survey.put()
+
+    access_checker = access.OrgSignupStartedAccessChecker()
+    access_checker.checkAccess(self.data, None)
+
+
+class OrgsAnnouncedAccessCheckerTest(unittest.TestCase):
+  """Unit tests for OrgsAnnouncedAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    sponsor = program_utils.seedSponsor()
+    self.program = program_utils.seedProgram(sponsor_key=sponsor.key())
+
+    kwargs = {
+        'sponsor': sponsor.key().name(),
+        'program': self.program.program_id
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+  def testBeforeOrgsAnnouncedAccessDenied(self):
+    """Tests that access is denied before orgs are announced."""
+    self.program.timeline.accepted_organization_announced_deadline = (
+        timeline_utils.future())
+    self.program.timeline.put()
+
+    access_checker = access.OrgsAnnouncedAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testAfterOrgsAnnouncedAccessGranted(self):
+    """Tests that access is granted after orgs are announced."""
+    self.program.timeline.accepted_organization_announced_deadline = (
+        timeline_utils.past())
+    self.program.timeline.put()
+
+    access_checker = access.OrgsAnnouncedAccessChecker()
+    access_checker.checkAccess(self.data, None)
+
+
+class StudentSignupActiveAccessCheckerTest(unittest.TestCase):
+  """Unit tests for StudentSignupActiveAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    sponsor = program_utils.seedSponsor()
+    self.program = program_utils.seedProgram(sponsor_key=sponsor.key())
+
+    kwargs = {
+        'sponsor': sponsor.key().name(),
+        'program': self.program.program_id
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+  def testBeforeStudentSignupAccessDenied(self):
+    """Tests that access is denied before student sign-up period."""
+    self.program.timeline.student_signup_start = timeline_utils.future(delta=10)
+    self.program.timeline.student_signup_end = timeline_utils.future(delta=20)
+    self.program.timeline.put()
+
+    access_checker = access.StudentSignupActiveAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testAfterStudentSignupAccessDenied(self):
+    """Tests that access is denied after student sign-up period."""
+    self.program.timeline.student_signup_start = timeline_utils.past(delta=20)
+    self.program.timeline.student_signup_end = timeline_utils.past(delta=10)
+    self.program.timeline.put()
+
+    access_checker = access.StudentSignupActiveAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testDuringStudentSignupAccessGranted(self):
+    """Tests that access is granted during student sign-up period."""
+    self.program.timeline.student_signup_start = timeline_utils.past(delta=10)
+    self.program.timeline.student_signup_end = timeline_utils.future(delta=10)
+    self.program.timeline.put()
+
+    access_checker = access.StudentSignupActiveAccessChecker()
+    access_checker.checkAccess(self.data, None)

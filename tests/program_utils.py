@@ -16,6 +16,8 @@
 
 from codein import types as ci_types
 
+from google.appengine.ext import db
+
 from melange import types
 
 from soc.models import document as document_model
@@ -290,6 +292,8 @@ def seedApplicationSurvey(program_key, **kwargs):
     Newly seeded survey entity.
   """
   user = profile_utils.seedNDBUser()
+  program = db.get(program_key)
+
   properties = {
       'scope': program_key,
       'program': program_key,
@@ -299,6 +303,7 @@ def seedApplicationSurvey(program_key, **kwargs):
       'schema': ('[["item"],{"item":{"field_type":"input_text",'
                  '"required":false, "label":"test"}}]'),
       'survey_content': None,
+      'key_name': '%s/%s/orgapp' % (program.prefix, program_key.name())
       }
   properties.update(kwargs)
   return seeder_logic.seed(OrgAppSurvey, properties)
@@ -352,6 +357,8 @@ class ProgramHelper(object):
         'schema': ('[["item"],{"item":{"field_type":"input_text",'
                    '"required":false, "label":"test"}}]'),
         'survey_content': None,
+        'key_name': '%s/%s/orgapp' % (
+            self.program.prefix, self.program.key().name()),
     }
     properties.update(override or {})
     self.org_app = self.seed(OrgAppSurvey, properties)
