@@ -35,6 +35,12 @@ from tests import program_utils
 from tests import timeline_utils
 from tests.utils import connection_utils
 
+# NOTE(nathaniel): Throughout this module attribute access is used
+# as an operation under test. This confuses lint which assumes that
+# attribute access is always a safe and side-effect-free action. In
+# all fairness, lint is probably right and our code is weird.
+# pylint: disable=pointless-statement
+
 
 class TimelineHelperTest(unittest.TestCase):
   """Unit tests for TimelineHelper class."""

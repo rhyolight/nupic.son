@@ -26,6 +26,12 @@ from tests import program_utils
 from tests.utils import project_utils
 from tests.utils import proposal_utils
 
+# NOTE(nathaniel): Throughout this module attribute access is used
+# as an operation under test. This confuses lint which assumes that
+# attribute access is always a safe and side-effect-free action. In
+# all fairness, lint is probably right and our code is weird.
+# pylint: disable=pointless-statement
+
 
 class UrlProjectTest(unittest.TestCase):
   """Unit tests for url_project property or RequestData class."""
