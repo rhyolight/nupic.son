@@ -234,52 +234,35 @@ class NonStudentUrlProfileAccessCheckerTest(unittest.TestCase):
   def setUp(self):
     """See unittest.setUp for specification."""
     sponsor = program_utils.seedSponsor()
+    self.program = program_utils.seedProgram(sponsor_key=sponsor.key())
 
-    program_properties = {
-        'sponsor': sponsor,
-        'scope': sponsor,
-        }
-    program = seeder_logic.seed(
-        program_model.Program, properties=program_properties)
-
-    profile_properties = {
-        'status': 'active',
-        'is_student': False
-        }
-    self.url_profile = seeder_logic.seed(
-        profile_model.Profile, properties=profile_properties)
-
-    kwargs = {
+    self.kwargs = {
         'sponsor': sponsor.key().name(),
-        'program': program.link_id,
+        'program': self.program.program_id,
         }
-    self.data = request_data.RequestData(None, None, kwargs)
 
   def testUrlUserWithNoProfileAccessDenied(self):
     """Tests that access is denied for a user that does not have a profile."""
-    self.data.kwargs['user'] = 'non_existing_user'
+    self.kwargs['user'] = 'non_existing_user'
+    data = request_data.RequestData(None, None, self.kwargs)
 
     access_checker = access.NonStudentUrlProfileAccessChecker()
     with self.assertRaises(exception.UserError) as context:
-      access_checker.checkAccess(self.data, None)
+      access_checker.checkAccess(data, None)
     self.assertEqual(context.exception.status, httplib.NOT_FOUND)
 
   def testStudentAccessDenied(self):
     """Tests that access is denied for a user with a student profile."""
     # additionally, seed a profile who is not a student
     # access should be still denied as the check corresponds to URL profile
-    profile_properties = {
-        'status': 'active',
-        'is_student': False
-        }
-    profile =  seeder_logic.seed(
-        profile_model.Profile, properties=profile_properties)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
-    self.url_profile.is_student = True
-
-    data = request_data.RequestData(None, None, None)
-    data._url_profile = self.url_profile
-    data._profile = profile
+    # seed URL profile who is a student
+    url_profile = profile_utils.seedNDBStudent(self.program)
+    self.kwargs['user'] = url_profile.profile_id
+    data = request_data.RequestData(None, None, self.kwargs)
 
     access_checker = access.NonStudentUrlProfileAccessChecker()
     with self.assertRaises(exception.UserError) as context:
@@ -289,10 +272,10 @@ class NonStudentUrlProfileAccessCheckerTest(unittest.TestCase):
 
   def testNonStudentAccessGranted(self):
     """Tests that access is granted for users with non-student accounts."""
-    self.url_profile.is_student = False
-
-    data = request_data.RequestData(None, None, None)
-    data._url_profile = self.url_profile
+    # seed URL profile who is not a student
+    url_profile = profile_utils.seedNDBProfile(self.program.key())
+    self.kwargs['user'] = url_profile.profile_id
+    data = request_data.RequestData(None, None, self.kwargs)
 
     access_checker = access.NonStudentUrlProfileAccessChecker()
     access_checker.checkAccess(data, None)
