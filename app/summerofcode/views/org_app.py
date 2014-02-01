@@ -851,7 +851,7 @@ class OrgApplicationList(survey_response_list.SurveyResponseList):
         ('(%s)' % _STATUS_PRE_ACCEPTED_ID, _STATUS_PRE_ACCEPTED_ID),
         ('(%s)' % _STATUS_PRE_REJECTED_ID, _STATUS_PRE_REJECTED_ID),
         # TODO(daniel): figure out how ignored state is used.
-        ('(ignored)', 'ignored'),
+        #('(ignored)', 'ignored'),
     ]
 
     self.list_config.addPlainTextColumn(
@@ -861,6 +861,10 @@ class OrgApplicationList(survey_response_list.SurveyResponseList):
         options=options)
     self.list_config.setColumnEditable('status', True, 'select')
     self.list_config.addPostEditButton(_SET_STATUS_BUTTON_ID, 'Save')
+
+    self.list_config.setRowAction(
+        lambda entity, *args: links.LINKER.organization(
+            entity.key.parent(), urls.UrlNames.ORG_APP_SHOW))
 
   def templatePath(self):
     """See template.Template.templatePath for specification."""
@@ -882,7 +886,7 @@ class OrgApplicationList(survey_response_list.SurveyResponseList):
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self.list_config, query, lists.keyStarter,
         prefetcher=None)
-    return response_builder.build()
+    return response_builder.buildNDB()
 
 
 class PublicOrganizationListRowRedirect(melange_lists.RedirectCustomRow):
