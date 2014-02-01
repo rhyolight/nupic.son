@@ -141,7 +141,10 @@ class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
 
   def testPageLoads(self):
     """Tests that page loads properly."""
-    self.profile_helper.createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
+
     response = self.get(_getOrgProfileCreateUrl(self.program))
     self.assertResponseOK(response)
 

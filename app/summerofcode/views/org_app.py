@@ -508,8 +508,9 @@ class OrgApplicationReminder(object):
 class OrgProfileCreatePage(base.GSoCRequestHandler):
   """View to create organization profile."""
 
-  # TODO(daniel): implement actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = access.ConjuctionAccessChecker([
+      access.NON_STUDENT_PROFILE_ACCESS_CHECKER,
+      access.ORG_SIGNUP_ACTIVE_ACCESS_CHECKER])
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""
