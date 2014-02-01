@@ -22,11 +22,6 @@ from melange.models import profile as profile_model
 
 from soc.modules.gsoc.logic import profile as profile_logic
 
-from soc.modules.gsoc.models import project as project_model
-from soc.modules.gsoc.models import proposal as proposal_model
-
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
-
 from tests import org_utils
 from tests import profile_utils
 from tests import program_utils
@@ -67,7 +62,7 @@ class ProfileTest(unittest.TestCase):
       self.bar_mentors.append(mentor)
 
     #assign an organization admin for bar_organization
-    self.bar_org_admin =  profile_utils.seedNDBProfile(
+    self.bar_org_admin = profile_utils.seedNDBProfile(
         self.program.key(), admin_for=[self.bar_organization.key])
 
 
@@ -536,7 +531,7 @@ class CanBecomeOrgAdminTest(unittest.TestCase):
 
   def testForMentor(self):
     profile = profile_utils.seedNDBProfile(
-        self.program.key(), mentor_for= [self.organization.key])
+        self.program.key(), mentor_for=[self.organization.key])
 
     # profile with a mentor role can become an org admin
     can_become = profile_logic.canBecomeOrgAdmin(profile)
@@ -544,7 +539,7 @@ class CanBecomeOrgAdminTest(unittest.TestCase):
 
   def testForOrgAdmin(self):
     profile = profile_utils.seedNDBProfile(
-        self.program.key(), admin_for= [self.organization.key])
+        self.program.key(), admin_for=[self.organization.key])
 
     # profile with an org admin role can still become an org admin
     can_become = profile_logic.canBecomeOrgAdmin(profile)
@@ -555,7 +550,7 @@ class CanBecomeOrgAdminTest(unittest.TestCase):
     organization_two = org_utils.seedSOCOrganization(self.program.key())
 
     profile = profile_utils.seedNDBProfile(
-        self.program.key(), admin_for= [organization_two.key])
+        self.program.key(), admin_for=[organization_two.key])
 
     # profile with an org admin role can still become an org admin
     can_become = profile_logic.canBecomeOrgAdmin(profile)

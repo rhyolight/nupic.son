@@ -19,7 +19,6 @@ import StringIO
 import unittest
 
 from google.appengine.api import memcache
-from google.appengine.ext import blobstore
 
 from melange.logic import school as school_logic
 

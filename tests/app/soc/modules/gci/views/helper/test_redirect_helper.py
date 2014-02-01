@@ -17,7 +17,6 @@
 from soc.views.helper.access_checker import unset
 
 from soc.modules.gci.views.base import GCIRequestHandler
-from soc.modules.gci.views.helper import url_names
 
 from tests.test_utils import GCITestCase
 from tests.test_utils import MockRequest

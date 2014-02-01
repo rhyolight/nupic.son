@@ -16,13 +16,10 @@
 
 from datetime import date
 
-from google.appengine.ext import ndb
-
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import project_survey as project_survey_model
 
 from summerofcode.logic import survey as survey_logic
-from summerofcode.models import survey as survey_model
 from summerofcode.views import project_manage as project_manage_view
 
 from tests import profile_utils
@@ -56,7 +53,7 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
     """Tests that users without profiles cannot access the page."""
     self.profile_helper.createUser()
     self._seedProjectData()
-    
+
     response = self.get(self._getUrl(self.project))
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)

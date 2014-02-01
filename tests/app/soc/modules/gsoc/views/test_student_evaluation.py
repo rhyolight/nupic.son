@@ -24,22 +24,17 @@ from django.utils import html
 
 from tests import profile_utils
 from tests import timeline_utils
-from tests.profile_utils import GSoCProfileHelper
 from tests.survey_utils import SurveyHelper
 from tests import test_utils
 from tests.utils import project_utils
 
-from melange.models import education
-from melange.models import user
-
 from soc.views import forms
 
-from soc.modules.gsoc.models.project import GSoCProject
+from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 
 from soc.modules.seeder.logic.providers.string import LinkIDProvider
 
-from summerofcode.models import profile as soc_profile
 from summerofcode.models import survey as survey_model
 
 
@@ -109,7 +104,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
       self.assertEqual(field_dict['label'], form_field.label)
       self.assertEqual(field_dict['required'], form_field.required)
 
-  def createProject(self, override_properties={}):
+  def createProject(self, override_properties=None):
     properties = {
         'is_featured': False,
         'mentors': [],
@@ -117,8 +112,8 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
         'program': self.gsoc,
         'org': self.org,
         }
-    properties.update(override_properties)
-    return self.seed(GSoCProject, properties)
+    properties.update(override_properties or {})
+    return self.seed(project_model.GSoCProject, properties)
 
   def getStudentEvalRecordProperties(self, show=False):
     evaluation = self.evaluation.createStudentEvaluation()
@@ -291,7 +286,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response = self.client.post(url)
     self.assertResponseForbidden(response)
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
     project.mentors.append(mentor.key.to_old_key())
     project.put()
     # test student evaluation take GET for the mentor of the project
@@ -322,7 +317,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     """
     url, evaluation, _ = self.getStudentEvalRecordProperties()
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
 
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
@@ -351,7 +346,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
 
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
@@ -376,7 +371,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
 
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
@@ -405,7 +400,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
 
     suffix = "%s/%s/%s/%s" % (
         self.gsoc.key().name(), evaluation.link_id,
@@ -425,7 +420,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     url, evaluation, _ = self.getStudentEvalRecordProperties()
     other_org = self.createOrg()
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
 
     mentor = profile_utils.seedNDBProfile(
         self.program.key(), mentor_for=[other_org.key])
@@ -507,7 +502,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
 
     url = '%s/%s' % (base_url, suffix)
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
 
     # test student evaluation show GET for a for a student who
     # has another project in a different organization
@@ -642,7 +637,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     response = self.get(url)
     self.assertResponseForbidden(response)
 
-    project = GSoCProject.all().get()
+    project = project_model.GSoCProject.all().get()
 
     project_mentors = project.mentors
     project.mentors.append(mentor.key.to_old_key())

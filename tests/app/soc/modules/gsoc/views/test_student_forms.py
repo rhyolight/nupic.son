@@ -17,8 +17,6 @@
 import os
 import tempfile
 
-from soc.modules.gsoc.models import profile as profile_model
-
 from tests import profile_utils
 from tests import test_utils
 from tests.utils import project_utils

@@ -21,10 +21,6 @@ from google.appengine.ext import ndb
 
 from melange.utils import lists
 
-from soc.modules.gsoc.models import project as project_model
-
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
-
 from tests import org_utils
 from tests import program_utils
 from tests import profile_utils

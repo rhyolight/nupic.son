@@ -24,8 +24,6 @@ from melange.models import organization as org_model
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
 
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
-
 from summerofcode.models import organization as soc_org_model
 
 from tests import org_utils

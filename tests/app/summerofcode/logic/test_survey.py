@@ -19,7 +19,6 @@ import unittest
 from google.appengine.ext import ndb
 from datetime import timedelta
 
-from soc.models import profile as profile_model
 from soc.models import survey as soc_survey_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from summerofcode.logic import survey as survey_logic

@@ -305,8 +305,7 @@ def seedApplicationSurvey(program_key, **kwargs):
 
 
 class ProgramHelper(object):
-  """Helper class to aid in manipulating program data.
-  """
+  """Helper class to aid in manipulating program data."""
 
   def __init__(self, sponsor=None, program=None):
     """Initializes the ProgramHelper.
@@ -331,15 +330,13 @@ class ProgramHelper(object):
     return seeder_logic.seedn(model, n, properties, recurse=False,
         auto_seed_optional_properties=auto_seed_optional_properties)
 
-  def createProgram(self, override={}):
-    """Creates a program for the defined properties.
-    """
+  def createProgram(self, override=None):
+    """Creates a program for the defined properties."""
     if self.sponsor is None:
       self.sponsor = seedSponsor()
 
-  def createOrgApp(self, override={}):
-    """Creates an organization application for the defined properties.
-    """
+  def createOrgApp(self, override=None):
+    """Creates an organization application for the defined properties."""
     if self.org_app:
       return self.org_app
     if self.program is None:
@@ -356,7 +353,7 @@ class ProgramHelper(object):
                    '"required":false, "label":"test"}}]'),
         'survey_content': None,
     }
-    properties.update(override)
+    properties.update(override or {})
     self.org_app = self.seed(OrgAppSurvey, properties)
     return self.org_app
 
@@ -374,18 +371,17 @@ class ProgramHelper(object):
     """
     return self._updateEntity(self.org, override)
 
-  def createOrUpdateOrg(self, override={}):
-    """Creates or updates an org (self.org) for the defined properties.
-    """
+  def createOrUpdateOrg(self, override=None):
+    """Creates or updates an org (self.org) for the defined properties."""
     if self.org:
       if not override:
         return self.org
       else:
-        return self._updateOrg(override)
-    self.org = self.createNewOrg(override)
+        return self._updateOrg(override or {})
+    self.org = self.createNewOrg(override or {})
     return self.org
 
-  def createNewOrg(self, override={}):
+  def createNewOrg(self, override=None):
     """Creates a new organization for the defined properties.
 
     This new organization will not be stored in self.org but returned.
@@ -395,37 +391,36 @@ class ProgramHelper(object):
 
 
 class GSoCProgramHelper(ProgramHelper):
-  """Helper class to aid in manipulating GSoC program data.
-  """
+  """Helper class to aid in manipulating GSoC program data."""
 
   def __init__(self, **kwargs):
     """Initializes the GSoCProgramHelper.
     """
     super(GSoCProgramHelper, self).__init__(**kwargs)
 
-  def createProgram(self, override={}):
-    """Creates a program for the defined properties.
-    """
+  def createProgram(self, override=None):
+    """Creates a program for the defined properties."""
     if self.program:
       return self.program
     super(GSoCProgramHelper, self).createProgram()
 
-    self.program = seedGSoCProgram(sponsor_key=self.sponsor.key(), **override)
+    self.program = seedGSoCProgram(
+        sponsor_key=self.sponsor.key(), **override or {})
 
     return self.program
 
-  def createNewOrg(self, override={}):
+  def createNewOrg(self, override=None):
     """Creates a new organization for the defined properties.
 
     This new organization will not be stored in self.org but returned.
     """
     if not self.program:
       self.createProgram()
-    return org_utils.seedSOCOrganization(self.program.key(), **override)
+    return org_utils.seedSOCOrganization(self.program.key(), **override or {})
 
-  def createOrgApp(self, override={}):
-    """Creates an organization application for the defined properties.
-    """
+  def createOrgApp(self, override=None):
+    """Creates an organization application for the defined properties."""
+    override = override or {}
     override.update({
         'key_name': 'gsoc_program/%s/orgapp' % self.program.key().name(),
         'survey_start': timeline_utils.past(),
@@ -435,30 +430,30 @@ class GSoCProgramHelper(ProgramHelper):
 
 
 class GCIProgramHelper(ProgramHelper):
-  """Helper class to aid in manipulating GCI program data.
-  """
+  """Helper class to aid in manipulating GCI program data."""
 
   def __init__(self, **kwargs):
     """Initializes the GCIProgramHelper.
     """
     super(GCIProgramHelper, self).__init__(**kwargs)
 
-  def createProgram(self, override={}):
-    """Creates a program for the defined properties.
-    """
+  def createProgram(self, override=None):
+    """Creates a program for the defined properties."""
     if self.program:
       return self.program
     super(GCIProgramHelper, self).createProgram()
 
-    self.program = seedGCIProgram(sponsor_key=self.sponsor.key(), **override)
+    self.program = seedGCIProgram(
+        sponsor_key=self.sponsor.key(), **override or {})
 
     return self.program
 
-  def createNewOrg(self, override={}):
+  def createNewOrg(self, override=None):
     """Creates a new organization for the defined properties.
 
     This new organization will not be stored in self.org but returned.
     """
+    override = override or {}
     super(GCIProgramHelper, self).createNewOrg(override)
     properties = {
         'scope': self.program,
@@ -471,9 +466,9 @@ class GCIProgramHelper(ProgramHelper):
     properties.update(override)
     return self.seed(GCIOrganization, properties)
 
-  def createOrgApp(self, override={}):
-    """Creates an organization application for the defined properties.
-    """
+  def createOrgApp(self, override=None):
+    """Creates an organization application for the defined properties."""
+    override = override or {}
     override.update({
         'key_name': 'gci_program/%s/orgapp' % self.program.key().name(),
         })

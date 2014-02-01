@@ -12,16 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for soc.logic.mapreduce_convert_user."""
 
-"""Tests for soc.logic.mapreduce_convert_user.
-"""
-
-
-import os
 import unittest
 
 from google.appengine.api import users
-from google.appengine.ext import db
 
 from soc.models.user import User
 from soc.mapreduce import convert_user

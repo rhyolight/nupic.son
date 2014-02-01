@@ -19,14 +19,18 @@ import unittest
 
 from melange.request import exception
 
-from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.views.helper import request_data
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import profile_utils
 from tests import program_utils
 from tests.utils import project_utils
 from tests.utils import proposal_utils
+
+# NOTE(nathaniel): Throughout this module attribute access is used
+# as an operation under test. This confuses lint which assumes that
+# attribute access is always a safe and side-effect-free action. In
+# all fairness, lint is probably right and our code is weird.
+# pylint: disable=pointless-statement
 
 
 class UrlProjectTest(unittest.TestCase):

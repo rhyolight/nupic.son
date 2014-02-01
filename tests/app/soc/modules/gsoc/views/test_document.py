@@ -130,6 +130,6 @@ class EventsPageTest(GSoCDjangoTestCase):
   def testEventsPageLoads(self):
     response = self.get('/gsoc/events/%s' % self.gsoc.key().name())
     self.assertResponseOK(response)
-    self.assertEqual(response.context['page_name'],'Events and Timeline')
+    self.assertEqual(response.context['page_name'], 'Events and Timeline')
     self.assertTemplateUsed(response, 'modules/gsoc/document/events.html')
     self.assertGSoCTemplatesUsed(response)

@@ -30,39 +30,39 @@ class TimeFormatTest(unittest.TestCase):
     various datetimes.
     """
     now = datetime.utcnow()
-    
+
     expected = 'just now'
     actual = timeformat.relativeTime(now - timedelta(seconds=0.5))
     self.assertEqual(expected, actual)
-    
+
     expected = '5 seconds ago'
     actual = timeformat.relativeTime(now - timedelta(seconds=5.4))
     self.assertEqual(expected, actual)
-    
+
     expected = '1 minute ago'
     actual = timeformat.relativeTime(now - timedelta(minutes=1, seconds=20))
     self.assertEqual(expected, actual)
-    
+
     expected = '13 minutes ago'
     actual = timeformat.relativeTime(now - timedelta(minutes=13, seconds=20))
     self.assertEqual(expected, actual)
-    
+
     expected = '1 hour ago'
     actual = timeformat.relativeTime(now - timedelta(hours=1, minutes=20))
     self.assertEqual(expected, actual)
-    
+
     expected = '19 hours ago'
     actual = timeformat.relativeTime(now - timedelta(hours=19, minutes=20))
     self.assertEqual(expected, actual)
-    
+
     expected = '1 day ago'
     actual = timeformat.relativeTime(now - timedelta(days=1, hours=8))
     self.assertEqual(expected, actual)
-    
+
     expected = '6 days ago'
     actual = timeformat.relativeTime(now - timedelta(days=6, hours=8))
     self.assertEqual(expected, actual)
-    
+
     date = now - timedelta(days=8)
     expected = date.ctime()
     actual = timeformat.relativeTime(date)

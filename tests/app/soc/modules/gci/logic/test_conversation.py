@@ -22,17 +22,10 @@ from datetime import timedelta
 
 from google.appengine.ext import ndb
 
-from soc.models import user as user_model
 from soc.models import email as email_model
 from soc.models import conversation as conversation_model
 
 from tests.utils import conversation_utils
-
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
-
-from soc.modules.gci.models import program as gciprogram_model
-from soc.modules.gci.models import conversation as gciconversation_model
-from soc.modules.gci.models import message as gcimessage_model
 
 from soc.modules.gci.logic import conversation as gciconversation_logic
 
@@ -208,7 +201,7 @@ class GCIConversationTest(unittest.TestCase):
         gciconversation_logic.queryUnreadMessagesForConversationAndUser(
             conversation=conv.key, user=self.user_keys[2]))
     self.assertEqual(expected_query, actual_query)
-      
+
 
   def testNumUnreadMessagesForConversationAndUser(self):
     """Tests that numUnreadMessagesForConversationAndUser returns the correct
@@ -851,7 +844,7 @@ class GCIConversationTest(unittest.TestCase):
     user_winner_key = self.conv_utils.createUser(
         return_key=True, winning_organization=org_keys[1],
         roles=[conversation_utils.WINNER, conversation_utils.STUDENT])
-    
+
     # Conversation for program admins and mentors
     conv_a = self.conv_utils.createConversation(subject='')
     conv_a.recipients_type = conversation_model.PROGRAM
@@ -1168,7 +1161,7 @@ class GCIConversationTest(unittest.TestCase):
     # Get last entity in email entity group
     email = email_model.Email.all().get()
     email_ctx = json.loads(email.context)
-    
+
     # Test that email has correct recipients
     expected = set([self.user_emails[0], self.user_emails[1]])
     actual = set(email_ctx['bcc'])
@@ -1196,7 +1189,7 @@ class GCIConversationTest(unittest.TestCase):
     # Get last entity in email entity group
     email = email_model.Email.all().get()
     email_ctx = json.loads(email.context)
-    
+
     # Test that email has correct recipients
     expected = set([self.user_emails[0], self.user_emails[1], email_b])
     actual = set(email_ctx['bcc'])

@@ -45,9 +45,9 @@ class ConnectionTest(unittest.TestCase):
         self.program, dev_test=False)
     user = profile_utils.seedUser()
     profile_properties = {'link_id': user.link_id, 'student_info': None,
-        'user': user,'parent': user, 'scope': self.program,
-        'status': 'active','email': user.account.email(),
-        'program': self.program,'mentor_for': [], 'org_admin_for': [],
+        'user': user, 'parent': user, 'scope': self.program,
+        'status': 'active', 'email': user.account.email(),
+        'program': self.program, 'mentor_for': [], 'org_admin_for': [],
         'is_org_admin': False, 'is_mentor': False, 'is_student': False
         }
     self.profile = self.profile_helper.seed(
@@ -61,7 +61,7 @@ class ConnectionTest(unittest.TestCase):
         self.profile, self.org.key)
 
 
-class ConnectionExistsTest(unittest.TestCase): 
+class ConnectionExistsTest(unittest.TestCase):
   """Unit tests for the connectionExists function."""
 
   def setUp(self):
@@ -325,7 +325,7 @@ class CanCreateConnectionTest(unittest.TestCase):
     result = connection_logic.canCreateConnection(self.profile, self.org.key)
     self.assertFalse(result)
     self.assertEqual(
-        result.extra, 
+        result.extra,
         connection_logic._PROFILE_IS_STUDENT % self.profile.profile_id)
 
   @mock.patch.object(connection_logic, 'connectionExists', return_value=True)
@@ -396,7 +396,7 @@ class CreateAnonymousConnectionTest(unittest.TestCase):
 
     connection_logic.createAnonymousConnection(org=org,
         org_role=connection_model.MENTOR_ROLE, email='person@test.com')
-    expected_expiration =  datetime.today() + timedelta(7)
+    expected_expiration = datetime.today() + timedelta(7)
 
     connection = connection_model.AnonymousConnection.all().get()
     self.assertEquals(expected_expiration.date(),
@@ -467,7 +467,7 @@ class ActivateAnonymousConnectionTest(unittest.TestCase):
 
     connection_logic.createAnonymousConnection(
         'test@example.com', org, connection_model.ORG_ADMIN_ROLE)
- 
+
     anonymous_connection = connection_model.AnonymousConnection.all().get()
 
     connection_logic.activateAnonymousConnection(

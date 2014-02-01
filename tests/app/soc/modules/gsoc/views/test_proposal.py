@@ -18,7 +18,6 @@ from tests import profile_utils
 from tests.utils import proposal_utils
 from tests.test_utils import GSoCDjangoTestCase
 
-from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models import proposal as proposal_model
 
 
@@ -309,4 +308,3 @@ class ProposalTest(GSoCDjangoTestCase):
     student = student.key.get()
     # check if number of proposals is increased
     self.assertEqual(student.student_data.number_of_proposals, 1)
-

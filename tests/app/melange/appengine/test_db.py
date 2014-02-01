@@ -66,7 +66,7 @@ class LinkValidatorTest(unittest.TestCase):
 
 class TestToDict(unittest.TestCase):
   """Unit tests for toDict function."""
-  
+
   def testForDBModel(self):
     """Tests whether a correct dict is returned for a db model."""
     class Books(db.Model):

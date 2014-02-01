@@ -12,20 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-"""Tests for program homepage related views.
-"""
-
+"""Tests for program homepage related views."""
 
 from tests.test_utils import GCIDjangoTestCase
 
-# TODO: perhaps we should move this out?
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
-
 
 class HomepageViewTest(GCIDjangoTestCase):
-  """Tests program homepage views.
-  """
+  """Tests program homepage views."""
 
   def setUp(self):
     self.init()

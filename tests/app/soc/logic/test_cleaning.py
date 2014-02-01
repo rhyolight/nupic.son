@@ -12,14 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
-
 from django import forms
 
 from soc.logic import cleaning
 
 from tests import profile_utils
-from tests import program_utils
 from tests.test_utils import GSoCDjangoTestCase
 
 

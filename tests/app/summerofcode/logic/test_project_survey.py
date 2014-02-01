@@ -18,7 +18,6 @@ import unittest
 
 from google.appengine.ext import db
 
-from soc.modules.gsoc.models import program as program_model
 from soc.modules.gsoc.models import project_survey as project_survey_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 

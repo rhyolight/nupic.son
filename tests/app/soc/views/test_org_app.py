@@ -25,8 +25,8 @@ from tests import test_utils
 from tests import timeline_utils
 
 ORG_APP_SCHEMA = ([
-    ["frm-t1359271954246-item","frm-t1359347613687-item",
-     "frm-t1359347873346-item","frm-t1359347876071-item"],
+    ["frm-t1359271954246-item", "frm-t1359347613687-item",
+     "frm-t1359347873346-item", "frm-t1359347876071-item"],
     {
         "frm-t1359271954246-item": {
             "field_type": "input_text",

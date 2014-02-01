@@ -216,7 +216,7 @@ class ProfileOrgMemberCreatePageTest(test_utils.GSoCDjangoTestCase):
     form = response.context['forms'][0]
     self.assertNotIn('username', form.fields)
 
-    # check POST request 
+    # check POST request
     postdata = {
         'public_name': TEST_PUBLIC_NAME,
         'web_page': TEST_WEB_PAGE,

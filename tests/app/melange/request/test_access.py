@@ -272,7 +272,7 @@ class NonStudentUrlProfileAccessCheckerTest(unittest.TestCase):
         'status': 'active',
         'is_student': False
         }
-    profile =  seeder_logic.seed(
+    profile = seeder_logic.seed(
         profile_model.Profile, properties=profile_properties)
 
     self.url_profile.is_student = True
