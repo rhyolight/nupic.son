@@ -210,6 +210,7 @@ OTHER_PROFILE_IS_THE_CURRENT_PROFILE = translation.ugettext(
 TAG_TOO_LONG = translation.ugettext('Tag %s is too long: %s')
 
 GENERAL_INFO_GROUP_TITLE = translation.ugettext('General Info')
+CONTACT_GROUP_TITLE = translation.ugettext('Contact')
 
 ORGANIZATION_LIST_DESCRIPTION = 'List of organizations'
 
@@ -753,13 +754,31 @@ class OrgAppShowPage(base.GSoCRequestHandler):
     """See base.RequestHandler.context for specification."""
     groups = []
 
+    # General Info group
     fields = collections.OrderedDict()
-    fields[data.models.ndb_org_model.org_id._verbose_name] = (
-        data.url_ndb_org.org_id)
-    fields[data.models.ndb_org_model.name._verbose_name] = (
-        data.url_ndb_org.name)
+    fields[ORG_ID_LABEL] = data.url_ndb_org.org_id
+    fields[ORG_NAME_LABEL] = data.url_ndb_org.name
+    fields[IS_VETERAN_LABEL] = data.url_ndb_org.is_veteran
+    fields[DESCRIPTION_LABEL] = data.url_ndb_org.description
+    fields[TAGS_LABEL] = ', '.join(data.url_ndb_org.tags)
+    fields[LICENSE_LABEL] = data.url_ndb_org.license
+    fields[LOGO_URL_LABEL] = data.url_ndb_org.logo_url
+    fields[IDEAS_PAGE_LABEL] = data.url_ndb_org.ideas_page
     groups.append(
         readonly_template.Group(GENERAL_INFO_GROUP_TITLE, fields.items()))
+
+    # Contact group
+    fields = collections.OrderedDict()
+    fields[MAILING_LIST_LABEL] = data.url_ndb_org.contact.mailing_list
+    fields[WEB_PAGE_LABEL] = data.url_ndb_org.contact.web_page
+    fields[IRC_CHANNEL_LABEL] = data.url_ndb_org.contact.irc_channel
+    fields[FEED_URL_LABEL] = data.url_ndb_org.contact.feed_url
+    fields[GOOGLE_PLUS_LABEL] = data.url_ndb_org.contact.google_plus
+    fields[TWITTER_LABEL] = data.url_ndb_org.contact.twitter
+    fields[BLOG_LABEL] = data.url_ndb_org.contact.blog
+    fields[FACEBOOK_LABEL] = data.url_ndb_org.contact.facebook
+    groups.append(
+        readonly_template.Group(CONTACT_GROUP_TITLE, fields.items()))
 
     app_response = org_logic.getApplicationResponse(data.url_ndb_org.key)
     groups.append(
