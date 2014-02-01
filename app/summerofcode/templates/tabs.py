@@ -16,6 +16,7 @@
 
 from django.utils import translation
 
+from melange.models import organization as org_model
 from melange.request import links
 from melange.templates import tabs
 
@@ -90,11 +91,12 @@ def orgTabs(data, selected_tab_id=None):
   tabs_list.append(
       tabs.Tab(ORG_APP_RESPONSE_TAB_ID, ORG_APP_RESPONSE_NAME, url))
 
-  # add Organization Preferences tab
-  url = links.LINKER.organization(
-      data.url_ndb_org.key, urls.UrlNames.ORG_PREFERENCES_EDIT)
-  tabs_list.append(
-      tabs.Tab(ORG_PREFERENCES_TAB_ID, ORG_PREFERENCES_NAME, url))
+  # add Organization Preferences tab if the organization is accepted
+  if data.url_ndb_org.status == org_model.Status.ACCEPTED:
+    url = links.LINKER.organization(
+        data.url_ndb_org.key, urls.UrlNames.ORG_PREFERENCES_EDIT)
+    tabs_list.append(
+        tabs.Tab(ORG_PREFERENCES_TAB_ID, ORG_PREFERENCES_NAME, url))
 
   return tabs.Tabs(
       data, TEMPLATE_PATH, tabs_list, selected_tab_id=selected_tab_id)
