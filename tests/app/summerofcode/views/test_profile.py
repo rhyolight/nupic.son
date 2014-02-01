@@ -36,6 +36,7 @@ from summerofcode.views import profile as profile_view
 from tests import profile_utils
 from tests import program_utils
 from tests import test_utils
+from tests import timeline_utils
 
 
 TEST_BIRTH_DATE = datetime.date(1993, 01, 01)
@@ -290,6 +291,11 @@ class ProfileRegisterAsStudentPageTest(test_utils.GSoCDjangoTestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.init()
+
+    # student registration is now
+    self.program.timeline.student_signup_start = timeline_utils.past()
+    self.program.timeline.student_signup_end = timeline_utils.future()
+    self.program.timeline.put()
 
   def testPageLoads(self):
     """Tests that page loads properly."""
