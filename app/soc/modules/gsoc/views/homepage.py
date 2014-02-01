@@ -32,6 +32,7 @@ from soc.modules.gsoc.views import base
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper.url_patterns import url
 
+from summerofcode.logic import timeline as timeline_logic
 from summerofcode.views.helper import urls
 
 
@@ -266,41 +267,11 @@ class Homepage(base.GSoCRequestHandler):
     # is over: please remember to remove it from the Timeline widget class,
     # too.
     new_widget = True
+    timeline_data = json.dumps(timeline_logic.createTimelineDict(data.timeline))
 
     context = {
         'timeline': Timeline(data, current_timeline, next_deadline, new_widget),
-        'timeline_data': json.dumps({
-          'title_selector': '#timeline-head-title',
-          'timerange_selector': '#timeline-head-timerange',
-          'now': '2014-03-01 00:00',
-          'slices': [
-            {
-              'title': 'Off season',
-              'from': '2013-08-22 19:00',
-              'to': '2014-02-03 19:00'
-            },
-            {
-              'title': 'Organizations applications',
-              'from': '2014-02-03 19:00',
-              'to': '2014-02-14 19:00'
-            },
-            {
-              'title': 'Students Applications',
-              'from': '2014-03-10 19:00',
-              'to': '2014-03-21 19:00'
-            },
-            {
-              'title': 'Community bonding',
-              'from': '2014-04-21 19:00',
-              'to': '2014-05-19 19:00'
-            },
-            {
-              'title': 'Students coding',
-              'from': '2014-05-19 19:00',
-              'to': '2014-08-22 19:00'
-            }
-          ]
-        }),
+        'timeline_data': timeline_data,
         'apply': Apply(data),
         'connect_with_us': ConnectWithUs(data),
         'new_widget': new_widget,
