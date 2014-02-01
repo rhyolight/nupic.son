@@ -715,3 +715,49 @@ class OrgsAnnouncedAccessCheckerTest(unittest.TestCase):
 
     access_checker = access.OrgsAnnouncedAccessChecker()
     access_checker.checkAccess(self.data, None)
+
+
+class StudentSignupActiveAccessCheckerTest(unittest.TestCase):
+  """Unit tests for StudentSignupActiveAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    sponsor = program_utils.seedSponsor()
+    self.program = program_utils.seedProgram(sponsor_key=sponsor.key())
+
+    kwargs = {
+        'sponsor': sponsor.key().name(),
+        'program': self.program.program_id
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+  def testBeforeStudentSignupAccessDenied(self):
+    """Tests that access is denied before student sign-up period."""
+    self.program.timeline.student_signup_start = timeline_utils.future(delta=10)
+    self.program.timeline.student_signup_end = timeline_utils.future(delta=20)
+    self.program.timeline.put()
+
+    access_checker = access.StudentSignupActiveAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testAfterStudentSignupAccessDenied(self):
+    """Tests that access is denied after student sign-up period."""
+    self.program.timeline.student_signup_start = timeline_utils.past(delta=20)
+    self.program.timeline.student_signup_end = timeline_utils.past(delta=10)
+    self.program.timeline.put()
+
+    access_checker = access.StudentSignupActiveAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testDuringStudentSignupAccessGranted(self):
+    """Tests that access is granted during student sign-up period."""
+    self.program.timeline.student_signup_start = timeline_utils.past(delta=10)
+    self.program.timeline.student_signup_end = timeline_utils.future(delta=10)
+    self.program.timeline.put()
+
+    access_checker = access.StudentSignupActiveAccessChecker()
+    access_checker.checkAccess(self.data, None)

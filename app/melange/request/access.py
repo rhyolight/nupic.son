@@ -57,6 +57,9 @@ _MESSAGE_NOT_ORG_ADMIN_FOR_ORG = translation.ugettext(
 _MESSAGE_INACTIVE_BEFORE = translation.ugettext(
     'This page is inactive before %s.')
 
+_MESSAGE_INACTIVE_OUTSIDE = translation.ugettext(
+    'This page is inactive before %s and after %s.')
+
 def ensureLoggedIn(data):
   """Ensures that the user is logged in.
 
@@ -310,7 +313,7 @@ HAS_NO_PROFILE_ACCESS_CHECKER = HasNoProfileAccessChecker()
 
 
 class OrgSignupStartedAccessChecker(AccessChecker):
-  """AccessChecker that ensures that organization sign-up process has started
+  """AccessChecker that ensures that organization sign-up period has started
   for the program specified in the URL.
   """
 
@@ -333,3 +336,17 @@ class OrgsAnnouncedAccessChecker(AccessChecker):
     if not data.timeline.orgsAnnounced():
       active_from = data.timeline.orgsAnnouncedOn()
       raise exception.Forbidden(message=_MESSAGE_INACTIVE_BEFORE % active_from)
+
+
+class StudentSignupActiveAccessChecker(AccessChecker):
+  """AccessChecker that ensures that student sign-up period has started
+  for the program specified in the URL.
+  """
+
+  def checkAccess(self, data, check):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.timeline.studentSignup():
+      raise exception.Forbidden(message=_MESSAGE_INACTIVE_OUTSIDE % (
+          data.timeline.studentsSignupBetween()))
+
+STUDENT_SIGNUP_ACTIVE_ACCESS_CHECKER = StudentSignupActiveAccessChecker()
