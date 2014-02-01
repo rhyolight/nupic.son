@@ -685,8 +685,9 @@ class OrgPreferencesEditPage(base.GSoCRequestHandler):
 class OrgApplicationSubmitPage(base.GSoCRequestHandler):
   """View to submit application to a program by organization representatives."""
 
-  # TODO(daniel): implement actual access checker
-  access_checker = access.ALL_ALLOWED_ACCESS_CHECKER
+  access_checker = access.ConjuctionAccessChecker([
+      access.NON_STUDENT_PROFILE_ACCESS_CHECKER,
+      access.ORG_SIGNUP_ACTIVE_ACCESS_CHECKER])
 
   def djangoURLPatterns(self):
     """See base.RequestHandler.djangoURLPatterns for specification."""
