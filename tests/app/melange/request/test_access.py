@@ -682,6 +682,53 @@ class OrgsSignupStartedAccessCheckerTest(unittest.TestCase):
     access_checker.checkAccess(self.data, None)
 
 
+class OrgSignupActiveAccessCheckerTest(unittest.TestCase):
+  """Unit tests for OrgSignupActiveAccessChecker class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    sponsor = program_utils.seedSponsor()
+    program = program_utils.seedProgram(sponsor_key=sponsor.key())
+    self.app_survey = program_utils.seedApplicationSurvey(program.key())
+
+    kwargs = {
+        'sponsor': sponsor.key().name(),
+        'program': program.program_id
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+  def testBeforeOrgSignupAccessDenied(self):
+    """Tests that access is denied before organization sign-up starts."""
+    self.app_survey.survey_start = timeline_utils.future(delta=100)
+    self.app_survey.survey_end = timeline_utils.future(delta=150)
+    self.app_survey.put()
+
+    access_checker = access.OrgSignupActiveAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testDuringOrgSignupAccessGranted(self):
+    """Tests that access is granted during organization sign-up period."""
+    self.app_survey.survey_start = timeline_utils.past()
+    self.app_survey.survey_end = timeline_utils.future()
+    self.app_survey.put()
+
+    access_checker = access.OrgSignupActiveAccessChecker()
+    access_checker.checkAccess(self.data, None)
+
+  def testAfterOrgSignupAccessDenied(self):
+    """Tests that access is denied after organization sign-up ends."""
+    self.app_survey.survey_start = timeline_utils.past(delta=150)
+    self.app_survey.survey_end = timeline_utils.past(delta=100)
+    self.app_survey.put()
+
+    access_checker = access.OrgSignupActiveAccessChecker()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+
 class OrgsAnnouncedAccessCheckerTest(unittest.TestCase):
   """Unit tests for OrgsAnnouncedAccessChecker class."""
 

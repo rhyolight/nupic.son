@@ -326,6 +326,20 @@ class OrgSignupStartedAccessChecker(AccessChecker):
 ORG_SIGNUP_STARTED_ACCESS_CHECKER = OrgSignupStartedAccessChecker()
 
 
+class OrgSignupActiveAccessChecker(AccessChecker):
+  """AccessChecker that ensures that organization sign-up period is active
+  for the program specified in the URL.
+  """
+
+  def checkAccess(self, data, check):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.timeline.orgSignup():
+      raise exception.Forbidden(message=_MESSAGE_INACTIVE_OUTSIDE % (
+          data.timeline.orgSignupBetween()))
+
+ORG_SIGNUP_ACTIVE_ACCESS_CHECKER = OrgSignupActiveAccessChecker()
+
+
 class OrgsAnnouncedAccessChecker(AccessChecker):
   """AccessChecker that ensures that organizations have been announced for
   the program specified in the URL.
@@ -339,7 +353,7 @@ class OrgsAnnouncedAccessChecker(AccessChecker):
 
 
 class StudentSignupActiveAccessChecker(AccessChecker):
-  """AccessChecker that ensures that student sign-up period has started
+  """AccessChecker that ensures that student sign-up period is active
   for the program specified in the URL.
   """
 
