@@ -121,12 +121,12 @@
   };
 
   /*
-    Parse yyyy-mm-dd hh:mm:ss using custom function, since standard parse
-    function is implementation dependent.
+    Parse ISO 8601 date string using custom function, since standard
+    parse function is implementation dependent.
     Returns number of milliseconds from midnight January 1 1970.
   */
-  Timeline.prototype.dateToUTCMilliseconds = function (date) {
-    var parts = date.match(/(\d+)/g);
+  Timeline.prototype.dateToUTCMilliseconds = function (date_string) {
+    var parts = date_string.match(/(\d+)/g);
     return Date.UTC(
       parts[0],
       parts[1] - 1, // months are 0-based
