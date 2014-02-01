@@ -42,110 +42,144 @@ from pylint import lint
 PROJECT_DIR = path.path(__file__).dirname().abspath()
 REPORTS_DIR = PROJECT_DIR / 'reports'
 JS_DIRS = ['soc/content/js']
-
-# Set some default options. Having the options at the top of the file cleans
-# the whole thing up and makes the behaviour a lot more configurable.
-easy.options(
-  build = easy.Bunch(
-    project_dir = PROJECT_DIR,
-    app_build = PROJECT_DIR / 'build',
-    app_folder = PROJECT_DIR / 'app',
-    copy_dirs = JS_DIRS + ['soc/content/css'],
-    dont_copy_dirs = ['soc/content/js/thirdparty/tiny_mce'],
-    overrides_folder = PROJECT_DIR / 'overrides',
-    overrides_dirs = ['soc', 'soc/models', 'soc/content'],
-    overrides_files = ['soc/models/universities.py'],
-    app_files = ['app.yaml', 'index.yaml', 'queue.yaml', 'cron.yaml',
-                 'mapreduce.yaml', 'main.py', 'settings.py', 'urls.py',
-                 'gae_django.py', 'profiler.py', 'appengine_config.py'],
-    app_dirs =  ["melange", "soc", "feedparser", "djangoforms", "ranklist",
-                 "shell", "html5lib", "gviz", "webmaster",
-                 "mapreduce", "summerofcode", "codein", "apiclient",
-                 "httplib2", "oauth2client", "uritemplate"],
-    css_dirs = ["soc/content/css/gsoc/", "soc/content/css/gci"],
-    css_files = {
-        "jquery-ui/jquery.ui.merged.css": [
-            "jquery-ui/jquery.ui.core.css",
-            "jquery-ui/jquery.ui.resizable.css",
-            "jquery-ui/jquery.ui.selectable.css",
-            "jquery-ui/jquery.ui.accordion.css",
-            "jquery-ui/jquery.ui.autocomplete.css",
-            "jquery-ui/jquery.ui.button.css",
-            "jquery-ui/jquery.ui.dialog.css",
-            "jquery-ui/jquery.ui.slider.css",
-            "jquery-ui/jquery.ui.tabs.css",
-            "jquery-ui/jquery.ui.datepicker.css",
-            "jquery-ui/jquery.ui.progressbar.css",
-            "jquery-ui/jquery.ui.theme.css"
+COPY_DIRS = JS_DIRS + ['soc/content/css']
+DONT_COPY_DIRS = ['soc/content/js/thirdparty/tiny_mce']
+APP_FILES = [
+    'app.yaml',
+    'index.yaml',
+    'queue.yaml',
+    'cron.yaml',
+    'mapreduce.yaml',
+    'main.py',
+    'settings.py',
+    'urls.py',
+    'gae_django.py',
+    'profiler.py',
+    'appengine_config.py',
+    ]
+APP_DIRS = [
+    'melange',
+    'soc',
+    'feedparser',
+    'djangoforms',
+    'ranklist',
+    'shell',
+    'html5lib',
+    'gviz',
+    'webmaster',
+    'mapreduce',
+    'summerofcode',
+    'codein',
+    'apiclient',
+    'httplib2',
+    'oauth2client',
+    'uritemplate',
+    ]
+CSS_FILES = {
+    'jquery-ui/jquery.ui.merged.css': [
+        'jquery-ui/jquery.ui.core.css',
+        'jquery-ui/jquery.ui.resizable.css',
+        'jquery-ui/jquery.ui.selectable.css',
+        'jquery-ui/jquery.ui.accordion.css',
+        'jquery-ui/jquery.ui.autocomplete.css',
+        'jquery-ui/jquery.ui.button.css',
+        'jquery-ui/jquery.ui.dialog.css',
+        'jquery-ui/jquery.ui.slider.css',
+        'jquery-ui/jquery.ui.tabs.css',
+        'jquery-ui/jquery.ui.datepicker.css',
+        'jquery-ui/jquery.ui.progressbar.css',
+        'jquery-ui/jquery.ui.theme.css',
         ],
-    },
-    zip_files = ['tiny_mce.zip'],
-    docs_config = PROJECT_DIR / 'docs.config',
-    docs_output = REPORTS_DIR / 'docs',
-    skip_docs = False,
-    skip_pylint = False,
-    skip_closure = False,
-  )
-)
+    }
+CSS_DIRS = ['soc/content/css/gsoc/', 'soc/content/css/gci']
+ZIP_FILES = ['tiny_mce.zip']
+DOCS_CONFIG = PROJECT_DIR / 'docs.config'
+DOCS_OUTPUT = REPORTS_DIR / 'docs'
 
+# TODO(nathaniel): Get rid of all the "overrides" stuff as part of
+# finishing https://code.google.com/p/soc/issues/detail?id=1560.
+OVERRIDES_FOLDER = PROJECT_DIR / 'overrides'
+OVERRIDES_DIRS = ['soc', 'soc/models', 'soc/content']
+OVERRIDES_FILES = ['soc/models/universities.py']
 
+BUILD_BUNCH = easy.Bunch(
+    project_dir=PROJECT_DIR,
+    app_files=APP_FILES,
+    app_dirs=APP_DIRS,
+    app_build=PROJECT_DIR / 'build',
+    app_folder=PROJECT_DIR / 'app',
+    css_dirs=CSS_DIRS,
+    css_files=CSS_FILES,
+    zip_files=ZIP_FILES,
+    docs_config=DOCS_CONFIG,
+    docs_output=DOCS_OUTPUT,
+    copy_dirs=COPY_DIRS,
+    dont_copy_dirs=DONT_COPY_DIRS,
+    overrides_folder=OVERRIDES_FOLDER,
+    overrides_dirs=OVERRIDES_DIRS,
+    overrides_files=OVERRIDES_FILES,
+    skip_closure=False,
+    skip_docs=False,
+    skip_pylint=False)
 
-# The second call to options allows us to re-use some of the constants defined
-# in the first call.
+PYLINT_APP_FOLDER_MODULES = [
+    'codein',
+    'melange',
+    'soc',
+    'summerofcode',
+    'settings.py',
+    'urls.py',
+    'main.py',
+    ]
+PYLINT_TESTS_FOLDER = PROJECT_DIR / 'tests'
+PYLINT_PROJECT_FOLDER_MODULES = ['pavement.py', 'setup.py']
+PYLINT_VERBOSE_ARGS = [
+    # In the rcfile(pylintrc) errors-only option is set. This is to enable
+    # other messages as well.
+    # R and C modules are just too chatty, we can however turn a few of the
+    # more useful ones on explicitly.
+    '--enable=W,F',
+    '--reports=yes',
+    # We may want to enable these in the future
+    '--disable=protected-access,attribute-defined-outside-init',
+    # TODO(nathaniel): fix all occurences and enable this
+    '--disable=abstract-method',
+    # These are just plain useless, we don't ever want to these
+    '--disable=fixme,unused-argument,star-args,bad-builtin,locally-disabled',
+    # These are somewhat debatable, but not realistic for Melange
+    '--disable=no-init,super-init-not-called',
+    # TODO(nathaniel): fix all occurences and move this to pylintrc file.
+    '--enable=line-too-long',
+    ]
+PYLINT_BUNCH = easy.Bunch(
+    app_folder_modules=PYLINT_APP_FOLDER_MODULES,
+    project_folder_modules=PYLINT_PROJECT_FOLDER_MODULES,
+    tests_folder=PYLINT_TESTS_FOLDER,
+    verbose=False,
+    verbose_args=PYLINT_VERBOSE_ARGS,
+    pylint_args=[],
+    with_module=None,
+    ignore=False,
+    **BUILD_BUNCH)
+
+CLOSURE_BIN = PROJECT_DIR / 'thirdparty/closure/compiler.jar'
+CLOSURE_NO_OPTIMIZE = ['jquery-jqgrid.base.js', 'jLinq-2.2.1.js']
+CLOSURE_BUNCH = easy.Bunch(
+    js_filter=None,
+    js_dir=None,
+    output_to_build=False,
+    js_dirs=JS_DIRS,
+    closure_bin=CLOSURE_BIN,
+    no_optimize=CLOSURE_NO_OPTIMIZE,
+    **BUILD_BUNCH)
+
+# Install the option bunches.
 easy.options(
-  clean_build = easy.options.build,
-  tinymce_zip = easy.options.build,
-
-  pylint = easy.Bunch(
-    app_folder_modules = [
-        'codein',
-        'melange',
-        'soc',
-        'summerofcode',
-        'settings.py',
-        'urls.py',
-        'main.py',
-    ],
-    project_folder_modules = [
-        'pavement.py',
-        'setup.py',
-    ],
-    tests_folder = PROJECT_DIR / 'tests',
-    verbose = False,
-    verbose_args = [
-      # In the rcfile(pylintrc) errors-only option is set. This is to enable
-      # other messages as well.
-      # R and C modules are just too chatty, we can however turn a few of the
-      # more useful ones on explicitly.
-      '--enable=W,F',
-      '--reports=yes',
-      # We may want to enable these in the future
-      '--disable=protected-access,attribute-defined-outside-init',
-      # TODO(nathaniel): fix all occurences and enable this
-      '--disable=abstract-method',
-      # These are just plain useless, we don't ever want to these
-      '--disable=fixme,unused-argument,star-args,bad-builtin,locally-disabled',
-      # These are somewhat debatable, but not realistic for Melange
-      '--disable=no-init,super-init-not-called',
-      # TODO(nathaniel): fix all occurences and move this to pylintrc file.
-      '--enable=line-too-long',
-    ], 
-    pylint_args = [],
-    with_module = None,
-    ignore = False,
-    **easy.options.build
-  ),
-
-  closure = easy.Bunch(
-    js_filter = None,
-    js_dir = None,
-    output_to_build = False,
-    js_dirs = JS_DIRS,
-    closure_bin = PROJECT_DIR / "thirdparty/closure/compiler.jar",
-    no_optimize = ["jquery-jqgrid.base.js", "jLinq-2.2.1.js"],
-    **easy.options.build
-  )
-)
+    build=BUILD_BUNCH,
+    clean_build=BUILD_BUNCH,
+    tinymce_zip=BUILD_BUNCH,
+    pylint=PYLINT_BUNCH,
+    closure=CLOSURE_BUNCH)
 
 
 # Utility functions
@@ -179,7 +213,6 @@ def symlink(target, link_name):
     # If we are on a platform where symlinks are not supported (such as
     # Windows), simply copy the files across.
     target.copy(link_name)
-
 
 # Tasks
 

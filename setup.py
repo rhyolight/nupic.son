@@ -2,42 +2,57 @@
 
 import os
 import re
-from setuptools import setup, find_packages
 
-match_version = re.compile("version: ([0-9\-]+)")
+import setuptools
+
+MATCH_VERSION = re.compile('version: ([0-9\-]+)')
+
+MELANGE_NAME = 'melange'
+MELANGE_DESCRIPTION = (
+    'The goal of this project is to create a framework for ' +
+    'representing Open Source contribution workflows, such as ' +
+    'the existing Google Summer of Code TM (GSoC) program.')
+MELANGE_AUTHORS = open('AUTHORS').read()
+MELANGE_URL = 'http://code.google.com/p/soc'
+MELANGE_LICENSE = 'Apache2'
+
+PACKAGES = setuptools.find_packages(exclude=['thirdparty', 'parts'])
+TESTS_REQUIRE = [
+    'zope.testbrowser',
+    'gaeftest',
+    'gaetestbed',
+    'webtest',
+    'mox',
+    'nose',
+    'mock',
+    ]
+ENTRY_POINTS = {
+    'console_scripts': [
+        'run-tests = tests.run:main',
+        'gen-app-yaml = scripts.gen_app_yaml:main',
+        'stats = scripts.stats:main',
+        'download-student-forms = scripts.download_student_forms:main',
+        ],
+    }
+
+
 try:
-    appyaml = open(os.path.join("app", "app.yaml.template"))
-    version = match_version.findall(appyaml.read())[0]
+  appyaml = open(os.path.join('app', 'app.yaml.template'))
+  version = MATCH_VERSION.findall(appyaml.read())[0]
 except:
-    version = "UNKNOWN"
+  version = 'UNKNOWN'
 
-setup(
-    name = 'melange',
-    description=("The goal of this project is to create a framework for "
-                 "representing Open Source contribution workflows, such as"
-                 " the existing Google Summer of Code TM (GSoC) program."),
-    version = version,
-    packages = find_packages(exclude=['thirdparty','parts']),
-    author=open("AUTHORS").read(),
-    url='http://code.google.com/p/soc',
-    license='Apache2',
-    install_requires = [
-        ],
-    tests_require=[
-        'zope.testbrowser',
-        'gaeftest',
-        'gaetestbed',
-        'webtest',
-        'mox',
-        'nose',
-        'mock',
-        ],
-    entry_points = {'console_scripts': ['run-tests = tests.run:main',
-                                        'gen-app-yaml = scripts.gen_app_yaml:main',
-                                        'stats = scripts.stats:main',
-                                        'download-student-forms = scripts.download_student_forms:main',
-                                        ],
-                    },
-    include_package_data = True,
-    zip_safe = False,
+setuptools.setup(
+    name=MELANGE_NAME,
+    description=MELANGE_DESCRIPTION,
+    version=version,
+    packages=PACKAGES,
+    author=MELANGE_AUTHORS,
+    url=MELANGE_URL,
+    license=MELANGE_LICENSE,
+    install_requires=[],
+    tests_require=TESTS_REQUIRE,
+    entry_points=ENTRY_POINTS,
+    include_package_data=True,
+    zip_safe=False,
     )
