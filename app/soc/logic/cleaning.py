@@ -298,25 +298,6 @@ def cleanValidAddressCharacters(value):
     return value
 
 
-def clean_valid_shipping_chars(field_name):
-  """Clean method for cleaning a field that must comply with Google's character
-  requirements for shipping.
-  """
-
-  @check_field_is_empty(field_name)
-  def wrapper(self):
-    """Decorator wrapper method.
-    """
-    value = self.cleaned_data.get(field_name)
-
-    if value and not DEF_VALID_SHIPPING_CHARS.match(value):
-      raise forms.ValidationError(
-          safestring.mark_safe(DEF_INVALID_SHIPPING_CHARS))
-
-    return value
-  return wrapper
-
-
 def clean_content_length(field_name, min_length=0, max_length=500):
   """Clean method for cleaning a field which must contain at least min and
      not more then max length characters.

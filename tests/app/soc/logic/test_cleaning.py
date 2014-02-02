@@ -193,21 +193,6 @@ class CleaningTest(GSoCDjangoTestCase):
     self.form.cleaned_data = {field_name: field_value}
     self.assertRaises(forms.ValidationError, clean_field, self.form)
 
-  def testCleanValidShippingChars(self):
-    """Tests that the shipping fields can be cleaned.
-    """
-    field_name = 'test_ascii'
-    clean_field = cleaning.clean_valid_shipping_chars(field_name)
-    # Test that the value will be returned if the value of field is valid
-    field_value = 'ab12'
-    self.form.cleaned_data = {field_name: field_value}
-    self.assertEqual(clean_field(self.form), field_value)
-    # Test that forms.ValidationError will be raised if the value of field
-    # is not valid ascii
-    field_value = u'\ua000'
-    self.form.cleaned_data = {field_name: field_value}
-    self.assertRaises(forms.ValidationError, clean_field, self.form)
-
   def testCleanContentLength(self):
     """Tests that content length can be cleaned.
     """

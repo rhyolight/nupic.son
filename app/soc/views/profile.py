@@ -73,26 +73,53 @@ class ProfileForm(forms.ModelForm):
   clean_im_network = cleaning.clean_html_content('im_network')
   clean_im_handle = cleaning.clean_html_content('im_handle')
   clean_program_knowledge = cleaning.clean_html_content('program_knowledge')
-
-  clean_given_name = cleaning.clean_valid_shipping_chars('given_name')
-  clean_surname = cleaning.clean_valid_shipping_chars('surname')
   clean_email = cleaning.clean_email('email')
   clean_phone = cleaning.clean_phone_number('phone')
-  clean_res_street = cleaning.clean_valid_shipping_chars('res_street')
-  clean_res_street_extra = cleaning.clean_valid_shipping_chars(
-      'res_street_extra')
-  clean_res_city = cleaning.clean_valid_shipping_chars('res_city')
-  clean_res_state = cleaning.clean_valid_shipping_chars('res_state')
-  clean_res_postalcode = cleaning.clean_valid_shipping_chars(
-      'res_postalcode')
-  clean_ship_name = cleaning.clean_valid_shipping_chars('ship_name')
-  clean_ship_street = cleaning.clean_valid_shipping_chars('ship_street')
-  clean_ship_street_extra = cleaning.clean_valid_shipping_chars(
-      'ship_street_extra')
-  clean_ship_city = cleaning.clean_valid_shipping_chars('ship_city')
-  clean_ship_state = cleaning.clean_valid_shipping_chars('ship_state')
-  clean_ship_postalcode = cleaning.clean_valid_shipping_chars(
-      'ship_postalcode')
+
+  def clean_given_name(self):
+    return cleaning.cleanValidAddressCharacters(self.cleaned_data['given_name'])
+
+  def clean_surname(self):
+    return cleaning.cleanValidAddressCharacters(self.cleaned_data['surname'])
+
+  def clean_res_street(self):
+    return cleaning.cleanValidAddressCharacters(self.cleaned_data['res_street'])
+
+  def clean_res_city(self):
+    return cleaning.cleanValidAddressCharacters(self.cleaned_data['res_city'])
+
+  def clean_res_street_extra(self):
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['res_street_extra'])
+
+  def clean_res_state(self):
+    return cleaning.cleanValidAddressCharacters(self.cleaned_data['res_state'])
+
+  def clean_res_postalcode(self):
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['res_postalcode'])
+
+  def clean_ship_name(self):
+    return cleaning.cleanValidAddressCharacters(self.cleaned_data['ship_name'])
+
+  def clean_ship_street(self):
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['ship_street'])
+
+  def clean_ship_street_extra(self):
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['ship_street_extra'])
+
+  def clean_ship_city(self):
+    return cleaning.cleanValidAddressCharacters(self.cleaned_data['ship_city'])
+
+  def clean_ship_state(self):
+    return cleaning.cleanValidAddressCharacters(self.cleaned_data['ship_state'])
+
+  def clean_ship_postalcode(self):
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['ship_postalcode'])
+
   clean_home_page = cleaning.clean_url('home_page')
   clean_blog = cleaning.clean_url('blog')
   clean_photo_url = cleaning.clean_url('photo_url')
