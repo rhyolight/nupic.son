@@ -49,7 +49,7 @@ COUNTRY_INFO = {
     'Bermuda': ('.bm', 'North America'),
     'Bhutan': ('.bt', 'Asia'),
     'Bolivia': ('.bo', 'South America'),
-    'Bosnia-Herzegovina': ('.ba', 'Europe'),
+    'Bosnia and Herzegovina': ('.ba', 'Europe'),
     'Botswana': ('.bw', 'Africa'),
     'Bouvet Island': ('.bv', 'Europe'),
     'Brazil': ('.br', 'South America'),
