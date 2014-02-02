@@ -1599,13 +1599,14 @@ class TodoComponent(Component):
     if response.start == 'done':
       return response
 
-    info = self.data.student_info
-
     isgood = lambda x: x and x.size and x.filename
 
-    if self.data.is_student and info.number_of_projects:
+    if (self.data.ndb_profile.is_student
+        and self.data.ndb_profile.student_data.number_of_projects):
       if self.data.timeline.afterFormSubmissionStart():
-        status = colorize(isgood(info.tax_form), "Submitted", "Not submitted")
+        status = colorize(
+            isgood(self.data.ndb_profile.student_data.tax_form),
+            'Submitted', 'Not submitted')
         response.addRow({
             'key': 'tax_form',
             'name': 'Tax form',
@@ -1613,15 +1614,20 @@ class TodoComponent(Component):
         })
 
         status = colorize(
-            isgood(info.enrollment_form), "Submitted", "Not submitted")
+            isgood(self.data.ndb_profile.student_data.enrollment_form),
+            'Submitted', 'Not submitted')
         response.addRow({
             'key': 'enrollment_form',
             'name': 'Enrollment form',
             'status': status,
         })
 
-      matches = info.school_name in UNIVERSITIES.get(info.school_country, [])
-      status = colorize(matches, "Yes", "No")
+      matches = (
+          self.data.ndb_profile.student_data.education.school_id
+              in UNIVERSITIES.get(
+                  self.data.ndb_profile.student_data.education.school_country,
+                  []))
+      status = colorize(matches, 'Yes', 'No')
       response.addRow({
           'key': 'school_name',
           'name': 'School name selected from autocomplete',
