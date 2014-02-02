@@ -276,6 +276,28 @@ def clean_users_not_same(field_name):
   return wrapped
 
 
+def cleanValidAddressCharacters(value):
+  """Cleaning method for a value that is submitted as a part of an address
+  information. It ensures that it complies with Google's character
+  requirements for shipping purposes.
+
+  Args:
+    value: The value submitted in the form as a part of an address.
+
+  Returns:
+    Cleaned value for the field.
+
+  Raises:
+    django_forms.ValidationError if the submitted value contains invalid
+    characters.
+  """
+  if value and not DEF_VALID_SHIPPING_CHARS.match(value):
+    raise forms.ValidationError(
+        safestring.mark_safe(DEF_INVALID_SHIPPING_CHARS))
+  else:
+    return value
+
+
 def clean_valid_shipping_chars(field_name):
   """Clean method for cleaning a field that must comply with Google's character
   requirements for shipping.
