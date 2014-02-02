@@ -385,6 +385,12 @@ VALID_POSTDATA = {
     'residential_province': TEST_RESIDENTIAL_PROVINCE,
     'residential_country': TEST_RESIDENTIAL_COUNTRY,
     'residential_postal_code': TEST_RESIDENTIAL_POSTAL_CODE,
+    'shipping_name': TEST_SHIPPING_NAME,
+    'shipping_street': TEST_SHIPPING_STREET,
+    'shipping_city': TEST_SHIPPING_CITY,
+    'shipping_province': TEST_SHIPPING_PROVINCE,
+    'shipping_country': TEST_SHIPPING_COUNTRY,
+    'shipping_postal_code': TEST_SHIPPING_POSTAL_CODE,
     'is_shipping_address_different': False,
     'birth_date': TEST_BIRTH_DATE.strftime('%Y-%m-%d'),
     'tee_style': TEST_TEE_STYLE,
@@ -557,6 +563,31 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
     response = self.post(
         _getEditProfileUrl(self.program.key()), postdata=postdata)
     self.assertTrue(response.context['error'])
+
+    # residential address fields have invalid characters
+    fields = [
+        'residential_street', 'residential_street_extra', 'residential_city',
+        'residential_province', 'residential_country',
+        'residential_postal_code']
+    for field in fields:
+      postdata = VALID_POSTDATA.copy()
+      postdata[field] = '!N^al!D'
+      response = self.post(
+          _getEditProfileUrl(self.program.key()), postdata=postdata)
+      self.assertTrue(response.context['error'])
+
+    # shipping address fields have invalid characters
+    fields = [
+        'shipping_street', 'shipping_street_extra', 'shipping_city',
+        'shipping_province', 'shipping_country', 'shipping_postal_code',
+        'shipping_name']
+    for field in fields:
+      postdata = VALID_POSTDATA.copy()
+      postdata[field] = '!N^al!D'
+      response = self.post(
+          _getEditProfileUrl(self.program.key()), postdata=postdata)
+      self.assertTrue(response.context['error'])
+
 
 class CleanShippingAddressPartTest(unittest.TestCase):
   """Unit tests for _cleanShippingAddressPart function."""

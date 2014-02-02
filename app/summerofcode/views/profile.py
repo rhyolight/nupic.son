@@ -620,6 +620,78 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
     """
     return cleanUserId(self.cleaned_data['user_id'])
 
+  def clean_residential_street(self):
+    """Cleans residential_street field.
+
+    Returns:
+      Cleaned value for residential_street field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['residential_street'])
+
+  def clean_residential_street_extra(self):
+    """Cleans residential_street_extra field.
+
+    Returns:
+      Cleaned value for residential_street_extra field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['residential_street_extra'])
+
+  def clean_residential_city(self):
+    """Cleans residential_city field.
+
+    Returns:
+      Cleaned value for residential_city field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['residential_city'])
+
+  def clean_residential_province(self):
+    """Cleans residential_province field.
+
+    Returns:
+      Cleaned value for residential_province field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['residential_province'])
+
+  def clean_residential_postal_code(self):
+    """Cleans residential_postal_code field.
+
+    Returns:
+      Cleaned value for residential_postal_code field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['residential_postal_code'])
+
+  def clean_residential_country(self):
+    """Cleans residential_country field.
+
+    Returns:
+      Cleaned value for residential_country field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['residential_country'])
+
   def clean_shipping_name(self):
     """Cleans shipping_name field.
 
