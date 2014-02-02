@@ -265,6 +265,10 @@ class DashboardPage(base.GSoCRequestHandler):
       components.append(TodoComponent(data))
       components.append(OrganizationsIParticipateInComponent(data))
 
+      if data.ndb_profile.is_admin:
+        # add a component for all organization that this user administers
+        components.append(ParticipantsComponent(data))
+
     if data.ndb_profile.is_mentor:
       if data.timeline.studentsAnnounced():
         # add a component to show all projects a user is mentoring
@@ -275,16 +279,14 @@ class DashboardPage(base.GSoCRequestHandler):
       components.append(SubmittedProposalsComponent(data))
 
     if data.ndb_profile.is_admin:
-      # add a component for all organization that this user administers
-      components.append(ParticipantsComponent(data))
-
-    if data.ndb_profile.is_admin:
       mentor_evals = dictForSurveyModel(
           GradingProjectSurvey, data.program, ['midterm', 'final'])
       student_evals = dictForSurveyModel(
           ProjectSurvey, data.program, ['midterm', 'final'])
-      components.append(MentorEvaluationComponent(data, mentor_evals))
-      components.append(StudentEvaluationComponent(data, student_evals))
+
+      if data.timeline.studentsAnnounced():
+        components.append(MentorEvaluationComponent(data, mentor_evals))
+        components.append(StudentEvaluationComponent(data, student_evals))
 
     return components
 
