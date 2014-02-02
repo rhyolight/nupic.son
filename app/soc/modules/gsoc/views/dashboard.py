@@ -34,6 +34,7 @@ from soc.logic import document as document_logic
 from soc.logic import org_app as org_app_logic
 from soc.models.universities import UNIVERSITIES
 from soc.views import base_templates
+from soc.views import dashboard as dashboard_view
 from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
 from soc.views.helper import lists
@@ -84,7 +85,7 @@ class MainDashboard(Dashboard):
       data: The RequestData object
     """
     super(MainDashboard, self).__init__(data)
-    self.subpages = []
+    self.subpages = dashboard_view._initMainDashboardSubpages(data)
 
   def context(self):
     """Returns the context of main dashboard.
