@@ -77,7 +77,7 @@ class FunctionalTestCase(unittest.TestCase):
     self.program = self.gsoc.key().name()
     self.org = self.program_helper.createOrg()
     self.org_app = self.program_helper.createOrgApp()
-    self.user = profile_utils.seedGSoCProfile(self.gsoc)
+    self.user = profile_utils.seedNDBProfile(self.gsoc.key())
     self.sponsor = program_utils.seedSponsor(sponsor_id='google')
     self.site = program_utils.seedSite(latest_gsoc=self.sponsor.key().name() + '/' + self.program, active_program=self.gsoc)
 
