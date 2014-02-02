@@ -391,7 +391,7 @@ VALID_POSTDATA = {
     'shipping_province': TEST_SHIPPING_PROVINCE,
     'shipping_country': TEST_SHIPPING_COUNTRY,
     'shipping_postal_code': TEST_SHIPPING_POSTAL_CODE,
-    'is_shipping_address_different': False,
+    'is_shipping_address_different': True,
     'birth_date': TEST_BIRTH_DATE.strftime('%Y-%m-%d'),
     'tee_style': TEST_TEE_STYLE,
     'tee_size': TEST_TEE_SIZE,
@@ -553,6 +553,12 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
 
   def testInvalidData(self):
     """Tests that organization is not updated if data is not valid."""
+    # check that data is really valid
+    response = self.post(
+        _getEditProfileUrl(self.program.key()), postdata=VALID_POSTDATA)
+    self.assertResponseRedirect(
+        response, url=_getEditProfileUrl(self.program.key()))
+
     # the birth date is not eligible (the user is too young)
     self.program.student_min_age = (
         (datetime.date.today() - TEST_BIRTH_DATE).days / 365 + 2)
@@ -568,7 +574,7 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
     fields = [
         'residential_street', 'residential_street_extra', 'residential_city',
         'residential_province', 'residential_country',
-        'residential_postal_code']
+        'residential_postal_code', 'first_name', 'last_name']
     for field in fields:
       postdata = VALID_POSTDATA.copy()
       postdata[field] = '!N^al!D'

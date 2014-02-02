@@ -620,6 +620,30 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
     """
     return cleanUserId(self.cleaned_data['user_id'])
 
+  def clean_first_name(self):
+    """Cleans first_name field.
+
+    Returns:
+      Cleaned value for first_name field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['first_name'])
+
+  def clean_last_name(self):
+    """Cleans last_name field.
+
+    Returns:
+      Cleaned value for last_name field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['last_name'])
+
   def clean_residential_street(self):
     """Cleans residential_street field.
 
