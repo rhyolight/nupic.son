@@ -599,6 +599,12 @@ class CleanShippingAddressPartTest(unittest.TestCase):
     result = profile_view._cleanShippingAddressPart(True, 'a value', False)
     self.assertEqual(result, 'a value')
 
+  def testInvalidAddressCharacters(self):
+    """Tests that invalid characters are not accepted."""
+    # Empty or None values are not accepted for required fields
+    with self.assertRaises(django_forms.ValidationError):
+      profile_view._cleanShippingAddressPart(True, '!N^al!D', True)
+
 
 class CleanBirthDateTest(unittest.TestCase):
   """Unit tests for cleanBirthDate function."""

@@ -356,7 +356,7 @@ def _cleanShippingAddressPart(
   elif is_shipping_address_different and not value and is_required:
     raise django_forms.ValidationError('This field is required.')
   else:
-    return value
+    return cleaning.cleanValidAddressCharacters(value)
 
 
 def cleanTermsOfService(is_accepted, terms_of_service):
