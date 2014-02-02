@@ -23,9 +23,7 @@ from google.appengine.ext import ndb
 from django import http
 from django.utils.translation import ugettext
 
-from melange.logic import connection as connection_logic
 from melange.logic import organization as org_logic
-from melange.models import connection as connection_model
 from melange.models import profile as profile_model
 from melange.request import access
 from melange.request import exception
@@ -67,11 +65,6 @@ from summerofcode.views.helper import urls
 
 BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
 
-CONNECTION_ROLES = (
-  ('No Role|Mentor|Org Admin', 'All'),
-  ('No Role', 'No Role'),
-  ('Mentor', 'Mentor'),
-  ('Org Admin', 'Org Admin'))
 
 def colorize(choice, yes, no):
   """Differentiate between yes and no status with green and red colors."""
@@ -261,7 +254,6 @@ class DashboardPage(base.GSoCRequestHandler):
     if component:
       components.append(component)
 
-    components.append(UserConnectionComponent(data))
     evals = dictForSurveyModel(GradingProjectSurvey, data.program,
                                ['midterm', 'final'])
 
@@ -288,7 +280,6 @@ class DashboardPage(base.GSoCRequestHandler):
 
     if data.ndb_profile.is_admin:
       # add a component for all organization that this user administers
-      components.append(OrgConnectionComponent(data, True))
       components.append(ParticipantsComponent(data))
 
     # move to the bottom after student signup
@@ -1288,170 +1279,6 @@ class OrganizationsIParticipateInComponent(Component):
       query.filter('org', org.key.to_old_key())
       query.filter('has_mentor', True).filter('accept_as_project', True)
       return query.count()
-
-
-class OrgConnectionComponent(Component):
-  """Component for listing all the connections for orgs of which the user is an
-  admin.
-  """
-
-  IDX = 7
-
-  def __init__(self, data, for_admin):
-    """Initializes this component.
-    """
-    self.data = data
-    list_config = lists.ListConfiguration()
-
-    def getOrganization(entity, *args):
-      """Helper function to get value of organization column."""
-      org_key = (connection_model.Connection.organization
-          .get_value_for_datastore(entity))
-      return ndb.Key.from_old_key(org_key).get().name
-
-    def getStudent(entity, *args):
-      """Helper function to get value of student column."""
-      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
-
-    list_config.addPlainTextColumn(
-        'organization', 'Organization', getOrganization)
-    list_config.addPlainTextColumn('name', 'Name', getStudent)
-    list_config.addPlainTextColumn('role', 'Role',
-        lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()],
-            options=CONNECTION_ROLES)
-
-    list_config.setRowAction(
-        lambda e, *args: data.redirect.show_org_connection(connection=e).url())
-    self._list_config = list_config
-
-    super(OrgConnectionComponent, self).__init__(data)
-
-  def templatePath(self):
-    return'modules/gsoc/dashboard/list_component.html'
-
-  def getListData(self):
-    """Generates a list of data for the table in this component.
-
-    See getListData() method of soc.views.dashboard.Component for more details.
-
-    Returns:
-        The list data as requested by the current request. Returns None if there is
-        no data to be shown or the request is not for this component's index (IDX).
-    """
-
-    if lists.getListIndex(self.data.request) != self.IDX:
-      return None
-
-    query = connection_logic.queryForOrganizations(
-        self.data.ndb_profile.admin_for)
-
-    starter = lists.keyStarter
-
-    # TODO(daniel): enable prefetching from ndb models
-    #prefetcher = lists.ModelPrefetcher(
-    #    connection_model.Connection, ['organization'])
-
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.data.request, self._list_config, query, starter, prefetcher=None)
-    return response_builder.build()
-
-  def context(self):
-    """Returns the context of this component.
-    """
-    my_list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=7, preload_list=False)
-
-    title = 'Connections for my organizations'
-    description = ugettext(
-        'List of connections with mentors and admins for my organization.')
-
-    return {
-        'name': 'org_connections',
-        'title': title,
-        'lists': [my_list],
-        'description': description
-    }
-
-
-class UserConnectionComponent(Component):
-  """Component for listing all the connections for the current user.
-  """
-
-  IDX = 8
-
-  def __init__(self, data):
-    """Initializes this component.
-    """
-    def getOrganization(entity, *args):
-      """Helper function to get value of organization column."""
-      org_key = (connection_model.Connection.organization
-          .get_value_for_datastore(entity))
-      return ndb.Key.from_old_key(org_key).get().name
-
-    def getStudent(entity, *args):
-      """Helper function to get value of student column."""
-      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
-
-    list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key',
-        lambda e, *args: '%s' % e.keyName(), hidden=True)
-    list_config.addPlainTextColumn(
-        'organization', 'Organization', getOrganization)
-    list_config.addPlainTextColumn('name', 'Name', getStudent)
-    list_config.addPlainTextColumn('role', 'Role',
-        lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()],
-            options=CONNECTION_ROLES)
-
-    list_config.setRowAction(
-        lambda e, *args: data.redirect.show_user_connection(
-        connection=e).url())
-    self._list_config = list_config
-
-    super(UserConnectionComponent, self).__init__(data)
-
-  def templatePath(self):
-    return'modules/gsoc/dashboard/list_component.html'
-
-  def getListData(self):
-    """Generates a list of data for the table in this component.
-
-    See getListData() method of soc.views.dashboard.Component for more details.
-
-    Returns:
-        The list data as requested by the current request. Returns None if there is
-        no data to be shown or the request is not for this component's index (IDX).
-    """
-    if lists.getListIndex(self.data.request) != self.IDX:
-      return None
-
-    q = connection_logic.queryForAncestor(self.data.ndb_profile.key)
-
-    starter = lists.keyStarter
-
-    # TODO(daniel): enable prefetching from ndb models
-    #prefetcher = lists.ModelPrefetcher(
-    #    connection_model.Connection, ['organization'])
-
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.data.request, self._list_config, q, starter,
-        prefetcher=None)
-    return response_builder.build()
-
-  def context(self):
-    """Returns the context of this component.
-    """
-    my_list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=self.IDX, preload_list=False)
-
-    title = 'My connections'
-    description = ugettext('List of my connections with organizations.')
-
-    return {
-        'name': 'connections',
-        'title': title,
-        'lists': [my_list],
-        'description': description
-    }
 
 
 class ParticipantsComponent(Component):
