@@ -213,7 +213,6 @@ class DashboardPage(base.GSoCRequestHandler):
     if data.ndb_profile.is_student:
       components += self._getStudentComponents(data)
     elif data.ndb_profile.is_mentor:
-      components.append(TodoComponent(data))
       components += self._getOrgMemberComponents(data)
 
     return components
@@ -268,6 +267,9 @@ class DashboardPage(base.GSoCRequestHandler):
 
     if evals and data.timeline.afterFirstSurveyStart(evals.values()):
       components.append(OrgEvaluationsComponent(data, evals))
+
+    if data.timeline.orgsAnnounced():
+      components.append(TodoComponent(data))
 
     if data.ndb_profile.is_mentor:
       if data.timeline.studentsAnnounced():
