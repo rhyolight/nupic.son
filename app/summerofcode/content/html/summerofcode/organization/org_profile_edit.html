@@ -27,6 +27,17 @@ limitations under the License.
   {{ block.super }}
 {% endblock %}
 
+{% block form_header_msg %}
+  <div id="pre-form-header">
+    {{ block.super }}
+    {% if description %}
+      <div class="description">
+        {{ description|safe }}
+      </div>
+    {% endif %}
+  </div>
+{% endblock form_header_msg %}
+
 {% block dependencies %}
   [
     dep.uniform,

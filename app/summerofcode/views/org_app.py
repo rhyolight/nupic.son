@@ -530,6 +530,7 @@ class OrgProfileCreatePage(base.GSoCRequestHandler):
 
     return {
         'page_name': ORG_PROFILE_CREATE_PAGE_NAME,
+        'description': data.org_app.content,
         'forms': [form],
         'error': bool(form.errors)
         }
