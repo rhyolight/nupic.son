@@ -538,15 +538,16 @@ class ReviewProposal(base.GSoCRequestHandler):
     if user_role:
       context['user_actions'] = UserActions(data, user_role)
 
+    mentor_key = proposal_model.GSoCProposal.mentor.get_value_for_datastore(
+        data.url_proposal)
+    mentor = ndb.Key.from_old_key(mentor_key).get() if mentor_key else None
     context.update({
         'additional_info': url_helper.trim_url_to(additional_info, 50),
         'additional_info_link': additional_info,
         'comment_box': comment_box,
         'duplicate': duplicate,
         'max_score': org.max_score,
-        'mentor': ndb.Key.from_old_key(
-            proposal_model.GSoCProposal.mentor.get_value_for_datastore(
-                data.url_proposal)),
+        'mentor': mentor,
         'page_name': data.url_proposal.title,
         'possible_mentors': possible_mentors_names,
         'private_comments': private_comments,
