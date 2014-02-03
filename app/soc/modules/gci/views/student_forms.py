@@ -28,7 +28,6 @@ from soc.views.helper import blobstore as bs_helper
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import profile as profile_logic
-from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.views import base
 from soc.modules.gci.views import forms as gci_forms
 from soc.modules.gci.views.helper import url_names
@@ -48,21 +47,19 @@ DEF_STUDENT_ID_FORM_TEXT_HELP = ugettext(
 
 
 class UploadForm(gci_forms.GCIModelForm):
-  """Django form to upload student forms
-  """
+  """Django form to upload student forms."""
 
-  class Meta:
-    model = GCIStudentInfo
-    css_prefix = 'gci_student_forms'
-    fields = ['consent_form', 'student_id_form']
+  Meta = object
 
   consent_form = gci_forms.FileField(required=False)
-  student_id_form = gci_forms.FileField(required=False)
+  enrollment_form = gci_forms.FileField(required=False)
 
-  def __init__(self, request_data=None, **kwargs):
+  def __init__(self, request_data, **kwargs):
     """Initializes the FileFields.
     """
     super(UploadForm, self).__init__(**kwargs)
+
+    self.request_data = request_data
 
     # TODO(nathaniel): make this .program() call unnecessary.
     request_data.redirect.program()
@@ -71,16 +68,18 @@ class UploadForm(gci_forms.GCIModelForm):
 
     self['consent_form'].field.widget = gci_forms.AsyncFileInput(
         download_url='%s?%s' % (base_url, url_names.CONSENT_FORM_GET_PARAM),
-        verified=self.instance.consent_form_verified)
-    self['student_id_form'].field.widget = gci_forms.AsyncFileInput(
-        download_url='%s?%s' % (base_url, url_names.STUDENT_ID_FORM_GET_PARAM),
-        verified=self.instance.student_id_form_verified)
+        verified=request_data.ndb_profile
+            .student_data.is_consent_form_verified)
+    self['enrollment_form'].field.widget = gci_forms.AsyncFileInput(
+        download_url='%s?%s' % (base_url, url_names.ENROLLMENT_FORM_GET_PARAM),
+        verified=request_data.ndb_profile
+            .student_data.is_enrollment_form_verified)
 
     self['consent_form'].field.help_text = (
         DEF_CONSENT_FORM_HELP_TEXT % (
             self['consent_form'].field.help_text,
             request_data.program.form_translations_url))
-    self['student_id_form'].field.help_text = (
+    self['enrollment_form'].field.help_text = (
         DEF_STUDENT_ID_FORM_TEXT_HELP %
             request_data.program.form_translations_url)
 
@@ -90,26 +89,30 @@ class UploadForm(gci_forms.GCIModelForm):
     cleaned_data = self.cleaned_data
 
     consent_form = cleaned_data.get('consent_form')
-    student_id_form = cleaned_data.get('student_id_form')
+    enrollment_form = cleaned_data.get('enrollment_form')
 
-    if not (consent_form or student_id_form):
+    if not (consent_form or enrollment_form):
       raise gci_forms.ValidationError(DEF_NO_UPLOAD)
 
     return cleaned_data
 
   def save(self, commit=True):
-    student_info = super(UploadForm, self).save(commit=False)
-
     if self.cleaned_data.get('consent_form'):
-      student_info.consent_form_verified = False
+      self.request_data.ndb_profile.student_data.consent_form = (
+          self.cleaned_data.get('consent_form').key())
+      self.request_data.ndb_profile.student_data.is_consent_form_verified = (
+          False)
 
-    if self.cleaned_data.get('student_id_form'):
-      student_info.student_id_form_verified = False
+    if self.cleaned_data.get('enrollment_form'):
+      self.request_data.ndb_profile.student_data.enrollment_form = (
+          self.cleaned_data.get('enrollment_form').key())
+      self.request_data.ndb_profile.student_data.is_enrollment_form_verified = (
+          False)
 
     if commit:
-      student_info.put()
+      self.request_data.ndb_profile.put()
 
-    return student_info
+    return self.request_data.ndb_profile
 
 
 class StudentFormUpload(base.GCIRequestHandler):
@@ -145,28 +148,35 @@ class StudentFormUpload(base.GCIRequestHandler):
 
   def get(self, data, check, mutator):
     """Handles download of the forms otherwise resumes normal rendering."""
-    if 'consent_form' in data.GET:
-      download = data.student_info.consent_form
-    elif 'student_id_form' in data.GET:
-      download = data.student_info.student_id_form
-    else:
+    if 'consent_form' not in data.GET and 'enrollment_form' not in data.GET:
+      # no download request has been specified
       return super(StudentFormUpload, self).get(data, check, mutator)
+    elif 'consent_form' in data.GET:
+      download = data.ndb_profile.student_data.consent_form
+    elif 'enrollment_form' in data.GET:
+      download = data.ndb_profile.student_data.enrollment_form
 
     # download has been requested
     if download:
-      return bs_helper.sendBlob(download)
+      return bs_helper.sendBlob(blobstore.BlobInfo(download))
     else:
       raise exception.NotFound(message='File not found')
 
   def context(self, data, check, mutator):
     """Handler for default HTTP GET request."""
-    context = {
-        'page_name': 'Student form upload'
-        }
+    context = {'page_name': 'Student form upload'}
 
-    upload_form = UploadForm(data, instance=data.student_info)
+    form_data = {}
+    if data.ndb_profile.student_data.consent_form:
+      form_data['consent_form'] = blobstore.BlobInfo(
+          data.ndb_profile.student_data.consent_form)
+    if data.ndb_profile.student_data.enrollment_form:
+      form_data['enrollment_form'] = blobstore.BlobInfo(
+          data.ndb_profile.student_data.enrollment_form)
 
-    if profile_logic.hasStudentFormsUploaded(data.student_info):
+    upload_form = UploadForm(data, initial=form_data)
+
+    if profile_logic.hasStudentFormsUploaded(data.ndb_profile):
       kwargs = dicts.filter(data.kwargs, ['sponsor', 'program'])
       claim_tasks_url = reverse('gci_list_tasks', kwargs=kwargs)
       context['form_instructions'] = CLAIM_TASKS_NOW % claim_tasks_url
@@ -181,15 +191,13 @@ class StudentFormUpload(base.GCIRequestHandler):
 
     context['form'] = upload_form
     context['form_verification_awaiting'] = (
-        ci_profile_logic.isFormVerificationAwaiting(data.student_info))
+        ci_profile_logic.isFormVerificationAwaiting(data.ndb_profile))
 
     return context
 
   def post(self, data, check, mutator):
     """Handles POST requests for the bulk create page."""
-    form = UploadForm(
-        request_data=data, data=data.POST, instance=data.student_info,
-        files=data.request.file_uploads)
+    form = UploadForm(data, data=data.POST, files=data.request.file_uploads)
 
     if not form.is_valid():
       # we are not storing this form, remove the uploaded blobs from the cloud
@@ -207,9 +215,9 @@ class StudentFormUpload(base.GCIRequestHandler):
     cleaned_data = form.cleaned_data
     for field_name in data.request.file_uploads.keys():
       if field_name in cleaned_data:
-        existing = getattr(data.student_info, field_name)
+        existing = getattr(data.ndb_profile.student_data, field_name)
         if existing:
-          existing.delete()
+          blobstore.BlobInfo(existing).delete()
 
     form.save()
 
@@ -236,7 +244,7 @@ class StudentFormDownload(base.GCIRequestHandler):
     """Allows hosts to download the student forms."""
     if url_names.CONSENT_FORM_GET_PARAM in data.GET:
       download = data.url_student_info.consent_form
-    elif url_names.STUDENT_ID_FORM_GET_PARAM in data.GET:
+    elif url_names.ENROLLMENT_FORM_GET_PARAM in data.GET:
       download = data.url_student_info.student_id_form
     else:
       raise exception.BadRequest(message='No file requested')

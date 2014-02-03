@@ -16,6 +16,7 @@
 """Tests the view for GCI student form uploads.
 """
 
+from tests import profile_utils
 from tests.profile_utils import GCIProfileHelper
 from tests.test_utils import GCIDjangoTestCase
 
@@ -35,10 +36,10 @@ class StudentFormUploadTest(GCIDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gci/student_forms/base.html')
 
   def testStudentFormUpload(self):
-    """Tests the studentsInfoList component of the dashboard.
-    """
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    student = profile_helper.createStudent()
+    """Tests the studentsInfoList component of the dashboard."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
 
     response = self.get(self.url)
     self.assertStudentFormUploadTemplatesUsed(response)

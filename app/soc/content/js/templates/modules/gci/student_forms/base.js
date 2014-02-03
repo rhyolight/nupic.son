@@ -14,6 +14,6 @@
  */
 melange.templates.inherit(
   function (_self, context) {
-    melange.asyncUpload(['#consent_form', '#student_id_form']);
+    melange.asyncUpload(['#consent_form', '#enrollment_form']);
   }
 );

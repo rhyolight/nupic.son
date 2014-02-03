@@ -49,7 +49,7 @@ class StudentFormsTemplate(Template):
         url_names.GCI_STUDENT_FORM_DOWNLOAD)
     consent_form_url = '%s?%s' % (base_url, url_names.CONSENT_FORM_GET_PARAM)
     student_id_form_url = '%s?%s' % (
-        base_url, url_names.STUDENT_ID_FORM_GET_PARAM)
+        base_url, url_names.ENROLLMENT_FORM_GET_PARAM)
 
     student_info = self.profile.student_info
     return {
