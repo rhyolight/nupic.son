@@ -180,19 +180,19 @@ def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
       models=types.CI_MODELS)
 
 
-def isFormVerificationAwaiting(student_info):
-  """Tells whether all the required forms have been submitted by
-  the user and are currently awaiting verification by a program administrator.
+def isFormVerificationAwaiting(profile):
+  """Tells whether all the required forms have been submitted by the specified
+  student and are currently awaiting verification by a program administrator.
 
   Args:
-    student_info: Student Info entity.
+    profile: Profile entity.
 
   Returns:
     True, if all forms are submitted and awaiting verification.
     Otherwise, False.
   """
-  return (student_info.consent_form and student_info.student_id_form and
-      not (student_info.student_id_form_verified
-          and student_info.consent_form_verified))
-
+  return (profile.student_data.consent_form 
+      and profile.student_data.enrollment_form and
+      not (profile.student_data.is_enrollment_form_verified
+          and profile.student_data.is_consent_form_verified))
 

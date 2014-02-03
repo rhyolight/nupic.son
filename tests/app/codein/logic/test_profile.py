@@ -17,6 +17,8 @@
 import mock
 import unittest
 
+from google.appengine.ext import ndb
+
 from codein.logic import profile as profile_logic
 
 from melange.utils import rich_bool
@@ -217,62 +219,56 @@ class IsFormVerificationAwaitingTest(unittest.TestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     program = program_utils.seedGCIProgram()
-    self.student_info = profile_utils.seedGCIStudent(program)
+    self.profile = profile_utils.seedNDBStudent(program)
 
   def testForNoFormsSubmitted(self):
     """Tests the behavior when no forms have been submitted."""
-    self.student_info.consent_form = None
-    self.student_info.student_id_form = None
-    self.assertFalse(
-        profile_logic.isFormVerificationAwaiting(self.student_info))
+    self.profile.student_data.consent_form = ndb.BlobKey('blob-key')
+    self.profile.student_data.enrollment_form = None
+    self.assertFalse(profile_logic.isFormVerificationAwaiting(self.profile))
 
   def testForOneFormSubmitted(self):
     """Tests the behavior when one form has been submitted."""
-    # only student id form is submitted but not verified
-    self.student_info.consent_form = None
-    self.student_info.student_id_form = object()
-    self.student_info.student_id_form_verified = False
-    self.assertFalse(
-        profile_logic.isFormVerificationAwaiting(self.student_info))
+    # only enrollment form is submitted but not verified
+    self.profile.student_data.consent_form = None
+    self.profile.student_data.enrollment_form = ndb.BlobKey('blob-key')
+    self.profile.student_data.is_enrollment_form_verified = False
+    self.assertFalse(profile_logic.isFormVerificationAwaiting(self.profile))
 
-    # only student id form is submitted and verified
-    self.student_info.student_id_form_verified = True
-    self.assertFalse(
-        profile_logic.isFormVerificationAwaiting(self.student_info))
+    # only enrollment form is submitted and verified
+    self.profile.student_data.is_enrollment_form_verified = True
+    self.assertFalse(profile_logic.isFormVerificationAwaiting(self.profile))
 
     # only consent form is submitted but not verified
-    self.student_info.consent_form = object()
-    self.student_info.consent_form_verified = False
-    self.student_info.student_id_form = None
-    self.student_info.student_id_form_verified = None
-    self.assertFalse(
-        profile_logic.isFormVerificationAwaiting(self.student_info))
+    self.profile.student_data.consent_form = ndb.BlobKey('blob-key')
+    self.profile.student_data.is_consent_form_verified = False
+    self.profile.student_data.enrollment_form = None
+    self.profile.student_data.is_enrollment_form_verified = None
+    self.assertFalse(profile_logic.isFormVerificationAwaiting(self.profile))
 
     # only consent form is submitted and verified
-    self.student_info.consent_form_verified = True
-    self.assertFalse(
-        profile_logic.isFormVerificationAwaiting(self.student_info))
+    self.profile.student_data.is_consent_form_verified = True
+    self.assertFalse(profile_logic.isFormVerificationAwaiting(self.profile))
 
   def testForTwoFormsSubmitted(self):
     """Tests the behavior when two forms have been submitted."""
-    self.student_info.student_id_form = object()
-    self.student_info.consent_form = object()
+    self.profile.student_data.enrollment_form = ndb.BlobKey('blob-key')
+    self.profile.student_data.consent_form = ndb.BlobKey('blob-key')
 
     # no forms have been verified
-    self.student_info.consent_form_verified = False
-    self.student_info.student_id_form_verified = False
-    self.assertTrue(profile_logic.isFormVerificationAwaiting(self.student_info))
+    self.profile.student_data.is_consent_form_verified = False
+    self.profile.student_data.is_enrollment_form_verified = False
+    self.assertTrue(profile_logic.isFormVerificationAwaiting(self.profile))
 
     # only student id form is verified
-    self.student_info.student_id_form_verified = True
-    self.assertTrue(profile_logic.isFormVerificationAwaiting(self.student_info))
+    self.profile.student_data.is_enrollment_form_verified = True
+    self.assertTrue(profile_logic.isFormVerificationAwaiting(self.profile))
 
     # only consent form is verified
-    self.student_info.consent_form_verified = True
-    self.student_info.student_id_form_verified = False
-    self.assertTrue(profile_logic.isFormVerificationAwaiting(self.student_info))
+    self.profile.student_data.is_consent_form_verified = True
+    self.profile.student_data.is_enrollment_form_verified = False
+    self.assertTrue(profile_logic.isFormVerificationAwaiting(self.profile))
 
     # both forms are verified
-    self.student_info.student_id_form_verified = True
-    self.assertFalse(
-        profile_logic.isFormVerificationAwaiting(self.student_info))
+    self.profile.student_data.is_enrollment_form_verified = True
+    self.assertFalse(profile_logic.isFormVerificationAwaiting(self.profile))
