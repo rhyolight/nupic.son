@@ -191,7 +191,7 @@ def isFormVerificationAwaiting(profile):
     True, if all forms are submitted and awaiting verification.
     Otherwise, False.
   """
-  return (profile.student_data.consent_form 
+  return (profile.student_data.consent_form
       and profile.student_data.enrollment_form and
       not (profile.student_data.is_enrollment_form_verified
           and profile.student_data.is_consent_form_verified))

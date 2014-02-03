@@ -46,7 +46,7 @@ class OrgMemberRegistrationTopMessage(unittest.TestCase):
     message = top_message.orgMemberRegistrationTopMessage(self.data)
     self.assertEqual(
         message._message,
-        top_message._ORG_MEMBER_REGISTER_MESSAGE_BEFORE_STUDENT_SIGN_UP % 
+        top_message._ORG_MEMBER_REGISTER_MESSAGE_BEFORE_STUDENT_SIGN_UP %
             self.program.timeline.student_signup_start)
 
   def testDuringStudentSignUp(self):
@@ -63,7 +63,7 @@ class OrgMemberRegistrationTopMessage(unittest.TestCase):
             self.program.key().name())
     self.assertEqual(
         message._message,
-        top_message._ORG_MEMBER_REGISTER_MESSAGE_ACTIVE_STUDENT_SIGN_UP % 
+        top_message._ORG_MEMBER_REGISTER_MESSAGE_ACTIVE_STUDENT_SIGN_UP %
             register_url)
 
   def testAfterStudentSignUp(self):

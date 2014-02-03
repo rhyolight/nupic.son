@@ -17,7 +17,6 @@
 """
 
 from tests import profile_utils
-from tests.profile_utils import GCIProfileHelper
 from tests.test_utils import GCIDjangoTestCase
 
 

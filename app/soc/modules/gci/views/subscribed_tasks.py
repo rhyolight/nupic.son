@@ -15,7 +15,6 @@
 """Module containing the view for list of a users' subscribed tasks """
 
 from melange.request import access
-from melange.request import exception
 
 from soc.views.helper import url_patterns
 
@@ -68,7 +67,7 @@ class SubscribedTasksPage(base.GCIRequestHandler):
 
   def context(self, data, check, mutator):
     return {
-        'page_name': 'Tasks %s is subscribed to' % 
+        'page_name': 'Tasks %s is subscribed to' %
              data.url_ndb_profile.public_name,
         'tasks_list': SubscribedTasksList(data),
     }
