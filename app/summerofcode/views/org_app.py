@@ -873,6 +873,15 @@ class OrgApplicationList(template.Template):
         'new_or_veteran', 'New/Veteran',
         lambda entity, *args:
             'Veteran' if entity.key.parent().get().is_veteran else 'New')
+    self.list_config.addPlainTextColumn(
+        'description', 'Description',
+        lambda entity, *args: entity.key.parent().get().description)
+    self.list_config.addPlainTextColumn(
+        'license', 'License',
+        lambda entity, *args: entity.key.parent().get().license)
+    self.list_config.addPlainTextColumn(
+        'ideas_page', 'Ideas Page',
+        lambda entity, *args: entity.key.parent().get().ideas_page)
 
     survey_response_list.addColumnsForSurvey(self.list_config, survey)
 
