@@ -188,6 +188,9 @@ ELIGIBLE_COUNTRY_LABEL = translation.ugettext(
 ORG_APPLICATION_SUBMIT_PAGE_NAME = translation.ugettext(
     'Submit application')
 
+ORG_APPLICATION_SHOW_PAGE_NAME = translation.ugettext(
+    'Organization application - %s')
+
 ORG_PREFERENCES_EDIT_PAGE_NAME = translation.ugettext(
     'Edit organization preferences')
 
@@ -787,7 +790,10 @@ class OrgAppShowPage(base.GSoCRequestHandler):
     response_template = readonly_template.SurveyResponseReadOnlyTemplate(
         'summerofcode/_readonly_template.html', groups)
 
-    return {'record': response_template}
+    return {
+        'page_name': ORG_APPLICATION_SHOW_PAGE_NAME % data.url_ndb_org.name,
+        'record': response_template
+        }
 
 
 # TODO(daniel): replace this class with new style list
