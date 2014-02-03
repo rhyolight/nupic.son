@@ -229,8 +229,7 @@ class DashboardPage(base.GSoCRequestHandler):
       evals = dictForSurveyModel(
           ProjectSurvey, data.program, ['midterm', 'final'])
       any_survey_active = any(
-          survey_logic.isSurveyActive(
-              evaluation, data.ndb_profile.key.to_old_key())
+          survey_logic.isSurveyActive(evaluation, data.ndb_profile.key)
               for evaluation in evals.values())
       if any_survey_active:
         components.append(MyEvaluationsComponent(data, evals))
