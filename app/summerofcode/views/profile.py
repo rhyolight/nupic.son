@@ -48,6 +48,7 @@ from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_patterns as soc_url_patterns
 
 from summerofcode.templates import tabs
+from summerofcode.templates import top_message
 from summerofcode.views.helper import urls
 
 
@@ -1200,7 +1201,8 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
     return {
         'page_name': PROFILE_ORG_MEMBER_CREATE_PAGE_NAME,
         'forms': [form],
-        'error': bool(form.errors)
+        'error': bool(form.errors),
+        'form_top_msg': top_message.orgMemberRegistrationTopMessage(data),
         }
 
   def post(self, data, check, mutator):
