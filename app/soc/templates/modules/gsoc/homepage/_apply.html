@@ -36,7 +36,9 @@ limitations under the License.
         <a href="{{ org_apply_link }}">Begin registration</a>
       </p>
       <strong>
+        {% if is_admin %}
         <a href="{{ dashboard_link }}">Or edit your existing application from your dashboard</a>
+        {% endif %}
       </strong>
       {% else %}
       <p id="block-apply-text-action" class="action">

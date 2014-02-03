@@ -119,7 +119,13 @@ class Apply(Template):
 
     context['org_signup'] = self.data.timeline.orgSignup()
     if context['org_signup']:
-      context['has_profile'] = self.data.ndb_profile is not None
+      if self.data.ndb_profile:
+        context['has_profile'] = True
+        context['is_admin'] = self.data.ndb_profile.is_admin
+      else:
+        context['has_profile'] = False
+        context['is_admin'] = False
+
       context['org_member_profile_link'] = links.ABSOLUTE_LINKER.program(
           self.data.program, urls.UrlNames.PROFILE_REGISTER_AS_ORG_MEMBER,
           secure=True)
