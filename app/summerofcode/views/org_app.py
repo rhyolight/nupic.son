@@ -838,12 +838,24 @@ _STATUS_ID_TO_ENUM_MAP = dict(_STATUS_ID_TO_ENUM_LINK)
 _STATUS_ENUM_TO_ID_MAP = dict(
     (v, k) for (k, v) in _STATUS_ID_TO_ENUM_LINK)
 
-class OrgApplicationList(survey_response_list.SurveyResponseList):
+class OrgApplicationList(template.Template):
   """List of organization applications that have been submitted for the program.
   """
 
-  def __init__(self, data, survey):
-    super(OrgApplicationList, self).__init__(data, survey)
+  def __init__(self, data, survey, idx=0, description=None):
+    """Creates a new OrgApplicationList template.
+
+    Args:
+      data: request_data.RequestData object for the current request.
+      survey: Survey entity to show the responses for
+      idx: The index of the list to use.
+      description: The (optional) description of the list.
+    """
+    super(OrgApplicationList, self).__init__(data)
+
+    self.idx = idx
+    self.description = description or ''
+    self.list_config = lists.ListConfiguration()
 
     self.list_config.addPlainTextColumn(
         'key', 'Key', lambda entity, *args: entity.key.parent().id(),
@@ -861,6 +873,8 @@ class OrgApplicationList(survey_response_list.SurveyResponseList):
         'new_or_veteran', 'New/Veteran',
         lambda entity, *args:
             'Veteran' if entity.key.parent().get().is_veteran else 'New')
+
+    survey_response_list.addColumnsForSurvey(self.list_config, survey)
 
     # TODO(ljvderijk): Poke Mario during all-hands to see if we can separate
     # "search options" and in-line selection options.
