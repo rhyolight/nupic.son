@@ -6,6 +6,7 @@
 @image_form_submit_bg: "@{images_gsoc_location}/form-submit-bg.png";
 @image_form_submit_bg_blue: "@{images_gsoc_location}/form-submit-bg-blue.png";
 
+@orange: #eeab4c;
 @darkblue: #00538b;
 @darkorange: #d5620e;
 @lightblue: #238bd2;
@@ -783,6 +784,13 @@ fieldset .row.error .textarea {
     background: url(@image_flash_success) no-repeat 10px 50% #C6F9C9;
     border-color: #9BD39E;
     color: #4F7F51;
+  }
+
+  &.flash-info {
+    /* general information banner */
+    border-color: @darkorange;
+    color: @darkorange;
+    background-color: @orange;
   }
 }
 

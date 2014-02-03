@@ -40,4 +40,4 @@ class TopMessage(template.Template):
 
   def context(self):
     """See template.Template.context for specification."""
-    return {'top_message': self._top_message}
+    return {'top_message': self._message}
