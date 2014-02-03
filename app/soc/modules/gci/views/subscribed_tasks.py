@@ -14,7 +14,9 @@
 
 """Module containing the view for list of a users' subscribed tasks """
 
+from melange.request import access
 from melange.request import exception
+
 from soc.views.helper import url_patterns
 
 from soc.modules.gci.logic import task as task_logic
@@ -38,10 +40,11 @@ class SubscribedTasksList(task_list.TaskList):
 
   def _getDescription(self):
     return 'List of tasks %s is subscribed to.' % (
-        self.data.url_profile.name())
+        self.data.url_ndb_profile.public_name)
 
   def _getQuery(self):
-    return task_logic.querySubscribedTasksForProfile(self.data.url_profile)
+    return task_logic.querySubscribedTasksForProfile(
+        self.data.url_ndb_profile.key)
 
 
 class SubscribedTasksPage(base.GCIRequestHandler):
@@ -56,16 +59,16 @@ class SubscribedTasksPage(base.GCIRequestHandler):
             self, name=url_names.GCI_SUBSCRIBED_TASKS),
     ]
 
-  def checkAccess(self, data, check, mutator):
-    check.isProfileActive()
-    if data.profile.key() != data.url_profile.key():
-      raise exception.Forbidden(message='You do not have access to this data')
+  access_checker = access.ConjuctionAccessChecker([
+      access.IS_URL_USER_ACCESS_CHECKER,
+      access.HAS_PROFILE_ACCESS_CHECKER])
 
   def jsonContext(self, data, check, mutator):
     return SubscribedTasksList(data).getListData().content()
 
   def context(self, data, check, mutator):
     return {
-        'page_name': "Tasks %s is subscribed to" % data.url_profile.name(),
+        'page_name': 'Tasks %s is subscribed to' % 
+             data.url_ndb_profile.public_name,
         'tasks_list': SubscribedTasksList(data),
     }
