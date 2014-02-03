@@ -155,11 +155,3 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertDashboardComponentTemplatesUsed(response)
     response = self.getListResponse(url, 4)
     self.assertIsJsonResponse(response)
-
-  def testDashboardRequest(self):
-    self.profile_helper.createOrgAdmin(self.org)
-    url = '/gsoc/dashboard/' + self.gsoc.key().name()
-    response = self.getListResponse(url, 7)
-    self.assertIsJsonResponse(response)
-    response = self.getListResponse(url, 8)
-    self.assertIsJsonResponse(response)

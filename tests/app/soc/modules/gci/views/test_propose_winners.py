@@ -14,6 +14,9 @@
 
 """Tests for propose winners related views."""
 
+from google.appengine.ext import ndb
+
+from tests import profile_utils
 from tests import test_utils
 
 
@@ -38,7 +41,12 @@ class ProposeWinnersPageTest(test_utils.GCIDjangoTestCase):
 
   def testPageLoads(self):
     """Tests that the page loads properly."""
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
+
     self.timeline_helper.allWorkReviewed()
     response = self.get(_getProposeWinnersPageUrl(self.org.key()))
     self.assertResponseOK(response)

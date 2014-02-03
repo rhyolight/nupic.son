@@ -54,7 +54,7 @@ CONSENT_FORM_GET_PARAM = 'consent_form'
 
 """GET parameter which should be set in order to download Student ID Form.
 """
-STUDENT_ID_FORM_GET_PARAM = 'student_id_form'
+ENROLLMENT_FORM_GET_PARAM = 'enrollment_form'
 
 GCI_STUDENTS_INFO = 'gci_students_info'
 

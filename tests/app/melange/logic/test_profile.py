@@ -561,6 +561,7 @@ class CreateStudentDataTest(unittest.TestCase):
     """Tests that student data is created properly if all data is valid."""
     student_data = profile_logic.createStudentData(TEST_STUDENT_DATA_PROPERTIES)
 
-    # check properties
-    self.assertDictEqual(
-        student_data.education.to_dict(), TEST_EDUCATION_PROPERTIES)
+    # check properties of education
+    for key in TEST_EDUCATION_PROPERTIES:
+      self.assertEqual(
+          student_data.education.to_dict()[key], TEST_EDUCATION_PROPERTIES[key])

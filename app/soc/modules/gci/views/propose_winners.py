@@ -15,6 +15,7 @@
 """Module for the GCI Organization Admins to propose winners for their orgs."""
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import forms
 from django.utils.translation import ugettext
@@ -54,8 +55,7 @@ class ProposeWinnersForm(gci_forms.GCIModelForm):
 
     choices = [(ProposeWinnersForm.EMPTY_CHOICE, '---')]
 
-    possible_winners = org_score_logic.getPossibleWinners(
-        request_data.organization)
+    possible_winners = org_score_logic.getPossibleWinners(request_data.url_org)
 
     for possible_winner in possible_winners:
       choices.append(self._getChoiceOption(possible_winner))
@@ -65,20 +65,20 @@ class ProposeWinnersForm(gci_forms.GCIModelForm):
     self.fields.get('backup_proposed_winner').choices = choices
 
     # check if at least one grand prize winner is already set
-    if len(self.request_data.organization.proposed_winners) > 0:
+    if len(self.request_data.url_org.proposed_winners) > 0:
       self.fields.get('first_proposed_winner').initial = str(
-          self.request_data.organization.proposed_winners[0])
+          self.request_data.url_org.proposed_winners[0])
 
       # check if both grand prize winners are already set
-      if len(self.request_data.organization.proposed_winners) > 1:
+      if len(self.request_data.url_org.proposed_winners) > 1:
         self.fields.get('second_proposed_winner').initial = str(
             self.request_data.organization.proposed_winners[1])
 
     # check if backup winner is already set
-    if self.request_data.organization.backup_winner:
-      self.fields.get('backup_proposed_winner').initial = str(
-          organization_model.GCIOrganization.backup_winner.
-              get_value_for_datastore(self.request_data.organization))
+    backup_winner_key = (organization_model.GCIOrganization.backup_winner
+        .get_value_for_datastore(self.request_data.url_org))
+    if backup_winner_key:
+      self.fields.get('backup_proposed_winner').initial = str(backup_winner_key)
 
 
   first_proposed_winner = forms.ChoiceField(label='First Grand Prize Winner')
@@ -108,10 +108,10 @@ class ProposeWinnersForm(gci_forms.GCIModelForm):
       self._errors['__all__'] = DEF_WINNER_MORE_THAN_ONCE_ERROR
 
   def _getChoiceOption(self, student):
-    return (str(student.key()), self._formatPossibleWinner(student))
+    return (str(student.key), self._formatPossibleWinner(student))
 
   def _formatPossibleWinner(self, student):
-    return '%s' % student.name()
+    return '%s' % student.public_name
 
 
 class ProposeWinnersPage(GCIRequestHandler):
@@ -127,7 +127,7 @@ class ProposeWinnersPage(GCIRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    check.isOrgAdminForOrganization(data.url_org.key())
+    check.isOrgAdminForOrganization(ndb.Key.from_old_key(data.url_org.key()))
     if not data.timeline.allReviewsStopped():
       raise exception.Forbidden(
           message='This page may be accessed when the review period is over')
@@ -135,7 +135,7 @@ class ProposeWinnersPage(GCIRequestHandler):
   def context(self, data, check, mutator):
     form = ProposeWinnersForm(request_data=data, data=data.POST or None)
     context = {
-        'page_name': 'Propose winners for %s' % data.organization.name,
+        'page_name': 'Propose winners for %s' % data.url_org.name,
         'forms': [form]
     }
 
@@ -180,11 +180,12 @@ class ProposeWinnersPage(GCIRequestHandler):
     representation of db.Key.
     """
     try:
-      key = db.Key(key_str)
-    except db.BadKeyError:
+      key = ndb.Key(key_str)
+    # TODO(daniel): find out what actual exception class is
+    except Exception:
       return None
 
-    return profile_model.GCIProfile.get(key)
+    return key.get()
 
   def _getBackupWinner(self, backup_key_str):
     """Returns the GCIProfile entity belonging to the backup winner chosen
@@ -218,11 +219,11 @@ class ProposeWinnersPage(GCIRequestHandler):
 
     profile = self._getProfileByKeyStr(first_key_str)
     if profile:
-      proposed_winners.append(profile.key())
+      proposed_winners.append(profile.key)
 
     profile = self._getProfileByKeyStr(second_key_str)
     if profile:
-      proposed_winners.append(profile.key())
+      proposed_winners.append(profile.key)
 
     return proposed_winners
 
@@ -316,7 +317,7 @@ class ProposedWinnersForOrgsList(org_list.OrgList):
     """
     def proposedWinnersFunc(organization, *args):
       profiles = profile_model.GCIProfile.get(organization.proposed_winners)
-      return ', '.join([p.name() for p in profiles if p])
+      return ', '.join([p.public_name for p in profiles if p])
 
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn('name', 'Name',
@@ -324,8 +325,8 @@ class ProposedWinnersForOrgsList(org_list.OrgList):
     list_config.addPlainTextColumn('proposed_winners', 'Proposed Winners',
         proposedWinnersFunc)
     list_config.addPlainTextColumn('backup_winner', 'Backup Winner',
-        lambda e, *args: e.backup_winner.name() if e.backup_winner else '')
-    list_config.addSimpleColumn('link_id', 'Link ID', hidden=True)
+        lambda e, *args: e.backup_winner.public_name if e.backup_winner else '')
+    list_config.addSimpleColumn('profile_id', 'Username', hidden=True)
     list_config.setRowAction(self._getRedirect())
 
     return list_config

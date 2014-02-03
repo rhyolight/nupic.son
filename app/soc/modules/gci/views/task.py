@@ -668,8 +668,12 @@ class CommentsTemplate(Template):
 
       # generate author link, if comment sent by a student
       author_link = None
-      author_key = ndb.Key.from_old_key(
-          GCIComment.created_by.get_value_for_datastore(comment))
+
+      if GCIComment.created_by.get_value_for_datastore(comment):
+        author_key = ndb.Key.from_old_key(
+            GCIComment.created_by.get_value_for_datastore(comment))
+      else:
+        author_key = None
       if author_key:
         author = melange_profile_logic.getProfileForUsername(
             author_key.id(), self.data.program.key())

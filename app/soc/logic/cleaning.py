@@ -276,23 +276,26 @@ def clean_users_not_same(field_name):
   return wrapped
 
 
-def clean_valid_shipping_chars(field_name):
-  """Clean method for cleaning a field that must comply with Google's character
-  requirements for shipping.
+def cleanValidAddressCharacters(value):
+  """Cleaning method for a value that is submitted as a part of an address
+  information. It ensures that it complies with Google's character
+  requirements for shipping purposes.
+
+  Args:
+    value: The value submitted in the form as a part of an address.
+
+  Returns:
+    Cleaned value for the field.
+
+  Raises:
+    django_forms.ValidationError if the submitted value contains invalid
+    characters.
   """
-
-  @check_field_is_empty(field_name)
-  def wrapper(self):
-    """Decorator wrapper method.
-    """
-    value = self.cleaned_data.get(field_name)
-
-    if value and not DEF_VALID_SHIPPING_CHARS.match(value):
-      raise forms.ValidationError(
-          safestring.mark_safe(DEF_INVALID_SHIPPING_CHARS))
-
+  if value and not DEF_VALID_SHIPPING_CHARS.match(value):
+    raise forms.ValidationError(
+        safestring.mark_safe(DEF_INVALID_SHIPPING_CHARS))
+  else:
     return value
-  return wrapper
 
 
 def clean_content_length(field_name, min_length=0, max_length=500):

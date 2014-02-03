@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GCIOrgScore logic methods and queries.
-"""
-
+"""GCIOrgScore logic methods and queries."""
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models.score import GCIOrgScore
@@ -124,7 +123,9 @@ def getPossibleWinners(org):
   org_scores = queryForOrg(org).fetch(1000)
   org_scores = sorted(org_scores, key=lambda e: len(e.tasks), reverse=True)
 
-  profiles = [org_score.parent() for org_score in org_scores]
+  profiles = [
+      ndb.Key.from_old_key(org_score.parent_key()).get()
+      for org_score in org_scores]
 
   return profiles[:POSSIBLE_WINNER_MAX_POSITION]
 

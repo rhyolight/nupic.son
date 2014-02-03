@@ -14,56 +14,70 @@
 
 """Tests for lists of SubscribedTasksPage view."""
 
-from tests import test_utils
 from tests import profile_utils
+from tests import task_utils
+from tests import test_utils
 
-from soc.modules.gci.models import task as task_model
-from soc.modules.seeder.logic import seeder
+
+_NUMBER_OF_SUBSCRIBED_TASKS = 3
+_NUMBER_OF_NON_SUBSCRIBED_TASKS = 2
+
+def _getSubscribedTasksUrl(program, user_id):
+  """Returns URL to Subscribed Tasks page.
+
+  Args:
+    program: Program entity.
+    user_id: User identifier.
+
+  Returns:
+    A string containing the URL to Subscribed Tasks page.
+  """
+  return '/gci/subscribed_tasks/%s/%s' % (program.key().name(), user_id)
+
 
 class SubscribedTasksPageTest(test_utils.GCIDjangoTestCase):
   """Unit tests for SubscribedTasksPage."""
 
   def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
     self.init()
-    self.profile_helper = profile_utils.GCIProfileHelper(
-        self.gci, self.dev_test)
-    user = self.profile_helper.createUser()
-    self.url = "/gci/subscribed_tasks/%s/%s" % (
-        self.gci.key().name(), user.link_id)
 
   def testSubscribedListAsLoneUser(self):
-    response = self.get(self.url)
+    """Tests that access for a user without a profile is denied."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+
+    response = self.get(_getSubscribedTasksUrl(self.program, user.user_id))
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def assertSubscribedTasksTemplateUsed(self):
-    self.profile_helper.createProfile()
-    response = self.get(self.url)
+    """Tests that correct templates are used to render the page."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
+
+    response = self.get(_getSubscribedTasksUrl(self.program, user.user_id))
     self.assertResponseOK(response)
     self.assertGCITemplatesUsed(response)
     self.assertTemplateUsed(response,
         'modules/gci/leaderboard/student_tasks.html')
 
   def testSubscribedListAsStudent(self):
-    student = self.profile_helper.createStudent()
-    response = self.get(self.url)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBStudent(self.program, user=user)
+
+    response = self.get(_getSubscribedTasksUrl(self.program, user.user_id))
     self.assertResponseOK(response)
 
-    task_properties_student_subscribed = {
-        'subscribers': [student.key()]
-    }
+    for _ in range(_NUMBER_OF_SUBSCRIBED_TASKS):
+      task_utils.seedTask(
+          self.program, self.org, [], subscribers=[profile.key.to_old_key()])
 
-    task_properties_student_not_subscribed = {
-        'subscribers': []
-    }
+    for _ in range(_NUMBER_OF_NON_SUBSCRIBED_TASKS):
+      task_utils.seedTask(self.program, self.org, [])
 
-    seeder.logic.seed(task_model.GCITask, task_properties_student_subscribed)
-    seeder.logic.seed(task_model.GCITask, task_properties_student_subscribed)
-    seeder.logic.seed(task_model.GCITask, task_properties_student_subscribed)
-    seeder.logic.seed(task_model.GCITask,
-        task_properties_student_not_subscribed)
-    seeder.logic.seed(task_model.GCITask,
-        task_properties_student_not_subscribed)
-
-    list_data = self.getListData(self.url, 0)
-    self.assertEqual(3, len(list_data))
+    list_data = self.getListData(
+        _getSubscribedTasksUrl(self.program, user.user_id), 0)
+    self.assertEqual(_NUMBER_OF_SUBSCRIBED_TASKS, len(list_data))

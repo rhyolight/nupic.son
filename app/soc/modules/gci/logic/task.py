@@ -762,10 +762,10 @@ def queryCurrentTaskForStudent(profile, keys_only=False):
       'student', profile.key.to_old_key()).filter('status != ', 'Closed')
 
 
-def querySubscribedTasksForProfile(profile, keys_only=False):
+def querySubscribedTasksForProfile(profile_key, keys_only=False):
   """Returns a query for tasks that the specified profile is subscribed to."""
   return task_model.GCITask.all(keys_only=keys_only).filter(
-      'subscribers', profile)
+      'subscribers', profile_key.to_old_key())
 
 
 def queryForStudentAndOrganizationAndStatus(student, org, status,

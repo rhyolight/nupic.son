@@ -385,7 +385,13 @@ VALID_POSTDATA = {
     'residential_province': TEST_RESIDENTIAL_PROVINCE,
     'residential_country': TEST_RESIDENTIAL_COUNTRY,
     'residential_postal_code': TEST_RESIDENTIAL_POSTAL_CODE,
-    'is_shipping_address_different': False,
+    'shipping_name': TEST_SHIPPING_NAME,
+    'shipping_street': TEST_SHIPPING_STREET,
+    'shipping_city': TEST_SHIPPING_CITY,
+    'shipping_province': TEST_SHIPPING_PROVINCE,
+    'shipping_country': TEST_SHIPPING_COUNTRY,
+    'shipping_postal_code': TEST_SHIPPING_POSTAL_CODE,
+    'is_shipping_address_different': True,
     'birth_date': TEST_BIRTH_DATE.strftime('%Y-%m-%d'),
     'tee_style': TEST_TEE_STYLE,
     'tee_size': TEST_TEE_SIZE,
@@ -547,6 +553,12 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
 
   def testInvalidData(self):
     """Tests that organization is not updated if data is not valid."""
+    # check that data is really valid
+    response = self.post(
+        _getEditProfileUrl(self.program.key()), postdata=VALID_POSTDATA)
+    self.assertResponseRedirect(
+        response, url=_getEditProfileUrl(self.program.key()))
+
     # the birth date is not eligible (the user is too young)
     self.program.student_min_age = (
         (datetime.date.today() - TEST_BIRTH_DATE).days / 365 + 2)
@@ -557,6 +569,31 @@ class ProfileEditPageTest(test_utils.GSoCDjangoTestCase):
     response = self.post(
         _getEditProfileUrl(self.program.key()), postdata=postdata)
     self.assertTrue(response.context['error'])
+
+    # residential address fields have invalid characters
+    fields = [
+        'residential_street', 'residential_street_extra', 'residential_city',
+        'residential_province', 'residential_country',
+        'residential_postal_code', 'first_name', 'last_name']
+    for field in fields:
+      postdata = VALID_POSTDATA.copy()
+      postdata[field] = '!N^al!D'
+      response = self.post(
+          _getEditProfileUrl(self.program.key()), postdata=postdata)
+      self.assertTrue(response.context['error'])
+
+    # shipping address fields have invalid characters
+    fields = [
+        'shipping_street', 'shipping_street_extra', 'shipping_city',
+        'shipping_province', 'shipping_country', 'shipping_postal_code',
+        'shipping_name']
+    for field in fields:
+      postdata = VALID_POSTDATA.copy()
+      postdata[field] = '!N^al!D'
+      response = self.post(
+          _getEditProfileUrl(self.program.key()), postdata=postdata)
+      self.assertTrue(response.context['error'])
+
 
 class CleanShippingAddressPartTest(unittest.TestCase):
   """Unit tests for _cleanShippingAddressPart function."""
@@ -598,6 +635,12 @@ class CleanShippingAddressPartTest(unittest.TestCase):
     # Actual values is returned upon clearing
     result = profile_view._cleanShippingAddressPart(True, 'a value', False)
     self.assertEqual(result, 'a value')
+
+  def testInvalidAddressCharacters(self):
+    """Tests that invalid characters are not accepted."""
+    # Empty or None values are not accepted for required fields
+    with self.assertRaises(django_forms.ValidationError):
+      profile_view._cleanShippingAddressPart(True, '!N^al!D', True)
 
 
 class CleanBirthDateTest(unittest.TestCase):

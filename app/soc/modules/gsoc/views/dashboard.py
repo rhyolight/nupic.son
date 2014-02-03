@@ -23,9 +23,7 @@ from google.appengine.ext import ndb
 from django import http
 from django.utils.translation import ugettext
 
-from melange.logic import connection as connection_logic
 from melange.logic import organization as org_logic
-from melange.models import connection as connection_model
 from melange.models import profile as profile_model
 from melange.request import access
 from melange.request import exception
@@ -36,6 +34,7 @@ from soc.logic import document as document_logic
 from soc.logic import org_app as org_app_logic
 from soc.models.universities import UNIVERSITIES
 from soc.views import base_templates
+from soc.views import dashboard as dashboard_view
 from soc.views.dashboard import Component
 from soc.views.dashboard import Dashboard
 from soc.views.helper import lists
@@ -67,11 +66,6 @@ from summerofcode.views.helper import urls
 
 BACKLINKS_TO_ADMIN = {'to': 'main', 'title': 'Main dashboard'}
 
-CONNECTION_ROLES = (
-  ('No Role|Mentor|Org Admin', 'All'),
-  ('No Role', 'No Role'),
-  ('Mentor', 'Mentor'),
-  ('Org Admin', 'Org Admin'))
 
 def colorize(choice, yes, no):
   """Differentiate between yes and no status with green and red colors."""
@@ -91,7 +85,7 @@ class MainDashboard(Dashboard):
       data: The RequestData object
     """
     super(MainDashboard, self).__init__(data)
-    self.subpages = []
+    self.subpages = dashboard_view._initMainDashboardSubpages(data)
 
   def context(self):
     """Returns the context of main dashboard.
@@ -213,7 +207,6 @@ class DashboardPage(base.GSoCRequestHandler):
     if data.ndb_profile.is_student:
       components += self._getStudentComponents(data)
     elif data.ndb_profile.is_mentor:
-      components.append(TodoComponent(data))
       components += self._getOrgMemberComponents(data)
 
     return components
@@ -236,8 +229,7 @@ class DashboardPage(base.GSoCRequestHandler):
       evals = dictForSurveyModel(
           ProjectSurvey, data.program, ['midterm', 'final'])
       any_survey_active = any(
-          survey_logic.isSurveyActive(
-              evaluation, data.ndb_profile.key.to_old_key())
+          survey_logic.isSurveyActive(evaluation, data.ndb_profile.key)
               for evaluation in evals.values())
       if any_survey_active:
         components.append(MyEvaluationsComponent(data, evals))
@@ -262,44 +254,38 @@ class DashboardPage(base.GSoCRequestHandler):
     if component:
       components.append(component)
 
-    components.append(UserConnectionComponent(data))
     evals = dictForSurveyModel(GradingProjectSurvey, data.program,
                                ['midterm', 'final'])
 
     if evals and data.timeline.afterFirstSurveyStart(evals.values()):
       components.append(OrgEvaluationsComponent(data, evals))
 
+    if data.timeline.orgsAnnounced():
+      components.append(TodoComponent(data))
+      components.append(OrganizationsIParticipateInComponent(data))
+
+      if data.ndb_profile.is_admin:
+        # add a component for all organization that this user administers
+        components.append(ParticipantsComponent(data))
+
     if data.ndb_profile.is_mentor:
       if data.timeline.studentsAnnounced():
         # add a component to show all projects a user is mentoring
         components.append(ProjectsIMentorComponent(data))
-
-    orgs = OrganizationsIParticipateInComponent(data)
-
-    # move to the top during student signup
-    if data.timeline.studentSignup():
-      components.append(orgs)
 
     if data.timeline.afterStudentSignupStart():
       # Add the submitted proposals component
       components.append(SubmittedProposalsComponent(data))
 
     if data.ndb_profile.is_admin:
-      # add a component for all organization that this user administers
-      components.append(OrgConnectionComponent(data, True))
-      components.append(ParticipantsComponent(data))
-
-    # move to the bottom after student signup
-    if not data.timeline.studentSignup():
-      components.append(orgs)
-
-    if data.ndb_profile.is_admin:
       mentor_evals = dictForSurveyModel(
           GradingProjectSurvey, data.program, ['midterm', 'final'])
       student_evals = dictForSurveyModel(
           ProjectSurvey, data.program, ['midterm', 'final'])
-      components.append(MentorEvaluationComponent(data, mentor_evals))
-      components.append(StudentEvaluationComponent(data, student_evals))
+
+      if data.timeline.studentsAnnounced():
+        components.append(MentorEvaluationComponent(data, mentor_evals))
+        components.append(StudentEvaluationComponent(data, student_evals))
 
     return components
 
@@ -1288,170 +1274,6 @@ class OrganizationsIParticipateInComponent(Component):
       return query.count()
 
 
-class OrgConnectionComponent(Component):
-  """Component for listing all the connections for orgs of which the user is an
-  admin.
-  """
-
-  IDX = 7
-
-  def __init__(self, data, for_admin):
-    """Initializes this component.
-    """
-    self.data = data
-    list_config = lists.ListConfiguration()
-
-    def getOrganization(entity, *args):
-      """Helper function to get value of organization column."""
-      org_key = (connection_model.Connection.organization
-          .get_value_for_datastore(entity))
-      return ndb.Key.from_old_key(org_key).get().name
-
-    def getStudent(entity, *args):
-      """Helper function to get value of student column."""
-      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
-
-    list_config.addPlainTextColumn(
-        'organization', 'Organization', getOrganization)
-    list_config.addPlainTextColumn('name', 'Name', getStudent)
-    list_config.addPlainTextColumn('role', 'Role',
-        lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()],
-            options=CONNECTION_ROLES)
-
-    list_config.setRowAction(
-        lambda e, *args: data.redirect.show_org_connection(connection=e).url())
-    self._list_config = list_config
-
-    super(OrgConnectionComponent, self).__init__(data)
-
-  def templatePath(self):
-    return'modules/gsoc/dashboard/list_component.html'
-
-  def getListData(self):
-    """Generates a list of data for the table in this component.
-
-    See getListData() method of soc.views.dashboard.Component for more details.
-
-    Returns:
-        The list data as requested by the current request. Returns None if there is
-        no data to be shown or the request is not for this component's index (IDX).
-    """
-
-    if lists.getListIndex(self.data.request) != self.IDX:
-      return None
-
-    query = connection_logic.queryForOrganizations(
-        self.data.ndb_profile.admin_for)
-
-    starter = lists.keyStarter
-
-    # TODO(daniel): enable prefetching from ndb models
-    #prefetcher = lists.ModelPrefetcher(
-    #    connection_model.Connection, ['organization'])
-
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.data.request, self._list_config, query, starter, prefetcher=None)
-    return response_builder.build()
-
-  def context(self):
-    """Returns the context of this component.
-    """
-    my_list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=7, preload_list=False)
-
-    title = 'Connections for my organizations'
-    description = ugettext(
-        'List of connections with mentors and admins for my organization.')
-
-    return {
-        'name': 'org_connections',
-        'title': title,
-        'lists': [my_list],
-        'description': description
-    }
-
-
-class UserConnectionComponent(Component):
-  """Component for listing all the connections for the current user.
-  """
-
-  IDX = 8
-
-  def __init__(self, data):
-    """Initializes this component.
-    """
-    def getOrganization(entity, *args):
-      """Helper function to get value of organization column."""
-      org_key = (connection_model.Connection.organization
-          .get_value_for_datastore(entity))
-      return ndb.Key.from_old_key(org_key).get().name
-
-    def getStudent(entity, *args):
-      """Helper function to get value of student column."""
-      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
-
-    list_config = lists.ListConfiguration(add_key_column=False)
-    list_config.addPlainTextColumn('key', 'Key',
-        lambda e, *args: '%s' % e.keyName(), hidden=True)
-    list_config.addPlainTextColumn(
-        'organization', 'Organization', getOrganization)
-    list_config.addPlainTextColumn('name', 'Name', getStudent)
-    list_config.addPlainTextColumn('role', 'Role',
-        lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()],
-            options=CONNECTION_ROLES)
-
-    list_config.setRowAction(
-        lambda e, *args: data.redirect.show_user_connection(
-        connection=e).url())
-    self._list_config = list_config
-
-    super(UserConnectionComponent, self).__init__(data)
-
-  def templatePath(self):
-    return'modules/gsoc/dashboard/list_component.html'
-
-  def getListData(self):
-    """Generates a list of data for the table in this component.
-
-    See getListData() method of soc.views.dashboard.Component for more details.
-
-    Returns:
-        The list data as requested by the current request. Returns None if there is
-        no data to be shown or the request is not for this component's index (IDX).
-    """
-    if lists.getListIndex(self.data.request) != self.IDX:
-      return None
-
-    q = connection_logic.queryForAncestor(self.data.ndb_profile.key)
-
-    starter = lists.keyStarter
-
-    # TODO(daniel): enable prefetching from ndb models
-    #prefetcher = lists.ModelPrefetcher(
-    #    connection_model.Connection, ['organization'])
-
-    response_builder = lists.RawQueryContentResponseBuilder(
-        self.data.request, self._list_config, q, starter,
-        prefetcher=None)
-    return response_builder.build()
-
-  def context(self):
-    """Returns the context of this component.
-    """
-    my_list = lists.ListConfigurationResponse(
-        self.data, self._list_config, idx=self.IDX, preload_list=False)
-
-    title = 'My connections'
-    description = ugettext('List of my connections with organizations.')
-
-    return {
-        'name': 'connections',
-        'title': title,
-        'lists': [my_list],
-        'description': description
-    }
-
-
 class ParticipantsComponent(Component):
   """Component for listing all the participants for all organizations."""
 
@@ -1599,13 +1421,14 @@ class TodoComponent(Component):
     if response.start == 'done':
       return response
 
-    info = self.data.student_info
-
     isgood = lambda x: x and x.size and x.filename
 
-    if self.data.is_student and info.number_of_projects:
+    if (self.data.ndb_profile.is_student
+        and self.data.ndb_profile.student_data.number_of_projects):
       if self.data.timeline.afterFormSubmissionStart():
-        status = colorize(isgood(info.tax_form), "Submitted", "Not submitted")
+        status = colorize(
+            isgood(self.data.ndb_profile.student_data.tax_form),
+            'Submitted', 'Not submitted')
         response.addRow({
             'key': 'tax_form',
             'name': 'Tax form',
@@ -1613,15 +1436,20 @@ class TodoComponent(Component):
         })
 
         status = colorize(
-            isgood(info.enrollment_form), "Submitted", "Not submitted")
+            isgood(self.data.ndb_profile.student_data.enrollment_form),
+            'Submitted', 'Not submitted')
         response.addRow({
             'key': 'enrollment_form',
             'name': 'Enrollment form',
             'status': status,
         })
 
-      matches = info.school_name in UNIVERSITIES.get(info.school_country, [])
-      status = colorize(matches, "Yes", "No")
+      matches = (
+          self.data.ndb_profile.student_data.education.school_id
+              in UNIVERSITIES.get(
+                  self.data.ndb_profile.student_data.education.school_country,
+                  []))
+      status = colorize(matches, 'Yes', 'No')
       response.addRow({
           'key': 'school_name',
           'name': 'School name selected from autocomplete',

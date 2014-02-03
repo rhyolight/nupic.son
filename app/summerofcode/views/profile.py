@@ -48,6 +48,7 @@ from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.modules.gsoc.views.helper import url_patterns as soc_url_patterns
 
 from summerofcode.templates import tabs
+from summerofcode.templates import top_message
 from summerofcode.views.helper import urls
 
 
@@ -356,7 +357,7 @@ def _cleanShippingAddressPart(
   elif is_shipping_address_different and not value and is_required:
     raise django_forms.ValidationError('This field is required.')
   else:
-    return value
+    return cleaning.cleanValidAddressCharacters(value)
 
 
 def cleanTermsOfService(is_accepted, terms_of_service):
@@ -619,6 +620,102 @@ class _UserProfileForm(gsoc_forms.GSoCModelForm):
       django_forms.ValidationError if the submitted value is not valid.
     """
     return cleanUserId(self.cleaned_data['user_id'])
+
+  def clean_first_name(self):
+    """Cleans first_name field.
+
+    Returns:
+      Cleaned value for first_name field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['first_name'])
+
+  def clean_last_name(self):
+    """Cleans last_name field.
+
+    Returns:
+      Cleaned value for last_name field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['last_name'])
+
+  def clean_residential_street(self):
+    """Cleans residential_street field.
+
+    Returns:
+      Cleaned value for residential_street field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['residential_street'])
+
+  def clean_residential_street_extra(self):
+    """Cleans residential_street_extra field.
+
+    Returns:
+      Cleaned value for residential_street_extra field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['residential_street_extra'])
+
+  def clean_residential_city(self):
+    """Cleans residential_city field.
+
+    Returns:
+      Cleaned value for residential_city field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['residential_city'])
+
+  def clean_residential_province(self):
+    """Cleans residential_province field.
+
+    Returns:
+      Cleaned value for residential_province field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['residential_province'])
+
+  def clean_residential_postal_code(self):
+    """Cleans residential_postal_code field.
+
+    Returns:
+      Cleaned value for residential_postal_code field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['residential_postal_code'])
+
+  def clean_residential_country(self):
+    """Cleans residential_country field.
+
+    Returns:
+      Cleaned value for residential_country field.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleaning.cleanValidAddressCharacters(
+        self.cleaned_data['residential_country'])
 
   def clean_shipping_name(self):
     """Cleans shipping_name field.
@@ -1104,7 +1201,8 @@ class ProfileRegisterAsOrgMemberPage(base.GSoCRequestHandler):
     return {
         'page_name': PROFILE_ORG_MEMBER_CREATE_PAGE_NAME,
         'forms': [form],
-        'error': bool(form.errors)
+        'error': bool(form.errors),
+        'form_top_msg': top_message.orgMemberRegistrationTopMessage(data),
         }
 
   def post(self, data, check, mutator):

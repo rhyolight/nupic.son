@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import unittest
+
 from django import forms
 
 from soc.logic import cleaning
@@ -188,21 +190,6 @@ class CleaningTest(GSoCDjangoTestCase):
     # Test that forms.ValidationError will be raised if the value of field
     # is not an existent user's user_id
     field_value = 'non_existent_user'
-    self.form.cleaned_data = {field_name: field_value}
-    self.assertRaises(forms.ValidationError, clean_field, self.form)
-
-  def testCleanValidShippingChars(self):
-    """Tests that the shipping fields can be cleaned.
-    """
-    field_name = 'test_ascii'
-    clean_field = cleaning.clean_valid_shipping_chars(field_name)
-    # Test that the value will be returned if the value of field is valid
-    field_value = 'ab12'
-    self.form.cleaned_data = {field_name: field_value}
-    self.assertEqual(clean_field(self.form), field_value)
-    # Test that forms.ValidationError will be raised if the value of field
-    # is not valid ascii
-    field_value = u'\ua000'
     self.form.cleaned_data = {field_name: field_value}
     self.assertRaises(forms.ValidationError, clean_field, self.form)
 
@@ -431,3 +418,29 @@ class CleaningTest(GSoCDjangoTestCase):
     self.form.cleaned_data = {field_name: field_value}
     self.form.fields = {field_name: forms.URLField()}
     self.assertEqual(clean_field(self.form), field_value)
+
+
+class CleanValidAddressCharactersTest(unittest.TestCase):
+  """Unit tests for cleanValidAddressCharacters function."""
+
+  def testValidValues(self):
+    """Tests that value is cleaned correctly for valid values."""
+    self.assertIsNone(cleaning.cleanValidAddressCharacters(None))
+    self.assertEqual('', cleaning.cleanValidAddressCharacters(''))
+    self.assertEqual('ab 12 a', cleaning.cleanValidAddressCharacters('ab 12 a'))
+    self.assertEqual('AB 12 a', cleaning.cleanValidAddressCharacters('AB 12 a'))
+
+  def testInvalidValues(self):
+    """Tests that an error is raised for invalid values."""
+    with self.assertRaises(forms.ValidationError):
+      cleaning.cleanValidAddressCharacters(u'\ua000')
+    with self.assertRaises(forms.ValidationError):
+      cleaning.cleanValidAddressCharacters('\u0105')
+    with self.assertRaises(forms.ValidationError):
+      cleaning.cleanValidAddressCharacters('#')
+    with self.assertRaises(forms.ValidationError):
+      cleaning.cleanValidAddressCharacters('ab 1/2')
+    with self.assertRaises(forms.ValidationError):
+      cleaning.cleanValidAddressCharacters('(1)')
+    with self.assertRaises(forms.ValidationError):
+      cleaning.cleanValidAddressCharacters('&-2')

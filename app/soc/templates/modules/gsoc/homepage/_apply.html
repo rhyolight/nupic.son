@@ -30,18 +30,27 @@ limitations under the License.
   <div id="apply-orgs" class="block block-orgs">
     <img src="/soc/content/{{ app_version }}/images/gsoc/students-apply-now.jpg" height="107" width="429" alt="" id="block-apply-image" />
     <h3 id="title-section-apply">Organizations apply now!</h3>
-    {% if has_profile %}
-    <p id="block-apply-text-action" class="action">
-      <a href="{{ org_apply_link }}">Begin registration</a>
-    </p>
+    {% if not login_link %}
+      {% if has_profile %}
+      <p id="block-apply-text-action" class="action">
+        <a href="{{ org_apply_link }}">Begin registration</a>
+      </p>
       <strong>
+        {% if is_admin %}
         <a href="{{ dashboard_link }}">Or edit your existing application from your dashboard</a>
+        {% endif %}
       </strong>
-    {% else %}
-    <p id="block-apply-text-action" class="action">
+      {% else %}
+      <p id="block-apply-text-action" class="action">
       In order to register your organization, you need to create <a href={{ org_member_profile_link }}>a profile</a> first.
-    {% endif %}
-    </p>
+      </p>
+      {% endif %}
+    {% else %}
+      <p id="block-apply-text-action" class="action">
+        <a href="{{ login_link }}">Log in</a>
+	  </p>
+	  with your Google account to begin registration.
+	{% endif %}
   </div>
 {% endif %}
 

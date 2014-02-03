@@ -18,6 +18,13 @@ The classes in this module are intended to serve as base classes for
 iconic dashboard (Dashboard) and component list (Component).
 """
 
+from django.utils import translation
+
+# TODO(daniel): URLs must be injected depending on the program
+from codein.views.helper import urls
+
+from melange.request import links
+
 from soc.views import template
 
 
@@ -95,3 +102,115 @@ class Dashboard(template.Template):
         subpages[:middle_ceil],
         subpages[middle_ceil:],
     ]
+
+
+def _initMainDashboardSubpages(data):
+  """Initializes list of subpages for the main dashboard.
+
+  Args:
+    request_data.RequestData for the current request.
+
+  Returns:
+    initial list of subpages to set for the main dashboard.
+  """
+  if False:
+  # TODO(daniel): re-enable when connection views are back
+  #if not data.profile.is_student and data.timeline.orgsAnnounced():
+    connection_dashboard = ConnectionsDashboard(data)
+
+    return [{
+        'name': 'connections_dashboard',
+        'description': translation.ugettext(
+            'Connect with organizations, check current status and '
+            'participate in the program.'),
+        'title': 'Connections',
+        'link': '',
+        'subpage_links': connection_dashboard.getSubpagesLink(),
+        }]
+  else:
+    return []
+
+
+class ConnectionsDashboard(Dashboard):
+  """Dashboard grouping connection related elements."""
+
+  def __init__(self, data):
+    """Initializes new instance of this class.
+
+    Args:
+      data: request_data.RequestData for the current request.
+    """
+    super(ConnectionsDashboard, self).__init__(data)
+    self.subpages = _initConnectionDashboardSubpages(data)
+
+
+  def context(self):
+    """See dashboard.Dashboard.context for specification."""
+    subpages = self._divideSubPages(self.subpages)
+
+    return {
+        'title': 'Connections',
+        'name': 'connections_dashboard',
+        'backlinks': [
+            {
+                'to': 'main',
+                'title': 'Participant dashboard'
+            },
+        ],
+        'subpages': subpages
+    }
+
+
+def _initConnectionDashboardSubpages(data):
+  """Initializes list of subpages for the connection dashboard.
+
+  Args:
+    data: request_data.RequestData for the current request.
+
+  Returns:
+    initial list of subpages to set for the connection dashboard.
+  """
+  subpages = [
+      {
+          'name': 'list_connections_for_user',
+          'description': translation.ugettext(
+              'Check status of your existing connections with '
+              'organizations and communicate with administrators.'),
+          'title': translation.ugettext('See your connections'),
+          'link': links.LINKER.program(
+              data.program, urls.UrlNames.CONNECTION_PICK_ORG)
+      },
+      {
+          'name': 'connect',
+          'description': translation.ugettext(
+              'Connect with organizations and request a role to '
+              'participate in the program.'),
+          'title': translation.ugettext('Connect with organizations'),
+          'link': links.LINKER.program(
+              data.program, urls.UrlNames.CONNECTION_PICK_ORG)
+      }]
+
+  # add organization admin specific items
+  if data.ndb_profile.is_admin:
+    subpages.append({
+        'name': 'list_connections_for_org_admin',
+        'description': translation.ugettext(
+            'Manage connections for the organizations for which you have '
+            'administrator role at this moment.'),
+        'title': translation.ugettext('See organization\'s connections'),
+        'link': links.LINKER.profile(
+            data.ndb_profile, urls.UrlNames.CONNECTION_LIST_FOR_ORG_ADMIN)
+        })
+
+    for org in data.org_admin_for:
+      subpages.append({
+          'name': 'connect_for_%s' % org.link_id,
+          'description': translation.ugettext(
+              'Connect with users and offer them role in your '
+              'organization.'),
+          'title': translation.ugettext('Connect users with %s' % org.name),
+          'link': links.LINKER.organization(
+              org.key(), urls.UrlNames.CONNECTION_START_AS_ORG)
+          })
+
+  return subpages

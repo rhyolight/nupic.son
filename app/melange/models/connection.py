@@ -129,7 +129,7 @@ class Connection(ndb.Model):
   def keyName(self):
     """Returns a string which uniquely represents the entity.
     """
-    return '/'.join([self.parent_key().name(), str(self.key().id())])
+    return '/'.join([self.key.parent().id(), str(self.key.id())])
 
   def getRole(self):
     """Returns the role currently assigned to the user for the connected
