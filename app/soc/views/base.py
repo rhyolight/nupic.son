@@ -24,23 +24,30 @@ from google.appengine.ext import db
 from django import http
 from django.template import loader
 
-from melange.request import error
 from melange.request import exception
-from melange.request import initialize
-from melange.request import links
-from melange.request import render
-
 
 class RequestHandler(object):
   """Base class managing HTTP Requests."""
 
   # TODO(nathaniel): Pass these as construction parameters like
   # real injected dependencies.
-  initializer = initialize.MELANGE_INITIALIZER
-  linker = links.LINKER
-  renderer = render.MELANGE_RENDERER
-  error_handler = error.MELANGE_ERROR_HANDLER
   access_checker = None
+
+  def __init__(self, initializer, linker, renderer, error_handler):
+    """Initializes a new instance of the request handler for the specified
+    parameters which define actual behavior of how requests are handled and
+    how HTTP response is generated.
+
+    Args:
+      initializer: Implementation of initialize.Initializer interface.
+      linker: Instance of links.Linker class.
+      renderer: Implementation of render.Renderer interface.
+      error_handler: Implementation of error.ErrorHandler interface.
+    """
+    self.initializer = initializer
+    self.linker = linker
+    self.renderer = renderer
+    self.error_handler = error_handler
 
   def context(self, data, check, mutator):
     """Provides a dictionary of values needed to render a template.

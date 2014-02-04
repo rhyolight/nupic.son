@@ -15,6 +15,10 @@
 """Module containing the Melange callback."""
 
 from melange.views import settings
+from melange.request import error
+from melange.request import initialize
+from melange.request import links
+from melange.request import render
 
 
 class Callback(object):
@@ -32,7 +36,11 @@ class Callback(object):
 
   def registerViews(self):
     """Instantiates all view objects."""
-    self.views.append(settings.UserSettings())
+    self.views.append(
+        settings.UserSettings(
+            initialize.MELANGE_INITIALIZER,
+            links.LINKER, render.MELANGE_RENDERER,
+            error.MELANGE_ERROR_HANDLER))
 
   def registerWithSitemap(self):
     """Called by the server when sitemap entries should be registered."""

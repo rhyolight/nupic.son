@@ -27,6 +27,8 @@ from soc.modules.gsoc.views import base_templates
 from soc.modules.gsoc.views.helper import access_checker
 from soc.modules.gsoc.views.helper import request_data
 
+from summerofcode.request import links
+
 _GSOC_BASE_TEMPLATE = 'modules/gsoc/base.html'
 _GSOC_ERROR_TEMPLATE = 'modules/gsoc/error.html'
 
@@ -137,6 +139,9 @@ class GSoCErrorHandler(error.ErrorHandler):
 class GSoCRequestHandler(base.RequestHandler):
   """Customization required by GSoC to handle HTTP requests."""
 
-  initializer = _GSOC_INITIALIZER
-  renderer = GSoCRenderer(render.MELANGE_RENDERER)
-  error_handler = GSoCErrorHandler(renderer, error.MELANGE_ERROR_HANDLER)
+  def __init__(self):
+    """Initializes a new instance of the request handler for Summer of Code."""
+    renderer = GSoCRenderer(render.MELANGE_RENDERER)
+    super(GSoCRequestHandler, self).__init__(
+        _GSOC_INITIALIZER, links.SOC_LINKER, renderer,
+        GSoCErrorHandler(renderer, error.MELANGE_ERROR_HANDLER))

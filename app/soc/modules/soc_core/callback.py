@@ -14,6 +14,11 @@
 
 """Module containing the core callback."""
 
+from melange.request import error
+from melange.request import initialize
+from melange.request import links
+from melange.request import render
+
 from soc.tasks import mailer
 from soc.views import legacy
 from soc.views import site
@@ -38,11 +43,31 @@ class Callback(object):
     """Instantiates all view objects."""
     self.views.append(legacy.Legacy())
     self.views.append(mailer.MailerTask())
-    self.views.append(site.EditSitePage())
-    self.views.append(site.LandingPage())
-    self.views.append(site.SiteHomepage())
-    self.views.append(user.CreateUserPage())
-    self.views.append(user.EditUserPage())
+    self.views.append(
+        site.EditSitePage(
+            initialize.MELANGE_INITIALIZER,
+            links.LINKER, render.MELANGE_RENDERER,
+            error.MELANGE_ERROR_HANDLER))
+    self.views.append(
+        site.LandingPage(
+            initialize.MELANGE_INITIALIZER,
+            links.LINKER, render.MELANGE_RENDERER,
+            error.MELANGE_ERROR_HANDLER))
+    self.views.append(
+        site.SiteHomepage(
+            initialize.MELANGE_INITIALIZER,
+            links.LINKER, render.MELANGE_RENDERER,
+            error.MELANGE_ERROR_HANDLER))
+    self.views.append(
+        user.CreateUserPage(
+            initialize.MELANGE_INITIALIZER,
+            links.LINKER, render.MELANGE_RENDERER,
+            error.MELANGE_ERROR_HANDLER))
+    self.views.append(
+        user.EditUserPage(
+            initialize.MELANGE_INITIALIZER,
+            links.LINKER, render.MELANGE_RENDERER,
+            error.MELANGE_ERROR_HANDLER))
     self.views.append(warmup.WarmupPage())
 
   def registerWithSitemap(self):
