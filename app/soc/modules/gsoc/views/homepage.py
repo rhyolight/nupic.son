@@ -105,7 +105,7 @@ class Apply(Template):
       context['nr_accepted_orgs'] = nr_orgs if nr_orgs else ""
       context['accepted_orgs_link'] = accepted_orgs_link
       participating_orgs = []
-      current_orgs = org_logic.getAcceptedOrganizations(
+      current_orgs = org_logic.getAcceptedOrganizationsWithLogoURLs(
           self.data.program.key(), models=self.data.models)
 
       for org in current_orgs:
