@@ -27,6 +27,7 @@ from soc.modules.gsoc.models import timeline as timeline_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import org_utils
+from tests import profile_utils
 from tests import program_utils
 from tests import timeline_utils
 
@@ -416,12 +417,8 @@ class CanProposalBeResubmittedTest(unittest.TestCase):
         program_id=TEST_PROGRAM_ID, sponsor_key=sponsor.key(),
         timeline_key=self.timeline.key(), app_tasks_limit=3)
 
-    # seed a new student info
-    student_info_properties = {
-        'number_of_proposals': 0,
-        }
-    self.student_info = seeder_logic.seed(
-        profile_model.GSoCStudentInfo, student_info_properties)
+    # seed a new student
+    self.student = profile_utils.seedNDBStudent(self.program)
 
     # seed a new proposal
     proposal_properties = {'status': proposal_model.STATUS_WITHDRAWN}
@@ -431,7 +428,7 @@ class CanProposalBeResubmittedTest(unittest.TestCase):
   def testResubmitWithdrawnProposal(self):
     # it should be possible to resubmit this proposal
     can_resubmit = proposal_logic.canProposalBeResubmitted(
-        self.proposal, self.student_info, self.program, self.timeline)
+        self.proposal, self.student, self.program, self.timeline)
     self.assertTrue(can_resubmit)
 
   def testResubmitForOtherStatuses(self):
@@ -441,7 +438,7 @@ class CanProposalBeResubmittedTest(unittest.TestCase):
 
     # it should not be possible to resubmit this proposal
     can_resubmit = proposal_logic.canProposalBeResubmitted(
-        self.proposal, self.student_info, self.program, self.timeline)
+        self.proposal, self.student, self.program, self.timeline)
     self.assertFalse(can_resubmit)
 
     # set status of the proposal to ignored
@@ -450,7 +447,7 @@ class CanProposalBeResubmittedTest(unittest.TestCase):
 
     # it should not be possible to resubmit this proposal
     can_resubmit = proposal_logic.canProposalBeResubmitted(
-        self.proposal, self.student_info, self.program, self.timeline)
+        self.proposal, self.student, self.program, self.timeline)
     self.assertFalse(can_resubmit)
 
     # set status of the proposal to invalid
@@ -459,7 +456,7 @@ class CanProposalBeResubmittedTest(unittest.TestCase):
 
     # it should not be possible to resubmit this proposal
     can_resubmit = proposal_logic.canProposalBeResubmitted(
-        self.proposal, self.student_info, self.program, self.timeline)
+        self.proposal, self.student, self.program, self.timeline)
     self.assertFalse(can_resubmit)
 
     # set status of the proposal to pending
@@ -468,7 +465,7 @@ class CanProposalBeResubmittedTest(unittest.TestCase):
 
     # it should not be possible to resubmit this proposal
     can_resubmit = proposal_logic.canProposalBeResubmitted(
-        self.proposal, self.student_info, self.program, self.timeline)
+        self.proposal, self.student, self.program, self.timeline)
     self.assertFalse(can_resubmit)
 
     # set status of the proposal to rejected
@@ -477,7 +474,7 @@ class CanProposalBeResubmittedTest(unittest.TestCase):
 
     # it should not be possible to resubmit this proposal
     can_resubmit = proposal_logic.canProposalBeResubmitted(
-        self.proposal, self.student_info, self.program, self.timeline)
+        self.proposal, self.student, self.program, self.timeline)
     self.assertFalse(can_resubmit)
 
   def testAfterStudentAppPeriod(self):
@@ -487,7 +484,7 @@ class CanProposalBeResubmittedTest(unittest.TestCase):
 
     # it should still be possible to resubmit this proposal
     can_resubmit = proposal_logic.canProposalBeResubmitted(
-        self.proposal, self.student_info, self.program, self.timeline)
+        self.proposal, self.student, self.program, self.timeline)
     self.assertTrue(can_resubmit)
 
   def testAfterAcceptedStudentsAnnounced(self):
@@ -499,27 +496,29 @@ class CanProposalBeResubmittedTest(unittest.TestCase):
 
     # it should not be possible to resubmit this proposal
     can_resubmit = proposal_logic.canProposalBeResubmitted(
-        self.proposal, self.student_info, self.program, self.timeline)
+        self.proposal, self.student, self.program, self.timeline)
     self.assertFalse(can_resubmit)
 
   def testForStudentWithMaxMinusOneProposals(self):
     # change the student so that already max - 1 proposals are submitted
-    self.student_info.number_of_proposals = self.program.apps_tasks_limit - 1
-    self.student_info.put()
+    self.student.student_data.number_of_proposals = (
+        self.program.apps_tasks_limit - 1)
+    self.student.put()
 
     # it should not be possible to resubmit this proposal
     can_resubmit = proposal_logic.canProposalBeResubmitted(
-        self.proposal, self.student_info, self.program, self.timeline)
+        self.proposal, self.student, self.program, self.timeline)
     self.assertTrue(can_resubmit)
 
   def testForStudentWithMaxProposals(self):
     # change the student so that max proposals are already submitted
-    self.student_info.number_of_proposals = self.program.apps_tasks_limit
-    self.student_info.put()
+    self.student.student_data.number_of_proposals = (
+        self.program.apps_tasks_limit)
+    self.student.put()
 
     # it should not be possible to resubmit this proposal
     can_resubmit = proposal_logic.canProposalBeResubmitted(
-        self.proposal, self.student_info, self.program, self.timeline)
+        self.proposal, self.student, self.program, self.timeline)
     self.assertFalse(can_resubmit)
 
 
