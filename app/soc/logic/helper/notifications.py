@@ -214,7 +214,7 @@ class StartConnectionByOrgContextProvider(object):
     """
     subject = DEF_NEW_ORG_CONNECTION % {'org': org.name}
     connection_url = self._linker.userId(
-        profile.key(), connection_key.id(),
+        profile.key, connection_key.id(),
         self._url_names.CONNECTION_MANAGE_AS_USER)
 
     message_properties = {

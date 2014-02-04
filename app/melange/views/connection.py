@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module with Code In specific connection views."""
+"""Module with connection related views."""
+
+from django import forms as django_forms
+from django import http
+from django.utils import translation
 
 from google.appengine.ext import db
 from google.appengine.ext import ndb
@@ -20,10 +24,318 @@ from google.appengine.ext import ndb
 from melange.logic import connection as connection_logic
 from melange.logic import profile as profile_logic
 from melange.models import connection as connection_model
+from melange.models import user as user_model
+from melange.request import access
 from melange.request import exception
+from melange.request import links
 
+from soc.logic import cleaning
 from soc.logic.helper import notifications
 from soc.tasks import mailer
+from soc.modules.gsoc.views import forms as gsoc_forms
+from soc.views import base
+from soc.views.helper import url_patterns
+
+
+ACTIONS_FORM_NAME = 'actions_form'
+MESSAGE_FORM_NAME = 'message_form'
+
+LIST_CONNECTIONS_FOR_USER_PAGE_NAME = translation.ugettext(
+    'List of connections for %s')
+
+LIST_CONNECTIONS_FOR_ORG_ADMIN_PAGE_NAME = translation.ugettext(
+    'List connections for organization admin')
+
+MANAGE_CONNECTION_PAGE_NAME = translation.ugettext(
+    'Manage connection')
+
+PICK_ORGANIZATION_TO_CONNECT = translation.ugettext(
+    'Pick organization to connect with')
+
+START_CONNECTION_AS_ORG_PAGE_NAME = translation.ugettext(
+    'Start connections with users')
+
+START_CONNECTION_AS_USER_PAGE_NAME = translation.ugettext(
+    'Start connection with organization')
+
+START_CONNECTION_MESSAGE_LABEL = translation.ugettext(
+    'Message')
+
+CONNECTION_FORM_USERS_HELP_TEXT = translation.ugettext(
+    'Comma separated list of usernames')
+
+CONNECTION_FORM_USERS_LABEL = translation.ugettext(
+    'Users')
+
+CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT = translation.ugettext(
+    'Optional message to the organization')
+
+CONNECTION_AS_ORG_FORM_MESSAGE_HELP_TEXT = translation.ugettext(
+    'Optional message to users')
+
+MANAGE_CONNECTION_FORM_ORG_ROLE_HELP_TEXT = translation.ugettext(
+    'Type of role you designate to the user')
+
+START_CONNECTION_FORM_ORG_ROLE_HELP_TEXT = translation.ugettext(
+    'Type of role you designate to the users')
+
+CONNECTION_FORM_USER_ROLE_HELP_TEXT = translation.ugettext(
+    'Whether you request role from organization or not')
+
+CONNECTION_FORM_ORG_ROLE_LABEL = translation.ugettext(
+    'Role To Assign')
+
+CONNECTION_FORM_USER_ROLE_LABEL = translation.ugettext(
+    'Role For Organization')
+
+MESSAGE_FORM_CONTENT_LABEL = translation.ugettext(
+    'Send New Message')
+
+MESSAGE_CONNECTION_CANNOT_BE_ACCESSED = translation.ugettext(
+    'Requested connection cannot by accessed by this user.')
+
+ORGANIZATION_ITEM_LABEL = translation.ugettext('Organization')
+USER_ITEM_LABEL = translation.ugettext('User')
+USER_ROLE_ITEM_LABEL = translation.ugettext('User Requests Role')
+ORG_ROLE_ITEM_LABEL = translation.ugettext('Role Granted by Organization')
+INITIALIZED_ON_LABEL = translation.ugettext('Initialized On')
+
+USER_ROLE_CHOICES = (
+    (connection_model.NO_ROLE, 'No'),
+    (connection_model.ROLE, 'Yes'))
+
+ACTUAL_ORG_ROLE_CHOICES = [
+    (connection_model.MENTOR_ROLE, 'Mentor'),
+    (connection_model.ORG_ADMIN_ROLE, 'Organization Admin'),
+    ]
+
+ALL_ORG_ROLE_CHOICES = [
+    (connection_model.NO_ROLE, 'No Role'),
+    (connection_model.MENTOR_ROLE, 'Mentor'),
+    (connection_model.ORG_ADMIN_ROLE, 'Organization Admin'),
+    ]
+
+
+def cleanUsers(tokens, program_key):
+  """Cleans users field.
+
+  Args:
+    tokens: A string containing user tokens.
+
+  Returns:
+    Cleaned value for users field. It is a tuple with three elements:
+    list of found profile entities, list of found user entities and list
+    of email addresses.
+
+  Raises:
+    django_forms.ValidationError if the submitted value is not valid.
+  """
+  identifiers = set(token.strip() for token in tokens)
+
+  emails = []
+  users = []
+  profiles = []
+  error_list = []
+
+  for identifier in identifiers:
+    try:
+      if '@' in identifier:
+        cleaning.cleanEmail(identifier)
+        emails.append(identifier)
+      else:
+        cleaning.cleanLinkID(identifier)
+        profile = profile_logic.getProfileForUsername(identifier, program_key)
+        if profile:
+          profiles.append(profile)
+        else:
+          user = user_model.User.get_by_id(identifier)
+          if user:
+            users.append(user)
+          else:
+            raise django_forms.ValidationError(
+                cleaning.USER_DOES_NOT_EXIST_ERROR_MSG % identifier)
+    except django_forms.ValidationError as e:
+      error_list.append(e.messages)
+
+  # form is not valid if at least one error occurred
+  if error_list:
+    raise django_forms.ValidationError(error_list)
+
+  # TODO(daniel): anonymous connections should be supported
+  if users or emails:
+    raise django_forms.ValidationError(
+        'Anonymous connections are not supported at this time. '
+        'Please provide usernames of users with profiles only.')
+
+  return profiles, users, emails
+
+def _formToStartConnectionAsOrg(**kwargs):
+  """Returns a Django form to start connection as an organization
+  administrator.
+
+  Returns:
+    ConnectionForm adjusted to start connection as organization administrator.
+  """
+  form = ConnectionForm(**kwargs)
+  form.fields['role'].label = CONNECTION_FORM_ORG_ROLE_LABEL
+  form.fields['role'].help_text = START_CONNECTION_FORM_ORG_ROLE_HELP_TEXT
+  form.fields['role'].choices = ACTUAL_ORG_ROLE_CHOICES
+
+  form.setHelpTextForMessage(CONNECTION_AS_ORG_FORM_MESSAGE_HELP_TEXT)
+  return form
+
+# TODO(daniel): this form mustn't inherit from GSoC form
+class ConnectionForm(gsoc_forms.GSoCModelForm):
+  """Django form to show specific fields for an organization.
+
+  Upon creation the form can be customized using instance methods so as
+  to accommodate actual use cases.
+  """
+
+  users = django_forms.CharField(
+      required=True, label=CONNECTION_FORM_USERS_LABEL,
+      help_text=CONNECTION_FORM_USERS_HELP_TEXT)
+  message = django_forms.CharField(
+      widget=django_forms.Textarea(), required=False)
+  role = django_forms.ChoiceField()
+
+  Meta = object
+
+  def __init__(self, request_data=None, **kwargs):
+    """Initializes a new instance of connection form."""
+    super(ConnectionForm, self).__init__(**kwargs)
+
+    self.request_data = request_data
+
+    self.fields['message'].label = START_CONNECTION_MESSAGE_LABEL
+
+  def clean_users(self):
+    """Cleans users field.
+
+    Returns:
+      Cleaned value for users field. It is a tuple with three elements:
+      list of found profile entities, list of found user entities and list
+      of email addresses.
+
+    Raises:
+      django_forms.ValidationError if the submitted value is not valid.
+    """
+    return cleanUsers(
+        self.cleaned_data['users'], self.request_data.program.key())
+
+  def setHelpTextForMessage(self, help_text):
+    """Sets help text for 'message' field.
+
+    Args:
+      help_text: a string containing help text to set.
+    """
+    self.fields['message'].help_text = help_text
+
+  def setLabelForRole(self, label):
+    """Sets label for 'role' field.
+
+    Args:
+      label: a string containing the label to set.
+    """
+    self.fields['user_role'].label = label
+
+  def setHelpTextForRole(self, help_text):
+    """Sets help text for 'role' field.
+
+    Args:
+      help_text: a string containing help text to set.
+    """
+    self.fields['user_role'].help_text = help_text
+
+  def removeField(self, key):
+    """Removes field with the specified key.
+
+    Args:
+      key: a string with a key of a field to remove.
+    """
+    del self.fields[key]
+
+
+START_CONNECTION_AS_ORG_ACCESS_CHECKER = access.ConjuctionAccessChecker([
+    access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+    access.IS_USER_ORG_ADMIN_FOR_NDB_ORG
+    ])
+
+class StartConnectionAsOrg(base.RequestHandler):
+  """View to start connections with users as organization administrators."""
+
+  access_checker = START_CONNECTION_AS_ORG_ACCESS_CHECKER
+
+  def __init__(self, initializer, linker, renderer, error_handler,
+      url_pattern_constructor, url_names, template_path):
+    """Initializes a new instance of the request handler for the specified
+    parameters.
+
+    Args:
+      initializer: Implementation of initialize.Initializer interface.
+      linker: Instance of links.Linker class.
+      renderer: Implementation of render.Renderer interface.
+      error_handler: Implementation of error.ErrorHandler interface.
+      url_pattern_constructor:
+        Implementation of url_patterns.UrlPatternConstructor.
+      url_names: Instance of url_names.UrlNames.
+      template_path: The path of the template to be used.
+    """
+    super(StartConnectionAsOrg, self).__init__(
+        initializer, linker, renderer, error_handler)
+    self.url_pattern_constructor = url_pattern_constructor
+    self.url_names = url_names
+    self.template_path = template_path
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.djangoURLPatterns for specification."""
+    return [
+        self.url_pattern_constructor.construct(
+            r'connection/start/org/%s$' % url_patterns.ORG,
+            self, name=self.url_names.CONNECTION_START_AS_ORG)
+    ]
+
+  def templatePath(self):
+    """See base.RequestHandler.templatePath for specification."""
+    return self.template_path
+
+  def context(self, data, check, mutator):
+    """See base.RequestHandler.context for specification."""
+    form = _formToStartConnectionAsOrg(
+        data=data.POST or None, request_data=data)
+
+    return {
+        'page_name': START_CONNECTION_AS_ORG_PAGE_NAME,
+        'forms': [form],
+        'error': bool(form.errors)
+        }
+
+  def post(self, data, check, mutator):
+    """See base.RequestHandler.post for specification."""
+    form = _formToStartConnectionAsOrg(data=data.POST, request_data=data)
+    if form.is_valid():
+      profiles, _, _ = form.cleaned_data['users']
+
+      notification_context_provider = (
+          notifications.StartConnectionByOrgContextProvider(
+              links.ABSOLUTE_LINKER, self.url_names))
+      connections = []
+      for profile in profiles:
+        connections.append(createConnectionTxn(
+            data, profile.key, data.url_ndb_org, None,
+            message=form.cleaned_data['message'],
+            notification_context_provider=notification_context_provider,
+            recipients=[profile.contact.email],
+            org_role=form.cleaned_data['role'],
+            org_admin=data.ndb_profile))
+
+      # TODO(daniel): add some message with whom connections are started
+      url = self.links.LINKER.organization(
+          data.url_ndb_org.key, self.url_names.CONNECTION_START_AS_ORG)
+      return http.HttpResponseRedirect(url)
+    else:
+      # TODO(nathaniel): problematic self-call.
+      return self.get(data, check, mutator)
 
 
 def sendMentorWelcomeMail(data, profile, message):
@@ -103,13 +415,14 @@ def createConnectionTxn(
     if notification_context_provider and recipients:
       notification_context = notification_context_provider.getContext(
           recipients, organization, profile, data.program, data.site,
-          connection.key(), message)
+          connection.key, message)
       sub_txn = mailer.getSpawnMailTaskTxn(
           notification_context, parent=connection)
       sub_txn()
 
     # spawn task to update this user's messages
-    conversation_updater.updateConversationsForProfile(profile)
+    if conversation_updater:
+      conversation_updater.updateConversationsForProfile(profile)
 
     return connection
 
