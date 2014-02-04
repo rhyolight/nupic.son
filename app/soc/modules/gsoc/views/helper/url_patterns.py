@@ -31,6 +31,18 @@ def url(regex, view, kwargs=None, name=None):
   return django_url('^gsoc/%s' % regex, view, kwargs=kwargs, name=name)
 
 
+class SOCUrlPatternConstructor(url_patterns.UrlPatternConstructor):
+  """Implementation of UrlPatternConstructor which constructs
+  Summer Of Code-specific URL patterns prefixed with ^gsoc/.
+  """
+
+  def construct(self, regex, view, kwargs=None, name=None):
+    """See url_patterns.UrlPatternConstructor.construct for specification."""
+    return django_url('^gsoc/%s' % regex, view, kwargs=kwargs, name=name)
+
+SOC_URL_PATTERN_CONSTRUCTOR = SOCUrlPatternConstructor()
+
+
 SHIPMENT_INFO = namedIdBasedPattern(['sponsor', 'program'])
 SURVEY = namedLinkIdPattern(['sponsor', 'program', 'survey'])
 COMMENT = namedIdBasedPattern(['sponsor', 'program', 'user'])
