@@ -15,6 +15,7 @@
 """GSoC logic for proposals."""
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from melange.utils import time as time_utils
 
@@ -22,7 +23,6 @@ from soc.logic import timeline as timeline_logic
 
 from soc.views.helper import request_data
 
-from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
 
@@ -121,12 +121,12 @@ def hasMentorProposalAssigned(profile, org_key=None):
   return query.count() > 0
 
 
-def canSubmitProposal(student_info, program, timeline):
+def canSubmitProposal(profile, program, timeline):
   """Tells whether the specified student can submit a proposal for
   the specified program.
 
   Args:
-    student_info: student info entity
+    profile: Profile entity.
     program: program entity
     timeline: timeline entity for the program
 
@@ -145,7 +145,7 @@ def canSubmitProposal(student_info, program, timeline):
     return False
 
   # check if the student has not reached the limit of apps per program
-  if student_info.number_of_proposals >= program.apps_tasks_limit:
+  if profile.student_data.number_of_proposals >= program.apps_tasks_limit:
     return False
 
   return True
@@ -232,7 +232,7 @@ def resubmitProposal(proposal, profile, program, timeline):
 
   Args:
     proposal: proposal entity
-    student_info: student info entity
+    profile: Profile entity of the student to whom the proposal belongs.
     program: program entity
     timeline: timeline entity for the program
 
@@ -305,17 +305,18 @@ def acceptProposal(proposal):
       }
   project = project_model.GSoCProject(parent=profile_key, **properties)
 
-  # get student info and update its related properties
-  student_info = profile_model.GSoCStudentInfo.all().ancestor(
-      profile_key).get()
-  student_info.number_of_projects += 1
-  student_info.project_for_orgs.append(org_key)
-  student_info.project_for_orgs = list(set(student_info.project_for_orgs))
+  # get student and update its related properties
+  profile = ndb.Key.from_old_key(profile_key).get()
+  profile.student_data.number_of_projects += 1
+  profile.student_data.project_for_orgs.append(ndb.Key.from_old_key(org_key))
+  profile.student_data.project_for_orgs = list(
+      set(profile.student_data.project_for_orgs))
+  profile.put()
 
   # update proposal's status
   proposal.status = proposal_model.STATUS_ACCEPTED
 
-  db.put([proposal, project, student_info])
+  db.put([proposal, project])
 
   return project
 
