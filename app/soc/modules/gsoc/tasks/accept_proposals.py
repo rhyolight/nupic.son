@@ -216,15 +216,15 @@ class ProposalAcceptanceTask(object):
     """
     sender_name, sender = mail_dispatcher.getDefaultMailSender()
 
-    student_entity = proposal.parent()
+    student_entity = ndb.Key.from_old_key(proposal.parent_key()).get()
 
     org_key = GSoCProposal.org.get_value_for_datastore(proposal)
     org = ndb.Key.from_old_key(org_key).get()
     program_entity = proposal.program
 
     context = {
-      'to': student_entity.email,
-      'to_name': student_entity.given_name,
+      'to': student_entity.contact.email,
+      'to_name': student_entity.first_name,
       'sender': sender,
       'sender_name': sender_name,
       'program_name': program_entity.name,
@@ -237,7 +237,7 @@ class ProposalAcceptanceTask(object):
     template_string = messages.accepted_students_msg
 
     return mail_dispatcher.getSendMailFromTemplateStringTxn(
-        template_string, context, parent=proposal.parent(),
+        template_string, context, parent=student_entity,
         transactional=transactional)
 
   def getWelcomeMailTxn(self, proposal, transactional=True):
@@ -245,12 +245,12 @@ class ProposalAcceptanceTask(object):
     """
     sender_name, sender = mail_dispatcher.getDefaultMailSender()
 
-    student_entity = proposal.parent()
+    student_entity = ndb.Key.from_old_key(proposal.parent_key()).get()
     program_entity = proposal.program
 
     context = {
-      'to': student_entity.email,
-      'to_name': student_entity.given_name,
+      'to': student_entity.contact.email,
+      'to_name': student_entity.first_name,
       'sender': sender,
       'sender_name': sender_name,
       'program_name': program_entity.name,
@@ -261,7 +261,7 @@ class ProposalAcceptanceTask(object):
     template_string = messages.accepted_students_welcome_msg
 
     return mail_dispatcher.getSendMailFromTemplateStringTxn(
-        template_string, context, parent=proposal.parent(),
+        template_string, context, parent=student_entity,
         transactional=transactional)
 
   def getRejectProposalMailTxn(self, proposal):
@@ -270,7 +270,7 @@ class ProposalAcceptanceTask(object):
     """
     sender_name, sender = mail_dispatcher.getDefaultMailSender()
 
-    student_entity = proposal.parent()
+    student_entity = ndb.Key.from_old_key(proposal.parent_key()).get()
 
     org_key = GSoCProposal.org.get_value_for_datastore(proposal)
     org = ndb.Key.from_old_key(org_key).get()
@@ -278,8 +278,8 @@ class ProposalAcceptanceTask(object):
     program_entity = proposal.program
 
     context = {
-      'to': student_entity.email,
-      'to_name': student_entity.given_name,
+      'to': student_entity.contact.email,
+      'to_name': student_entity.first_name,
       'sender': sender,
       'sender_name': sender_name,
       'proposal_title': proposal.title,
@@ -292,7 +292,7 @@ class ProposalAcceptanceTask(object):
     template_string = messages.rejected_students_msg
 
     return mail_dispatcher.getSendMailFromTemplateStringTxn(
-        template_string, context, parent=proposal.parent())
+        template_string, context, parent=student_entity)
 
   def acceptProposal(self, proposal, transactional=True):
     """Accept a single proposal.
@@ -320,7 +320,9 @@ class ProposalAcceptanceTask(object):
       """
 
       # add a task that performs conversion status per proposal
-      status_task.add(transactional=transactional)
+      # TODO(daniel): run in transaction when proposal and project are NDB
+      # status_task.add(transactional=transactional)
+      status_task.add(transactional=False)
 
       proposal = db.get(proposal_key)
       proposal_logic.acceptProposal(proposal)
@@ -328,7 +330,9 @@ class ProposalAcceptanceTask(object):
       accepted_mail_txn()
       welcome_mail_txn()
 
-    db.RunInTransaction(acceptProposalTxn)
+    # TODO(daniel): run in transaction when proposal and project are NDB
+    # db.RunInTransaction(acceptProposalTxn)
+    acceptProposalTxn()
 
   def rejectProposal(self, proposal):
     """Rejects a single proposal.
@@ -347,4 +351,6 @@ class ProposalAcceptanceTask(object):
 
       mail_txn()
 
-    db.RunInTransaction(rejectProposalTxn)
+    # TODO(daniel): run in transaction when proposal and project are NDB
+    # db.RunInTransaction(rejectProposalTxn)
+    rejectProposalTxn()

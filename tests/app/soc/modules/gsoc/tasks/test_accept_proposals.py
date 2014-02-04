@@ -30,6 +30,7 @@ from tests import org_utils
 from tests import profile_utils
 from tests import program_utils
 from tests import test_utils
+from tests.utils import proposal_utils
 
 
 ACCEPT_URL = '/tasks/gsoc/accept_proposals/accept'
@@ -64,11 +65,13 @@ class AcceptProposalsTest(
 
   def _createStudent(self, email, n_proposals):
     """Creates a student with proposals."""
-    student = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
-    student.createOtherUser(email)
-    student.createStudentWithProposals(
-        self.org, self.mentor, n=n_proposals)
-    student.notificationSettings()
+    student = profile_utils.seedNDBStudent(self.program)
+    for _ in range(n_proposals):
+      proposal_utils.seedProposal(
+          student.key, self.program.key(), org_key=self.org.key,
+          mentor_key=self.mentor.key)
+    # TODO(daniel): bring back notifications
+    # student.notificationSettings()
     return student
 
   def _acceptProposals(self):
@@ -78,11 +81,11 @@ class AcceptProposalsTest(
     self.student1 = self._createStudent(
         'student1@example.com', n_proposals=2)
     self.student1_proposals = proposal_model.GSoCProposal.all().ancestor(
-        self.student1.profile)
+        self.student1.key.to_old_key())
     self.student2 = self._createStudent(
         'student2@example.com', n_proposals=3)
     self.student2_proposals = proposal_model.GSoCProposal.all().ancestor(
-        self.student2.profile)
+        self.student2.key.to_old_key())
 
     self.assertEqual(self.student1_proposals.count(), 2)
     self.assertEqual(self.student2_proposals.count(), 3)
@@ -156,9 +159,9 @@ class AcceptProposalsTest(
     # assert accepted student got proper emails
     self.assertEqual(response.status_code, httplib.OK)
     self.assertEmailSent(
-        to=self.student1.profile.email, subject='Congratulations!')
+        to=self.student1.contact.email, subject='Congratulations!')
     self.assertEmailSent(
-        to=self.student1.profile.email,
+        to=self.student1.contact.email,
         subject='Welcome to %s' % self.gsoc.name)
     # TODO(daniel): add assertEmailNotSent to DjangoTestCase
     # self.assertEmailNotSent(to=self.student2.profile.email)
@@ -168,7 +171,8 @@ class AcceptProposalsTest(
         self.student1_proposals[0].status, proposal_model.STATUS_ACCEPTED)
 
     # assert a project created and associated with accepted student
-    projects = project_model.GSoCProject.all().ancestor(self.student1.profile)
+    projects = project_model.GSoCProject.all().ancestor(
+        self.student1.key.to_old_key())
     self.assertEqual(projects.count(), 1)
     project = projects.get()
     self.assertEqual(project.status, project_model.STATUS_ACCEPTED)
@@ -211,7 +215,7 @@ class AcceptProposalsTest(
 
     # assert student2 got a reject email
     self.assertEmailSent(
-        to=self.student2.profile.email,
+        to=self.student2.contact.email,
         subject='Thank you for applying to %s' % self.gsoc.name)
     # assert student2 got no accept email
     # TODO(daniel): add assertEmailNotSent to DjangoTestCase
@@ -219,11 +223,12 @@ class AcceptProposalsTest(
     #    subject='Congratulations!')
     # assert student1 got a reject email (already got an accept mail)
     self.assertEmailSent(
-        to=self.student1.profile.email,
+        to=self.student1.contact.email,
         subject='Thank you for applying to %s' % self.gsoc.name)
 
     # assert no projects are created for rejected student
-    projects = project_model.GSoCProject.all().ancestor(self.student2.profile)
+    projects = project_model.GSoCProject.all().ancestor(
+        self.student2.key.to_old_key())
     self.assertEqual(projects.count(), 0)
 
 
