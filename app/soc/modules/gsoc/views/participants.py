@@ -94,7 +94,7 @@ class MentorsList(Template):
         self.data.request, self._list_config, query, starter,
         prefetcher=prefetcher)
 
-    return response_builder.build()
+    return response_builder.buildNDB()
 
   def templatePath(self):
     return 'modules/gsoc/participants/_mentors_list.html'
