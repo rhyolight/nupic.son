@@ -21,6 +21,7 @@ from soc.modules.gsoc.models.project_survey import ProjectSurvey
 from tests import profile_utils
 from tests import test_utils
 from tests import timeline_utils
+from tests.utils import project_utils
 
 
 class SurveyRemindersTest(
@@ -34,14 +35,15 @@ class SurveyRemindersTest(
   def setUp(self):
     super(SurveyRemindersTest, self).setUp()
     self.init()
-    self.createMentor()
-    self.createStudent()
-    self.createSurveys()
 
-  def createMentor(self):
-    """Creates a new mentor."""
     self.mentor = profile_utils.seedNDBProfile(
         self.program.key(), mentor_for=[self.org.key])
+    self.student = profile_utils.seedNDBStudent(self.program)
+    self.project = project_utils.seedProject(
+        self.student, self.program.key(), org_key=self.org.key,
+        mentor_key=self.mentor.key)
+
+    self.createSurveys()
 
   def createStudent(self):
     """Creates a Student with a project.
@@ -56,61 +58,32 @@ class SurveyRemindersTest(
     """Creates the surveys and records required for the tests in the old
     format.
     """
-    user = profile_utils.seedUser()
+    user = profile_utils.seedNDBUser()
     survey_values = {
-        'author': user,
+        'author': user.key.to_old_key(),
         'title': 'Title',
-        'modified_by': user,
+        'modified_by': user.key.to_old_key(),
         'link_id': 'link_id',
-        'scope': self.gsoc,
+        'scope': self.program,
         'survey_start': timeline_utils.past(),
         'survey_end': timeline_utils.past(),
     }
 
-    self.project_survey = ProjectSurvey(key_name='key_name',
-                                        **survey_values)
+    self.project_survey = ProjectSurvey(
+        key_name='key_name', **survey_values)
     self.project_survey.put()
 
-    self.grading_survey = GradingProjectSurvey(key_name='key_name',
-                                               **survey_values)
+    self.grading_survey = GradingProjectSurvey(
+        key_name='key_name', **survey_values)
     self.grading_survey.put()
 
-  def createWithdrawnProject(self):
-    """Creates a project that is withdrawn.
-    """
-    # list response with projects
-    mentor = profile_utils.seedNDBProfile(
-        self.program.key(), mentor_for=[self.org.key])
-
-    # Create a student with the project.
-    student_profile_helper = profile_utils.GSoCProfileHelper(
-        self.gsoc, self.dev_test)
-    student_profile = student_profile_helper.createStudentWithProject(
-        self.org, mentor)
-
-    # Retrieve the project, corresponding proposal.
-    project = GSoCProject.all().ancestor(student_profile).get()
-    proposal = project.proposal
-
-    # Update the properties for withdrawing the project.
-    student_profile.student_info.number_of_projects -= 1
-    student_profile.student_info.project_for_orgs.remove(
-        self.org.key.to_old_key())
-    project.status = 'withdrawn'
-    proposal.status = 'withdrawn'
-
-    # Update the entities.
-    student_profile.student_info.put()
-    project.put()
-    proposal.put()
-
   def testSpawnSurveyRemindersForProjectSurvey(self):
-    """Test spawning reminder tasks for a ProjectSurvey.
-    """
+    """Test spawning reminder tasks for a ProjectSurvey."""
     post_data = {
-        'program_key': self.gsoc.key().id_or_name(),
+        'program_key': self.program.key().id_or_name(),
         'survey_key': self.project_survey.key().id_or_name(),
-        'survey_type': 'project'}
+        'survey_type': 'project'
+        }
 
     response = self.post(self.SPAWN_URL, post_data)
 
@@ -120,12 +93,12 @@ class SurveyRemindersTest(
     self.assertTasksInQueue(n=1, url=self.SEND_URL)
 
   def testSpawnSurveyRemindersForGradingSurvey(self):
-    """Test spawning reminder tasks for a GradingProjectSurvey.
-    """
+    """Test spawning reminder tasks for a GradingProjectSurvey."""
     post_data = {
-        'program_key': self.gsoc.key().id_or_name(),
+        'program_key': self.program.key().id_or_name(),
         'survey_key': self.grading_survey.key().id_or_name(),
-        'survey_type': 'grading'}
+        'survey_type': 'grading'
+        }
 
     response = self.post(self.SPAWN_URL, post_data)
 
@@ -135,36 +108,36 @@ class SurveyRemindersTest(
     self.assertTasksInQueue(n=1, url=self.SEND_URL)
 
   def testSendSurveyReminderForProjectSurvey(self):
-    """Test sending out a reminder for a ProjectSurvey.
-    """
+    """Test sending out a reminder for a ProjectSurvey."""
     post_data = {
         'survey_key': self.project_survey.key().id_or_name(),
         'survey_type': 'project',
-        'project_key': str(self.project.key())}
+        'project_key': str(self.project.key())
+        }
 
     response = self.post(self.SEND_URL, post_data)
 
     self.assertResponseOK(response)
     # URL explicitly added since the email task is in there
     self.assertTasksInQueue(n=0, url=self.SEND_URL)
-    self.assertEmailSent(to=self.student.email)
+    self.assertEmailSent(to=self.student.contact.email)
     # TODO(daniel): add assertEmailNotSent to DjangoTestCase
     #self.assertEmailNotSent(to=self.mentor.email)
 
   def testSendSurveyReminderForGradingSurvey(self):
-    """Test sending out a reminder for a GradingProjectSurvey.
-    """
+    """Test sending out a reminder for a GradingProjectSurvey."""
     post_data = {
         'survey_key': self.grading_survey.key().id_or_name(),
         'survey_type': 'grading',
-        'project_key': str(self.project.key())}
+        'project_key': str(self.project.key())
+        }
 
     response = self.post(self.SEND_URL, post_data)
 
     self.assertResponseOK(response)
     # URL explicitly added since the email task is in there
     self.assertTasksInQueue(n=0, url=self.SEND_URL)
-    self.assertEmailSent(to=self.mentor.email)
+    self.assertEmailSent(to=self.mentor.contact.email)
     # TODO(daniel): add assertEmailNotSent to DjangoTestCase
     #self.assertEmailNotSent(to=self.student.email)
 
@@ -174,11 +147,16 @@ class SurveyRemindersTest(
 
     This covers all the evaluations created (midterm and final).
     """
-    self.createWithdrawnProject()
+    # seed a withdrawn project
+    student = profile_utils.seedNDBStudent(self.program)
+    project_utils.seedProject(
+        student, self.program.key(), org_key=self.org.key, status='withdrawn')
+
     post_data = {
         'program_key': self.gsoc.key().id_or_name(),
         'survey_key': self.project_survey.key().id_or_name(),
-        'survey_type': 'project'}
+        'survey_type': 'project'
+        }
 
     response = self.post(self.SPAWN_URL, post_data)
 
@@ -195,12 +173,16 @@ class SurveyRemindersTest(
 
     This covers all the evaluations created (midterm and final).
     """
-    self.createWithdrawnProject()
+    student = profile_utils.seedNDBStudent(self.program)
+    project_utils.seedProject(
+        student, self.program.key(), org_key=self.org.key, status='withdrawn')
+
     self.project.put()
     post_data = {
         'program_key': self.gsoc.key().id_or_name(),
         'survey_key': self.grading_survey.key().id_or_name(),
-        'survey_type': 'grading'}
+        'survey_type': 'grading'
+        }
 
     response = self.post(self.SPAWN_URL, post_data)
 

@@ -16,6 +16,7 @@
 
 from google.appengine.api import taskqueue
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import http
 from django.conf.urls import url
@@ -101,19 +102,23 @@ class SurveyReminderTask(object):
       return http.HttpResponse()
 
     for project in projects:
-      task_params = {'survey_key': survey_key,
-                     'survey_type': survey_type,
-                     'project_key': str(project.key())}
+      task_params = {
+          'survey_key': survey_key,
+          'survey_type': survey_type,
+          'project_key': str(project.key())
+          }
       task_url = '/tasks/gsoc/surveys/send_reminder/send'
 
       new_task = taskqueue.Task(params=task_params, url=task_url)
       new_task.add('mail')
 
     # pass along these params as POST to the new task
-    task_params = {'program_key': program_key,
-                   'survey_key': survey_key,
-                   'survey_type': survey_type,
-                   'cursor': q.cursor()}
+    task_params = {
+        'program_key': program_key,
+        'survey_key': survey_key,
+        'survey_type': survey_type,
+        'cursor': q.cursor()
+        }
     task_url = request.path
     new_task = taskqueue.Task(params=task_params, url=task_url)
     new_task.add()
@@ -181,23 +186,23 @@ class SurveyReminderTask(object):
 
     if not record:
       # send reminder email because we found no record
-      student_profile = project.parent()
+      student = ndb.Key.from_old_key(project.parent_key()).get()
       site_entity = site.singleton()
 
       if survey_type == 'project':
         url_name = 'gsoc_take_student_evaluation'
 
-        to_name = student_profile.name()
-        to_address = student_profile.email
+        to_name = student.public_name
+        to_address = student.contact.email
         mail_template = 'modules/gsoc/reminder/student_eval_reminder.html'
       elif survey_type == 'grading':
         url_name = 'gsoc_take_mentor_evaluation'
 
-        mentors = db.get(project.mentors)
-        to_address = [m.email for m in mentors]
-        to_name = 'mentor(s) for project "%s"' %(project.title)
-        mail_template = \
-            'modules/gsoc/reminder/mentor_eval_reminder.html'
+        mentors = ndb.get_multi(map(ndb.Key.from_old_key, project.mentors))
+        to_address = [mentor.contact.email for mentor in mentors]
+        to_name = 'mentor(s) for project "%s"' % (project.title)
+        mail_template = (
+            'modules/gsoc/reminder/mentor_eval_reminder.html')
 
       program = project.program
       hostname = site.getHostname()
@@ -205,7 +210,7 @@ class SurveyReminderTask(object):
           'sponsor': program_logic.getSponsorKey(program).name(),
           'program': program.link_id,
           'survey': survey.link_id,
-          'user': student_profile.link_id,
+          'user': student.profile_id,
           'id': str(project.key().id()),
           }
       url_path_and_query = reverse(url_name, kwargs=url_kwargs)
@@ -213,7 +218,7 @@ class SurveyReminderTask(object):
 
       # set the context for the mail template
       mail_context = {
-          'student_name': student_profile.name(),
+          'student_name': student.public_name,
           'project_title': project.title,
           'survey_url': survey_url,
           'survey_end': survey.survey_end,
@@ -227,18 +232,19 @@ class SurveyReminderTask(object):
       mail_context['sender'] = sender_address
       # set the receiver and subject
       mail_context['to'] = to_address
-      mail_context['subject'] = \
-          'Evaluation "%s" Reminder' %(survey.title)
+      mail_context['subject'] = (
+          'Evaluation "%s" Reminder' % survey.title)
 
       # find all org admins for the project's organization
-      org_key = GSoCProject.org.get_value_for_datastore(project)
+      org_key = ndb.Key.from_old_key(
+          GSoCProject.org.get_value_for_datastore(project))
       org_admins = profile_logic.getOrgAdmins(org_key)
 
       # collect email addresses for all found org admins
       org_admin_addresses = []
 
       for org_admin in org_admins:
-        org_admin_addresses.append(org_admin.email)
+        org_admin_addresses.append(org_admin.contact.email)
 
       if org_admin_addresses:
         mail_context['cc'] = org_admin_addresses
