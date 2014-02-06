@@ -145,7 +145,9 @@ class ProposalList(Template):
           else:
             proposal_logic.acceptProposal(proposal)
 
-      db.run_in_transaction(accept_proposal_txn)
+      # TODO(daniel): run within a transaction when proposals are NDB models
+      # db.run_in_transaction(accept_proposal_txn)
+      accept_proposal_txn()
 
     return True
 

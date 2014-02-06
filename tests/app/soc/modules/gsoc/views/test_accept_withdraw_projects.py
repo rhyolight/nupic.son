@@ -16,13 +16,13 @@
 
 import json
 
-from soc.modules.gsoc.models import profile as profile_model
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.views import accept_withdraw_projects
 
 from tests import profile_utils
 from tests import test_utils
+from tests.utils import proposal_utils
 
 
 class AcceptProposalsTest(test_utils.GSoCDjangoTestCase):
@@ -84,15 +84,14 @@ class AcceptProposalsTest(test_utils.GSoCDjangoTestCase):
     user = profile_utils.seedNDBUser(host_for=[self.program])
     profile_utils.loginNDB(user)
 
-    mentor = profile_utils.GSoCProfileHelper(
-        self.gsoc, False).createMentor(self.org)
-    student = profile_utils.GSoCProfileHelper(
-        self.gsoc, False).createStudentWithProposal(self.org, mentor)
-    proposal = proposal_model.GSoCProposal.all().ancestor(student).get()
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
+    student = profile_utils.seedNDBStudent(self.program)
+    proposal = proposal_utils.seedProposal(
+        student.key, self.program.key(), org_key=self.org.key,
+        mentor_key=mentor.key)
 
-    list_data = [{
-        accept_withdraw_projects._PROPOSAL_KEY: str(proposal.key())
-        }]
+    list_data = [{accept_withdraw_projects._PROPOSAL_KEY: str(proposal.key())}]
     post_data = {
         'button_id': 'accept',
         'data': json.dumps(list_data),
@@ -105,32 +104,35 @@ class AcceptProposalsTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(proposal.status, proposal_model.STATUS_ACCEPTED)
 
     # check if a project is created
-    project = project_model.GSoCProject.all().ancestor(student).get()
+    project = project_model.GSoCProject.all().ancestor(
+        student.key.to_old_key()).get()
     self.assertEqual(project.status, project_model.STATUS_ACCEPTED)
     self.assertEqual(project.proposal.key(), proposal.key())
 
     # check if number of projects is updated
-    student_info = profile_model.GSoCStudentInfo.all().ancestor(student).get()
-    self.assertEqual(student_info.number_of_projects, 1)
+    student = student.key.get()
+    self.assertEqual(student.student_data.number_of_projects, 1)
 
   def testAcceptTwoProposals(self):
     """Tests that two proposals can be accepted in the same request."""
     user = profile_utils.seedNDBUser(host_for=[self.program])
     profile_utils.loginNDB(user)
 
-    mentor = profile_utils.GSoCProfileHelper(
-        self.gsoc, False).createMentor(self.org)
-    student1 = profile_utils.GSoCProfileHelper(
-        self.gsoc, False).createStudentWithProposal(self.org, mentor)
-    student2 = profile_utils.GSoCProfileHelper(
-        self.gsoc, False).createStudentWithProposal(self.org, mentor)
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
 
-    proposal1 = proposal_model.GSoCProposal.all().ancestor(student1).get()
-    proposal2 = proposal_model.GSoCProposal.all().ancestor(student2).get()
+    student_one = profile_utils.seedNDBStudent(self.program)
+    proposal_one = proposal_utils.seedProposal(
+        student_one.key, self.program.key(), org_key=self.org.key,
+        mentor_key=mentor.key)
+    student_two = profile_utils.seedNDBStudent(self.program)
+    proposal_two = proposal_utils.seedProposal(
+        student_two.key, self.program.key(), org_key=self.org.key,
+        mentor_key=mentor.key)
 
     list_data = [
-        {accept_withdraw_projects._PROPOSAL_KEY: str(proposal1.key())},
-        {accept_withdraw_projects._PROPOSAL_KEY: str(proposal2.key())}
+        {accept_withdraw_projects._PROPOSAL_KEY: str(proposal_one.key())},
+        {accept_withdraw_projects._PROPOSAL_KEY: str(proposal_two.key())}
         ]
 
     post_data = {
@@ -141,8 +143,8 @@ class AcceptProposalsTest(test_utils.GSoCDjangoTestCase):
     self.post(self.url, post_data)
 
     # check if both proposals are accepted correctly
-    proposal1 = proposal_model.GSoCProposal.get(proposal1.key())
+    proposal1 = proposal_model.GSoCProposal.get(proposal_one.key())
     self.assertEqual(proposal1.status, proposal_model.STATUS_ACCEPTED)
 
-    proposal2 = proposal_model.GSoCProposal.get(proposal2.key())
+    proposal2 = proposal_model.GSoCProposal.get(proposal_two.key())
     self.assertEqual(proposal2.status, proposal_model.STATUS_ACCEPTED)
