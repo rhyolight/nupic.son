@@ -505,8 +505,9 @@ class AccessChecker(access_checker.AccessChecker):
 
     # check if the person is an organization admin for the organization
     # to which the project was assigned
-    org_key = project_model.GSoCProject.org.get_value_for_datastore(
-        self.data.url_project)
+    org_key = ndb.Key.from_old_key(
+        project_model.GSoCProject.org.get_value_for_datastore(
+            self.data.url_project))
     self.isOrgAdminForOrganization(org_key)
 
     # check if the status allows the project to be updated

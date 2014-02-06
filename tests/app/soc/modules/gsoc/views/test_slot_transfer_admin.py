@@ -76,7 +76,6 @@ class SlotsTransferAdminPageTest(test_utils.GSoCDjangoTestCase):
     response = self.get(self.url)
     self.assertResponseOK(response)
 
-#  @unittest.skip('add when GSoCSlotTransfer is updated to NDB')
   def testListData(self):
     user = profile_utils.seedNDBUser(host_for=[self.program])
     profile_utils.loginNDB(user)

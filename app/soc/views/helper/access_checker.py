@@ -493,7 +493,6 @@ class AccessChecker(BaseAccessChecker):
     """Checks if the user is an admin for the specified organiztaion.
     """
     self.isProfileActive()
-
     if org_key in self.data.ndb_profile.admin_for:
       return
 

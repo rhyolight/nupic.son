@@ -24,6 +24,7 @@ from django.forms.util import ErrorDict
 from django.utils.translation import ugettext
 
 from melange.logic import user as user_logic
+from melange.models import profile as profile_model
 from melange.request import exception
 from melange.request import links
 
@@ -434,7 +435,8 @@ def _isUpdateLinkVisible(data):
     return True
 
   # users without active profiles cannot definitely update projects
-  if not data.profile or data.profile.status != 'active':
+  if (not data.ndb_profile or 
+      data.ndb_profile.status != profile_model.Status.ACTIVE):
     return False
 
   # only passed and valid project can be updated
@@ -442,11 +444,12 @@ def _isUpdateLinkVisible(data):
     return False
 
   # a student who own the project can update it
-  if data.url_project.parent_key() == data.profile.key():
+  if data.url_project.parent_key() == data.ndb_profile.key.to_old_key():
     return True
 
   # org admins of the organization that manages the project can update it
-  org_key = GSoCProject.org.get_value_for_datastore(data.url_project)
+  org_key = ndb.Key.from_old_key(
+      GSoCProject.org.get_value_for_datastore(data.url_project))
   if data.orgAdminFor(org_key):
     return True
 
@@ -594,7 +597,8 @@ class FeaturedProject(base.GSoCRequestHandler):
     ]
 
   def checkAccess(self, data, check, mutator):
-    org_key = GSoCProject.org.get_value_for_datastore(data.url_project)
+    org_key = ndb.Key.from_old_key(
+        GSoCProject.org.get_value_for_datastore(data.url_project))
     check.isOrgAdminForOrganization(org_key)
 
   def toggleFeatured(self, data, value):

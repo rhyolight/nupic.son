@@ -14,15 +14,16 @@
 
 """Tests for project_detail views."""
 
-from tests import org_utils
-from tests import profile_utils
-from tests import test_utils
-
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.views import project_details
 from soc.modules.gsoc.views.helper import request_data
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
+
+from tests import org_utils
+from tests import profile_utils
+from tests import test_utils
+from tests.utils import project_utils
 
 
 def _createProjectForStudent(program, org, dev_test, student=None):
@@ -39,22 +40,9 @@ def _createProjectForStudent(program, org, dev_test, student=None):
     the newly created GSoCProject instance
   """
   if not student:
-    student = profile_utils.seedGSoCStudent(program)
+    student = profile_utils.seedSOCStudent(program)
 
-  mentor = profile_utils.seedNDBProfile(
-      program.key(), mentor_for=[org.key])
-
-
-  project_properties = {
-      'parent': student.key(),
-      'mentors': [mentor.key()],
-      'program': program,
-      'org': org.key.to_old_key(),
-      'status': project_model.STATUS_ACCEPTED,
-      'is_featured': False,
-      }
-  return seeder_logic.seed(
-      project_model.GSoCProject, properties=project_properties)
+  return project_utils.seedProject(student, program.key(), org_key=org.key)
 
 
 def _createProjectForMentor(program, org, dev_test, mentor=None):
@@ -74,18 +62,10 @@ def _createProjectForMentor(program, org, dev_test, mentor=None):
     mentor = profile_utils.seedNDBProfile(
         program.key(), mentor_for=[org.key])
 
-  student = profile_utils.seedGSoCStudent(program)
+  student = profile_utils.seedSOCStudent(program)
 
-  project_properties = {
-      'parent': student.key(),
-      'mentors': [mentor.key()],
-      'program': program,
-      'org': org.key.to_old_key(),
-      'status': project_model.STATUS_ACCEPTED,
-      'is_featured': False,
-      }
-  return seeder_logic.seed(
-      project_model.GSoCProject, properties=project_properties)
+  return project_utils.seedProject(
+      student, program.key(), org_key=org.key, mentor_key=mentor.key)
 
 
 class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
@@ -106,18 +86,11 @@ class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
   def createProject(self):
     mentor = profile_utils.seedNDBProfile(
         self.program.key(), mentor_for=[self.org.key])
-    student = profile_utils.seedGSoCStudent(self.program)
+    student = profile_utils.seedSOCStudent(self.program)
 
-    project_properties = {
-        'parent': student.key(),
-        'mentors': [mentor.key()],
-        'program': self.program,
-        'org': self.org.key.to_old_key(),
-        'status': project_model.STATUS_ACCEPTED,
-        'is_featured': False,
-        }
-    return seeder_logic.seed(
-        project_model.GSoCProject, properties=project_properties)
+    return project_utils.seedProject(
+        student, self.program.key(), org_key=self.org.key,
+        mentor_key=mentor.key)
 
   def testProjectDetails(self):
     self.timeline_helper.studentsAnnounced()
@@ -126,7 +99,7 @@ class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        project.parent().user.key().name(),
+        project.parent_key().parent().name(),
         project.key().id())
 
     # test project details GET
@@ -136,8 +109,8 @@ class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
     self.assertProjectDetailsTemplateUsed(response)
 
   def testFeaturedProjectButton(self):
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
     profile_utils.seedNDBProfile(
         self.program.key(), user=user, admin_for=[self.org.key])
 
@@ -147,7 +120,7 @@ class ProjectDetailsTest(test_utils.GSoCDjangoTestCase):
 
     suffix = "%s/%s/%d" % (
         self.gsoc.key().name(),
-        project.parent().user.key().name(),
+        project.parent_key().parent().name(),
         project.key().id())
 
     url = '/gsoc/project/featured/' + suffix
@@ -183,8 +156,8 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
   def testMentorAccessForbidden(self):
     self.timeline_helper.studentsAnnounced()
 
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
     mentor = profile_utils.seedNDBProfile(
         self.program.key(), user=user, mentor_for=[self.org.key])
 
@@ -199,8 +172,8 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
   def testOrgAdminAccessGranted(self):
     self.timeline_helper.studentsAnnounced()
 
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
     profile_utils.seedNDBProfile(
         self.program.key(), user=user, admin_for=[self.org.key])
 
@@ -215,10 +188,10 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
 
     other_org = org_utils.seedSOCOrganization(self.program.key())
 
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
     profile_utils.seedNDBProfile(
-        self.program.key(), user=user, admin_for=[self.org.key])
+        self.program.key(), user=user, admin_for=[other_org.key])
 
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
@@ -242,9 +215,9 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
   def testStudentAccessTheirProjectGranted(self):
     self.timeline_helper.studentsAnnounced()
 
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-    student = profile_utils.seedGSoCStudent(self.program, user=user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedSOCStudent(self.program, user=user)
 
     project = _createProjectForStudent(
         self.gsoc, self.org, self.dev_test, student=student)
@@ -256,9 +229,9 @@ class ProjectDetailsUpdateTest(test_utils.GSoCDjangoTestCase):
   def testStudentAccessOtherProjectForbidden(self):
     self.timeline_helper.studentsAnnounced()
 
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-    profile_utils.seedGSoCStudent(self.program, user=user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedSOCStudent(self.program, user=user)
 
     project = _createProjectForStudent(self.gsoc, self.org, self.dev_test)
 
@@ -283,9 +256,9 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
     self.assertTrue(result)
 
   def testForProjectStudent(self):
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-    student = profile_utils.seedGSoCStudent(self.program, user=user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedSOCStudent(self.program, user=user)
 
     project = _createProjectForStudent(
         self.gsoc, self.org, self.dev_test, student=student)
@@ -302,9 +275,9 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
     self.assertTrue(project_details._isUpdateLinkVisible(data))
 
   def testForOtherStudent(self):
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-    profile_utils.seedGSoCStudent(self.program, user=user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedSOCStudent(self.program, user=user)
 
     project = _createProjectForStudent(self.gsoc, self.org, self.dev_test)
 
@@ -320,8 +293,8 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
     self.assertFalse(project_details._isUpdateLinkVisible(data))
 
   def testForProjectMentor(self):
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
     mentor = profile_utils.seedNDBProfile(
         self.program.key(), user=user, mentor_for=[self.org.key])
 
@@ -340,8 +313,8 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
     self.assertFalse(project_details._isUpdateLinkVisible(data))
 
   def testForOtherMentor(self):
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
     profile_utils.seedNDBProfile(
         self.program.key(), user=user, mentor_for=[self.org.key])
 
@@ -359,12 +332,12 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
     self.assertFalse(project_details._isUpdateLinkVisible(data))
 
   def testForProjectOrgAdmin(self):
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
     profile_utils.seedNDBProfile(
         self.program.key(), user=user, admin_for=[self.org.key])
 
-    project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
+    project = _createProjectForMentor(self.program, self.org, self.dev_test)
 
     sponsor_id, program_id, user_id = project.parent_key().name().split('/')
     kwargs = {
@@ -380,8 +353,8 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
   def testForOtherOrgAdmin(self):
     other_org = org_utils.seedSOCOrganization(self.program.key())
 
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
     profile_utils.seedNDBProfile(
         self.program.key(), user=user, admin_for=[self.org.key])
 
@@ -399,15 +372,15 @@ class TestIsUpdateLinkVisible(test_utils.GSoCTestCase):
     self.assertFalse(project_details._isUpdateLinkVisible(data))
 
   def testForLoneUser(self):
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
 
     project = _createProjectForMentor(self.gsoc, self.org, self.dev_test)
 
     kwargs = {
         'sponsor': self.sponsor.link_id,
         'program': self.program.program_id,
-        'user': user.link_id,
+        'user': user.user_id,
         'id': project.key().id(),
         }
     data = request_data.RequestData(None, None, kwargs)
