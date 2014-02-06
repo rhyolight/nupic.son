@@ -184,9 +184,7 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     link_id = LinkIDProvider(ProjectSurvey).getValue()
     suffix = "%s/%s" % (self.gsoc.key().name(), link_id)
 
-    other_user = profile_utils.seedNDBUser(
-        user_id='student_with_proj@example.com')
-    student = profile_utils.seedSOCStudent(self.program, user=other_user)
+    student = profile_utils.seedNDBStudent(self.program)
 
     mentor = profile_utils.seedNDBProfile(
         self.program.key(), mentor_for=[self.org.key])
