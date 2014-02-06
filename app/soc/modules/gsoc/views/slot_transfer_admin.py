@@ -39,14 +39,29 @@ class SlotsTransferAdminList(template.Template):
   def __init__(self, data):
     self.data = data
 
+    def getOrganization(entity, *args):
+      """Helper function to get value for organization column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().name
+
+    def getSlotRequestMin(entity, *args):
+      """Helper function to get value for slot request min column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().slot_request_min
+
+    def getSlotRequestMax(entity, *args):
+      """Helper function to get value for slot request max column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().slot_request_max
+
+    def getSlotAllocation(entity, *args):
+      """Helper function to get value for slot allocation column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().slot_allocation
+
     list_config = lists.ListConfiguration()
     # hidden key
     list_config.addPlainTextColumn(
         'full_transfer_key', 'Full slot transfer key',
         lambda ent, *args: str(ent.key()), hidden=True)
     list_config.addPlainTextColumn(
-        'org', 'Organization',
-        lambda e, *args: e.parent().short_name.strip(), width=75)
+        'org', 'Organization', getOrganization, width=75)
     options = [('', 'All'), ('pending', 'Pending'),
                ('accepted', 'Accepted'), ('rejected', 'Rejected')]
     list_config.addSimpleColumn('status', 'Status', width=40, options=options)
@@ -56,14 +71,14 @@ class SlotsTransferAdminList(template.Template):
     list_config.addSimpleColumn('admin_remarks', 'Admin remarks')
     list_config.setColumnEditable('admin_remarks', True) #, edittype='textarea')
     list_config.addNumericalColumn(
-        'slots_desired', 'Min desired',
-        lambda e, *args: e.parent().slots_desired, width=25, hidden=True)
+        'slot_request_min', 'Min slots requested', getSlotRequestMin,
+        width=25, hidden=True)
     list_config.addNumericalColumn(
-        'max_slots_desired', 'Max desired',
-        lambda e, *args: e.parent().max_slots_desired, width=25, hidden=True)
+        'slot_request_max', 'Max slots requested', getSlotRequestMax,
+        width=25, hidden=True)
     list_config.addNumericalColumn(
-        'slots', 'Slots',
-        lambda e, *args: e.parent().slots, width=50, hidden=True)
+        'slot_allocation', 'Slot allocation', getSlotAllocation,
+        width=50, hidden=True)
     list_config.setDefaultPagination(False)
     list_config.setDefaultSort('org')
     list_config.addPostEditButton('save', "Save", "",
@@ -215,11 +230,12 @@ class SlotsTransferAdminList(template.Template):
     q = GSoCSlotTransfer.all().filter('program', self.data.program)
 
     starter = lists.keyStarter
-    prefetcher = lists.ModelPrefetcher(GSoCSlotTransfer, [], parent=True)
+    # TODO(daniel): enable prefetching ['parent']
+    # prefetcher = lists.ModelPrefetcher(GSoCSlotTransfer, [], parent=True)
 
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, q, starter,
-        prefetcher=prefetcher)
+        prefetcher=None)
 
     return response_builder.build()
 

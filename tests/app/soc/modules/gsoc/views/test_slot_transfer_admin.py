@@ -41,17 +41,17 @@ class SlotsTransferAdminPageTest(test_utils.GSoCDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testStudentAccessForbidden(self):
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
-    profile_utils.seedGSoCStudent(self.program, user=user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
 
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
 
   def testMentorAccessForbidden(self):
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
     profile_utils.seedNDBProfile(
         self.program.key(), user=user, mentor_for=[self.org.key])
 
@@ -60,8 +60,8 @@ class SlotsTransferAdminPageTest(test_utils.GSoCDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testOrgAdminAccessForbidden(self):
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
     profile_utils.seedNDBProfile(
         self.program.key(), user=user, admin_for=[self.org.key])
 
@@ -76,7 +76,7 @@ class SlotsTransferAdminPageTest(test_utils.GSoCDjangoTestCase):
     response = self.get(self.url)
     self.assertResponseOK(response)
 
-  @unittest.skip('add when GSoCSlotTransfer is updated to NDB')
+#  @unittest.skip('add when GSoCSlotTransfer is updated to NDB')
   def testListData(self):
     user = profile_utils.seedNDBUser(host_for=[self.program])
     profile_utils.loginNDB(user)
