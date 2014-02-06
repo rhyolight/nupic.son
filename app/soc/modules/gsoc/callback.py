@@ -87,7 +87,6 @@ class Callback(object):
     self.views.append(org_app.GSoCOrgAppPreviewPage())
     self.views.append(org_app.GSoCOrgAppRecordsList())
     self.views.append(org_app.GSoCOrgAppShowPage())
-    self.views.append(org_app.GSoCOrgAppTakePage())
     self.views.append(participants.MentorsListAdminPage())
     self.views.append(program.DownloadSchoolsHandler())
     self.views.append(program.GSoCCreateProgramPage())

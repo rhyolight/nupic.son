@@ -197,94 +197,6 @@ class GSoCOrgAppPreviewPage(base.GSoCRequestHandler):
     return context
 
 
-class GSoCOrgAppTakePage(base.GSoCRequestHandler):
-  """View for organizations to submit their application."""
-
-  def djangoURLPatterns(self):
-    return [
-         url(r'org/application/%s$' % url_patterns.PROGRAM,
-             self, name='gsoc_take_org_app'),
-         url(r'org/application/%s$' % url_patterns.ID,
-             self, name='gsoc_retake_org_app'),
-    ]
-
-  def checkAccess(self, data, check, mutator):
-    if not data.org_app:
-      raise exception.NotFound(
-          message=access_checker.DEF_NO_ORG_APP % data.program.name)
-    mutator.orgAppRecordIfIdInKwargs()
-    assert access_checker.isSet(data.org_app)
-
-    show_url = None
-    if 'id' in data.kwargs:
-      show_url = data.redirect.id().urlOf('gsoc_show_org_app')
-
-    check.isSurveyActive(data.org_app, show_url)
-
-    if data.org_app_record:
-      check.canRetakeOrgApp()
-    else:
-      check.canTakeOrgApp()
-
-  def templatePath(self):
-    return 'modules/gsoc/org_app/take.html'
-
-  def context(self, data, check, mutator):
-    if data.org_app_record:
-      form = GSoCOrgAppTakeForm(
-          request_data=data, data=data.POST or None,
-          instance=data.org_app_record)
-    else:
-      form = GSoCOrgAppTakeForm(request_data=data, data=data.POST or None)
-
-    context = {
-        'page_name': '%s' % (data.org_app.title),
-        'description': data.org_app.content,
-        'forms': [form],
-        'error': bool(form.errors),
-        }
-
-    return context
-
-  def recordOrgAppFromForm(self, data):
-    """Create/edit a new student evaluation record based on the form input.
-
-    Args:
-      data: A RequestData describing the current request.
-
-    Returns:
-      a newly created or updated evaluation record entity or None
-    """
-    if data.org_app_record:
-      form = GSoCOrgAppTakeForm(
-          request_data=data, data=data.POST, instance=data.org_app_record)
-    else:
-      form = GSoCOrgAppTakeForm(request_data=data, data=data.POST)
-
-    if not form.is_valid():
-      return None
-
-    if not data.org_app_record:
-      form.cleaned_data['user'] = data.user
-      form.cleaned_data['main_admin'] = data.user
-      form.cleaned_data['survey'] = data.org_app
-      form.cleaned_data['program'] = data.program
-      entity = form.create(commit=True)
-    else:
-      entity = form.save(commit=True)
-
-    return entity
-
-  def post(self, data, check, mutator):
-    org_app_record = self.recordOrgAppFromForm(data)
-    if org_app_record:
-      data.redirect.id(org_app_record.key().id())
-      return data.redirect.to('gsoc_retake_org_app', validated=True)
-    else:
-      # TODO(nathaniel): problematic self-use.
-      return self.get(data, check, mutator)
-
-
 class GSoCOrgAppRecordsList(org_app.OrgAppRecordsList,
       base.GSoCRequestHandler):
   """View for listing all records of a GSoC Organization application.
@@ -392,13 +304,5 @@ class GSoCOrgAppShowPage(base.GSoCRequestHandler):
             record.main_admin, urls.UrlNames.PROFILE_ADMIN)
         context['backup_admin_url'] = links.LINKER.profile(
             record.backup_admin, urls.UrlNames.PROFILE_ADMIN)
-
-    if data.timeline.surveyPeriod(data.org_app):
-      if record:
-        context['update_link'] = data.redirect.id().urlOf(
-            'gsoc_retake_org_app')
-      else:
-        context['create_link'] = self.linker.program(
-            data.program, 'gsoc_take_org_app')
 
     return context

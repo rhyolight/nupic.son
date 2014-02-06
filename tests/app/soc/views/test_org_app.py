@@ -17,7 +17,6 @@
 import json
 import os
 
-from soc.models import org_app_record
 from soc.models import org_app_survey
 
 from tests import profile_utils
@@ -110,23 +109,6 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
         'survey_start': timeline_utils.past().strftime(time_fmt),
         'survey_end': timeline_utils.future().strftime(time_fmt),
         'schema': json.dumps(ORG_APP_SCHEMA),
-        }
-
-  def getOrgAppTakePostData(self):
-    """Returns the post data dictionary for applying as an organization.
-    """
-    backup_admin = profile_utils.seedNDBProfile(
-        self.program.key(), admin_for=[self.org.key])
-
-    return {
-        'org_id': 'testorg',
-        'name': 'Test Org',
-        'description': 'Best of all the test orgs.',
-        'home_page': 'http://example.test.org',
-        'license': 'GNU General Public License (GPL)',
-        'new_org': 'New',
-        'agreed_to_admin_agreement': True,
-        'backup_admin_id': backup_admin.link_id,
         }
 
   def testOrgAppCreateOrEditByProgramAdmin(self):
@@ -267,33 +249,3 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
 
     org_app = org_app_survey.OrgAppSurvey.get_by_key_name(org_app_key_name)
     self.assertIsNone(org_app)
-
-  def testOrgAppTakeNoProfile(self):
-    """Tests that anybody with profile for the program should be able to apply.
-    """
-    url = '/gsoc/org/application/' + self.gsoc.key().name()
-    response = self.get(url)
-    self.assertResponseForbidden(response)
-
-    response = self.post(url, self.getOrgAppTakePostData())
-    self.assertResponseForbidden(response)
-
-  def testOrgAppTakeWithProfile(self):
-    """Tests that any one with a profile can apply as an organization.
-    """
-    self.profile_helper.createProfile()
-    url = '/gsoc/org/application/' + self.gsoc.key().name()
-    response = self.get(url)
-    self.assertResponseOK(response)
-
-    postdata = self.getOrgAppTakePostData()
-    response = self.post(url, postdata)
-
-    q = org_app_record.OrgAppRecord.all()
-    q.filter('org_id', postdata.get('org_id', None))
-    q.filter('program', self.gsoc)
-    q.filter('survey', self.org_app)
-    record = q.get()
-
-    self.assertResponseRedirect(response, url + '/%d?validated' % (
-        record.key().id(),))
