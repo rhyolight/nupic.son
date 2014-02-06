@@ -237,11 +237,14 @@ class ProjectList(Template):
       org_key = project_model.GSoCProject.org.get_value_for_datastore(entity)
       return ndb.Key.from_old_key(org_key).get().name
 
+    def getStudent(entity, *args):
+      """Helper function to get value of student column."""
+      return ndb.Key.from_old_key(entity.parent_key()).get().public_name
+
     self.data = data
 
     list_config = lists.ListConfiguration()
-    list_config.addPlainTextColumn('student', 'Student',
-        lambda entity, *args: entity.parent().name())
+    list_config.addPlainTextColumn('student', 'Student', getStudent)
     list_config.addSimpleColumn('title', 'Title')
     list_config.addPlainTextColumn('org', 'Organization', getOrganization)
 
@@ -330,15 +333,16 @@ class ProjectList(Template):
         continue
 
       # key of the organization for the project
-      org_key = project_model.GSoCProject.org.get_value_for_datastore(project)
+      org_key = ndb.Key.from_old_key(
+          project_model.GSoCProject.org.get_value_for_datastore(project))
       # key of the student profile for the project
-      profile_key = project.parent_key()
+      profile_key = ndb.Key.from_old_key(project.parent_key())
 
       proposal = project.proposal
 
       def withdraw_or_accept_project_txn():
-        student_info = GSoCStudentInfo.all().ancestor(profile_key).get()
-        orgs = student_info.project_for_orgs
+        profile = profile_key.get()
+        orgs = profile.student_data.project_for_orgs
 
         if withdraw:
           new_status = 'withdrawn'
@@ -351,10 +355,11 @@ class ProjectList(Template):
 
         project.status = new_status
         proposal.status = new_status
-        student_info.project_for_orgs = orgs
-        student_info.number_of_projects = new_number
+        profile.student_data.project_for_orgs = orgs
+        profile.student_data.number_of_projects = new_number
 
-        db.put([proposal, project, student_info])
+        db.put([proposal, project])
+        profile.put()
 
       db.run_in_transaction(withdraw_or_accept_project_txn)
 

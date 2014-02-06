@@ -23,6 +23,7 @@ from soc.modules.gsoc.models import proposal as proposal_model
 
 from tests import profile_utils
 from tests.test_utils import GSoCDjangoTestCase
+from tests.utils import project_utils
 
 
 class WithdrawProjectsTest(GSoCDjangoTestCase):
@@ -52,7 +53,7 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
 
     self.timeline_helper.studentsAnnounced()
 
-    url = '/gsoc/withdraw_projects/' + self.gsoc.key().name()
+    url = '/gsoc/withdraw_projects/' + self.program.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertWithdrawProjects(response)
@@ -64,10 +65,8 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
     self.assertEqual(0, len(data))
 
     # list response with projects
-    mentor = profile_utils.seedNDBProfile(
-        self.program.key(), mentor_for=[self.org.key])
-    self.profile_helper.createStudentWithProposal(self.org, mentor)
-    self.profile_helper.createStudentWithProject(self.org, mentor)
+    student = profile_utils.seedNDBStudent(self.program)
+    project_utils.seedProject(student, self.program.key(), org_key=self.org.key)
 
     response = self.getListResponse(url, 0)
     self.assertIsJsonResponse(response)
@@ -76,22 +75,17 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
 
   def testWithdrawProject(self):
     """Test if withdrawing a project updates all the datastore properties."""
+    self.timeline_helper.studentsAnnounced()
+
     user = profile_utils.seedNDBUser(host_for=[self.program])
     profile_utils.loginNDB(user)
 
-    self.timeline_helper.studentsAnnounced()
+    student = profile_utils.seedNDBStudent(self.program)
+    project = project_utils.seedProject(
+        student, self.program.key(), org_key=self.org.key)
 
-    # list response with projects
-    mentor = profile_utils.seedNDBProfile(
-        self.program.key(), mentor_for=[self.org.key])
-    self.profile_helper.createStudentWithProposal(self.org, mentor)
-    student = self.profile_helper.createStudentWithProject(self.org, mentor)
-    student_key = student.key()
-    orig_number_of_projects = student.student_info.number_of_projects
-    orig_project_for_orgs = student.student_info.project_for_orgs
-
-    project_q = project_model.GSoCProject.all().ancestor(student)
-    project = project_q.get()
+    old_number_of_projects = student.key.get().student_data.number_of_projects
+    old_project_for_orgs = student.key.get().student_data.project_for_orgs[:]
 
     data_payload = [{
         'full_project_key': str(project.key()),
@@ -107,24 +101,23 @@ class WithdrawProjectsTest(GSoCDjangoTestCase):
 
     list_idx = 0
     url = '/gsoc/withdraw_projects/%s?fmt=json&marker=1&&idx=%s' % (
-        self.gsoc.key().name(), str(list_idx))
+        self.program.key().name(), str(list_idx))
 
     response = self.post(url, postdata)
     self.assertResponseOK(response)
 
-    student = db.get(student_key)
-    project_q = project_model.GSoCProject.all().ancestor(student)
-    project = project_q.get()
+    student = student.key.get()
+    project = db.get(project.key())
 
-    proposal_q = proposal_model.GSoCProposal.all().ancestor(student)
-    proposal = proposal_q.get()
+    proposal = project.proposal
 
     self.assertEqual(project.status, 'withdrawn')
     self.assertEqual(proposal.status, 'withdrawn')
 
-    self.assertEqual(student.student_info.number_of_projects,
-                     orig_number_of_projects - 1)
+    self.assertEqual(
+        student.student_data.number_of_projects,
+        old_number_of_projects - 1)
 
-    orig_project_for_orgs.remove(self.org.key.to_old_key())
-    self.assertEqual(list(student.student_info.project_for_orgs),
-                     orig_project_for_orgs)
+    old_project_for_orgs.remove(self.org.key)
+    self.assertEqual(
+        list(student.student_data.project_for_orgs), old_project_for_orgs)
