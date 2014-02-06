@@ -384,13 +384,6 @@ class ManageOrganizationsDashboard(Dashboard):
             'link': links.SOC_LINKER.program(
                 data.program, urls.UrlNames.ORG_APPLICATION_LIST)
         },
-        {
-            'name': 'accepted_orgs',
-            'description': ugettext(
-                'List of accepted organizations'),
-            'title': 'Accepted Organizations',
-            'link': data.redirect.urlOf(url_names.GSOC_ORG_LIST_FOR_HOST),
-        },
     ]
 
     super(ManageOrganizationsDashboard, self).__init__(data, subpages)

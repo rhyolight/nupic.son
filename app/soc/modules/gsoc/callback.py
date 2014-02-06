@@ -21,7 +21,6 @@ from soc.modules.gsoc.tasks import proposal_duplicates as proposal_duplicates_ta
 from soc.modules.gsoc.tasks import survey_reminders as survey_reminders_tasks
 from soc.modules.gsoc.views import accept_proposals
 from soc.modules.gsoc.views import accept_withdraw_projects
-from soc.modules.gsoc.views import accepted_orgs
 from soc.modules.gsoc.views import admin
 from soc.modules.gsoc.views import dashboard
 from soc.modules.gsoc.views import document
@@ -62,7 +61,6 @@ class Callback(object):
     self.views.append(accept_proposals.AcceptProposalsPage())
     self.views.append(accept_withdraw_projects.AcceptProposals())
     self.views.append(accept_withdraw_projects.WithdrawProjects())
-    self.views.append(accepted_orgs.AcceptedOrgsAdminPage())
     self.views.append(admin.DashboardPage())
     self.views.append(admin.LookupLinkIdPage())
     self.views.append(admin.ManageProjectsListPage())
