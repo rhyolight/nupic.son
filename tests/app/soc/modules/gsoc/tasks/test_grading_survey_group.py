@@ -27,6 +27,7 @@ from soc.modules.gsoc.models import project_survey_record as psr_model
 from tests import profile_utils
 from tests import test_utils
 from tests import timeline_utils
+from tests.utils import project_utils
 
 
 class GradingSurveyGroupTest(
@@ -41,51 +42,45 @@ class GradingSurveyGroupTest(
   def setUp(self):
     super(GradingSurveyGroupTest, self).setUp()
     self.init()
-    self.createMentor()
-    self.createStudent()
-    self.createSurveys()
 
-  def createMentor(self):
-    """Creates a new mentor."""
     self.mentor = profile_utils.seedNDBProfile(
         self.program.key(), mentor_for=[self.org.key])
 
-  def createStudent(self):
-    """Creates a Student with a project.
-    """
-    profile_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
-    profile_helper.createOtherUser('student@example.com')
-    self.student = profile_helper.createStudentWithProject(self.org,
-                                                           self.mentor)
-    self.project = project_model.GSoCProject.all().ancestor(self.student).get()
+    self.student = profile_utils.seedNDBStudent(self.program)
+    self.project = project_utils.seedProject(
+        self.student, self.program.key(), org_key=self.org.key,
+        mentor_key=self.mentor.key)
+
+    self.createSurveys()
 
   def createSurveys(self):
     """Creates the surveys and records required for the tests.
     """
-    user = profile_utils.seedUser()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
     survey_values = {
-        'author': user,
+        'author': user.key.to_old_key(),
         'title': 'Title',
-        'modified_by': user,
+        'modified_by': user.key.to_old_key(),
         'link_id': 'link_id',
-        'scope': self.gsoc,
+        'scope': self.program.key(),
         'survey_start': timeline_utils.past(),
         'survey_end': timeline_utils.past(),
     }
 
-    self.project_survey = ps_model.ProjectSurvey(key_name='key_name',
-                                                 **survey_values)
+    self.project_survey = ps_model.ProjectSurvey(
+        key_name='key_name', **survey_values)
     self.project_survey.put()
 
-    self.grading_survey = gps_model.GradingProjectSurvey(key_name='key_name',
-                                                         **survey_values)
+    self.grading_survey = gps_model.GradingProjectSurvey(
+        key_name='key_name', **survey_values)
     self.grading_survey.put()
 
     record_values = {
-        'user': self.student.user,
+        'user': self.student.key.parent().to_old_key(),
         'org': self.org.key.to_old_key(),
         'project': self.project,
-        'survey': self.project_survey}
+        'survey': self.project_survey
+        }
     self.project_survey_record = psr_model.GSoCProjectSurveyRecord(
         **record_values)
     self.project_survey_record.put()
@@ -94,11 +89,12 @@ class GradingSurveyGroupTest(
     self.grading_survey.put()
 
     record_values = {
-        'user': self.student.user,
+        'user': self.student.key.parent().to_old_key(),
         'org': self.org.key.to_old_key(),
         'project': self.project,
         'survey': self.grading_survey,
-        'grade': True}
+        'grade': True
+        }
     self.grading_survey_record = gpsr_model.GSoCGradingProjectSurveyRecord(
         **record_values)
     self.grading_survey_record.put()
@@ -107,7 +103,8 @@ class GradingSurveyGroupTest(
         'name': 'Survey Group Name',
         'grading_survey': self.grading_survey,
         'student_survey': self.project_survey,
-        'program': self.gsoc}
+        'program': self.program
+        }
     self.survey_group = gsg_model.GSoCGradingSurveyGroup(**group_values)
     self.survey_group.put()
 
@@ -115,19 +112,17 @@ class GradingSurveyGroupTest(
         'grading_survey_group': self.survey_group,
         'mentor_record': self.grading_survey_record,
         'student_record': self.project_survey_record,
-        'grade_decision': 'pass'}
-    self.grading_record = gr_model.GSoCGradingRecord(parent=self.project,
-                                                     **record_values)
+        'grade_decision': 'pass'
+        }
+    self.grading_record = gr_model.GSoCGradingRecord(
+        parent=self.project, **record_values)
     self.grading_record.put()
 
   def testCreateGradingRecord(self):
-    """Test creating a GradingRecord.
-    """
+    """Test creating a GradingRecord."""
     self.grading_record.delete()
 
-    post_data = {
-        'group_key': self.survey_group.key().id_or_name()
-        }
+    post_data = {'group_key': self.survey_group.key().id_or_name()}
 
     response = self.post(self.UPDATE_RECORDS_URL, post_data)
 
@@ -139,36 +134,14 @@ class GradingSurveyGroupTest(
     self.assertEqual(record.grade_decision, 'pass')
 
   def testDoesNotCreateGradingRecordForWithdrawnProject(self):
-    # list response with projects
-    mentor = profile_utils.seedNDBProfile(
-        self.program.key(), mentor_for=[self.org.key])
-
     # create another project and mark it withdrawn
-    student_profile_helper = profile_utils.GSoCProfileHelper(
-        self.gsoc, self.dev_test)
-    student_profile_helper.createStudentWithProposal(self.org, mentor)
-    student_profile = student_profile_helper.createStudentWithProject(
-        self.org, mentor)
+    student = profile_utils.seedNDBStudent(self.program)
 
-    # Retrieve the project, corresponding proposal.
-    project = project_model.GSoCProject.all().ancestor(student_profile).get()
-    proposal = project.proposal
+    project_utils.seedProject(
+        student, self.program.key(), org_key=self.org.key,
+        mentor_key=self.mentor.key, status='withdrawn')
 
-    # Update the properties for withdrawing the project.
-    student_profile.student_info.number_of_projects -= 1
-    student_profile.student_info.project_for_orgs.remove(
-        self.org.key.to_old_key())
-    project.status = 'withdrawn'
-    proposal.status = 'withdrawn'
-
-    # Update the entities.
-    student_profile.student_info.put()
-    project.put()
-    proposal.put()
-
-    post_data = {
-        'group_key': self.survey_group.key().id_or_name()
-        }
+    post_data = {'group_key': self.survey_group.key().id_or_name()}
 
     response = self.post(self.UPDATE_RECORDS_URL, post_data)
 
@@ -215,7 +188,9 @@ class GradingSurveyGroupTest(
     project = project_model.GSoCProject.all().get()
     self.assertFalse(project is None)
     self.assertEqual(project.passed_evaluations, [self.grading_record.key()])
-    self.assertEqual(1, project.parent().student_info.passed_evaluations)
+
+    student = self.student.key.get()
+    self.assertEqual(student.student_data.passed_evaluations, 1)
 
   def testUpdateProjectWithSendMail(self):
     """Test updating a Project with a GradingRecord's result and sending mail.
@@ -234,18 +209,17 @@ class GradingSurveyGroupTest(
     project = project_model.GSoCProject.all().get()
     self.assertFalse(project is None)
     self.assertEqual(project.passed_evaluations, [self.grading_record.key()])
-    self.assertEqual(1, project.parent().student_info.passed_evaluations)
+
+    student = self.student.key.get()
+    self.assertEqual(student.student_data.passed_evaluations, 1)
 
   def testSendMail(self):
-    """Test sending mail about a GradingRecord's result.
-    """
-    post_data = {
-        'record_key': str(self.grading_record.key())
-        }
+    """Test sending mail about a GradingRecord's result."""
+    post_data = {'record_key': str(self.grading_record.key())}
 
     response = self.post(self.SEND_URL, post_data)
 
     self.assertResponseOK(response)
     # URL explicitly added since the email task is in there
     self.assertTasksInQueue(n=0, url=self.SEND_URL)
-    self.assertEmailSent(to=self.student.email)
+    self.assertEmailSent(to=self.student.contact.email)

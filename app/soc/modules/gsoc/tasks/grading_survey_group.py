@@ -203,7 +203,7 @@ class GradingRecordTasks(object):
 
     survey_group_entity = record.grading_survey_group
     project_entity = record.parent()
-    student_entity = project_entity.parent()
+    student_entity = ndb.Key.from_old_key(project_entity.parent_key()).get()
 
     org_key = GSoCProject.org.get_value_for_datastore(project_entity)
     org = ndb.Key.from_old_key(org_key).get()
@@ -216,7 +216,7 @@ class GradingRecordTasks(object):
         'project': project_entity,
         'organization': org,
         'site_name': site_entity.site_name,
-        'to_name': student_entity.name()
+        'to_name': student_entity.public_name
     }
 
     # set the sender
@@ -224,7 +224,7 @@ class GradingRecordTasks(object):
     mail_context['sender'] = sender_address
 
     # set the receiver and subject
-    mail_context['to'] = student_entity.email
+    mail_context['to'] = student_entity.contact.email
     mail_context['cc'] = []
     mail_context['subject'] = '%s results processed for %s' %(
         survey_group_entity.name, project_entity.title)
@@ -232,11 +232,13 @@ class GradingRecordTasks(object):
     org_admins = profile_logic.getOrgAdmins(org.key)
 
     # collect all mentors
-    mentors = db.get(project_entity.mentors)
+    mentors = ndb.get_multi(
+        map(ndb.Key.from_old_key,
+            GSoCProject.mentors.get_value_for_datastore(project_entity)))
 
     # add them all to the cc list
     for org_member in org_admins + mentors:
-      mail_context['cc'].append(org_member.email)
+      mail_context['cc'].append(org_member.contact.email)
 
     # send out the email using a template
     mail_template = 'modules/gsoc/grading_record/mail/result.html'
