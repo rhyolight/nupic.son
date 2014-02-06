@@ -13,15 +13,14 @@
 # limitations under the License.
 
 """Module for displaying GradingSurveyGroups and records."""
-
 import collections
 
 from google.appengine.api import taskqueue
-from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from django import http
 
+from melange.models import profile as profile_model
 from melange.request import access
 from melange.request import exception
 
@@ -190,14 +189,16 @@ class GradingRecordsList(Template):
         mentor_key = project.mentors[0]
         record_key = entity.key()
         if record_key:
-          mentor_records_map[mentor_key].append(record_key)
-          student_profiles[record_key] = project.parent()
+          mentor_records_map[ndb.Key.from_old_key(mentor_key)].append(
+              record_key)
+          student_profiles[record_key] = (
+              ndb.Key.from_old_key(project.parent_key()).get())
 
-      entities = db.get(mentor_records_map.keys())
+      entities = ndb.get_multi(mentor_records_map.keys())
       mentors = {}
       for mentor in entities:
         if mentor:
-          for record_key in mentor_records_map[mentor.key()]:
+          for record_key in mentor_records_map[mentor.key]:
             mentors[record_key] = mentor
 
       return ([mentors, student_profiles], {})
@@ -229,32 +230,33 @@ class GradingRecordsList(Template):
     list_config.addPlainTextColumn(
         'student_record', 'Evaluation by Student', stud_rec_func)
 
-    stud_id_func = lambda rec, *args: rec.parent().parent().link_id
+    stud_id_func = lambda rec, *args: (
+        profile_model.getUserId(rec.parent_key().parent()))
     list_config.addPlainTextColumn(
         'student_id', 'Student username', stud_id_func, hidden=True)
 
-    stud_email_func = lambda rec, *args: args[1][rec.key()].email
+    stud_email_func = lambda rec, *args: args[1][rec.key()].contact.email
     list_config.addPlainTextColumn('student_email', 'Student Email Address',
         stud_email_func, hidden=True)
 
-    stud_fn_func = lambda rec, *args: args[1][rec.key()].given_name
+    stud_fn_func = lambda rec, *args: args[1][rec.key()].first_name
     list_config.addPlainTextColumn('student_fn', 'Student First Name',
         stud_fn_func, hidden=True)
 
-    stud_ln_func = lambda rec, *args: args[1][rec.key()].surname
+    stud_ln_func = lambda rec, *args: args[1][rec.key()].last_name
     list_config.addPlainTextColumn('student_ln', 'Student Last Name',
         stud_ln_func, hidden=True)
 
-    mentor_email_func = lambda rec, *args: args[0][rec.key()].email
+    mentor_email_func = lambda rec, *args: args[0][rec.key()].contact.email
 
     list_config.addPlainTextColumn('mentor_email', 'Mentor Email Address',
         mentor_email_func, hidden=True)
 
-    mentor_fn_func = lambda rec, *args: args[0][rec.key()].given_name
+    mentor_fn_func = lambda rec, *args: args[0][rec.key()].first_name
     list_config.addPlainTextColumn('mentor_fn', 'Mentor First Name',
         mentor_fn_func, hidden=True)
 
-    mentor_ln_func = lambda rec, *args: args[0][rec.key()].surname
+    mentor_ln_func = lambda rec, *args: args[0][rec.key()].last_name
     list_config.addPlainTextColumn('mentor_ln', 'Mentor Last Name',
         mentor_ln_func, hidden=True)
 

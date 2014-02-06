@@ -23,6 +23,7 @@ from soc.modules.gsoc.models import project as project_model
 from tests import profile_utils
 from tests import survey_utils
 from tests import test_utils
+from tests.utils import project_utils
 
 
 GRADING_SURVEY_GROUP_NAME = 'Test Grading Survey Group'
@@ -62,7 +63,7 @@ class GradingGroupCreateTest(test_utils.GSoCDjangoTestCase):
     group = gsg_model.GSoCGradingSurveyGroup.all().get()
     self.assertResponseRedirect(response, self.getOverviewUrl(group))
 
-    expected_name = '%s - Midterm Evaluation' %self.program.name
+    expected_name = '%s - Midterm Evaluation' % self.program.name
     self.assertEqual(group.name, expected_name)
     self.assertEqual(group.program.key(), self.program.key())
     self.assertEqual(group.grading_survey.key(), self.grading_survey.key())
@@ -149,19 +150,14 @@ class GradingRecordsOverviewTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(0, len(data))
 
     # list response with projects
-    mentor = profile_utils.seedNDBProfile(
-        self.program.key(), mentor_for=[self.org.key])
+    student = profile_utils.seedNDBStudent(self.program)
+    project = project_utils.seedProject(
+        student, self.program.key(), org_key=self.org.key)
 
-    self.profile_helper.createStudentWithProposal(self.org, mentor)
-    self.profile_helper.createStudentWithProject(self.org, mentor)
+    other_student = profile_utils.seedNDBStudent(self.program)
+    project_utils.seedProject(
+        other_student, self.program.key(), org_key=self.org.key)
 
-    student_profile_helper = profile_utils.GSoCProfileHelper(
-        self.gsoc, self.dev_test)
-    student_profile_helper.createStudentWithProposal(self.org, mentor)
-    student_profile_helper.createStudentWithProject(self.org, mentor)
-
-    project = project_model.GSoCProject.all().ancestor(
-        self.profile_helper.profile).get()
     grading_record.updateOrCreateRecordsFor(grading_survey_group, [project])
 
     response = self.getListResponse(url, 0)

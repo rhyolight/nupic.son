@@ -23,6 +23,7 @@ from google.appengine.ext import ndb
 from melange.logic import user as user_logic
 from melange.models import connection as connection_model
 from melange.models import organization as melange_org_model
+from melange.models import profile as profile_model
 # TODO(nathaniel): I'm not sure how I feel about the exception module
 # being important here, but that just goes hand-in-hand with my skepticism
 # about the RequestData object raising exceptions generally.
@@ -573,7 +574,7 @@ class RedirectHelper(request_data.RedirectHelper):
 
     self.program()
     self.id()
-    self.kwargs['user'] = project.parent().link_id
+    self.kwargs['user'] = profile_model.getUserId(project.parent_key())
     self.kwargs['group'] = record.grading_survey_group.key().id_or_name()
     self.kwargs['record'] = record.key().id()
 
