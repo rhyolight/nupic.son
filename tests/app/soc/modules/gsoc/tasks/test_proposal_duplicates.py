@@ -12,13 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
 import httplib
 import urllib
 
-from tests import profile_utils
-from tests.profile_utils import GSoCProfileHelper
 from tests.test_utils import GSoCDjangoTestCase
 from tests.test_utils import TaskQueueTestCase
 
@@ -26,8 +22,12 @@ from melange.models import organization as org_model
 
 from soc.modules.gsoc.logic import duplicates as duplicates_logic
 from soc.modules.gsoc.models.proposal_duplicates import GSoCProposalDuplicate
-from soc.modules.gsoc.models.proposal import GSoCProposal
 
+from tests import profile_utils
+from tests.utils import proposal_utils
+
+
+_FIRST_STUDENT_NUMBER_OF_DUPLICATES = 2
 
 class ProposalDuplicatesTest(GSoCDjangoTestCase, TaskQueueTestCase):
   """Tests for the tasks that calculates duplicates.
@@ -40,47 +40,31 @@ class ProposalDuplicatesTest(GSoCDjangoTestCase, TaskQueueTestCase):
     super(ProposalDuplicatesTest, self).setUp()
     self.init()
 
+    self.timeline_helper.studentSignup()
+
     # set the organization as accepted and allocate some slots
     self.org.status = org_model.Status.ACCEPTED
     self.org.slot_allocation = 10
     self.org.put()
 
-    self.createMentor()
-    self.createStudent()
-    self.timeline_helper.studentSignup()
+    # the first student has a two duplicates and one non-accepted proposal
+    self.student1 = profile_utils.seedNDBStudent(self.program)
+    for _ in range(_FIRST_STUDENT_NUMBER_OF_DUPLICATES):
+      proposal_utils.seedProposal(
+          self.student1.key, self.program.key(), org_key=self.org.key,
+          accept_as_project=True)
+    proposal_utils.seedProposal(
+        self.student1.key, self.program.key(), org_key=self.org.key,
+        accept_as_project=False)
 
-  def createMentor(self):
-    """Creates a new mentor."""
-    self.mentor = profile_utils.seedNDBProfile(
-        self.program.key(), mentor_for=[self.org.key])
-
-  def createStudent(self):
-    """Creates two new students the first one has a duplicate the second one has
-    none.
-    """
-    profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
-    profile_helper.createOtherUser('student_1@example.com')
-    self.student1 = profile_helper.createStudentWithProposals(
-        self.org, self.mentor, 3)
-
-    proposals = GSoCProposal.all().ancestor(self.student1).fetch(2)
-    for p in proposals:
-      p.accept_as_project = True
-      p.put()
-
-    profile_helper = GSoCProfileHelper(self.gsoc, self.dev_test)
-    profile_helper.createOtherUser('student_2@example.com')
-    self.student2 = profile_helper.createStudentWithProposals(
-        self.org, self.mentor, 1)
-    proposal = GSoCProposal.all().ancestor(self.student2).get()
-    proposal.accept_as_project = True
-    proposal.put()
-
-  def updateOrgSlots(self):
-    """Updates the number of slots our org wants.
-    """
-    self.org.slot_allocation = 10
-    self.org.put()
+    # the other student has two proposals; one of them is to be accepted.
+    self.student2 = profile_utils.seedNDBStudent(self.program)
+    proposal_utils.seedProposal(
+        self.student2.key, self.program.key(), org_key=self.org.key,
+        accept_as_project=True)
+    proposal_utils.seedProposal(
+        self.student2.key, self.program.key(), org_key=self.org.key,
+        accept_as_project=False)
 
   def testStartFailsWhenMissingProgram(self):
     """Test whether start fails to enqueue a calculate task when program is
@@ -170,11 +154,11 @@ class ProposalDuplicatesTest(GSoCDjangoTestCase, TaskQueueTestCase):
     a single organization.
     """
     # skip the initialization step
-    status = duplicates_logic.getOrCreateStatusForProgram(self.gsoc)
+    status = duplicates_logic.getOrCreateStatusForProgram(self.program)
     status.status = 'processing'
     status.put()
 
-    post_data = {'program_key': self.gsoc.key().id_or_name()}
+    post_data = {'program_key': self.program.key().id_or_name()}
 
     response = self.post(self.CALCULATE_URL, post_data)
 
@@ -187,18 +171,19 @@ class ProposalDuplicatesTest(GSoCDjangoTestCase, TaskQueueTestCase):
     params = self.get_tasks()[0]['params']
     self.assertTrue(params.has_key('org_cursor'))
     self.assertEqual(params['program_key'],
-                     urllib.quote_plus(self.gsoc.key().id_or_name()))
+                     urllib.quote_plus(self.program.key().id_or_name()))
 
     # 2 duplicates should have been created since there are 2 students
     duplicates = GSoCProposalDuplicate.all().fetch(1000)
     self.assertEqual(len(duplicates), 2)
     for dup in duplicates:
-      if dup.student.key() == self.student1.key():
+      student_key = GSoCProposalDuplicate.student.get_value_for_datastore(dup)
+      if student_key == self.student1.key.to_old_key():
         self.assertTrue(dup.is_duplicate)
       else:
         self.assertFalse(dup.is_duplicate)
 
-    status = duplicates_logic.getOrCreateStatusForProgram(self.gsoc)
+    status = duplicates_logic.getOrCreateStatusForProgram(self.program)
     self.assertEqual(status.status, 'processing')
 
 
@@ -238,8 +223,10 @@ class ProposalDuplicatesTest(GSoCDjangoTestCase, TaskQueueTestCase):
     self.assertEqual(len(duplicates), 1)
     dup = duplicates[0]
     self.assertTrue(dup.is_duplicate)
-    self.assertEqual(dup.student.key(), self.student1.key())
-    self.assertEqual(len(dup.duplicates), 2)
 
-    status = duplicates_logic.getOrCreateStatusForProgram(self.gsoc)
+    student_key = GSoCProposalDuplicate.student.get_value_for_datastore(dup)
+    self.assertEqual(student_key, self.student1.key.to_old_key())
+    self.assertEqual(len(dup.duplicates), _FIRST_STUDENT_NUMBER_OF_DUPLICATES)
+
+    status = duplicates_logic.getOrCreateStatusForProgram(self.program)
     self.assertEqual(status.status, 'idle')

@@ -179,17 +179,16 @@ class ProposalDuplicatesTask(object):
       accepted_proposals = (
           proposal_logic.getProposalsToBeAcceptedForOrg(organization))
 
-      for ap in accepted_proposals:
-        student_entity = ap.parent()
-
+      for accepted_proposal in accepted_proposals:
         q = GSoCProposalDuplicate.all()
-        q.filter('student', student_entity)
+        q.filter('student', accepted_proposal.parent_key())
         proposal_duplicate = q.get()
 
-        if proposal_duplicate and ap.key() not in proposal_duplicate.duplicates:
+        if (proposal_duplicate and
+            accepted_proposal.key() not in proposal_duplicate.duplicates):
           # non-counted (to-be) accepted proposal found
           proposal_duplicate.duplicates = proposal_duplicate.duplicates + \
-                                          [ap.key()]
+                                          [accepted_proposal.key()]
           proposal_duplicate.is_duplicate = \
               len(proposal_duplicate.duplicates) >= 2
           if organization.key.to_old_key() not in proposal_duplicate.orgs:
@@ -198,9 +197,9 @@ class ProposalDuplicatesTask(object):
         else:
           pd_fields = {
               'program': program_entity,
-              'student': student_entity,
+              'student': accepted_proposal.parent_key(),
               'orgs':[organization.key.to_old_key()],
-              'duplicates': [ap.key()],
+              'duplicates': [accepted_proposal.key()],
               'is_duplicate': False
               }
           proposal_duplicate = GSoCProposalDuplicate(**pd_fields)
