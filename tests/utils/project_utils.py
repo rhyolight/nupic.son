@@ -62,6 +62,9 @@ def seedProject(
   project.put()
 
   student.student_data.number_of_projects += 1
+  student.student_data.project_for_orgs.append(org_key)
+  student.student_data.project_for_orgs = list(
+      set(student.student_data.project_for_orgs))
   student.put()
 
   return project
