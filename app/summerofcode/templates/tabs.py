@@ -86,8 +86,15 @@ def orgTabs(data, selected_tab_id=None):
   tabs_list.append(tabs.Tab(ORG_PROFILE_TAB_ID, ORG_PROFILE_NAME, url))
 
   # add Application Response tab
-  url = links.LINKER.organization(
-      data.url_ndb_org.key, urls.UrlNames.ORG_APPLICATION_SUBMIT)
+  # A link to edit and resubmit the application should be used during
+  # the organization application period. A link to see the survey response
+  # in read-only mode should be used afterwards.
+  if data.timeline.orgSignup():
+    url = links.LINKER.organization(
+        data.url_ndb_org.key, urls.UrlNames.ORG_APPLICATION_SUBMIT)
+  else:
+    url = links.LINKER.organization(
+        data.url_ndb_org.key, urls.UrlNames.ORG_SURVEY_RESPONSE_SHOW)
   tabs_list.append(
       tabs.Tab(ORG_APP_RESPONSE_TAB_ID, ORG_APP_RESPONSE_NAME, url))
 
