@@ -14,9 +14,14 @@
 
 """Unit tests for lists of GCITask entities."""
 
+from google.appengine.ext import ndb
+
 from tests import profile_utils
+from tests import task_utils
 from tests.test_utils import GCIDjangoTestCase
 
+
+_NUMBER_OF_TASKS = 2
 
 class AllOrganizationTasksPageTest(GCIDjangoTestCase):
   """Unit tests for AllOrganizationTasksPage.
@@ -66,3 +71,23 @@ class AllOrganizationTasksPageTest(GCIDjangoTestCase):
     response = self.get(self.url)
     self.assertPageTemplatesUsed(response)
     self.assertResponseOK(response)
+
+  def testPageLoads(self):
+    """Tests that the page loads properly."""
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+
+    # seed a couple of tasks
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[ndb.Key.from_old_key(self.org.key())])
+    for _ in range(_NUMBER_OF_TASKS):
+      task_utils.seedTask(self.program, self.org, [mentor.key.to_old_key()])
+
+    response = self.get(self.url)
+    self.assertPageTemplatesUsed(response)
+    self.assertResponseOK(response)
+
+    response = self.getListResponse(self.url, 0)
+    self.assertIsJsonResponse(response)
+    data = response.context['data']['']
+    self.assertEqual(len(data), _NUMBER_OF_TASKS)
