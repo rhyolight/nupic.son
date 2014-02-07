@@ -503,10 +503,10 @@ class AccessChecker(BaseAccessChecker):
     """
     self.isProfileActive()
 
-    if self.data.mentorFor(org_key):
+    if org_key in self.data.ndb_profile.mentor_for:
       return
 
-    raise exception.Forbidden(message=DEF_NOT_MENTOR % org_key.name())
+    raise exception.Forbidden(message=DEF_NOT_MENTOR % org_key.id())
 
   def isOrganizationInURLActive(self):
     """Checks if the organization in URL exists and if its status is active.
