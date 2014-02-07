@@ -114,6 +114,7 @@ def seed(request, *args, **kwargs):
       'program_start': before,
       'program_end': after,
       'accepted_organization_announced_deadline': before,
+      'accepted_students_announced_deadline' : after,
       'student_signup_start': before,
       'student_signup_end': after,
   }
