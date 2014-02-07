@@ -215,11 +215,12 @@ class GSoCMentorEvaluationTakePage(base.GSoCRequestHandler):
       form = GSoCMentorEvaluationTakeForm(
           survey=data.mentor_evaluation, data=data.POST or None)
 
+    student = ndb.Key.from_old_key(data.url_project.parent_key()).get()
     context = {
         'page_name': '%s' % (data.mentor_evaluation.title),
         'description': data.mentor_evaluation.content,
         'project': data.url_project.title,
-        'student': data.url_project.parent().name(),
+        'student': student.public_name,
         'forms': [form],
         'error': bool(form.errors),
         }

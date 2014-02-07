@@ -786,8 +786,6 @@ class AccessChecker(BaseAccessChecker):
       self.isActiveStudent()
       return
     elif taking_access == 'org':
-      assert isSet(self.data.organization)
-
       self.isMentor()
       return
     elif taking_access == 'user':

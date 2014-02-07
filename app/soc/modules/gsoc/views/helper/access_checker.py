@@ -189,7 +189,7 @@ class Mutator(access_checker.Mutator):
     # TODO(daniel): get rid of this ugly mutation!
     org_key = project_model.GSoCProject.org.get_value_for_datastore(
         self.data.url_project)
-    self.data.organization = ndb.Key.from_old_key(org_key).get()
+    self.data._url_ndb_org = ndb.Key.from_old_key(org_key).get()
 
     q = GSoCGradingProjectSurveyRecord.all()
     q.filter('project', self.data.url_project)
@@ -333,7 +333,8 @@ class AccessChecker(access_checker.AccessChecker):
 
     # check if the currently logged in user is the mentor or co-mentor
     # for the project in request or the org admin for the org
-    if self.data.profile.key.to_old_key() not in self.data.url_project.mentors:
+    if (self.data.ndb_profile.key.to_old_key()
+        not in self.data.url_project.mentors):
       raise exception.Forbidden(message=DEF_MENTOR_EVAL_DOES_NOT_BELONG_TO_YOU)
 
   def canApplyStudent(self, edit_url):
