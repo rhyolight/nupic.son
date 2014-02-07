@@ -14,6 +14,8 @@
 
 """Module containing template with a list of GCITask entities."""
 
+from google.appengine.ext import ndb
+
 from soc.views.helper import lists
 from soc.views.template import Template
 
@@ -71,13 +73,21 @@ class TaskList(Template):
     if 'org' in self._columns:
       fields.append('org')
 
-    if 'mentors' in self._columns:
-      list_fields.append('mentors')
+    # TODO(daniel): re-enable prefetching (mentor)
+    # if 'mentors' in self._columns:
+    # list_fields.append('mentors')
 
     return lists.ListModelPrefetcher(GCITask, fields, list_fields)
 
   def _getListConfig(self):
     list_config = lists.ListConfiguration()
+
+    def getMentors(entity, *args):
+      """Helper function to get value for mentors column."""
+      mentors = ndb.get_multi(
+          map(ndb.Key.from_old_key,
+              GCITask.mentors.get_value_for_datastore(entity)))
+      return ', '.join(mentor.public_name for mentor in mentors if mentor)
 
     if 'title' in self._columns:
       list_config.addSimpleColumn('title', 'Title')
@@ -87,9 +97,7 @@ class TaskList(Template):
           lambda entity, *args: entity.org.name)
 
     if 'mentors' in self._columns:
-      list_config.addPlainTextColumn('mentors', 'Mentors',
-          lambda entity, mentors, *args: ', '.join(
-              mentors[i].name() for i in entity.mentors), hidden=True)
+      list_config.addPlainTextColumn('mentors', 'Mentors', getMentors)
 
     if 'types' in self._columns:
       list_config.addPlainTextColumn('types', 'Category',
