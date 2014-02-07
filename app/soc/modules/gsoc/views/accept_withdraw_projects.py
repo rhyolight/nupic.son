@@ -33,7 +33,6 @@ from soc.views.template import Template
 
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
-from soc.modules.gsoc.models.profile import GSoCStudentInfo
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.gsoc.views import base

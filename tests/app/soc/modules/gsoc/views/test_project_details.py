@@ -18,8 +18,6 @@ from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.views import project_details
 from soc.modules.gsoc.views.helper import request_data
 
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
-
 from tests import org_utils
 from tests import profile_utils
 from tests import test_utils

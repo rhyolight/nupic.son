@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for grading record details views.
-"""
-
+"""Tests for grading record details views."""
 
 from soc.modules.gsoc.logic import grading_record
 from soc.modules.gsoc.models import grading_survey_group as gsg_model
-from soc.modules.gsoc.models import project as project_model
 
 from tests import profile_utils
 from tests import survey_utils

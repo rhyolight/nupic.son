@@ -18,9 +18,6 @@ import json
 
 from google.appengine.ext import db
 
-from soc.modules.gsoc.models import project as project_model
-from soc.modules.gsoc.models import proposal as proposal_model
-
 from tests import profile_utils
 from tests.test_utils import GSoCDjangoTestCase
 from tests.utils import project_utils

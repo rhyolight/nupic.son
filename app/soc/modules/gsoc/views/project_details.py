@@ -435,7 +435,7 @@ def _isUpdateLinkVisible(data):
     return True
 
   # users without active profiles cannot definitely update projects
-  if (not data.ndb_profile or 
+  if (not data.ndb_profile or
       data.ndb_profile.status != profile_model.Status.ACTIVE):
     return False
 

@@ -14,8 +14,6 @@
 
 """Unit tests for slot transfer admin view."""
 
-import unittest
-
 from soc.modules.gsoc.models import slot_transfer as slot_transfer_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
