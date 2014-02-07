@@ -14,21 +14,15 @@
 
 """Module containing the boilerplate required to construct GSoC views."""
 
-import httplib
-
-from django import http
-
-from melange.request import error
 from melange.request import initialize
-from melange.request import render
-from soc.views import base
 
-from soc.modules.gsoc.views import base_templates
+from soc.views import base
 from soc.modules.gsoc.views.helper import access_checker
 from soc.modules.gsoc.views.helper import request_data
 
-_GSOC_BASE_TEMPLATE = 'modules/gsoc/base.html'
-_GSOC_ERROR_TEMPLATE = 'modules/gsoc/error.html'
+from summerofcode.request import error
+from summerofcode.request import links
+from summerofcode.request import render
 
 
 class GSoCInitializer(initialize.Initializer):
@@ -62,81 +56,11 @@ class GSoCInitializer(initialize.Initializer):
 _GSOC_INITIALIZER = GSoCInitializer()
 
 
-class GSoCRenderer(render.Renderer):
-  """A Renderer customized for GSoC."""
-
-  def __init__(self, delegate):
-    """Constructs a GSoCRenderer.
-
-    Args:
-      delegate: A Renderer to which this Renderer may delegate
-        some portion of its functionality.
-    """
-    self._delegate = delegate
-
-  def render(self, data, template_path, context):
-    """See render.Renderer.render for specification.
-
-    The template is rendered against the given context content augmented
-    by the following items:
-      base_layout: The path to the base template.
-      header: A rendered header.Header template for the passed data.
-      mainmenu: A rendered site_menu.MainMenu template for the passed data.
-      footer: A rendered site_menu.Footer template for the passed data.
-    """
-    augmented_context = dict(context)
-    augmented_context.update({
-        'base_layout': _GSOC_BASE_TEMPLATE,
-        'header': base_templates.Header(data),
-        'mainmenu': base_templates.MainMenu(data),
-        'footer': base_templates.Footer(data),
-    })
-    return self._delegate.render(data, template_path, augmented_context)
-
-
-class GSoCErrorHandler(error.ErrorHandler):
-  """A GSoC implementation of error.ErrorHandler."""
-
-  def __init__(self, renderer, delegate):
-    """Constructs a GSoCErrorHandler.
-
-    Args:
-      renderer: A render.Renderer to be used to render
-        response content.
-      delegate: An error.ErrorHandler to be used to handle
-        errors that this GSoCErrorHandler does not wish or
-        is not able to handle.
-    """
-    self._renderer = renderer
-    self._delegate = delegate
-
-  def handleUserError(self, user_error, data):
-    """See error.ErrorHandler.handleUserError for specification."""
-    if not data.program:
-      return self._delegate.handleUserError(user_error, data)
-
-    # If message is not set, set it to the default associated with the
-    # given status (such as "Method Not Allowed" or "Service Unavailable").
-    message = user_error.message if user_error.message else (
-        httplib.responses.get(user_error.status, ''))
-
-    context = {
-        'page_name': message,
-        'message': message,
-    }
-
-    return http.HttpResponse(
-        content=self._renderer.render(data, _GSOC_ERROR_TEMPLATE, context),
-        status=user_error.status)
-
-  def handleServerError(self, server_error, data):
-    """See error.ErrorHandler.handleServerError for specification."""
-    return self._delegate.handleServerError(server_error, data)
-
-
 class GSoCRequestHandler(base.RequestHandler):
   """Customization required by GSoC to handle HTTP requests."""
 
-  initializer = _GSOC_INITIALIZER
-  renderer = GSoCRenderer(render.MELANGE_RENDERER)
-  error_handler = GSoCErrorHandler(renderer, error.MELANGE_ERROR_HANDLER)
+  def __init__(self):
+    """Initializes a new instance of the request handler for Summer of Code."""
+    super(GSoCRequestHandler, self).__init__(
+        _GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
+        error.SOC_ERROR_HANDLER)

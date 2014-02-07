@@ -20,6 +20,7 @@ from django import http
 
 from melange.request import error
 from melange.request import initialize
+from melange.request import links
 from melange.request import render
 from soc.views import base
 
@@ -140,6 +141,9 @@ class GCIErrorHandler(error.ErrorHandler):
 class GCIRequestHandler(base.RequestHandler):
   """Customization required by GCI to handle HTTP requests."""
 
-  initializer = _GCI_INITIALIZER
-  renderer = GCIRenderer(render.MELANGE_RENDERER)
-  error_handler = GCIErrorHandler(renderer, error.MELANGE_ERROR_HANDLER)
+  def __init__(self):
+    """Initializes a new instance of the request handler for Code In."""
+    renderer = GCIRenderer(render.MELANGE_RENDERER)
+    super(GCIRequestHandler, self).__init__(
+        _GCI_INITIALIZER, links.LINKER, renderer,
+        GCIErrorHandler(renderer, error.MELANGE_ERROR_HANDLER))

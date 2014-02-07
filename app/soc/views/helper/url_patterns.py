@@ -28,6 +28,30 @@ def url(prefix, regex, view, kwargs=None, name=None):
   return django_url('^%s/%s' % (prefix, regex), view, kwargs=kwargs, name=name)
 
 
+class UrlPatternConstructor(object):
+  """Interface which defines methods to construct URL patterns to be
+  registered with Django.
+  """
+
+  def construct(self, regex, view, kwargs=None, name=None):
+    """Constructs a new URL pattern for registration with Django.
+
+    Args:
+      regex: Regular expression associated with the pattern. Only URLs which do
+        match the specified expression may be
+      view: Actual subclass of base.RequestHandler to which the request is
+        dispatched provided it matches the regular expression.
+      kwargs: TODO(daniel): figure out what the hell is that here.
+      name: Name with which the pattern is registered with Django. If specified,
+        it may be used for reverse lookup, i.e. construction of actual URL
+        based on the name of the matching pattern and kwargs.
+
+    Returns:
+      django.core.urlresolvers.RegexURLPattern to serve as a Django pattern.
+    """
+    raise NotImplementedError
+
+
 def captureLinkId(name):
   """Returns a capture group for a link id with the specified name.
   """

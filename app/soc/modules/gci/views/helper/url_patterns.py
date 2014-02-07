@@ -29,6 +29,18 @@ def url(regex, view, kwargs=None, name=None):
   return django_url('^gci/%s' % regex, view, kwargs=kwargs, name=name)
 
 
+class CIUrlPatternConstructor(url_patterns.UrlPatternConstructor):
+  """Implementation of UrlPatternConstructor which constructs Code In-specific
+  URL patterns prefixed with ^gci/.
+  """
+
+  def construct(self, regex, view, kwargs=None, name=None):
+    """See url_patterns.UrlPatternConstructor.construct for specification."""
+    return django_url('^gci/%s' % regex, view, kwargs=kwargs, name=name)
+
+CI_URL_PATTERN_CONSTRUCTOR = CIUrlPatternConstructor()
+
+
 TASK = url_patterns.namedIdBasedPattern(['sponsor', 'program'])
 PREFIXES = "(gci_program|gci_org)"
 DOCUMENT = url_patterns.DOCUMENT_FMT % PREFIXES
