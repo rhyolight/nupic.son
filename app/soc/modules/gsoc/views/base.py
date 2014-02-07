@@ -20,18 +20,16 @@ from django import http
 
 from melange.request import error
 from melange.request import initialize
-from melange.request import render
-from soc.views import base
 
-from soc.modules.gsoc.views import base_templates
+from soc.views import base
 from soc.modules.gsoc.views.helper import access_checker
 from soc.modules.gsoc.views.helper import request_data
 
 from summerofcode.request import links
+from summerofcode.request import render
 
-_GSOC_BASE_TEMPLATE = 'modules/gsoc/base.html'
+
 _GSOC_ERROR_TEMPLATE = 'modules/gsoc/error.html'
-
 
 class GSoCInitializer(initialize.Initializer):
   """An Initializer customized for GSoC.
@@ -62,38 +60,6 @@ class GSoCInitializer(initialize.Initializer):
 
 # Since GSoCInitializer is stateless, there might as well be just one of it.
 _GSOC_INITIALIZER = GSoCInitializer()
-
-
-class GSoCRenderer(render.Renderer):
-  """A Renderer customized for GSoC."""
-
-  def __init__(self, delegate):
-    """Constructs a GSoCRenderer.
-
-    Args:
-      delegate: A Renderer to which this Renderer may delegate
-        some portion of its functionality.
-    """
-    self._delegate = delegate
-
-  def render(self, data, template_path, context):
-    """See render.Renderer.render for specification.
-
-    The template is rendered against the given context content augmented
-    by the following items:
-      base_layout: The path to the base template.
-      header: A rendered header.Header template for the passed data.
-      mainmenu: A rendered site_menu.MainMenu template for the passed data.
-      footer: A rendered site_menu.Footer template for the passed data.
-    """
-    augmented_context = dict(context)
-    augmented_context.update({
-        'base_layout': _GSOC_BASE_TEMPLATE,
-        'header': base_templates.Header(data),
-        'mainmenu': base_templates.MainMenu(data),
-        'footer': base_templates.Footer(data),
-    })
-    return self._delegate.render(data, template_path, augmented_context)
 
 
 class GSoCErrorHandler(error.ErrorHandler):
@@ -141,7 +107,6 @@ class GSoCRequestHandler(base.RequestHandler):
 
   def __init__(self):
     """Initializes a new instance of the request handler for Summer of Code."""
-    renderer = GSoCRenderer(render.MELANGE_RENDERER)
     super(GSoCRequestHandler, self).__init__(
-        _GSOC_INITIALIZER, links.SOC_LINKER, renderer,
-        GSoCErrorHandler(renderer, error.MELANGE_ERROR_HANDLER))
+        _GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
+        GSoCErrorHandler(render.SOC_RENDERER, error.MELANGE_ERROR_HANDLER))

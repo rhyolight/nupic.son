@@ -16,16 +16,18 @@
 
 from soc.modules.gsoc.views import base as gsoc_base
 from soc.modules.gsoc.views.helper import url_patterns as soc_url_patterns
-from melange.request import render
+
 from melange.request import error
 from melange.views import connection as connection_view
 
 from summerofcode.request import links
+from summerofcode.request import render
 from summerofcode.views.helper import urls as soc_urls
 
-renderer = gsoc_base.GSoCRenderer(render.MELANGE_RENDERER)
+
 START_CONNECTION_AS_ORG = connection_view.StartConnectionAsOrg(
-    gsoc_base._GSOC_INITIALIZER, links.SOC_LINKER, renderer,
-    gsoc_base.GSoCErrorHandler(renderer, error.MELANGE_ERROR_HANDLER),
+    gsoc_base._GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
+    gsoc_base.GSoCErrorHandler(
+        render.SOC_RENDERER, error.MELANGE_ERROR_HANDLER),
     soc_url_patterns.SOC_URL_PATTERN_CONSTRUCTOR,
     soc_urls.UrlNames, 'modules/gsoc/form_base.html')
