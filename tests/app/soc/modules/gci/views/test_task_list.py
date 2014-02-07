@@ -65,4 +65,4 @@ class AllOrganizationTasksPageTest(GCIDjangoTestCase):
 
     response = self.get(self.url)
     self.assertPageTemplatesUsed(response)
-    self.assertResponseOK(response);
+    self.assertResponseOK(response)
