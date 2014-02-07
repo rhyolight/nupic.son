@@ -110,6 +110,18 @@ def _getOrgAppShowUrl(org):
   return '/gsoc/org/application/show2/%s' % org.key.id()
 
 
+def _getOrgSurveyResponseShowUrl(org):
+  """Returns URL to Organization Survey Response Show page.
+
+  Args:
+    org: Organization entity.
+
+  Returns:
+    A string containing the URL to Organization Survey Response Show page.
+  """
+  return '/gsoc/org/survey_response/show/%s' % org.key.id()
+
+
 def _getPublicOrgListUrl(program):
   """Returns URL to Public Organization List page.
 
@@ -466,6 +478,38 @@ class OrgAppShowPageTest(test_utils.GSoCDjangoTestCase):
     profile_utils.loginNDB(user)
 
     response = self.post(_getOrgAppShowUrl(self.org))
+    self.assertResponseMethodNotAllowed(response)
+
+
+class SurveyResponseShowPageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for SurveyResponseShowPage class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+    self.org = org_utils.seedSOCOrganization(
+        self.program.key(), name=TEST_ORG_NAME)
+    self.app_response = survey_model.SurveyResponse(parent=self.org.key)
+    self.app_response.put()
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    response = self.get(_getOrgSurveyResponseShowUrl(self.org))
+    self.assertResponseOK(response)
+
+  def testPostMethodNotAllowed(self):
+    """Tests that POST method is not permitted."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    response = self.post(_getOrgSurveyResponseShowUrl(self.org))
     self.assertResponseMethodNotAllowed(response)
 
 

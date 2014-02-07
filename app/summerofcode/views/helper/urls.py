@@ -26,6 +26,7 @@ class UrlNames(object):
   ORG_PROFILE_CREATE = 'soc_org_profile_create'
   ORG_PROFILE_EDIT = 'soc_org_profile_edit'
   ORG_PUBLIC_LIST = 'soc_org_public_list'
+  ORG_SURVEY_RESPONSE_SHOW = 'soc_org_survey_response_show'
   PROFILE_ADMIN = 'soc_profile_admin'
   PROFILE_EDIT = 'soc_profile_edit'
   PROFILE_REGISTER_AS_ORG_MEMBER = 'soc_profile_register_as_org_member'

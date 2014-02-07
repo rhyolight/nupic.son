@@ -191,6 +191,9 @@ ORG_APPLICATION_SUBMIT_PAGE_NAME = translation.ugettext(
 ORG_APPLICATION_SHOW_PAGE_NAME = translation.ugettext(
     'Organization application - %s')
 
+ORG_SURVEY_RESPONSE_SHOW_PAGE_NAME = translation.ugettext(
+    'Organization questionnaire - %s')
+
 ORG_PREFERENCES_EDIT_PAGE_NAME = translation.ugettext(
     'Edit organization preferences')
 
@@ -737,7 +740,9 @@ class OrgApplicationSubmitPage(base.GSoCRequestHandler):
 
 
 class OrgAppShowPage(base.GSoCRequestHandler):
-  """Page to display organization application response."""
+  """Page to display organization application response for program
+  administrators.
+  """
 
   access_checker = access.PROGRAM_ADMINISTRATOR_ACCESS_CHECKER
 
@@ -792,6 +797,36 @@ class OrgAppShowPage(base.GSoCRequestHandler):
 
     return {
         'page_name': ORG_APPLICATION_SHOW_PAGE_NAME % data.url_ndb_org.name,
+        'record': response_template
+        }
+
+
+class SurveyResponseShowPage(base.GSoCRequestHandler):
+  """Page to display survey response."""
+
+  access_checker = access.IS_USER_ORG_ADMIN_FOR_NDB_ORG
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.djangoURLPatterns for specification."""
+    return [
+        soc_url_patterns.url(
+            r'org/survey_response/show/%s$' % url_patterns.ORG,
+            self, name=urls.UrlNames.ORG_SURVEY_RESPONSE_SHOW)]
+
+  def templatePath(self):
+    """See base.RequestHandler.templatePath for specification."""
+    return 'modules/gsoc/org_app/show.html'
+
+  def context(self, data, check, mutator):
+    """See base.RequestHandler.context for specification."""
+    app_response = org_logic.getApplicationResponse(data.url_ndb_org.key)
+    groups = [readonly_template.SurveyResponseGroup(data.org_app, app_response)]
+
+    response_template = readonly_template.SurveyResponseReadOnlyTemplate(
+        'summerofcode/_readonly_template.html', groups)
+
+    return {
+        'page_name': ORG_SURVEY_RESPONSE_SHOW_PAGE_NAME % data.url_ndb_org.name,
         'record': response_template
         }
 

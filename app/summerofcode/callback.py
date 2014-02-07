@@ -44,6 +44,7 @@ class Callback(object):
     self.views.append(org_app.OrgProfileCreatePage())
     self.views.append(org_app.OrgProfileEditPage())
     self.views.append(org_app.PublicOrganizationListPage())
+    self.views.append(org_app.SurveyResponseShowPage())
     self.views.append(org_home.OrgHomePage())
     self.views.append(profile.ProfileAdminPage())
     self.views.append(profile.ProfileEditPage())
