@@ -392,10 +392,14 @@ class IsHostPropertyTest(unittest.TestCase):
   def testForHostUser(self):
     """Tests that True is returned for a user who is a host."""
     sponsor = program_utils.seedSponsor()
-    user = profile_utils.seedUser(host_for=[sponsor.key()])
-    profile_utils.login(user)
+    program = program_utils.seedProgram(sponsor_key=sponsor.key())
+    user = profile_utils.seedNDBUser(host_for=[program])
+    profile_utils.loginNDB(user)
 
-    kwargs = {'sponsor': sponsor.link_id}
+    kwargs = {
+        'sponsor': sponsor.link_id,
+        'program': program.program_id,
+        }
     data = request_data.RequestData(None, None, kwargs)
     is_host = data.is_host
     self.assertTrue(is_host)
@@ -403,10 +407,14 @@ class IsHostPropertyTest(unittest.TestCase):
   def testForNonHostUser(self):
     """Tests that False is returned for a user who is not a host."""
     sponsor = program_utils.seedSponsor()
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
+    program = program_utils.seedProgram(sponsor_key=sponsor.key())
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
 
-    kwargs = {'sponsor': sponsor.link_id}
+    kwargs = {
+        'sponsor': sponsor.link_id,
+        'program': program.program_id,
+        }
     data = request_data.RequestData(None, None, kwargs)
     is_host = data.is_host
     self.assertFalse(is_host)

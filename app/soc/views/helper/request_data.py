@@ -303,14 +303,8 @@ class RequestData(object):
   def is_host(self):
     """Returns the is_host field."""
     if not self._isSet(self._is_host):
-      if not self.user:
-        self._is_host = False
-      elif 'sponsor' in self.kwargs:
-        key = db.Key.from_path('Sponsor', self.kwargs.get('sponsor'))
-        self._is_host = key in self.user.host_for
-      else:
-        key = program_logic.getSponsorKey(self.program)
-        self._is_host = key in self.user.host_for
+      self._is_host = ndb_user_logic.isHostForProgram(
+          self.ndb_user, self.program.key())
     return self._is_host
 
   @property
