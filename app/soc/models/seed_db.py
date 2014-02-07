@@ -36,6 +36,7 @@ from soc.logic import accounts
 from soc.models.document import Document
 
 from soc.models import program as program_model
+from soc.models import org_app_survey as org_app_survey_model
 from soc.models.site import Site
 from soc.models.sponsor import Sponsor
 
@@ -114,6 +115,7 @@ def seed(request, *args, **kwargs):
       'program_start': before,
       'program_end': after,
       'accepted_organization_announced_deadline': before,
+      'accepted_students_announced_deadline' : after,
       'student_signup_start': before,
       'student_signup_end': after,
   }
@@ -155,6 +157,23 @@ def seed(request, *args, **kwargs):
   })
   gsoc2010 = GSoCProgram(**program_properties)
   gsoc2010.put()
+
+  # TODO(drew): Replace gsoc2014.prefix with whatever its replacement becomes
+  # once prefix is removed from program and no longer used in the query for
+  # OrgAppSurvey in soc.views.helper.RequestData._getProgramWideFields().
+  org_app_survey_properties = {
+    'key_name' : '%s/%s/orgapp' % (gsoc2014.prefix, gsoc2014.key().name()),
+    'program' : gsoc2014,
+    'title' : 'Org App Survey',
+    'content' : 'Here is some content.',
+    'modified_by' : current_user.key.to_old_key(),
+    'survey_start' : before,
+    'survey_end' : after
+  }
+  org_app_survey_model.OrgAppSurvey(**org_app_survey_properties).put()
+
+  org_app_survey_properties['program'] = gsoc2010
+  org_app_survey_model.OrgAppSurvey(**org_app_survey_properties).put()
 
   timeline_properties = {
         'key_name': 'google/gci2013',
