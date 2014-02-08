@@ -293,8 +293,6 @@ class RequestData(object):
     if not self._isSet(self._is_developer):
       if users.is_current_user_admin():
         self._is_developer = True
-      elif self.user and self.user.is_developer:
-        self._is_developer = True
       else:
         self._is_developer = False
     return self._is_developer

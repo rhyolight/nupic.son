@@ -30,8 +30,8 @@ class LandingPageTest(test_utils.DjangoTestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
-    self.user = profile_utils.seedUser()
-    profile_utils.login(self.user)
+    self.user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(self.user)
 
     site_properties = {
         'key_name': 'site',
@@ -99,8 +99,8 @@ class LandingPageTest(test_utils.DjangoTestCase):
     response = self.get('/')
     self.assertResponseCode(response, httplib.SERVICE_UNAVAILABLE)
 
-    self.user.is_developer = True
-    self.user.put()
+    # log in as a developer
+    profile_utils.loginNDB(self.user, is_admin=True)
     response = self.get('/')
     self.assertResponseOK(response)
 
@@ -126,16 +126,16 @@ class EditSitePageTest(test_utils.DjangoTestCase):
 
   def testPageLoads(self):
     """Tests that page loads properly."""
-    user = profile_utils.seedUser(is_developer=True)
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
 
     response = self.get('/site/edit')
     self.assertResponseOK(response)
 
   def testUpdateSettings(self):
     """Tests that site settings are updated properly."""
-    user = profile_utils.seedUser(is_developer=True)
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
 
     postdata = {
         'description': TEST_DESCRIPTION,
