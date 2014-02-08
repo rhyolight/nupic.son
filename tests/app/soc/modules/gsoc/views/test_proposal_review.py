@@ -49,12 +49,6 @@ class ProposalReviewTest(GSoCDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gsoc/proposal/review.html')
     self.assertTemplateUsed(response, 'modules/gsoc/proposal/_comment_form.html')
 
-  def createMentorWithSettings(self, email, notification_settings=None):
-    # TODO(daniel): take care of notification settings
-    user = profile_utils.seedUser(email=email)
-    return profile_utils.seedNDBProfile(
-        self.program.key(), user=user, mentor_for=[self.org.key])
-
   def createProposal(self, override_properties=None):
     properties = {
         'score': 0,

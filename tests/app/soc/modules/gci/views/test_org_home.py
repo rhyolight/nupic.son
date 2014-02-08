@@ -54,8 +54,8 @@ class OrgHomeTest(GCIDjangoTestCase):
     self.assertResponseOK(response)
 
     # tests that page loads properly for program hosts
-    user = profile_utils.seedUser(host_for=[self.sponsor.key()])
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
     response = self.get(self.url)
     self.assertResponseOK(response)
 

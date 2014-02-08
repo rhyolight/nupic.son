@@ -24,15 +24,13 @@ from soc.modules.gci.views.helper import request_data
 from tests import profile_utils
 
 
-TEST_EMAIL = 'test@example.com'
-
 class LoggedInAsTest(unittest.TestCase):
   """Unit tests for LoggedInAs template."""
 
   def testForLoggedInUser(self):
     """Tests context for a logged in user."""
-    user = profile_utils.seedUser(email=TEST_EMAIL)
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
 
     request = client.RequestFactory().get('http://some-unused.url.com/')
 
