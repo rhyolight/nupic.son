@@ -33,11 +33,9 @@ def setUserSettings(user_key, **kwargs):
     settings_model.UserSettings entity for the specified user.
   """
   user_settings = ndb.Query(
-      kind=settings_model.UserSettings._get_kind(),
-      ancestor=ndb.Key.from_old_key(user_key)).get()
+      kind=settings_model.UserSettings._get_kind(), ancestor=user_key).get()
   if not user_settings:
-    user_settings = settings_model.UserSettings(
-        parent=ndb.Key.from_old_key(user_key), **kwargs)
+    user_settings = settings_model.UserSettings(parent=user_key, **kwargs)
   else:
     user_settings.populate(**kwargs)
 
@@ -58,8 +56,7 @@ def getUserSettings(user_key):
     settings_model.UserSettings entity for the specified user.
   """
   user_settings = ndb.Query(
-      kind=settings_model.UserSettings._get_kind(),
-      ancestor=ndb.Key.from_old_key(user_key)).get()
+      kind=settings_model.UserSettings._get_kind(), ancestor=user_key).get()
   if user_settings:
     return user_settings
   else:

@@ -29,7 +29,7 @@ class SetUserSettingsTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
-    self.user_key = profile_utils.seedUser().key()
+    self.user_key = profile_utils.seedNDBUser().key
 
   def testForNonExistingSettings(self):
     """Tests that new entity is created if there is not one."""
@@ -48,7 +48,7 @@ class SetUserSettingsTest(unittest.TestCase):
     # seed user settings
     properties = {'view_as': ndb.Key('User', 'test_user')}
     user_settings = settings_model.UserSettings(
-        parent=ndb.Key.from_old_key(self.user_key), **properties).put()
+        parent=self.user_key, **properties).put()
 
     other_key = ndb.Key('User', 'other_user')
     updated_settings = settings_logic.setUserSettings(
@@ -66,7 +66,7 @@ class GetUserSettingsTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
-    self.user_key = profile_utils.seedUser().key()
+    self.user_key = profile_utils.seedNDBUser().key
 
   def testForNonExistingSettings(self):
     """Tests that new entity is created and returned if there is not one."""
@@ -80,7 +80,7 @@ class GetUserSettingsTest(unittest.TestCase):
     # seed user settings
     properties = {'view_as': ndb.Key('User', 'test_user')}
     user_settings = settings_model.UserSettings(
-        parent=ndb.Key.from_old_key(self.user_key), **properties).put()
+        parent=self.user_key, **properties).put()
 
     retrived_settings = settings_logic.getUserSettings(self.user_key)
 
@@ -96,6 +96,5 @@ class GetUserSettingsTest(unittest.TestCase):
     self.assertEqual(first_settings.key, other_settings.key)
 
     # check that only one entity exists
-    count = settings_model.UserSettings.query(
-        ancestor=ndb.Key.from_old_key(self.user_key)).count()
+    count = settings_model.UserSettings.query(ancestor=self.user_key).count()
     self.assertEqual(count, 1)
