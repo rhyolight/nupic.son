@@ -31,7 +31,7 @@ from soc.modules.gci.models import message as gcimessage_model
 from soc.modules.gci.views import conversation_create as gciconversation_create_view
 
 
-class MockRequestData:
+class MockRequestData(object):
   """An object that can pretend to be a RequestData object for tests.
 
   Attributes:
@@ -39,16 +39,18 @@ class MockRequestData:
     user: A User entity for the request.
     profile: A GCIProfile entity for the request.
   """
-  def __init__(self, program_helper, profile_helper, post=None):
+
+  def __init__(self, program, profile, post=None):
     """Populates the request data attributes.
 
     Args:
-      program_helper: A GCIProgramHelper.
-      profile_helper: A GCIProfileHelper.
+      program: Program entity.
+      profile: Profile entity.
+      post: A dict containing POST data sent along with the request.
     """
-    self.program = program_helper.program
-    self.profile = profile_helper.profile
-    self.user = self.profile.user
+    self.program = program
+    self.profile = profile
+    self.user = profile.user
     self.POST = post
 
 
@@ -191,7 +193,7 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.profile_helper.createProfile()
     self.user_key = ndb.Key.from_old_key(self.profile_helper.profile.user.key())
     self.mock_data = MockRequestData(
-        self.program_helper, self.profile_helper, post)
+        self.program_helper.program, self.profile_helper.profile, post)
 
   def testCreateProgramRoleChoices(self):
     """Tests that createProgramRoleChoices() returns the appropriate program
