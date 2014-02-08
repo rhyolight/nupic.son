@@ -243,14 +243,14 @@ class StudentFormDownload(base.GCIRequestHandler):
   def get(self, data, check, mutator):
     """Allows hosts to download the student forms."""
     if url_names.CONSENT_FORM_GET_PARAM in data.GET:
-      download = data.url_student_info.consent_form
+      download = data.url_ndb_profile.student_data.consent_form
     elif url_names.ENROLLMENT_FORM_GET_PARAM in data.GET:
-      download = data.url_student_info.student_id_form
+      download = data.url_ndb_profile.student_data.enrollment_form
     else:
       raise exception.BadRequest(message='No file requested')
 
     # download has been requested
     if download:
-      return bs_helper.sendBlob(download)
+      return bs_helper.sendBlob(blobstore.BlobInfo(download))
     else:
       raise exception.NotFound(message='File not found')
