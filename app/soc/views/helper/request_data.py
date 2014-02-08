@@ -380,6 +380,19 @@ class RequestData(object):
     if not self._isSet(self._ndb_user):
       self._ndb_user = ndb_user_logic.getByCurrentAccount()
       # TODO(daniel): add support for "Logged in as" feature
+
+      # developer may view the page as another user
+      if self._ndb_user and users.is_current_user_admin():
+        settings = settings_logic.getUserSettings(self._ndb_user.key)
+        if settings.view_as is not None:
+          user = settings.view_as.get()
+          if user:
+            self._ndb_user = user
+          else:
+            user_settings_url = links.LINKER.user(
+                self._ndb_user, urls.UrlNames.USER_SETTINGS)
+            raise exception.BadRequest(
+                message=VIEW_AS_USER_DOES_NOT_EXIST % user_settings_url)
     return self._ndb_user
 
   @property

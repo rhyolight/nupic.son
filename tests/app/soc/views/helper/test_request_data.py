@@ -426,31 +426,30 @@ class UserPropertyTest(unittest.TestCase):
   def testNoUser(self):
     """Tests that None is returned for no user entity."""
     data = request_data.RequestData(None, None, None)
-    self.assertIsNone(data.user)
+    self.assertIsNone(data.ndb_user)
 
   def testUserExists(self):
     """Tests that user entity is returned when it exists."""
-    user = profile_utils.seedUser()
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
 
     data = request_data.RequestData(None, None, None)
-    self.assertEqual(data.user.key(), user.key())
+    self.assertEqual(data.ndb_user.key, user.key)
 
   def testForDeveloperWithViewAsUser(self):
     """Tests for developer who has 'view_as' property set."""
-    user = profile_utils.seedUser(is_developer=True)
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
 
     # set the settings so that 'view_as' is set to an existing user
-    other_user = profile_utils.seedUser()
+    other_user = profile_utils.seedNDBUser()
     settings = settings_model.UserSettings(
-        parent=ndb.Key.from_old_key(user.key()),
-        view_as=ndb.Key.from_old_key(other_user.key()))
+        parent=user.key, view_as=other_user.key)
     settings.put()
 
     # check that the other user is returned
     data = request_data.RequestData(None, None, None)
-    self.assertEqual(data.user.key(), other_user.key())
+    self.assertEqual(data.ndb_user.key, other_user.key)
 
     # set the settings so that 'view_as' is set to a non-existing user
     settings.view_as = ndb.Key('User', 'non_existing')
@@ -459,5 +458,5 @@ class UserPropertyTest(unittest.TestCase):
     # check that an error is raised
     data = request_data.RequestData(None, None, None)
     with self.assertRaises(exception.UserError) as context:
-      user = data.user
+      user = data.ndb_user
     self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
