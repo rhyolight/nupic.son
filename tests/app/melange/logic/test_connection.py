@@ -20,46 +20,15 @@ import unittest
 
 from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
-from soc.models import profile as profile_model
-from soc.models.program import Program
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from tests import org_utils
 from tests import profile_utils
 from tests import program_utils
 from tests import timeline_utils
 from tests.utils import connection_utils
-from tests.program_utils import ProgramHelper
 
 
 TEST_MESSAGE_CONTENT = 'Test Message Content'
-
-class ConnectionTest(unittest.TestCase):
-  """Base class for this module to encapsulate a setUp method that will
-  initialize data common to each of the test classes in this module.
-  """
-  def setUp(self):
-    self.program = seeder_logic.seed(Program)
-
-    self.profile_helper = profile_utils.ProfileHelper(
-        self.program, dev_test=False)
-    user = profile_utils.seedUser()
-    profile_properties = {'link_id': user.link_id, 'student_info': None,
-        'user': user, 'parent': user, 'scope': self.program,
-        'status': 'active', 'email': user.account.email(),
-        'program': self.program, 'mentor_for': [], 'org_admin_for': [],
-        'is_org_admin': False, 'is_mentor': False, 'is_student': False
-        }
-    self.profile = self.profile_helper.seed(
-        profile_model.Profile, profile_properties)
-
-    self.program_helper = ProgramHelper()
-
-    self.org = org_utils.seedOrganization(self.program.key())
-
-    self.connection = connection_utils.seed_new_connection(
-        self.profile, self.org.key)
-
 
 class ConnectionExistsTest(unittest.TestCase):
   """Unit tests for the connectionExists function."""
