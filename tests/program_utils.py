@@ -487,3 +487,24 @@ class GCIProgramHelper(ProgramHelper):
         'key_name': 'gci_program/%s/orgapp' % self.program.key().name(),
         })
     return super(GCIProgramHelper, self).createOrgApp(override)
+
+def seedOldOrganization(program_key, **kwargs):
+  org_id = string_provider.UniqueIDProvider().getValue()
+
+  entity_id = '%s/%s' % (program_key.name(), org_id)
+
+  properties = {
+      'description': 'some description',
+      'link_id': org_id,
+      'name': 'some name',
+      'status': 'active',
+      'home': None,
+      'task_quota_limit': 100,
+      'backup_winner': None,
+      'scope': program_key,
+      'program': program_key,
+      'key_name': entity_id,
+      }
+  properties.update(kwargs)
+  return seeder_logic.seed(GCIOrganization, properties)
+
