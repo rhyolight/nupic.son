@@ -17,6 +17,7 @@
 from codein import types as ci_types
 
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from melange import types
 
@@ -129,7 +130,7 @@ TEST_DOCUMENT_PREFIX = 'program'
 TEST_DOCUMENT_TITLE = 'Test Document'
 
 def seedProgram(models=types.MELANGE_MODELS, program_id=None,
-    sponsor_key=None, timeline_key=None, **kwargs):
+    sponsor_key=None, timeline_key=None, host=None, **kwargs):
   """Seeds a new program.
 
   Args:
@@ -137,6 +138,7 @@ def seedProgram(models=types.MELANGE_MODELS, program_id=None,
     program_id: Identifier of the new program.
     sponsor_key: Sponsor key for the new program.
     timeline_key: Timeline key for the new program.
+    host: Optional user to be set as a host for the new program.
 
   Returns:
     Newly seeded program entity.
@@ -162,7 +164,12 @@ def seedProgram(models=types.MELANGE_MODELS, program_id=None,
   properties.update(kwargs)
   program = models.program_model(**properties)
 
-  host = profile_utils.seedUser(host_for=[sponsor_key])
+  if host:
+    host.host_for.append(ndb.Key.from_old_key(program.key()))
+    host.put()
+  else:
+    host = profile_utils.seedNDBUser(host_for=[program])
+
   document_id = string_provider.UniqueIDProvider().getValue()
   prefix = kwargs.get('prefix', TEST_DOCUMENT_PREFIX)
   properties = {
@@ -170,8 +177,8 @@ def seedProgram(models=types.MELANGE_MODELS, program_id=None,
       'read_access': 'public',
       'key_name': '%s/%s/%s' % (prefix, program.key().name(), document_id),
       'link_id': document_id,
-      'modified_by': host,
-      'author': host,
+      'modified_by': host.key.to_old_key(),
+      'author': host.key.to_old_key(),
       'home_for': None,
       'title': TEST_DOCUMENT_TITLE,
       'prefix': prefix,
