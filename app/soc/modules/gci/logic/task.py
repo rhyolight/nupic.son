@@ -768,14 +768,22 @@ def querySubscribedTasksForProfile(profile_key, keys_only=False):
       'subscribers', profile_key.to_old_key())
 
 
-def queryForStudentAndOrganizationAndStatus(student, org, status,
+def queryForStudentAndOrganizationAndStatus(student_key, org_key, status,
     keys_only=False):
   """Returns a query for all tasks for the specified student,
   organization and status.
+
+  Args:
+    student_key: Student key.
+    org_key: Organization key.
+    status: List of allowed statuses of the tasks to query.
+
+  Returns:
+    A query to fetch all tasks with the specified properties.
   """
   query = task_model.GCITask.all()
-  query.filter('student', student)
-  query.filter('org', org)
+  query.filter('student', student_key)
+  query.filter('org', org_key)
 
   if isinstance(status, list):
     query.filter('status IN', status)

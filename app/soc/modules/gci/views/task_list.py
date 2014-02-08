@@ -21,6 +21,7 @@ from soc.views.helper import lists
 from soc.views.template import Template
 
 from soc.modules.gci.logic import task as task_logic
+from soc.modules.gci.models import task as task_model
 from soc.modules.gci.models.task import GCITask
 from soc.modules.gci.templates.org_list import BasicOrgList
 from soc.modules.gci.templates.task_list import TaskList
@@ -115,7 +116,8 @@ class StudentTasksForOrganizationList(TaskList):
 
   def _getQuery(self):
     return task_logic.queryForStudentAndOrganizationAndStatus(
-        self.data.url_profile, self.data.organization, 'Closed')
+        self.data.url_ndb_profile.key.to_old_key(),
+        self.data.organization.key(), task_model.CLOSED)
 
 
 class StudentTasksForOrganizationPage(GCIRequestHandler):
