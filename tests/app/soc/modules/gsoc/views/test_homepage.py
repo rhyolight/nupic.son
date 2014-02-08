@@ -83,7 +83,7 @@ class HomepageViewTest(test_utils.GSoCDjangoTestCase):
     self.assertIn('profile_link', apply_context)
 
     # Show featured_project
-    student = profile_utils.seedGSoCStudent(self.program)
+    student = profile_utils.seedNDBStudent(self.program)
 
     mentor = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
     mentor.createOtherUser('mentor@example.com')

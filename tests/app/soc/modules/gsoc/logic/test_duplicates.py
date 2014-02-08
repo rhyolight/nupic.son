@@ -37,13 +37,13 @@ class DuplicatesTest(unittest.TestCase):
     """Creates and returns a seeded GSoCPropoposalDuplicate entity for
     a given student in a given program.
     """
-    properties = {'program': program, 'student': student, 'is_duplicate': False}
+    properties = {
+        'program': program,
+        'student': student.key.to_old_key(),
+        'is_duplicate': False
+        }
     proposal_duplicate = seeder_logic.seed(GSoCProposalDuplicate, properties)
     return proposal_duplicate
-
-  def createStudent(self, email, program):
-    user = profile_utils.seedUser(email=email)
-    return profile_utils.seedGSoCStudent(program, user=user)
 
   def setUp(self):
     """Setup required to test the functions.
@@ -58,17 +58,16 @@ class DuplicatesTest(unittest.TestCase):
 
     #Create GSoCStudents in program1
     self.gsoc_students = []
-    for i in xrange(5):
-      email = 'test%s@example.com' % str(i)
-      student = self.createStudent(email, self.program1)
+    for _ in xrange(5):
+      student = profile_utils.seedNDBStudent(self.program1)
       self.gsoc_students.append(student)
 
     #Create a GSoCProposalDuplicate entity for all the students
     #in self.gsoc_students for program1.
     self.proposal_duplicates = []
     for student in self.gsoc_students:
-      proposal_duplicate = self.createGSoCProposalDuplicate(student,
-                                                            self.program1)
+      proposal_duplicate = self.createGSoCProposalDuplicate(
+          student, self.program1)
       self.proposal_duplicates.append(proposal_duplicate)
 
     #Create other program entity.
@@ -76,9 +75,8 @@ class DuplicatesTest(unittest.TestCase):
 
     #Create students in program2.
     self.other_gsoc_students = []
-    for i in xrange(5):
-      email = 'othertest%s@example.com' % str(i)
-      student = self.createStudent(email, self.program2)
+    for _ in xrange(5):
+      student = profile_utils.seedNDBStudent(self.program2)
       self.other_gsoc_students.append(student)
 
     #Create a GSoCProposalDuplicate entity for all the students

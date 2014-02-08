@@ -383,31 +383,6 @@ def seedStudent(program, model=profile_model.Profile,
   return profile
 
 
-def seedGSoCStudent(program, user=None, **kwargs):
-  """Seeds a new profile who is registered as a student for GSoC.
-
-  Args:
-    program: Program entity for which the profile is seeded.
-    model: Model class of which a new profile should be seeded.
-    user: User entity corresponding to the profile.
-
-  Returns:
-    A newly seeded GSoCProfile entity.
-  """
-  properties = {
-      'tax_form': None,
-      'enrollment_form': None,
-      'number_of_projects': 0,
-      'number_of_proposals': 0,
-      'passed_evaluations': 0,
-      'failed_evaluations': 0,
-      }
-  properties.update(**kwargs)
-  return seedStudent(program, model=gsoc_profile_model.GSoCProfile,
-      student_info_model=gsoc_profile_model.GSoCStudentInfo,
-      user=user, **properties)
-
-
 class ProfileHelper(object):
   """Helper class to aid in manipulating profile data.
   """
