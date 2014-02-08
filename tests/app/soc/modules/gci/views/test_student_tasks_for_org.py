@@ -38,7 +38,7 @@ class TestStudentTasksForOrganizationPage(test_utils.GCIDjangoTestCase):
     self.task = task_utils.seedTask(
         self.program, self.org, mentors=[mentor.key.to_old_key()])
 
-    self.student = profile_utils.seedGCIStudent(self.program)
+    self.student = profile_utils.seedSOCStudent(self.program)
 
   def testTemplateUsed(self):
     url = self._taskPageUrl()
@@ -48,9 +48,8 @@ class TestStudentTasksForOrganizationPage(test_utils.GCIDjangoTestCase):
     self.assertGCITemplatesUsed(response)
 
   def _taskPageUrl(self):
-    """Returns the url of the page.
-    """
+    """Returns the url of the page."""
     return '/gci/student_tasks_for_org/%s/%s/%s' % (
         self.program.key().name(),
-        self.student.link_id,
+        self.student.profile_id,
         self.org.link_id)

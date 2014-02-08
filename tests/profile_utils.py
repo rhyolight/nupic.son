@@ -383,28 +383,6 @@ def seedStudent(program, model=profile_model.Profile,
   return profile
 
 
-def seedGCIStudent(program, user=None, **kwargs):
-  """Seeds a new profile who is registered as a student for GCI.
-
-  Args:
-    program: Program entity for which the profile is seeded.
-    model: Model class of which a new profile should be seeded.
-    user: User entity corresponding to the profile.
-
-  Returns:
-    A newly seeded GCIProfile entity.
-  """
-  properties = {
-      'number_of_completed_tasks': 0,
-      'is_winner': False,
-      'winner_for': None,
-      }
-  properties.update(**kwargs)
-  return seedStudent(program, model=gci_profile_model.GCIProfile,
-      student_info_model=gci_profile_model.GCIStudentInfo,
-      user=user, **properties)
-
-
 def seedGSoCStudent(program, user=None, **kwargs):
   """Seeds a new profile who is registered as a student for GSoC.
 
