@@ -79,22 +79,22 @@ class UrlUserPropertyTest(unittest.TestCase):
     """Tests that error is raised if there is no user data in kwargs."""
     data = request_data.RequestData(None, None, {})
     with self.assertRaises(exception.UserError) as context:
-      data.url_user
+      data.url_ndb_user
     self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
   def testUserDoesNotExist(self):
     """Tests that error is raised if requested user does not exist."""
     data = request_data.RequestData(None, None, {'user': 'non_existing'})
     with self.assertRaises(exception.UserError) as context:
-      data.url_user
+      data.url_ndb_user
     self.assertEqual(context.exception.status, httplib.NOT_FOUND)
 
   def testUserExists(self):
     """Tests that user is returned correctly if exists."""
-    user = profile_utils.seedUser()
-    data = request_data.RequestData(None, None, {'user': user.link_id})
-    url_user = data.url_user
-    self.assertEqual(user.key(), url_user.key())
+    user = profile_utils.seedNDBUser()
+    data = request_data.RequestData(None, None, {'user': user.user_id})
+    url_user = data.url_ndb_user
+    self.assertEqual(user.key, url_user.key)
 
 
 class UrlProfilePropertyTest(unittest.TestCase):
