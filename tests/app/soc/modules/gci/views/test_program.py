@@ -200,7 +200,9 @@ class EditProgramTest(GCIDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testEditProgramAsDeveloper(self):
-    self.profile_helper.createDeveloper()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
+
     url = '/gci/program/edit/' + self.gci.key().name()
     response = self.get(url)
     self.assertProgramTemplatesUsed(response)

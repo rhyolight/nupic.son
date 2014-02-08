@@ -197,8 +197,10 @@ class EditProgramTest(test_utils.GSoCDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testEditProgramAsDeveloper(self):
-    self.profile_helper.createDeveloper()
-    url = '/gsoc/program/edit/' + self.gsoc.key().name()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
+
+    url = '/gsoc/program/edit/' + self.program.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertProgramTemplatesUsed(response)
