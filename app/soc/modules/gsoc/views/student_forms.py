@@ -269,13 +269,13 @@ class DownloadForm(base.GSoCRequestHandler):
   def _tax(self, data):
     return data.kwargs['form'] == 'tax'
 
-  def _studentInfo(self, data):
-    return data.url_student_info if self._admin(data) else data.student_info
+  def _profile(self, data):
+    return data.url_ndb_profile if self._admin(data) else data.ndb_profile
 
   def get(self, data, check, mutator):
     if self._tax(data):
-      blob_info = self._studentInfo(data).tax_form
+      blob_key = self._profile(data).student_data.tax_form
     else:
-      blob_info = self._studentInfo(data).enrollment_form
+      blob_key = self._profile(data).student_data.enrollment_form
 
-    return bs_helper.sendBlob(blob_info)
+    return bs_helper.sendBlob(blobstore.BlobInfo(blob_key))
