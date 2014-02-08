@@ -351,38 +351,6 @@ def seedSOCStudent(program, user=None, **kwargs):
       user=user, **kwargs)
 
 
-def seedStudent(program, model=profile_model.Profile,
-    student_info_model=profile_model.StudentInfo, user=None, **kwargs):
-  """Seeds a new profile who is registered as a student.
-
-  Args:
-    program: Program entity for which the profile is seeded.
-    model: Model class of which a new profile should be seeded.
-    user: User entity corresponding to the profile.
-
-  Returns:
-    A newly seeded Profile entity.
-  """
-  profile = seedProfile(program, model=model, user=user, **kwargs)
-  user = profile.parent()
-
-  properties = {
-      'key_name': '%s/%s' % (program.key().name(), user.key().name()),
-      'parent': profile,
-      'school': None,
-      'program': program,
-      'birth_date': generateEligibleStudentBirthDate(program)
-      }
-  properties.update(**kwargs)
-  student_info = seeder_logic.seed(student_info_model, properties=properties)
-
-  profile.is_student = True
-  profile.student_info = student_info
-  profile.put()
-
-  return profile
-
-
 class ProfileHelper(object):
   """Helper class to aid in manipulating profile data.
   """
