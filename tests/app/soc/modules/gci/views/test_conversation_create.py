@@ -59,21 +59,18 @@ class GCICreateConversationFormTest(unittest.TestCase):
   """Tests the views for creating GCI conversations."""
 
   def setUp(self):
-    program = program_utils.seedGCIProgram()
-    self.program_key = ndb.Key.from_old_key(program.key())
+    self.program = program_utils.seedGCIProgram()
+    self.program_key = ndb.Key.from_old_key(self.program.key())
     self.conv_utils = conversation_utils.GCIConversationHelper(self.program_key)
 
-    self.program_helper = program_utils.GCIProgramHelper()
-    self.program_helper.program = program
-
     self.org_a = program_utils.seedOldOrganization(
-        self.program_helper.program.key(), name='org_a')
+        self.program.key(), name='org_a')
     self.org_b = program_utils.seedOldOrganization(
-        self.program_helper.program.key(), name='org_b')
+        self.program.key(), name='org_b')
     self.org_c = program_utils.seedOldOrganization(
-        self.program_helper.program.key(), name='org_c')
+        self.program.key(), name='org_c')
     self.org_d = program_utils.seedOldOrganization(
-        self.program_helper.program.key(), name='org_d')
+        self.program.key(), name='org_d')
     self.createProfileAndRequest()
 
   def assertEmpty(self, item):
@@ -198,11 +195,11 @@ class GCICreateConversationFormTest(unittest.TestCase):
     helper.
     """
     self.profile_helper = profile_utils.GCIProfileHelper(
-        self.program_helper.program, False)
+        self.program, False)
     self.profile_helper.createProfile()
     self.user_key = ndb.Key.from_old_key(self.profile_helper.profile.user.key())
     self.mock_data = MockRequestData(
-        self.program_helper.program, self.profile_helper.profile, post)
+        self.program, self.profile_helper.profile, post)
 
   def testCreateProgramRoleChoices(self):
     """Tests that createProgramRoleChoices() returns the appropriate program
