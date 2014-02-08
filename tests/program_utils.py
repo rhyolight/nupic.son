@@ -354,13 +354,13 @@ class ProgramHelper(object):
     if self.program is None:
       self.createProgram()
 
-    user = profile_utils.seedUser()
+    user = profile_utils.seedNDBUser()
     properties = {
         'scope': self.program,
         'program': self.program,
-        'modified_by': user,
-        'created_by': user,
-        'author': user,
+        'modified_by': user.key.to_old_key(),
+        'created_by': user.key.to_old_key(),
+        'author': user.key.to_old_key(),
         'schema': ('[["item"],{"item":{"field_type":"input_text",'
                    '"required":false, "label":"test"}}]'),
         'survey_content': None,
