@@ -127,11 +127,15 @@ class GetHostsForProgramTest(unittest.TestCase):
 
   def testGetHostsForProgram(self):
     """Tests if a correct user entities are returned."""
-    program_one = program_utils.seedProgram()
+    # seed a user to be initial host for the first program
+    host = profile_utils.seedNDBUser()
+
+    # seed two programs
+    program_one = program_utils.seedProgram(host=host)
     program_two = program_utils.seedProgram()
 
     # seed hosts for the program one
-    hosts = set()
+    hosts = set([host.key])
     for _ in range(3):
       user_entity = profile_utils.seedNDBUser(host_for=[program_one])
       hosts.add(user_entity.key)
