@@ -24,7 +24,6 @@ from melange.request import exception
 
 from soc.models import org_app_survey as org_app_survey_model
 from soc.models import organization as org_model
-from soc.models import profile as profile_model
 from soc.models import program as program_model
 from soc.views.helper import request_data
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
@@ -105,7 +104,7 @@ class UrlProfilePropertyTest(unittest.TestCase):
     # no data at all
     data = request_data.RequestData(None, None, {})
     with self.assertRaises(exception.UserError) as context:
-      data.url_profile
+      data.url_ndb_profile
     self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # program data but no user identifier
@@ -115,13 +114,13 @@ class UrlProfilePropertyTest(unittest.TestCase):
         }
     data = request_data.RequestData(None, None, kwargs)
     with self.assertRaises(exception.UserError) as context:
-      data.url_profile
+      data.url_ndb_profile
     self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
     # user identifier present but no program data
     data = request_data.RequestData(None, None, {'user': 'user_id'})
     with self.assertRaises(exception.UserError) as context:
-      data.url_profile
+      data.url_ndb_profile
     self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
   def testProfileDoesNotExist(self):
@@ -133,14 +132,14 @@ class UrlProfilePropertyTest(unittest.TestCase):
         }
     data = request_data.RequestData(None, None, kwargs)
     with self.assertRaises(exception.UserError) as context:
-      data.url_profile
+      data.url_ndb_profile
     self.assertEqual(context.exception.status, httplib.NOT_FOUND)
 
   def testProfileExists(self):
     """Tests that profile is returned correctly if exists."""
     sponsor = program_utils.seedSponsor()
     program = program_utils.seedProgram(sponsor_key=sponsor.key())
-    profile = profile_utils.seedNDBProfile(self.program.key())
+    profile = profile_utils.seedNDBProfile(program.key())
 
     kwargs = {
         'sponsor': sponsor.link_id,
@@ -148,8 +147,8 @@ class UrlProfilePropertyTest(unittest.TestCase):
         'user': profile.profile_id,
         }
     data = request_data.RequestData(None, None, kwargs)
-    url_profile = data.url_profile
-    self.assertEqual(profile.key(), url_profile.key())
+    url_profile = data.url_ndb_profile
+    self.assertEqual(profile.key, url_profile.key)
 
 
 class UrlOrgPropertyTest(unittest.TestCase):
