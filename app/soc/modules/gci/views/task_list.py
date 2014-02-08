@@ -112,7 +112,7 @@ class StudentTasksForOrganizationList(TaskList):
 
   def _getDescription(self):
     return "List of tasks closed by %s for %s." % (
-        self.data.url_profile.name(), self.data.organization.name)
+        self.data.url_ndb_profile.public_name, self.data.organization.name)
 
   def _getQuery(self):
     return task_logic.queryForStudentAndOrganizationAndStatus(
@@ -145,7 +145,7 @@ class StudentTasksForOrganizationPage(GCIRequestHandler):
   def context(self, data, check, mutator):
     return {
         'page_name': "Tasks closed by %s for %s" % (
-            data.url_profile.name(), data.organization.name),
+            data.url_ndb_profile.public_name, data.organization.name),
         'task_list': StudentTasksForOrganizationList(data),
     }
 

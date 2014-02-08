@@ -16,10 +16,14 @@
 
 from google.appengine.ext import ndb
 
+from soc.modules.gci.models import task as task_model
+
 from tests import profile_utils
 from tests import task_utils
 from tests import test_utils
 
+
+_NUMBER_OF_TASKS = 2
 
 class TestStudentTasksForOrganizationPage(test_utils.GCIDjangoTestCase):
   """Tests GCITask public view.
@@ -40,12 +44,32 @@ class TestStudentTasksForOrganizationPage(test_utils.GCIDjangoTestCase):
 
     self.student = profile_utils.seedSOCStudent(self.program)
 
-  def testTemplateUsed(self):
-    url = self._taskPageUrl()
-    response = self.get(url)
+  def testPageLoads(self):
+    """Tests that the page loads properly."""
+    response = self.get(self._taskPageUrl())
 
     self.assertResponseOK(response)
     self.assertGCITemplatesUsed(response)
+
+  def testListLoads(self):
+    """Tests that the list data loads properly."""
+    # seed a couple of tasks that have been closed by the student
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[ndb.Key.from_old_key(self.org.key())])
+    for _ in range(_NUMBER_OF_TASKS):
+      task_utils.seedTask(self.program, self.org, [mentor.key.to_old_key()],
+          student=self.student.key.to_old_key(), status=task_model.CLOSED)
+
+    # seed a task that is currently claimed by the student
+    # it should not be included in the list of closed tasks
+    task_utils.seedTask(self.program, self.org, [mentor.key.to_old_key()],
+        student=self.student.key.to_old_key(), status=task_model.CLAIMED)
+
+    response = self.getListResponse(self._taskPageUrl(), 0)
+    self.assertIsJsonResponse(response)
+    data = response.context['data']['']
+    self.assertEqual(len(data), _NUMBER_OF_TASKS)
+
 
   def _taskPageUrl(self):
     """Returns the url of the page."""
