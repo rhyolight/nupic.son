@@ -489,6 +489,9 @@ class GCIProgramHelper(ProgramHelper):
     return super(GCIProgramHelper, self).createOrgApp(override)
 
 def seedOldOrganization(program_key, **kwargs):
+  if isinstance(program_key, ndb.Key):
+    program_key = program_key.to_old_key()
+
   org_id = string_provider.UniqueIDProvider().getValue()
 
   entity_id = '%s/%s' % (program_key.name(), org_id)

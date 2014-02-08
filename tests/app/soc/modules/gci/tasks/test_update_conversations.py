@@ -39,8 +39,8 @@ class UpdateConversationsTest(
     super(UpdateConversationsTest, self).setUp()
     self.init()
 
-    self.conv_utils = conversation_utils.GCIConversationHelper()
-    self.program_key = self.conv_utils.program_key
+    self.program_key = ndb.Key.from_old_key(self.program.key())
+    self.conv_utils = conversation_utils.GCIConversationHelper(self.program_key)
 
   def testUpdateConversations(self):
     """Tests that the updateConversations task correctly adds a user to all

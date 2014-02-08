@@ -59,9 +59,13 @@ class GCICreateConversationFormTest(unittest.TestCase):
   """Tests the views for creating GCI conversations."""
 
   def setUp(self):
-    self.conv_utils = conversation_utils.GCIConversationHelper()
-    self.program_helper = self.conv_utils.program_helper
-    self.program_helper.createProgram()
+    program = program_utils.seedGCIProgram()
+    self.program_key = ndb.Key.from_old_key(program.key())
+    self.conv_utils = conversation_utils.GCIConversationHelper(self.program_key)
+
+    self.program_helper = program_utils.GCIProgramHelper()
+    self.program_helper.program = program
+
     self.org_a = program_utils.seedOldOrganization(
         self.program_helper.program.key(), name='org_a')
     self.org_b = program_utils.seedOldOrganization(

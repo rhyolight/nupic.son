@@ -38,18 +38,16 @@ WINNER = 'Winner'
 class ConversationHelper(object):
   """Helper class to aid in manipulating conversation data."""
 
-  def __init__(self):
+  def __init__(self, program_key):
     """Initializes the ConversationHelper.
 
     Args:
-      program: Key (ndb) for a program.
+      program_key: Program key.
     """
-    self.program_helper = program_utils.ProgramHelper()
+    self.program_key = program_key
     self.conversation_model_class = conversation_model.Conversation
     self.conversation_user_model_class = conversation_model.ConversationUser
     self.message_model_class = message_model.Message
-    self.program_helper.createProgram()
-    self.program_key = ndb.Key.from_old_key(self.program_helper.program.key())
 
   def createConversation(
       self, subject, content=None, creator=None, time=None, users=None):
@@ -200,19 +198,17 @@ class ConversationHelper(object):
 class GCIConversationHelper(ConversationHelper):
   """Helper class to aid in manipulating GCI conversation data."""
 
-  def __init__(self):
+  def __init__(self, program_key):
     """Initializes the GCIConversationHelper.
 
     Args:
-      program: Key (ndb) for a program.
+      program_key: Program key.
     """
-    self.program_helper = program_utils.GCIProgramHelper()
+    super(GCIConversationHelper, self).__init__(program_key)
     self.conversation_model_class = gciconversation_model.GCIConversation
     self.conversation_user_model_class = (
         gciconversation_model.GCIConversationUser)
     self.message_model_class = gcimessage_model.GCIMessage
-    self.program_helper.createProgram()
-    self.program_key = ndb.Key.from_old_key(self.program_helper.program.key())
 
   def createUser(
       self, roles=None, mentor_organizations=None, admin_organizations=None,

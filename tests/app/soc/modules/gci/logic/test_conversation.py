@@ -25,6 +25,7 @@ from google.appengine.ext import ndb
 from soc.models import email as email_model
 from soc.models import conversation as conversation_model
 
+from tests import program_utils
 from tests.utils import conversation_utils
 
 from soc.modules.gci.logic import conversation as gciconversation_logic
@@ -34,8 +35,9 @@ class GCIConversationTest(unittest.TestCase):
   """Tests the logic for GCI conversations."""
 
   def setUp(self):
-    self.conv_utils = conversation_utils.GCIConversationHelper()
-    self.program_key = self.conv_utils.program_key
+    program = program_utils.seedGCIProgram()
+    self.program_key = ndb.Key.from_old_key(program.key())
+    self.conv_utils = conversation_utils.GCIConversationHelper(self.program_key)
 
     # Create three dummy users
     user_ranges = range(3)
@@ -113,9 +115,11 @@ class GCIConversationTest(unittest.TestCase):
     GCIConversation entities for a program.
     """
 
-    # Create a new conversation_utils to create a separate program, and add
+    # Create a new conversation_utils for a new separate program, and add
     # a conversation
-    other_conv_utils = conversation_utils.GCIConversationHelper()
+    other_program = program_utils.seedGCIProgram()
+    program_key = ndb.Key.from_old_key(other_program.key())
+    other_conv_utils = conversation_utils.GCIConversationHelper(program_key)
     other_conv = other_conv_utils.createConversation(subject='A Subject')
 
     # Main program has two conversations
@@ -429,7 +433,8 @@ class GCIConversationTest(unittest.TestCase):
     # Create a couple dummy organizations
     org_keys = map(
         lambda org: ndb.Key.from_old_key(org.key()),
-        list(self.conv_utils.program_helper.createNewOrg() for _ in range(2)))
+        (program_utils.seedOldOrganization(self.conv_utils.program_key)
+            for _ in range(2)))
 
     # Dummy user to create conversation
     creator = self.conv_utils.createUser(return_key=True)
@@ -735,7 +740,8 @@ class GCIConversationTest(unittest.TestCase):
     # Create a couple dummy organizations
     org_keys = map(
         lambda org: ndb.Key.from_old_key(org.key()),
-        list(self.conv_utils.program_helper.createNewOrg() for _ in range(2)))
+        (program_utils.seedOldOrganization(self.conv_utils.program_key)
+            for _ in range(2)))
 
     # Create three dummy admin users, two as admins for the two orgs, then a
     # third that is an admin for both orgs.
@@ -829,7 +835,8 @@ class GCIConversationTest(unittest.TestCase):
     # Create a couple dummy organizations
     org_keys = map(
         lambda org: ndb.Key.from_old_key(org.key()),
-        list(self.conv_utils.program_helper.createNewOrg() for x in range(2)))
+        (program_utils.seedOldOrganization(self.conv_utils.program_key)
+            for _ in range(2)))
 
     # Create various dummy users
     user_admin_key = self.conv_utils.createUser(

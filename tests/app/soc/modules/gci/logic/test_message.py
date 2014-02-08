@@ -16,9 +16,12 @@
 
 import unittest
 
+from google.appengine.ext import ndb
+
 from datetime import datetime
 from datetime import timedelta
 
+from tests import program_utils
 from tests.utils import conversation_utils
 
 from soc.modules.gci.logic import message as gcimessage_logic
@@ -28,8 +31,9 @@ class GCIMessage(unittest.TestCase):
   """Tests the logic for GCI messages."""
 
   def setUp(self):
-    self.conv_utils = conversation_utils.GCIConversationHelper()
-    self.program_key = self.conv_utils.program_key
+    program = program_utils.seedGCIProgram()
+    self.program_key = ndb.Key.from_old_key(program.key())
+    self.conv_utils = conversation_utils.GCIConversationHelper(self.program_key)
 
     # Ndb keys of two dummy users
     self.user_keys = list(
