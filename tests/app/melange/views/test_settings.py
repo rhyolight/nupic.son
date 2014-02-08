@@ -27,7 +27,7 @@ def _getUserSettingsUrl(user):
   Returns:
     a string containg URL to user settings page.
   """
-  return '/site/settings/user/%s' % user.key().name()
+  return '/site/settings/user/%s' % user.key.id()
 
 
 class UserSettingsTest(test_utils.DjangoTestCase):
@@ -40,16 +40,16 @@ class UserSettingsTest(test_utils.DjangoTestCase):
 
   def testNonDeveloperAccessDenied(self):
     """Tests that access is denied for users who are not developers."""
-    user = profile_utils.seedUser(is_developer=False)
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
 
     response = self.get(_getUserSettingsUrl(user))
     self.assertResponseForbidden(response)
 
   def testPageLoads(self):
     """Tests that page loads properly."""
-    user = profile_utils.seedUser(is_developer=True)
-    profile_utils.login(user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
 
     response = self.get(_getUserSettingsUrl(user))
     self.assertResponseOK(response)

@@ -35,7 +35,7 @@ class UserSettingsForm(forms.Form):
   def clean_view_as(self):
     """Cleans view_as field."""
     user = cleaning.clean_existing_user('view_as')(self)
-    return ndb.Key.from_old_key(user.key()) if user else None
+    return user.key if user else None
 
 
 class UserSettings(base.RequestHandler):
@@ -57,7 +57,7 @@ class UserSettings(base.RequestHandler):
 
   def context(self, data, check, mutator):
     """See base.RequestHandler.context for specification."""
-    user_settings = settings_logic.getUserSettings(data.url_user.key())
+    user_settings = settings_logic.getUserSettings(data.url_ndb_user.key)
 
     initial = {}
     if user_settings.view_as is not None:
@@ -71,8 +71,7 @@ class UserSettings(base.RequestHandler):
     if form.is_valid():
       view_as = form.cleaned_data['view_as'] or None
 
-      settings_logic.setUserSettings(
-          data.url_user.key(), view_as=view_as)
+      settings_logic.setUserSettings(data.url_ndb_user.key, view_as=view_as)
 
       return http.HttpResponseRedirect(data.request.get_full_path())
     else:
