@@ -351,20 +351,6 @@ def seedSOCStudent(program, user=None, **kwargs):
       user=user, **kwargs)
 
 
-def seedGCIProfile(program, user=None, **kwargs):
-  """Seeds a new profile for GCI.
-
-  Args:
-    program: Program entity for which the profile is seeded.
-    user: User entity corresponding to the profile.
-
-  Returns:
-    A newly seeded GCIProfile entity.
-  """
-  return seedProfile(
-      program, model=gci_profile_model.GCIProfile, user=user, **kwargs)
-
-
 def seedStudent(program, model=profile_model.Profile,
     student_info_model=profile_model.StudentInfo, user=None, **kwargs):
   """Seeds a new profile who is registered as a student.

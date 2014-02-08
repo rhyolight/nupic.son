@@ -717,10 +717,10 @@ class WorkSubmissionDownloadTest(GCIDjangoTestCase):
     self.timeline_helper.tasksPubliclyVisible()
 
     # Create an open task.
-    mentor = profile_utils.seedGCIProfile(
-        self.program, mentor_for=[self.org.key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[ndb.Key.from_old_key(self.org.key())])
     self.task = task_utils.seedTask(
-        self.program, self.org, mentors=[mentor.key()])
+        self.program, self.org, mentors=[mentor.key.to_old_key()])
 
   def testXSS(self):
     xss_payload = '><img src=http://www.google.com/images/srpr/logo4w.png>'

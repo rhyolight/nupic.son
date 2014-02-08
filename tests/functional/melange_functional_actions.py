@@ -89,7 +89,7 @@ class FunctionalTestCase(unittest.TestCase):
     self.program = self.gci.key().name()
     self.org = self.program_helper.createOrg()
     self.org_app = self.program_helper.createOrgApp()
-    self.user = profile_utils.seedGCIProfile(self.gci)
+    self.user = profile_utils.seedNDBProfile(self.gci.key())
     self.sponsor = program_utils.seedSponsor(sponsor_id='google')
     self.site = program_utils.seedSite(latest_gci=self.sponsor.key().name() + '/' + self.program, active_program=self.gci)
 

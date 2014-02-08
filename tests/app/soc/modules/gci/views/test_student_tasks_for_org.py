@@ -14,6 +14,8 @@
 
 """Tests for StudentTasksForOrganizationPage view."""
 
+from google.appengine.ext import ndb
+
 from tests import profile_utils
 from tests import task_utils
 from tests import test_utils
@@ -31,10 +33,10 @@ class TestStudentTasksForOrganizationPage(test_utils.GCIDjangoTestCase):
     self.timeline_helper.tasksPubliclyVisible()
 
     # Create a task, status published
-    mentor = profile_utils.seedGCIProfile(
-        self.program, mentor_for=[self.org.key()])
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[ndb.Key.from_old_key(self.org.key())])
     self.task = task_utils.seedTask(
-        self.program, self.org, mentors=[mentor.key()])
+        self.program, self.org, mentors=[mentor.key.to_old_key()])
 
     self.student = profile_utils.seedGCIStudent(self.program)
 
