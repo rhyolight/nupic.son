@@ -251,67 +251,7 @@ def seedStudentData(model=ndb_profile_model.StudentData, **kwargs):
   return model(**properties)
 
 
-def seedProfile(program, model=profile_model.Profile, user=None,
-    mentor_for=None, org_admin_for=None, **kwargs):
-  """Seeds a new profile.
 
-  Args:
-    program: Program entity for which the profile is seeded.
-    model: Model class of which a new profile should be seeded.
-    user: User entity corresponding to the profile.
-    mentor_for: List of organizations for which the profile should be
-      registered as a mentor.
-    org_admin_for: List of organizations for which the profile should be
-      registered as organization administrator.
-
-  Returns:
-    A newly seeded Profile entity.
-  """
-  user = user or seedUser()
-
-  mentor_for = mentor_for or []
-  org_admin_for = org_admin_for or []
-
-  properties = {
-      'program': program,
-      'scope': program,
-      'parent': user,
-      'status': 'active',
-      'link_id': user.key().name(),
-      'key_name': '%s/%s' % (program.key().name(), user.key().name()),
-      'mentor_for': list(set(mentor_for + org_admin_for)),
-      'is_mentor': bool(mentor_for + org_admin_for),
-      'org_admin_for': org_admin_for,
-      'is_org_admin': bool(org_admin_for),
-      'is_student': False,
-      'student_info': None,
-      'email': user.account.email(),
-      'user': user,
-      'notify_new_requests': False,
-      'notify_request_handled': False,
-      }
-  properties.update(**kwargs)
-  profile = seeder_logic.seed(model, properties=properties)
-
-  org_keys = list(set(mentor_for + org_admin_for))
-  for org_key in org_keys:
-    if org_key in org_admin_for:
-      org_role = connection_model.ORG_ADMIN_ROLE
-    else:
-      org_role = connection_model.MENTOR_ROLE
-
-    connection_properties = {
-        'user_role': connection_model.ROLE,
-        'org_role': org_role
-        }
-
-    # TODO(daniel): remove when all organizations are converted
-    if isinstance(org_key, db.Key):
-      org_key = ndb.Key.from_old_key(org_key)
-    connection_utils.seed_new_connection(
-        ndb.Key.from_old_key(profile.key()), org_key, **connection_properties)
-
-  return profile
 
 
 def seedNDBStudent(program, student_data_model=ndb_profile_model.StudentData,
