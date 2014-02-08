@@ -36,7 +36,7 @@ class TestPrefixes(unittest.TestCase):
 
   def setUp(self):
 
-    self.user = profile_utils.seedUser()
+    self.user = profile_utils.seedNDBUser()
 
     self.program = program_utils.seedProgram()
 
@@ -53,7 +53,6 @@ class TestPrefixes(unittest.TestCase):
 
     self.gci_organization = seeder_logic.seed(GCIOrganization)
 
-    self.user_key_name = self.user.key().name()
     self.program_key_name = self.program.key().name()
     self.gsoc_program_key_name = self.gsoc_program.key().name()
     self.gci_program_key_name = self.gci_program.key().name()
@@ -66,9 +65,8 @@ class TestPrefixes(unittest.TestCase):
     """Tests if the scope for a given prefix and key_name is returned.
     """
     prefix = 'user'
-    key_name = self.user_key_name
-    scope_returned = prefixes.getScopeForPrefix(prefix, key_name)
-    self.assertEqual(scope_returned.key().name(), key_name)
+    scope_returned = prefixes.getScopeForPrefix(prefix, self.user.key.id())
+    self.assertEqual(scope_returned.key.id(), self.user.key.id())
     self.assertEqual(type(scope_returned), type(self.user))
 
     prefix = 'site'

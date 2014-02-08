@@ -14,9 +14,10 @@
 
 """Prefix helper module for models with document prefixes."""
 
+from melange.models import user as user_model
+
 from soc.models import program as program_model
 from soc.models import organization as org_model
-from soc.models import user as user_model
 from soc.models import site as site_model
 
 from soc.modules.gsoc.models import program as gsoc_program_model
@@ -54,7 +55,10 @@ def getScopeForPrefix(prefix, key_name):
   # determine the type of the scope
   scope_type = scope_types.get(prefix)
 
-  if scope_type:
+  # NDB models are handled by different API
+  if prefix == 'user':
+    return scope_type.get_by_id(key_name)
+  elif scope_type:
     return scope_type.get_by_key_name(key_name)
   else:
     # try finding a scope among NDB models
