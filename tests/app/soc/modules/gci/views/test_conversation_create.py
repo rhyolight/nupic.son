@@ -18,6 +18,7 @@ import unittest
 
 from google.appengine.ext import ndb
 
+from tests import program_utils
 from tests import profile_utils
 from tests.utils import conversation_utils
 
@@ -61,10 +62,14 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.conv_utils = conversation_utils.GCIConversationHelper()
     self.program_helper = self.conv_utils.program_helper
     self.program_helper.createProgram()
-    self.org_a = self.program_helper.createNewOrg({'name': 'org_a'})
-    self.org_b = self.program_helper.createNewOrg({'name': 'org_b'})
-    self.org_c = self.program_helper.createNewOrg({'name': 'org_c'})
-    self.org_d = self.program_helper.createNewOrg({'name': 'org_d'})
+    self.org_a = program_utils.seedOldOrganization(
+        self.program_helper.program.key(), name='org_a')
+    self.org_b = program_utils.seedOldOrganization(
+        self.program_helper.program.key(), name='org_b')
+    self.org_c = program_utils.seedOldOrganization(
+        self.program_helper.program.key(), name='org_c')
+    self.org_d = program_utils.seedOldOrganization(
+        self.program_helper.program.key(), name='org_d')
     self.createProfileAndRequest()
 
   def assertEmpty(self, item):
