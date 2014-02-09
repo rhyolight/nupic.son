@@ -82,6 +82,8 @@ def loginNDB(user, is_admin=False):
   os.environ['USER_ID'] = user.account_id
   if is_admin:
     os.environ['USER_IS_ADMIN'] = '1'
+  else:
+    os.environ['USER_IS_ADMIN'] = '0'
 
 
 def logout():
