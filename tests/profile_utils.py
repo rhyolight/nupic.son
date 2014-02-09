@@ -348,68 +348,6 @@ class ProfileHelper(object):
     """
     pass
 
-  def removeStudent(self):
-    """Removes the student profile from the current user.
-    """
-    if not self.profile:
-      return self
-    if self.profile.student_info:
-      self.profile.student_info.delete()
-      self.profile.student_info = None
-      self.profile.put()
-    return self.profile
-
-  def removeHost(self):
-    """Removes the host profile from the current user.
-    """
-    if not self.user:
-      return self
-    self.user.host_for = []
-    self.user.put()
-    return self.user
-
-  def removeOrgAdmin(self):
-    """Removes the org admin profile from the current user.
-    """
-    if not self.profile:
-      return self
-    self.profile.mentor_for = []
-    self.profile.org_admin_for = []
-    self.profile.is_mentor = False
-    self.profile.is_org_admin = False
-    self.profile.put()
-    return self.profile
-
-  def removeMentor(self):
-    """Removes the mentor profile from the current user.
-    """
-    if not self.profile:
-      return self
-    self.profile.mentor_for = []
-    self.profile.is_mentor = False
-    self.profile.put()
-    return self.profile
-
-  def removeAllRoles(self):
-    """Removes all profile roles from the current user excluding host.
-    """
-    if not self.profile:
-      return self
-    self.removeMentor()
-    self.removeOrgAdmin()
-    self.removeStudent()
-    return self.profile
-
-  def clear(self):
-    if self.profile and self.profile.student_info:
-      self.profile.student_info.delete()
-    if self.profile:
-      self.profile.delete()
-    if self.user:
-      self.user.delete()
-    self.profile = None
-    self.user = None
-
 
 class GSoCProfileHelper(ProfileHelper):
   """Helper class to aid in manipulating GSoC profile data.
