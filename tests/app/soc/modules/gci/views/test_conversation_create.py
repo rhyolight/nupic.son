@@ -55,6 +55,19 @@ class MockRequestData(object):
     self.POST = post
 
 
+def _getRequestData(profile, postdata=None):
+  """Returns a new request data based on the specified profile and post data.
+
+  Args:
+    profile: Profile entity.
+    postdata: A dict containing POST data.
+
+  Returns:
+    RequestData object.
+  """
+  return MockRequestData(profile.program, profile, post=postdata)
+
+
 class GCICreateConversationFormTest(unittest.TestCase):
   """Tests the views for creating GCI conversations."""
 
@@ -71,7 +84,7 @@ class GCICreateConversationFormTest(unittest.TestCase):
         self.program.key(), name='org_c')
     self.org_d = program_utils.seedOldOrganization(
         self.program.key(), name='org_d')
-    self.createProfileAndRequest()
+    self.createProfile()
 
   def assertEmpty(self, item):
     """Asserts that an object is not empty.
@@ -190,29 +203,26 @@ class GCICreateConversationFormTest(unittest.TestCase):
           auto_update_users, conversation_ent.auto_update_users,
           msg='Conversation auto_update_users is incorrect.')
 
-  def createProfileAndRequest(self, post=None):
-    """Creates a new GCIProfileHelper, along with a new MockRequestData for the
-    helper.
-    """
+  def createProfile(self, post=None):
+    """Creates a new GCIProfileHelper and a profile"""
     self.profile_helper = profile_utils.GCIProfileHelper(
         self.program, False)
     self.profile_helper.createProfile()
     self.user_key = ndb.Key.from_old_key(self.profile_helper.profile.user.key())
-    self.mock_data = MockRequestData(
-        self.program, self.profile_helper.profile, post)
+    self.profile = self.profile_helper.profile
+
 
   def testCreateProgramRoleChoices(self):
     """Tests that createProgramRoleChoices() returns the appropriate program
     role choices (if any) for a user."""
 
     # Test that for an average user, no program roles are available
-    expected = set()
-    actual = set(gciconversation_create_view.createProgramRoleChoices(
-        self.mock_data))
-    self.assertEqual(expected, actual)
+    data = _getRequestData(self.profile)
+    actual = set(gciconversation_create_view.createProgramRoleChoices(data))
+    self.assertEqual(actual, set())
 
     # Test that all program role choices are available for a host of the program
-    self.createProfileAndRequest()
+    self.createProfile()
     self.profile_helper.createHost()
 
     expected = set([
@@ -229,12 +239,13 @@ class GCICreateConversationFormTest(unittest.TestCase):
         gciconversation_create_view.ROLE_PROGRAM_WINNERS,
         gciconversation_create_view.DEF_ROLE_PROGRAM_WINNERS),
     ])
-    actual = set(gciconversation_create_view.createProgramRoleChoices(
-        self.mock_data))
+
+    data = _getRequestData(self.profile)
+    actual = set(gciconversation_create_view.createProgramRoleChoices(data))
     self.assertEqual(expected, actual)
 
     # Test that all program role choices are available for a developer
-    self.createProfileAndRequest()
+    self.createProfile()
     self.profile_helper.createDeveloper()
 
     expected = set([
@@ -251,22 +262,22 @@ class GCICreateConversationFormTest(unittest.TestCase):
         gciconversation_create_view.ROLE_PROGRAM_WINNERS,
         gciconversation_create_view.DEF_ROLE_PROGRAM_WINNERS),
     ])
-    actual = set(gciconversation_create_view.createProgramRoleChoices(
-        self.mock_data))
+
+    data = _getRequestData(self.profile)
+    actual = set(gciconversation_create_view.createProgramRoleChoices(data))
     self.assertEqual(expected, actual)
 
     # Test that someone who's just an org admin can send messages to other org
     # admins in the program
-    self.createProfileAndRequest()
+    self.createProfile()
     self.profile_helper.createOrgAdmin(self.org_a)
 
-    expected = set([
-      (
+    expected = set([(
         gciconversation_create_view.ROLE_PROGRAM_ADMINISTRATORS,
-        gciconversation_create_view.DEF_ROLE_PROGRAM_ADMINISTRATORS),
-    ])
-    actual = set(gciconversation_create_view.createProgramRoleChoices(
-        self.mock_data))
+        gciconversation_create_view.DEF_ROLE_PROGRAM_ADMINISTRATORS)])
+
+    data = _getRequestData(self.profile)
+    actual = set(gciconversation_create_view.createProgramRoleChoices(data))
     self.assertEqual(expected, actual)
 
   def testCreateOrganizationRoleChoices(self):
@@ -283,12 +294,13 @@ class GCICreateConversationFormTest(unittest.TestCase):
           gciconversation_create_view.ROLE_ORGANIZATION_MENTORS,
           gciconversation_create_view.DEF_ROLE_ORGANIZATION_MENTORS),
     ])
-    actual = set(gciconversation_create_view.createOrganizationRoleChoices(
-        self.mock_data))
+    data = _getRequestData(self.profile)
+    actual = set(
+        gciconversation_create_view.createOrganizationRoleChoices(data))
     self.assertEqual(expected, actual)
 
     # Test that all choices are available for org admins
-    self.createProfileAndRequest()
+    self.createProfile()
     self.profile_helper.createOrgAdmin(self.org_a)
     expected = set([
       (
@@ -301,12 +313,13 @@ class GCICreateConversationFormTest(unittest.TestCase):
           gciconversation_create_view.ROLE_ORGANIZATION_WINNERS,
           gciconversation_create_view.DEF_ROLE_ORGANIZATION_WINNERS),
     ])
-    actual = set(gciconversation_create_view.createOrganizationRoleChoices(
-        self.mock_data))
+    data = _getRequestData(self.profile)
+    actual = set(
+        gciconversation_create_view.createOrganizationRoleChoices(data))
     self.assertEqual(expected, actual)
 
     # Test that all choices are available for org mentors
-    self.createProfileAndRequest()
+    self.createProfile()
     self.profile_helper.createMentor(self.org_b)
     expected = set([
       (
@@ -319,12 +332,13 @@ class GCICreateConversationFormTest(unittest.TestCase):
           gciconversation_create_view.ROLE_ORGANIZATION_WINNERS,
           gciconversation_create_view.DEF_ROLE_ORGANIZATION_WINNERS),
     ])
-    actual = set(gciconversation_create_view.createOrganizationRoleChoices(
-        self.mock_data))
+    data = _getRequestData(self.profile)
+    actual = set(
+        gciconversation_create_view.createOrganizationRoleChoices(data))
     self.assertEqual(expected, actual)
 
     # Test that all choices are available for program hosts
-    self.createProfileAndRequest()
+    self.createProfile()
     self.profile_helper.createHost()
     expected = set([
       (
@@ -337,12 +351,13 @@ class GCICreateConversationFormTest(unittest.TestCase):
           gciconversation_create_view.ROLE_ORGANIZATION_WINNERS,
           gciconversation_create_view.DEF_ROLE_ORGANIZATION_WINNERS),
     ])
-    actual = set(gciconversation_create_view.createOrganizationRoleChoices(
-        self.mock_data))
+    data = _getRequestData(self.profile)
+    actual = set(
+        gciconversation_create_view.createOrganizationRoleChoices(data))
     self.assertEqual(expected, actual)
 
     # Test that all choices are available for developers
-    self.createProfileAndRequest()
+    self.createProfile()
     self.profile_helper.createDeveloper()
     expected = set([
       (
@@ -355,8 +370,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
           gciconversation_create_view.ROLE_ORGANIZATION_WINNERS,
           gciconversation_create_view.DEF_ROLE_ORGANIZATION_WINNERS),
     ])
-    actual = set(gciconversation_create_view.createOrganizationRoleChoices(
-        self.mock_data))
+    data = _getRequestData(self.profile)
+    actual = set(
+        gciconversation_create_view.createOrganizationRoleChoices(data))
     self.assertEqual(expected, actual)
 
   def testCreateOrganizationChoices(self):
@@ -364,38 +380,38 @@ class GCICreateConversationFormTest(unittest.TestCase):
     organization choices (if any) for a user."""
 
     # Test that for an average user, all organizations are available
-    self.createProfileAndRequest()
+    self.createProfile()
 
     expected = set([
         self.org_a.key(), self.org_b.key(), self.org_c.key(), self.org_d.key()])
-    actual = set(map(
-        lambda org: org.key(),
-        gciconversation_create_view.createOrganizationChoices(
-            self.mock_data)))
+    data = _getRequestData(self.profile)
+    actual = set(
+        map(lambda org: org.key(),
+            gciconversation_create_view.createOrganizationChoices(data)))
     self.assertEqual(expected, actual)
 
     # Test that all organizations are available for a host of the program
-    self.createProfileAndRequest()
+    self.createProfile()
     self.profile_helper.createHost()
 
     expected = set([
         self.org_a.key(), self.org_b.key(), self.org_c.key(), self.org_d.key()])
-    actual = set(map(
-        lambda org: org.key(),
-        gciconversation_create_view.createOrganizationChoices(
-            self.mock_data)))
+    data = _getRequestData(self.profile)
+    actual = set(
+        map(lambda org: org.key(),
+            gciconversation_create_view.createOrganizationChoices(data)))
     self.assertEqual(expected, actual)
 
     # Test that all organizations are available for a developer
-    self.createProfileAndRequest()
+    self.createProfile()
     self.profile_helper.createDeveloper()
 
     expected = set([
         self.org_a.key(), self.org_b.key(), self.org_c.key(), self.org_d.key()])
-    actual = set(map(
-        lambda org: org.key(),
-        gciconversation_create_view.createOrganizationChoices(
-            self.mock_data)))
+    data = _getRequestData(self.profile)
+    actual = set(
+        map(lambda org: org.key(),
+            gciconversation_create_view.createOrganizationChoices(data)))
     self.assertEqual(expected, actual)
 
   def testFields(self):
@@ -403,7 +419,8 @@ class GCICreateConversationFormTest(unittest.TestCase):
 
     # Test that only recipients type choice is 'Organization', and that the
     # standards fields exist along with all organizations
-    form = gciconversation_create_view.ConversationCreateForm(self.mock_data)
+    data = _getRequestData(self.profile)
+    form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertIn('recipients_type', form.bound_fields)
     self.assertNotIn('users', form.bound_fields)
     self.assertNotIn('program_roles', form.bound_fields)
@@ -433,9 +450,10 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertIn('org_d', organization_html)
 
     # Test that all fields are present for a developer
-    self.createProfileAndRequest()
+    self.createProfile()
     self.profile_helper.createDeveloper()
-    form = gciconversation_create_view.ConversationCreateForm(self.mock_data)
+    data = _getRequestData(self.profile)
+    form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertIn('recipients_type', form.bound_fields)
     self.assertIn('users', form.bound_fields)
     self.assertIn('program_roles', form.bound_fields)
@@ -478,9 +496,10 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertIn('org_d', organization_html)
 
     # Test that all fields are present for a host of the program sponsor
-    self.createProfileAndRequest()
+    self.createProfile()
     self.profile_helper.createHost()
-    form = gciconversation_create_view.ConversationCreateForm(self.mock_data)
+    data = _getRequestData(self.profile)
+    form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertIn('recipients_type', form.bound_fields)
     self.assertIn('users', form.bound_fields)
     self.assertIn('program_roles', form.bound_fields)
@@ -524,14 +543,15 @@ class GCICreateConversationFormTest(unittest.TestCase):
 
     # Test that for someone who is a mentor of orgs a,b and admin of orgs b,c,
     # that the correct fields and field options are visible.
-    self.createProfileAndRequest()
+    self.createProfile()
     profile = self.profile_helper.profile
     profile.mentor_for = [self.org_a.key(), self.org_b.key()]
     profile.org_admin_for = [self.org_b.key(), self.org_c.key()]
     profile.is_mentor = True
     profile.is_org_admin = True
     profile.put()
-    form = gciconversation_create_view.ConversationCreateForm(self.mock_data)
+    data = _getRequestData(self.profile)
+    form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertIn('recipients_type', form.bound_fields)
     self.assertIn('users', form.bound_fields)
     self.assertIn('program_roles', form.bound_fields)
@@ -627,11 +647,12 @@ class GCICreateConversationFormTest(unittest.TestCase):
         roles=[conversation_utils.STUDENT, conversation_utils.MENTOR])
 
     # Test for correct errors in a mostly blank form for recipients_type 'User'
-    self.createProfileAndRequest({
-        'recipients_type': conversation_model.USER,
-      })
+    self.createProfile()
     self.profile_helper.createDeveloper()
-    form = gciconversation_create_view.ConversationCreateForm(self.mock_data)
+    postdata = {'recipients_type': conversation_model.USER}
+    data = _getRequestData(self.profile, postdata=postdata)
+
+    form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertFalse(form.is_valid())
     self.assertEmpty(form.bound_fields['recipients_type'].errors)
     self.assertIn('required', ''.join(form.bound_fields['users'].errors))
@@ -643,47 +664,59 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertEmpty(form.bound_fields['program_roles'].errors)
 
     # Test for empty users array
-    self.createProfileAndRequest({
+    self.createProfile()
+    self.profile_helper.createDeveloper()
+
+    postdata = {
         'recipients_type': conversation_model.USER,
         'users': '[]',
-      })
-    self.profile_helper.createDeveloper()
-    form = gciconversation_create_view.ConversationCreateForm(self.mock_data)
+        }
+    data = _getRequestData(self.profile, postdata=postdata)
+    form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertIn('specified', ''.join(form.bound_fields['users'].errors))
 
     # Test for invalid user error
+    self.createProfile()
+    self.profile_helper.createDeveloper()
+
     name_a = ndb.Key.to_old_key(dummy_student_a).name()
     name_b = ndb.Key.to_old_key(dummy_org_mentor_b).name()
-    self.createProfileAndRequest({
+    postdata = {
         'recipients_type': conversation_model.PROGRAM,
         'users': '["%s", "foo", "%s", "bar"]' % (name_a, name_b),
-      })
-    self.profile_helper.createDeveloper()
-    form = gciconversation_create_view.ConversationCreateForm(self.mock_data)
+        }
+    data = _getRequestData(self.profile, postdata=postdata)
+    form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertFalse(form.is_valid())
     self.assertIn('foo', ''.join(form.bound_fields['users'].errors))
     self.assertIn('bar', ''.join(form.bound_fields['users'].errors))
 
     # Test for no errors if valid users given
+    self.createProfile()
+    self.profile_helper.createDeveloper()
+
     name_a = ndb.Key.to_old_key(dummy_student_a).name()
     name_b = ndb.Key.to_old_key(dummy_org_mentor_b).name()
-    self.createProfileAndRequest({
+    postdata = {
         'recipients_type': conversation_model.PROGRAM,
         'users': '["%s", "%s"]' % (name_a, name_b),
-      })
-    self.profile_helper.createDeveloper()
-    form = gciconversation_create_view.ConversationCreateForm(self.mock_data)
+        }
+    data = _getRequestData(self.profile, postdata=postdata)
+    form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertFalse(form.is_valid())
     self.assertEmpty(form.bound_fields['users'].errors)
 
     # Test for correct errors in a mostly blank form for recipients_type
     # 'Program'
-    self.createProfileAndRequest({
+    self.createProfile()
+    self.profile_helper.createDeveloper()
+
+    postdata = {
         'recipients_type': conversation_model.PROGRAM,
         'users': '[]',
-      })
-    self.profile_helper.createDeveloper()
-    form = gciconversation_create_view.ConversationCreateForm(self.mock_data)
+        }
+    data = _getRequestData(self.profile, postdata=postdata)
+    form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertFalse(form.is_valid())
     self.assertEmpty(form.bound_fields['recipients_type'].errors)
     self.assertEmpty(form.bound_fields['users'].errors)
@@ -697,12 +730,15 @@ class GCICreateConversationFormTest(unittest.TestCase):
 
     # Test for correct errors in a mostly blank form for recipients_type
     # 'Organization'
-    self.createProfileAndRequest({
+    self.createProfile()
+    self.profile_helper.createDeveloper()
+
+    postdata = {
         'recipients_type': conversation_model.ORGANIZATION,
         'users': '[]',
-      })
-    self.profile_helper.createDeveloper()
-    form = gciconversation_create_view.ConversationCreateForm(self.mock_data)
+        }
+    data = _getRequestData(self.profile, postdata=postdata)
+    form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertFalse(form.is_valid())
     self.assertEmpty(form.bound_fields['recipients_type'].errors)
     self.assertEmpty(form.bound_fields['users'].errors)
@@ -716,14 +752,17 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertEmpty(form.bound_fields['program_roles'].errors)
 
     # Test for invalid errors
-    self.createProfileAndRequest({
+    self.createProfile()
+    self.profile_helper.createDeveloper()
+
+    postdata = {
         'recipients_type': conversation_model.USER,
         'users': '[]',
         'message_content': '  \t\r\n<h1></h1>  ',
         'subject': '  <b>   </b> ',
-      })
-    self.profile_helper.createDeveloper()
-    form = gciconversation_create_view.ConversationCreateForm(self.mock_data)
+        }
+    data = _getRequestData(self.profile, postdata=postdata)
+    form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertFalse(form.is_valid())
     self.assertIn('specified', ''.join(form.bound_fields['users'].errors))
     self.assertIn('blank', ''.join(form.bound_fields['subject'].errors))
@@ -732,18 +771,21 @@ class GCICreateConversationFormTest(unittest.TestCase):
     # Test that a conversation is correctly created for specific users.
     # Whitespace is added to the start and end of subject and content to
     # make sure it is stripped.
+    self.createProfile()
+    self.profile_helper.createDeveloper()
+
     name_a = ndb.Key.to_old_key(dummy_student_a).name()
     name_b = ndb.Key.to_old_key(dummy_org_mentor_b).name()
     subject = 'Hello world!'
     content = '<h1>Foo</h1><p>Bar</p>'
-    self.createProfileAndRequest({
+    postdata = {
         'recipients_type': conversation_model.USER,
         'users': '["%s", "%s"]' % (name_a, name_b),
         'subject': '  \r\n\t  %s  \n ' % subject,
         'message_content': '  \r\n\t  %s  \n ' % content,
-      })
-    self.profile_helper.createDeveloper()
-    form = gciconversation_create_view.ConversationCreateForm(self.mock_data)
+        }
+    data = _getRequestData(self.profile, postdata=postdata)
+    form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertTrue(form.is_valid())
     conversation = form.create()
     self.assertConversation(
@@ -754,7 +796,10 @@ class GCICreateConversationFormTest(unittest.TestCase):
 
     # Test that a conversation is correctly created for users with specific
     # roles within the program.
-    self.createProfileAndRequest({
+    self.createProfile()
+    self.profile_helper.createDeveloper()
+
+    postdata = {
         'recipients_type': conversation_model.PROGRAM,
         'users': '[]',
         'program_roles': [
@@ -763,9 +808,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
             ],
         'subject': subject,
         'message_content': content,
-      })
-    self.profile_helper.createDeveloper()
-    form = gciconversation_create_view.ConversationCreateForm(self.mock_data)
+        }
+    data = _getRequestData(self.profile, postdata=postdata)
+    form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertTrue(form.is_valid())
     conversation = form.create()
     self.assertConversation(
@@ -779,7 +824,10 @@ class GCICreateConversationFormTest(unittest.TestCase):
 
     # Test that a conversation is correctly created for users with specific
     # roles within an organization. Also tests that it saves auto_update_users.
-    self.createProfileAndRequest({
+    self.createProfile()
+    self.profile_helper.createDeveloper()
+
+    postdata = {
         'recipients_type': conversation_model.ORGANIZATION,
         'users': '[]',
         'organization': str(self.org_b.key()),
@@ -790,9 +838,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
         'subject': subject,
         'message_content': content,
         'auto_update_users': 'on',
-      })
-    self.profile_helper.createDeveloper()
-    form = gciconversation_create_view.ConversationCreateForm(self.mock_data)
+        }
+    data = _getRequestData(self.profile, postdata=postdata)
+    form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertTrue(form.is_valid())
     conversation = form.create()
     self.assertConversation(
