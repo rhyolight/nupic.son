@@ -18,6 +18,8 @@ import unittest
 
 from google.appengine.ext import ndb
 
+from melange.models import profile as profile_model
+
 from tests import program_utils
 from tests import profile_utils
 from tests.utils import conversation_utils
@@ -30,6 +32,7 @@ from soc.modules.gci.logic import message as gcimessage_logic
 from soc.modules.gci.models import message as gcimessage_model
 
 from soc.modules.gci.views import conversation_create as gciconversation_create_view
+from soc.modules.gci.views.helper import request_data
 
 
 class MockRequestData(object):
@@ -65,7 +68,15 @@ def _getRequestData(profile, postdata=None):
   Returns:
     RequestData object.
   """
-  return MockRequestData(profile.program, profile, post=postdata)
+  profile_key = profile.key if isinstance(profile, ndb.Model) else profile.key()
+  kwargs = {
+      'sponsor': profile_model.getSponsorId(profile_key),
+      'program': profile_model.getProgramId(profile_key),
+      'user': profile_model.getUserId(profile_key),
+      }
+  data = request_data.RequestData(None, None, kwargs)
+  data._POST = postdata
+  return data
 
 
 class GCICreateConversationFormTest(unittest.TestCase):
