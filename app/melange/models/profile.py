@@ -246,6 +246,10 @@ class Profile(ndb.Model):
   #: by the registered profile.
   accepted_tos = ndb.KeyProperty(repeated=True)
 
+  #: Notification settings for the registered profile.
+  notification_settings = ndb.StructuredProperty(
+      NotificationSettings, required=True, default=NotificationSettings())
+
   @property
   def profile_id(self):
     """Unique identifier of the registered profile on per program basis.
