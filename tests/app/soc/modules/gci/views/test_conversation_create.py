@@ -20,42 +20,16 @@ from google.appengine.ext import ndb
 
 from melange.models import profile as profile_model
 
-from tests import program_utils
-from tests import profile_utils
-from tests.utils import conversation_utils
-
 from soc.models import conversation as conversation_model
-
 from soc.modules.gci.logic import conversation as gciconversation_logic
 from soc.modules.gci.logic import message as gcimessage_logic
-
 from soc.modules.gci.models import message as gcimessage_model
-
 from soc.modules.gci.views import conversation_create as gciconversation_create_view
 from soc.modules.gci.views.helper import request_data
 
-
-class MockRequestData(object):
-  """An object that can pretend to be a RequestData object for tests.
-
-  Attributes:
-    program: A GCIProgram entity for the request.
-    user: A User entity for the request.
-    profile: A GCIProfile entity for the request.
-  """
-
-  def __init__(self, program, profile, post=None):
-    """Populates the request data attributes.
-
-    Args:
-      program: Program entity.
-      profile: Profile entity.
-      post: A dict containing POST data sent along with the request.
-    """
-    self.program = program
-    self.profile = profile
-    self.user = profile.user
-    self.POST = post
+from tests import program_utils
+from tests import profile_utils
+from tests.utils import conversation_utils
 
 
 def _getRequestData(profile, postdata=None):
@@ -95,7 +69,6 @@ class GCICreateConversationFormTest(unittest.TestCase):
         self.program.key(), name='org_c')
     self.org_d = program_utils.seedOldOrganization(
         self.program.key(), name='org_d')
-    self.createProfile()
 
   def assertEmpty(self, item):
     """Asserts that an object is not empty.
@@ -214,19 +187,15 @@ class GCICreateConversationFormTest(unittest.TestCase):
           auto_update_users, conversation_ent.auto_update_users,
           msg='Conversation auto_update_users is incorrect.')
 
-  def createProfile(self, post=None):
-    """Creates a new GCIProfileHelper and a profile"""
-    user = profile_utils.seedNDBUser()
-    profile_utils.loginNDB(user)
-    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
-
-
   def testCreateProgramRoleChoices(self):
     """Tests that createProgramRoleChoices() returns the appropriate program
     role choices (if any) for a user."""
-
     # Test that for an average user, no program roles are available
-    data = _getRequestData(self.profile)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
+
+    data = _getRequestData(profile)
     actual = set(gciconversation_create_view.createProgramRoleChoices(data))
     self.assertEqual(actual, set())
 
@@ -297,9 +266,12 @@ class GCICreateConversationFormTest(unittest.TestCase):
   def testCreateOrganizationRoleChoices(self):
     """Tests that createOrganizationRoleChoices() returns the appropriate
     organization role choices (if any) for a user."""
-
     # For an average user, only organization mentors and administrators should
     # be choices.
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
+
     expected = set([
       (
           gciconversation_create_view.ROLE_ORGANIZATION_ADMINISTRATORS,
@@ -308,7 +280,7 @@ class GCICreateConversationFormTest(unittest.TestCase):
           gciconversation_create_view.ROLE_ORGANIZATION_MENTORS,
           gciconversation_create_view.DEF_ROLE_ORGANIZATION_MENTORS),
     ])
-    data = _getRequestData(self.profile)
+    data = _getRequestData(profile)
     actual = set(
         gciconversation_create_view.createOrganizationRoleChoices(data))
     self.assertEqual(expected, actual)
@@ -403,7 +375,6 @@ class GCICreateConversationFormTest(unittest.TestCase):
   def testCreateOrganizationChoices(self):
     """Tests that testCreateOrganizationChoices() returns the appropriate
     organization choices (if any) for a user."""
-
     # Test that for an average user, all organizations are available
     user = profile_utils.seedNDBUser()
     profile_utils.loginNDB(user)
@@ -445,10 +416,13 @@ class GCICreateConversationFormTest(unittest.TestCase):
 
   def testFields(self):
     """Tests that the right fields are created by ConversationCreateForm."""
-
     # Test that only recipients type choice is 'Organization', and that the
     # standards fields exist along with all organizations
-    data = _getRequestData(self.profile)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
+
+    data = _getRequestData(profile)
     form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertIn('recipients_type', form.bound_fields)
     self.assertNotIn('users', form.bound_fields)
