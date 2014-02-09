@@ -15,6 +15,7 @@
 """Module containing the Summer Of Code callback."""
 
 from summerofcode.views import connection
+from summerofcode.views import notification_settings
 from summerofcode.views import org_app
 from summerofcode.views import org_home
 from summerofcode.views import profile
@@ -39,6 +40,7 @@ class Callback(object):
   def registerViews(self):
     """Instantiates all view objects."""
     self.views.append(connection.START_CONNECTION_AS_ORG)
+    self.views.append(notification_settings.CONNECTION_SETTINGS_PAGE)
     self.views.append(org_app.OrgAppShowPage())
     self.views.append(org_app.OrgApplicationListPage())
     self.views.append(org_app.OrgApplicationSubmitPage())

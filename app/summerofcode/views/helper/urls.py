@@ -30,6 +30,7 @@ class UrlNames(object):
   ORG_SURVEY_RESPONSE_SHOW = 'soc_org_survey_response_show'
   PROFILE_ADMIN = 'soc_profile_admin'
   PROFILE_EDIT = 'soc_profile_edit'
+  PROFILE_NOTIFICATION_SETTINGS = 'soc_profile_notification_settings'
   PROFILE_REGISTER_AS_ORG_MEMBER = 'soc_profile_register_as_org_member'
   PROFILE_REGISTER_AS_STUDENT = 'soc_profile_register_as_student'
   PROFILE_SHOW = 'soc_profile_show'
