@@ -218,6 +218,8 @@ class GCICreateConversationFormTest(unittest.TestCase):
     """Creates a new GCIProfileHelper and a profile"""
     self.profile_helper = profile_utils.GCIProfileHelper(
         self.program, False)
+    self.profile_helper.user = profile_utils.seedUser()
+    profile_utils.login(self.profile_helper.user)
     self.profile_helper.createProfile()
     self.user_key = ndb.Key.from_old_key(self.profile_helper.profile.user.key())
     self.profile = self.profile_helper.profile
