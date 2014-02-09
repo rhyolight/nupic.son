@@ -171,7 +171,7 @@ class ConversationHelper(object):
 
   def createUser(
       self, roles=None, mentor_organizations=None, admin_organizations=None,
-      winning_organization=None, return_key=False, developer=False, email=None):
+      winning_organization=None, return_key=False, email=None):
     """Creates a dummy user with a profile.
 
     Concrete subclasses must implement this method.
@@ -185,7 +185,6 @@ class ConversationHelper(object):
                            If None, none will be set.
       winning_organization: A GCIConversation the user is a winner for.
       return_key: Whether just an ndb key for the entity will be returned.
-      developer: Whether the user is a developer.
       email: The email address for the user's profile.
 
     Returns:
@@ -212,7 +211,7 @@ class GCIConversationHelper(ConversationHelper):
 
   def createUser(
       self, roles=None, mentor_organizations=None, admin_organizations=None,
-      winning_organization=None, return_key=False, developer=False, email=None):
+      winning_organization=None, return_key=False, email=None):
     """Creates a dummy user with a GCIProfile.
 
     See ConversationHelper.createUser for full specification.
@@ -227,9 +226,6 @@ class GCIConversationHelper(ConversationHelper):
 
     if profile is None:
       raise Exception('profile is none')
-
-    if developer:
-      profile.createDeveloper()
 
     if email:
       profile.email = email
