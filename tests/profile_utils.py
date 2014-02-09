@@ -338,19 +338,6 @@ class ProfileHelper(object):
     self.user = seedUser(email=email)
     return self
 
-  def deleteProfile(self):
-    """Deletes the created profile.
-    """
-    if not self.profile:
-      return self
-
-    if self.profile.student_info:
-      self.profile.student_info.delete()
-    self.profile.delete()
-    self.profile = None
-
-    return self
-
   def createProfile(self):
     """Creates a profile for the current user.
     """
