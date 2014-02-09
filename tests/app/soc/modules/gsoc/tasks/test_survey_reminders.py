@@ -45,15 +45,6 @@ class SurveyRemindersTest(
 
     self.createSurveys()
 
-  def createStudent(self):
-    """Creates a Student with a project.
-    """
-    profile_helper = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
-    profile_helper.createOtherUser('student@example.com')
-    self.student = profile_helper.createStudentWithProject(self.org,
-                                                           self.mentor)
-    self.project = GSoCProject.all().ancestor(self.student).get()
-
   def createSurveys(self):
     """Creates the surveys and records required for the tests in the old
     format.

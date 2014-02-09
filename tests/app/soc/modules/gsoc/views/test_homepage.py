@@ -19,6 +19,7 @@ import unittest
 
 from tests import profile_utils
 from tests import test_utils
+from tests.utils import project_utils
 
 
 class HomepageViewTest(test_utils.GSoCDjangoTestCase):
@@ -84,15 +85,9 @@ class HomepageViewTest(test_utils.GSoCDjangoTestCase):
 
     # Show featured_project
     student = profile_utils.seedNDBStudent(self.program)
+    project = project_utils.seedProject(
+        student.key, self.program.key(), org_key=self.org.key, is_featured=True)
 
-    mentor = profile_utils.GSoCProfileHelper(self.gsoc, self.dev_test)
-    mentor.createOtherUser('mentor@example.com')
-    mentor.createMentorWithProject(self.org, student)
-
-    from soc.modules.gsoc.models.project import GSoCProject
-    project = GSoCProject.all().ancestor(student).get()
-    project.is_featured = True
-    project.put()
     response = self.get(url)
     self.assertResponseOK(response)
     self.assertHomepageTemplatesUsed(response)
