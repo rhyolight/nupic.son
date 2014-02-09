@@ -331,14 +331,6 @@ class ProfileHelper(object):
     self.user = seedUser(email=email, is_developer=self.dev_test)
     return self.user
 
-  def createDeveloper(self):
-    """Creates a user entity for the current user that is a developer.
-    """
-    self.createUser()
-    self.user.is_developer = True
-    self.user.put()
-    return self.user
-
   def createOtherUser(self, email):
     """Creates a user entity for the specified email.
     """
