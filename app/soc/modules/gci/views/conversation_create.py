@@ -84,15 +84,15 @@ def createProgramRoleChoices(data):
 
   # If user is an org admin let them send a message to all other org admins in
   # the program.
-  if data.profile.is_org_admin:
+  if data.ndb_profile.is_admin:
     choices.update([
           (ROLE_PROGRAM_ADMINISTRATORS, DEF_ROLE_PROGRAM_ADMINISTRATORS)
         ])
 
   # If user is a host for the current program sponsor or a dev, let them send
   # a message to all org admins, mentors, students, and winners in the program.
-  if (data.program.sponsor.key() in data.user.host_for
-      or data.user.is_developer):
+  if (ndb.Key.from_old_key(data.program.key()) in data.ndb_user.host_for
+      or data.is_developer):
     choices.update([
           (ROLE_PROGRAM_ADMINISTRATORS, DEF_ROLE_PROGRAM_ADMINISTRATORS),
           (ROLE_PROGRAM_MENTORS, DEF_ROLE_PROGRAM_MENTORS),
@@ -117,9 +117,9 @@ def createOrganizationRoleChoices(data):
     (ROLE_ORGANIZATION_MENTORS, DEF_ROLE_ORGANIZATION_MENTORS),
   ])
 
-  if (data.profile.is_org_admin or data.profile.is_mentor
-      or data.program.sponsor.key() in data.user.host_for
-      or data.user.is_developer):
+  if (data.ndb_profile.is_admin or data.ndb_profile.is_mentor
+      or ndb.Key.from_old_key(data.program.key()) in data.ndb_user.host_for
+      or data.is_developer):
     choices.update([
           (ROLE_ORGANIZATION_WINNERS, DEF_ROLE_ORGANIZATION_WINNERS),
         ])
@@ -155,9 +155,10 @@ class ConversationCreateForm(gci_forms.GCIModelForm):
 
     self.recipients_type_choices = []
 
-    if (request_data.profile.is_org_admin or request_data.profile.is_mentor
-        or request_data.program.sponsor.key() in request_data.user.host_for
-        or request_data.user.is_developer):
+    if (request_data.ndb_profile.is_admin or request_data.ndb_profile.is_mentor
+        or ndb.Key.from_old_key(request_data.program.key())
+            in request_data.ndb_user.host_for
+        or request_data.is_developer):
       self.recipients_type_choices.append(
           (conversation_model.USER, translation.ugettext('Specified users')))
       self.fields['users'] = django_forms.CharField(
@@ -373,8 +374,7 @@ class ConversationCreateForm(gci_forms.GCIModelForm):
     cleaned_data['program'] = ndb.Key.from_old_key(
         self.request_data.program.key())
 
-    cleaned_data['creator'] = ndb.Key.from_old_key(
-        self.request_data.user.key())
+    cleaned_data['creator'] = self.request_data.ndb_user.key
 
     return cleaned_data
 

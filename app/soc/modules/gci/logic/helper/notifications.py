@@ -250,7 +250,7 @@ def getTaskConversationMessageContext(message, to_emails, is_reply):
   message_ent = message.get()
   conversation_ent = message_ent.conversation.get()
   program_ent = db.get(ndb.Key.to_old_key(conversation_ent.program))
-  author_ent = db.get(ndb.Key.to_old_key(message_ent.author))
+  author_ent = message_ent.author.get()
 
   url_kwargs = {
     'sponsor': program_logic.getSponsorKey(program_ent).name(),
@@ -267,7 +267,7 @@ def getTaskConversationMessageContext(message, to_emails, is_reply):
       'conversation': reverse(url_names.GCI_CONVERSATION, kwargs=url_kwargs),
       'message_id': message.integer_id()}
 
-  message_by = author_ent.name if author_ent else 'Melange'
+  message_by = author_ent.user_id if author_ent else 'Melange'
 
   message_properties = {
       'author_name': message_by,
