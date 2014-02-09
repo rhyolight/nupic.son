@@ -358,7 +358,8 @@ class RequestData(object):
 
       # developer may view the page as another user
       if self._user and user_logic.isDeveloper(user=self._user):
-        settings = settings_logic.getUserSettings(self._user.key())
+        settings = settings_logic.getUserSettings(
+            ndb.Key.from_old_key(self._user.key()))
         if settings.view_as is not None:
           user = user_model.User.get(settings.view_as.to_old_key())
           if user:
