@@ -294,3 +294,17 @@ def createStudentData(student_data_properties, models=types.MELANGE_MODELS):
     Newly created student data entity.
   """
   return models.student_data_model(**student_data_properties)
+
+
+def createtNotificationSettings(notification_settings_properties):
+  """Creates a new notification settings object based on
+  the specified properties.
+
+  Args:
+    notification_settings_properties: A dict mapping notification
+      settings properties to their values.
+
+  Returns:
+    Newly created notification settings object.
+  """
+  return profile_model.NotificationSettings(**notification_settings_properties)
