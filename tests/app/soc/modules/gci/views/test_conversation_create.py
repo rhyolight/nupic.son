@@ -216,13 +216,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
 
   def createProfile(self, post=None):
     """Creates a new GCIProfileHelper and a profile"""
-    self.profile_helper = profile_utils.GCIProfileHelper(
-        self.program, False)
-    self.profile_helper.user = profile_utils.seedUser()
-    profile_utils.login(self.profile_helper.user)
-    self.profile_helper.createProfile()
-    self.user_key = ndb.Key.from_old_key(self.profile_helper.profile.user.key())
-    self.profile = self.profile_helper.profile
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
 
 
   def testCreateProgramRoleChoices(self):
@@ -235,8 +231,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertEqual(actual, set())
 
     # Test that all program role choices are available for a host of the program
-    self.createProfile()
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     expected = set([
       (
@@ -258,8 +255,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertEqual(expected, actual)
 
     # Test that all program role choices are available for a developer
-    self.createProfile()
-    self.profile_helper.createDeveloper()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     expected = set([
       (
@@ -282,8 +280,11 @@ class GCICreateConversationFormTest(unittest.TestCase):
 
     # Test that someone who's just an org admin can send messages to other org
     # admins in the program
-    self.createProfile()
-    self.profile_helper.createOrgAdmin(self.org_a)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    self.profile = profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org_a.key())])
 
     expected = set([(
         gciconversation_create_view.ROLE_PROGRAM_ADMINISTRATORS,
@@ -313,8 +314,11 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertEqual(expected, actual)
 
     # Test that all choices are available for org admins
-    self.createProfile()
-    self.profile_helper.createOrgAdmin(self.org_a)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    self.profile = profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org_a.key())])
     expected = set([
       (
           gciconversation_create_view.ROLE_ORGANIZATION_ADMINISTRATORS,
@@ -332,8 +336,12 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertEqual(expected, actual)
 
     # Test that all choices are available for org mentors
-    self.createProfile()
-    self.profile_helper.createMentor(self.org_b)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    self.profile = profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org_b.key())])
+
     expected = set([
       (
           gciconversation_create_view.ROLE_ORGANIZATION_ADMINISTRATORS,
@@ -351,8 +359,10 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertEqual(expected, actual)
 
     # Test that all choices are available for program hosts
-    self.createProfile()
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
+
     expected = set([
       (
           gciconversation_create_view.ROLE_ORGANIZATION_ADMINISTRATORS,
@@ -370,8 +380,10 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertEqual(expected, actual)
 
     # Test that all choices are available for developers
-    self.createProfile()
-    self.profile_helper.createDeveloper()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
+
     expected = set([
       (
           gciconversation_create_view.ROLE_ORGANIZATION_ADMINISTRATORS,
@@ -393,7 +405,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
     organization choices (if any) for a user."""
 
     # Test that for an average user, all organizations are available
-    self.createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     expected = set([
         self.org_a.key(), self.org_b.key(), self.org_c.key(), self.org_d.key()])
@@ -404,8 +418,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertEqual(expected, actual)
 
     # Test that all organizations are available for a host of the program
-    self.createProfile()
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     expected = set([
         self.org_a.key(), self.org_b.key(), self.org_c.key(), self.org_d.key()])
@@ -416,8 +431,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertEqual(expected, actual)
 
     # Test that all organizations are available for a developer
-    self.createProfile()
-    self.profile_helper.createDeveloper()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     expected = set([
         self.org_a.key(), self.org_b.key(), self.org_c.key(), self.org_d.key()])
@@ -463,8 +479,10 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertIn('org_d', organization_html)
 
     # Test that all fields are present for a developer
-    self.createProfile()
-    self.profile_helper.createDeveloper()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
+
     data = _getRequestData(self.profile)
     form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertIn('recipients_type', form.bound_fields)
@@ -509,8 +527,10 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertIn('org_d', organization_html)
 
     # Test that all fields are present for a host of the program sponsor
-    self.createProfile()
-    self.profile_helper.createHost()
+    user = profile_utils.seedNDBUser(host_for=[self.program])
+    profile_utils.loginNDB(user)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
+
     data = _getRequestData(self.profile)
     form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertIn('recipients_type', form.bound_fields)
@@ -556,13 +576,14 @@ class GCICreateConversationFormTest(unittest.TestCase):
 
     # Test that for someone who is a mentor of orgs a,b and admin of orgs b,c,
     # that the correct fields and field options are visible.
-    self.createProfile()
-    profile = self.profile_helper.profile
-    profile.mentor_for = [self.org_a.key(), self.org_b.key()]
-    profile.org_admin_for = [self.org_b.key(), self.org_c.key()]
-    profile.is_mentor = True
-    profile.is_org_admin = True
-    profile.put()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    self.profile = profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[
+            ndb.Key.from_old_key(self.org_a.key()),
+            ndb.Key.from_old_key(self.org_b.key())])
+
     data = _getRequestData(self.profile)
     form = gciconversation_create_view.ConversationCreateForm(data)
     self.assertIn('recipients_type', form.bound_fields)
@@ -660,8 +681,10 @@ class GCICreateConversationFormTest(unittest.TestCase):
         roles=[conversation_utils.STUDENT, conversation_utils.MENTOR])
 
     # Test for correct errors in a mostly blank form for recipients_type 'User'
-    self.createProfile()
-    self.profile_helper.createDeveloper()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
+
     postdata = {'recipients_type': conversation_model.USER}
     data = _getRequestData(self.profile, postdata=postdata)
 
@@ -677,8 +700,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertEmpty(form.bound_fields['program_roles'].errors)
 
     # Test for empty users array
-    self.createProfile()
-    self.profile_helper.createDeveloper()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     postdata = {
         'recipients_type': conversation_model.USER,
@@ -689,8 +713,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertIn('specified', ''.join(form.bound_fields['users'].errors))
 
     # Test for invalid user error
-    self.createProfile()
-    self.profile_helper.createDeveloper()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     name_a = ndb.Key.to_old_key(dummy_student_a).name()
     name_b = ndb.Key.to_old_key(dummy_org_mentor_b).name()
@@ -705,8 +730,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertIn('bar', ''.join(form.bound_fields['users'].errors))
 
     # Test for no errors if valid users given
-    self.createProfile()
-    self.profile_helper.createDeveloper()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     name_a = ndb.Key.to_old_key(dummy_student_a).name()
     name_b = ndb.Key.to_old_key(dummy_org_mentor_b).name()
@@ -721,8 +747,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
 
     # Test for correct errors in a mostly blank form for recipients_type
     # 'Program'
-    self.createProfile()
-    self.profile_helper.createDeveloper()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     postdata = {
         'recipients_type': conversation_model.PROGRAM,
@@ -743,8 +770,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
 
     # Test for correct errors in a mostly blank form for recipients_type
     # 'Organization'
-    self.createProfile()
-    self.profile_helper.createDeveloper()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     postdata = {
         'recipients_type': conversation_model.ORGANIZATION,
@@ -765,8 +793,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
     self.assertEmpty(form.bound_fields['program_roles'].errors)
 
     # Test for invalid errors
-    self.createProfile()
-    self.profile_helper.createDeveloper()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     postdata = {
         'recipients_type': conversation_model.USER,
@@ -784,8 +813,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
     # Test that a conversation is correctly created for specific users.
     # Whitespace is added to the start and end of subject and content to
     # make sure it is stripped.
-    self.createProfile()
-    self.profile_helper.createDeveloper()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     name_a = ndb.Key.to_old_key(dummy_student_a).name()
     name_b = ndb.Key.to_old_key(dummy_org_mentor_b).name()
@@ -803,14 +833,15 @@ class GCICreateConversationFormTest(unittest.TestCase):
     conversation = form.create()
     self.assertConversation(
         conversation.key, recipients_type=conversation_model.USER,
-        creator=self.user_key, subject=subject, message_content=content,
+        creator=user.key, subject=subject, message_content=content,
         auto_update_users=False,
-        users=[self.user_key, dummy_student_a, dummy_org_mentor_b])
+        users=[user.key, dummy_student_a, dummy_org_mentor_b])
 
     # Test that a conversation is correctly created for users with specific
     # roles within the program.
-    self.createProfile()
-    self.profile_helper.createDeveloper()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     postdata = {
         'recipients_type': conversation_model.PROGRAM,
@@ -828,17 +859,18 @@ class GCICreateConversationFormTest(unittest.TestCase):
     conversation = form.create()
     self.assertConversation(
         conversation.key, recipients_type=conversation_model.PROGRAM,
-        creator=self.user_key, subject=subject, message_content=content,
+        creator=user.key, subject=subject, message_content=content,
         include_students=True, include_mentors=True, include_admins=False,
         include_winners=False, auto_update_users=False, users=[
-            self.user_key, dummy_org_mentor_a, dummy_org_mentor_b,
+            user.key, dummy_org_mentor_a, dummy_org_mentor_b,
             dummy_org_mentor_ab, dummy_student_a, dummy_student_b,
             dummy_student_org_mentor_c, dummy_winner_a, dummy_winner_b])
 
     # Test that a conversation is correctly created for users with specific
     # roles within an organization. Also tests that it saves auto_update_users.
-    self.createProfile()
-    self.profile_helper.createDeveloper()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user, is_admin=True)
+    self.profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     postdata = {
         'recipients_type': conversation_model.ORGANIZATION,
@@ -858,10 +890,9 @@ class GCICreateConversationFormTest(unittest.TestCase):
     conversation = form.create()
     self.assertConversation(
         conversation.key, recipients_type=conversation_model.ORGANIZATION,
-        creator=self.user_key, subject=subject, message_content=content,
+        creator=user.key, subject=subject, message_content=content,
         include_students=False, include_mentors=True, include_admins=False,
         organization=ndb.Key.from_old_key(self.org_b.key()),
         include_winners=True, auto_update_users=True,
         users=[
-            self.user_key, dummy_org_mentor_b, dummy_org_mentor_ab,
-            dummy_winner_b])
+            user.key, dummy_org_mentor_b, dummy_org_mentor_ab, dummy_winner_b])
