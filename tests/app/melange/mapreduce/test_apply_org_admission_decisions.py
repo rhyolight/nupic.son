@@ -18,9 +18,14 @@ from mapreduce import test_support
 
 from melange.models import organization as org_model
 
+from summerofcode import types
+
 from tests import org_utils
+from tests import profile_utils
+from tests import program_utils
 from tests import test_utils
 
+from soc.logic.helper import notifications
 from soc.models import program as program_model
 from soc.mapreduce.helper import control as mapreduce_control
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
@@ -48,6 +53,14 @@ class TestApplyOrgAdmissionDecisions(
           self.program.key(), org_id='org_id_%s' % i,
           status=statuses[i % len(statuses)])
       seeded_orgs[i % len(statuses)].append(org.key)
+
+    self.admins = []
+    for i in range(int(1.5 * len(seeded_orgs))):
+      admin = profile_utils.seedNDBProfile(
+          self.program.key(), admin_for=seeded_orgs[i % len(seeded_orgs)])
+      self.admins.append(admin)
+
+    self.program_messages = self.program.getProgramMessages()
 
     self.pre_accepted_orgs = seeded_orgs[0]
     self.pre_rejected_orgs = seeded_orgs[1]
@@ -79,6 +92,20 @@ class TestApplyOrgAdmissionDecisions(
     for org_key in self.applying_orgs:
       org = org_key.get()
       self.assertEqual(org.status, org_model.Status.APPLYING)
+
+    for org_key in self.pre_accepted_orgs:
+      org = org_key.get()
+      subject = notifications.DEF_ACCEPTED_ORG % {
+          'org': org.name,
+          }
+      self.assertEmailSent(cc=org.contact.email, subject=subject)
+
+    for org_key in self.pre_rejected_orgs:
+      org = org_key.get()
+      subject = notifications.DEF_REJECTED_ORG % {
+          'org': org.name,
+          }
+      self.assertEmailSent(cc=org.contact.email, subject=subject)
 
   def testOrgsForAnotherProgram(self):
     """Tests that status of organizations for another program is untouched."""
