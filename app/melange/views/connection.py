@@ -184,6 +184,20 @@ def _formToStartConnectionAsOrg(**kwargs):
   form.setHelpTextForMessage(CONNECTION_AS_ORG_FORM_MESSAGE_HELP_TEXT)
   return form
 
+
+def _formToStartConnectionAsUser(**kwargs):
+  """Returns a Django form to start connection as a user.
+
+  Returns:
+    ConnectionForm adjusted to start connection as a user.
+  """
+  form = ConnectionForm(**kwargs)
+  form.removeField('role')
+  form.removeField('users')
+  form.setHelpTextForMessage(CONNECTION_AS_USER_FORM_MESSAGE_HELP_TEXT)
+  return form
+
+
 # TODO(daniel): this form mustn't inherit from GSoC form
 class ConnectionForm(gsoc_forms.GSoCModelForm):
   """Django form to show specific fields for an organization.
@@ -335,6 +349,105 @@ class StartConnectionAsOrg(base.RequestHandler):
       return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-call.
+      return self.get(data, check, mutator)
+
+
+class NoConnectionExistsAccessChecker(access.AccessChecker):
+  """AccessChecker that ensures that no connection exists between the user,
+  who is currently logged-in, and organization which is specified in the URL.
+  """
+
+  def __init__(self, url_names):
+    """Initializes a new instance of this access checker for the specified
+    parameters.
+
+    Args:
+      url_names: Instance of url_names.UrlNames.
+    """
+    self.url_names = url_names
+
+  def checkAccess(self, data, check):
+    """See access.AccessChecker.checkAccess for specification."""
+    connection = connection_logic.connectionForProfileAndOrganization(
+        data.ndb_profile.key, data.url_ndb_org.key)
+    if connection:
+      url = links.LINKER.userId(
+          data.ndb_profile.key, connection.key.id(),
+          self.url_names.CONNECTION_MANAGE_AS_USER)
+      raise exception.Redirect(url)
+
+
+class StartConnectionAsUser(base.RequestHandler):
+  """View to start connections with organizations as users."""
+
+  def __init__(self, initializer, linker, renderer, error_handler,
+      url_pattern_constructor, url_names, template_path, access_checker):
+    """Initializes a new instance of the request handler for the specified
+    parameters.
+
+    Args:
+      initializer: Implementation of initialize.Initializer interface.
+      linker: Instance of links.Linker class.
+      renderer: Implementation of render.Renderer interface.
+      error_handler: Implementation of error.ErrorHandler interface.
+      url_pattern_constructor:
+        Implementation of url_patterns.UrlPatternConstructor.
+      url_names: Instance of url_names.UrlNames.
+      template_path: The path of the template to be used.
+      access_checker: Implementation of access.AccessChecker interface.
+    """
+    super(StartConnectionAsUser, self).__init__(
+        initializer, linker, renderer, error_handler)
+    self.url_pattern_constructor = url_pattern_constructor
+    self.url_names = url_names
+    self.template_path = template_path
+    self.access_checker = access_checker
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.djangoURLPatterns for specification."""
+    return [
+        self.url_pattern_constructor.construct(
+            r'connection/start/user/%s$' % url_patterns.ORG,
+            self, name=self.url_names.CONNECTION_START_AS_USER)
+    ]
+
+  def templatePath(self):
+    """See base.RequestHandler.templatePath for specification."""
+    return self.template_path
+
+  def context(self, data, check, mutator):
+    """See base.RequestHandler.context for specification."""
+    return {
+        'page_name': START_CONNECTION_AS_USER_PAGE_NAME,
+        'organization': data.organization.org_id,
+        'forms': [_formToStartConnectionAsUser()]
+        }
+
+  def post(self, data, check, mutator):
+    """See base.RequestHandler.post for specification."""
+    form = _formToStartConnectionAsUser(data=data.POST)
+    if form.is_valid():
+
+      # create notification that will be sent to organization administrators
+      org_admins = profile_logic.getOrgAdmins(data.url_ndb_org.key)
+      emails = [org_admin.contact.email for org_admin in org_admins]
+
+      context_provider = notifications.StartConnectionByUserContextProvider(
+          links.ABSOLUTE_LINKER, self.url_names)
+
+      connection = createConnectionTxn(
+          data, data.ndb_profile.key, data.url_ndb_org, None,
+          message=form.cleaned_data['message'],
+          notification_context_provider=context_provider,
+          recipients=emails, user_role=connection_model.ROLE)
+
+      url = links.LINKER.userId(
+          data.ndb_profile.key(), connection.key.id(),
+          self.url_names.CONNECTION_MANAGE_AS_USER)
+      return http.HttpResponseRedirect(url)
+
+    else:
+      # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
 
 

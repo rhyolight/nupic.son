@@ -17,6 +17,7 @@
 from soc.modules.gsoc.views import base as gsoc_base
 from soc.modules.gsoc.views.helper import url_patterns as soc_url_patterns
 
+from melange.request import access
 from melange.views import connection as connection_view
 
 from summerofcode.request import error
@@ -29,3 +30,16 @@ START_CONNECTION_AS_ORG = connection_view.StartConnectionAsOrg(
     gsoc_base._GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
     error.SOC_ERROR_HANDLER, soc_url_patterns.SOC_URL_PATTERN_CONSTRUCTOR,
     soc_urls.UrlNames, 'modules/gsoc/form_base.html')
+
+
+START_CONNECTION_AS_USER_ACCESS_CHECKER = access.ConjuctionAccessChecker([
+    access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+    access.NON_STUDENT_PROFILE_ACCESS_CHECKER,
+    connection_view.NoConnectionExistsAccessChecker(soc_urls.UrlNames)])
+
+START_CONNECTION_AS_USER = connection_view.StartConnectionAsUser(
+    gsoc_base._GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
+    error.SOC_ERROR_HANDLER, soc_url_patterns.SOC_URL_PATTERN_CONSTRUCTOR,
+    soc_urls.UrlNames, 'modules/gsoc/form_base.html',
+    START_CONNECTION_AS_USER_ACCESS_CHECKER)
+

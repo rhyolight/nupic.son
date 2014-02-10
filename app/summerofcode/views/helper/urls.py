@@ -19,6 +19,7 @@ class UrlNames(object):
   """URL names for Summer Of Code views."""
 
   CONNECTION_START_AS_ORG = 'soc_connection_start_as_org'
+  CONNECTION_START_AS_USER = 'soc_connection_start_as_user'
   ORG_APP_SHOW = 'soc_org_app_show'
   ORG_APPLICATION_LIST = 'soc_org_application_list'
   ORG_APPLICATION_SUBMIT = 'soc_org_application_submit'
