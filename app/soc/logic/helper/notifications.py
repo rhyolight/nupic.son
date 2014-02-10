@@ -165,12 +165,12 @@ class StartConnectionByUserContextProvider(object):
     """
     subject = DEF_NEW_USER_CONNECTION % {'org': org.name}
     connection_url = self._linker.userId(
-        profile.key(), connection_key.id(),
+        profile.key, connection_key.id(),
         self._url_names.CONNECTION_MANAGE_AS_ORG)
 
     message_properties = {
         'connection_url': connection_url,
-        'name': profile.name(),
+        'name': profile.public_name,
         'org_name': org.name,
         'message': message,
         }
