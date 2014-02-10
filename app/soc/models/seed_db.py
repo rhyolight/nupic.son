@@ -118,6 +118,10 @@ def seed(request, *args, **kwargs):
       'accepted_students_announced_deadline' : after,
       'student_signup_start': before,
       'student_signup_end': after,
+      'application_review_deadline': after,
+      'student_application_matched_deadline': after,
+      'accepted_students_announced_deadline': after,
+      'form_submission_start':before,
   }
   gsoc2014_timeline = GSoCTimeline(**timeline_properties)
   gsoc2014_timeline.put()
