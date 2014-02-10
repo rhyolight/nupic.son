@@ -14,6 +14,7 @@
 
 """Helper functions for sending out notifications."""
 
+from django import template
 from django.template import loader
 from django.utils.translation import ugettext
 
@@ -71,7 +72,9 @@ DEF_REJECTED_ORG_TEMPLATE = \
 DEF_MENTOR_WELCOME_MAIL_TEMPLATE = \
     'soc/notification/mentor_welcome_mail.html'
 
-def getContext(site, program, receivers, message_properties, subject, template):
+
+def _getContextCommon(site, program, receivers, message_properties,
+                      subject, body):
   """Sends out a notification to the specified user.
 
   Args:
@@ -80,15 +83,13 @@ def getContext(site, program, receivers, message_properties, subject, template):
     receivers: Email addresses to which the notification should be sent.
     message_properties: Message properties.
     subject: Subject of notification email.
-    template: Template used for generating notification.
+    body: Email body to be sent as notification.
   Returns:
     A dictionary containing the context for a message to be sent to one
     or more recipients.
   """
   message_properties['sender_name'] = 'The %s Team' % site.site_name
   message_properties['program_name'] = program.name
-
-  body = loader.render_to_string(template, dictionary=message_properties)
 
   # TODO(nathaniel): "to" can be a list of email addresses or a single
   # email address? Is that right? The documentation of mailer.getMailContext
@@ -101,6 +102,53 @@ def getContext(site, program, receivers, message_properties, subject, template):
     bcc = receivers
 
   return mailer.getMailContext(to, subject, body, bcc=bcc)
+
+
+def getContextFromTemplateString(site, program, receivers,
+                                 message_properties, subject,
+                                 template_string):
+  """Sends out a notification to the specified user using the template
+  string to construct the notification body.
+
+  Args:
+    site: Site entity.
+    program: Program entity to which the notification applies.
+    receivers: Email addresses to which the notification should be sent.
+    message_properties: Message properties.
+    subject: Subject of notification email.
+    template_string: Template used for generating notification.
+  Returns:
+    A dictionary containing the context for a message to be sent to one
+    or more recipients.
+  """
+  template_inst = template.Template(template_string)
+  context_instance = template.Context(message_properties)
+  body = template_inst.render(context_instance)
+
+  return _getContextCommon(site, program, receivers, message_properties,
+                           subject, body)
+
+
+def getContext(site, program, receivers, message_properties,
+               subject, template):
+  """Sends out a notification to the specified user by using the template
+  file to construct the notification body.
+
+  Args:
+    site: Site entity.
+    program: Program entity to which the notification applies.
+    receivers: Email addresses to which the notification should be sent.
+    message_properties: Message properties.
+    subject: Subject of notification email.
+    template: Template used for generating notification.
+  Returns:
+    A dictionary containing the context for a message to be sent to one
+    or more recipients.
+  """
+  body = loader.render_to_string(template, dictionary=message_properties)
+
+  return _getContextCommon(site, program, receivers, message_properties,
+                           subject, body)
 
 
 def getDefaultContext(request_data, emails, subject, extra_context=None):
