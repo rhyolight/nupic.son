@@ -40,10 +40,10 @@ DEF_NEW_ANONYMOUS_CONNECTION = ugettext(
     'New Google Summer of Code Connection')
 
 DEF_ACCEPTED_ORG = ugettext(
-    '[%s] Your organization application has been accepted.')
+    '[%(org)s] Your organization application has been accepted.')
 
 DEF_REJECTED_ORG = ugettext(
-    '[%s] Your organization application has been rejected.')
+    '[%(org)s] Your organization application has been rejected.')
 
 DEF_MENTOR_WELCOME_MAIL_SUBJECT = ugettext('Welcome to %s')
 
@@ -379,11 +379,9 @@ class OrganizationAcceptedContextProvider(object):
       program_messages: ProgramMessages entity that holds the message
           templates provided by the program admins.
     """
-    # TODO(daniel): replace with a dynamic mail content
-    # program_messages = program.getProgramMessages()
-    # template = program_messages.accepted_orgs_msg
-    template = DEF_ACCEPTED_ORG_TEMPLATE
-    subject = DEF_ACCEPTED_ORG % organization.name
+    subject = DEF_ACCEPTED_ORG % {
+        'org': organization.name,
+        }
 
     # TODO(daniel): consult what properties are needed.
     message_properties = {}
@@ -410,11 +408,9 @@ class OrganizationRejectedContextProvider(object):
       program_messages: ProgramMessages entity that holds the message
           templates provided by the program admins.
     """
-    # TODO(daniel): replace with a dynamic mail content
-    # program_messages = program.getProgramMessages()
-    # template = program_messages.rejected_orgs_msg
-    template = DEF_REJECTED_ORG_TEMPLATE
-    subject = DEF_REJECTED_ORG % organization.name
+    subject = DEF_REJECTED_ORG % {
+        'org': organization.name,
+        }
 
     # TODO(daniel): consult what properties are needed.
     message_properties = {}
