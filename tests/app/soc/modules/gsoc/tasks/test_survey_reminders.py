@@ -15,7 +15,6 @@
 """Test for sending Survey reminders."""
 
 from soc.modules.gsoc.models.grading_project_survey import GradingProjectSurvey
-from soc.modules.gsoc.models.project import GSoCProject
 from soc.modules.gsoc.models.project_survey import ProjectSurvey
 
 from tests import profile_utils

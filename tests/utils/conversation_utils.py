@@ -25,7 +25,6 @@ from soc.models import message as message_model
 from soc.modules.gci.models import conversation as gciconversation_model
 from soc.modules.gci.models import message as gcimessage_model
 
-from tests import program_utils
 from tests import profile_utils
 
 # Constants for specifying a profile role in helper functions

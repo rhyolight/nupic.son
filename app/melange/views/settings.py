@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from google.appengine.ext import ndb
+"""Module with user settings related views."""
 
 from django import forms
 from django import http

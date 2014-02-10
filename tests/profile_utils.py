@@ -17,7 +17,6 @@
 import datetime
 import os
 
-from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from datetime import timedelta
@@ -29,11 +28,9 @@ from melange.models import education as education_model
 from melange.models import profile as ndb_profile_model
 from melange.models import user as ndb_user_model
 
-from soc.models import profile as profile_model
 from soc.models import user as user_model
 
 from soc.modules.gci.models import profile as gci_profile_model
-from soc.modules.gsoc.models import profile as gsoc_profile_model
 from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.seeder.logic.providers import string as string_provider
@@ -80,10 +77,7 @@ def loginNDB(user, is_admin=False):
       of the application or not.
   """
   os.environ['USER_ID'] = user.account_id
-  if is_admin:
-    os.environ['USER_IS_ADMIN'] = '1'
-  else:
-    os.environ['USER_IS_ADMIN'] = '0'
+  os.environ['USER_IS_ADMIN'] = '1' if is_admin else '0'
 
 
 def logout():
