@@ -21,6 +21,7 @@ from google.appengine.ext import ndb
 from mapreduce import context as mapreduce_context
 
 from melange.logic import organization as org_logic
+from melange.logic import profile as profile_logic
 from melange.models import organization as org_model
 
 from soc.logic import site as site_logic
@@ -44,6 +45,9 @@ def process(org_key):
 
   # TODO(daniel): add email recipients, i.e. organization admins
   site = site_logic.singleton()
+
+  admins = profile_logic.getOrgAdmins(organization.key)
+  recipients = [a.contact.email for a in admins]
 
   @ndb.transactional
   def updateOrganizationStatus():
