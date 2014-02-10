@@ -367,7 +367,7 @@ class OrganizationAcceptedContextProvider(object):
   is accepted into a program.
   """
 
-  def getContext(self, emails, organization, program, site):
+  def getContext(self, emails, organization, program, site, program_messages):
     """Provides notification context of an email to send out when the specified
     organization is accepted into the program.
 
@@ -376,6 +376,8 @@ class OrganizationAcceptedContextProvider(object):
       organization: Organization entity.
       program: Program entity.
       site: Site entity.
+      program_messages: ProgramMessages entity that holds the message
+          templates provided by the program admins.
     """
     # TODO(daniel): replace with a dynamic mail content
     # program_messages = program.getProgramMessages()
@@ -386,8 +388,9 @@ class OrganizationAcceptedContextProvider(object):
     # TODO(daniel): consult what properties are needed.
     message_properties = {}
 
-    return getContext(
-        site, program, emails, message_properties, subject, template)
+    return getContextFromTemplateString(
+        site, program, emails, message_properties, subject,
+        program_messages.accepted_orgs_msg)
 
 
 class OrganizationRejectedContextProvider(object):
@@ -395,7 +398,7 @@ class OrganizationRejectedContextProvider(object):
   is rejected from a program.
   """
 
-  def getContext(self, emails, organization, program, site):
+  def getContext(self, emails, organization, program, site, program_messages):
     """Provides notification context of an email to send out when the specified
     organization is rejected from the program.
 
@@ -404,6 +407,8 @@ class OrganizationRejectedContextProvider(object):
       organization: Organization entity.
       program: Program entity.
       site: Site entity.
+      program_messages: ProgramMessages entity that holds the message
+          templates provided by the program admins.
     """
     # TODO(daniel): replace with a dynamic mail content
     # program_messages = program.getProgramMessages()
@@ -414,8 +419,9 @@ class OrganizationRejectedContextProvider(object):
     # TODO(daniel): consult what properties are needed.
     message_properties = {}
 
-    return getContext(
-        site, program, emails, message_properties, subject, template)
+    return getContextFromTemplateString(
+        site, program, emails, message_properties, subject,
+        program_messages.rejected_orgs_msg)
 
 
 def orgAppContext(data, record, new_status, apply_url):
