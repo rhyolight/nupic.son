@@ -60,6 +60,39 @@ class ConnectionExistsTest(unittest.TestCase):
       connection_logic.connectionExists(self.profile.key, self.org.key))
 
 
+class ConnectionForProfileAndOrganizationTest(unittest.TestCase):
+  """Unit tests for the connectionForProfileAndOrganization function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.program = program_utils.seedProgram()
+    self.profile = profile_utils.seedNDBProfile(self.program.key())
+    self.org = org_utils.seedOrganization(self.program.key())
+
+  def testConnectionExists(self):
+    """Tests that connection is returned if it exists."""
+    # seed a connection
+    connection = connection_utils.seed_new_connection(
+        self.profile.key, self.org.key)
+    self.assertEqual(
+        connection_logic.connectionForProfileAndOrganization(
+            self.profile.key, self.org.key), connection)
+
+  def testConnectionDoesNotExist(self):
+    """Tests that None is returned if connection does not exist."""
+    # seed a connection between the org and another profile
+    other_profile = profile_utils.seedNDBProfile(self.program.key())
+    connection_utils.seed_new_connection(other_profile.key, self.org.key)
+
+    # seed a connection between the profile and another org
+    other_org = org_utils.seedOrganization(self.program.key())
+    connection_utils.seed_new_connection(self.profile.key, other_org.key)
+
+    self.assertIsNone(
+        connection_logic.connectionForProfileAndOrganization(
+            self.profile.key, self.org.key))
+
+
 class CreateConnectionTest(unittest.TestCase):
   """Unit tests for the createConnection function."""
 

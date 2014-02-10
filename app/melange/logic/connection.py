@@ -119,6 +119,23 @@ def queryForOrganizations(org_keys):
     raise ValueError('List of organizations cannot be empty.')
 
 
+def connectionForProfileAndOrganization(profile_key, org_key):
+  """Returns connection between the specified profile and organization,
+  if one already exists.
+
+  Args:
+    profile_key: Profile key.
+    org_key: Organization key.
+
+  Returns:
+    Connection entity, if one exists for the specified profile and organization.
+    None otherwise.
+  """
+  return connection_model.Connection.query(
+      connection_model.Connection.organization == org_key,
+      ancestor=profile_key).get()
+
+
 def connectionExists(profile_key, org_key):
   """Check to see whether or not a Connection exists between the specified
   profile and organization.
