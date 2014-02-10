@@ -169,6 +169,40 @@ def cleanUsers(tokens, program_key):
 
   return profiles, users, emails
 
+
+def _getValueForUserRoleItem(data):
+  """Returns value to be displayed for User Role item of connection summary.
+
+  Args:
+    data: request_data.RequestData for the current request.
+
+  Returns:
+    a string containing a value for User Role item.
+  """
+  if data.url_connection.user_role == connection_model.ROLE:
+    return 'Yes'
+  else:
+    return 'No'
+
+
+def _getValueForOrgRoleItem(data):
+  """Returns value to be displayed for Organization Role item of connection
+  summary
+
+  Args:
+    data: request_data.RequestData for the current request.
+
+  Returns:
+    a string containing a value for Organization Role item.
+  """
+  if data.url_connection.org_role == connection_model.NO_ROLE:
+    return translation.ugettext('No role')
+  elif data.url_connection.org_role == connection_model.MENTOR_ROLE:
+    return translation.ugettext('Mentor')
+  else:
+    return translation.ugettext('Organization Administrator')
+
+
 def _formToStartConnectionAsOrg(**kwargs):
   """Returns a Django form to start connection as an organization
   administrator.
@@ -198,6 +232,18 @@ def _formToStartConnectionAsUser(**kwargs):
   return form
 
 
+def _formToManageConnectionAsUser(**kwargs):
+  """Returns a Django form to manage connection as a user.
+
+  Returns:
+    ConnectionForm adjusted to manage connection as a user.
+  """
+  form = ConnectionForm(**kwargs)
+  form.removeField('message')
+  form.removeField('users')
+  return form
+
+
 # TODO(daniel): this form mustn't inherit from GSoC form
 class ConnectionForm(gsoc_forms.GSoCModelForm):
   """Django form to show specific fields for an organization.
@@ -209,8 +255,10 @@ class ConnectionForm(gsoc_forms.GSoCModelForm):
   users = django_forms.CharField(
       required=True, label=CONNECTION_FORM_USERS_LABEL,
       help_text=CONNECTION_FORM_USERS_HELP_TEXT)
+
   message = django_forms.CharField(
       widget=django_forms.Textarea(), required=False)
+
   role = django_forms.ChoiceField()
 
   Meta = object
@@ -268,6 +316,33 @@ class ConnectionForm(gsoc_forms.GSoCModelForm):
       key: a string with a key of a field to remove.
     """
     del self.fields[key]
+
+
+# TODO(daniel): this form mustn't inherit from GSoC form
+class MessageForm(gsoc_forms.GSoCModelForm):
+  """Django form to submit connection messages."""
+
+  content = django_forms.CharField(
+      widget=django_forms.Textarea(), required=True)
+
+  Meta = object
+
+  def __init__(self, **kwargs):
+    """Initializes a new instance of connection message form."""
+    super(MessageForm, self).__init__(**kwargs)
+    self.fields['content'].label = MESSAGE_FORM_CONTENT_LABEL
+
+  def clean_content(self):
+    field_name = 'content'
+    wrapped_clean_html_content = cleaning.clean_html_content(field_name)
+    content = wrapped_clean_html_content(self)
+
+    if content:
+      return content
+    else:
+      raise django_forms.ValidationError(
+          translation.ugettext('Message content cannot be empty.'),
+          code='invalid')
 
 
 START_CONNECTION_AS_ORG_ACCESS_CHECKER = access.ConjuctionAccessChecker([
@@ -449,6 +524,132 @@ class StartConnectionAsUser(base.RequestHandler):
     else:
       # TODO(nathaniel): problematic self-use.
       return self.get(data, check, mutator)
+
+
+class UrlConnectionIsForCurrentUserAccessChecker(access.AccessChecker):
+  """AccessChecker that ensures that connection which is retrieved from URL
+  data belongs to the user who is currently logged in.
+  """
+
+  def checkAccess(self, data, check):
+    """See AccessChecker.checkAccess for specification."""
+    if (not data.ndb_profile or
+        data.url_connection.key.parent() != data.ndb_profile.key):
+      raise exception.Forbidden(message=MESSAGE_CONNECTION_CANNOT_BE_ACCESSED)
+
+
+MANAGE_CONNECTION_AS_USER_ACCESS_CHECKER = access.ConjuctionAccessChecker([
+    access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+    UrlConnectionIsForCurrentUserAccessChecker(),
+    ])
+
+class ManageConnectionAsUser(base.RequestHandler):
+  """View to manage an existing connection by the user."""
+
+  access_checker = MANAGE_CONNECTION_AS_USER_ACCESS_CHECKER
+
+  def __init__(self, initializer, linker, renderer, error_handler,
+      url_pattern_constructor, url_names, template_path):
+    """Initializes a new instance of the request handler for the specified
+    parameters.
+
+    Args:
+      initializer: Implementation of initialize.Initializer interface.
+      linker: Instance of links.Linker class.
+      renderer: Implementation of render.Renderer interface.
+      error_handler: Implementation of error.ErrorHandler interface.
+      url_pattern_constructor:
+        Implementation of url_patterns.UrlPatternConstructor.
+      url_names: Instance of url_names.UrlNames.
+      template_path: The path of the template to be used.
+    """
+    super(ManageConnectionAsUser, self).__init__(
+        initializer, linker, renderer, error_handler)
+    self.url_pattern_constructor = url_pattern_constructor
+    self.url_names = url_names
+    self.template_path = template_path
+
+  def djangoURLPatterns(self):
+    """See base.GCIRequestHandler.djangoURLPatterns for specification."""
+    return [
+        self.url_pattern_constructor.construct(
+            r'connection/manage/user/%s$' % url_patterns.USER_ID,
+            self, name=self.url_names.CONNECTION_MANAGE_AS_USER)
+    ]
+
+  def templatePath(self):
+    """See base.GCIRequestHandler.templatePath for specification."""
+    return self.template_path
+
+  def context(self, data, check, mutator):
+    """See base.GCIRequestHandler.context for specification."""
+    form_data = {'role': data.url_connection.user_role}
+    actions_form = _formToManageConnectionAsUser(
+        data=data.POST or form_data, name=ACTIONS_FORM_NAME)
+    message_form = MessageForm(data=data.POST or None, name=MESSAGE_FORM_NAME)
+
+    # TODO(daniel): add a template for summary
+    #summary = readonly.ReadOnlyTemplate(data)
+    #summary.addItem(
+    #    ORGANIZATION_ITEM_LABEL, data.url_connection.organization.name)
+    #summary.addItem(USER_ITEM_LABEL, data.url_profile.name())
+    #summary.addItem(USER_ROLE_ITEM_LABEL, _getValueForUserRoleItem(data))
+    #summary.addItem(ORG_ROLE_ITEM_LABEL, _getValueForOrgRoleItem(data))
+    #summary.addItem(INITIALIZED_ON_LABEL, data.url_connection.created_on)
+
+    messages = connection_logic.getConnectionMessages(data.url_connection.key)
+
+    # TODO(daniel): add mark as seen by user 
+    #mark_as_seen_url = links.LINKER.userId(
+    #    data.url_ndb_profile.key, data.url_connection.key.id(),
+    #    self.url_names.CONNECTION_MARK_AS_SEEN_BY_USER)
+
+    return {
+        'page_name': MANAGE_CONNECTION_PAGE_NAME,
+        'actions_form': actions_form,
+        'message_form': message_form,
+       # 'summary': summary,
+        'messages': messages,
+     #   'mark_as_seen_url': mark_as_seen_url,
+        }
+
+  def post(self, data, check, mutator):
+    """See base.GCIRequestHandler.post for specification."""
+
+    handler = self._dispatchPostData(data)
+
+    return handler.handle(data, check, mutator)
+
+  def _dispatchPostData(self, data):
+    """Picks form handler that is capable of handling the data that was sent
+    in the the current request.
+
+    Args:
+      data: request_data.RequestData for the current request.
+
+    Returns:
+      FormHandler implementation to handler the received data.
+    """
+    if ACTIONS_FORM_NAME in data.POST:
+      # TODO(daniel): eliminate passing self object.
+      return UserActionsFormHandler(self)
+    elif MESSAGE_FORM_NAME in data.POST:
+      # TODO(daniel): eliminate passing self object.
+      return MessageFormHandler(
+          self, data.url_profile.key(),
+          self.url_names.CONNECTION_MANAGE_AS_USER)
+    else:
+      raise exception.BadRequest('No valid form data is found in POST.')
+
+
+class UserActionsFormHandler(object):
+  """TODO(daniel): implement this class."""
+  pass
+
+
+class MessageFormHandler(object):
+  """TODO(daniel): implement this class."""
+  pass
 
 
 def sendMentorWelcomeMail(data, profile, message):
