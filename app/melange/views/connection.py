@@ -241,6 +241,12 @@ def _formToManageConnectionAsUser(**kwargs):
   form = ConnectionForm(**kwargs)
   form.removeField('message')
   form.removeField('users')
+
+  form.fields['role'].widget=django_forms.Select(
+      choices=USER_ROLE_CHOICES)
+  form.fields['role'].label = CONNECTION_FORM_USER_ROLE_LABEL
+  form.fields['role'].help_text = CONNECTION_FORM_USER_ROLE_HELP_TEXT
+
   return form
 
 
@@ -259,7 +265,7 @@ class ConnectionForm(gsoc_forms.GSoCModelForm):
   message = django_forms.CharField(
       widget=django_forms.Textarea(), required=False)
 
-  role = django_forms.ChoiceField()
+  role = django_forms.CharField()
 
   Meta = object
 
