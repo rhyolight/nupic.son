@@ -1183,3 +1183,39 @@ p.reply-logged-in {
     }
   }  
 }
+
+
+/*////////////////
+
+  Manage connections
+
+////////////////*/
+.connection-summary {
+  .row {
+    /*styling for each property in the model*/
+    display: block;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    overflow: hidden;
+    width: 100%;
+
+    label {
+      /*verbose name of each model property*/
+      clear: left;
+      color: @darkorange;
+      float: left;
+      font-weight: bold;
+      margin-right: 5px;
+      padding-right: 20px;
+      text-align: right;
+      width: 200px;
+    }
+
+    span.readonly-row-content {
+      /*actual value stored in the property*/
+      float: right;
+      padding: 0;
+      width: 390px;
+    }
+  }
+}
