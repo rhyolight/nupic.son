@@ -14,6 +14,8 @@
 
 """Module with connection related views."""
 
+import collections
+
 from django import forms as django_forms
 from django import http
 from django.utils import translation
@@ -594,14 +596,13 @@ class ManageConnectionAsUser(base.RequestHandler):
         data=data.POST or form_data, name=ACTIONS_FORM_NAME)
     message_form = MessageForm(data=data.POST or None, name=MESSAGE_FORM_NAME)
 
-    # TODO(daniel): add a template for summary
-    #summary = readonly.ReadOnlyTemplate(data)
-    #summary.addItem(
-    #    ORGANIZATION_ITEM_LABEL, data.url_connection.organization.name)
-    #summary.addItem(USER_ITEM_LABEL, data.url_profile.name())
-    #summary.addItem(USER_ROLE_ITEM_LABEL, _getValueForUserRoleItem(data))
-    #summary.addItem(ORG_ROLE_ITEM_LABEL, _getValueForOrgRoleItem(data))
-    #summary.addItem(INITIALIZED_ON_LABEL, data.url_connection.created_on)
+    summary_items = collections.OrderedDict()
+    summary_items[USER_ITEM_LABEL] = data.url_ndb_profile.public_name
+    summary_items[ORGANIZATION_ITEM_LABEL] = (
+        data.url_connection.organization.get().name)
+    summary_items[USER_ROLE_ITEM_LABEL] = _getValueForUserRoleItem(data)
+    summary_items[ORG_ROLE_ITEM_LABEL] = _getValueForOrgRoleItem(data)
+    summary_items[INITIALIZED_ON_LABEL] = data.url_connection.created_on
 
     messages = connection_logic.getConnectionMessages(data.url_connection.key)
 
@@ -614,14 +615,13 @@ class ManageConnectionAsUser(base.RequestHandler):
         'page_name': MANAGE_CONNECTION_PAGE_NAME,
         'actions_form': actions_form,
         'message_form': message_form,
-       # 'summary': summary,
+        'items': summary_items,
         'messages': messages,
      #   'mark_as_seen_url': mark_as_seen_url,
         }
 
   def post(self, data, check, mutator):
     """See base.GCIRequestHandler.post for specification."""
-
     handler = self._dispatchPostData(data)
 
     return handler.handle(data, check, mutator)
