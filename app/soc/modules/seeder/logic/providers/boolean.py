@@ -21,10 +21,6 @@ from soc.modules.seeder.logic.providers.provider import BaseDataProvider
 from soc.modules.seeder.logic.providers.provider import ParameterValueError
 from soc.modules.seeder.logic.providers.provider import DataProviderParameter
 
-_authors__ = [
-  '"Felix Kerekes" <sttwister@gmail.com>',
-  ]
-
 
 class BooleanProvider(BaseDataProvider):
   """Base class for all data providers that return a boolean."""

@@ -14,10 +14,6 @@
 
 """Module containing data providers for ListProperty."""
 
-_authors__ = [
-  '"Felix Kerekes" <sttwister@gmail.com>',
-  ]
-
 from soc.modules.seeder.logic.providers.provider import BaseDataProvider
 
 
