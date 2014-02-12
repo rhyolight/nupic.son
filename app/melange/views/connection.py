@@ -547,7 +547,7 @@ class StartConnectionAsUser(base.RequestHandler):
           recipients=emails, user_role=connection_model.ROLE)
 
       url = links.LINKER.userId(
-          data.ndb_profile.key(), connection.key.id(),
+          data.ndb_profile.key, connection.key.id(),
           self.url_names.CONNECTION_MANAGE_AS_USER)
       return http.HttpResponseRedirect(url)
 
@@ -809,7 +809,7 @@ class UserActionsFormHandler(form_handler.FormHandler):
         success = self._handleRoleSelection(data)
 
       if success:
-        return http.HttpResponseRedirect(url=self.url)
+        return http.HttpResponseRedirect(self._url)
       else:
         raise exception.BadRequest(success.extra)
 
@@ -1069,7 +1069,7 @@ def handleUserNoRoleSelectionTxn(connection, conversation_updater):
     message = connection_logic.generateMessageOnUpdateByUser(
         connection, old_user_role)
 
-    db.put([connection, message])
+    ndb.put_multi([connection, message])
 
     profile = connection.key.parent().get()
     profile_logic.assignNoRoleForOrg(profile, connection.organization)
@@ -1155,7 +1155,7 @@ def handleOrgNoRoleSelection(connection, org_admin, conversation_updater):
     message = connection_logic.generateMessageOnUpdateByOrg(
         connection, org_admin, old_org_role)
 
-    db.put([connection, message])
+    ndb.put_multi([connection, message])
 
     profile = connection.key.parent().get()
     profile_logic.assignNoRoleForOrg(profile, connection.organization)

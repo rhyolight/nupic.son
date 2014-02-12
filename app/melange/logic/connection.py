@@ -367,7 +367,7 @@ def generateMessageOnUpdateByOrg(connection, org_admin, old_org_role):
         connection.org_role], org_admin.name()))
 
     content = '\n'.join(lines)
-    return createConnectionMessage(connection.key(), content)
+    return createConnectionMessage(connection.key, content)
   else:
     return None
 
@@ -391,6 +391,6 @@ def generateMessageOnUpdateByUser(connection, old_user_role):
       lines.append(_USER_REQUESTS_ROLE)
 
     content = '\n'.join(lines)
-    return createConnectionMessage(connection.key(), content)
+    return createConnectionMessage(connection.key, content)
   else:
     return None
