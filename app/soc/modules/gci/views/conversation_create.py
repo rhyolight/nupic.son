@@ -24,6 +24,8 @@ from django.forms import util as forms_util
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
+from melange.models import user as user_model
+
 from soc.logic import cleaning
 
 from soc.views import template
@@ -287,9 +289,9 @@ class ConversationCreateForm(gci_forms.GCIModelForm):
     invalid_usernames = []
     for username in usernames:
       if username:
-        key = db.Key.from_path('User', username)
-        if db.get(key):
-          user_keys.append(ndb.Key.from_old_key(key))
+        user = user_model.User.get_by_id(username)
+        if user:
+          user_keys.append(user.key)
         else:
           invalid_usernames.append(username)
 

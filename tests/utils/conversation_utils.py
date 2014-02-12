@@ -216,11 +216,10 @@ class GCIConversationHelper(ConversationHelper):
     See ConversationHelper.createUser for full specification.
     """
 
-    program_ent = db.get(ndb.Key.to_old_key(self.program_key))
-    profile_helper = profile_utils.GCIProfileHelper(program_ent, False)
+    program = db.get(ndb.Key.to_old_key(self.program_key))
 
     roles = set(roles) if roles else set()
-    profile = profile_helper.createProfile()
+    profile = profile_utils.seedNDBProfile(program.key())
     winner_for = None
 
     if profile is None:
@@ -231,27 +230,20 @@ class GCIConversationHelper(ConversationHelper):
 
     if mentor_organizations:
       roles.update([MENTOR])
-      profile.mentor_for = map(ndb.Key.to_old_key, mentor_organizations)
+      profile.mentor_for = mentor_organizations
 
     if admin_organizations:
       roles.update([ADMIN])
-      profile.org_admin_for = map(ndb.Key.to_old_key, admin_organizations)
+      profile.admin_for = admin_organizations
 
     if winning_organization:
       roles.update([WINNER])
-      winner_for = ndb.Key.to_old_key(winning_organization)
+      winner_for = winning_organization
 
-    profile.is_mentor = MENTOR in roles
-    profile.is_org_admin = ADMIN in roles
-    profile.is_student = STUDENT in roles
+    if winner_for or WINNER in roles or STUDENT in roles:
+      profile.student_data = profile_utils.seedStudentData(
+          winner_for=winner_for)
 
     profile.put()
 
-    if winner_for or WINNER in roles:
-      profile_helper.createStudent(
-          is_winner=WINNER in roles, winner_for=winner_for)
-
-    if return_key:
-      return ndb.Key.from_old_key(profile_helper.user.key())
-    else:
-      return profile_helper.user
+    return profile.key.parent() if return_key else profile.key.parent().get()

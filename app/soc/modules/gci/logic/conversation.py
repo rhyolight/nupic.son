@@ -14,20 +14,20 @@
 
 """GCIConversationUser logic methods."""
 
+from datetime import timedelta
+
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
-from datetime import timedelta
+from melange.logic import profile as profile_logic
+from melange.models import profile as profile_model
 
 from soc.tasks import mailer
 
+from soc.modules.gci.logic import message as gcimessage_logic
+from soc.modules.gci.logic.helper import notifications
 from soc.modules.gci.models import conversation as gciconversation_model
 from soc.modules.gci.models import message as gcimessage_model
-from soc.modules.gci.models import profile as gciprofile_model
-
-from soc.modules.gci.logic import message as gcimessage_logic
-from soc.modules.gci.logic import profile as gciprofile_logic
-from soc.modules.gci.logic.helper import notifications
 
 from soc.models import conversation as conversation_model
 
@@ -339,54 +339,42 @@ def doesUserBelongInConversation(
     recipients_type is 'User', True is always returned. Also returns true if
     the user is the conversation's creator.
   """
-
-  user_ent = db.get(ndb.Key.to_old_key(user))
   conversation_ent = conversation.get()
 
   if not conversation_ent.auto_update_users and not ignore_auto_update_users:
     return True
 
-  if conversation_ent.creator == ndb.Key.from_old_key(user_ent.key()):
+  if conversation_ent.creator == user:
     return True
 
-  profile_results = gciprofile_logic.queryProfileForUserAndProgram(
-      user=user_ent.key(),
-      program=ndb.Key.to_old_key(conversation_ent.program)).fetch(1)
+  profile = profile_logic.getProfileForUsername(
+      user.id(), conversation_ent.program.to_old_key())
 
-  if len(profile_results) == 0:
+  if not profile:
     raise Exception('Could not find GCIProfile for user and program.')
 
-  profile = profile_results[0]
-
-  student_info_query = gciprofile_logic.queryStudentInfoForParent(profile)
-  student_info_results = student_info_query.fetch(1)
-  student_info = student_info_results[0] if student_info_results else None
-
   if conversation_ent.recipients_type == conversation_model.PROGRAM:
-    if conversation_ent.include_admins and profile.is_org_admin:
+    if conversation_ent.include_admins and profile.is_admin:
       return True
     elif conversation_ent.include_mentors and profile.is_mentor:
       return True
     elif conversation_ent.include_students and profile.is_student:
       return True
-    elif (student_info and conversation_ent.include_winners
-        and student_info.is_winner):
+    elif (profile.is_student and conversation_ent.include_winners
+        and profile.student_data.is_winner):
       return True
     else:
       return False
   elif conversation_ent.recipients_type == conversation_model.ORGANIZATION:
-    if (conversation_ent.include_admins and profile.is_org_admin and
-        ndb.Key.to_old_key(conversation_ent.organization) in
-            profile.org_admin_for):
+    if (conversation_ent.include_admins and
+        conversation_ent.organization in profile.admin_for):
       return True
-    elif (conversation_ent.include_mentors and profile.is_mentor and
-        ndb.Key.to_old_key(conversation_ent.organization) in
-            profile.mentor_for):
+    elif (conversation_ent.include_mentors and
+        conversation_ent.organization in profile.mentor_for):
       return True
-    elif (student_info and conversation_ent.include_winners
-        and student_info.is_winner and
-        ndb.Key.to_old_key(conversation_ent.organization) ==
-            student_info.winner_for.key()):
+    elif (profile.is_student and conversation_ent.include_winners
+        and profile.student_data.is_winner and
+        conversation_ent.organization == profile.student_data.winner_for):
       return True
     else:
       return False
@@ -408,12 +396,11 @@ def refreshConversationParticipants(conversation):
     conversation: Key (ndb) of GCIConversation.
   """
   conv = conversation.get()
-  program = db.get(ndb.Key.to_old_key(conv.program))
 
   def addProfile(profile):
     addUserToConversation(
         conversation=conversation,
-        user=ndb.Key.from_old_key(profile.user.key()))
+        user=profile.key.parent())
 
   def deleteConvUserIfDoesntBelong(conv_user):
     if not doesConversationUserBelong(conversation_user=conv_user.key):
@@ -427,59 +414,50 @@ def refreshConversationParticipants(conversation):
   # Make sure users who fit the criteria are included
   if conv.recipients_type == conversation_model.PROGRAM:
     if conv.include_admins:
-      query = gciprofile_model.GCIProfile.all()
-      query.filter('program =', ndb.Key.to_old_key(conv.program))
-      query.filter('is_org_admin =', True)
-      map(addProfile, query.run(batch_size=1000))
+      query = profile_model.Profile.query(
+          profile_model.Profile.program == conv.program,
+          profile_model.Profile.is_admin == True)
+      map(addProfile, query)
 
     if conv.include_mentors:
-      query = gciprofile_model.GCIProfile.all()
-      query.filter('program =', ndb.Key.to_old_key(conv.program))
-      query.filter('is_mentor =', True)
-      map(addProfile, query.run(batch_size=1000))
+      query = profile_logic.queryAllMentorsForProgram(conv.program.to_old_key())
+      map(addProfile, query)
 
     if conv.include_students:
-      query = gciprofile_model.GCIProfile.all()
-      query.filter('program =', ndb.Key.to_old_key(conv.program))
-      query.filter('is_student =', True)
-      map(addProfile, query.run(batch_size=1000))
+      query = profile_model.Profile.query(
+          profile_model.Profile.program == conv.program,
+          profile_model.Profile.is_student == True)
+      map(addProfile, query)
 
     if conv.include_winners:
-      query = gciprofile_model.GCIStudentInfo.all()
-      query.filter('program =', ndb.Key.to_old_key(conv.program))
-      query.filter('is_winner =', True)
-      map(lambda e: addProfile(e.parent()), query.run(batch_size=1000))
+      query = profile_model.Profile.query(
+          profile_model.Profile.program == conv.program,
+          profile_model.Profile.student_data.is_winner == True)
+      map(addProfile, query)
 
   elif conv.recipients_type == conversation_model.ORGANIZATION:
-    org_db_key = ndb.Key.to_old_key(conv.organization)
-
     if conv.include_admins:
-      query = gciprofile_model.GCIProfile.all()
-      query.filter('program =', ndb.Key.to_old_key(conv.program))
-      query.filter('is_org_admin =', True)
-      query.filter('org_admin_for =', org_db_key)
-      map(addProfile, query.run(batch_size=1000))
+      org_admins = profile_logic.getOrgAdmins(conv.organization)
+      map(addProfile, org_admins)
 
     if conv.include_mentors:
-      query = gciprofile_model.GCIProfile.all()
-      query.filter('program =', ndb.Key.to_old_key(conv.program))
-      query.filter('is_mentor =', True)
-      query.filter('mentor_for =', org_db_key)
-      map(addProfile, query.run(batch_size=1000))
+      query = profile_model.Profile.query(
+          profile_model.Profile.mentor_for == conv.organization,
+          profile_model.Profile.status == profile_model.Status.ACTIVE)
+      map(addProfile, query)
 
     if conv.include_winners:
-      query = gciprofile_model.GCIStudentInfo.all()
-      query.filter('program =', ndb.Key.to_old_key(conv.program))
-      query.filter('is_winner =', True)
-      query.filter('winner_for =', org_db_key)
-      map(lambda e: addProfile(e.parent()), query.run(batch_size=1000))
+      query = profile_model.Profile.query(
+          profile_model.Profile.student_data.winner_for == conv.organization,
+          profile_model.Profile.status == profile_model.Status.ACTIVE)
+      map(addProfile, query)
 
   # Make sure conversation's creator is included
   if conv.creator is not None:
     addUserToConversation(conversation=conversation, user=conv.creator)
 
 
-def refreshConversationsForUserAndProgram(user, program):
+def refreshConversationsForUserAndProgram(user_key, program_key):
   """Adds/removes the user to/from conversations that they should be involved in
   based on the conversation's criteria.
 
@@ -499,18 +477,14 @@ def refreshConversationsForUserAndProgram(user, program):
   should have been created when the conversation was initially created.
 
   Args:
-    user: Key (ndb) of the User.
-    program: Key (ndb) of the GCIProgram.
+    user_key: Key (ndb) of the User.
+    program_key: Key (ndb) of the GCIProgram.
   """
-  profile = gciprofile_logic.queryProfileForUserAndProgram(
-      user=ndb.Key.to_old_key(user),
-      program=ndb.Key.to_old_key(program)).get()
+  profile = profile_logic.getProfileForUsername(
+      user_key.id(), program_key.to_old_key())
 
   if not profile:
-    raise Exception('Could not find GCIProfile for user and program.')
-
-  student_info_query = gciprofile_logic.queryStudentInfoForParent(profile)
-  student_info = student_info_query.get()
+    raise Exception('Could not find Profile for user and program.')
 
   def deleteConvUserIfDoesntBelong(conv_user):
     if not doesConversationUserBelong(
@@ -518,21 +492,19 @@ def refreshConversationsForUserAndProgram(user, program):
       conv_user.key.delete()
 
   # Remove user from any conversations they're in that they don't belong in
-  conv_user_query = queryForProgramAndUser(user=user, program=program)
+  conv_user_query = queryForProgramAndUser(user=user_key, program=program_key)
   map(deleteConvUserIfDoesntBelong, conv_user_query)
 
   def addToConversation(conversation):
-    addUserToConversation(conversation=conversation.key, user=user)
+    addUserToConversation(conversation=conversation.key, user=user_key)
 
-  mentor_org_keys = map(lambda key: ndb.Key.from_old_key(key),
-      profile.mentor_for)
-  admin_org_keys = map(lambda key: ndb.Key.from_old_key(key),
-      profile.org_admin_for)
+  mentor_org_keys = profile.mentor_for
+  admin_org_keys = profile.admin_for
 
   # Make sure user is added to program conversations they belong in as a
   # student
   if profile.is_student:
-    query = (queryConversationsForProgram(program)
+    query = (queryConversationsForProgram(program_key)
         .filter(gciconversation_model.GCIConversation.recipients_type ==
             conversation_model.PROGRAM)
         .filter(gciconversation_model.GCIConversation.auto_update_users == True)
@@ -542,7 +514,7 @@ def refreshConversationsForUserAndProgram(user, program):
   # Make sure user is added to program conversations they belong in as a
   # mentor
   if profile.is_mentor:
-    query = (queryConversationsForProgram(program)
+    query = (queryConversationsForProgram(program_key)
       .filter(gciconversation_model.GCIConversation.recipients_type ==
           conversation_model.PROGRAM)
       .filter(gciconversation_model.GCIConversation.auto_update_users == True)
@@ -551,8 +523,8 @@ def refreshConversationsForUserAndProgram(user, program):
 
   # Make sure user is added to program conversations they belong in as an
   # admin
-  if profile.is_org_admin:
-    query = (queryConversationsForProgram(program)
+  if profile.is_admin:
+    query = (queryConversationsForProgram(program_key)
         .filter(gciconversation_model.GCIConversation.recipients_type ==
             conversation_model.PROGRAM)
         .filter(gciconversation_model.GCIConversation.auto_update_users == True)
@@ -561,8 +533,8 @@ def refreshConversationsForUserAndProgram(user, program):
 
   # Make sure user is added to program conversations they belong in as a
   # winner
-  if student_info and student_info.is_winner:
-    query = (queryConversationsForProgram(program)
+  if profile.student_data and profile.student_data.is_winner:
+    query = (queryConversationsForProgram(program_key)
         .filter(gciconversation_model.GCIConversation.recipients_type ==
             conversation_model.PROGRAM)
         .filter(gciconversation_model.GCIConversation.auto_update_users == True)
@@ -572,7 +544,7 @@ def refreshConversationsForUserAndProgram(user, program):
   # Make sure user is added to org conversations they belong in as an org
   # mentor
   if profile.is_mentor and mentor_org_keys:
-    query = (queryConversationsForProgram(program)
+    query = (queryConversationsForProgram(program_key)
         .filter(gciconversation_model.GCIConversation.recipients_type ==
             conversation_model.ORGANIZATION)
         .filter(gciconversation_model.GCIConversation.auto_update_users == True)
@@ -583,8 +555,8 @@ def refreshConversationsForUserAndProgram(user, program):
 
   # Make sure user is added to org conversations they belong in as an org
   # admin
-  if profile.is_org_admin and admin_org_keys:
-    query = (queryConversationsForProgram(program)
+  if profile.is_admin and admin_org_keys:
+    query = (queryConversationsForProgram(program_key)
         .filter(gciconversation_model.GCIConversation.recipients_type ==
             conversation_model.ORGANIZATION)
         .filter(gciconversation_model.GCIConversation.auto_update_users == True)
@@ -595,14 +567,14 @@ def refreshConversationsForUserAndProgram(user, program):
 
   # Make sure user is added to org conversations they belong in as an org
   # winner
-  if student_info and student_info.is_winner and student_info.winner_for:
-    query = (queryConversationsForProgram(program)
+  if profile.is_student and profile.student_data.is_winner:
+    query = (queryConversationsForProgram(program_key)
         .filter(gciconversation_model.GCIConversation.recipients_type ==
             conversation_model.ORGANIZATION)
         .filter(gciconversation_model.GCIConversation.auto_update_users == True)
         .filter(gciconversation_model.GCIConversation.include_winners == True)
         .filter(gciconversation_model.GCIConversation.organization ==
-            ndb.Key.from_old_key(student_info.winner_for.key())))
+            profile.student_data.winner_for))
     map(addToConversation, query)
 
 
@@ -626,16 +598,14 @@ def getSubscribedEmails(conversation, exclude=None):
   for conv_user in conv_users:
     if conv_user.enable_notifications and (
         not exclude or conv_user.user not in exclude):
-      user_key = ndb.Key.to_old_key(conv_user.user)
-      profile_results = gciprofile_logic.queryProfileForUserAndProgram(
-          user=user_key, program=program_key).fetch(1)
+      profile = profile_logic.getProfileForUsername(
+          conv_user.user.id(), program_key)
 
-      if len(profile_results) == 0:
+      if not profile:
         raise Exception('Could not find GCIProfile for user %s and program. %s'
             % (conv_user.name, program_key.name()))
 
-      profile = profile_results[0]
-      addresses.add(profile.email)
+      addresses.add(profile.contact.email)
 
   return addresses
 
