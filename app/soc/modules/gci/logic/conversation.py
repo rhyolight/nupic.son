@@ -598,16 +598,14 @@ def getSubscribedEmails(conversation, exclude=None):
   for conv_user in conv_users:
     if conv_user.enable_notifications and (
         not exclude or conv_user.user not in exclude):
-      user_key = ndb.Key.to_old_key(conv_user.user)
-      profile_results = gciprofile_logic.queryProfileForUserAndProgram(
-          user=user_key, program=program_key).fetch(1)
+      profile = profile_logic.getProfileForUsername(
+          conv_user.user.id(), program_key)
 
-      if len(profile_results) == 0:
+      if not profile:
         raise Exception('Could not find GCIProfile for user %s and program. %s'
             % (conv_user.name, program_key.name()))
 
-      profile = profile_results[0]
-      addresses.add(profile.email)
+      addresses.add(profile.contact.email)
 
   return addresses
 
