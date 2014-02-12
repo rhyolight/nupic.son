@@ -21,7 +21,6 @@ from django.utils import html
 from django.utils import translation
 from django.forms import util as forms_util
 
-from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from melange.models import user as user_model
