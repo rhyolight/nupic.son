@@ -39,6 +39,9 @@ from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.views import base
 from soc.views.helper import url_patterns
 
+# TODO(daniel): do not import GSoC specific things in this module
+from soc.modules.gsoc.logic import profile as soc_profile_logic
+
 
 ACTIONS_FORM_NAME = 'actions_form'
 MESSAGE_FORM_NAME = 'message_form'
@@ -638,8 +641,11 @@ class ManageConnectionAsUser(base.RequestHandler):
       FormHandler implementation to handler the received data.
     """
     if ACTIONS_FORM_NAME in data.POST:
+      url = links.LINKER.userId(
+          data.url_ndb_profile.key, data.url_connection.key.id(),
+          self.url_names.CONNECTION_MANAGE_AS_USER)
       # TODO(daniel): eliminate passing self object.
-      return UserActionsFormHandler(self)
+      return UserActionsFormHandler(self, url=url)
     elif MESSAGE_FORM_NAME in data.POST:
       # TODO(daniel): eliminate passing self object.
       return MessageFormHandler(
@@ -649,9 +655,79 @@ class ManageConnectionAsUser(base.RequestHandler):
       raise exception.BadRequest('No valid form data is found in POST.')
 
 
-class UserActionsFormHandler(object):
-  """TODO(daniel): implement this class."""
-  pass
+class UserActionsFormHandler(form_handler.FormHandler):
+  """Form handler implementation to handle incoming data that is supposed to
+  take an action on the existing connection by users.
+  """
+
+  def handle(self, data, check, mutator):
+    """Takes an action on the connection based on the data that was sent
+    in the current request.
+
+    See form_handler.FormHandler.handle for specification.
+    """
+    actions_form = _formToManageConnectionAsUser(data=data.POST)
+    if actions_form.is_valid():
+      role = actions_form.cleaned_data['role']
+      if role == connection_model.NO_ROLE:
+        success = self._handleNoRoleSelection(data)
+      else:
+        success = self._handleRoleSelection(data)
+
+      if success:
+        return http.HttpResponseRedirect(url=self.url)
+      else:
+        raise exception.BadRequest(success.extra)
+
+    else:
+      # TODO(nathaniel): problematic self-use.
+      return self._view.get(data, check, mutator)
+
+  def _handleNoRoleSelection(self, data):
+    """Makes all necessary changes if user selects connection_model.NO_ROLE.
+
+    Args:
+      data: A soc.views.helper.request_data.RequestData.
+
+    Returns:
+      RichBool whose value is set to True, if the selection has been handled
+      successfully. Otherwise, RichBool whose value is set to False and extra
+      part is a string representation of the reason why the picked selection
+      is not possible.
+    """
+    is_eligible = soc_profile_logic.isNoRoleEligibleForOrg(
+        data.url_ndb_profile, data.url_connection.organization)
+    if is_eligible:
+      handleUserNoRoleSelectionTxn(data.url_connection, None)
+
+    return is_eligible
+
+  def _handleRoleSelection(self, data):
+    """Makes all necessary changes if user selects connection_model.ROLE.
+
+    Args:
+      data: A soc.views.helper.request_data.RequestData.
+
+    Returns:
+      RichBool whose value is set to True, if the selection has been handled
+      successfully. Otherwise, RichBool whose value is set to False and extra
+      part is a string representation of the reason why the picked selection
+      is not possible.
+    """
+    if data.url_connection.orgOfferedMentorRole():
+      is_eligible = profile_logic.isMentorRoleEligibleForOrg(
+          data.url_ndb_profile, data.url_connection.organization)
+    else:
+      is_eligible = True
+
+    if is_eligible:
+      # TODO(daniel): eliminate these calls by removing data from
+      # the call below. without these now XG transactions may be needed
+      data.program  # pylint: disable=pointless-statement
+      data.site  # pylint: disable=pointless-statement
+      handleUserRoleSelectionTxn(data, data.url_connection, None)
+
+    return is_eligible
 
 
 class MessageFormHandler(form_handler.FormHandler):
@@ -864,7 +940,8 @@ def handleUserNoRoleSelectionTxn(connection, conversation_updater):
     profile = connection.key.parent().get()
     profile_logic.assignNoRoleForOrg(profile, connection.organization)
 
-    conversation_updater.updateConversationsForProfile(profile)
+    if conversation_updater:
+      conversation_updater.updateConversationsForProfile(profile)
 
 
 @ndb.transactional
@@ -913,7 +990,8 @@ def handleUserRoleSelectionTxn(data, connection, conversation_updater):
       message = 'TODO(daniel): supply actual message.'
       sendMentorWelcomeMail(data, profile, message)
 
-    conversation_updater.updateConversationsForProfile(profile)
+    if conversation_updater:
+      conversation_updater.updateConversationsForProfile(profile)
 
 
 @ndb.transactional
@@ -948,7 +1026,8 @@ def handleOrgNoRoleSelection(connection, org_admin, conversation_updater):
     profile = connection.key.parent().get()
     profile_logic.assignNoRoleForOrg(profile, connection.organization)
 
-    conversation_updater.updateConversationsForProfile(profile)
+    if conversation_updater:
+      conversation_updater.updateConversationsForProfile(profile)
 
     # TODO(daniel): generate connection message
 
