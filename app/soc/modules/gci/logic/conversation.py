@@ -14,20 +14,20 @@
 
 """GCIConversationUser logic methods."""
 
+from datetime import timedelta
+
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
-from datetime import timedelta
+from melange.logic import profile as profile_logic
+from melange.models import profile as profile_model
 
 from soc.tasks import mailer
 
+from soc.modules.gci.logic import message as gcimessage_logic
+from soc.modules.gci.logic.helper import notifications
 from soc.modules.gci.models import conversation as gciconversation_model
 from soc.modules.gci.models import message as gcimessage_model
-from soc.modules.gci.models import profile as gciprofile_model
-
-from soc.modules.gci.logic import message as gcimessage_logic
-from soc.modules.gci.logic import profile as gciprofile_logic
-from soc.modules.gci.logic.helper import notifications
 
 from soc.models import conversation as conversation_model
 
@@ -339,54 +339,42 @@ def doesUserBelongInConversation(
     recipients_type is 'User', True is always returned. Also returns true if
     the user is the conversation's creator.
   """
-
-  user_ent = db.get(ndb.Key.to_old_key(user))
   conversation_ent = conversation.get()
 
   if not conversation_ent.auto_update_users and not ignore_auto_update_users:
     return True
 
-  if conversation_ent.creator == ndb.Key.from_old_key(user_ent.key()):
+  if conversation_ent.creator == user:
     return True
 
-  profile_results = gciprofile_logic.queryProfileForUserAndProgram(
-      user=user_ent.key(),
-      program=ndb.Key.to_old_key(conversation_ent.program)).fetch(1)
+  profile = profile_logic.getProfileForUsername(
+      user.id(), conversation_ent.program.to_old_key())
 
-  if len(profile_results) == 0:
+  if not profile:
     raise Exception('Could not find GCIProfile for user and program.')
 
-  profile = profile_results[0]
-
-  student_info_query = gciprofile_logic.queryStudentInfoForParent(profile)
-  student_info_results = student_info_query.fetch(1)
-  student_info = student_info_results[0] if student_info_results else None
-
   if conversation_ent.recipients_type == conversation_model.PROGRAM:
-    if conversation_ent.include_admins and profile.is_org_admin:
+    if conversation_ent.include_admins and profile.is_admin:
       return True
     elif conversation_ent.include_mentors and profile.is_mentor:
       return True
     elif conversation_ent.include_students and profile.is_student:
       return True
-    elif (student_info and conversation_ent.include_winners
-        and student_info.is_winner):
+    elif (profile.is_student and conversation_ent.include_winners
+        and profile.student_data.is_winner):
       return True
     else:
       return False
   elif conversation_ent.recipients_type == conversation_model.ORGANIZATION:
-    if (conversation_ent.include_admins and profile.is_org_admin and
-        ndb.Key.to_old_key(conversation_ent.organization) in
-            profile.org_admin_for):
+    if (conversation_ent.include_admins and
+        conversation_ent.organization in profile.admin_for):
       return True
-    elif (conversation_ent.include_mentors and profile.is_mentor and
-        ndb.Key.to_old_key(conversation_ent.organization) in
-            profile.mentor_for):
+    elif (conversation_ent.include_mentors and
+        conversation_ent.organization in profile.mentor_for):
       return True
-    elif (student_info and conversation_ent.include_winners
-        and student_info.is_winner and
-        ndb.Key.to_old_key(conversation_ent.organization) ==
-            student_info.winner_for.key()):
+    elif (profile.is_student and conversation_ent.include_winners
+        and profile.student_data.is_winner and
+        conversation_ent.organization == profile.student_data.winner_for):
       return True
     else:
       return False
