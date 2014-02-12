@@ -93,32 +93,6 @@ def isNoRoleEligibleForOrg(profile, org_key):
   return rich_bool.TRUE
 
 
-def isMentorRoleEligibleForOrg(profile, org_key):
-  """Tells whether the specified user is eligible to have only mentor role
-  for the specified organization.
-
-  A user is eligible for mentor role only if he or she can resign from
-  organization administrator role, if the person has one.
-
-  Please note that this function executes a non-ancestor query, so it cannot
-  be safely used within transactions.
-
-  Args:
-    profile: profile entity.
-    org_key: organization key.
-
-  Returns:
-    RichBool whose value is set to True, if the user is eligible for mentor
-    only role for the specified organization. Otherwise, RichBool whose value
-    is set to False and extra part is a string that represents a reason why
-    the user is not eligible to have mentor role only at this time.
-  """
-  if org_key in profile.admin_for:
-    return profile_logic.canResignAsOrgAdminForOrg(profile, org_key)
-  else:
-    return rich_bool.TRUE
-
-
 def getProfileForUsername(username, program_key):
   """Returns profile entity for a user with the specified username and
   for the specified program.

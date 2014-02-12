@@ -167,50 +167,6 @@ class IsNoRoleEligibleForOrgTest(unittest.TestCase):
       self.assertTrue(result)
 
 
-class IsMentorRoleEligibleForOrgTest(unittest.TestCase):
-  """Unit tests for isMentorRoleEligibleForOrg function."""
-
-  def setUp(self):
-    """See unittest.TestCase.setUp for specification."""
-    program = program_utils.seedGCIProgram()
-
-    # seed an organization
-    self.org = program_utils.seedOldOrganization(program.key())
-
-    # seed a profile
-    self.profile = profile_utils.seedNDBProfile(program.key())
-
-  def testForUserWithNoRole(self):
-    """Tests that user with no role is eligible."""
-    result = profile_logic.isMentorRoleEligibleForOrg(
-        self.profile, ndb.Key.from_old_key(self.org.key()))
-    self.assertTrue(result)
-
-  @mock.patch.object(
-      melange_profile_logic,
-      'canResignAsOrgAdminForOrg', return_value=rich_bool.FALSE)
-  def testForOrgAdminThatCannotResign(self, mock_func):
-    """Tests that org admin that cannot resign is not eligible."""
-    self.profile.mentor_for = [ndb.Key.from_old_key(self.org.key())]
-    self.profile.admin_for = [ndb.Key.from_old_key(self.org.key())]
-
-    result = profile_logic.isMentorRoleEligibleForOrg(
-        self.profile, ndb.Key.from_old_key(self.org.key()))
-    self.assertFalse(result)
-
-  @mock.patch.object(
-      melange_profile_logic,
-      'canResignAsOrgAdminForOrg', return_value=rich_bool.TRUE)
-  def testForOrgAdminThatCanResign(self, mock_func):
-    """Tests that org admin that can resign is eligible."""
-    self.profile.mentor_for = [ndb.Key.from_old_key(self.org.key())]
-    self.profile.admin_for = [ndb.Key.from_old_key(self.org.key())]
-
-    result = profile_logic.isMentorRoleEligibleForOrg(
-        self.profile, ndb.Key.from_old_key(self.org.key()))
-    self.assertTrue(result)
-
-
 class IsFormVerificationAwaitingTest(unittest.TestCase):
   """Unit tests isFormVerificationAwaiting function."""
 
