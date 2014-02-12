@@ -852,7 +852,7 @@ class GCIConversationTest(unittest.TestCase):
         return_key=True, roles=[conversation_utils.MENTOR],
         mentor_organizations=[org_keys[0], org_keys[1]])
     user_mentor_student_key = self.conv_utils.createUser(
-        return_key=True,
+        return_key=True, mentor_organizations=[org_keys[0], org_keys[1]],
         roles=[conversation_utils.MENTOR, conversation_utils.STUDENT])
     user_winner_key = self.conv_utils.createUser(
         return_key=True, winning_organization=org_keys[1],
@@ -940,13 +940,14 @@ class GCIConversationTest(unittest.TestCase):
 
     # Refresh each user's conversations
     gciconversation_logic.refreshConversationsForUserAndProgram(
-        user=user_admin_key, program=self.program_key)
+        user_admin_key, self.program_key)
     gciconversation_logic.refreshConversationsForUserAndProgram(
-        user=user_mentor_key, program=self.program_key)
+        user_mentor_key, self.program_key)
+
     gciconversation_logic.refreshConversationsForUserAndProgram(
-        user=user_mentor_student_key, program=self.program_key)
+        user_mentor_student_key, self.program_key)
     gciconversation_logic.refreshConversationsForUserAndProgram(
-        user=user_winner_key, program=self.program_key)
+        user_winner_key, self.program_key)
 
     # Test that admin user is in the correct conversations
     expected_keys = set([conv_a.key, conv_b.key, conv_e.key, conv_f.key])
@@ -965,7 +966,8 @@ class GCIConversationTest(unittest.TestCase):
     self.assertEqual(expected_keys, actual_keys)
 
     # Test that mentor/student user is in the correct conversations
-    expected_keys = set([conv_a.key, conv_d.key, conv_e.key, conv_f.key])
+    expected_keys = set(
+        [conv_a.key, conv_c.key, conv_d.key, conv_e.key, conv_f.key])
     actual_keys = set(map(
         lambda conv_user: conv_user.conversation,
         gciconversation_logic.queryForProgramAndUser(
@@ -1052,13 +1054,13 @@ class GCIConversationTest(unittest.TestCase):
     # all conversations, refreshing each user should actually remove them from
     # conversations they don't belong to.
     gciconversation_logic.refreshConversationsForUserAndProgram(
-        user=user_admin_key, program=self.program_key)
+        user_admin_key, self.program_key)
     gciconversation_logic.refreshConversationsForUserAndProgram(
-        user=user_mentor_key, program=self.program_key)
+        user_mentor_key, self.program_key)
     gciconversation_logic.refreshConversationsForUserAndProgram(
-        user=user_mentor_student_key, program=self.program_key)
+        user_mentor_student_key, self.program_key)
     gciconversation_logic.refreshConversationsForUserAndProgram(
-        user=user_winner_key, program=self.program_key)
+        user_winner_key, self.program_key)
 
     # Test that admin user is in the correct conversations
     expected_keys = set([conv_a.key, conv_b.key, conv_e.key, conv_f.key])
@@ -1078,7 +1080,8 @@ class GCIConversationTest(unittest.TestCase):
     self.assertEqual(expected_keys, actual_keys)
 
     # Test that mentor/student user is in the correct conversations
-    expected_keys = set([conv_a.key, conv_d.key, conv_e.key, conv_f.key])
+    expected_keys = set(
+        [conv_a.key, conv_c.key, conv_d.key, conv_e.key, conv_f.key])
     actual_keys = set(map(
         lambda conv_user: conv_user.conversation,
         gciconversation_logic.queryForProgramAndUser(
@@ -1144,30 +1147,28 @@ class GCIConversationTest(unittest.TestCase):
     # Create a few users with unique email addresses
     email_a = 'a@example.net'
     user_a = self.conv_utils.createUser(email=email_a)
-    user_a_key = ndb.Key.from_old_key(user_a.key())
     self.conv_utils.addUser(
-        conversation=self.conv_a.key, user=user_a_key,
+        conversation=self.conv_a.key, user=user_a.key,
         enable_notifications=False)
     self.conv_utils.addUser(
-        conversation=self.conv_b.key, user=user_a_key,
+        conversation=self.conv_b.key, user=user_a.key,
         enable_notifications=False)
 
     # Add another new user to the two conversations with notifications enabled
     email_b = 'b@example.net'
     user_b = self.conv_utils.createUser(email=email_b)
-    user_b_key = ndb.Key.from_old_key(user_b.key())
     self.conv_utils.addUser(
-        conversation=self.conv_a.key, user=user_b_key,
+        conversation=self.conv_a.key, user=user_b.key,
         enable_notifications=True)
     self.conv_utils.addUser(
-        conversation=self.conv_b.key, user=user_b_key,
+        conversation=self.conv_b.key, user=user_b.key,
         enable_notifications=True)
 
     # Add a new message and send an email notification for it as if it were the
     # first message.
     content = 'Hello universe?'
     message = self.conv_utils.addMessage(
-        self.conv_a.key, user=user_b_key, content=content)
+        self.conv_a.key, user=user_b.key, content=content)
     gciconversation_logic.notifyParticipantsOfMessage(
         message.key, False)
 
@@ -1195,7 +1196,7 @@ class GCIConversationTest(unittest.TestCase):
     # reply
     content = 'The universe is busy at the moment. Please check back later.'
     message = self.conv_utils.addMessage(
-        self.conv_a.key, user=user_a_key, content=content)
+        self.conv_a.key, user=user_a.key, content=content)
     gciconversation_logic.notifyParticipantsOfMessage(
         message.key, True)
 

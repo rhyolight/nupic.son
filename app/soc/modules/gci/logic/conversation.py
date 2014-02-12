@@ -457,7 +457,7 @@ def refreshConversationParticipants(conversation):
     addUserToConversation(conversation=conversation, user=conv.creator)
 
 
-def refreshConversationsForUserAndProgram(user, program):
+def refreshConversationsForUserAndProgram(user_key, program_key):
   """Adds/removes the user to/from conversations that they should be involved in
   based on the conversation's criteria.
 
@@ -477,18 +477,14 @@ def refreshConversationsForUserAndProgram(user, program):
   should have been created when the conversation was initially created.
 
   Args:
-    user: Key (ndb) of the User.
-    program: Key (ndb) of the GCIProgram.
+    user_key: Key (ndb) of the User.
+    program_key: Key (ndb) of the GCIProgram.
   """
-  profile = gciprofile_logic.queryProfileForUserAndProgram(
-      user=ndb.Key.to_old_key(user),
-      program=ndb.Key.to_old_key(program)).get()
+  profile = profile_logic.getProfileForUsername(
+      user_key.id(), program_key.to_old_key())
 
   if not profile:
-    raise Exception('Could not find GCIProfile for user and program.')
-
-  student_info_query = gciprofile_logic.queryStudentInfoForParent(profile)
-  student_info = student_info_query.get()
+    raise Exception('Could not find Profile for user and program.')
 
   def deleteConvUserIfDoesntBelong(conv_user):
     if not doesConversationUserBelong(
@@ -496,21 +492,19 @@ def refreshConversationsForUserAndProgram(user, program):
       conv_user.key.delete()
 
   # Remove user from any conversations they're in that they don't belong in
-  conv_user_query = queryForProgramAndUser(user=user, program=program)
+  conv_user_query = queryForProgramAndUser(user=user_key, program=program_key)
   map(deleteConvUserIfDoesntBelong, conv_user_query)
 
   def addToConversation(conversation):
-    addUserToConversation(conversation=conversation.key, user=user)
+    addUserToConversation(conversation=conversation.key, user=user_key)
 
-  mentor_org_keys = map(lambda key: ndb.Key.from_old_key(key),
-      profile.mentor_for)
-  admin_org_keys = map(lambda key: ndb.Key.from_old_key(key),
-      profile.org_admin_for)
+  mentor_org_keys = profile.mentor_for
+  admin_org_keys = profile.admin_for
 
   # Make sure user is added to program conversations they belong in as a
   # student
   if profile.is_student:
-    query = (queryConversationsForProgram(program)
+    query = (queryConversationsForProgram(program_key)
         .filter(gciconversation_model.GCIConversation.recipients_type ==
             conversation_model.PROGRAM)
         .filter(gciconversation_model.GCIConversation.auto_update_users == True)
@@ -520,7 +514,7 @@ def refreshConversationsForUserAndProgram(user, program):
   # Make sure user is added to program conversations they belong in as a
   # mentor
   if profile.is_mentor:
-    query = (queryConversationsForProgram(program)
+    query = (queryConversationsForProgram(program_key)
       .filter(gciconversation_model.GCIConversation.recipients_type ==
           conversation_model.PROGRAM)
       .filter(gciconversation_model.GCIConversation.auto_update_users == True)
@@ -529,8 +523,8 @@ def refreshConversationsForUserAndProgram(user, program):
 
   # Make sure user is added to program conversations they belong in as an
   # admin
-  if profile.is_org_admin:
-    query = (queryConversationsForProgram(program)
+  if profile.is_admin:
+    query = (queryConversationsForProgram(program_key)
         .filter(gciconversation_model.GCIConversation.recipients_type ==
             conversation_model.PROGRAM)
         .filter(gciconversation_model.GCIConversation.auto_update_users == True)
@@ -539,8 +533,8 @@ def refreshConversationsForUserAndProgram(user, program):
 
   # Make sure user is added to program conversations they belong in as a
   # winner
-  if student_info and student_info.is_winner:
-    query = (queryConversationsForProgram(program)
+  if profile.student_data and profile.student_data.is_winner:
+    query = (queryConversationsForProgram(program_key)
         .filter(gciconversation_model.GCIConversation.recipients_type ==
             conversation_model.PROGRAM)
         .filter(gciconversation_model.GCIConversation.auto_update_users == True)
@@ -550,7 +544,7 @@ def refreshConversationsForUserAndProgram(user, program):
   # Make sure user is added to org conversations they belong in as an org
   # mentor
   if profile.is_mentor and mentor_org_keys:
-    query = (queryConversationsForProgram(program)
+    query = (queryConversationsForProgram(program_key)
         .filter(gciconversation_model.GCIConversation.recipients_type ==
             conversation_model.ORGANIZATION)
         .filter(gciconversation_model.GCIConversation.auto_update_users == True)
@@ -561,8 +555,8 @@ def refreshConversationsForUserAndProgram(user, program):
 
   # Make sure user is added to org conversations they belong in as an org
   # admin
-  if profile.is_org_admin and admin_org_keys:
-    query = (queryConversationsForProgram(program)
+  if profile.is_admin and admin_org_keys:
+    query = (queryConversationsForProgram(program_key)
         .filter(gciconversation_model.GCIConversation.recipients_type ==
             conversation_model.ORGANIZATION)
         .filter(gciconversation_model.GCIConversation.auto_update_users == True)
@@ -573,14 +567,14 @@ def refreshConversationsForUserAndProgram(user, program):
 
   # Make sure user is added to org conversations they belong in as an org
   # winner
-  if student_info and student_info.is_winner and student_info.winner_for:
-    query = (queryConversationsForProgram(program)
+  if profile.is_student and profile.student_data.is_winner:
+    query = (queryConversationsForProgram(program_key)
         .filter(gciconversation_model.GCIConversation.recipients_type ==
             conversation_model.ORGANIZATION)
         .filter(gciconversation_model.GCIConversation.auto_update_users == True)
         .filter(gciconversation_model.GCIConversation.include_winners == True)
         .filter(gciconversation_model.GCIConversation.organization ==
-            ndb.Key.from_old_key(student_info.winner_for.key())))
+            profile.student_data.winner_for))
     map(addToConversation, query)
 
 
