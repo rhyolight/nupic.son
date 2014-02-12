@@ -21,6 +21,7 @@ from google.appengine.ext import ndb
 
 from codein.logic import profile as profile_logic
 
+from melange.logic import profile as melange_profile_logic
 from melange.utils import rich_bool
 
 from soc.modules.gci.models import organization as org_model
@@ -125,7 +126,8 @@ class IsNoRoleEligibleForOrgTest(unittest.TestCase):
     self.assertTrue(result)
 
   @mock.patch.object(
-      profile_logic, 'canResignAsOrgAdminForOrg', return_value=rich_bool.FALSE)
+      melange_profile_logic, 'canResignAsOrgAdminForOrg',
+      return_value=rich_bool.FALSE)
   def testForOrgAdminThatCannotResign(self, mock_func):
     """Tests for u user who is an org admin that cannot currently resign."""
     # make profile an administrator for organization
@@ -138,7 +140,8 @@ class IsNoRoleEligibleForOrgTest(unittest.TestCase):
     self.assertFalse(result)
 
   @mock.patch.object(
-      profile_logic, 'canResignAsOrgAdminForOrg', return_value=rich_bool.TRUE)
+      melange_profile_logic,
+      'canResignAsOrgAdminForOrg', return_value=rich_bool.TRUE)
   def testForOrgAdminThatCanResign(self, mock_func):
     """Tests for u user who is an org admin that can currently resign."""
     # make profile an administrator for organization
@@ -184,7 +187,8 @@ class IsMentorRoleEligibleForOrgTest(unittest.TestCase):
     self.assertTrue(result)
 
   @mock.patch.object(
-      profile_logic, 'canResignAsOrgAdminForOrg', return_value=rich_bool.FALSE)
+      melange_profile_logic,
+      'canResignAsOrgAdminForOrg', return_value=rich_bool.FALSE)
   def testForOrgAdminThatCannotResign(self, mock_func):
     """Tests that org admin that cannot resign is not eligible."""
     self.profile.mentor_for = [ndb.Key.from_old_key(self.org.key())]
@@ -195,7 +199,8 @@ class IsMentorRoleEligibleForOrgTest(unittest.TestCase):
     self.assertFalse(result)
 
   @mock.patch.object(
-      profile_logic, 'canResignAsOrgAdminForOrg', return_value=rich_bool.TRUE)
+      melange_profile_logic,
+      'canResignAsOrgAdminForOrg', return_value=rich_bool.TRUE)
   def testForOrgAdminThatCanResign(self, mock_func):
     """Tests that org admin that can resign is eligible."""
     self.profile.mentor_for = [ndb.Key.from_old_key(self.org.key())]
