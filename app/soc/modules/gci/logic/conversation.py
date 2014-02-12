@@ -396,12 +396,11 @@ def refreshConversationParticipants(conversation):
     conversation: Key (ndb) of GCIConversation.
   """
   conv = conversation.get()
-  program = db.get(ndb.Key.to_old_key(conv.program))
 
   def addProfile(profile):
     addUserToConversation(
         conversation=conversation,
-        user=ndb.Key.from_old_key(profile.user.key()))
+        user=profile.key.parent())
 
   def deleteConvUserIfDoesntBelong(conv_user):
     if not doesConversationUserBelong(conversation_user=conv_user.key):
@@ -415,52 +414,43 @@ def refreshConversationParticipants(conversation):
   # Make sure users who fit the criteria are included
   if conv.recipients_type == conversation_model.PROGRAM:
     if conv.include_admins:
-      query = gciprofile_model.GCIProfile.all()
-      query.filter('program =', ndb.Key.to_old_key(conv.program))
-      query.filter('is_org_admin =', True)
-      map(addProfile, query.run(batch_size=1000))
+      query = profile_model.Profile.query(
+          profile_model.Profile.program == conv.program,
+          profile_model.Profile.is_admin == True)
+      map(addProfile, query)
 
     if conv.include_mentors:
-      query = gciprofile_model.GCIProfile.all()
-      query.filter('program =', ndb.Key.to_old_key(conv.program))
-      query.filter('is_mentor =', True)
-      map(addProfile, query.run(batch_size=1000))
+      query = profile_logic.queryAllMentorsForProgram(conv.program.to_old_key())
+      map(addProfile, query)
 
     if conv.include_students:
-      query = gciprofile_model.GCIProfile.all()
-      query.filter('program =', ndb.Key.to_old_key(conv.program))
-      query.filter('is_student =', True)
-      map(addProfile, query.run(batch_size=1000))
+      query = profile_model.Profile.query(
+          profile_model.Profile.program == conv.program,
+          profile_model.Profile.is_student == True)
+      map(addProfile, query)
 
     if conv.include_winners:
-      query = gciprofile_model.GCIStudentInfo.all()
-      query.filter('program =', ndb.Key.to_old_key(conv.program))
-      query.filter('is_winner =', True)
-      map(lambda e: addProfile(e.parent()), query.run(batch_size=1000))
+      query = profile_model.Profile.query(
+          profile_model.Profile.program == conv.program,
+          profile_model.Profile.student_data.is_winner == True)
+      map(addProfile, query)
 
   elif conv.recipients_type == conversation_model.ORGANIZATION:
-    org_db_key = ndb.Key.to_old_key(conv.organization)
-
     if conv.include_admins:
-      query = gciprofile_model.GCIProfile.all()
-      query.filter('program =', ndb.Key.to_old_key(conv.program))
-      query.filter('is_org_admin =', True)
-      query.filter('org_admin_for =', org_db_key)
-      map(addProfile, query.run(batch_size=1000))
+      org_admins = profile_logic.getOrgAdmins(conv.organization)
+      map(addProfile, org_admins)
 
     if conv.include_mentors:
-      query = gciprofile_model.GCIProfile.all()
-      query.filter('program =', ndb.Key.to_old_key(conv.program))
-      query.filter('is_mentor =', True)
-      query.filter('mentor_for =', org_db_key)
-      map(addProfile, query.run(batch_size=1000))
+      query = profile_model.Profile.query(
+          profile_model.Profile.mentor_for == conv.organization,
+          profile_model.Profile.status == profile_model.Status.ACTIVE)
+      map(addProfile, query)
 
     if conv.include_winners:
-      query = gciprofile_model.GCIStudentInfo.all()
-      query.filter('program =', ndb.Key.to_old_key(conv.program))
-      query.filter('is_winner =', True)
-      query.filter('winner_for =', org_db_key)
-      map(lambda e: addProfile(e.parent()), query.run(batch_size=1000))
+      query = profile_model.Profile.query(
+          profile_model.Profile.student_data.winner_for == conv.organization,
+          profile_model.Profile.status == profile_model.Status.ACTIVE)
+      map(addProfile, query)
 
   # Make sure conversation's creator is included
   if conv.creator is not None:

@@ -639,16 +639,22 @@ class GCIConversationTest(unittest.TestCase):
     but no longer should be.
     """
 
+    # Create a couple dummy organizations
+    org_keys = map(
+        lambda org: ndb.Key.from_old_key(org.key()),
+        (program_utils.seedOldOrganization(self.conv_utils.program_key)
+            for _ in range(2)))
+
     # Create dummy admins, mentors, and students, some hybrid users, and a
     # conversation creator
     creator = self.conv_utils.createUser(return_key=True)
     dummy_admin_keys = list(
         self.conv_utils.createUser(
-            return_key=True,
+            return_key=True, admin_organizations=org_keys,
             roles=[conversation_utils.ADMIN]) for _ in range(2))
     dummy_mentor_keys = list(
         self.conv_utils.createUser(
-            return_key=True,
+            return_key=True, mentor_organizations=org_keys,
             roles=[conversation_utils.MENTOR]) for _ in range(2))
     dummy_student_keys = list(
         self.conv_utils.createUser(
@@ -656,12 +662,12 @@ class GCIConversationTest(unittest.TestCase):
             roles=[conversation_utils.STUDENT]) for _ in range(2))
     dummy_mentor_student_keys = list(
         self.conv_utils.createUser(
-            return_key=True,
+            return_key=True, mentor_organizations=org_keys,
             roles=[conversation_utils.STUDENT, conversation_utils.MENTOR])
                 for _ in range(2))
     dummy_winner_keys = list(
         self.conv_utils.createUser(
-            return_key=True,
+            return_key=True, winning_organization=org_keys[0],
             roles=[conversation_utils.STUDENT, conversation_utils.WINNER])
                 for _ in range(2))
 
