@@ -169,47 +169,40 @@ class IsMentorRoleEligibleForOrgTest(unittest.TestCase):
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
-    # seed an organization
-    self.org = seeder_logic.seed(org_model.GCIOrganization)
+    program = program_utils.seedGCIProgram()
 
-    # seed a user
-    self.profile = seeder_logic.seed(profile_model.GCIProfile)
+    # seed an organization
+    self.org = program_utils.seedOldOrganization(program.key())
+
+    # seed a profile
+    self.profile = profile_utils.seedNDBProfile(program.key())
 
   def testForUserWithNoRole(self):
     """Tests that user with no role is eligible."""
-    self.profile.is_mentor = False
-    self.profile.mentor_for = []
-    self.profile.is_org_admin = False
-    self.profile.org_admin_for = []
-
     result = profile_logic.isMentorRoleEligibleForOrg(
-        self.profile, self.org.key())
+        self.profile, ndb.Key.from_old_key(self.org.key()))
     self.assertTrue(result)
 
   @mock.patch.object(
       profile_logic, 'canResignAsOrgAdminForOrg', return_value=rich_bool.FALSE)
   def testForOrgAdminThatCannotResign(self, mock_func):
     """Tests that org admin that cannot resign is not eligible."""
-    self.profile.is_mentor = True
-    self.profile.mentor_for = [self.org.key()]
-    self.profile.is_org_admin = True
-    self.profile.org_admin_for = [self.org.key()]
+    self.profile.mentor_for = [ndb.Key.from_old_key(self.org.key())]
+    self.profile.admin_for = [ndb.Key.from_old_key(self.org.key())]
 
     result = profile_logic.isMentorRoleEligibleForOrg(
-        self.profile, self.org.key())
+        self.profile, ndb.Key.from_old_key(self.org.key()))
     self.assertFalse(result)
 
   @mock.patch.object(
       profile_logic, 'canResignAsOrgAdminForOrg', return_value=rich_bool.TRUE)
   def testForOrgAdminThatCanResign(self, mock_func):
     """Tests that org admin that can resign is eligible."""
-    self.profile.is_mentor = True
-    self.profile.mentor_for = [self.org.key()]
-    self.profile.is_org_admin = True
-    self.profile.org_admin_for = [self.org.key()]
+    self.profile.mentor_for = [ndb.Key.from_old_key(self.org.key())]
+    self.profile.admin_for = [ndb.Key.from_old_key(self.org.key())]
 
     result = profile_logic.isMentorRoleEligibleForOrg(
-        self.profile, self.org.key())
+        self.profile, ndb.Key.from_old_key(self.org.key()))
     self.assertTrue(result)
 
 

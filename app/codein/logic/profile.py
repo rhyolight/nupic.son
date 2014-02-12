@@ -134,7 +134,7 @@ def isMentorRoleEligibleForOrg(profile, org_key):
     is set to False and extra part is a string that represents a reason why
     the user is not eligible to have mentor role only at this time.
   """
-  if org_key in profile.org_admin_for:
+  if org_key in profile.admin_for:
     return canResignAsOrgAdminForOrg(profile, org_key)
   else:
     return rich_bool.TRUE
