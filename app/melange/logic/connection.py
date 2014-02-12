@@ -363,8 +363,10 @@ def generateMessageOnUpdateByOrg(connection, org_admin, old_org_role):
   """
   if connection.org_role != old_org_role:
     lines = []
-    lines.append(_ORG_ROLE_CHANGED % (connection_model.VERBOSE_ROLE_NAMES[
-        connection.org_role], org_admin.name()))
+    lines.append(
+        _ORG_ROLE_CHANGED % (
+            connection_model.VERBOSE_ROLE_NAMES[connection.org_role],
+            org_admin.public_name))
 
     content = '\n'.join(lines)
     return createConnectionMessage(connection.key, content)

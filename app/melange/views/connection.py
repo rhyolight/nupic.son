@@ -30,6 +30,7 @@ from melange.models import user as user_model
 from melange.request import access
 from melange.request import exception
 from melange.request import links
+from melange.utils import rich_bool
 from melange.views.helper import form_handler
 
 from soc.logic import cleaning
@@ -747,7 +748,7 @@ class ManageConnectionAsOrg(base.RequestHandler):
     summary_items[ORG_ROLE_ITEM_LABEL] = _getValueForOrgRoleItem(data)
     summary_items[INITIALIZED_ON_LABEL] = data.url_connection.created_on
 
-    messages = connection_logic.getConnectionMessages(data.url_connection)
+    messages = connection_logic.getConnectionMessages(data.url_connection.key)
 
     # TODO(daniel): enable mark as seen
     # mark_as_seen_url = links.LINKER.userId(
@@ -779,12 +780,15 @@ class ManageConnectionAsOrg(base.RequestHandler):
       FormHandler implementation to handler the received data.
     """
     if ACTIONS_FORM_NAME in data.POST:
+      url = links.LINKER.userId(
+          data.url_ndb_profile.key, data.url_connection.key.id(),
+          self.url_names.CONNECTION_MANAGE_AS_ORG)
       # TODO(daniel): eliminate passing self object.
-      return OrgActionsFormHandler(self)
+      return OrgActionsFormHandler(self, url=url)
     elif MESSAGE_FORM_NAME in data.POST:
       # TODO(daniel): eliminate passing self object.
       return MessageFormHandler(
-          self, data.profile.key(), urls.UrlNames.CONNECTION_MANAGE_AS_ORG)
+          self, data.ndb_profile.key, self.url_names.CONNECTION_MANAGE_AS_ORG)
     else:
       raise exception.BadRequest('No valid form data is found in POST.')
 
@@ -862,6 +866,91 @@ class UserActionsFormHandler(form_handler.FormHandler):
       handleUserRoleSelectionTxn(data, data.url_connection, None)
 
     return is_eligible
+
+
+class OrgActionsFormHandler(form_handler.FormHandler):
+  """Form handler implementation to handle incoming data that is supposed to
+  take an action on the existing connection by organization administrators.
+  """
+
+  def handle(self, data, check, mutator):
+    """Takes an action on the connection based on the data that was sent
+    in the current request.
+
+    See form_handler.FormHandler.handle for specification.
+    """
+    actions_form = _formToManageConnectionAsOrg(data=data.POST)
+    if actions_form.is_valid():
+      role = actions_form.cleaned_data['role']
+      if role == connection_model.NO_ROLE:
+        success = self._handleNoRoleSelection(data)
+      elif role == connection_model.MENTOR_ROLE:
+        success = self._handleMentorSelection(data)
+      else:
+        success = self._handleOrgAdminSelection(data)
+
+      if success:
+        return http.HttpResponseRedirect(self._url)
+      else:
+        raise exception.BadRequest(success.extra)
+
+    else:
+      # TODO(nathaniel): problematic self-use.
+      return self._view.get(data, check, mutator)
+
+  def _handleNoRoleSelection(self, data):
+    """Makes all necessary changes if an organization administrator
+    selects connection_model.NO_ROLE.
+
+    Args:
+      data: A soc.views.helper.request_data.RequestData.
+
+    Returns:
+      RichBool whose value is set to True, if the selection has been handled
+      successfully. Otherwise, RichBool whose value is set to False and extra
+      part is a string representation of the reason why the picked selection
+      is not possible.
+    """
+    is_eligible = soc_profile_logic.isNoRoleEligibleForOrg(
+        data.url_ndb_profile, data.url_connection.organization)
+    if is_eligible:
+      handleOrgNoRoleSelection(data.url_connection, data.ndb_profile, None)
+    return is_eligible
+
+  def _handleMentorSelection(self, data):
+    """Makes all necessary changes if an organization administrator
+    selects connection_model.MENTOR_ROLE.
+
+    Args:
+      data: A soc.views.helper.request_data.RequestData.
+
+    Returns:
+      RichBool whose value is set to True, if the selection has been handled
+      successfully. Otherwise, RichBool whose value is set to False and extra
+      part is a string representation of the reason why the picked selection
+      is not possible.
+    """
+    is_eligible = profile_logic.isMentorRoleEligibleForOrg(
+        data.url_ndb_profile, data.url_connection.organization)
+    if is_eligible:
+      handleMentorRoleSelection(data.url_connection, data.ndb_profile, None)
+    return is_eligible
+
+  def _handleOrgAdminSelection(self, data):
+    """Makes all necessary changes if an organization administrator
+    selects connection_model.ORG_ADMIN_ROLE.
+
+    Args:
+      data: A soc.views.helper.request_data.RequestData.
+
+    Returns:
+      RichBool whose value is set to True, if the selection has been handled
+      successfully. Otherwise, RichBool whose value is set to False and extra
+      part is a string representation of the reason why the picked selection
+      is not possible.
+    """
+    handleOrgAdminRoleSelection(data.url_connection, data.ndb_profile, None)
+    return rich_bool.TRUE
 
 
 class MessageFormHandler(form_handler.FormHandler):
@@ -1194,15 +1283,16 @@ def handleMentorRoleSelection(connection, admin, conversation_updater):
     message = connection_logic.generateMessageOnUpdateByOrg(
         connection, admin, old_org_role)
 
-    db.put([connection, message])
+    ndb.put_multi([connection, message])
 
     if connection.userRequestedRole():
       profile = connection.key.parent().get()
       send_email = not profile.is_mentor
 
-      profile_logic.assignMentorRoleForOrg(profile, connection.organizaion)
+      profile_logic.assignMentorRoleForOrg(profile, connection.organization)
 
-      conversation_updater.updateConversationsForProfile(profile)
+      if conversation_updater:
+        conversation_updater.updateConversationsForProfile(profile)
 
       if send_email:
         pass
@@ -1244,7 +1334,8 @@ def handleOrgAdminRoleSelection(connection, admin, conversation_updater):
 
       profile_logic.assignOrgAdminRoleForOrg(profile, connection.organization)
 
-      conversation_updater.updateConversationsForProfile(profile)
+      if conversation_updater:
+        conversation_updater.updateConversationsForProfile(profile)
 
       if send_email:
         pass
