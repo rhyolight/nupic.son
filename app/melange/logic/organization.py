@@ -252,6 +252,8 @@ def getAcceptedOrganizations(
 
 
 # TODO(nathaniel): This is computationally inefficient and just plain weird.
+# The right way to fix this problem is to just store org logos in org profiles
+# (issue 1796).
 def getAcceptedOrganizationsWithLogoURLs(
     program_key, limit=None, models=types.MELANGE_MODELS):
   """Finds accepted organizations that have set a logo URL.
@@ -278,8 +280,7 @@ def getAcceptedOrganizationsWithLogoURLs(
   cache_key = '%s_accepted_orgs_with_logo_URLs_%s' % (limit, program_key.name())
   cached_data = memcache.get(cache_key)
   if cached_data:
-    # TODO(nathaniel): 30 seconds is for debugging, use _ORG_CACHE_DURATION for real below.
-    if datetime.datetime.now() < cached_data.time + datetime.timedelta(seconds=30):
+    if datetime.datetime.now() < cached_data.time + _ORG_CACHE_DURATION:
       return cached_data.orgs
     else:
       cursor = cached_data.cursor
@@ -296,14 +297,21 @@ def getAcceptedOrganizationsWithLogoURLs(
         models.ndb_org_model.status == org_model.Status.ACCEPTED)
     found_orgs, cursor, _ = query.fetch_page(
         limit - len(orgs), start_cursor=cursor)
-    if len(found_orgs) < limit - len(orgs):
-      cursor = None
     for found_org in found_orgs:
       if found_org.key in all_found_org_keys:
+        # We've wrapped all the way around the list of orgs and come back
+        # to the start. Return what we have.
         break
       all_found_org_keys.add(found_org.key)
       if found_org.logo_url:
         orgs.append(found_org)
+    if len(found_orgs) < limit - len(orgs):
+      if cursor:
+        # Wrap around to the beginning.
+        cursor = None
+      else:
+        # Even from the beginning there just aren't enough orgs? Give up.
+        break
 
   # If the requested number of organizations have been found, cache them.
   if len(orgs) == limit:
