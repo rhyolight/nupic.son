@@ -96,14 +96,10 @@ class AlreadyRegisteredRight(Error):
 
 
 class Core(object):
-  """The core handler that controls the Melange API.
-  """
+  """The core handler that controls the Melange API."""
 
   def __init__(self):
-    """Creates a new instance of the Core.
-    """
-
-    # pylint: disable=C0103
+    """Creates a new instance of the Core."""
     self.API_VERSION = 1
 
     self.registered_callbacks = []

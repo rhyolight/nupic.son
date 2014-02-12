@@ -150,7 +150,6 @@ def isDeveloper(account=None, user=None):
     # default user to the current logged in user
     user = forAccount(account)
 
-  # pylint: disable=E1103
   if user and user.is_developer:
     return True
 

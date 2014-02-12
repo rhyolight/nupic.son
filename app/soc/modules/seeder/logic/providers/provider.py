@@ -11,35 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing basic data provider classes.
-"""
+
+"""Module containing basic data provider classes."""
 
 
 class Error(Exception):
-  """Error class for the data provider module.
-  """
-
-  pass
+  """Error class for the data provider module."""
 
 
 class MissingParameterError(Error):
-  """Error raised when a required parameter is missing.
-  """
-
-  pass
+  """Error raised when a required parameter is missing."""
 
 
+# TODO(nathaniel): Replace all occurrences of this with Python's
+# built-in TypeError.
 class ParameterValueError(Error):
-  """Error raised when a parameter is not of the expected type.
-  """
-
-  pass
+  """Error raised when a parameter is not of the expected type."""
 
 
-# pylint: disable=R0903
 class DataProviderParameter(object):
-  """Holds information about a data provider parameters
-  """
+  """Holds information about a data provider parameters."""
 
   def __init__(self, name, verbose_name, description, required=False):
     self.name = name
@@ -48,10 +39,8 @@ class DataProviderParameter(object):
     self.required = required
 
 
-# pylint: disable=R0922
 class BaseDataProvider(object):
-  """Base class for all data providers.
-  """
+  """Base class for all data providers."""
 
   def __init__(self, **param_values):
     """Constructor for the base data provider.
@@ -62,34 +51,28 @@ class BaseDataProvider(object):
     self.param_values = param_values
 
   def getValue(self):
-    """Returns a value from the data provider.
-    """
+    """Returns a value from the data provider."""
     raise NotImplementedError
 
   @classmethod
   def getParametersList(cls):
-    """Returns a list of accepted parameters.
-    """
+    """Returns a list of accepted parameters."""
     return []
 
   @classmethod
   def hasParameter(cls, param_name):
-    """Checks whether this data provider has a parameter named param_name.
-    """
+    """Checks whether this data provider has a parameter named param_name."""
     return param_name in (param.name for param in cls.getParametersList())
 
   def checkParameters(self):
-    """Checks that all required parameters are supplied.
-    """
-
+    """Checks that all required parameters are supplied."""
     for param in self.getParametersList():
       if param.required and param.name not in self.param_values:
         raise MissingParameterError('Parameter "%s" is missing.' % param.name)
 
 
 class FixedValueProvider(BaseDataProvider):
-  """Data provider interface for providing a fixed value.
-  """
+  """Data provider interface for providing a fixed value."""
 
   @classmethod
   def getParametersList(cls):

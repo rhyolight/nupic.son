@@ -22,20 +22,12 @@ from soc.modules.seeder.logic.providers.provider import FixedValueProvider
 from soc.modules.seeder.logic.providers.provider import ParameterValueError
 
 
-# pylint: disable=W0223
 class StringProvider(BaseDataProvider):
-  """Base class for all data providers that return a string.
-  """
-
-  pass
+  """Base class for all data providers that return a string."""
 
 
-# pylint: disable=W0223
 class FixedStringProvider(StringProvider, FixedValueProvider):
-  """Data provider that returns a fixed string.
-  """
-
-  pass
+  """Data provider that returns a fixed string."""
 
 
 class FixedLengthAscendingNumericStringProvider(StringProvider):

@@ -11,27 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing data providers for UserProperty.
-"""
+
+"""Module containing data providers for UserProperty."""
+
+from django.core.validators import email_re
 
 from soc.modules.seeder.logic.providers.provider import BaseDataProvider
 from soc.modules.seeder.logic.providers.provider import FixedValueProvider
 from soc.modules.seeder.logic.providers.provider import ParameterValueError
-from django.core.validators import email_re
 
 
-
-# pylint: disable=W0223
 class EmailProvider(BaseDataProvider):
-  """Base class for all data providers that return an e-mail.
-  """
-
-  pass
+  """Base class for all data providers that return an e-mail."""
 
 
 class FixedEmailProvider(EmailProvider, FixedValueProvider):
-  """Data provider that returns a fixed e-mail.
-  """
+  """Data provider that returns a fixed e-mail."""
 
   def checkParameters(self):
     super(FixedEmailProvider, self).checkParameters()
@@ -56,8 +51,7 @@ class UniqueEmailProvider(EmailProvider):
 
   @staticmethod
   def getRandomDomain():
-    """Returns a random domain for a link
-    """
+    """Returns a random domain for a link."""
     #TODO(sttwister): Really return a random domain
     return "gmail.com"
 

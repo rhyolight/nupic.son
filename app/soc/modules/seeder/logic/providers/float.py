@@ -11,30 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing data providers for FloatProperty.
-"""
 
+"""Module containing data providers for FloatProperty."""
+
+import random
 
 from soc.modules.seeder.logic.providers.provider import BaseDataProvider
 from soc.modules.seeder.logic.providers.provider import DataProviderParameter
 from soc.modules.seeder.logic.providers.provider import ParameterValueError
 from soc.modules.seeder.logic.providers.provider import FixedValueProvider
-import random
 
 
-
-# pylint: disable=W0223
 class FloatProvider(BaseDataProvider):
-  """Base class for all data providers that return a float.
-  """
-
-  pass
+  """Base class for all data providers that return a float."""
 
 
-# pylint: disable=W0223
 class FixedFloatProvider(FloatProvider, FixedValueProvider):
-  """Data provider that returns a fixed float.
-  """
+  """Data provider that returns a fixed float."""
 
   def checkParameters(self):
     super(FixedFloatProvider, self).checkParameters()
@@ -46,8 +39,7 @@ class FixedFloatProvider(FloatProvider, FixedValueProvider):
 
 
 class RandomUniformDistributionFloatProvider(FloatProvider):
-  """Returns a float sampled from an uniform distribution.
-  """
+  """Returns a float sampled from an uniform distribution."""
 
   DEFAULT_MIN = 0
   DEFAULT_MAX = 10

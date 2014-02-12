@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Main Melange module with profiling support.
-"""
-
+"""Main Melange module with profiling support."""
 
 import logging
 
 from google.appengine.ext.webapp import util
 
-# pylint: disable=W0611
-import gae_django
+# TODO(nathaniel): What's up with this unused import?
+import gae_django  # pylint: disable=unused-import
 
 
 def profile_main_as_html():
