@@ -331,24 +331,6 @@ def insertDummyData(student_info):
   return [profile, student_info], blobs_to_delete
 
 
-def canResignAsOrgAdminForOrg(profile, org_key):
-  """Tells whether the specified profile can resign from their organization
-  administrator role for the specified organization.
-
-  An organization administrator may be removed from the list of administrators
-  of an organization, if there is at least one other user with this role.
-
-  Args:
-    profile: the specified profile entity.
-    org_key: the specified organization entity.
-
-  Returns:
-    True, if the mentor is allowed to resign; False otherwise
-  """
-  return profile_logic.canResignAsOrgAdminForOrg(
-      profile, org_key, models=types.CI_MODELS)
-
-
 def getOrgAdmins(org_key, keys_only=False, extra_attrs=None):
   """Returns organization administrators for the specified organization.
 
