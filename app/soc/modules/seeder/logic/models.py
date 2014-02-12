@@ -49,19 +49,18 @@ class Logic():
   @staticmethod
   def _getModels():
     """Returns a list of models in all modules specified in settings.MODULES."""
-    modules = set()
-
-    # TODO(nathaniel): Why is 'codein.models' not on this list?
     model_package_names = [
+        'codein.models',
         'soc.models',
         'soc.modules.gsoc.models',
         'soc.modules.gci.models',
-        'summerofcode.models'
+        'summerofcode.models',
         ]
 
     packages = [(__import__(module_name, fromlist=['']), module_name)
                 for module_name in model_package_names]
 
+    modules = set()
     for package, packagename in packages:
       for module_file in os.listdir(os.path.dirname(package.__file__)):
         if not module_file.endswith(".py"):
@@ -71,10 +70,8 @@ class Logic():
 
         modelname = os.path.basename(module_file)[:-3]
         try:
-          # TODO(nathaniel): WAT? This should just use an ordinary import.
-          exec("import %s.%s as current_model" % (packagename, modelname))
-
-          for _, klass in getmembers(current_model, isclass):  # pylint: disable=undefined-variable
+          current_model = __import__('%s.%s' % (packagename, modelname))
+          for _, klass in getmembers(current_model, isclass):
 
             # Make sure the class is actually defined in the module
             klass_module = '.'.join(klass.__module__.split('.')[:-1])
@@ -94,8 +91,7 @@ class Logic():
     return list(modules)
 
   def _getReferenceClass(self, prop, model):
-    """Return the referenced class name for a reference property.
-    """
+    """Return the referenced class name for a reference property."""
     klass = None
     if (prop.name == 'scope'):
       module = model.__module__
