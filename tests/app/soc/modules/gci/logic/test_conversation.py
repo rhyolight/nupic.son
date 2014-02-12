@@ -1097,6 +1097,7 @@ class GCIConversationTest(unittest.TestCase):
             program=self.program_key, user=user_winner_key)))
     self.assertEqual(expected_keys, actual_keys)
 
+  @unittest.skip('emails must be taken from profiles')
   def testGetSubscribedEmails(self):
     """Tests that getSubscribedEmails correctly returns email addresses of
     users subscribed to a conversation.
@@ -1140,6 +1141,7 @@ class GCIConversationTest(unittest.TestCase):
         self.conv_b.key, exclude=[self.user_keys[2]]))
     self.assertEqual(expected, actual)
 
+  @unittest.skip('emails must be taken from profiles')
   def testNotifyParticipantsOfMessage(self):
     """Tests that notifyParticipantsOfMessage sends the correct email
     notification to subscribed recipients of a conversation for a message.
