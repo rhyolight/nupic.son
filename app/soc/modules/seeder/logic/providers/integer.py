@@ -11,30 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing data providers for IntegerProperty.
-"""
+
+"""Module containing data providers for IntegerProperty."""
+
+import random
 
 from google.appengine.api import memcache
+
 from soc.modules.seeder.logic.providers.provider import BaseDataProvider
 from soc.modules.seeder.logic.providers.provider import ParameterValueError
 from soc.modules.seeder.logic.providers.provider import FixedValueProvider
 from soc.modules.seeder.logic.providers.provider import DataProviderParameter
-import random
 
 
-
-# pylint: disable=W0223
 class IntegerProvider(BaseDataProvider):
-  """Base class for all data providers that return a integer.
-  """
-
-  pass
+  """Base class for all data providers that return a integer."""
 
 
-# pylint: disable=W0223
 class FixedIntegerProvider(IntegerProvider, FixedValueProvider):
-  """Data provider that returns a fixed integer.
-  """
+  """Data provider that returns a fixed integer."""
 
   def checkParameters(self):
     super(FixedIntegerProvider, self).checkParameters()
@@ -44,10 +39,9 @@ class FixedIntegerProvider(IntegerProvider, FixedValueProvider):
     except (TypeError, ValueError):
       raise ParameterValueError('%s is not a valid integer' % value)
 
-# pylint: disable=W0622
+
 class RandomUniformDistributionIntegerProvider(IntegerProvider):
-  """Returns an integer sampled from an uniform distribution.
-  """
+  """Returns an integer sampled from an uniform distribution."""
 
   DEFAULT_MIN = 0
   DEFAULT_MAX = 10
@@ -175,14 +169,12 @@ class SequenceIntegerProvider(IntegerProvider):
       raise ParameterValueError('%s is not a valid integer for %s' %
                                 (value, key))
 
-# pylint: disable=E1101
   def getValue(self):
     self.checkParameters()
     key = self.param_values['name']
-    data = memcache.get(key, self.MEMCACHE_NAMESPACE) #@UndefinedVariable
+    data = memcache.get(key, self.MEMCACHE_NAMESPACE)
     if not data:
       data = self.param_values.get('start', self.DEFAULT_START)
-    memcache.set(key, data + self.DEFAULT_STEP, #@UndefinedVariable
+    memcache.set(key, data + self.DEFAULT_STEP,
                  namespace=self.MEMCACHE_NAMESPACE)
     return data
-# pylint: enable=E1101

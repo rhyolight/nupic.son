@@ -226,7 +226,6 @@ def clean_user_is_current(field_name, as_user=True):
     user_id = clean_link_id(field_name)(self)
 
     current_user = user_logic.getByCurrentAccount()
-    # pylint: disable=E1103
     if not current_user or current_user.user_id != user_id:
       # this user is not the current user
       raise forms.ValidationError('This user is not you.')
@@ -267,7 +266,6 @@ def clean_users_not_same(field_name):
     user = clean_user_field(self)
 
     current_user = user_logic.getByCurrentAccount()
-    # pylint: disable=E1103
     if user.key == current_user.key:
       # users are equal
       raise forms.ValidationError('You cannot enter yourself here.')

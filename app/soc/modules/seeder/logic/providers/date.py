@@ -11,30 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing data providers for DateProperty.
-"""
 
+"""Module containing data providers for DateProperty."""
 
-from soc.modules.seeder.logic.providers.provider import BaseDataProvider
-from soc.modules.seeder.logic.providers.provider import DataProviderParameter
-from soc.modules.seeder.logic.providers.provider import ParameterValueError
 import datetime
 import random
 import time
 
+from soc.modules.seeder.logic.providers.provider import BaseDataProvider
+from soc.modules.seeder.logic.providers.provider import DataProviderParameter
+from soc.modules.seeder.logic.providers.provider import ParameterValueError
 
 
-# pylint: disable=W0223
 class DateProvider(BaseDataProvider):
-  """Base class for all data providers that return a date.
-  """
-
-  pass
+  """Base class for all data providers that return a date."""
 
 
 class FixedDateProvider(DateProvider):
-  """Data provider that returns a fixed string.
-  """
+  """Data provider that returns a fixed string."""
 
   @classmethod
   def getParametersList(cls):

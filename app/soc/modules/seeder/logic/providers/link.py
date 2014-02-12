@@ -11,36 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing data providers for LinkProperty.
-"""
 
+"""Module containing data providers for LinkProperty."""
+
+import random
 
 from soc.modules.seeder.logic.providers.provider import BaseDataProvider
 from soc.modules.seeder.logic.providers.provider import FixedValueProvider
 from soc.modules.seeder.logic.providers.string import RandomWordProvider
-import random
 
 
-
-# pylint: disable=W0223
 class LinkProvider(BaseDataProvider):
-  """Base class for all data providers that return a link.
-  """
-
-  pass
+  """Base class for all data providers that return a link."""
 
 
-# pylint: disable=W0223
 class FixedLinkProvider(LinkProvider, FixedValueProvider):
-  """Data provider that returns a fixed link.
-  """
-
-  pass
+  """Data provider that returns a fixed link."""
 
 
 class RandomLinkProvider(LinkProvider, RandomWordProvider):
-  """Data provider that returns a random link.
-  """
+  """Data provider that returns a random link."""
 
   def getValue(self):
     link = 'http://www.'

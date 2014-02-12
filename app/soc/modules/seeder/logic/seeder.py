@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Logic for data seeding operations.
-"""
+
+"""Logic for data seeding operations."""
 
 import json
 import random
@@ -238,9 +238,7 @@ class Logic(object):
 
       values[str(property_name)] = value
 
-    # pylint: disable=W0142
     model = model_class(**values)
-    # pylint: enable=W0142
     return model
 
   def processReferences(self, model_data):
@@ -291,9 +289,7 @@ class Logic(object):
           related_models = self.seedModel(provider_data['parameters'])
           for related_model in related_models:
             back_reference_property = getattr(model_class, property_name)
-            # pylint: disable=W0212
             setattr(related_model, back_reference_property._prop_name, model)
-            # pylint: enable=W0212
             related_model.put()
 
       models.append(model)

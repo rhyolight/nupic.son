@@ -11,28 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing data providers for ListProperty.
-"""
+
+"""Module containing data providers for ListProperty."""
 
 _authors__ = [
   '"Felix Kerekes" <sttwister@gmail.com>',
   ]
 
-
 from soc.modules.seeder.logic.providers.provider import BaseDataProvider
 
 
-# pylint: disable=W0223
 class ListProvider(BaseDataProvider):
-  """Base class for all data providers that return a list.
-  """
-
-  pass
+  """Base class for all data providers that return a list."""
 
 
 class EmptyListProvider(ListProvider):
-  """Data provider that returns an empty.
-  """
+  """Data provider that returns an empty."""
 
   def getValue(self):
     return []

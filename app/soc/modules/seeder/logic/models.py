@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""This is the Data Seeder Model Logic module.
-"""
 
+"""This is the Data Seeder Model Logic module."""
 
 import os
 
@@ -49,11 +48,10 @@ class Logic():
 
   @staticmethod
   def _getModels():
-    """Returns a list of models in all modules specified in
-    settings.MODULES.
-    """
+    """Returns a list of models in all modules specified in settings.MODULES."""
     modules = set()
 
+    # TODO(nathaniel): Why is 'codein.models' not on this list?
     model_package_names = [
         'soc.models',
         'soc.modules.gsoc.models',
@@ -73,13 +71,10 @@ class Logic():
 
         modelname = os.path.basename(module_file)[:-3]
         try:
-          # pylint: disable=W0122
+          # TODO(nathaniel): WAT? This should just use an ordinary import.
           exec("import %s.%s as current_model" % (packagename, modelname))
-          # pylint: enable=W0122
 
-          # pylint: disable=E0602
-          for _, klass in getmembers(current_model, isclass):#@UndefinedVariable
-          # pylint: enable=E0602
+          for _, klass in getmembers(current_model, isclass):  # pylint: disable=undefined-variable
 
             # Make sure the class is actually defined in the module
             klass_module = '.'.join(klass.__module__.split('.')[:-1])

@@ -11,35 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing data providers for PhoneNumberProperty.
-"""
 
+"""Module containing data providers for PhoneNumberProperty."""
+
+import random
 
 from soc.modules.seeder.logic.providers.provider import BaseDataProvider
 from soc.modules.seeder.logic.providers.provider import FixedValueProvider
-import random
 
 
-
-# pylint: disable=W0223
 class PhoneNumberProvider(BaseDataProvider):
-  """Base class for all data providers that return a phone number.
-  """
-
-  pass
+  """Base class for all data providers that return a phone number."""
 
 
-# pylint: disable=W0223
 class FixedPhoneNumberProvider(PhoneNumberProvider, FixedValueProvider):
-  """Data provider that returns a fixed phone number.
-  """
-
-  pass
+  """Data provider that returns a fixed phone number."""
 
 
 class RandomPhoneNumberProvider(PhoneNumberProvider):
-  """Data provider that returns a random phone number.
-  """
+  """Data provider that returns a random phone number."""
 
   def getValue(self):
     return ''.join(str(random.randint(0, 9)) for _ in range(10))

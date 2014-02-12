@@ -11,11 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Contains data providers implementations and utilities.
-"""
 
+"""Contains data providers implementations and utilities."""
 
-# pylint: disable=C0301
 from soc.modules.seeder.logic.providers.string import FixedStringProvider
 from soc.modules.seeder.logic.providers.string import RandomWordProvider
 from soc.modules.seeder.logic.providers.string import RandomNameProvider
@@ -50,12 +48,10 @@ from soc.modules.seeder.logic.providers.phone_number import RandomPhoneNumberPro
 from soc.modules.seeder.logic.providers.reference import RandomReferenceProvider
 from soc.modules.seeder.logic.providers.reference import FixedReferenceProvider
 from soc.modules.seeder.logic.providers.list import EmptyListProvider
-# pylint: enable=C0301
 
 
 class Logic():
-  """Logic class for general data provider functionality.
-  """
+  """Logic class for general data provider functionality."""
 
   def __init__(self):
     self.providers = {}

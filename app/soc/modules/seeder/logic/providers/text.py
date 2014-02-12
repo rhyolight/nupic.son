@@ -11,27 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing data providers for TextProperty.
-"""
 
+"""Module containing data providers for TextProperty."""
+
+import random
 
 from soc.modules.seeder.logic.providers.string import StringProvider
 from soc.modules.seeder.logic.providers.string import RandomPhraseProvider
-import random
 
 
-
-# pylint: disable=W0223
 class TextProvider(StringProvider):
-  """Base class for all data providers that return text.
-  """
-
-  pass
+  """Base class for all data providers that return text."""
 
 
 class RandomParagraphProvider(TextProvider, RandomPhraseProvider):
-  """Data provider that returns a random paragraph.
-  """
+  """Data provider that returns a random paragraph."""
 
   def getValue(self):
     return ' '.join(RandomPhraseProvider.getValue(self)
@@ -39,8 +33,7 @@ class RandomParagraphProvider(TextProvider, RandomPhraseProvider):
 
 
 class RandomPlainTextDocumentProvider(RandomParagraphProvider):
-  """Data provider that returns a random plain text document.
-  """
+  """Data provider that returns a random plain text document."""
 
   def getValue(self):
     return '\n\n'.join(RandomParagraphProvider.getValue(self)
@@ -48,8 +41,7 @@ class RandomPlainTextDocumentProvider(RandomParagraphProvider):
 
 
 class RandomHtmlDocumentProvider(RandomParagraphProvider):
-  """Data provider that returns a random HTML document.
-  """
+  """Data provider that returns a random HTML document."""
 
   def getValue(self):
     #TODO(sttwister): This could be improved
@@ -62,8 +54,7 @@ class RandomHtmlDocumentProvider(RandomParagraphProvider):
 
 
 class RandomMarkdownDocumentProvider(RandomParagraphProvider):
-  """Data provider that returns a random Markdown document.
-  """
+  """Data provider that returns a random Markdown document."""
 
   def getValue(self):
     #TODO(sttwister): This could be improved

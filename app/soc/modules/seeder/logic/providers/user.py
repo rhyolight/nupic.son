@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing data providers for UserProperty.
-"""
 
+"""Module containing data providers for UserProperty."""
 
 from google.appengine.api import users
 
@@ -22,34 +21,25 @@ from soc.modules.seeder.logic.providers.email import FixedEmailProvider
 from soc.modules.seeder.logic.providers.email import UniqueEmailProvider
 
 
-
-# pylint: disable=W0223
 class UserProvider(BaseDataProvider):
-  """Base class for all data providers that return an e-mail.
-  """
-
-  pass
+  """Base class for all data providers that return an e-mail."""
 
 
 class CurrentUserProvider(UserProvider):
-  """Data provider that returns the currently logged in user.
-  """
+  """Data provider that returns the currently logged in user."""
 
   def getValue(self):
     return users.User()
 
 class FixedUserProvider(FixedEmailProvider):
-  """Data provider that returns a fixed user.
-  """
+  """Data provider that returns a fixed user."""
 
   def getValue(self):
     return users.User(super(FixedUserProvider, self).getValue())
 
 
-# pylint: disable=R0901
 class RandomUserProvider(UniqueEmailProvider):
-  """Data provider that returns a random user.
-  """
+  """Data provider that returns a random user."""
 
   def getValue(self):
     return users.User(super(RandomUserProvider, self).getValue())

@@ -11,33 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Module containing data providers for BooleanProperty.
-"""
 
+"""Module containing data providers for BooleanProperty."""
+
+import random
 
 from soc.modules.seeder.logic.providers.provider import FixedValueProvider
 from soc.modules.seeder.logic.providers.provider import BaseDataProvider
 from soc.modules.seeder.logic.providers.provider import ParameterValueError
 from soc.modules.seeder.logic.providers.provider import DataProviderParameter
-import random
-
 
 _authors__ = [
   '"Felix Kerekes" <sttwister@gmail.com>',
   ]
 
 
-# pylint: disable=W0223
 class BooleanProvider(BaseDataProvider):
-  """Base class for all data providers that return a boolean.
-  """
-
-  pass
+  """Base class for all data providers that return a boolean."""
 
 
 class FixedBooleanProvider(BooleanProvider, FixedValueProvider):
-  """Data provider that returns a fixed integer.
-  """
+  """Data provider that returns a fixed integer."""
 
   def checkParameters(self):
     super(FixedBooleanProvider, self).checkParameters()
@@ -49,8 +43,7 @@ class FixedBooleanProvider(BooleanProvider, FixedValueProvider):
 
 
 class RandomBooleanProvider(BooleanProvider):
-  """Data provider that returns a random boolean value.
-  """
+  """Data provider that returns a random boolean value."""
 
   DEFAULT_CHANCE = 0.5
 
