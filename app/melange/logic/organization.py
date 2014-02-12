@@ -249,3 +249,65 @@ def getAcceptedOrganizations(
         cache_key, CachedData(orgs, datetime.datetime.now(), next_cursor))
 
   return orgs
+
+
+# TODO(nathaniel): This is computationally inefficient and just plain weird.
+def getAcceptedOrganizationsWithLogoURLs(
+    program_key, limit=None, models=types.MELANGE_MODELS):
+  """Finds accepted organizations that have set a logo URL.
+
+  There is no guarantee that two different invocation of this function for
+  the same arguments will return the same entities. The callers should
+  acknowledge that it will receive a list of 'any' accepted organizations for
+  the program and not make any further assumptions.
+
+  In order to speed up the function, organizations may be returned
+  from memcache, so subsequent calls to this function may be more efficient.
+
+  Args:
+    program_key: Program key.
+    limit: Maximum number of results to return.
+    models: instance of types.Models that represent appropriate models.
+
+  Returns:
+    A list of organization entities participating in the specified program
+      that have non-empty logo URL attributes.
+  """
+  limit = limit or _DEFAULT_ORG_NUMBER
+
+  cache_key = '%s_accepted_orgs_with_logo_URLs_%s' % (limit, program_key.name())
+  cached_data = memcache.get(cache_key)
+  if cached_data:
+    # TODO(nathaniel): 30 seconds is for debugging, use _ORG_CACHE_DURATION for real below.
+    if datetime.datetime.now() < cached_data.time + datetime.timedelta(seconds=30):
+      return cached_data.orgs
+    else:
+      cursor = cached_data.cursor
+  else:
+    cursor = None
+
+  # Iterate through all the orgs looking for limit orgs with logos or a
+  # determination that all available orgs have been exhausted.
+  orgs = []
+  all_found_org_keys = set()
+  while len(orgs) < limit:
+    query = models.ndb_org_model.query(
+        models.ndb_org_model.program == ndb.Key.from_old_key(program_key),
+        models.ndb_org_model.status == org_model.Status.ACCEPTED)
+    found_orgs, cursor, _ = query.fetch_page(
+        limit - len(orgs), start_cursor=cursor)
+    if len(found_orgs) < limit - len(orgs):
+      cursor = None
+    for found_org in found_orgs:
+      if found_org.key in all_found_org_keys:
+        break
+      all_found_org_keys.add(found_org.key)
+      if found_org.logo_url:
+        orgs.append(found_org)
+
+  # If the requested number of organizations have been found, cache them.
+  if len(orgs) == limit:
+    memcache.set(
+        cache_key, CachedData(orgs, datetime.datetime.now(), cursor))
+
+  return orgs
