@@ -216,11 +216,10 @@ class GCIConversationHelper(ConversationHelper):
     See ConversationHelper.createUser for full specification.
     """
 
-    program_ent = db.get(ndb.Key.to_old_key(self.program_key))
-    profile_helper = profile_utils.GCIProfileHelper(program_ent, False)
+    program = db.get(ndb.Key.to_old_key(self.program_key))
 
     roles = set(roles) if roles else set()
-    profile = profile_helper.createProfile()
+    profile = profile_utils.seedNDBProfile(program.key())
     winner_for = None
 
     if profile is None:
