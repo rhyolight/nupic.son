@@ -44,6 +44,12 @@ START_CONNECTION_AS_USER = connection_view.StartConnectionAsUser(
     START_CONNECTION_AS_USER_ACCESS_CHECKER)
 
 
+MANAGE_CONNECTION_AS_ORG = connection_view.ManageConnectionAsOrg(
+    gsoc_base._GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
+    error.SOC_ERROR_HANDLER, soc_url_patterns.SOC_URL_PATTERN_CONSTRUCTOR,
+    soc_urls.UrlNames, 'summerofcode/connection/manage_connection.html')
+
+
 MANAGE_CONNECTION_AS_USER = connection_view.ManageConnectionAsUser(
     gsoc_base._GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
     error.SOC_ERROR_HANDLER, soc_url_patterns.SOC_URL_PATTERN_CONSTRUCTOR,

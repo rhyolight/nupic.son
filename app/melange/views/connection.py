@@ -256,6 +256,24 @@ def _formToManageConnectionAsUser(**kwargs):
   return form
 
 
+def _formToManageConnectionAsOrg(**kwargs):
+  """Returns a Django form to manage connection as an organization admin.
+
+  Returns:
+    ConnectionForm adjusted to manage connection as an organization admin.
+  """
+  form = ConnectionForm(**kwargs)
+  form.removeField('message')
+  form.removeField('users')
+
+  form.fields['role'].widget=django_forms.Select(
+      choices=ALL_ORG_ROLE_CHOICES)
+  form.fields['role'].label = CONNECTION_FORM_ORG_ROLE_LABEL
+  form.fields['role'].help_text = MANAGE_CONNECTION_FORM_ORG_ROLE_HELP_TEXT
+
+  return form
+
+
 # TODO(daniel): this form mustn't inherit from GSoC form
 class ConnectionForm(gsoc_forms.GSoCModelForm):
   """Django form to show specific fields for an organization.
@@ -651,6 +669,122 @@ class ManageConnectionAsUser(base.RequestHandler):
       return MessageFormHandler(
           self, data.url_ndb_profile.key,
           self.url_names.CONNECTION_MANAGE_AS_USER)
+    else:
+      raise exception.BadRequest('No valid form data is found in POST.')
+
+
+class IsUserOrgAdminForUrlConnection(access.AccessChecker):
+  """AccessChecker that ensures that the logged in user is organization
+  administrator for the connection which is retrieved from the URL data.
+  """
+
+  def checkAccess(self, data, check):
+    """See AccessChecker.checkAccess for specification."""
+    if not data.ndb_profile:
+      raise exception.Forbidden(message=access._MESSAGE_NO_PROFILE)
+
+    if data.url_connection.organization not in data.ndb_profile.admin_for:
+      raise exception.Forbidden(
+          message=access._MESSAGE_NOT_ORG_ADMIN_FOR_ORG %
+              data.url_connection.organization.id())
+
+
+MANAGE_CONNECTION_AS_ORG_ACCESS_CHECKER = access.ConjuctionAccessChecker([
+    access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+    IsUserOrgAdminForUrlConnection()
+    ])
+
+class ManageConnectionAsOrg(base.RequestHandler):
+  """View to manage an existing connection by the organization."""
+
+  access_checker = MANAGE_CONNECTION_AS_ORG_ACCESS_CHECKER
+
+  def __init__(self, initializer, linker, renderer, error_handler,
+      url_pattern_constructor, url_names, template_path):
+    """Initializes a new instance of the request handler for the specified
+    parameters.
+
+    Args:
+      initializer: Implementation of initialize.Initializer interface.
+      linker: Instance of links.Linker class.
+      renderer: Implementation of render.Renderer interface.
+      error_handler: Implementation of error.ErrorHandler interface.
+      url_pattern_constructor:
+        Implementation of url_patterns.UrlPatternConstructor.
+      url_names: Instance of url_names.UrlNames.
+      template_path: The path of the template to be used.
+    """
+    super(ManageConnectionAsOrg, self).__init__(
+        initializer, linker, renderer, error_handler)
+    self.url_pattern_constructor = url_pattern_constructor
+    self.url_names = url_names
+    self.template_path = template_path
+
+  def djangoURLPatterns(self):
+    """See base.GCIRequestHandler.djangoURLPatterns for specification."""
+    return [
+        self.url_pattern_constructor.construct(
+            r'connection/manage/org/%s$' % url_patterns.USER_ID,
+            self, name=self.url_names.CONNECTION_MANAGE_AS_ORG)
+    ]
+
+  def templatePath(self):
+    """See base.GCIRequestHandler.templatePath for specification."""
+    return self.template_path
+
+  def context(self, data, check, mutator):
+    """See base.GCIRequestHandler.context for specification."""
+    form_data = {'role': data.url_connection.org_role}
+    actions_form = _formToManageConnectionAsOrg(
+        data=data.POST or form_data, name=ACTIONS_FORM_NAME)
+    message_form = MessageForm(data=data.POST or None, name=MESSAGE_FORM_NAME)
+
+    summary_items = collections.OrderedDict()
+    summary_items[USER_ITEM_LABEL] = data.url_ndb_profile.public_name
+    summary_items[ORGANIZATION_ITEM_LABEL] = (
+        data.url_connection.organization.get().name)
+    summary_items[USER_ROLE_ITEM_LABEL] = _getValueForUserRoleItem(data)
+    summary_items[ORG_ROLE_ITEM_LABEL] = _getValueForOrgRoleItem(data)
+    summary_items[INITIALIZED_ON_LABEL] = data.url_connection.created_on
+
+    messages = connection_logic.getConnectionMessages(data.url_connection)
+
+    # TODO(daniel): enable mark as seen
+    # mark_as_seen_url = links.LINKER.userId(
+    #   data.url_profile.key(), data.url_connection.key().id(),
+    #   self.url_names.CONNECTION_MARK_AS_SEEN_BY_ORG)
+
+    return {
+        'page_name': MANAGE_CONNECTION_PAGE_NAME,
+        'actions_form': actions_form,
+        'message_form': message_form,
+        'items': summary_items,
+        'messages': messages,
+    #   'mark_as_seen_url': mark_as_seen_url,
+        }
+
+  def post(self, data, check, mutator):
+    """See base.GCIRequestHandler.post for specification."""
+    handler = self._dispatchPostData(data)
+    return handler.handle(data, check, mutator)
+
+  def _dispatchPostData(self, data):
+    """Picks form handler that is capable of handling the data that was sent
+    in the the current request.
+
+    Args:
+      data: request_data.RequestData for the current request.
+
+    Returns:
+      FormHandler implementation to handler the received data.
+    """
+    if ACTIONS_FORM_NAME in data.POST:
+      # TODO(daniel): eliminate passing self object.
+      return OrgActionsFormHandler(self)
+    elif MESSAGE_FORM_NAME in data.POST:
+      # TODO(daniel): eliminate passing self object.
+      return MessageFormHandler(
+          self, data.profile.key(), urls.UrlNames.CONNECTION_MANAGE_AS_ORG)
     else:
       raise exception.BadRequest('No valid form data is found in POST.')
 
