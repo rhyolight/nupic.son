@@ -18,6 +18,8 @@ import unittest
 
 from soc.modules.gsoc.views.helper import request_data
 
+from melange.logic import connection as connection_logic
+from melange.models import connection as connection_model
 from melange.request import exception
 from melange.views import connection as connection_view
 
@@ -26,7 +28,21 @@ from summerofcode.views.helper import urls
 from tests import org_utils
 from tests import profile_utils
 from tests import program_utils
+from tests import test_utils
 from tests.utils import connection_utils
+
+
+def _getStartAsOrgUrl(org):
+  """Returns URL to 'Start Connection As Organization' page for
+  the specified organization.
+
+  Args:
+    org: Organization entity.
+
+  Returns:
+    The URL to 'Start Connection As Organization' page.
+  """
+  return '/gsoc/connection/start/org/%s' % org.key.id()
 
 
 def _getManageAsUserUrl(connection):
@@ -134,3 +150,101 @@ class NoConnectionExistsAccessCheckerTest(unittest.TestCase):
         connection_view.NoConnectionExistsAccessChecker(urls.UrlNames))
     with self.assertRaises(exception.Redirect):
       access_checker.checkAccess(self.data, None)
+
+
+class StartConnectionAsOrgTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for StartConnectionAsOrg class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def _assertPageTemplatesUsed(self, response):
+    """Asserts that all templates for the tested page are used."""
+    self.assertGSoCTemplatesUsed(response)
+    #self.assertTemplateUsed(
+    #    response, 'codein/connection/start_connection_as_org.html')
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    response = self.get(_getStartAsOrgUrl(self.org))
+    self.assertResponseOK(response)
+    self._assertPageTemplatesUsed(response)
+
+  def testConnectionStartedForNonStudent(self):
+    """Tests that connection is created successfully for non-students."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    first_profile = profile_utils.seedNDBProfile(self.program.key())
+    second_profile = profile_utils.seedNDBProfile(self.program.key())
+
+    post_data = {
+        'role': connection_model.MENTOR_ROLE,
+        'users': '%s, %s' % (
+            first_profile.profile_id, second_profile.profile_id)
+        }
+    response = self.post(_getStartAsOrgUrl(self.org), post_data)
+    self.assertResponseRedirect(response, _getStartAsOrgUrl(self.org))
+
+    # check that connection with the first profile is created
+    connection = connection_model.Connection.query(
+        connection_model.Connection.organization == self.org.key,
+        ancestor=first_profile.key).get()
+    self.assertIsNotNone(connection)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+
+    # check that auto-generated message is created
+    message = connection_model.ConnectionMessage.query(
+        ancestor=connection.key).get()
+    self.assertIsNotNone(message)
+    self.assertTrue(message.is_auto_generated)
+    self.assertEqual(
+        message.content,
+        connection_logic._ORG_STARTED_CONNECTION % (
+            profile.public_name,
+            connection_model.VERBOSE_ROLE_NAMES[connection_model.MENTOR_ROLE]))
+
+    # check that an email to the user has been sent
+    self.assertEmailSent(to=first_profile.contact.email)
+
+    # check that connection with the second profile is created
+    connection = connection_model.Connection.query(
+        connection_model.Connection.organization == self.org.key,
+        ancestor=second_profile.key).get()
+    self.assertIsNotNone(connection)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+
+    # check that an email to the user has been sent
+    self.assertEmailSent(to=second_profile.contact.email)
+
+  def testConnectionNotStartedForStudent(self):
+    """Tests that connection is not created for a student."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    profile = profile_utils.seedNDBStudent(self.program)
+
+    post_data = {
+        'role': connection_model.MENTOR_ROLE,
+        'users': '%s' % profile.profile_id
+        }
+    response = self.post(_getStartAsOrgUrl(self.org), post_data)
+    self.assertResponseBadRequest(response)
+
+    # check that no connection has been created
+    connection = connection_model.Connection.query(
+        connection_model.Connection.organization == self.org.key,
+        ancestor=profile.key).get()
+    self.assertIsNone(connection)
