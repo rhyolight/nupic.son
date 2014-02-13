@@ -18,11 +18,8 @@ from mapreduce import test_support
 
 from melange.models import organization as org_model
 
-from summerofcode import types
-
 from tests import org_utils
 from tests import profile_utils
-from tests import program_utils
 from tests import test_utils
 
 from soc.logic.helper import notifications
