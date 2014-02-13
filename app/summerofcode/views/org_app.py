@@ -1110,7 +1110,8 @@ class SetOrganizationStatusHandler(form_handler.FormHandler):
             message='Missing or invalid new status in POST data.')
       else:
         organization = org_key.get()
-        org_logic.setStatus(organization, data.program, data.site, new_status)
+        org_logic.setStatus(organization, data.program, data.site,
+                            data.program.getProgramMessages(), new_status)
         return http.HttpResponse()
 
 

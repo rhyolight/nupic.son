@@ -149,13 +149,16 @@ def setApplicationResponse(org_key, survey_key, properties):
 
 
 @ndb.transactional
-def setStatus(organization, program, site, new_status, recipients=None):
+def setStatus(organization, program, site, program_messages,
+              new_status, recipients=None):
   """Sets status of the specified organization.
 
   Args:
     organization: Organization entity.
     program: Program entity to which organization is assigned.
     site: Site entity.
+    program_messages: ProgramMessages entity that holds the message
+          templates provided by the program admins.
     new_status: New status of the organization. Must be one of
       org_model.Status constants.
     recipients: List of one or more recipients for the notification email.
@@ -172,11 +175,13 @@ def setStatus(organization, program, site, new_status, recipients=None):
       if new_status == org_model.Status.ACCEPTED:
         notification_context = (
             notifications.OrganizationAcceptedContextProvider()
-                .getContext(recipients, organization, program, site))
+                .getContext(recipients, organization, program,
+                            site, program_messages))
       elif new_status == org_model.Status.REJECTED:
         notification_context = (
             notifications.OrganizationRejectedContextProvider()
-                .getContext(recipients, organization, program, site))
+                .getContext(recipients, organization, program,
+                            site, program_messages))
 
       sub_txn = mailer.getSpawnMailTaskTxn(
           notification_context, parent=organization)

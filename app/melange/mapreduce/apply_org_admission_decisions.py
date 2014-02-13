@@ -21,6 +21,7 @@ from google.appengine.ext import ndb
 from mapreduce import context as mapreduce_context
 
 from melange.logic import organization as org_logic
+from melange.logic import profile as profile_logic
 from melange.models import organization as org_model
 
 from soc.logic import site as site_logic
@@ -45,6 +46,19 @@ def process(org_key):
   # TODO(daniel): add email recipients, i.e. organization admins
   site = site_logic.singleton()
 
+  org_admins = profile_logic.getOrgAdmins(organization.key)
+  recipients = [org_admin.contact.email for org_admin in org_admins]
+
+  # We are "prefetching" the ProgramMessages entity here instead of fetching
+  # it where it is required i.e. when the message templates are required
+  # to build the email message body. We do this because we perform the
+  # operation of fetching the ProgramMessages entity if it exists or create
+  # it if it doesn't in a Appengine regular "db" transation whereas rest
+  # of the updating of organization entities happen within an ndb transaction
+  # because Organization model is an ndb model and such cross API nested
+  # transactions are incompatible in Appengine.
+  program_messages = program.getProgramMessages()
+
   @ndb.transactional
   def updateOrganizationStatus():
     """Transactionally updates organization status."""
@@ -52,9 +66,11 @@ def process(org_key):
     if organization.program.to_old_key() == program_key:
       if organization.status == org_model.Status.PRE_ACCEPTED:
         org_logic.setStatus(
-            organization, program, site, org_model.Status.ACCEPTED)
+            organization, program, site, program_messages,
+            org_model.Status.ACCEPTED, recipients)
       elif organization.status == org_model.Status.PRE_REJECTED:
         org_logic.setStatus(
-            organization, program, site, org_model.Status.REJECTED)
+            organization, program, site, program_messages,
+            org_model.Status.REJECTED, recipients)
 
   updateOrganizationStatus()

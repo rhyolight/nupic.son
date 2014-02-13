@@ -256,10 +256,7 @@ def seedProgramMessages(
   """
   properties = {'parent': program_key}
   properties.update(kwargs)
-  program_messages = models.program_messages_model(**properties)
-  program_messages.put()
-
-  return program_messages
+  return seeder_logic.seed(models.program_messages_model, properties)
 
 
 def seedGSoCProgramMessages(program_key=None, **kwargs):

@@ -14,6 +14,7 @@
 
 """Helper functions for sending out notifications."""
 
+from django import template
 from django.template import loader
 from django.utils.translation import ugettext
 
@@ -39,10 +40,10 @@ DEF_NEW_ANONYMOUS_CONNECTION = ugettext(
     'New Google Summer of Code Connection')
 
 DEF_ACCEPTED_ORG = ugettext(
-    '[%s] Your organization application has been accepted.')
+    '[%(org)s] Your organization application has been accepted.')
 
 DEF_REJECTED_ORG = ugettext(
-    '[%s] Your organization application has been rejected.')
+    '[%(org)s] Your organization application has been rejected.')
 
 DEF_MENTOR_WELCOME_MAIL_SUBJECT = ugettext('Welcome to %s')
 
@@ -62,16 +63,12 @@ DEF_NEW_CONNECTION_MESSAGE_TEMPLATE = \
 DEF_NEW_ANONYMOUS_CONNECTION_NOTIFICATION_TEMPLATE = \
     'modules/gsoc/notification/anonymous_connection.html'
 
-DEF_ACCEPTED_ORG_TEMPLATE = \
-    'soc/notification/org_accepted.html'
-
-DEF_REJECTED_ORG_TEMPLATE = \
-    'soc/notification/org_rejected.html'
-
 DEF_MENTOR_WELCOME_MAIL_TEMPLATE = \
     'soc/notification/mentor_welcome_mail.html'
 
-def getContext(site, program, receivers, message_properties, subject, template):
+
+def _getContextCommon(site, program, receivers, message_properties,
+                      subject, body):
   """Sends out a notification to the specified user.
 
   Args:
@@ -80,15 +77,13 @@ def getContext(site, program, receivers, message_properties, subject, template):
     receivers: Email addresses to which the notification should be sent.
     message_properties: Message properties.
     subject: Subject of notification email.
-    template: Template used for generating notification.
+    body: Email body to be sent as notification.
   Returns:
     A dictionary containing the context for a message to be sent to one
     or more recipients.
   """
   message_properties['sender_name'] = 'The %s Team' % site.site_name
   message_properties['program_name'] = program.name
-
-  body = loader.render_to_string(template, dictionary=message_properties)
 
   # TODO(nathaniel): "to" can be a list of email addresses or a single
   # email address? Is that right? The documentation of mailer.getMailContext
@@ -101,6 +96,53 @@ def getContext(site, program, receivers, message_properties, subject, template):
     bcc = receivers
 
   return mailer.getMailContext(to, subject, body, bcc=bcc)
+
+
+def getContextFromTemplateString(site, program, receivers,
+                                 message_properties, subject,
+                                 template_string):
+  """Sends out a notification to the specified user using the template
+  string to construct the notification body.
+
+  Args:
+    site: Site entity.
+    program: Program entity to which the notification applies.
+    receivers: Email addresses to which the notification should be sent.
+    message_properties: Message properties.
+    subject: Subject of notification email.
+    template_string: Template used for generating notification.
+  Returns:
+    A dictionary containing the context for a message to be sent to one
+    or more recipients.
+  """
+  template_inst = template.Template(template_string)
+  context_instance = template.Context(message_properties)
+  body = template_inst.render(context_instance)
+
+  return _getContextCommon(site, program, receivers, message_properties,
+                           subject, body)
+
+
+def getContext(site, program, receivers, message_properties,
+               subject, template):
+  """Sends out a notification to the specified user by using the template
+  file to construct the notification body.
+
+  Args:
+    site: Site entity.
+    program: Program entity to which the notification applies.
+    receivers: Email addresses to which the notification should be sent.
+    message_properties: Message properties.
+    subject: Subject of notification email.
+    template: Template used for generating notification.
+  Returns:
+    A dictionary containing the context for a message to be sent to one
+    or more recipients.
+  """
+  body = loader.render_to_string(template, dictionary=message_properties)
+
+  return _getContextCommon(site, program, receivers, message_properties,
+                           subject, body)
 
 
 def getDefaultContext(request_data, emails, subject, extra_context=None):
@@ -319,7 +361,7 @@ class OrganizationAcceptedContextProvider(object):
   is accepted into a program.
   """
 
-  def getContext(self, emails, organization, program, site):
+  def getContext(self, emails, organization, program, site, program_messages):
     """Provides notification context of an email to send out when the specified
     organization is accepted into the program.
 
@@ -328,18 +370,19 @@ class OrganizationAcceptedContextProvider(object):
       organization: Organization entity.
       program: Program entity.
       site: Site entity.
+      program_messages: ProgramMessages entity that holds the message
+          templates provided by the program admins.
     """
-    # TODO(daniel): replace with a dynamic mail content
-    # program_messages = program.getProgramMessages()
-    # template = program_messages.accepted_orgs_msg
-    template = DEF_ACCEPTED_ORG_TEMPLATE
-    subject = DEF_ACCEPTED_ORG % organization.name
+    subject = DEF_ACCEPTED_ORG % {
+        'org': organization.name,
+        }
 
     # TODO(daniel): consult what properties are needed.
     message_properties = {}
 
-    return getContext(
-        site, program, emails, message_properties, subject, template)
+    return getContextFromTemplateString(
+        site, program, emails, message_properties, subject,
+        program_messages.accepted_orgs_msg)
 
 
 class OrganizationRejectedContextProvider(object):
@@ -347,7 +390,7 @@ class OrganizationRejectedContextProvider(object):
   is rejected from a program.
   """
 
-  def getContext(self, emails, organization, program, site):
+  def getContext(self, emails, organization, program, site, program_messages):
     """Provides notification context of an email to send out when the specified
     organization is rejected from the program.
 
@@ -356,18 +399,19 @@ class OrganizationRejectedContextProvider(object):
       organization: Organization entity.
       program: Program entity.
       site: Site entity.
+      program_messages: ProgramMessages entity that holds the message
+          templates provided by the program admins.
     """
-    # TODO(daniel): replace with a dynamic mail content
-    # program_messages = program.getProgramMessages()
-    # template = program_messages.rejected_orgs_msg
-    template = DEF_REJECTED_ORG_TEMPLATE
-    subject = DEF_REJECTED_ORG % organization.name
+    subject = DEF_REJECTED_ORG % {
+        'org': organization.name,
+        }
 
     # TODO(daniel): consult what properties are needed.
     message_properties = {}
 
-    return getContext(
-        site, program, emails, message_properties, subject, template)
+    return getContextFromTemplateString(
+        site, program, emails, message_properties, subject,
+        program_messages.rejected_orgs_msg)
 
 
 def orgAppContext(data, record, new_status, apply_url):
