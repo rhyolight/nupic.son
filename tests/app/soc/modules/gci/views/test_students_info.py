@@ -16,6 +16,7 @@
 
 from soc.modules.gci.models.score import GCIScore
 
+from tests import forms_to_submit_utils
 from tests import profile_utils
 from tests.test_utils import GCIDjangoTestCase
 
@@ -55,15 +56,19 @@ class StudentsInfoTest(GCIDjangoTestCase):
     self.assertResponseOK(response)
 
   def testStudentsInfoList(self):
-    """Tests the studentsInfoList component of the dashboard.
-    """
-    profile_helper = profile_utils.GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createOtherUser('pr@gmail.com')
+    """Tests the studentsInfoList component of the dashboard."""
+    forms_helper = forms_to_submit_utils.FormsToSubmitHelper()
+    student_data_properties = {
+        'consent_form': forms_helper.createBlobStoreForm()
+        }
+    student = profile_utils.seedNDBStudent(
+        self.program, student_data_properties=student_data_properties)
 
-    idx = 1
-
-    student = profile_helper.createStudentWithConsentForms(consent_form=True)
-    score_properties = {'points': 5, 'program': self.gci, 'parent': student}
+    score_properties = {
+        'points': 5,
+        'program': self.program,
+        'parent': student.key.to_old_key()
+        }
     score = GCIScore(**score_properties)
     score.put()
 
@@ -73,6 +78,7 @@ class StudentsInfoTest(GCIDjangoTestCase):
     response = self.get(self.url)
     self.assertStudentsInfoTemplatesUsed(response)
 
+    idx = 1
     response = self.getListResponse(self.url, idx)
     self.assertIsJsonResponse(response)
 
@@ -81,29 +87,27 @@ class StudentsInfoTest(GCIDjangoTestCase):
 
     #Only the consent form has been submitted.
     self.assertEqual(data[0]['columns']['consent_form'], 'Yes')
-    self.assertEqual(data[0]['columns']['student_id_form'], 'No')
+    self.assertEqual(data[0]['columns']['enrollment_form'], 'No')
 
-    #Case when both the forms have been submitted.
-    student = profile_helper.createStudentWithConsentForms(
-        consent_form=True, student_id_form=True)
-    score_properties = {'points': 5, 'program': self.gci, 'parent': student}
-    score = GCIScore(**score_properties)
+    # Case when both the forms have been submitted.
+    student.student_data.enrollment_form = forms_helper.createBlobStoreForm()
+    student.put()
 
     data = self.getListData(self.url, idx)
     self.assertEqual(len(data), 1)
     self.assertEqual(data[0]['columns']['consent_form'], 'Yes')
-    self.assertEqual(data[0]['columns']['student_id_form'], 'Yes')
+    self.assertEqual(data[0]['columns']['enrollment_form'], 'Yes')
 
     #Case when none of the two forms have been submitted.
-    student = profile_helper.createStudentWithConsentForms()
-    score_properties = {'points': 5, 'program': self.gci, 'parent': student}
-    score = GCIScore(**score_properties)
+    student.student_data.enrollment_form = None
+    student.student_data.consent_form = None
+    student.put()
 
     data = self.getListData(self.url, idx)
     self.assertEqual(len(data), 1)
     list_fields = data[0]['columns']
     self.assertEqual(list_fields['consent_form'], 'No')
-    self.assertEqual(list_fields['student_id_form'], 'No')
-    self.assertEqual(list_fields['name'], student.name())
-    self.assertEqual(list_fields['link_id'], student.link_id)
-    self.assertEqual(list_fields['email'], student.email)
+    self.assertEqual(list_fields['enrollment_form'], 'No')
+    self.assertEqual(list_fields['public_name'], student.public_name)
+    self.assertEqual(list_fields['profile_id'], student.profile_id)
+    self.assertEqual(list_fields['email'], student.contact.email)

@@ -39,11 +39,13 @@ class AllParticipatingStudentsList(student_list.StudentList):
 
     # Columns that display whether the student forms are already verified.
     self._list_config.addPlainTextColumn(
-        'consent_form_verified', 'Parental Verified',
-        (lambda e, sp, *args: formVerified(e.consent_form_verified)))
+        'is_consent_form_verified', 'Consent Verified',
+        lambda entity, *args:
+            formVerified(entity.student_data.is_consent_form_verified))
     self._list_config.addPlainTextColumn(
-        'student_id_form_verified', 'Student Verified',
-        (lambda e, sp, *args: formVerified(e.student_id_form_verified)))
+        'is_enrollment_form_verified', 'Enrollment Verified',
+        lambda entity, *args:
+            formVerified(entity.student_data.is_enrollment_form_verified))
 
     # Each individual item in the list of students for the host now redirect
     # to the profile show page for that student that which is available only
@@ -51,8 +53,8 @@ class AllParticipatingStudentsList(student_list.StudentList):
     # tasks completed by the student and that link is now moved to the profile
     # show page.
     self._list_config.setRowAction(
-        lambda e, sp, *args: data.redirect.profile(
-            sp[e.parent_key()].link_id).urlOf(url_names.GCI_PROFILE_SHOW_ADMIN))
+        lambda entity, *args: data.redirect.profile(
+            entity.profile_id).urlOf(url_names.GCI_PROFILE_SHOW_ADMIN))
 
   def context(self):
     all_participating_students_list = lists.ListConfigurationResponse(
