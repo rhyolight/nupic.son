@@ -63,12 +63,6 @@ DEF_NEW_CONNECTION_MESSAGE_TEMPLATE = \
 DEF_NEW_ANONYMOUS_CONNECTION_NOTIFICATION_TEMPLATE = \
     'modules/gsoc/notification/anonymous_connection.html'
 
-DEF_ACCEPTED_ORG_TEMPLATE = \
-    'soc/notification/org_accepted.html'
-
-DEF_REJECTED_ORG_TEMPLATE = \
-    'soc/notification/org_rejected.html'
-
 DEF_MENTOR_WELCOME_MAIL_TEMPLATE = \
     'soc/notification/mentor_welcome_mail.html'
 
