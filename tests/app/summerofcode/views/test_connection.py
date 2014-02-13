@@ -14,15 +14,18 @@
 
 """Unit tests for connection related views."""
 
+import mock
 import unittest
 
 from soc.modules.gsoc.views.helper import request_data
 
 from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
+from melange.request import access
 from melange.request import exception
 from melange.views import connection as connection_view
 
+from summerofcode.views import connection as soc_connection_view
 from summerofcode.views.helper import urls
 
 from tests import org_utils
@@ -43,6 +46,19 @@ def _getStartAsOrgUrl(org):
     The URL to 'Start Connection As Organization' page.
   """
   return '/gsoc/connection/start/org/%s' % org.key.id()
+
+
+def _getStartAsUserUrl(org):
+  """Returns URL to 'Start Connection As User' page for
+  the specified organization.
+
+  Args:
+    org: Organization entity.
+
+  Returns:
+    The URL to 'Start Connection As Organization' page.
+  """
+  return '/gsoc/connection/start/user/%s' % org.key.id()
 
 
 def _getManageAsUserUrl(connection):
@@ -248,3 +264,84 @@ class StartConnectionAsOrgTest(test_utils.GSoCDjangoTestCase):
         connection_model.Connection.organization == self.org.key,
         ancestor=profile.key).get()
     self.assertIsNone(connection)
+
+
+class StartConnectionAsUserTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for ShowConnectionAsUser class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def testConnectionExists(self):
+    """Tests that exception is raised when connection already exists."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
+    connection = connection_utils.seed_new_connection(profile.key, self.org.key)
+
+    # check that user is redirected when a connection exists
+    response = self.get(_getStartAsUserUrl(self.org))
+    self.assertResponseRedirect(response, _getManageAsUserUrl(connection))
+
+    # check that bad request is raised when a connection already exists
+    # on POST request after access checker concludes
+    with mock.patch.object(
+        soc_connection_view.START_CONNECTION_AS_USER, 'access_checker',
+        new=access.ALL_ALLOWED_ACCESS_CHECKER):
+      response = self.post(_getStartAsUserUrl(self.org))
+      self.assertResponseBadRequest(response)
+
+  def testStudentProfile(self):
+    """Tests that exception is raised when student profile starts connection."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
+
+    # check that user is forbidden to access the page
+    response = self.get(_getStartAsUserUrl(self.org))
+    self.assertResponseForbidden(response)
+
+    # check that bad request is raised on POST request
+    # even when access checker gets through
+    with mock.patch.object(
+        soc_connection_view.START_CONNECTION_AS_USER, 'access_checker',
+        new=access.ALL_ALLOWED_ACCESS_CHECKER):
+      response = self.post(_getStartAsUserUrl(self.org))
+      self.assertResponseBadRequest(response)
+
+  def testNonStudentProfile(self):
+    """Tests that connection is created for a non-student profile."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
+
+    # seed an admin for the organization
+    org_admin = profile_utils.seedNDBProfile(
+        self.program.key(), admin_for=[self.org.key])
+
+    post_data = {'role': connection_model.ROLE}
+    response = self.post(_getStartAsUserUrl(self.org), post_data)
+
+    # check that a new connection is created
+    connection = connection_model.Connection.query(
+        connection_model.Connection.organization == self.org.key,
+        ancestor=profile.key).get()
+    self.assertIsNotNone(connection)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+
+    # check that auto-generated message is created
+    message = connection_model.ConnectionMessage.query(
+        ancestor=connection.key).get()
+    self.assertIsNotNone(message)
+    self.assertTrue(message.is_auto_generated)
+    self.assertEqual(
+        message.content,
+        connection_logic._USER_STARTED_CONNECTION)
+
+    # check that a message has been sent to the organization admin
+    self.assertEmailSent(to=org_admin.contact.email)
+
+    # check that the user is redirected to 'Manage Connection' page
+    self.assertResponseRedirect(response, _getManageAsUserUrl(connection))
