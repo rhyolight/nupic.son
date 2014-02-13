@@ -26,6 +26,7 @@ from google.appengine.ext import ndb
 from melange.logic import connection as connection_logic
 from melange.logic import profile as profile_logic
 from melange.models import connection as connection_model
+from melange.models import organization as org_model
 from melange.models import user as user_model
 from melange.request import access
 from melange.request import exception
@@ -378,7 +379,8 @@ class MessageForm(gsoc_forms.GSoCModelForm):
 
 START_CONNECTION_AS_ORG_ACCESS_CHECKER = access.ConjuctionAccessChecker([
     access.PROGRAM_ACTIVE_ACCESS_CHECKER,
-    access.IS_USER_ORG_ADMIN_FOR_NDB_ORG
+    access.IS_USER_ORG_ADMIN_FOR_NDB_ORG,
+    access.UrlOrgStatusAccessChecker([org_model.Status.ACCEPTED]),
     ])
 
 class StartConnectionAsOrg(base.RequestHandler):

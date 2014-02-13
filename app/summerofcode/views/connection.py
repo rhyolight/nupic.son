@@ -17,6 +17,7 @@
 from soc.modules.gsoc.views import base as gsoc_base
 from soc.modules.gsoc.views.helper import url_patterns as soc_url_patterns
 
+from melange.models import organization as org_model
 from melange.request import access
 from melange.views import connection as connection_view
 
@@ -35,6 +36,7 @@ START_CONNECTION_AS_ORG = connection_view.StartConnectionAsOrg(
 START_CONNECTION_AS_USER_ACCESS_CHECKER = access.ConjuctionAccessChecker([
     access.PROGRAM_ACTIVE_ACCESS_CHECKER,
     access.NON_STUDENT_PROFILE_ACCESS_CHECKER,
+    access.UrlOrgStatusAccessChecker([org_model.Status.ACCEPTED]),
     connection_view.NoConnectionExistsAccessChecker(soc_urls.UrlNames)])
 
 START_CONNECTION_AS_USER = connection_view.StartConnectionAsUser(

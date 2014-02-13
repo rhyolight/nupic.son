@@ -21,6 +21,7 @@ from soc.modules.gsoc.views.helper import request_data
 
 from melange.logic import connection as connection_logic
 from melange.models import connection as connection_model
+from melange.models import organization as org_model
 from melange.request import access
 from melange.request import exception
 from melange.views import connection as connection_view
@@ -176,6 +177,8 @@ class StartConnectionAsOrgTest(test_utils.GSoCDjangoTestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.init()
+    self.org.status = org_model.Status.ACCEPTED
+    self.org.put()
 
   def _assertPageTemplatesUsed(self, response):
     """Asserts that all templates for the tested page are used."""
@@ -274,6 +277,8 @@ class StartConnectionAsUserTest(test_utils.GSoCDjangoTestCase):
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.init()
+    self.org.status = org_model.Status.ACCEPTED
+    self.org.put()
 
   def testConnectionExists(self):
     """Tests that exception is raised when connection already exists."""
