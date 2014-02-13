@@ -78,6 +78,18 @@ def _getManageAsUserUrl(connection):
       connection.key.parent().id(), connection.key.id())
 
 
+def _getListForUserUrl(program):
+  """Returns URL to 'List Connections For User' page for the specified user.
+
+  Args:
+    profile: Profile entity.
+
+  Returns:
+    URL to 'List Connections For User' page.
+  """
+  return '/gsoc/connection/list/user/%s' % program.key().name()
+
+
 def _getManageAsOrgUrl(connection):
   """Returns URL to 'Manage Connection As Org' page for the specified
   connection entity.
@@ -446,3 +458,48 @@ class ManageConnectionAsUserTest(test_utils.GSoCDjangoTestCase):
 
     # check that last_modified property is updated
     self.assertGreater(self.connection.key.get().last_modified, last_modified)
+
+
+class ListConnectionsForUserTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for ListConnectionsForUser class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def _assertPageTemplatesUsed(self, response):
+    """Asserts that all templates for the tested page are used."""
+    self.assertGSoCTemplatesUsed(response)
+    self.assertTemplateUsed(response,
+        'summerofcode/connection/connection_list.html')
+    self.assertTemplateUsed(response,
+        'summerofcode/_list_component.html')
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
+
+    response = self.get(_getListForUserUrl(self.program))
+    self.assertResponseOK(response)
+    self._assertPageTemplatesUsed(response)
+
+  def testListData(self):
+    """Tests that correct list data is loaded."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
+
+    first_org = org_utils.seedSOCOrganization(
+        self.program.key(), status=org_model.Status.ACCEPTED)
+    connection_utils.seed_new_connection(profile.key, first_org.key)
+
+    other_org = org_utils.seedSOCOrganization(
+        self.program.key(), status=org_model.Status.ACCEPTED)
+    connection_utils.seed_new_connection(profile.key, other_org.key)
+
+    list_data = self.getListData(_getListForUserUrl(self.program), 0)
+
+    # check that all two connections are listed
+    self.assertEqual(len(list_data), 2)

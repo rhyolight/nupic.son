@@ -31,6 +31,7 @@ from melange.models import user as user_model
 from melange.request import access
 from melange.request import exception
 from melange.request import links
+from melange.templates import connection_list
 from melange.utils import rich_bool
 from melange.views.helper import form_handler
 
@@ -993,6 +994,72 @@ class MessageFormHandler(form_handler.FormHandler):
     else:
       # TODO(nathaniel): problematic self-use.
       return self._view.get(data, check, mutator)
+
+
+LIST_CONNECTIONS_FOR_USER_ACCESS_CHECKER = access.ConjuctionAccessChecker([
+    access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+    access.NON_STUDENT_PROFILE_ACCESS_CHECKER])
+
+class ListConnectionsForUser(base.RequestHandler):
+  """View to list all connections for the currently logged in user."""
+
+  access_checker = LIST_CONNECTIONS_FOR_USER_ACCESS_CHECKER
+
+  def __init__(self, initializer, linker, renderer, error_handler,
+      url_pattern_constructor, url_names, template_path):
+    """Initializes a new instance of the request handler for the specified
+    parameters.
+
+    Args:
+      initializer: Implementation of initialize.Initializer interface.
+      linker: Instance of links.Linker class.
+      renderer: Implementation of render.Renderer interface.
+      error_handler: Implementation of error.ErrorHandler interface.
+      url_pattern_constructor:
+        Implementation of url_patterns.UrlPatternConstructor.
+      url_names: Instance of url_names.UrlNames.
+      template_path: The path of the template to be used.
+    """
+    super(ListConnectionsForUser, self).__init__(
+        initializer, linker, renderer, error_handler)
+    self.url_pattern_constructor = url_pattern_constructor
+    self.url_names = url_names
+    self.template_path = template_path
+
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.djangoURLPatterns for specification."""
+    return [
+        self.url_pattern_constructor.construct(
+            r'connection/list/user/%s$' % url_patterns.PROGRAM,
+            self, name=self.url_names.CONNECTION_LIST_FOR_USER)
+    ]
+
+  def templatePath(self):
+    """See base.RequestHandler.templatePath for specification."""
+    return self.template_path
+
+  def context(self, data, check, mutator):
+    """See base.RequestHandler.context for specification."""
+    page_name = (
+        LIST_CONNECTIONS_FOR_USER_PAGE_NAME % data.ndb_profile.profile_id)
+
+    return {
+        # TODO(daniel): template path should not be hardcoded here.
+        'connection_list':
+            connection_list.UserConnectionList(
+                self.url_names, 'summerofcode/_list_component.html', data),
+        'page_name': page_name,
+        }
+
+  def jsonContext(self, data, check, mutator):
+    """See base.RequestHandler.jsonContext for specification."""
+    list_content = connection_list.UserConnectionList(
+        self.url_names, self.template_path, data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exception.BadRequest(message='This data cannot be accessed.')
 
 
 def sendMentorWelcomeMail(data, profile, message):

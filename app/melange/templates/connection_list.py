@@ -24,6 +24,8 @@ from soc.views import template
 from soc.views.helper import lists
 
 
+_CONNECTION_LIST_TITLE = translation.ugettext('Connections')
+
 ORG_ADMIN_CONNECTION_LIST_DESCRIPTION = translation.ugettext(
     'List of connections with mentors and admins for my organizations.')
 
@@ -33,9 +35,17 @@ USER_CONNECTION_LIST_DESCRIPTION = translation.ugettext(
 class ConnectionList(template.Template):
   """Template for list of connections."""
 
-  def __init__(self, data):
-    """See template.Template.__init__ for specification."""
+  def __init__(self, url_names, template_path, data):
+    """Initializes a new instance of the list for the specified parameters.
+
+    Args:
+      url_names: Instance of url_names.UrlNames.
+      template_path: The path of the template to be used.
+      data: request_data.RequestData for the current request.
+    """
     super(ConnectionList, self).__init__(data)
+    self.url_names = url_names
+    self.template_path = template_path
     self._list_config = self._getListConfig()
 
   def context(self):
@@ -45,7 +55,10 @@ class ConnectionList(template.Template):
     list_configuration_response = lists.ListConfigurationResponse(
         self.data, self._list_config, 0, description)
 
-    return {'lists': [list_configuration_response]}
+    return {
+        'list_title': _CONNECTION_LIST_TITLE,
+        'lists': [list_configuration_response]
+        }
 
   def getListData(self):
     # TODO(daniel): add missing doc string
@@ -60,7 +73,7 @@ class ConnectionList(template.Template):
         self.data.request, self._list_config, query,
         lists.keyStarter, prefetcher=prefetcher)
 
-    return response_builder.build()
+    return response_builder.buildNDB()
 
   def _getListConfig(self):
     """Returns list configuration for the list.
@@ -102,7 +115,7 @@ class UserConnectionList(ConnectionList):
 
   def _getQuery(self):
     """See ConnectionList._getQuery for specification."""
-    return connection_logic.queryForAncestor(self.data.url_ndb_profile)
+    return connection_logic.queryForAncestor(self.data.ndb_profile.key)
 
   def _getListConfig(self):
     """See ConnectionList._getListConfig for specification."""
@@ -110,7 +123,7 @@ class UserConnectionList(ConnectionList):
     list_config.addPlainTextColumn('key', 'Key',
         lambda e, *args: e.keyName(), hidden=True)
     list_config.addPlainTextColumn('organization', 'Organization',
-        lambda e, *args: e.organization.name)
+        lambda e, *args: e.organization.get().name)
     list_config.addPlainTextColumn('role', 'Role',
         lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()])
     list_config.addDateColumn('last_modified', 'Last Modified On',
@@ -118,7 +131,7 @@ class UserConnectionList(ConnectionList):
 
     list_config.setRowAction(
         lambda e, *args: links.LINKER.userId(
-            e.parent_key(), e.key().id(),
+            e.key.parent(), e.key.id(),
             self.url_names.CONNECTION_MANAGE_AS_USER))
 
     return list_config
