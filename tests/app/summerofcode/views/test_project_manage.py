@@ -61,15 +61,13 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
   def testStudentAccessForbidden(self):
     """Tests that students cannot access the page."""
     # try to access the page as a student who owns a project
-    self.profile_helper.createStudent()
-
-    # create a mentor
-    mentor = profile_utils.GSoCProfileHelper(
-        self.gsoc, False).createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedNDBStudent(self.program, user=user)
 
     # create a project
-    self.profile_helper.createStudentWithProject(self.org, mentor)
-    project = project_model.GSoCProject.all().get()
+    project = project_utils.seedProject(
+        student, self.program.key(), org_key=self.org.key)
 
     response = self.get(self._getUrl(project))
     self.assertResponseForbidden(response)
@@ -77,14 +75,17 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
 
   def testMentorAccessForbidden(self):
     """Tests that mentors cannot access the page."""
-    # create a student with a project
-    student = profile_utils.GSoCProfileHelper(
-        self.gsoc, False).createStudentWithProject(
-            self.org, self.profile_helper.profile)
-    project = project_model.GSoCProject.all().get()
+    # try to access the page as a mentor who mentor a project
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    mentor = profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
 
-    # try to access the page as a mentor for the project
-    self.profile_helper.createMentor(self.org)
+    # create a student with a project
+    student = profile_utils.seedNDBStudent(self.program)
+    project = project_utils.seedProject(
+        student, self.program.key(), org_key=self.org.key,
+        mentor_key=mentor.key)
 
     response = self.get(self._getUrl(project))
     self.assertResponseForbidden(response)

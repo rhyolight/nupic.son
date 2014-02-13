@@ -171,10 +171,11 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     link_id = LinkIDProvider(ProjectSurvey).getValue()
     suffix = "%s/%s" % (self.gsoc.key().name(), link_id)
 
-    mentor = profile_utils.seedNDBProfile(
-        self.program.key(), mentor_for=[self.org.key])
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedNDBStudent(self.program, user=user)
+    project_utils.seedProject(student, self.program.key(), org_key=self.org.key)
 
-    self.profile_helper.createStudentWithProject(self.org, mentor)
     # test review GET
     url = '/gsoc/eval/student/edit/' + suffix
     response = self.get(url)
@@ -559,9 +560,13 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testShowEvalForAnotherStudentWithProject(self):
-    url, evaluation, mentor = self.getStudentEvalRecordProperties(show=True)
+    url, evaluation, _ = self.getStudentEvalRecordProperties(show=True)
 
-    self.profile_helper.createStudentWithProject(self.org, mentor)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedNDBStudent(self.program, user=user)
+    project_utils.seedProject(student, self.program.key(), org_key=self.org.key)
+
     # test student evaluation show GET for a for a student who
     # has another project in the same org and whose mentor is
     # same as the student whose survey is being accessed
@@ -575,10 +580,11 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
   def testShowEvalForStudentProjectWithAnotherMentor(self):
     url, evaluation, _ = self.getStudentEvalRecordProperties(show=True)
 
-    mentor = profile_utils.seedNDBProfile(
-        self.program.key(), mentor_for=[self.org.key])
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedNDBStudent(self.program, user=user)
+    project_utils.seedProject(student, self.program.key(), org_key=self.org.key)
 
-    self.profile_helper.createStudentWithProject(self.org, mentor)
     # test student evaluation show GET for a for a student who
     # has another project whose mentor is different than the current
     # mentor but the project is in the same org
@@ -593,10 +599,12 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     url, evaluation, _ = self.getStudentEvalRecordProperties(show=True)
     other_org = self.createOrg()
 
-    mentor = profile_utils.seedNDBProfile(
-        self.program.key(), mentor_for=[self.org.key])
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    student = profile_utils.seedNDBStudent(self.program, user=user)
+    project_utils.seedProject(
+        student, self.program.key(), org_key=other_org.key)
 
-    self.profile_helper.createStudentWithProject(other_org, mentor)
     # test student evaluation show GET for a for a student who
     # has another project in a different organization
     response = self.get(url)
