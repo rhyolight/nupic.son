@@ -399,3 +399,45 @@ class ManageConnectionAsOrgTest(test_utils.GSoCDjangoTestCase):
 
     # check that last_modified property is updated
     self.assertGreater(self.connection.key.get().last_modified, last_modified)
+
+
+class ManageConnectionAsUserTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for ManageConnectionAsUser class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBProfile(self.program.key(), user=user)
+    self.connection = connection_utils.seed_new_connection(
+        profile.key, self.org.key)
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    response = self.get(_getManageAsUserUrl(self.connection))
+    self.assertResponseOK(response)
+
+  def testSendNewMessage(self):
+    """Tests that sending a new connection message works."""
+    last_modified = self.connection.last_modified
+
+    post_data = {
+        connection_view.MESSAGE_FORM_NAME: '',
+        'content': _TEST_MESSAGE_CONTENT,
+        }
+    response = self.post(_getManageAsUserUrl(self.connection), post_data)
+    self.assertResponseRedirect(response, _getManageAsUserUrl(self.connection))
+
+    # check that a new message is created
+    query = connection_model.ConnectionMessage.query(
+        ancestor=self.connection.key)
+    message = query.get()
+    self.assertIsNotNone(message)
+    self.assertEqual(message.content, _TEST_MESSAGE_CONTENT)
+    self.assertFalse(message.is_auto_generated)
+    self.assertEqual(message.author, self.connection.key.parent())
+
+    # check that last_modified property is updated
+    self.assertGreater(self.connection.key.get().last_modified, last_modified)
