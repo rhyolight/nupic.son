@@ -299,7 +299,7 @@ def getMentorWelcomeMailContext(profile, data, message):
     Context that can be given to the mailer. If the context is empty no message
     was defined.
   """
-  to = profile.email
+  to = profile.contact.email
   subject = DEF_MENTOR_WELCOME_MAIL_SUBJECT % (data.program.name)
 
   if not message:
