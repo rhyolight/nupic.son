@@ -102,6 +102,36 @@ class QueryAllMentorsForProgramTest(unittest.TestCase):
     self.assertEqual(self.mentor_keys, set(mentor.key for mentor in result))
 
 
+_NUMBER_OF_STUDENTS = 3
+
+class QueryAllStudentsForProgramTest(unittest.TestCase):
+  """Unit test for queryAllStudentsForProgram function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    # seed two programs for the same sponsor
+    sponsor = program_utils.seedSponsor()
+    self.program_one = program_utils.seedProgram(sponsor_key=sponsor.key())
+    program_two = program_utils.seedProgram(sponsor_key=sponsor.key())
+
+    # seed mentors for both programs
+    org = org_utils.seedOrganization(self.program_one.key())
+    profile_utils.seedNDBProfile(self.program_one.key(), mentor_for=[org.key])
+    profile_utils.seedNDBProfile(program_two.key(), mentor_for=[org.key])
+
+    self.student_keys = set()
+    # seed a few students for both programs
+    for _ in range(_NUMBER_OF_STUDENTS):
+      self.student_keys.add(profile_utils.seedNDBStudent(self.program_one).key)
+      profile_utils.seedNDBProfile(program_two.key())
+
+  def testAllStudentsForProgramFetched(self):
+    """Tests that the returned query fetches all students for the program."""
+    query = profile_logic.queryAllStudentsForProgram(self.program_one.key())
+    result = query.fetch(1000)
+    self.assertEqual(self.student_keys, set(student.key for student in result))
+
+
 class GetOrgAdminsTest(unittest.TestCase):
   """Unit tests for getOrgAdmins function."""
 
