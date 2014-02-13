@@ -434,30 +434,6 @@ class GSoCProfileHelper(ProfileHelper):
     self.profile = seedSOCStudent(self.program, user=user)
     return self.profile
 
-  def createStudentWithProposal(self, org, mentor):
-    """Sets the current user to be a student with a proposal for the
-    current program.
-    """
-    return self.createStudentWithProposals(org, mentor, 1)
-
-  def createStudentWithProposals(self, org, mentor, n):
-    """Sets the current user to be a student with specified number of
-    proposals for the current program.
-    """
-    self.createStudent()
-    self.profile.student_info.number_of_proposals = n
-    self.profile.put()
-    self.profile.student_info.put()
-    properties = {
-        'scope': self.profile, 'score': 0, 'nr_scores': 0,
-        'is_publicly_visible': False, 'accept_as_project': False,
-        'is_editable_post_deadline': False, 'extra': None,
-        'parent': self.profile, 'status': 'pending', 'has_mentor': True,
-        'program': self.program, 'org': org.key.to_old_key(), 'mentor': mentor
-    }
-    self.seedn(proposal_model.GSoCProposal, properties, n)
-    return self.profile
-
   def createStudentWithProject(self, org, mentor):
     """Sets the current user to be a student with a project for the
     current program.
