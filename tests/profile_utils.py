@@ -434,17 +434,6 @@ class GSoCProfileHelper(ProfileHelper):
     self.profile = seedSOCStudent(self.program, user=user)
     return self.profile
 
-  def createMentorWithProject(self, org, student):
-    """Creates an mentor profile with a project for the current user."""
-    self.createMentor(org)
-    proposal = proposal_model.GSoCProposal.all().ancestor(student).get()
-
-    properties = {'mentors': [self.profile.key()], 'program': self.program,
-                  'parent': student, 'org': org.key.to_old_key(),
-                  'status': 'accepted', 'proposal': proposal}
-    self.seed(project_model.GSoCProject, properties)
-    return self.profile
-
   def createConnection(self, org):
     self.createProfile()
     self.connection = connection_utils.seed_new_connection(
