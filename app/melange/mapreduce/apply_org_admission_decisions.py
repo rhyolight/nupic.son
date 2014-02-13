@@ -46,8 +46,8 @@ def process(org_key):
   # TODO(daniel): add email recipients, i.e. organization admins
   site = site_logic.singleton()
 
-  admins = profile_logic.getOrgAdmins(organization.key)
-  recipients = [a.contact.email for a in admins]
+  org_admins = profile_logic.getOrgAdmins(organization.key)
+  recipients = [org_admin.contact.email for org_admin in org_admins]
 
   # We are "prefetching" the ProgramMessages entity here instead of fetching
   # it where it is required i.e. when the message templates are required
