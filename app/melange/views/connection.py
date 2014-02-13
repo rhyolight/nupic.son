@@ -137,7 +137,7 @@ def cleanUsers(tokens, program_key):
   Raises:
     django_forms.ValidationError if the submitted value is not valid.
   """
-  identifiers = set(token.strip() for token in tokens)
+  identifiers = set(token.strip() for token in tokens.split(','))
 
   emails = []
   users = []
