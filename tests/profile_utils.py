@@ -219,6 +219,25 @@ def seedNDBProfile(program_key, model=ndb_profile_model.Profile,
   profile = model(id='%s/%s' % (program_key.name(), user.key.id()),
       parent=user.key, **properties)
   profile.put()
+
+  org_keys = list(set(mentor_for + admin_for))
+  for org_key in org_keys:
+    if org_key in admin_for:
+      org_role = connection_model.ORG_ADMIN_ROLE
+    else:
+      org_role = connection_model.MENTOR_ROLE
+
+    connection_properties = {
+        'user_role': connection_model.ROLE,
+        'org_role': org_role
+        }
+
+    # TODO(daniel): remove when all organizations are converted
+    if not isinstance(org_key, ndb.Key):
+      org_key = ndb.Key.from_old_key(org_key)
+    connection_utils.seed_new_connection(
+        profile.key, org_key, **connection_properties)
+
   return profile
 
 

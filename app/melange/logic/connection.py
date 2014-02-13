@@ -119,6 +119,23 @@ def queryForOrganizations(org_keys):
     raise ValueError('List of organizations cannot be empty.')
 
 
+def connectionForProfileAndOrganization(profile_key, org_key):
+  """Returns connection between the specified profile and organization,
+  if one already exists.
+
+  Args:
+    profile_key: Profile key.
+    org_key: Organization key.
+
+  Returns:
+    Connection entity, if one exists for the specified profile and organization.
+    None otherwise.
+  """
+  return connection_model.Connection.query(
+      connection_model.Connection.organization == org_key,
+      ancestor=profile_key).get()
+
+
 def connectionExists(profile_key, org_key):
   """Check to see whether or not a Connection exists between the specified
   profile and organization.
@@ -346,11 +363,13 @@ def generateMessageOnUpdateByOrg(connection, org_admin, old_org_role):
   """
   if connection.org_role != old_org_role:
     lines = []
-    lines.append(_ORG_ROLE_CHANGED % (connection_model.VERBOSE_ROLE_NAMES[
-        connection.org_role], org_admin.name()))
+    lines.append(
+        _ORG_ROLE_CHANGED % (
+            connection_model.VERBOSE_ROLE_NAMES[connection.org_role],
+            org_admin.public_name))
 
     content = '\n'.join(lines)
-    return createConnectionMessage(connection.key(), content)
+    return createConnectionMessage(connection.key, content)
   else:
     return None
 
@@ -374,6 +393,6 @@ def generateMessageOnUpdateByUser(connection, old_user_role):
       lines.append(_USER_REQUESTS_ROLE)
 
     content = '\n'.join(lines)
-    return createConnectionMessage(connection.key(), content)
+    return createConnectionMessage(connection.key, content)
   else:
     return None

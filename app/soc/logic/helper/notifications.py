@@ -207,12 +207,12 @@ class StartConnectionByUserContextProvider(object):
     """
     subject = DEF_NEW_USER_CONNECTION % {'org': org.name}
     connection_url = self._linker.userId(
-        profile.key(), connection_key.id(),
+        profile.key, connection_key.id(),
         self._url_names.CONNECTION_MANAGE_AS_ORG)
 
     message_properties = {
         'connection_url': connection_url,
-        'name': profile.name(),
+        'name': profile.public_name,
         'org_name': org.name,
         'message': message,
         }
@@ -341,7 +341,7 @@ def getMentorWelcomeMailContext(profile, data, message):
     Context that can be given to the mailer. If the context is empty no message
     was defined.
   """
-  to = profile.email
+  to = profile.contact.email
   subject = DEF_MENTOR_WELCOME_MAIL_SUBJECT % (data.program.name)
 
   if not message:

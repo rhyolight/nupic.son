@@ -15,6 +15,7 @@
 """Tests for profile logic."""
 
 import datetime
+import mock
 import unittest
 
 from google.appengine.ext import ndb
@@ -24,6 +25,7 @@ from melange.models import address as address_model
 from melange.models import education as education_model
 from melange.models import profile as ndb_profile_model
 from melange.models import user as user_model
+from melange.utils import rich_bool
 
 from soc.models import program as program_model
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
@@ -72,6 +74,49 @@ class CanResignAsOrgAdminForOrgTest(unittest.TestCase):
     with self.assertRaises(ValueError):
       profile_logic.canResignAsOrgAdminForOrg(
           self.org_admin, self.organization_two.key)
+
+
+class IsMentorRoleEligibleForOrgTest(unittest.TestCase):
+  """Unit tests for isMentorRoleEligibleForOrg function."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    program = program_utils.seedProgram()
+
+    # seed an organization
+    self.org = org_utils.seedOrganization(program.key())
+
+    # seed a profile
+    self.profile = profile_utils.seedNDBProfile(program.key())
+
+  def testForUserWithNoRole(self):
+    """Tests that user with no role is eligible."""
+    result = profile_logic.isMentorRoleEligibleForOrg(
+        self.profile, self.org.key)
+    self.assertTrue(result)
+
+  @mock.patch.object(
+      profile_logic, 'canResignAsOrgAdminForOrg', return_value=rich_bool.FALSE)
+  def testForOrgAdminThatCannotResign(self, mock_func):
+    """Tests that org admin that cannot resign is not eligible."""
+    self.profile.mentor_for = [self.org.key]
+    self.profile.admin_for = [self.org.key]
+
+    result = profile_logic.isMentorRoleEligibleForOrg(
+        self.profile, self.org.key)
+    self.assertFalse(result)
+
+  @mock.patch.object(
+      profile_logic, 'canResignAsOrgAdminForOrg', return_value=rich_bool.TRUE)
+  def testForOrgAdminThatCanResign(self, mock_func):
+    """Tests that org admin that can resign is eligible."""
+    self.profile.mentor_for = [self.org.key]
+    self.profile.admin_for = [self.org.key]
+
+    result = profile_logic.isMentorRoleEligibleForOrg(
+        self.profile, self.org.key)
+    self.assertTrue(result)
+
 
 _NUMBER_OF_MENTORS = 3
 

@@ -17,12 +17,18 @@
 from melange.appengine import db as melange_db
 from melange.logic import profile as profile_logic
 from melange.models import profile as profile_model
+from melange.utils import rich_bool
 
 from soc.modules.gsoc.logic import project as project_logic
 from soc.modules.gsoc.logic import proposal as proposal_logic
 
 from summerofcode import types
 
+
+# List of reasons why the specified profile cannot resign from mentor role
+IS_ORG_ADMIN = 'is_org_admin'
+HAS_PROPOSAL_ASSIGNED = 'has_proposal_assigned'
+HAS_PROJECT_ASSIGNED = 'has_project_assigned'
 
 def queryAllMentorsKeysForOrg(org_key, limit=1000):
   """Returns a list of keys of all the mentors for the specified organization.
@@ -157,7 +163,9 @@ def canResignAsMentorForOrg(profile, org_key):
     org_key: organization key
 
   Returns:
-    True, if the mentor is allowed to resign; False otherwise
+    RichBool whose value is set to True, if the mentor is allowed to resign.
+    Otherwise, RichBool whose value is set to False and extra part is a string
+    that represents the reason why the user is not allowed to resign.
   """
   # TODO(daniel): figure out what to do with "possible_mentors"
   # user may be asked either to remove herself from those proposals or
@@ -168,15 +176,48 @@ def canResignAsMentorForOrg(profile, org_key):
         'The specified profile is not a mentor for %s' % org_key.id())
 
   if org_key in profile.admin_for:
-    return False
+    return rich_bool.RichBool(False, IS_ORG_ADMIN)
 
   if proposal_logic.hasMentorProposalAssigned(profile, org_key=org_key):
-    return False
+    return rich_bool.RichBool(False, HAS_PROPOSAL_ASSIGNED)
 
   if project_logic.hasMentorProjectAssigned(profile, org_key=org_key):
-    return False
+    return rich_bool.RichBool(False, HAS_PROJECT_ASSIGNED)
 
-  return True
+  return rich_bool.TRUE
+
+
+def isNoRoleEligibleForOrg(profile, org_key):
+  """Tells whether the specified user is eligible to have no role for the
+  specified organization.
+
+  A user is eligible for no role if he or she does not have any obligations
+  to the organization.
+
+  Please note that this function executes a non-ancestor query, so it cannot
+  be safely used within transactions.
+
+  Args:
+    profile: profile entity.
+    org_key: organization key.
+
+  Returns:
+    RichBool whose value is set to True, if the user is eligible for no
+    role for the specified organization. Otherwise, RichBool whose value is set
+    to False and extra part is a string that represents a reason why the user
+    is not eligible to resign from role at this time.
+  """
+  if org_key in profile.admin_for:
+    result = profile_logic.canResignAsOrgAdminForOrg(profile, org_key)
+    if not result:
+      return result
+
+  if org_key in profile.mentor_for:
+    result = canResignAsMentorForOrg(profile, org_key)
+    if not result:
+      return result
+
+  return rich_bool.TRUE
 
 
 # TODO(daniel): make this function transaction safe

@@ -158,6 +158,7 @@ def setup():
                  os.path.join(appengine_location, 'lib', 'yaml', 'lib'),
                  os.path.join(appengine_location, 'lib', 'fancy_urllib'),
                  os.path.join(appengine_location, 'lib', 'simplejson'),
+                 os.path.join(appengine_location, 'lib', 'protorpc-1.0'),
                  appengine_location,
                  os.path.join(here, 'app'),
                 ]
