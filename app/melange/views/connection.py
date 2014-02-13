@@ -450,7 +450,7 @@ class StartConnectionAsOrg(base.RequestHandler):
             org_admin=data.ndb_profile))
 
       # TODO(daniel): add some message with whom connections are started
-      url = self.links.LINKER.organization(
+      url = self.linker.organization(
           data.url_ndb_org.key, self.url_names.CONNECTION_START_AS_ORG)
       return http.HttpResponseRedirect(url)
     else:
