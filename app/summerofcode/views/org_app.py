@@ -694,8 +694,10 @@ class OrgApplicationSubmitPage(base.GSoCRequestHandler):
   """View to submit application to a program by organization representatives."""
 
   access_checker = access.ConjuctionAccessChecker([
-      access.NON_STUDENT_PROFILE_ACCESS_CHECKER,
-      access.ORG_SIGNUP_ACTIVE_ACCESS_CHECKER])
+      access.IS_USER_ORG_ADMIN_FOR_NDB_ORG,
+      access.UrlOrgStatusAccessChecker(
+          [org_model.Status.APPLYING, org_model.Status.PRE_ACCEPTED,
+          org_model.Status.PRE_REJECTED])])
 
   def djangoURLPatterns(self):
     """See base.RequestHandler.djangoURLPatterns for specification."""
