@@ -434,28 +434,6 @@ class GSoCProfileHelper(ProfileHelper):
     self.profile = seedSOCStudent(self.program, user=user)
     return self.profile
 
-  def createStudentWithProject(self, org, mentor):
-    """Sets the current user to be a student with a project for the
-    current program.
-    """
-    return self.createStudentWithProjects(org, mentor, 1)
-
-  def createStudentWithProjects(self, org, mentor, n):
-    """Sets the current user to be a student with specified number of
-    projects for the current program.
-    """
-    student = seedSOCStudent(self.program, user=seedNDBUser())
-    mentor = seed_utils.seedNDBProfile(
-        self.program.key(), seedNDBUser(), mentor_for=[org.key])
-
-    proposal = seed_utils.seedProposal(
-        student.key, self.program.key(), org.key, mentor.key)
-    seed_utils.seedProject(
-        student, self.program.key(), proposal.key(), org.key, mentor.key)
-
-    self.profile = student
-    return self.profile
-
   def createMentorWithProject(self, org, student):
     """Creates an mentor profile with a project for the current user."""
     self.createMentor(org)
