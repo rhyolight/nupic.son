@@ -23,7 +23,6 @@ from soc.views.helper import lists
 from soc.views.helper.url import urlize
 from soc.views.template import Template
 
-from soc.modules.gci.models.profile import GCIStudentInfo
 from soc.modules.gci.views.helper import url_names
 
 

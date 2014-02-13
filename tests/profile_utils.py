@@ -31,8 +31,6 @@ from melange.models import user as ndb_user_model
 from soc.models import user as user_model
 
 from soc.modules.gci.models import profile as gci_profile_model
-from soc.modules.gsoc.models import project as project_model
-from soc.modules.gsoc.models import proposal as proposal_model
 from soc.modules.seeder.logic.providers import string as string_provider
 from soc.modules.seeder.logic.providers import user as user_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
@@ -42,7 +40,7 @@ from summerofcode.models import profile as soc_profile_model
 from tests import forms_to_submit_utils
 from tests import task_utils
 from tests.utils import connection_utils
-from tests.utils import seed_utils
+
 
 DEFAULT_EMAIL = 'test@example.com'
 

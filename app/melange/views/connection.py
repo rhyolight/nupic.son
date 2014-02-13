@@ -251,7 +251,7 @@ def _formToManageConnectionAsUser(**kwargs):
   form.removeField('message')
   form.removeField('users')
 
-  form.fields['role'].widget=django_forms.Select(
+  form.fields['role'].widget = django_forms.Select(
       choices=USER_ROLE_CHOICES)
   form.fields['role'].label = CONNECTION_FORM_USER_ROLE_LABEL
   form.fields['role'].help_text = CONNECTION_FORM_USER_ROLE_HELP_TEXT
@@ -269,7 +269,7 @@ def _formToManageConnectionAsOrg(**kwargs):
   form.removeField('message')
   form.removeField('users')
 
-  form.fields['role'].widget=django_forms.Select(
+  form.fields['role'].widget = django_forms.Select(
       choices=ALL_ORG_ROLE_CHOICES)
   form.fields['role'].label = CONNECTION_FORM_ORG_ROLE_LABEL
   form.fields['role'].help_text = MANAGE_CONNECTION_FORM_ORG_ROLE_HELP_TEXT
@@ -632,7 +632,7 @@ class ManageConnectionAsUser(base.RequestHandler):
 
     messages = connection_logic.getConnectionMessages(data.url_connection.key)
 
-    # TODO(daniel): add mark as seen by user 
+    # TODO(daniel): add mark as seen by user
     #mark_as_seen_url = links.LINKER.userId(
     #    data.url_ndb_profile.key, data.url_connection.key.id(),
     #    self.url_names.CONNECTION_MARK_AS_SEEN_BY_USER)

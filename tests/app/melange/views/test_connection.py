@@ -644,7 +644,7 @@ class UserActionsFormHandlerTest(unittest.TestCase):
     handler = connection_view.UserActionsFormHandler(self.view, url='unsed')
     with mock.patch.object(
         soc_profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
-      with self.assertRaises(exception.UserError) as context: 
+      with self.assertRaises(exception.UserError) as context:
         handler.handle(data, None, None)
       self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
 
@@ -820,7 +820,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # no role is still offered 
+    # no role is still offered
     request.POST = {'role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, kwargs)
 
@@ -862,7 +862,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # no role is still offered 
+    # no role is still offered
     request.POST = {'role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -901,7 +901,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # mentor role is offered now 
+    # mentor role is offered now
     request.POST = {'role': connection_model.MENTOR_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -948,7 +948,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # mentor role is offered now 
+    # mentor role is offered now
     request.POST = {'role': connection_model.MENTOR_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -994,7 +994,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # org admin role is offered now 
+    # org admin role is offered now
     request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -1041,7 +1041,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # org admin role is offered now 
+    # org admin role is offered now
     request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -1088,7 +1088,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # no role is offered now 
+    # no role is offered now
     request.POST = {'role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -1139,7 +1139,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # no role is offered now 
+    # no role is offered now
     request.POST = {'role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -1170,7 +1170,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
 
     # now the mentor can be removed
     request = http.HttpRequest()
-    # no role is offered now 
+    # no role is offered now
     request.POST = {'role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -1222,7 +1222,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # mentor role is offered now 
+    # mentor role is offered now
     request.POST = {'role': connection_model.MENTOR_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -1266,7 +1266,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # mentor role is offered now 
+    # mentor role is offered now
     request.POST = {'role': connection_model.MENTOR_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -1306,7 +1306,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # org admin role is offered now 
+    # org admin role is offered now
     request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -1354,7 +1354,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # org admin role is offered now 
+    # org admin role is offered now
     request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -1401,7 +1401,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # no role is offered now 
+    # no role is offered now
     request.POST = {'role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -1452,7 +1452,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # no role is offered now 
+    # no role is offered now
     request.POST = {'role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, kwargs)
 
@@ -1483,7 +1483,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
 
     # now the mentor can be removed
     request = http.HttpRequest()
-    # no role is offered now 
+    # no role is offered now
     request.POST = {'role': connection_model.NO_ROLE}
     data = request_data.RequestData(request, None, kwargs)
 
@@ -1533,7 +1533,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # mentor role is offered now 
+    # mentor role is offered now
     request.POST = {'role': connection_model.MENTOR_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -1616,7 +1616,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
 
     # now the org admin can be removed
     request = http.HttpRequest()
-    # mentor role is offered now 
+    # mentor role is offered now
     request.POST = {'role': connection_model.MENTOR_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -1669,7 +1669,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # org admin role is offered now 
+    # org admin role is offered now
     request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 
@@ -1712,7 +1712,7 @@ class OrgActionsFormHandlerTest(unittest.TestCase):
         }
 
     request = http.HttpRequest()
-    # org admin role is offered now 
+    # org admin role is offered now
     request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
     data = request_data.RequestData(request, None, self.kwargs)
 

@@ -16,7 +16,6 @@
 
 from datetime import date
 
-from soc.modules.gsoc.models import project as project_model
 from soc.modules.gsoc.models import project_survey as project_survey_model
 
 from summerofcode.logic import survey as survey_logic
