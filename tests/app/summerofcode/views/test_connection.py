@@ -195,8 +195,7 @@ class StartConnectionAsOrgTest(test_utils.GSoCDjangoTestCase):
   def _assertPageTemplatesUsed(self, response):
     """Asserts that all templates for the tested page are used."""
     self.assertGSoCTemplatesUsed(response)
-    #self.assertTemplateUsed(
-    #    response, 'codein/connection/start_connection_as_org.html')
+    self.assertTemplateUsed(response, 'modules/gsoc/form_base.html')
 
   def testPageLoads(self):
     """Tests that page loads properly."""
