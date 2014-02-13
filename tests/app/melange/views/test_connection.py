@@ -21,6 +21,7 @@ import unittest
 from django import http
 
 from melange.logic import connection as connection_logic
+from melange.logic import profile as profile_logic
 from melange.models import connection as connection_model
 from melange.request import exception
 from melange.views import connection as connection_view
@@ -29,7 +30,7 @@ from melange.utils import rich_bool
 from soc.views.helper import request_data
 
 # TODO(daniel): Summer Of code module cannot be imported here
-from soc.modules.gsoc.logic import profile as profile_logic
+from soc.modules.gsoc.logic import profile as soc_profile_logic
 
 from tests import org_utils
 from tests import profile_utils
@@ -495,6 +496,7 @@ class UserActionsFormHandlerTest(unittest.TestCase):
     connection = connection_model.Connection.query(
         connection_model.Connection.organization == self.org.key,
         ancestor=profile.key).get()
+
     old_seen_by_org = connection.seen_by_org
     old_seen_by_user = connection.seen_by_user
 
@@ -641,7 +643,7 @@ class UserActionsFormHandlerTest(unittest.TestCase):
     # assume that mentor is not eligible to quit
     handler = connection_view.UserActionsFormHandler(self.view, url='unsed')
     with mock.patch.object(
-        profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
+        soc_profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
       with self.assertRaises(exception.UserError) as context: 
         handler.handle(data, None, None)
       self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
@@ -673,7 +675,7 @@ class UserActionsFormHandlerTest(unittest.TestCase):
 
     # assume that mentor is eligible to quit
     with mock.patch.object(
-        profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.TRUE):
+        soc_profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.TRUE):
       handler.handle(data, None, None)
 
     # check if all data is updated properly
@@ -721,7 +723,7 @@ class UserActionsFormHandlerTest(unittest.TestCase):
     # assume that mentor is not eligible to quit
     handler = connection_view.UserActionsFormHandler(self.view, url='unsed')
     with mock.patch.object(
-        profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
+        soc_profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
       with self.assertRaises(exception.UserError) as context:
         handler.handle(data, None, None)
       self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
@@ -753,7 +755,7 @@ class UserActionsFormHandlerTest(unittest.TestCase):
 
     # assume that mentor is eligible to quit
     with mock.patch.object(
-        profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.TRUE):
+        soc_profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.TRUE):
       handler.handle(data, None, None)
 
     # check if all data is updated properly
@@ -772,3 +774,964 @@ class UserActionsFormHandlerTest(unittest.TestCase):
     query = connection_model.ConnectionMessage.query(ancestor=connection.key)
     message = query.get()
     self.assertIn(connection_logic._USER_DOES_NOT_REQUEST_ROLE, message.content)
+
+
+def _generatedMessageContent(org_role, org_admin):
+  """Returns part of content of a message that is generated when role offered
+  by organization changes.
+
+  Args:
+    org_role: new role offered by organization.
+    org_admin: profile entity of org admin who changed the role
+
+  Returns:
+    a string that is a part of message content that is generated.
+  """
+  return connection_logic._ORG_ROLE_CHANGED % (
+      connection_model.VERBOSE_ROLE_NAMES[org_role], org_admin.public_name)
+
+
+class OrgActionsFormHandlerTest(unittest.TestCase):
+  """Unit tests for OrgActionsFormHandler class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.sponsor = program_utils.seedSponsor()
+    self.program = program_utils.seedProgram(sponsor_key=self.sponsor.key())
+    self.org = org_utils.seedOrganization(self.program.key())
+
+    # unused object used as a callback for the handler
+    self.view = _MockView()
+
+  def testNoRoleToNoRoleWhileNoRoleRequested(self):
+    """Tests NO ROLE if no role offered and user requests no role."""
+    profile = profile_utils.seedNDBProfile(self.program.key())
+
+    # user does not request any role from organization
+    connection = connection_utils.seed_new_connection(profile.key, self.org.key)
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
+
+    kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # no role is still offered 
+    request.POST = {'role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, kwargs)
+
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
+    self.assertNotIn(self.org.key, profile.admin_for)
+    self.assertNotIn(self.org.key, profile.mentor_for)
+
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIsNone(message)
+
+  def testNoRoleToNoRoleWhileRoleRequested(self):
+    """Tests NO ROLE if no role offered and user requests role."""
+    profile = profile_utils.seedNDBProfile(self.program.key())
+
+    # user requests role from organization
+    connection = connection_utils.seed_new_connection(
+        profile.key, self.org.key, user_role=connection_model.ROLE)
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # no role is still offered 
+    request.POST = {'role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
+    self.assertNotIn(self.org.key, profile.admin_for)
+    self.assertNotIn(self.org.key, profile.mentor_for)
+
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIsNone(message)
+
+  def testNoRoleToMentorRoleWhileNoRoleRequested(self):
+    """Tests MENTOR ROLE if no role offered and user requests no role."""
+    profile = profile_utils.seedNDBProfile(self.program.key())
+
+    # user does not request any role from organization
+    connection = connection_utils.seed_new_connection(profile.key, self.org.key)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # mentor role is offered now 
+    request.POST = {'role': connection_model.MENTOR_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # seed an organization administrator who makes the decision
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key, profile.admin_for)
+    self.assertNotIn(self.org.key, profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.MENTOR_ROLE, data.ndb_profile), message.content)
+
+  def testNoRoleToMentorRoleWhileRoleRequested(self):
+    """Tests MENTOR ROLE if no role offered and user requests role."""
+    profile = profile_utils.seedNDBProfile(self.program.key())
+
+    # user requests role from organization
+    connection = connection_utils.seed_new_connection(
+        profile.key, self.org.key, user_role=connection_model.ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # mentor role is offered now 
+    request.POST = {'role': connection_model.MENTOR_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # seed an organization administrator who makes the decision
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key, profile.admin_for)
+    self.assertIn(self.org.key, profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.MENTOR_ROLE, data.ndb_profile), message.content)
+
+  def testNoRoleToOrgAdminRoleWhileNoRoleRequested(self):
+    """Tests ORG ADMIN ROLE if no role offered and user requests no role."""
+    profile = profile_utils.seedNDBProfile(self.program.key())
+
+    # user does not request any role from organization
+    connection = connection_utils.seed_new_connection(profile.key, self.org.key)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # org admin role is offered now 
+    request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # seed an organization administrator who makes the decision
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertNotIn(self.org.key, profile.admin_for)
+    self.assertNotIn(self.org.key, profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.ORG_ADMIN_ROLE, data.ndb_profile), message.content)
+
+  def testNoRoleToOrgAdminRoleWhileRoleRequested(self):
+    """Tests ORG ADMIN ROLE if no role offered and user requests role."""
+    profile = profile_utils.seedNDBProfile(self.program.key())
+
+    # user requests role from organization
+    connection = connection_utils.seed_new_connection(
+        profile.key, self.org.key, user_role=connection_model.ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # org admin role is offered now 
+    request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # seed an organization administrator who makes the decision
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertIn(self.org.key, profile.admin_for)
+    self.assertIn(self.org.key, profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.ORG_ADMIN_ROLE, data.ndb_profile), message.content)
+
+  def testMentorRoleToNoRoleWhileNoRoleRequested(self):
+    """Tests NO ROLE if mentor role offered and user requests no role."""
+    profile = profile_utils.seedNDBProfile(self.program.key())
+
+    # user does not request any role from organization
+    connection = connection_utils.seed_new_connection(
+        profile.key, self.org.key, org_role=connection_model.MENTOR_ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # no role is offered now 
+    request.POST = {'role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # seed an organization administrator who makes the decision
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
+    self.assertNotIn(self.org.key, profile.admin_for)
+    self.assertNotIn(self.org.key, profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.NO_ROLE, data.ndb_profile), message.content)
+
+  def testMentorRoleToNoRoleWhileRoleRequested(self):
+    """Tests NO ROLE if mentor role offered and user requests role."""
+    # user is a mentor for organization
+    profile = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
+    connection = connection_model.Connection.query(
+        connection_model.Connection.organization == self.org.key,
+        ancestor=profile.key).get()
+
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # no role is offered now 
+    request.POST = {'role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # assume that mentor cannot be removed
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    with mock.patch.object(
+        soc_profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
+      with self.assertRaises(exception.UserError) as context:
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key, profile.admin_for)
+    self.assertIn(self.org.key, profile.mentor_for)
+
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIsNone(message)
+
+    # now the mentor can be removed
+    request = http.HttpRequest()
+    # no role is offered now 
+    request.POST = {'role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # seed an organization administrator who makes the decision
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    # assume that mentor can be removed
+    with mock.patch.object(
+        soc_profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.TRUE):
+      handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+      handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
+    self.assertNotIn(self.org.key, profile.admin_for)
+    self.assertNotIn(self.org.key, profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.NO_ROLE, data.ndb_profile), message.content)
+
+  def testMentorRoleToMentorRoleWhileNoRoleRequested(self):
+    """Tests MENTOR ROLE if mentor role offered and user requests no role."""
+    profile = profile_utils.seedNDBProfile(self.program.key())
+
+    # user does not request any role from organization
+    connection = connection_utils.seed_new_connection(
+        profile.key, self.org.key, org_role=connection_model.MENTOR_ROLE)
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # mentor role is offered now 
+    request.POST = {'role': connection_model.MENTOR_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key, profile.admin_for)
+    self.assertNotIn(self.org.key, profile.mentor_for)
+
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIsNone(message)
+
+  def testMentorRoleToMentorRoleWhileRoleRequested(self):
+    """Tests MENTOR ROLE if mentor role offered and user requests role."""
+    # user is a mentor for organization
+    profile = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
+    connection = connection_model.Connection.query(
+        connection_model.Connection.organization == self.org.key,
+        ancestor=profile.key).get()
+
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # mentor role is offered now 
+    request.POST = {'role': connection_model.MENTOR_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key, profile.admin_for)
+    self.assertIn(self.org.key, profile.mentor_for)
+
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIsNone(message)
+
+  def testMentorRoleToOrgAdminRoleWhileNoRoleRequested(self):
+    """Tests ORG ADMIN if mentor role offered and user requests no role."""
+    profile = profile_utils.seedNDBProfile(self.program.key())
+
+    # user does not request any role from organization
+    connection = connection_utils.seed_new_connection(
+        profile.key, self.org.key, org_role=connection_model.MENTOR_ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # org admin role is offered now 
+    request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # seed an organization administrator who makes the decision
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertNotIn(self.org.key, profile.admin_for)
+    self.assertNotIn(self.org.key, profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.ORG_ADMIN_ROLE, data.ndb_profile), message.content)
+
+  def testMentorRoleToOrgAdminRoleWhileRoleRequested(self):
+    """Tests ORG ADMIN if mentor role offered and user requests role."""
+    # user is a mentor for organization
+    profile = profile_utils.seedNDBProfile(
+        self.program.key(), mentor_for=[self.org.key])
+    connection = connection_model.Connection.query(
+        connection_model.Connection.organization == self.org.key,
+        ancestor=profile.key).get()
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # org admin role is offered now 
+    request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # seed an organization administrator who makes the decision
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertIn(self.org.key, profile.admin_for)
+    self.assertIn(self.org.key, profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.ORG_ADMIN_ROLE, data.ndb_profile), message.content)
+
+  def testOrgAdminRoleToNoRoleWhileNoRoleRequested(self):
+    """Tests NO ROLE if org admin offered and user requests no role."""
+    profile = profile_utils.seedNDBProfile(self.program.key())
+
+    # user does not request any role from organization
+    connection = connection_utils.seed_new_connection(
+        profile.key, self.org.key, org_role=connection_model.ORG_ADMIN_ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # no role is offered now 
+    request.POST = {'role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # seed an organization administrator who makes the decision
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
+    self.assertNotIn(self.org.key, profile.admin_for)
+    self.assertNotIn(self.org.key, profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.NO_ROLE, data.ndb_profile), message.content)
+
+  def testOrgAdminRoleToNoRoleWhileRoleRequested(self):
+    """Tests NO ROLE if org admin offered and user requests role."""
+    # user is an org admin for organization
+    profile = profile_utils.seedNDBProfile(
+        self.program.key(), admin_for=[self.org.key])
+    connection = connection_model.Connection.query(
+        connection_model.Connection.organization == self.org.key,
+        ancestor=profile.key).get()
+
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
+
+    kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # no role is offered now 
+    request.POST = {'role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, kwargs)
+
+    # assume that org admin cannot be removed
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    with mock.patch.object(
+        soc_profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.FALSE):
+      with self.assertRaises(exception.UserError) as context:
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertIn(self.org.key, profile.admin_for)
+    self.assertIn(self.org.key, profile.mentor_for)
+
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIsNone(message)
+
+    # now the mentor can be removed
+    request = http.HttpRequest()
+    # no role is offered now 
+    request.POST = {'role': connection_model.NO_ROLE}
+    data = request_data.RequestData(request, None, kwargs)
+
+    # seed an organization administrator who makes the decision
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    # assume that org admin can be removed
+    with mock.patch.object(
+        soc_profile_logic, 'isNoRoleEligibleForOrg', return_value=rich_bool.TRUE):
+      handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+      handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.NO_ROLE)
+    self.assertNotIn(self.org.key, profile.admin_for)
+    self.assertNotIn(self.org.key, profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.NO_ROLE, data.ndb_profile), message.content)
+
+  def testOrgAdminRoleToMentorRoleWhileNoRoleRequested(self):
+    """Tests MENTOR ROLE if org admin offered and user requests no role."""
+    profile = profile_utils.seedNDBProfile(self.program.key())
+
+    # user does not request any role from organization
+    connection = connection_utils.seed_new_connection(
+        profile.key, self.org.key, org_role=connection_model.ORG_ADMIN_ROLE)
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # mentor role is offered now 
+    request.POST = {'role': connection_model.MENTOR_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # seed an organization administrator who makes the decision
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key, profile.admin_for)
+    self.assertNotIn(self.org.key, profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.MENTOR_ROLE, data.ndb_profile), message.content)
+
+  def testOrgAdminRoleToMentorRoleWhileRoleRequested(self):
+    """Tests MENTOR ROLE if org admin offered and user requests role."""
+    # user is an org admin for organization
+    profile = profile_utils.seedNDBProfile(
+        self.program.key(), admin_for=[self.org.key])
+    connection = connection_model.Connection.query(
+        connection_model.Connection.organization == self.org.key,
+        ancestor=profile.key).get()
+
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # mentor role is offered now
+    request.POST = {'role': connection_model.MENTOR_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # assume that org admin cannot be removed
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    with mock.patch.object(
+        profile_logic, 'isMentorRoleEligibleForOrg',
+        return_value=rich_bool.FALSE):
+      with self.assertRaises(exception.UserError) as context:
+        handler.handle(data, None, None)
+      self.assertEqual(context.exception.status, httplib.BAD_REQUEST)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertIn(self.org.key, profile.admin_for)
+    self.assertIn(self.org.key, profile.mentor_for)
+
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIsNone(message)
+
+    # now the org admin can be removed
+    request = http.HttpRequest()
+    # mentor role is offered now 
+    request.POST = {'role': connection_model.MENTOR_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    # seed an organization administrator who makes the decision
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    # assume that org admin can be removed
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    with mock.patch.object(
+        profile_logic, 'isMentorRoleEligibleForOrg',
+        return_value=rich_bool.TRUE):
+      handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
+    self.assertNotIn(self.org.key, profile.admin_for)
+    self.assertIn(self.org.key, profile.mentor_for)
+
+    # connection changed, so seen by properties are changed
+    self.assertFalse(connection.seen_by_user)
+    self.assertTrue(connection.seen_by_org)
+
+    # check that a connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIn(_generatedMessageContent(
+        connection_model.MENTOR_ROLE, data.ndb_profile), message.content)
+
+  def testOrgAdminRoleToOrgAdminRoleWhileNoRoleRequested(self):
+    """Tests ORG ADMIN if org admin offered and user requests no role."""
+    profile = profile_utils.seedNDBProfile(self.program.key())
+
+    # user does not request any role from organization
+    connection = connection_utils.seed_new_connection(
+        profile.key, self.org.key, org_role=connection_model.ORG_ADMIN_ROLE)
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # org admin role is offered now 
+    request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.NO_ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertNotIn(self.org.key, profile.admin_for)
+    self.assertNotIn(self.org.key, profile.mentor_for)
+
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIsNone(message)
+
+  def testOrgAdminRoleToOrgAdminRoleWhileRoleRequested(self):
+    """Tests ORG ADMIN if org admin offered and user requests role."""
+    # user is a org admin for organization
+    profile = profile_utils.seedNDBProfile(
+        self.program.key(), admin_for=[self.org.key])
+    connection = connection_model.Connection.query(
+        connection_model.Connection.organization == self.org.key,
+        ancestor=profile.key).get()
+    old_seen_by_org = connection.seen_by_org
+    old_seen_by_user = connection.seen_by_user
+
+    self.kwargs = {
+        'sponsor': self.sponsor.link_id,
+        'program': self.program.program_id,
+        'user': profile.profile_id,
+        'id': connection.key.id()
+        }
+
+    request = http.HttpRequest()
+    # org admin role is offered now 
+    request.POST = {'role': connection_model.ORG_ADMIN_ROLE}
+    data = request_data.RequestData(request, None, self.kwargs)
+
+    handler = connection_view.OrgActionsFormHandler(self.view, url='unused')
+    handler.handle(data, None, None)
+
+    # check if all data is updated properly
+    connection = connection.key.get()
+    profile = profile.key.get()
+    self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
+    self.assertIn(self.org.key, profile.admin_for)
+    self.assertIn(self.org.key, profile.mentor_for)
+
+    # nothing has changed, so seen by properties are not changed
+    self.assertEqual(connection.seen_by_user, old_seen_by_user)
+    self.assertEqual(connection.seen_by_org, old_seen_by_org)
+
+    # check that no connection message is created
+    query = connection_model.ConnectionMessage.query(ancestor=connection.key)
+    message = query.get()
+    self.assertIsNone(message)
