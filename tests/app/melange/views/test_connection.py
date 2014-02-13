@@ -107,3 +107,66 @@ class UrlConnectionIsForCurrentUserAccessCheckerTest(unittest.TestCase):
     with self.assertRaises(exception.UserError) as context:
       access_checker.checkAccess(self.data, None)
     self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+
+class IsUserOrgAdminForUrlConnectionTest(unittest.TestCase):
+  """Unit tests for IsUserOrgAdminForUrlConnection class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    sponsor = program_utils.seedSponsor()
+    self.program = program_utils.seedProgram(sponsor_key=sponsor.key())
+    self.organization = org_utils.seedOrganization(self.program.key())
+
+    self.user = profile_utils.seedNDBUser()
+    profile = profile_utils.seedNDBProfile(
+        self.program.key(), user=self.user)
+
+    connection = connection_utils.seed_new_connection(
+        profile.key, self.organization.key)
+
+    kwargs = {
+        'sponsor': sponsor.key().name(),
+        'program': self.program.program_id,
+        'organization': self.organization.org_id,
+        'user': self.user.user_id,
+        'id': str(connection.key.id())
+        }
+    self.data = request_data.RequestData(None, None, kwargs)
+
+
+  def testOrgAdminAccessGranted(self):
+    """Tests that access is granted for org admin for the connected org."""
+    # seed a user who is currently logged in
+    other_user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(other_user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=other_user, admin_for=[self.organization.key])
+
+    access_checker = connection_view.IsUserOrgAdminForUrlConnection()
+    access_checker.checkAccess(self.data, None)
+
+  def testConnectedUserAccessDenied(self):
+    """Tests that access is denied for connected user."""
+    profile_utils.loginNDB(self.user)
+
+    access_checker = connection_view.IsUserOrgAdminForUrlConnection()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
+
+  def testOtherOrgAdminAccessDenied(self):
+    """Tests that access is denied for org admin for another org."""
+    # seed another organization
+    other_org = org_utils.seedOrganization(self.program.key())
+
+    # seed a user who is currently logged in
+    other_user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(other_user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=other_user, admin_for=[other_org.key])
+
+    access_checker = connection_view.IsUserOrgAdminForUrlConnection()
+    with self.assertRaises(exception.UserError) as context:
+      access_checker.checkAccess(self.data, None)
+    self.assertEqual(context.exception.status, httplib.FORBIDDEN)
