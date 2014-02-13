@@ -35,6 +35,8 @@ from tests import test_utils
 from tests.utils import connection_utils
 
 
+_TEST_MESSAGE_CONTENT = 'Test message content'
+
 def _getStartAsOrgUrl(org):
   """Returns URL to 'Start Connection As Organization' page for
   the specified organization.
@@ -345,3 +347,55 @@ class StartConnectionAsUserTest(test_utils.GSoCDjangoTestCase):
 
     # check that the user is redirected to 'Manage Connection' page
     self.assertResponseRedirect(response, _getManageAsUserUrl(connection))
+
+
+class ManageConnectionAsOrgTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for ManageConnectionAsOrg class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+    # seed a profile for a connected user
+    profile = profile_utils.seedNDBProfile(self.program.key())
+
+    self.connection = connection_utils.seed_new_connection(
+        profile.key, self.org.key)
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    response = self.get(_getManageAsOrgUrl(self.connection))
+    self.assertResponseOK(response)
+
+  def testSendNewMessage(self):
+    """Tests that sending a new connection message works."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    last_modified = self.connection.last_modified
+
+    post_data = {
+        connection_view.MESSAGE_FORM_NAME: '',
+        'content': _TEST_MESSAGE_CONTENT,
+        }
+    response = self.post(_getManageAsOrgUrl(self.connection), post_data)
+    self.assertResponseRedirect(response, _getManageAsOrgUrl(self.connection))
+
+    # check that a new message is created
+    query = connection_model.ConnectionMessage.query(
+        ancestor=self.connection.key)
+    message = query.get()
+    self.assertIsNotNone(message)
+    self.assertEqual(message.content, _TEST_MESSAGE_CONTENT)
+    self.assertFalse(message.is_auto_generated)
+    self.assertEqual(message.author, profile.key)
+
+    # check that last_modified property is updated
+    self.assertGreater(self.connection.key.get().last_modified, last_modified)
