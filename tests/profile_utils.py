@@ -325,13 +325,6 @@ class ProfileHelper(object):
     self.user = seedUser(email=email, is_developer=self.dev_test)
     return self.user
 
-  def createOtherUser(self, email):
-    """Creates a user entity for the specified email.
-    """
-    # TODO(daniel): does it really should override self.user state??
-    self.user = seedUser(email=email)
-    return self
-
   def createProfile(self):
     """Creates a profile for the current user.
     """
