@@ -444,12 +444,6 @@ class GSoCProfileHelper(ProfileHelper):
         user=user)
     return self.profile
 
-  def createConnection(self, org):
-    self.createProfile()
-    self.connection = connection_utils.seed_new_connection(
-        ndb.Key.from_old_key(self.profile.key()), org.key)
-    return self.connection
-
 
 class GCIProfileHelper(ProfileHelper):
   """Helper class to aid in manipulating GCI profile data.
