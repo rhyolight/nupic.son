@@ -14,16 +14,17 @@
 
 """Test case for GSoC student registration process."""
 
-from melange_functional_actions import FunctionalTestCase
+from tests import timeline_utils
+from tests.functional import melange_functional_actions
 
-from tests.timeline_utils import GSoCTimelineHelper
 
-class StudentRegistrationTest(FunctionalTestCase):
+class StudentRegistrationTest(melange_functional_actions.FunctionalTestCase):
 
   def setUp(self):
     self.init()
     self.createGSoCProgram()
-    self.timeline = GSoCTimelineHelper(self.gsoc.timeline, self.org_app)
+    self.timeline = timeline_utils.GSoCTimelineHelper(
+        self.gsoc.timeline, self.org_app)
     self.timeline.studentSignup()
     # TODO(nathaniel): Extract this giant list of dicts in to a constant.
     self.properties = [
@@ -210,4 +211,3 @@ class StudentRegistrationTest(FunctionalTestCase):
 
   def tearDown(self):
     self.terminateInstance()
-
