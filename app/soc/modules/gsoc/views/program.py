@@ -16,6 +16,7 @@
 
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from django import forms as django_forms
 from django import http
@@ -156,7 +157,7 @@ class GSoCProgramMessagesForm(forms.GSoCModelForm):
         }
     context.update(common_context)
     return mail_dispatcher.getSendMailFromTemplateStringTxn(
-          template_string, context, parent=self.request_data.user,
+          template_string, context, parent=self.request_data.ndb_user,
           transactional=True)
 
   def sendTestEmail(self, message_entity):
@@ -207,11 +208,8 @@ class GSoCProgramMessagesForm(forms.GSoCModelForm):
           'Thank you for applying to %s' % (self.request_data.program.name),
           message_entity.rejected_students_msg, proposal_context))
 
-    def txn():
-      for mail_txn in mail_txns:
-        mail_txn()
-
-    db.run_in_transaction(txn)
+    for mail_txn in mail_txns:
+      ndb.transaction(mail_txn)
 
   def create(self, *args, **kwargs):
     """After creating the entity, send the test emails to the requested address.
