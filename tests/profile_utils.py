@@ -444,13 +444,6 @@ class GSoCProfileHelper(ProfileHelper):
         user=user)
     return self.profile
 
-  def createNDBStudent(self):
-    """Sets the current user to be a student for the current program."""
-    user = seedNDBUser()
-    loginNDB(user)
-    self.profile = seedSOCStudent(self.program, user=user)
-    return self.profile
-
   def createConnection(self, org):
     self.createProfile()
     self.connection = connection_utils.seed_new_connection(
