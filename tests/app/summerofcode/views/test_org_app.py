@@ -275,6 +275,14 @@ class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
         _getOrgProfileCreateUrl(self.program), postdata=postdata)
     self.assertTrue(response.context['error'])
 
+    # the organization with the same org_id already exists
+    org_utils.seedSOCOrganization(self.program.key(), org_id='duplicate')
+    postdata = valid_postdata.copy()
+    postdata['org_id'] = 'duplicate'
+    response = self.post(
+        _getOrgProfileCreateUrl(self.program), postdata=postdata)
+    self.assertResponseBadRequest(response)
+
 
 OTHER_TEST_BLOG = 'http://www.other.test.blog.com/'
 OTHER_TEST_DESCRIPTION = u'Other Organization Description'
