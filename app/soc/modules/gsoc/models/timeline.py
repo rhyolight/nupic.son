@@ -38,3 +38,24 @@ class GSoCTimeline(soc.models.timeline.Timeline):
 
   form_submission_start = db.DateTimeProperty(
       verbose_name=ugettext('Students Start Submitting Their Forms'))
+
+  bonding_start = db.DateTimeProperty(
+      verbose_name=ugettext('Community Bonding Period Start date'))
+
+  bonding_end = db.DateTimeProperty(
+      verbose_name=ugettext('Community Bonding Period End date'))
+
+  coding_start = db.DateTimeProperty(
+      verbose_name=ugettext('Coding Start date'))
+
+  coding_end = db.DateTimeProperty(
+      verbose_name=ugettext('Coding End date'))
+
+  suggested_coding_deadline = db.DateTimeProperty(
+      verbose_name=ugettext('Suggested Coding Deadline'))
+
+  mentor_summit_start = db.DateTimeProperty(
+      verbose_name=ugettext('Mentor Summit Start date'))
+
+  mentor_summit_end = db.DateTimeProperty(
+      verbose_name=ugettext('Mentor Summit End date'))
