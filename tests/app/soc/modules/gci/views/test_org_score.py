@@ -16,6 +16,7 @@
 """Tests for organization score related views.
 """
 
+from google.appengine.ext import ndb
 
 from soc.modules.gci.models.organization import GCIOrganization
 
@@ -52,7 +53,12 @@ class ChooseOrganizationForOrgScorePageTest(GCIDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testOrgAdminCannotAccess(self):
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
+
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
 
@@ -83,7 +89,7 @@ class ChooseOrganizationForOrgScorePageTest(GCIDjangoTestCase):
     self.assertPageTemplatesUsed(response)
     list_data = self.getListData(self.url, 0)
 
-    #Third organization is self.gci
+    # Third organization is self.gci
     self.assertEqual(3, len(list_data))
 
   def testNonActiveOrgsAreNotDisplayed(self):
@@ -101,5 +107,5 @@ class ChooseOrganizationForOrgScorePageTest(GCIDjangoTestCase):
     self.assertPageTemplatesUsed(response)
     list_data = self.getListData(self.url, 0)
 
-    #The only organization is self.gci
+    # The only organization is self.gci
     self.assertEqual(1, len(list_data))

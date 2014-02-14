@@ -42,13 +42,21 @@ class MentorsListAdminPageTest(test_utils.GSoCDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testMentorAccessForbidden(self):
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
+
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
     self.assertResponseForbidden(response)
 
   def testOrgAdminAccessForbidden(self):
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
     self.assertResponseForbidden(response)
@@ -79,5 +87,5 @@ class MentorsListAdminPageTest(test_utils.GSoCDjangoTestCase):
     self._assertPageTemplatesUsed(response)
     list_data = self.getListData(self.url, 0)
 
-    #The only organization is self.gsoc
+    # The only organization is self.gsoc
     self.assertEqual(NUMBER_OF_MENTORS, len(list_data))

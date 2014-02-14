@@ -17,6 +17,8 @@
 import json
 import os
 
+from google.appengine.ext import ndb
+
 from soc.models import org_app_survey
 
 from tests import profile_utils
@@ -190,7 +192,12 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
     # Make sure we do not have an org app for this test.
     self.org_app.delete()
 
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[self.org.key])
+
     url = '/gsoc/org/application/edit/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)

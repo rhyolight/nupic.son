@@ -65,7 +65,11 @@ class AcceptProposalsTest(test_utils.GSoCDjangoTestCase):
 
   def testOrgAdminAccessForbidded(self):
     """Tests that an organization admin cannot access the page."""
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)

@@ -129,7 +129,11 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertEqual(len(data['data']['']), 2)
 
   def testDashboardAsOrgAdmin(self):
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
     self.timeline_helper.studentsAnnounced()
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)

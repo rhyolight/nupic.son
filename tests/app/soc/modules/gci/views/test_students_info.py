@@ -14,6 +14,8 @@
 
 """Tests the view for GCI Dashboard."""
 
+from google.appengine.ext import ndb
+
 from soc.modules.gci.models.score import GCIScore
 
 from tests import forms_to_submit_utils
@@ -46,7 +48,13 @@ class StudentsInfoTest(GCIDjangoTestCase):
     response = self.get(self.url)
     self.assertResponseForbidden(response)
 
-    self.profile_helper.createOrgAdmin(self.org)
+    # check for an organization administrator
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
+
     response = self.get(self.url)
     self.assertResponseForbidden(response)
 
@@ -85,7 +93,7 @@ class StudentsInfoTest(GCIDjangoTestCase):
     data = self.getListData(self.url, idx)
     self.assertEqual(len(data), 1)
 
-    #Only the consent form has been submitted.
+    # Only the consent form has been submitted.
     self.assertEqual(data[0]['columns']['consent_form'], 'Yes')
     self.assertEqual(data[0]['columns']['enrollment_form'], 'No')
 
@@ -98,7 +106,7 @@ class StudentsInfoTest(GCIDjangoTestCase):
     self.assertEqual(data[0]['columns']['consent_form'], 'Yes')
     self.assertEqual(data[0]['columns']['enrollment_form'], 'Yes')
 
-    #Case when none of the two forms have been submitted.
+    # Case when none of the two forms have been submitted.
     student.student_data.enrollment_form = None
     student.student_data.consent_form = None
     student.put()

@@ -53,7 +53,12 @@ class AllOrganizationTasksPageTest(GCIDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testOrgAdminCannotAccess(self):
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
+
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
     self.assertResponseForbidden(response)

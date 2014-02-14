@@ -16,6 +16,8 @@
 
 import datetime
 
+from google.appengine.ext import ndb
+
 from soc.models import program as soc_program_model
 
 from soc.modules.gci.models import program as program_model
@@ -111,8 +113,13 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testOrgAdminAccessForbidden(self):
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        admin_for=[ndb.Key.from_old_key(self.org.key())])
+
     url = self._getCreateProgramUrl()
-    self.profile_helper.createOrgAdmin(self.org)
     response = self.get(url)
     self.assertErrorTemplatesUsed(response)
 

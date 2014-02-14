@@ -94,7 +94,11 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
     """Tests that org admins cannot access the page."""
     # try to access the page as org admin for organization project
     self._seedProjectData()
-    self.profile_helper.createOrgAdmin(self.org)
+
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     response = self.get(self._getUrl(self.project))
     self.assertResponseForbidden(response)
