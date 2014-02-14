@@ -936,7 +936,7 @@ class OrgApplicationList(template.Template):
         ('(%s)' % _STATUS_PRE_ACCEPTED_ID, _STATUS_PRE_ACCEPTED_ID),
         ('(%s)' % _STATUS_PRE_REJECTED_ID, _STATUS_PRE_REJECTED_ID),
         # TODO(daniel): figure out how ignored state is used.
-        #('(ignored)', 'ignored'),
+        # ('(ignored)', 'ignored'),
     ]
 
     self.list_config.addPlainTextColumn(
@@ -1144,6 +1144,8 @@ def createOrganizationTxn(
   """
   result = org_logic.createOrganization(
       org_id, program_key, org_properties, models)
+  if not result:
+    raise exception.BadRequest(message=result.extra)
 
   for admin_key in admin_keys:
     connection_view.createConnectionTxn(
