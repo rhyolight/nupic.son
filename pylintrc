@@ -34,7 +34,8 @@ errors-only=yes
 # must appear wherever these are suppressed.
 enable=arguments-differ,bad-indentation,cyclic-import,dangerous-default-value,
     logging-not-lazy,no-space-before-operator,pointless-statement,
-    reimported,relative-import,trailing-whitespace,unused-import
+    reimported,relative-import,trailing-whitespace,unused-import,
+    old-raise-syntax,
 
 # Disable the message, report, category or checker with the given id(s). You
 # can either give multiple identifiers separated by comma (,) or put this

@@ -82,8 +82,8 @@ class SyncTask(object):
       try:
         column_index = first_row.index(column_name)
       except ValueError:
-        msg = '%s not found in %s' % (str(column_name), str(first_row))
-        raise ColumnNotFoundError, msg
+        raise ColumnNotFoundError(
+            '%s not found in %s' % (column_name, first_row))
       column_indexes[column_name] = column_index
 
     return column_indexes
