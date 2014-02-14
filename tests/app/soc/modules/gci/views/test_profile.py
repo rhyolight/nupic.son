@@ -21,19 +21,15 @@ from datetime import timedelta
 
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
-from soc.modules.gci.models.profile import GCIProfile
+from soc.modules.gci.models import profile as profile_model
 
-from tests.test_utils import GCIDjangoTestCase
+from tests import test_utils
 
 
-class ProfileViewTest(GCIDjangoTestCase):
-  """Tests user profile views.
-  """
+class ProfileViewTest(test_utils.GCIDjangoTestCase):
+  """Tests user profile views."""
 
   def setUp(self):
-    from soc.modules.gci.models.profile import GCIProfile
-    from soc.modules.gci.models.profile import GCIStudentInfo
-
     self.init()
 
     program_suffix = self.gci.key().name()
@@ -57,8 +53,8 @@ class ProfileViewTest(GCIDjangoTestCase):
     # test will actually do the entity creation, so we reuse the
     # seed_properties method from the seeder to get the most common
     # values for Profile and StudentInfo
-    props.update(seeder_logic.seed_properties(GCIProfile))
-    props.update(seeder_logic.seed_properties(GCIStudentInfo))
+    props.update(seeder_logic.seed_properties(profile_model.GCIProfile))
+    props.update(seeder_logic.seed_properties(profile_model.GCIStudentInfo))
 
     props.update({
         'student_info': None,
@@ -226,8 +222,8 @@ class ProfileViewTest(GCIDjangoTestCase):
     response = self.post(self.student_url, self.default_props)
     self.assertResponseRedirect(response, self.validated_url)
 
-    self.assertEqual(1, GCIProfile.all().count())
-    student = GCIProfile.all().get()
+    self.assertEqual(1, profile_model.GCIProfile.all().count())
+    student = profile_model.GCIProfile.all().get()
 
     self.assertEqual(self.birth_date, str(student.birth_date))
     self.assertSameEntity(self.gci, student.program)
@@ -253,7 +249,7 @@ class ProfileViewTest(GCIDjangoTestCase):
     self.assertResponseRedirect(response, self.validated_url)
 
     # hacky
-    profile = GCIProfile.all().get()
+    profile = profile_model.GCIProfile.all().get()
     profile.delete()
 
     postdata.update({

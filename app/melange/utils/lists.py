@@ -37,6 +37,8 @@ from soc.modules.gsoc.models.program import GSoCProgram
 from soc.modules.gsoc.models.timeline import GSoCTimeline
 # pylint: enable=unused-import
 
+from summerofcode.models import organization as org_model
+
 # string that is used as the next_key parameter in the final batch.
 FINAL_BATCH = 'done'
 
@@ -729,13 +731,6 @@ GSOC_PROJECTS_LIST_ID = 'gsoc_projects'
 ORGANIZATION_LIST_ID = 'organizations'
 
 
-# Organization list
-from summerofcode.models import organization as org_model
-
-# GSoCProjects list
-from soc.modules.gsoc.models import project
-
-
 class SimpleColumn(Column):
   """Column object to display a simple attribute.
 
@@ -814,7 +809,7 @@ ndb_datastore_reader = DatastoreReaderForNDB()
 # CachedList should be updated once a day
 valid_period = datetime.timedelta(0, 60)
 
-GSOC_PROJECTS_LIST = List(GSOC_PROJECTS_LIST_ID, 0, project.GSoCProject,
+GSOC_PROJECTS_LIST = List(GSOC_PROJECTS_LIST_ID, 0, project_model.GSoCProject,
                           [key, student, title, org, mentors], datastore_reader,
                           valid_period=valid_period)
 
