@@ -1137,7 +1137,7 @@ class ApplyOrgAdmissionDecisionHandler(form_handler.FormHandler):
     mapreduce_control.start_map('ApplyOrgAdmissionDecisions', params)
 
     url = links.LINKER.program(data.program, urls.UrlNames.ORG_APPLICATION_LIST)
-    return http.HttpResponseRedirect(url)
+    return http.HttpResponseRedirect(url + '?validated=True')
 
 
 # TODO(nathaniel): remove suppression when
