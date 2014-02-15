@@ -106,8 +106,12 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testOrgAdminAccessForbidden(self):
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
     url = '/gsoc/program/create/' + self.sponsor.key().name()
-    self.profile_helper.createOrgAdmin(self.org)
     response = self.get(url)
     self.assertErrorTemplatesUsed(response)
 
@@ -277,8 +281,12 @@ class GSoCProgramMessagesPageTest(test_utils.GSoCDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testOrgAdminAccessForbidden(self):
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
     url = self._getUrl()
-    self.profile_helper.createOrgAdmin(self.org)
     response = self.get(url)
     self.assertErrorTemplatesUsed(response)
 

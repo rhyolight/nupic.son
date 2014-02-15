@@ -59,7 +59,10 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertDashboardTemplatesUsed(response)
 
   def testDashboardAsStudent(self):
-    self.profile_helper.createNDBStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
+
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
@@ -68,7 +71,10 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardAsStudentWithProposal(self):
-    profile = self.profile_helper.createNDBStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBStudent(self.program, user=user)
+
     proposal_utils.seedProposal(profile.key, self.program.key())
 
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
@@ -79,7 +85,10 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardAsStudentWithProject(self):
-    profile = self.profile_helper.createNDBStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBStudent(self.program, user=user)
+
     project_utils.seedProject(profile, self.program.key())
 
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
@@ -90,7 +99,10 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertIsJsonResponse(response)
 
   def testDashboardAsStudentWithEval(self):
-    profile = self.profile_helper.createNDBStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBStudent(self.program, user=user)
+
     project_utils.seedProject(profile, self.program.key())
 
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
@@ -117,7 +129,11 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertEqual(len(data['data']['']), 2)
 
   def testDashboardAsOrgAdmin(self):
-    self.profile_helper.createOrgAdmin(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
     self.timeline_helper.studentsAnnounced()
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
