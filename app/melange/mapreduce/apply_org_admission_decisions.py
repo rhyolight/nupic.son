@@ -26,6 +26,12 @@ from melange.models import organization as org_model
 
 from soc.logic import site as site_logic
 
+# pylint: disable=unused-import
+from soc.modules.gci.models.program import GCIProgram
+from soc.modules.gsoc.models.program import GSoCProgram
+from summerofcode.models.organization import SOCOrganization
+# pylint: enable=unused-import
+
 
 def process(org_key):
   """Processes a single organization.

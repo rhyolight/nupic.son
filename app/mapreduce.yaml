@@ -29,7 +29,6 @@ mapreduce:
     handler: melange.mapreduce.apply_org_admission_decisions.process
     params:
     - name: program_key
-    - name: program_type
 
 # GSoC specific mapreduce jobs
 - name: ConvertGSoCProfiles
