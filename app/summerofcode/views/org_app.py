@@ -39,6 +39,7 @@ from melange.views import connection as connection_view
 from melange.views.helper import form_handler
 
 from soc.logic import cleaning
+from soc.mapreduce.helper import control as mapreduce_control
 from soc.models import licenses
 from soc.models import program as program_model
 
@@ -1128,8 +1129,12 @@ class ApplyOrgAdmissionDecisionHandler(form_handler.FormHandler):
 
   def handle(self, data, check, mutator):
     """See form_handler.FormHandler.handle for specification."""
-    import logging
-    logging.error('TODO(daniel): implement this handler')
+    params = {
+        'program_key': str(data.program.key()),
+        # TODO(daniel): it must be obtained programatically somehow.
+        'entity_kind': 'summerofcode.models.organization.SOCOrganization',
+    }
+    mapreduce_control.start_map('ApplyOrgAdmissionDecisions', params)
 
     url = links.LINKER.program(data.program, urls.UrlNames.ORG_APPLICATION_LIST)
     return http.HttpResponseRedirect(url)
