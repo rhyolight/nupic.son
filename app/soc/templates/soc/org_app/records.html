@@ -27,7 +27,8 @@ limitations under the License.
     </div>
   {% endif %}
   <div id="form-register-fieldset-button-row" class="row button-row">
-    <input id="form-register-submit" type="submit" name="process" value="Finalize decisions and send acceptance/rejection emails" class="submit" />
+    <input type="hidden" name="button_id" value="{{ apply_org_admission_decision_id }}" />
+    <input id="form-register-submit" type="submit" value="Finalize decisions and send acceptance/rejection emails" class="submit" />
   </div>
 </form>
 

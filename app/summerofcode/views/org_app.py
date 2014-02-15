@@ -239,6 +239,8 @@ _LICENSE_CHOICES = ((_license, _license) for _license in licenses.LICENSES)
 
 _SET_STATUS_BUTTON_ID = 'save'
 
+_APPLY_ORG_ADMISSION_DECISION_ID = 'apply_org_admission_decision_button_id'
+
 
 def cleanOrgId(org_id):
   """Cleans org_id field.
@@ -936,7 +938,7 @@ class OrgApplicationList(template.Template):
         ('(%s)' % _STATUS_PRE_ACCEPTED_ID, _STATUS_PRE_ACCEPTED_ID),
         ('(%s)' % _STATUS_PRE_REJECTED_ID, _STATUS_PRE_REJECTED_ID),
         # TODO(daniel): figure out how ignored state is used.
-        #('(ignored)', 'ignored'),
+        # ('(ignored)', 'ignored'),
     ]
 
     self.list_config.addPlainTextColumn(
@@ -1071,6 +1073,7 @@ class OrgApplicationListPage(base.GSoCRequestHandler):
     context = {
         'page_name': page_name,
         'record_list': record_list,
+        'apply_org_admission_decision_id':_APPLY_ORG_ADMISSION_DECISION_ID,
         }
     return context
 
@@ -1080,6 +1083,9 @@ class OrgApplicationListPage(base.GSoCRequestHandler):
     if button_id is not None:
       if button_id == _SET_STATUS_BUTTON_ID:
         handler = SetOrganizationStatusHandler(self)
+        return handler.handle(data, check, mutator)
+      elif button_id == _APPLY_ORG_ADMISSION_DECISION_ID:
+        handler = ApplyOrgAdmissionDecisionHandler(self)
         return handler.handle(data, check, mutator)
       else:
         raise exception.BadRequest(
@@ -1113,6 +1119,20 @@ class SetOrganizationStatusHandler(form_handler.FormHandler):
         org_logic.setStatus(organization, data.program, data.site,
                             data.program.getProgramMessages(), new_status)
         return http.HttpResponse()
+
+
+class ApplyOrgAdmissionDecisionHandler(form_handler.FormHandler):
+  """Form handler implementation to start map reduce job that will apply
+  current decisions regarding admission of organizations into the program.
+  """
+
+  def handle(self, data, check, mutator):
+    """See form_handler.FormHandler.handle for specification."""
+    import logging
+    logging.error('TODO(daniel): implement this handler')
+
+    url = links.LINKER.program(data.program, urls.UrlNames.ORG_APPLICATION_LIST)
+    return http.HttpResponseRedirect(url)
 
 
 # TODO(nathaniel): remove suppression when
