@@ -365,16 +365,3 @@ def allFormsSubmitted(student_data):
     True if all forms has been submitted; False otherwise.
   """
   return student_data.tax_form and student_data.enrollment_form
-
-
-def hasProject(profile):
-  """Tells whether the specified profile has at least one project assigned.
-
-  Args:
-    profile: Profile entity.
-
-  Returns:
-    True if the profile is a student and has at least one project;
-      False otherwise.
-  """
-  return profile.is_student and bool(profile.student_data.number_of_projects)

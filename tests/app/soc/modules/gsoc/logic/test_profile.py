@@ -744,24 +744,3 @@ class AllFormsSubmittedTest(unittest.TestCase):
     self.profile.student_data.enrollment_form = blobstore.BlobKey('fake key')
     forms_submitted = profile_logic.allFormsSubmitted(self.profile.student_data)
     self.assertTrue(forms_submitted)
-
-
-class HasProjectTest(unittest.TestCase):
-  """Unit tests for hasProject function."""
-
-  def setUp(self):
-    """See unittest.TestCase.setUp for specification."""
-    program = program_utils.seedProgram()
-    self.profile = profile_utils.seedSOCStudent(program)
-
-  def testForStudentWithNoProjects(self):
-    """Tests for student with no projects."""
-    self.profile.student_data.number_of_projects = 0
-    has_project = profile_logic.hasProject(self.profile)
-    self.assertFalse(has_project)
-
-  def testForStudentWithOneProjects(self):
-    """Tests for student with one project."""
-    self.profile.student_data.number_of_projects = 1
-    has_project = profile_logic.hasProject(self.profile)
-    self.assertTrue(has_project)
