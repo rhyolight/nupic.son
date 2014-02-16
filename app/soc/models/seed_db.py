@@ -107,6 +107,8 @@ def seed(request, *args, **kwargs):
   now = datetime.datetime.now()
   before = now - datetime.timedelta(365)
   after = now + datetime.timedelta(365)
+  past_before = before - datetime.timedelta(2 * 365)
+  past_after = after - datetime.timedelta(2 * 365)
 
   timeline_properties = {
       'key_name': 'google/gsoc2014',
@@ -121,7 +123,7 @@ def seed(request, *args, **kwargs):
       'application_review_deadline': after,
       'student_application_matched_deadline': after,
       'accepted_students_announced_deadline': after,
-      'form_submission_start':before,
+      'form_submission_start': before,
   }
   gsoc2014_timeline = GSoCTimeline(**timeline_properties)
   gsoc2014_timeline.put()
@@ -146,6 +148,16 @@ def seed(request, *args, **kwargs):
   timeline_properties.update({
       'key_name': 'google/gsoc2010',
       'link_id': 'gsoc2010',
+      'program_start': past_before,
+      'program_end': past_after,
+      'accepted_organization_announced_deadline': past_before,
+      'accepted_students_announced_deadline' : past_after,
+      'student_signup_start': past_before,
+      'student_signup_end': past_after,
+      'application_review_deadline': past_after,
+      'student_application_matched_deadline': past_after,
+      'accepted_students_announced_deadline': past_after,
+      'form_submission_start': past_before,
   })
   gsoc2010_timeline = GSoCTimeline(**timeline_properties)
   gsoc2010_timeline.put()
@@ -179,6 +191,8 @@ def seed(request, *args, **kwargs):
   org_app_survey_properties['key_name'] = ('%s/%s/orgapp' % (
       gsoc2010.prefix, gsoc2010.key().name()))
   org_app_survey_properties['program'] = gsoc2010
+  org_app_survey_properties['survey_start'] = past_before
+  org_app_survey_properties['survey_end'] = past_after
   org_app_survey_model.OrgAppSurvey(**org_app_survey_properties).put()
 
   timeline_properties = {
