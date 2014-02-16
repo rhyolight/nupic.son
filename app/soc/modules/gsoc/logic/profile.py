@@ -367,13 +367,14 @@ def allFormsSubmitted(student_data):
   return student_data.tax_form and student_data.enrollment_form
 
 
-def hasProject(student_info):
-  """Tells whether the specified student has at least one project assigned.
+def hasProject(profile):
+  """Tells whether the specified profile has at least one project assigned.
 
   Args:
-    student_info: student info entity.
+    profile: Profile entity.
 
   Returns:
-    True if the student has at least one project; False otherwise.
+    True if the profile is a student and has at least one project;
+      False otherwise.
   """
-  return bool(student_info.number_of_projects)
+  return profile.is_student and bool(profile.student_data.number_of_projects)
