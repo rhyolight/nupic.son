@@ -176,6 +176,8 @@ def seed(request, *args, **kwargs):
   }
   org_app_survey_model.OrgAppSurvey(**org_app_survey_properties).put()
 
+  org_app_survey_properties['key_name'] = ('%s/%s/orgapp' % (
+      gsoc2010.prefix, gsoc2010.key().name()))
   org_app_survey_properties['program'] = gsoc2010
   org_app_survey_model.OrgAppSurvey(**org_app_survey_properties).put()
 
