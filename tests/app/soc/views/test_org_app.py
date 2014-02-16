@@ -17,8 +17,6 @@
 import json
 import os
 
-from google.appengine.ext import ndb
-
 from soc.models import org_app_survey
 
 from tests import profile_utils

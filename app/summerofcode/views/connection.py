@@ -62,3 +62,9 @@ MANAGE_CONNECTION_AS_USER = connection_view.ManageConnectionAsUser(
     gsoc_base._GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
     error.SOC_ERROR_HANDLER, soc_url_patterns.SOC_URL_PATTERN_CONSTRUCTOR,
     soc_urls.UrlNames, 'summerofcode/connection/manage_connection.html')
+
+
+PICK_ORGANIZATION_TO_CONNECT = connection_view.PickOrganizationToConnectPage(
+    gsoc_base._GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
+    error.SOC_ERROR_HANDLER, soc_url_patterns.SOC_URL_PATTERN_CONSTRUCTOR,
+    soc_urls.UrlNames, 'modules/gsoc/accepted_orgs/base.html')

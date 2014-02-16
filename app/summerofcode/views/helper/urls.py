@@ -22,6 +22,7 @@ class UrlNames(object):
   CONNECTION_MANAGE_AS_ORG = 'soc_connection_manage_as_org'
   CONNECTION_MANAGE_AS_USER = 'soc_connection_manage_as_user'
   CONNECTION_MARK_AS_SEEN_BY_USER = 'soc_connection_mark_as_seen_by_user'
+  CONNECTION_PICK_ORG = 'soc_connection_pick_org'
   CONNECTION_START_AS_ORG = 'soc_connection_start_as_org'
   CONNECTION_START_AS_USER = 'soc_connection_start_as_user'
   ORG_APP_SHOW = 'soc_org_app_show'
