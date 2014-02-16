@@ -14,8 +14,6 @@
 
 """Unit tests for organization application view."""
 
-import unittest
-
 from django import http
 
 from google.appengine.ext import ndb
@@ -556,6 +554,7 @@ class _MockView(object):
     """See base.RequestHandler.get for specification."""
     pass
 
+_NUMBER_OF_ORG_ADMINS = 2
 
 class ApplyOrgAdmissionDecisionHandlerTest(test_utils.DjangoTestCase):
   """Unit tests for ApplyOrgAdmissionDecisionHandler class."""
@@ -604,6 +603,40 @@ class ApplyOrgAdmissionDecisionHandlerTest(test_utils.DjangoTestCase):
         self.rejected_org.key.get().status, org_model.Status.REJECTED)
     self.assertEqual(
         self.applying_org.key.get().status, org_model.Status.APPLYING)
+
+  def testEmailIsSent(self):
+    """Tests that acceptance and rejection emails are sent."""
+    # seed a couple of organization administrators for both organizations
+    addresses_for_accept_email = []
+    addresses_for_reject_email = []
+    for _ in range(_NUMBER_OF_ORG_ADMINS):
+      profile = profile_utils.seedNDBProfile(
+          self.program.key(), admin_for=[self.pre_accepted_org.key])
+      addresses_for_accept_email.append(profile.contact.email)
+
+      profile = profile_utils.seedNDBProfile(
+          self.program.key(), admin_for=[self.pre_rejected_org.key])
+      addresses_for_reject_email.append(profile.contact.email)
+
+    # finalize decision and execute all MapReduce jobs
+    kwargs = {
+        'sponsor': self.sponsor.key().name(),
+        'program': self.program.program_id,
+        }
+    request = http.HttpRequest()
+    data = request_data.RequestData(request, None, kwargs)
+
+    handler = org_app_view.ApplyOrgAdmissionDecisionHandler(_MockView())
+    handler.handle(data, None, None)
+
+    self.executeMapReduceJobs()
+
+    # check that emails have been sent
+    for email_address in addresses_for_accept_email:
+      self.assertEmailSent(bcc=email_address)
+
+    for email_address in addresses_for_reject_email:
+      self.assertEmailSent(bcc=email_address)
 
 
 TEST_MAX_SCORE = 7
