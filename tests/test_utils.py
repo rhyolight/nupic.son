@@ -37,6 +37,8 @@ from google.appengine.ext import testbed
 from django.test import client
 from django.test import testcases
 
+from mapreduce import test_support
+
 from soc.logic.helper import xsrfutil
 from soc.middleware import xsrf as xsrf_middleware
 from soc.modules import callback
@@ -129,7 +131,7 @@ class StuboutHelper(object):
     """Creates a new ViewTest object.
     """
 
-    #Creates a StubOutForTesting object
+    # Creates a StubOutForTesting object
     self.stubout = stubout.StubOutForTesting()
 
   def tearDown(self):
@@ -756,6 +758,11 @@ class DjangoTestCase(SoCTestCase, testcases.TestCase):
         failure_message += ' Expected arguments: %s' % ', '.join(details)
 
       self.fail(failure_message)
+
+  def executeMapReduceJobs(self):
+    """Executes all Map Reduce jobs that have been started so far."""
+    taskqueue_stub = self.testbed.get_stub(testbed.TASKQUEUE_SERVICE_NAME)
+    test_support.execute_until_empty(taskqueue_stub)
 
   def executeTasks(self, url, queue_names=None):
     """Executes tasks with specified URL in specified task queues.
