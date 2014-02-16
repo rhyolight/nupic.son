@@ -14,6 +14,10 @@
 
 """Unit tests for organization application view."""
 
+import unittest
+
+from django import http
+
 from google.appengine.ext import ndb
 
 from melange.models import connection as connection_model
@@ -22,12 +26,15 @@ from melange.models import organization as org_model
 from melange.models import survey as survey_model
 
 from soc.models import licenses
+from soc.views.helper import request_data
 
 from summerofcode.models import organization as soc_org_model
 from summerofcode.templates import tabs
+from summerofcode.views import org_app as org_app_view
 
 from tests import org_utils
 from tests import profile_utils
+from tests import program_utils
 from tests import test_utils
 
 
@@ -540,6 +547,63 @@ class OrgApplicationListPageTest(test_utils.GSoCDjangoTestCase):
 
     response = self.get(_getOrgApplicationListPageListUrl(self.program))
     self.assertResponseOK(response)
+
+
+class _MockView(object):
+  """Simple request handler to be used as a callback for other handlers."""
+
+  def get(self, data, access, mutator):
+    """See base.RequestHandler.get for specification."""
+    pass
+
+
+class ApplyOrgAdmissionDecisionHandlerTest(test_utils.DjangoTestCase):
+  """Unit tests for ApplyOrgAdmissionDecisionHandler class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+    self.sponsor = program_utils.seedSponsor()
+    self.program = program_utils.seedProgram(sponsor_key=self.sponsor.key())
+
+    self.pre_accepted_org = org_utils.seedSOCOrganization(
+        self.program.key(), status=org_model.Status.PRE_ACCEPTED)
+    self.pre_rejected_org = org_utils.seedSOCOrganization(
+        self.program.key(), status=org_model.Status.PRE_REJECTED)
+    self.accepted_org = org_utils.seedSOCOrganization(
+        self.program.key(), status=org_model.Status.ACCEPTED)
+    self.rejected_org = org_utils.seedSOCOrganization(
+        self.program.key(), status=org_model.Status.REJECTED)
+    self.applying_org = org_utils.seedSOCOrganization(
+        self.program.key(), status=org_model.Status.APPLYING)
+
+  def testOrganizationStatusIsUpdated(self):
+    """Tests that organization admission decisions are applied correctly."""
+    kwargs = {
+        'sponsor': self.sponsor.key().name(),
+        'program': self.program.program_id,
+        }
+    request = http.HttpRequest()
+    data = request_data.RequestData(request, None, kwargs)
+
+    handler = org_app_view.ApplyOrgAdmissionDecisionHandler(_MockView())
+    handler.handle(data, None, None)
+
+    self.executeMapReduceJobs()
+
+    # check that status have been changed for pre_accepted and pre_rejected orgs
+    self.assertEqual(
+        self.pre_accepted_org.key.get().status, org_model.Status.ACCEPTED)
+    self.assertEqual(
+        self.pre_rejected_org.key.get().status, org_model.Status.REJECTED)
+
+    # check that status for other orgs have not changed
+    self.assertEqual(
+        self.accepted_org.key.get().status, org_model.Status.ACCEPTED)
+    self.assertEqual(
+        self.rejected_org.key.get().status, org_model.Status.REJECTED)
+    self.assertEqual(
+        self.applying_org.key.get().status, org_model.Status.APPLYING)
 
 
 TEST_MAX_SCORE = 7
