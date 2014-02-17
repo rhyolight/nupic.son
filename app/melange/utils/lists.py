@@ -823,13 +823,14 @@ class NdbKeyColumn(Column):
     return entity.key.id()
 
 key = NdbKeyColumn(key_column_id_const.KEY_COLUMN_ID, 'Key', hidden=True)
+org_id = SimpleColumn('org_id', 'Organization ID')
 name = SimpleColumn('name', 'Name')
 tags = TagsColumn('tags', 'Tags')
 ideas = IdeasColumn('ideas', 'Ideas')
 
 ORGANIZATION_LIST = List(
     ORGANIZATION_LIST_ID, 0, org_model.SOCOrganization,
-    [key, name, tags, ideas], ndb_datastore_reader)
+    [key, org_id, name, tags, ideas], ndb_datastore_reader)
 
 LISTS = {
     GSOC_PROJECTS_LIST_ID: GSOC_PROJECTS_LIST,

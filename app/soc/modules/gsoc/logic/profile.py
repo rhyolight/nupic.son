@@ -365,15 +365,3 @@ def allFormsSubmitted(student_data):
     True if all forms has been submitted; False otherwise.
   """
   return student_data.tax_form and student_data.enrollment_form
-
-
-def hasProject(student_info):
-  """Tells whether the specified student has at least one project assigned.
-
-  Args:
-    student_info: student info entity.
-
-  Returns:
-    True if the student has at least one project; False otherwise.
-  """
-  return bool(student_info.number_of_projects)

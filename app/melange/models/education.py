@@ -19,6 +19,7 @@ from google.appengine.ext.ndb import msgprop
 
 from protorpc import messages
 
+from melange.appengine import db as melange_db
 from melange.utils import countries
 
 
@@ -42,6 +43,10 @@ class Education(ndb.Model):
   #: Country in which the school is located.
   school_country = ndb.StringProperty(
       required=False, choices=countries.COUNTRIES_AND_TERRITORIES)
+
+  #: Web page of the school.
+  web_page = ndb.StringProperty(
+      required=False, validator=melange_db.link_validator)
 
   #: Expected graduation year.
   expected_graduation = ndb.IntegerProperty()

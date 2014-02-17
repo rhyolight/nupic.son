@@ -37,31 +37,31 @@ class ProfileTest(unittest.TestCase):
     self.program = program_utils.seedGSoCProgram()
     self.foo_organization = org_utils.seedSOCOrganization(self.program.key())
 
-    #create mentors for foo_organization.
+    # create mentors for foo_organization.
     self.foo_mentors = []
     for _ in range(5):
       mentor = profile_utils.seedNDBProfile(
           self.program.key(), mentor_for=[self.foo_organization.key])
       self.foo_mentors.append(mentor)
 
-    #create organization admins for foo_organization.
+    # create organization admins for foo_organization.
     self.foo_org_admins = []
     for _ in range(5):
       org_admin = profile_utils.seedNDBProfile(
           self.program.key(), admin_for=[self.foo_organization.key])
       self.foo_org_admins.append(org_admin)
 
-    #create another organization bar_organization for our program.
+    # create another organization bar_organization for our program.
     self.bar_organization = org_utils.seedSOCOrganization(self.program.key())
 
-    #assign mentors for bar_organization.
+    # assign mentors for bar_organization.
     self.bar_mentors = []
     for _ in range(5):
       mentor = profile_utils.seedNDBProfile(
           self.program.key(), mentor_for=[self.bar_organization.key])
       self.bar_mentors.append(mentor)
 
-    #assign an organization admin for bar_organization
+    # assign an organization admin for bar_organization
     self.bar_org_admin = profile_utils.seedNDBProfile(
         self.program.key(), admin_for=[self.bar_organization.key])
 
@@ -79,20 +79,20 @@ class ProfileTest(unittest.TestCase):
       actual_keys = set(profile_logic.queryAllMentorsKeysForOrg(org.key))
       self.assertSetEqual(expected_keys, actual_keys)
 
-    #Test for foo_organization
+    # Test for foo_organization
     mentors = self.foo_mentors
     org_admins = self.foo_org_admins
     org = self.foo_organization
     runTest(org, mentors, org_admins)
 
-    #Test the same for bar_organization
+    # Test the same for bar_organization
     mentors = self.bar_mentors
     org_admins = [self.bar_org_admin]
     org = self.bar_organization
     runTest(org, mentors, org_admins)
 
-    #Create an organization which has no mentors and org_admins and test that
-    #an empty list is returned.
+    # Create an organization which has no mentors and org_admins and test that
+    # an empty list is returned.
     org = org_utils.seedSOCOrganization(self.program.key())
     mentors = []
     org_admins = []
@@ -744,24 +744,3 @@ class AllFormsSubmittedTest(unittest.TestCase):
     self.profile.student_data.enrollment_form = blobstore.BlobKey('fake key')
     forms_submitted = profile_logic.allFormsSubmitted(self.profile.student_data)
     self.assertTrue(forms_submitted)
-
-
-class HasProjectTest(unittest.TestCase):
-  """Unit tests for hasProject function."""
-
-  def setUp(self):
-    """See unittest.TestCase.setUp for specification."""
-    program = program_utils.seedProgram()
-    self.profile = profile_utils.seedSOCStudent(program)
-
-  def testForStudentWithNoProjects(self):
-    """Tests for student with no projects."""
-    self.profile.student_data.number_of_projects = 0
-    has_project = profile_logic.hasProject(self.profile.student_data)
-    self.assertFalse(has_project)
-
-  def testForStudentWithOneProjects(self):
-    """Tests for student with one project."""
-    self.profile.student_data.number_of_projects = 1
-    has_project = profile_logic.hasProject(self.profile.student_data)
-    self.assertTrue(has_project)

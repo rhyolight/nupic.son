@@ -32,6 +32,7 @@ from melange.request import access
 from melange.request import exception
 from melange.request import links
 from melange.templates import connection_list
+from melange.utils import lists as melange_lists
 from melange.utils import rich_bool
 from melange.views.helper import form_handler
 
@@ -40,6 +41,8 @@ from soc.logic.helper import notifications
 from soc.tasks import mailer
 from soc.modules.gsoc.views import forms as gsoc_forms
 from soc.views import base
+from soc.views import template
+from soc.views.helper import lists
 from soc.views.helper import url_patterns
 
 # TODO(daniel): do not import GSoC specific things in this module
@@ -58,7 +61,10 @@ LIST_CONNECTIONS_FOR_ORG_ADMIN_PAGE_NAME = translation.ugettext(
 MANAGE_CONNECTION_PAGE_NAME = translation.ugettext(
     'Manage connection')
 
-PICK_ORGANIZATION_TO_CONNECT = translation.ugettext(
+PICK_ORGANIZATION_TO_CONNECT_PAGE_NAME = translation.ugettext(
+    'Pick organization to connect with')
+
+PICK_ORGANIZATION_TO_CONNECT_LIST_DESCRIPTION = translation.ugettext(
     'Pick organization to connect with')
 
 START_CONNECTION_AS_ORG_PAGE_NAME = translation.ugettext(
@@ -633,7 +639,7 @@ class ManageConnectionAsUser(base.RequestHandler):
     messages = connection_logic.getConnectionMessages(data.url_connection.key)
 
     # TODO(daniel): add mark as seen by user
-    #mark_as_seen_url = links.LINKER.userId(
+    # mark_as_seen_url = links.LINKER.userId(
     #    data.url_ndb_profile.key, data.url_connection.key.id(),
     #    self.url_names.CONNECTION_MARK_AS_SEEN_BY_USER)
 
@@ -1060,6 +1066,123 @@ class ListConnectionsForUser(base.RequestHandler):
       return list_content.content()
     else:
       raise exception.BadRequest(message='This data cannot be accessed.')
+
+
+class PickOrganizationToConnectListRowRedirect(melange_lists.RedirectCustomRow):
+  """Class which provides redirects for rows of pick organization to connect
+  with list."""
+
+  def __init__(self, data, url_names):
+    """Initializes a new instance of the row redirect.
+
+    Args:
+      data: request_data.RequestData for the current request.
+      url_names: Instance of url_names.UrlNames.
+    """
+    super(PickOrganizationToConnectListRowRedirect, self).__init__()
+    self.data = data
+    self.url_names = url_names
+
+  def getLink(self, item):
+    """See lists.RedirectCustomRow.getLink for specification."""
+    org_key = ndb.Key(
+        self.data.models.ndb_org_model._get_kind(), item['columns']['key'])
+    return links.LINKER.organization(
+        org_key, self.url_names.CONNECTION_START_AS_USER)
+
+
+# TODO(daniel): replace this class with a new style list
+class PickOrganizationToConnectList(template.Template):
+  """List of organizations with options to connect with."""
+
+  def __init__(self, data):
+    """See template.Template.__init__ for specification."""
+    super(PickOrganizationToConnectList, self).__init__(data)
+    self._list_config = lists.ListConfiguration()
+    self._list_config.addSimpleColumn('org_id', 'Organization ID', hidden=True)
+    self._list_config.addPlainTextColumn(
+        'name', 'Name', lambda e, *args: e.name.strip())
+
+  def templatePath(self):
+    """See template.Template.templatePath for specification."""
+    # TODO(daniel): this path should not be hardcoded to gsoc
+    return 'modules/gsoc/admin/_accepted_orgs_list.html'
+
+  def context(self):
+    """See template.Template.context for specification."""
+    description = PICK_ORGANIZATION_TO_CONNECT_LIST_DESCRIPTION
+
+    list_configuration_response = lists.ListConfigurationResponse(
+        self.data, self._list_config, 0, description)
+
+    return {
+        'lists': [list_configuration_response],
+    }
+
+PICK_ORGANIZATION_TO_CONNECT_ACCESS_CHECKER = (
+    access.ConjuctionAccessChecker([
+        access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+        access.NON_STUDENT_PROFILE_ACCESS_CHECKER]))
+
+class PickOrganizationToConnectPage(base.RequestHandler):
+  """Page for non-student users to pick organization to start connection."""
+
+  access_checker = PICK_ORGANIZATION_TO_CONNECT_ACCESS_CHECKER
+
+  def __init__(self, initializer, linker, renderer, error_handler,
+      url_pattern_constructor, url_names, template_path):
+    """Initializes a new instance of the request handler for the specified
+    parameters.
+
+    Args:
+      initializer: Implementation of initialize.Initializer interface.
+      linker: Instance of links.Linker class.
+      renderer: Implementation of render.Renderer interface.
+      error_handler: Implementation of error.ErrorHandler interface.
+      url_pattern_constructor:
+        Implementation of url_patterns.UrlPatternConstructor.
+      url_names: Instance of url_names.UrlNames.
+      template_path: The path of the template to be used.
+    """
+    super(PickOrganizationToConnectPage, self).__init__(
+        initializer, linker, renderer, error_handler)
+    self.url_pattern_constructor = url_pattern_constructor
+    self.url_names = url_names
+    self.template_path = template_path
+
+  def templatePath(self):
+    """See base.RequestHandler.templatePath for specification."""
+    return self.template_path
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.djangoURLPatterns for specification."""
+    return [
+        self.url_pattern_constructor.construct(
+            r'connection/pick/%s$' % url_patterns.PROGRAM,
+            self, name=self.url_names.CONNECTION_PICK_ORG),
+    ]
+
+  def jsonContext(self, data, check, mutator):
+    """See base.RequestHandler.jsonContext for specification."""
+    query = data.models.ndb_org_model.query(
+        org_model.Organization.program ==
+            ndb.Key.from_old_key(data.program.key()),
+        org_model.Organization.status == org_model.Status.ACCEPTED)
+
+    response = melange_lists.JqgridResponse(
+        melange_lists.ORGANIZATION_LIST_ID,
+        row=PickOrganizationToConnectListRowRedirect(data, self.url_names))
+
+    start = data.GET.get('start')
+
+    return response.getData(query, start=start)
+
+  def context(self, data, check, mutator):
+    """See base.GCIRequestHandler.context for specification."""
+    return {
+        'page_name': PICK_ORGANIZATION_TO_CONNECT_PAGE_NAME,
+        'accepted_orgs_list': PickOrganizationToConnectList(data),
+    }
 
 
 def sendMentorWelcomeMail(data, profile, message):

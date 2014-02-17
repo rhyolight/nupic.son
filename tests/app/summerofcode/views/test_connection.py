@@ -82,12 +82,24 @@ def _getListForUserUrl(program):
   """Returns URL to 'List Connections For User' page for the specified user.
 
   Args:
-    profile: Profile entity.
+    program: Program entity.
 
   Returns:
     URL to 'List Connections For User' page.
   """
   return '/gsoc/connection/list/user/%s' % program.key().name()
+
+
+def _getPickOrganizationToConnectUrl(program):
+  """Returns URL to 'Pick Organization To Connect' page for the specified user.
+
+  Args:
+    program: Program entity.
+
+  Returns:
+    URL to 'List Connections For User' page.
+  """
+  return '/gsoc/connection/pick/%s' % program.key().name()
 
 
 def _getManageAsOrgUrl(connection):
@@ -502,3 +514,36 @@ class ListConnectionsForUserTest(test_utils.GSoCDjangoTestCase):
 
     # check that all two connections are listed
     self.assertEqual(len(list_data), 2)
+
+
+class PickOrganizationToConnectPageTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for PickOrganizationToConnectPage class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def testPageLoads(self):
+    """Tests that the page loads properly."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
+
+    response = self.get(_getPickOrganizationToConnectUrl(self.program))
+    self.assertResponseOK(response)
+
+  def testListDataLoads(self):
+    """Tests that the list data loads properly."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
+
+    # the org is already accepted
+    self.org.status = org_model.Status.ACCEPTED
+    self.org.put()
+
+    list_data = self.getListData(
+        _getPickOrganizationToConnectUrl(self.program), 0)
+
+    # check that the organization is listed
+    self.assertEqual(len(list_data), 1)
