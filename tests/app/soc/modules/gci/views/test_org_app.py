@@ -385,8 +385,7 @@ class GCIOrgAppRecordsPageTest(test_utils.GCIDjangoTestCase):
     program_messages.put()
 
     record = self.record.createOrgAppRecord(
-        'org1', user.key.to_old_key(), user.key.to_old_key(),
-        {'status': 'needs review'})
+        'org1', user.key, user.key, {'status': 'needs review'})
 
     response = self.get(self.url)
     self.assertTemplatesUsed(response)

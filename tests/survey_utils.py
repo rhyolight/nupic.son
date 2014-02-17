@@ -92,7 +92,7 @@ class SurveyHelper(object):
                                  host=host, override=override or {})
 
   def createOrgAppRecord(
-      self, link_id, main_admin, backup_admin, override=None):
+      self, link_id, main_admin_key, backup_admin_key, override=None):
     """Creates a new OrgAppRecord for the specified link_id.
 
     Args:
@@ -105,9 +105,9 @@ class SurveyHelper(object):
     properties = {
       'org_id': link_id,
       'survey': self.org_app,
-      'backup_admin': backup_admin,
-      'user': main_admin,
-      'main_admin': main_admin,
+      'backup_admin': backup_admin_key.to_old_key(),
+      'user': main_admin_key.to_old_key(),
+      'main_admin': main_admin_key.to_old_key(),
       'status': 'accepted',
       'program': self.program,
     }

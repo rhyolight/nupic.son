@@ -59,8 +59,7 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     profile_utils.loginNDB(user)
 
     self.record.createOrgAppRecord(
-        'rejected', self.profile_helper.user, self.profile_helper.user,
-        override={'status': 'rejected'})
+        'rejected', user.key, user.key, override={'status': 'rejected'})
 
     url = '/gci/profile/organization/' + self.gci.key().name()
     response = self.get(url + '?org_id=rejected')
@@ -94,7 +93,7 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     backup_admin = profile_utils.seedNDBProfile(self.program.key())
 
     self.record.createOrgAppRecord(
-        'new_org', self.profile_helper.user, backup_admin.parent())
+        'new_org', user.key, backup_admin.key.parent())
 
     url = '/gci/profile/organization/' + self.gci.key().name()
     create_url = url + '?org_id=new_org'
@@ -103,7 +102,7 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     self.assertOrgProfilePageTemplatesUsed(response)
 
     postdata = {
-        'home': self.createDocument().key(), 'program': self.program,
+        'home': self.createDocument(user=user).key(), 'program': self.program,
         'scope': self.program, 'irc_channel': TEST_IRC_CHANNEL,
         'pub_mailing_list': TEST_MAILING_LIST, 'backup_winner': None,
     }
