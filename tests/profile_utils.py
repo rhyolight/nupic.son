@@ -30,15 +30,12 @@ from melange.models import user as ndb_user_model
 
 from soc.models import user as user_model
 
-from soc.modules.gci.models import profile as gci_profile_model
 from soc.modules.seeder.logic.providers import string as string_provider
 from soc.modules.seeder.logic.providers import user as user_provider
 from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from summerofcode.models import profile as soc_profile_model
 
-from tests import forms_to_submit_utils
-from tests import task_utils
 from tests.utils import connection_utils
 
 
@@ -264,9 +261,6 @@ def seedStudentData(model=ndb_profile_model.StudentData, **kwargs):
   return model(**properties)
 
 
-
-
-
 def seedNDBStudent(program, student_data_model=ndb_profile_model.StudentData,
     student_data_properties=None, user=None, **kwargs):
   """Seeds a new profile who is registered as a student.
@@ -302,59 +296,3 @@ def seedSOCStudent(program, user=None, **kwargs):
   return seedNDBStudent(
       program, student_data_model=soc_profile_model.SOCStudentData,
       user=user, **kwargs)
-
-
-class ProfileHelper(object):
-  """Helper class to aid in manipulating profile data.
-  """
-
-  def __init__(self, program, dev_test):
-    """Initializes the ProfileHelper.
-
-    Args:
-      program: a program
-      dev_test: if set, always creates users as developers
-    """
-    self.program = program
-    self.user = None
-    self.profile = None
-    self.connection = None
-    self.dev_test = dev_test
-
-  def seed(self, model, properties,
-           auto_seed_optional_properties=True):
-    return seeder_logic.seed(model, properties, recurse=False,
-        auto_seed_optional_properties=auto_seed_optional_properties)
-
-  def seedn(self, model, properties, n,
-            auto_seed_optional_properties=True):
-    return seeder_logic.seedn(model, n, properties, recurse=False,
-        auto_seed_optional_properties=auto_seed_optional_properties)
-
-
-class GSoCProfileHelper(ProfileHelper):
-  """Helper class to aid in manipulating GSoC profile data.
-  """
-
-  def __init__(self, program, dev_test):
-    """Initializes the GSocProfileHelper.
-
-    Args:
-      program: a GSoCProgram
-      dev_test: if set, always creates users as developers
-    """
-    super(GSoCProfileHelper, self).__init__(program, dev_test)
-
-
-class GCIProfileHelper(ProfileHelper):
-  """Helper class to aid in manipulating GCI profile data.
-  """
-
-  def __init__(self, program, dev_test):
-    """Initializes the GSocProfileHelper.
-
-    Args:
-      program: a GCIProgram
-      dev_test: if set, always creates users as developers
-    """
-    super(GCIProfileHelper, self).__init__(program, dev_test)

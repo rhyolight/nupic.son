@@ -299,7 +299,6 @@ class GSoCTestCase(SoCTestCase):
     org_app: An OrgAppSurvey.
     sponsor: A Sponsor.
     site: A Site.
-    profile_helper: A GSoCProfileHelper.
     program_helper: A GSoCProgramHelper.
     timeline_helper: A GSoCTimelineHelper.
   """
@@ -321,8 +320,6 @@ class GSoCTestCase(SoCTestCase):
     self.org_app = self.program_helper.createOrgApp()
     self.timeline_helper = timeline_utils.GSoCTimelineHelper(
         self.gsoc.timeline, self.org_app)
-    self.profile_helper = profile_utils.GSoCProfileHelper(
-        self.gsoc, self.dev_test)
 
 
 # TODO(nathaniel): Drop "gci" attribute in favor of "program".
@@ -338,7 +335,6 @@ class GCITestCase(SoCTestCase):
     sponsor: A Sponsor.
     org: A GCIOrganization.
     org_app: An OrgAppSurvey.
-    profile_helper: A GCIProfileHelper.
     program_helper: A GCIProgramHelper.
     timeline_helper: A GCITimelineHelper.
   """
@@ -361,8 +357,6 @@ class GCITestCase(SoCTestCase):
     self.org_app = self.program_helper.createOrgApp()
     self.timeline_helper = timeline_utils.GCITimelineHelper(
         self.gci.timeline, self.org_app)
-    self.profile_helper = profile_utils.GCIProfileHelper(
-        self.gci, self.dev_test)
 
 
 class DjangoTestCase(SoCTestCase, testcases.TestCase):
