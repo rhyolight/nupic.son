@@ -442,13 +442,6 @@ class GCIProfileHelper(ProfileHelper):
     """
     super(GCIProfileHelper, self).__init__(program, dev_test)
 
-  def createHost(self):
-    """Sets the current user to be a host for the current program."""
-    self.createUser()
-    self.user.host_for = [self.program.scope.key()]
-    self.user.put()
-    return self.user
-
   def createProfile(self):
     """Creates a profile for the current user."""
     if self.profile:
