@@ -26,6 +26,12 @@ from melange.models import organization as org_model
 
 from soc.logic import site as site_logic
 
+# pylint: disable=unused-import
+from soc.modules.gci.models.program import GCIProgram
+from soc.modules.gsoc.models.program import GSoCProgram
+from summerofcode.models.organization import SOCOrganization
+# pylint: enable=unused-import
+
 
 def process(org_key):
   """Processes a single organization.
@@ -41,12 +47,11 @@ def process(org_key):
   program_key = db.Key(context.mapreduce_spec.mapper.params['program_key'])
 
   program = db.get(program_key)
-  organization = ndb.Key.from_old_key(org_key).get()
 
-  # TODO(daniel): add email recipients, i.e. organization admins
   site = site_logic.singleton()
 
-  org_admins = profile_logic.getOrgAdmins(organization.key)
+  org_key = ndb.Key.from_old_key(org_key)
+  org_admins = profile_logic.getOrgAdmins(org_key)
   recipients = [org_admin.contact.email for org_admin in org_admins]
 
   # We are "prefetching" the ProgramMessages entity here instead of fetching
@@ -63,6 +68,7 @@ def process(org_key):
   def updateOrganizationStatus():
     """Transactionally updates organization status."""
     # only organizations defined for the specified program should be processed
+    organization = org_key.get()
     if organization.program.to_old_key() == program_key:
       if organization.status == org_model.Status.PRE_ACCEPTED:
         org_logic.setStatus(
