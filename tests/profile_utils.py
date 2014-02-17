@@ -28,11 +28,7 @@ from melange.models import education as education_model
 from melange.models import profile as ndb_profile_model
 from melange.models import user as ndb_user_model
 
-from soc.models import user as user_model
-
 from soc.modules.seeder.logic.providers import string as string_provider
-from soc.modules.seeder.logic.providers import user as user_provider
-from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from summerofcode.models import profile as soc_profile_model
 
@@ -96,35 +92,6 @@ def signInToGoogleAccount(email, user_id=None):
   """
   os.environ['USER_EMAIL'] = email
   os.environ['USER_ID'] = user_id or ''
-
-
-def seedUser(email=None, **kwargs):
-  """Seeds a new user.
-
-  Args:
-    email: email address specifying
-    kwargs: initial values for instance's properties, as keyword arguments.
-
-  Returns:
-    A newly seeded User entity.
-  """
-  properties = {'status': 'valid', 'is_developer': False}
-
-  if email is not None:
-    properties['account'] = user_provider.FixedUserProvider(value=email)
-  else:
-    properties['account'] = user_provider.RandomUserProvider()
-
-  properties.update(**kwargs)
-  user = seeder_logic.seed(user_model.User, properties=properties)
-
-  # this is tricky - AppEngine SDK sets user_id for user's account
-  # only after it is retrieved from datastore for the first time
-  user = user_model.User.get(user.key())
-  user.user_id = user.account.user_id()
-  user.put()
-
-  return user
 
 
 # TODO(daniel): Change name to seedUser and remove the function above
