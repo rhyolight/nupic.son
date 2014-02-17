@@ -14,6 +14,7 @@
 
 """Tests for program homepage related views."""
 
+from tests import profile_utils
 from tests.test_utils import GCIDjangoTestCase
 
 
@@ -87,10 +88,13 @@ class HomepageViewTest(GCIDjangoTestCase):
     #self.assertIn('profile_link', apply_context)
 
   def testHomepageDuringSignupExistingUser(self):
-    """Tests the student hompepage during the signup period with an existing user.
-    """
-    self.profile_helper.createProfile()
+    """Tests hompepage during the signup period with an existing user."""
     self.timeline_helper.studentSignup()
+
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
+
     url = '/gci/homepage/' + self.gci.key().name()
     response = self.get(url)
     self.assertHomepageTemplatesUsed(response)

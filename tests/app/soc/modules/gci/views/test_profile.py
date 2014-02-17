@@ -212,7 +212,11 @@ class ProfileViewTest(test_utils.GCIDjangoTestCase):
   @unittest.skip('This profile view is deprecated.')
   def testEditProfilePage(self):
     self.timeline_helper.studentSignup()
-    self.profile_helper.createProfile()
+
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
+
     url = '/gci/profile/' + self.gci.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
@@ -225,7 +229,11 @@ class ProfileViewTest(test_utils.GCIDjangoTestCase):
   # after the project is over
   #def testEditProfilePageInactive(self):
   #  self.timeline_helper.offSeason()
-  #  self.profile_helper.createProfile()
+  #
+  #  user = profile_utils.seedNDBUser()
+  #  profile_utils.loginNDB(user)
+  #  profile_utils.seedNDBProfile(self.program.key(), user=user)
+  #
   #  url = '/gci/profile/' + self.gci.key().name()
   #  response = self.get(url)
   #  self.assertResponseForbidden(response)

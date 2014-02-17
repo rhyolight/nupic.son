@@ -82,7 +82,10 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     org profile.
     """
     self.timeline_helper.orgSignup()
-    self.profile_helper.createProfile()
+
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     # create backup admin for the application
     backup_admin = profile_utils.seedNDBProfile(self.program.key())

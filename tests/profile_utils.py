@@ -342,11 +342,6 @@ class ProfileHelper(object):
     self.user = seedUser(email=email, is_developer=self.dev_test)
     return self.user
 
-  def createProfile(self):
-    """Creates a profile for the current user.
-    """
-    pass
-
 
 class GSoCProfileHelper(ProfileHelper):
   """Helper class to aid in manipulating GSoC profile data.
@@ -361,16 +356,6 @@ class GSoCProfileHelper(ProfileHelper):
     """
     super(GSoCProfileHelper, self).__init__(program, dev_test)
 
-  def createProfile(self):
-    """Creates a profile for the current user.
-    """
-    if self.profile:
-      return self.profile
-
-    user = seedNDBUser()
-    self.profile = seedNDBProfile(self.program.key(), user=user)
-    return self.profile
-
 
 class GCIProfileHelper(ProfileHelper):
   """Helper class to aid in manipulating GCI profile data.
@@ -384,18 +369,3 @@ class GCIProfileHelper(ProfileHelper):
       dev_test: if set, always creates users as developers
     """
     super(GCIProfileHelper, self).__init__(program, dev_test)
-
-  def createProfile(self):
-    """Creates a profile for the current user."""
-    if self.profile:
-      return
-    user = self.createUser()
-    properties = {
-        'link_id': user.link_id, 'student_info': None, 'user': user,
-        'parent': user, 'scope': self.program, 'status': 'active',
-        'email': self.user.account.email(), 'program': self.program,
-        'mentor_for': [], 'org_admin_for': [],
-        'is_org_admin': False, 'is_mentor': False, 'is_student': False
-    }
-    self.profile = self.seed(gci_profile_model.GCIProfile, properties)
-    return self.profile

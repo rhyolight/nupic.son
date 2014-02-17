@@ -45,8 +45,9 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.orgSignup()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     url = '/gci/bulk/' + self.org.key().name()
     response = self.get(url)
@@ -114,8 +115,9 @@ class BulkTaskCreateViewTest(GCIDjangoTestCase):
     """
     self.timeline_helper.taskClaimEnded()
 
-    profile_helper = GCIProfileHelper(self.gci, self.dev_test)
-    profile_helper.createProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
 
     url = '/gci/bulk/' + self.org.key().name()
     response = self.get(url)
