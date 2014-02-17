@@ -94,8 +94,12 @@ class GSoCCreateProgramPageTest(test_utils.GSoCDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testStudentAccessForbidden(self):
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
+
     url = '/gsoc/program/create/' + self.sponsor.key().name()
-    self.profile_helper.createStudent()
+
     response = self.get(url)
     self.assertErrorTemplatesUsed(response)
 
@@ -269,9 +273,11 @@ class GSoCProgramMessagesPageTest(test_utils.GSoCDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testStudentAccessForbidden(self):
-    url = self._getUrl()
-    self.profile_helper.createStudent()
-    response = self.get(url)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
+
+    response = self.get(self._getUrl())
     self.assertErrorTemplatesUsed(response)
 
   def testMentorAccessForbidden(self):

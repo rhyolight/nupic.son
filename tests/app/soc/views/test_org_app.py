@@ -234,12 +234,14 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
     self.assertIsNone(org_app)
 
   def testOrgAppCreateOrEditByStudent(self):
-    """Tests that a student cannot create an organization application.
-    """
+    """Tests that a student cannot create an organization application."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
+
     # Make sure we do not have an org app for this test.
     self.org_app.delete()
 
-    self.profile_helper.createStudent()
     url = '/gsoc/org/application/edit/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)

@@ -38,9 +38,11 @@ class StudentsInfoTest(GCIDjangoTestCase):
     self.assertTemplateUsed(response, 'modules/gci/students_info/base.html')
 
   def testAccessToTheList(self):
-    """Tests only the host can access the list.
-    """
-    self.profile_helper.createStudent()
+    """Tests only the host can access the list."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
+
     response = self.get(self.url)
     self.assertResponseForbidden(response)
 

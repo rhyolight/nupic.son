@@ -101,9 +101,11 @@ class GCICreateProgramPageTest(test_utils.GCIDjangoTestCase):
     self.assertErrorTemplatesUsed(response)
 
   def testStudentAccessForbidden(self):
-    url = self._getCreateProgramUrl()
-    self.profile_helper.createStudent()
-    response = self.get(url)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
+
+    response = self.get(self._getCreateProgramUrl())
     self.assertErrorTemplatesUsed(response)
 
   def testMentorAccessForbidden(self):

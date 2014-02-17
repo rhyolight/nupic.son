@@ -23,6 +23,7 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 
 from soc.modules.gci.models import profile as profile_model
 
+from tests import profile_utils
 from tests import test_utils
 
 
@@ -45,7 +46,7 @@ class ProfileViewTest(test_utils.GCIDjangoTestCase):
         'program_suffix': program_suffix
         }
 
-    self.birth_date = str(date.today() - timedelta(365*15))
+    self.birth_date = str(date.today() - timedelta(365 * 15))
 
     props = {}
     # we do not want to seed the data in the datastore, we just
@@ -108,7 +109,11 @@ class ProfileViewTest(test_utils.GCIDjangoTestCase):
   @unittest.skip('This profile view is deprecated.')
   def testRedirectWithStudentProfilePage(self):
     self.timeline_helper.studentSignup()
-    self.profile_helper.createStudent()
+
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
+
     url = '/gci/profile/student/' + self.gci.key().name()
     response = self.get(url)
     redirect_url = '/gci/profile/' + self.gci.key().name()

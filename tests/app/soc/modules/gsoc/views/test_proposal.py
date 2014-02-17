@@ -133,7 +133,10 @@ class ProposalTest(GSoCDjangoTestCase):
     """Test the submission of student proposals during the student signup
     period is not active.
     """
-    self.profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
+
     self.timeline_helper.orgSignup()
     url = '/gsoc/proposal/submit/' + self.org.key.id()
     response = self.get(url)

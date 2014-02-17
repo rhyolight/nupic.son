@@ -347,11 +347,6 @@ class ProfileHelper(object):
     """
     pass
 
-  def createStudent(self):
-    """Sets the current user to be a student for the current program.
-    """
-    pass
-
 
 class GSoCProfileHelper(ProfileHelper):
   """Helper class to aid in manipulating GSoC profile data.
@@ -416,18 +411,6 @@ class GSoCProfileHelper(ProfileHelper):
     self.profile.notify_private_comments = private_comments
     self.profile.put()
 
-  def createStudent(self):
-    """Sets the current user to be a student for the current program.
-    """
-    if self.profile:
-      return self.profile
-
-    user = seedNDBUser()
-    self.profile = seedSOCStudent(
-        self.program, birth_date=generateEligibleStudentBirthDate(self.program),
-        user=user)
-    return self.profile
-
 
 class GCIProfileHelper(ProfileHelper):
   """Helper class to aid in manipulating GCI profile data.
@@ -488,24 +471,3 @@ class GCIProfileHelper(ProfileHelper):
     self.profile.notify_request_handled = request_handled
     self.profile.notify_comments = comments
     self.profile.put()
-
-  def createStudent(self, **kwargs):
-    """Sets the current user to be a student for the current program."""
-    self.createProfile()
-
-    properties = {
-        'key_name': self.profile.key().name(),
-        'parent': self.profile,
-        'school': None,
-        'number_of_completed_tasks': 0,
-        'program': self.program,
-        'is_winner': False,
-        'winner_for': None
-    }
-    properties.update(kwargs)
-
-    self.profile.student_info = self.seed(
-        gci_profile_model.GCIStudentInfo, properties)
-    self.profile.is_student = True
-    self.profile.put()
-    return self.profile

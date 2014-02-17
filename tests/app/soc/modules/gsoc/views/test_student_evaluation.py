@@ -151,7 +151,10 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     link_id = LinkIDProvider(ProjectSurvey).getValue()
     suffix = "%s/%s" % (self.gsoc.key().name(), link_id)
 
-    self.profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
+
     # test review GET
     url = '/gsoc/eval/student/edit/' + suffix
     response = self.get(url)
@@ -555,7 +558,9 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     self.assertResponseRedirect(response, show_url)
 
   def testShowEvalForStudentWithNoProject(self):
-    self.profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
 
     # test student evaluation show GET for a for a student who
     # does not have a project in the program
@@ -758,7 +763,10 @@ class GSoCStudentEvaluationPreviewPageTest(test_utils.GSoCDjangoTestCase):
 
   def testStudentAccessDenied(self):
     """Tests that students cannot access the page."""
-    self.profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
+
     response = self.get(self._getUrl())
     self.assertResponseForbidden(response)
 

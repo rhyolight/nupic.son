@@ -51,7 +51,10 @@ class AcceptProposalsTest(test_utils.GSoCDjangoTestCase):
 
   def testStudentAccessForbidded(self):
     """Tests that a student cannot access the page."""
-    self.profile_helper.createStudent()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBStudent(self.program, user=user)
+
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)
