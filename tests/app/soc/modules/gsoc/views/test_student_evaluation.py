@@ -164,7 +164,11 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     link_id = LinkIDProvider(ProjectSurvey).getValue()
     suffix = "%s/%s" % (self.gsoc.key().name(), link_id)
 
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
+
     # test review GET
     url = '/gsoc/eval/student/edit/' + suffix
     response = self.get(url)
@@ -303,7 +307,12 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
     url, _, _ = self.getStudentEvalRecordProperties()
 
     another_org = self.createOrg()
-    self.profile_helper.createMentor(another_org)
+
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[another_org.key])
+
     # test student evaluation take GET for a mentor of another organization
     response = self.get(url)
     self.assertResponseForbidden(response)
@@ -680,7 +689,12 @@ class StudentEvaluationTest(test_utils.GSoCDjangoTestCase):
 
   def testShowEvaluationForOtherOrgMentor(self):
     another_org = self.createOrg()
-    self.profile_helper.createMentor(another_org)
+
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[another_org.key])
+
     url, evaluation, _ = self.getStudentEvalRecordProperties(show=True)
 
     # test student evaluation show GET for a mentor of another organization
@@ -772,7 +786,11 @@ class GSoCStudentEvaluationPreviewPageTest(test_utils.GSoCDjangoTestCase):
 
   def testMentorAccessDenied(self):
     """Tests that mentors cannot access the page."""
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
+
     response = self.get(self._getUrl())
     self.assertResponseForbidden(response)
 

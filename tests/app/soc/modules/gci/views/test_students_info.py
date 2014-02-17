@@ -46,7 +46,12 @@ class StudentsInfoTest(GCIDjangoTestCase):
     response = self.get(self.url)
     self.assertResponseForbidden(response)
 
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
+
     response = self.get(self.url)
     self.assertResponseForbidden(response)
 

@@ -193,8 +193,7 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
     user = profile_utils.seedNDBUser()
     profile_utils.loginNDB(user)
     profile_utils.seedNDBProfile(
-        self.program.key(), user=user,
-        admin_for=[self.org.key])
+        self.program.key(), user=user, admin_for=[self.org.key])
 
     url = '/gsoc/org/application/edit/' + self.gsoc.key().name()
     response = self.get(url)
@@ -217,7 +216,11 @@ class OrgAppTest(test_utils.GSoCDjangoTestCase):
     # Make sure we do not have an org app for this test.
     self.org_app.delete()
 
-    self.profile_helper.createMentor(self.org)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, mentor_for=[self.org.key])
+
     url = '/gsoc/org/application/edit/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)

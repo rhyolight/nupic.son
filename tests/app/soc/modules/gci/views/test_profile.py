@@ -16,6 +16,8 @@
 
 import unittest
 
+from google.appengine.ext import ndb
+
 from datetime import date
 from datetime import timedelta
 
@@ -122,7 +124,13 @@ class ProfileViewTest(test_utils.GCIDjangoTestCase):
   @unittest.skip('This profile view is deprecated.')
   def testRedirectWithMentorProfilePage(self):
     self.timeline_helper.studentSignup()
-    self.profile_helper.createMentor(self.org)
+
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
+
     url = '/gci/profile/mentor/' + self.gci.key().name()
     response = self.get(url)
     response_url = '/gci/profile/' + self.gci.key().name()
@@ -190,7 +198,13 @@ class ProfileViewTest(test_utils.GCIDjangoTestCase):
   @unittest.skip('This profile view is deprecated.')
   def testForbiddenWithMentorProfilePage(self):
     self.timeline_helper.studentSignup()
-    self.profile_helper.createMentor(self.org)
+
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user,
+        mentor_for=[ndb.Key.from_old_key(self.org.key())])
+
     url = '/gci/profile/student/' + self.gci.key().name()
     response = self.get(url)
     self.assertResponseForbidden(response)

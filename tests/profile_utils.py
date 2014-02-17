@@ -371,22 +371,6 @@ class GSoCProfileHelper(ProfileHelper):
     self.profile = seedNDBProfile(self.program.key(), user=user)
     return self.profile
 
-  def createMentor(self, org):
-    """Creates an Organization Administrator profile for the current user.
-
-    Args:
-      org: organization entity.
-
-    Returns:
-      the current profile entity.
-    """
-    user = seedNDBUser()
-    loginNDB(user)
-    self.profile = seedNDBProfile(
-        self.program.key(), user=user, mentor_for=[org.key])
-
-    return self.profile
-
   def notificationSettings(
       self, new_requests=False, request_handled=False,
       new_proposals=False, proposal_updates=False,
@@ -427,30 +411,6 @@ class GCIProfileHelper(ProfileHelper):
         'is_org_admin': False, 'is_mentor': False, 'is_student': False
     }
     self.profile = self.seed(gci_profile_model.GCIProfile, properties)
-    return self.profile
-
-  def createMentor(self, org):
-    """Creates a Mentor profile for the current user.
-
-    Args:
-      org: organization entity.
-
-    Returns:
-      the current profile entity.
-    """
-    self.createProfile()
-    self.profile.mentor_for = [org.key()]
-    self.profile.is_mentor = True
-    self.profile.put()
-
-    connection_properties = {
-        'user_role': connection_model.ROLE,
-        'org_role': connection_model.MENTOR_ROLE
-        }
-    connection_utils.seed_new_connection(
-        ndb.Key.from_old_key(self.profile.key()),
-        ndb.Key.from_old_key(org.key()), **connection_properties)
-
     return self.profile
 
   def notificationSettings(

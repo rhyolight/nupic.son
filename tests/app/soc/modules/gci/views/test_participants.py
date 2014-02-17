@@ -49,7 +49,6 @@ class MentorsListAdminPageTest(test_utils.GCIDjangoTestCase):
         self.program.key(), user=user,
         mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
-    self.profile_helper.createMentor(self.org)
     response = self.get(self.url)
     self.assertErrorTemplatesUsed(response)
     self.assertResponseForbidden(response)
