@@ -52,6 +52,8 @@ class EditProgramTest(GSoCDjangoTestCase):
     user = profile_utils.seedNDBUser()
     profile_utils.loginNDB(user)
 
+    self.document = self.createDocument(user=user)
+
   def testShowDocument(self):
     url = '/gsoc/document/show/' + self.document.key().name()
     response = self.get(url)

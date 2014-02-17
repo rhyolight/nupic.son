@@ -461,15 +461,19 @@ class DjangoTestCase(SoCTestCase, testcases.TestCase):
     response = self.post(url, combined_postdata)
     return response
 
-  def createDocumentForPrefix(self, prefix, override=None):
+  def createDocumentForPrefix(self, prefix, override=None, user=None):
     """Creates a document for the specified properties."""
     from soc.models.document import Document
     from soc.modules.seeder.logic.providers.string import (
         DocumentKeyNameProvider)
     override = override or {}
+
+    if not user:
+      user = profile_utils.seedNDBUser()
+
     properties = {
-        'modified_by': self.profile_helper.user,
-        'author': self.profile_helper.user,
+        'modified_by': user.key.to_old_key(),
+        'author': user.key.to_old_key(),
         'home_for': None,
         'prefix': prefix,
         'scope': self.program,
@@ -800,8 +804,9 @@ class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
     """Creates an organization for the defined properties."""
     return org_utils.seedSOCOrganization(self.program.key(), **override or {})
 
-  def createDocument(self, override=None):
-    return self.createDocumentForPrefix('gsoc_program', override or {})
+  def createDocument(self, override=None, user=None):
+    return self.createDocumentForPrefix(
+        'gsoc_program', override or {}, user=user)
 
   def assertGSoCTemplatesUsed(self, response):
     """Asserts that all the templates from the base view were used.
@@ -842,8 +847,9 @@ class GCIDjangoTestCase(DjangoTestCase, GCITestCase):
     self.assertTemplateUsed(response, 'modules/gci/_header.html')
     self.assertTemplateUsed(response, 'modules/gci/_mainmenu.html')
 
-  def createDocument(self, override=None):
-    return self.createDocumentForPrefix('gci_program', override or {})
+  def createDocument(self, override=None, user=None):
+    return self.createDocumentForPrefix(
+        'gci_program', override or {}, user=user)
 
 
 class TaskQueueTestCase(gaetestbed.taskqueue.TaskQueueTestCase,
