@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- melange.templates.inherit(
+melange.templates.inherit(
   function (_self, context) {
     jQuery("#form").submit(function () {
       return confirm(
