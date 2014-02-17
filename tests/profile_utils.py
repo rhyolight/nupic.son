@@ -371,19 +371,6 @@ class GSoCProfileHelper(ProfileHelper):
     self.profile = seedNDBProfile(self.program.key(), user=user)
     return self.profile
 
-  def notificationSettings(
-      self, new_requests=False, request_handled=False,
-      new_proposals=False, proposal_updates=False,
-      public_comments=False, private_comments=False):
-    self.createProfile()
-    self.profile.notify_new_requests = new_requests
-    self.profile.notify_request_handled = request_handled
-    self.profile.notify_new_proposals = new_proposals
-    self.profile.notify_proposal_updates = proposal_updates
-    self.profile.notify_public_comments = public_comments
-    self.profile.notify_private_comments = private_comments
-    self.profile.put()
-
 
 class GCIProfileHelper(ProfileHelper):
   """Helper class to aid in manipulating GCI profile data.
@@ -412,11 +399,3 @@ class GCIProfileHelper(ProfileHelper):
     }
     self.profile = self.seed(gci_profile_model.GCIProfile, properties)
     return self.profile
-
-  def notificationSettings(
-      self, new_requests=False, request_handled=False, comments=False):
-    self.createProfile()
-    self.profile.notify_new_requests = new_requests
-    self.profile.notify_request_handled = request_handled
-    self.profile.notify_comments = comments
-    self.profile.put()
