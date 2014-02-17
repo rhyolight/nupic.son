@@ -371,17 +371,6 @@ class GSoCProfileHelper(ProfileHelper):
     self.profile = seedNDBProfile(self.program.key(), user=user)
     return self.profile
 
-  def createNDBProfile(self):
-    """Creates a profile for the current user."""
-    if self.profile:
-      return self.profile
-
-    user = seedNDBUser()
-    loginNDB(user)
-    self.profile = seedNDBProfile(self.program.key(), user=user)
-
-    return self.profile
-
   def createMentor(self, org):
     """Creates an Organization Administrator profile for the current user.
 

@@ -52,7 +52,10 @@ class DashboardTest(GSoCDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testDashboardAsLoneUser(self):
-    self.profile_helper.createNDBProfile()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(self.program.key(), user=user)
+
     url = '/gsoc/dashboard/' + self.gsoc.key().name()
     response = self.get(url)
     self.assertResponseOK(response)
