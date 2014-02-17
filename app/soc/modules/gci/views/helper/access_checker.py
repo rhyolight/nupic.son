@@ -299,9 +299,11 @@ class AccessChecker(access_checker.AccessChecker):
     assert self.data.org_app
     assert self.data.org_app_record
 
-    if not self.data.user or self.data.user.key() not in [
-        self.data.org_app_record.main_admin.key(),
-        self.data.org_app_record.backup_admin.key()]:
+    if not self.data.ndb_user or self.data.ndb_user.key.to_old_key() not in [
+        OrgAppRecord.main_admin.get_value_for_datastore(
+            self.data.org_app_record),
+        OrgAppRecord.backup_admin.get_value_for_datastore(
+            self.data.org_app_record)]:
       raise exception.Forbidden(message=DEF_NOT_ORG_ADMIN_FOR_ORG_APP % {
           'org_name': self.data.org_app_record.name})
 
