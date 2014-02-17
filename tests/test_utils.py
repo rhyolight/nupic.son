@@ -41,7 +41,9 @@ from mapreduce import test_support
 
 from soc.logic.helper import xsrfutil
 from soc.middleware import xsrf as xsrf_middleware
+from soc.models import document as document_model
 from soc.modules import callback
+from soc.modules.seeder.logic.providers import string as string_provider
 from soc.tasks import mailer
 from soc.views import template
 
@@ -455,11 +457,17 @@ class DjangoTestCase(SoCTestCase, testcases.TestCase):
     response = self.post(url, combined_postdata)
     return response
 
-  def createDocumentForPrefix(self, prefix, override=None, user=None):
-    """Creates a document for the specified properties."""
-    from soc.models.document import Document
-    from soc.modules.seeder.logic.providers.string import (
-        DocumentKeyNameProvider)
+  def createDocumentForPrefix(self, prefix, user=None, override=None):
+    """Creates a document for the specified properties.
+
+    Args:
+      prefix: Prefix for the document.
+      user: User entity of the author for the document.
+      override: A dict mapping additional properties to their values.
+
+    Returns:
+      The newly created Document entity.
+    """
     override = override or {}
 
     if not user:
@@ -472,10 +480,10 @@ class DjangoTestCase(SoCTestCase, testcases.TestCase):
         'prefix': prefix,
         'scope': self.program,
         'read_access': 'public',
-        'key_name': DocumentKeyNameProvider(),
+        'key_name': string_provider.DocumentKeyNameProvider(),
     }
     properties.update(override)
-    return self.seed(Document, properties)
+    return self.seed(document_model.Document, properties)
 
   @classmethod
   def getXsrfToken(
@@ -798,9 +806,18 @@ class GSoCDjangoTestCase(DjangoTestCase, GSoCTestCase):
     """Creates an organization for the defined properties."""
     return org_utils.seedSOCOrganization(self.program.key(), **override or {})
 
-  def createDocument(self, override=None, user=None):
+  def createDocument(self, user=None, override=None):
+    """Creates a document for the specified properties.
+
+    Args:
+      user: User entity of the author for the document.
+      override: A dict mapping additional properties to their values.
+
+    Returns:
+      The newly created Document entity.
+    """
     return self.createDocumentForPrefix(
-        'gsoc_program', override or {}, user=user)
+        'gsoc_program', user=user, override=override)
 
   def assertGSoCTemplatesUsed(self, response):
     """Asserts that all the templates from the base view were used.
@@ -841,10 +858,18 @@ class GCIDjangoTestCase(DjangoTestCase, GCITestCase):
     self.assertTemplateUsed(response, 'modules/gci/_header.html')
     self.assertTemplateUsed(response, 'modules/gci/_mainmenu.html')
 
-  def createDocument(self, override=None, user=None):
-    return self.createDocumentForPrefix(
-        'gci_program', override or {}, user=user)
+  def createDocument(self, user=None, override=None):
+    """Creates a document for the specified properties.
 
+    Args:
+      user: User entity of the author for the document.
+      override: A dict mapping additional properties to their values.
+
+    Returns:
+      The newly created Document entity.
+    """
+    return self.createDocumentForPrefix(
+        'gci_program', user=user, override=override)
 
 class TaskQueueTestCase(gaetestbed.taskqueue.TaskQueueTestCase,
                         unittest.TestCase):
