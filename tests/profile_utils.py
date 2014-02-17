@@ -48,16 +48,6 @@ def generateEligibleStudentBirthDate(program):
       datetime.datetime.today() - timedelta(days=eligible_age * 365))
 
 
-def login(user):
-  """Logs in the specified user by setting 'USER_EMAIL' and 'USER_ID'
-  environmental variables.
-
-  Args:
-    user: user entity.
-  """
-  signInToGoogleAccount(user.account.email(), user.account.user_id())
-
-
 # TODO(daniel): Change name to login and remove the function above
 def loginNDB(user, is_admin=False):
   """Logs in the specified user by setting 'USER_ID' environmental variables.
