@@ -516,22 +516,3 @@ class GCIProfileHelper(ProfileHelper):
     self.profile.is_student = True
     self.profile.put()
     return self.profile
-
-  def createStudentWithTask(self, status, org, mentor):
-    """Sets the current user to be a student with a task for the
-    current program.
-    """
-    return self.createStudentWithTasks(status, org, mentor, 1)[0]
-
-  def createStudentWithTasks(self, status, org, mentor, n=1):
-    """Sets the current user to be a student with specified number of
-    tasks for the current program.
-    """
-    student = self.createStudent()
-    student.student_info.put()
-    tasks = []
-    for _ in xrange(n):
-      task = task_utils.seedTask(
-          self.program, org, [mentor.key()], student=student, status=status)
-      tasks.append(task)
-    return tasks
