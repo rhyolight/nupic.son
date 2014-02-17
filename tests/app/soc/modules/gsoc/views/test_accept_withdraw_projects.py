@@ -44,7 +44,9 @@ class AcceptProposalsTest(test_utils.GSoCDjangoTestCase):
 
   def testLoneUserAccessForbidded(self):
     """Tests that a lone user cannot access the page."""
-    self.profile_helper.createUser()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+
     response = self.get(self.url)
     self.assertResponseForbidden(response)
     self.assertErrorTemplatesUsed(response)

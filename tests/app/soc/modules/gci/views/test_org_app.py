@@ -143,7 +143,9 @@ class GCIOrgAppTakePageTest(test_utils.GCIDjangoTestCase):
 
   def testLoneUserAccessDenied(self):
     """Tests that users without profiles cannot access the page."""
-    self.profile_helper.createUser()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+
     response = self.get(self.take_url)
     self.assertResponseForbidden(response)
 

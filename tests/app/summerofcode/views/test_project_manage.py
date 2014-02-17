@@ -50,7 +50,9 @@ class ManageProjectProgramAdminViewTest(test_utils.GSoCDjangoTestCase):
 
   def testLoneUserAccessForbidden(self):
     """Tests that users without profiles cannot access the page."""
-    self.profile_helper.createUser()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+
     self._seedProjectData()
 
     response = self.get(self._getUrl(self.project))

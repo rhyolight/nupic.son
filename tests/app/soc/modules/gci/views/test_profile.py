@@ -77,15 +77,15 @@ class ProfileViewTest(test_utils.GCIDjangoTestCase):
     # we have other tests that verify the age_check system
     self.client.cookies['age_check'] = self.birth_date
 
-  def _updateDefaultProps(self, request_data):
+  def _updateDefaultProps(self, user):
     """Updates default_props variable with more personal data stored in
-    the specified request_data object.
+    the specified user object.
     """
     self.default_props.update({
-        'link_id': request_data.user.link_id,
-        'user': request_data.user,
-        'parent': request_data.user,
-        'email': request_data.user.account.email()
+        'link_id': user.user_id,
+        'user': user,
+        'parent': user,
+        'email': user.account.email()
         })
 
   def assertProfileTemplatesUsed(self, response):
@@ -268,8 +268,11 @@ class ProfileViewTest(test_utils.GCIDjangoTestCase):
   @unittest.skip('This profile view is deprecated.')
   def testCreateProfile(self):
     self.timeline_helper.studentSignup()
-    self.profile_helper.createUser()
-    self._updateDefaultProps(self.profile_helper)
+
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+
+    self._updateDefaultProps(user)
     postdata = self.default_props
 
     response = self.post(self.student_url, postdata)

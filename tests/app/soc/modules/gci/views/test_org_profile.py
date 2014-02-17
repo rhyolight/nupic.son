@@ -55,7 +55,9 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     self.assertResponseNotFound(response)
 
   def testCreateOrgRejectedApp(self):
-    self.profile_helper.createUser()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+
     self.record.createOrgAppRecord(
         'rejected', self.profile_helper.user, self.profile_helper.user,
         override={'status': 'rejected'})
@@ -65,9 +67,10 @@ class OrgProfilePageTest(test_utils.GCIDjangoTestCase):
     self.assertResponseForbidden(response)
 
   def testCreateOrgNoProfile(self):
-    self.profile_helper.createUser()
-    self.record.createOrgAppRecord(
-        'new_org', self.profile_helper.user, self.profile_helper.user)
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+
+    self.record.createOrgAppRecord('new_org', user.key, user.key)
 
     url = '/gci/profile/organization/' + self.gci.key().name()
     response = self.get(url + '?org_id=new_org')

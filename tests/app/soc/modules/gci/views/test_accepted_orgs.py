@@ -19,6 +19,7 @@
 
 from soc.modules.gci.models.organization import GCIOrganization
 
+from tests import profile_utils
 from tests.test_utils import GCIDjangoTestCase
 
 
@@ -52,7 +53,9 @@ class AcceptedOrgsPageTest(GCIDjangoTestCase):
     """Tests that the list of the organizations can not be accessed before
     organizations have been announced.
     """
-    self.profile_helper.createUser()
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+
     org_properties = {
         'scope': self.gci, 'status': 'active',
         'home': None, 'backup_winner': None, 'program': self.gci,

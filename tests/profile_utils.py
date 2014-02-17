@@ -331,17 +331,6 @@ class ProfileHelper(object):
     return seeder_logic.seedn(model, n, properties, recurse=False,
         auto_seed_optional_properties=auto_seed_optional_properties)
 
-  def createUser(self):
-    """Creates a user entity for the current user.
-    """
-    if self.user:
-      return self.user
-
-    email = os.environ['USER_EMAIL']
-
-    self.user = seedUser(email=email, is_developer=self.dev_test)
-    return self.user
-
 
 class GSoCProfileHelper(ProfileHelper):
   """Helper class to aid in manipulating GSoC profile data.
