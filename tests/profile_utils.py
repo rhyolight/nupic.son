@@ -550,19 +550,3 @@ class GCIProfileHelper(ProfileHelper):
       properties['student_id_form'] = forms_helper.createBlobStoreForm()
 
     return self.createStudent(**properties)
-
-  def createMentorWithTask(self, status, org):
-    """Creates an mentor profile with a task for the current user.
-    """
-    return self.createMentorWithTasks(status, org, 1)[0]
-
-  def createMentorWithTasks(self, status, org, n=1):
-    """Creates an mentor profile with a task for the current user.
-    """
-    mentor = self.createMentor(org)
-    tasks = []
-    for _ in xrange(n):
-      task = task_utils.seedTask(
-          self.program, org, [mentor.key()], status=status)
-      tasks.append(task)
-    return tasks
