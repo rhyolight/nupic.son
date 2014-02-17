@@ -535,18 +535,3 @@ class GCIProfileHelper(ProfileHelper):
           self.program, org, [mentor.key()], student=student, status=status)
       tasks.append(task)
     return tasks
-
-  def createStudentWithConsentForms(self, status='active', consent_form=False,
-      student_id_form=False):
-    """Creates a student who might have submitted consent forms required
-    by the program Terms of Service.
-    """
-    forms_helper = forms_to_submit_utils.FormsToSubmitHelper()
-
-    properties = {}
-    if consent_form:
-      properties['consent_form'] = forms_helper.createBlobStoreForm()
-    if student_id_form:
-      properties['student_id_form'] = forms_helper.createBlobStoreForm()
-
-    return self.createStudent(**properties)
