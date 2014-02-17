@@ -16,6 +16,7 @@
 
 from django.utils import html
 
+from tests import profile_utils
 from tests import test_utils
 
 
@@ -31,6 +32,9 @@ class ProfileXSSTest(object):
     self.timeline_helper.studentSignup()
 
   def testSanitization(self):
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+
     xss_payload = '><img src=http://www.google.com/images/srpr/logo4w.png>'
 
     role_url = '/%(program_type)s/profile/%(role)s/%(suffix)s' % {
@@ -41,8 +45,8 @@ class ProfileXSSTest(object):
 
     postdata = {
         'link_id': xss_payload,
-        'user': self.profile_helper.user,
-        'parent': self.profile_helper.user,
+        'user': user.key.to_old_key(),
+        'parent': user.key.to_old_key(),
         'scope': self.program,
         'status': 'active',
         'email': xss_payload,
