@@ -165,6 +165,10 @@ class Profile(ndb.Model):
   #: or a cartoon avatar. May be displayed publicly.
   photo_url = ndb.StringProperty(validator=db.link_validator)
 
+  #: Optional field storing an identifier of Avatar figure which has been
+  #: chosen by the profile.
+  avatar = ndb.StringProperty(required=False)
+
   #: Contact options to the profile.
   contact = ndb.LocalStructuredProperty(
       contact_model.Contact, default=contact_model.Contact())
