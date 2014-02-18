@@ -16,6 +16,8 @@
 
 import re
 
+from melange.request import links
+
 from soc.views.template import Template
 
 from soc.modules.gci.logic import program as program_logic
@@ -62,15 +64,15 @@ class YourScore(Template):
     self.data = data
     self.score = None
 
-    if self.data.profile and self.data.profile.student_info:
-      self.score = ranking_logic.get(self.data.profile)
+    if self.data.ndb_profile and self.data.ndb_profile.is_student:
+      self.score = ranking_logic.get(self.data.ndb_profile)
 
   def context(self):
     return {} if not self.score else {
         'points': self.score.points,
         'tasks': len(self.score.tasks),
-        'my_tasks_link': self.data.redirect.profile(
-            self.data.profile.link_id).urlOf(url_names.GCI_STUDENT_TASKS)
+        'my_tasks_link': links.LINKER.profile(
+            self.data.ndb_profile, url_names.GCI_STUDENT_TASKS),
         }
 
   def render(self):
