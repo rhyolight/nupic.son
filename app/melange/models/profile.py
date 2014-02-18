@@ -130,7 +130,7 @@ class StudentData(ndb.Model):
   winner_for = ndb.KeyProperty()
 
   #: Property telling thether the student is a winner of the program.
-  is_winner = ndb.ComputedProperty(lambda self: self.winner_for is not None)
+  is_winner = ndb.ComputedProperty(lambda self: bool(self.winner_for))
 
 
 class Profile(ndb.Model):
@@ -164,6 +164,10 @@ class Profile(ndb.Model):
   #: Optional field storing a URL to an image, for example a personal photo
   #: or a cartoon avatar. May be displayed publicly.
   photo_url = ndb.StringProperty(validator=db.link_validator)
+
+  #: Optional field storing an identifier of Avatar figure which has been
+  #: chosen by the profile.
+  avatar = ndb.StringProperty(required=False)
 
   #: Contact options to the profile.
   contact = ndb.LocalStructuredProperty(

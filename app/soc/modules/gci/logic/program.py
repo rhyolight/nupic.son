@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GCI logic for program.
-"""
+"""GCI logic for program."""
 
-from soc.modules.gci.models import profile as profile_model
+from google.appengine.ext import ndb
+
+from melange.models import profile as profile_model
 
 
 def getMostRecentProgram(data):
@@ -27,17 +28,17 @@ def getMostRecentProgram(data):
   return data.site.latest_gci
 
 
-def getWinnersForProgram(program):
+def getWinnersForProgram(program_key):
   """Returns the Grand Prize Winners for the specified program.
 
   Args:
-    program: GCIProgram instance for which to retrieve the winners
+    program_key: Program key.
 
   Returns:
-    a list of GCIProfile instances containing winners of the program
+    A list of Profile instances containing winners of the program
   """
-  student_keys = profile_model.GCIStudentInfo.all(keys_only=True).filter(
-      'is_winner', True).filter('program', program).fetch(1000)
+  query = profile_model.Profile.query(
+      profile_model.Profile.student_data.is_winner == True,
+      profile_model.Profile.program == ndb.Key.from_old_key(program_key))
+  return query.fetch(1000)
 
-  return profile_model.GCIProfile.get(
-      [key.parent() for key in student_keys])

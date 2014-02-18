@@ -16,6 +16,8 @@
 
 import re
 
+from melange.request import links
+
 from soc.views.template import Template
 
 from soc.modules.gci.logic import program as program_logic
@@ -62,15 +64,15 @@ class YourScore(Template):
     self.data = data
     self.score = None
 
-    if self.data.profile and self.data.profile.student_info:
-      self.score = ranking_logic.get(self.data.profile)
+    if self.data.ndb_profile and self.data.ndb_profile.is_student:
+      self.score = ranking_logic.get(self.data.ndb_profile)
 
   def context(self):
     return {} if not self.score else {
         'points': self.score.points,
         'tasks': len(self.score.tasks),
-        'my_tasks_link': self.data.redirect.profile(
-            self.data.profile.link_id).urlOf(url_names.GCI_STUDENT_TASKS)
+        'my_tasks_link': links.LINKER.profile(
+            self.data.ndb_profile, url_names.GCI_STUDENT_TASKS),
         }
 
   def render(self):
@@ -125,7 +127,7 @@ class OrgNominatedWinners(Template):
 
     def organization(self):
       """Returns GCIOrganization associated with the winner."""
-      return self.profile.student_info.winner_for
+      return self.profile.student_data.winner_for.get()
 
     def avatarPrefix(self):
       """Returns avatar prefix associated with the winner."""
@@ -157,10 +159,12 @@ class OrgNominatedWinners(Template):
     """
     winners = []
 
-    profiles = program_logic.getWinnersForProgram(program)
+    profiles = program_logic.getWinnersForProgram(program.key())
     for profile in profiles:
       winners.append(OrgNominatedWinners.Winner(profile))
 
-    winners.sort(key=lambda o: o.profile.given_name.lower())
+    winners.sort(
+        key=lambda nominated_winner:
+            nominated_winner.profile.first_name.lower())
 
     return winners

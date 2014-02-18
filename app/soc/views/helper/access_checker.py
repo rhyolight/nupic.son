@@ -446,16 +446,6 @@ class AccessChecker(BaseAccessChecker):
 
     raise exception.Forbidden(message=DEF_HAS_NO_PROJECT)
 
-  def notStudent(self):
-    """Checks if the current user has a non-student profile.
-    """
-    self.isProfileActive()
-
-    if not self.data.student_info:
-      return
-
-    raise exception.Forbidden(message=DEF_IS_STUDENT)
-
   def notOrgAdmin(self):
     """Checks if the user is not an admin.
     """
@@ -571,7 +561,7 @@ class AccessChecker(BaseAccessChecker):
         self.data.url_proposal.is_editable_post_deadline):
       return
 
-    violation_message = '%s %s'% ((DEF_PAGE_INACTIVE_OUTSIDE %
+    violation_message = '%s %s' % ((DEF_PAGE_INACTIVE_OUTSIDE %
         self.data.timeline.studentsSignupBetween()),
         DEF_PROPOSAL_MODIFICATION_REQUEST)
     raise exception.Forbidden(message=violation_message)
