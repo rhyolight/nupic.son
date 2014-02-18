@@ -47,6 +47,7 @@ def updateOrgScoreTxn(task, student):
   return txn
 
 
+#: TODO(daniel): implement unit tests for this function
 def updateOrgScoresTxn(tasks):
   """Returns a transaction function that updates GCIOrgScore for the
   specified list of tasks that belong to the same student.
@@ -88,9 +89,9 @@ def updateOrgScoresTxn(tasks):
 
       to_put.append(org_score)
 
-    student_info = profile_logic.queryStudentInfoForParent(student_key).get()
-    student_info.number_of_completed_tasks += len(tasks)
-    to_put.append(student_info)
+    student = ndb.Key.from_old_key(student_key)
+    student.student_data.number_of_completed_tasks += len(tasks)
+    student.put()
 
     db.put(to_put)
 
