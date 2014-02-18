@@ -106,9 +106,9 @@ def clearOrgScoresTxn(profile_key):
     org_scores = queryForAncestor(profile_key).fetch(1000)
     db.delete(org_scores)
 
-    student_info = profile_logic.queryStudentInfoForParent(profile_key).get()
-    student_info.number_of_completed_tasks = 0
-    student_info.put()
+    profile = profile_key.get()
+    profile.student_data.number_of_completed_tasks = 0
+    profile.put()
 
   return txn
 
