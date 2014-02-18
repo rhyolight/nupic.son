@@ -96,3 +96,4 @@ libraries:
 pagespeed:
   disabled_rewriters:
   - WebpOptimization
+  - ImageConvertToJpeg
