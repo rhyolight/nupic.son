@@ -130,7 +130,7 @@ class StudentData(ndb.Model):
   winner_for = ndb.KeyProperty()
 
   #: Property telling thether the student is a winner of the program.
-  is_winner = ndb.ComputedProperty(lambda self: self.winner_for is not None)
+  is_winner = ndb.ComputedProperty(lambda self: bool(self.winner_for))
 
 
 class Profile(ndb.Model):
