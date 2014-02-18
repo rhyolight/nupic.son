@@ -125,7 +125,7 @@ class OrgNominatedWinners(Template):
 
     def organization(self):
       """Returns GCIOrganization associated with the winner."""
-      return self.profile.student_info.winner_for
+      return self.profile.student_data.winner_for.get()
 
     def avatarPrefix(self):
       """Returns avatar prefix associated with the winner."""
@@ -161,6 +161,8 @@ class OrgNominatedWinners(Template):
     for profile in profiles:
       winners.append(OrgNominatedWinners.Winner(profile))
 
-    winners.sort(key=lambda o: o.profile.given_name.lower())
+    winners.sort(
+        key=lambda nominated_winner:
+            nominated_winner.profile.first_name.lower())
 
     return winners
