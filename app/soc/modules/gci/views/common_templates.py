@@ -157,7 +157,7 @@ class OrgNominatedWinners(Template):
     """
     winners = []
 
-    profiles = program_logic.getWinnersForProgram(program)
+    profiles = program_logic.getWinnersForProgram(program.key())
     for profile in profiles:
       winners.append(OrgNominatedWinners.Winner(profile))
 
