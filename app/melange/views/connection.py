@@ -874,7 +874,7 @@ class UserActionsFormHandler(form_handler.FormHandler):
       data.site  # pylint: disable=pointless-statement
       handleUserRoleSelectionTxn(
           data.url_connection, None, data.program,
-          data.program.getProgramMessages())
+          data.program.getProgramMessages(), data.site)
 
     return is_eligible
 
@@ -946,7 +946,7 @@ class OrgActionsFormHandler(form_handler.FormHandler):
     if is_eligible:
       handleMentorRoleSelection(
           data.url_connection, data.ndb_profile, None, data.program,
-          data.program.getProgramMessages())
+          data.program.getProgramMessages(), data.site)
     return is_eligible
 
   def _handleOrgAdminSelection(self, data):
@@ -964,7 +964,7 @@ class OrgActionsFormHandler(form_handler.FormHandler):
     """
     handleOrgAdminRoleSelection(
         data.url_connection, data.ndb_profile, None, data.program,
-        data.program.getProgramMessages())
+        data.program.getProgramMessages(), data.site)
     return rich_bool.TRUE
 
 
@@ -1375,7 +1375,7 @@ def handleUserNoRoleSelectionTxn(connection, conversation_updater):
 
 @ndb.transactional
 def handleUserRoleSelectionTxn(
-    connection, conversation_updater, program, program_messages):
+    connection, conversation_updater, program, program_messages, site):
   """Updates user role of the specified connection and all corresponding
   entities with connection_model.ROLE selection.
 
@@ -1389,6 +1389,7 @@ def handleUserRoleSelectionTxn(
     program: program_model.Program entity for the specified connection.
     program_messages: program_model.ProgramMessages entity for the specified
       program.
+    site: site_model.Site entity.
   """
   connection = connection.key.get()
 
@@ -1409,12 +1410,12 @@ def handleUserRoleSelectionTxn(
     if connection.orgOfferedMentorRole():
       profile_logic.assignMentorRoleForOrg(
           profile, connection.organization, sent_org_member_welcome_email=True,
-          program=program, program_messages=program_messages)
+          program=program, program_messages=program_messages, site=site)
       # TODO(daniel): generate connection message
     elif connection.orgOfferedOrgAdminRole():
       profile_logic.assignOrgAdminRoleForOrg(
           profile, connection.organization, sent_org_member_welcome_email=True,
-          program=program, program_messages=program_messages)
+          program=program, program_messages=program_messages, site=site)
       # TODO(daniel): generate connection message
 
     if conversation_updater:
@@ -1461,7 +1462,7 @@ def handleOrgNoRoleSelection(connection, org_admin, conversation_updater):
 
 @ndb.transactional
 def handleMentorRoleSelection(connection, admin, conversation_updater,
-    program, program_messages):
+    program, program_messages, site):
   """Updates organization role of the specified connection and all
   corresponding entities with connection_model.MENTOR_ROLE selection.
 
@@ -1477,6 +1478,7 @@ def handleMentorRoleSelection(connection, admin, conversation_updater,
     program: program_model.Program entity for the specified connection.
     program_messages: program_model.ProgramMessages entity for the specified
       program.
+    site: site_model.Site entity.
   """
 
   connection = connection.key.get()
@@ -1498,7 +1500,7 @@ def handleMentorRoleSelection(connection, admin, conversation_updater,
 
       profile_logic.assignMentorRoleForOrg(
           profile, connection.organization, sent_org_member_welcome_email=True,
-          program=program, program_messages=program_messages)
+          program=program, program_messages=program_messages, site=site)
 
       if conversation_updater:
         conversation_updater.updateConversationsForProfile(profile)
@@ -1506,7 +1508,7 @@ def handleMentorRoleSelection(connection, admin, conversation_updater,
 
 @ndb.transactional
 def handleOrgAdminRoleSelection(connection, admin, conversation_updater,
-    program, program_messages):
+    program, program_messages, site):
   """Updates organization role of the specified connection and all
   corresponding entities with connection_model.ORG_ADMIN_ROLE selection.
 
@@ -1522,6 +1524,7 @@ def handleOrgAdminRoleSelection(connection, admin, conversation_updater,
     program: program_model.Program entity for the specified connection.
     program_messages: program_model.ProgramMessages entity for the specified
       program.
+    site: site_model.Site entity.
   """
   connection = connection.key.get()
 
@@ -1542,7 +1545,7 @@ def handleOrgAdminRoleSelection(connection, admin, conversation_updater,
 
       profile_logic.assignOrgAdminRoleForOrg(
           profile, connection.organization, sent_org_member_welcome_email=True,
-          program=program, program_messages=program_messages)
+          program=program, program_messages=program_messages, site=site)
 
       if conversation_updater:
         conversation_updater.updateConversationsForProfile(profile)

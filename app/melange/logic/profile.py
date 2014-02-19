@@ -178,7 +178,8 @@ def assignNoRoleForOrg(profile, org_key):
 
 
 def assignMentorRoleForOrg(profile, org_key,
-    sent_org_member_welcome_email=None, program=None, program_messages=None):
+    sent_org_member_welcome_email=None, program=None,
+    program_messages=None, site=None):
   """Assigns the specified profile a mentor role for the specified
   organization. If a user is currently an organization administrator,
   they will be lowered to a mentor role.
@@ -193,11 +194,14 @@ def assignMentorRoleForOrg(profile, org_key,
       if the welcome email is supposed to be sent out.
     program_messages: Optional program_model.ProgramMessages entity. It needs
       to be specified if the welcome email is supposed to be sent out.
+    site: Optional site_model.Site entity. It needs
+      to be specified if the welcome email is supposed to be sent out.
   """
-  if sent_org_member_welcome_email and not (program or program_messages):
+  if (sent_org_member_welcome_email and
+      not (program or program_messages or site)):
     raise ValueError(
-        'If the welcome email is supposed to be sent, both program '
-        'and program_messages attributes must be set.')
+        'If the welcome email is supposed to be sent, all of program, '
+        'program_messages and site attributes must be set.')
 
   if org_key in profile.admin_for:
     profile.admin_for.remove(org_key)
@@ -209,12 +213,13 @@ def assignMentorRoleForOrg(profile, org_key,
           not in profile.sent_messages):
     profile.sent_messages.append(
         profile_model.MessageType.ORG_MEMBER_WELCOME_MSG)
-    dispatchOrgMemberWelcomeEmail(profile, program, program_messages)
+    dispatchOrgMemberWelcomeEmail(profile, program, program_messages, site)
 
   profile.put()
 
 def assignOrgAdminRoleForOrg(profile, org_key,
-    sent_org_member_welcome_email=None, program=None, program_messages=None):
+    sent_org_member_welcome_email=None, program=None,
+    program_messages=None, site=None):
   """Assigns the specified profile an organization administrator role
   for the specified organization.
 
@@ -228,7 +233,15 @@ def assignOrgAdminRoleForOrg(profile, org_key,
       if the welcome email is supposed to be sent out.
     program_messages: Optional program_model.ProgramMessages entity. It needs
       to be specified if the welcome email is supposed to be sent out.
+    site: Optional site_model.Site entity. It needs
+      to be specified if the welcome email is supposed to be sent out.
   """
+  if (sent_org_member_welcome_email and
+      not (program or program_messages or site)):
+    raise ValueError(
+        'If the welcome email is supposed to be sent, all of program, '
+        'program_messages and site attributes must be set.')
+
   if org_key not in profile.admin_for:
     if org_key not in profile.mentor_for:
       profile.mentor_for.append(org_key)
@@ -240,7 +253,7 @@ def assignOrgAdminRoleForOrg(profile, org_key,
             not in profile.sent_messages):
       profile.sent_messages.append(
           profile_model.MessageType.ORG_MEMBER_WELCOME_MSG)
-      dispatchOrgMemberWelcomeEmail(profile, program, program_messages)
+      dispatchOrgMemberWelcomeEmail(profile, program, program_messages, site)
 
     profile.put()
 
@@ -378,7 +391,7 @@ def createStudentData(student_data_properties, models=types.MELANGE_MODELS):
   return models.student_data_model(**student_data_properties)
 
 
-def dispatchOrgMemberWelcomeEmail(profile, program, program_messages):
+def dispatchOrgMemberWelcomeEmail(profile, program, program_messages, site):
   """Dispatches a task to send organization member welcome email for
   the program to the specified profile.
 
@@ -386,10 +399,10 @@ def dispatchOrgMemberWelcomeEmail(profile, program, program_messages):
     profile: profile_model.Profile entity to which the email should be sent.
     program: program_model.Program entity.
     program_messages: program_model.ProgramMessages entity.
+    site: site_model.Site entity.
   """
   if program_messages.mentor_welcome_msg:
-
-    sender, sender_name = mail_dispatcher.getDefaultMailSender()
+    sender, sender_name = mail_dispatcher.getDefaultMailSender(site=site)
 
     context = {
         'to': profile.contact.email,

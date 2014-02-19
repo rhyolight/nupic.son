@@ -681,6 +681,8 @@ class DispatchOrgMemberWelcomeEmailTest(test_utils.DjangoTestCase):
 
   def testOrgMemberWelcomeEmailSent(self):
     """Tests that welcome email is sent properly."""
+    site = program_utils.seedSite()
+
     program = program_utils.seedProgram()
     program_messages = program_utils.seedProgramMessages(
         program_key=program.key())
@@ -688,7 +690,7 @@ class DispatchOrgMemberWelcomeEmailTest(test_utils.DjangoTestCase):
     profile = profile_utils.seedNDBProfile(program.key())
 
     profile_logic.dispatchOrgMemberWelcomeEmail(
-        profile, program, program_messages)
+        profile, program, program_messages, site)
 
     self.assertEmailSent(
         to=profile.contact.email,
