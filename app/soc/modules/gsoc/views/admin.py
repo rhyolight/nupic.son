@@ -114,6 +114,7 @@ class DashboardPage(base.GSoCRequestHandler):
     dashboards.append(StudentEvaluationsDashboard(data))
     dashboards.append(EvaluationGroupDashboard(data))
     dashboards.append(StudentsDashboard(data))
+    dashboards.append(ParticipantsDashboard(data))
 
     dashboards.append(ShipmentTrackingDashboard(data))
     dashboards.append(ShipmentInfoDashboard(data))
