@@ -158,7 +158,8 @@ def getDefaultContext(request_data, emails, subject, extra_context=None):
   default_context['program_name'] = request_data.program.name
   default_context['subject'] = subject
 
-  sender_name, sender = mail_dispatcher.getDefaultMailSender()
+  sender_name, sender = mail_dispatcher.getDefaultMailSender(
+      site=request_data.site)
   default_context['sender_name'] = sender_name
   default_context['sender'] = sender
 
