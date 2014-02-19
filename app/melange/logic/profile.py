@@ -213,19 +213,35 @@ def assignMentorRoleForOrg(profile, org_key,
 
   profile.put()
 
-def assignOrgAdminRoleForOrg(profile, org_key):
+def assignOrgAdminRoleForOrg(profile, org_key,
+    sent_org_member_welcome_email=None, program=None, program_messages=None):
   """Assigns the specified profile an organization administrator role
   for the specified organization.
 
   Args:
     profile: Profile entity.
     org_key: Organization key.
+    sent_org_member_welcome_email: Optional bool value. If set to True 
+      the welcome email will be sent to the user provided he or she
+      has not received one so far.
+    program: Optional program_model.Program entity. It needs to be specified
+      if the welcome email is supposed to be sent out.
+    program_messages: Optional program_model.ProgramMessages entity. It needs
+      to be specified if the welcome email is supposed to be sent out.
   """
   if org_key not in profile.admin_for:
     if org_key not in profile.mentor_for:
       profile.mentor_for.append(org_key)
 
     profile.admin_for.append(org_key)
+
+    if (sent_org_member_welcome_email and
+        profile_model.MessageType.ORG_MEMBER_WELCOME_MSG
+            not in profile.sent_messages):
+      profile.sent_messages.append(
+          profile_model.MessageType.ORG_MEMBER_WELCOME_MSG)
+      dispatchOrgMemberWelcomeEmail(profile, program, program_messages)
+
     profile.put()
 
 
