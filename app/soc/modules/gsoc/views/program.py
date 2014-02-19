@@ -15,7 +15,6 @@
 """Module for the program settings pages."""
 
 from google.appengine.ext import blobstore
-from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from django import forms as django_forms

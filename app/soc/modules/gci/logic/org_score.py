@@ -17,10 +17,8 @@
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
-from soc.modules.gci.logic import profile as profile_logic
 from soc.modules.gci.models.score import GCIOrgScore
 from soc.modules.gci.models.task import GCITask
-
 
 # TODO(daniel): this should be a parameter of the program
 # determines the maximal position from which the student may be
