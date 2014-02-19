@@ -178,7 +178,7 @@ def assignNoRoleForOrg(profile, org_key):
 
 
 def assignMentorRoleForOrg(profile, org_key,
-    sent_org_member_welcome_email=None, program=None,
+    send_org_member_welcome_email=None, program=None,
     program_messages=None, site=None):
   """Assigns the specified profile a mentor role for the specified
   organization. If a user is currently an organization administrator,
@@ -187,7 +187,7 @@ def assignMentorRoleForOrg(profile, org_key,
   Args:
     profile: Profile entity.
     org_key: Organization key.
-    sent_org_member_welcome_email: Optional bool value. If set to True 
+    send_org_member_welcome_email: Optional bool value. If set to True 
       the welcome email will be sent to the user provided he or she
       has not received one so far.
     program: Optional program_model.Program entity. It needs to be specified
@@ -197,7 +197,7 @@ def assignMentorRoleForOrg(profile, org_key,
     site: Optional site_model.Site entity. It needs
       to be specified if the welcome email is supposed to be sent out.
   """
-  if (sent_org_member_welcome_email and
+  if (send_org_member_welcome_email and
       not (program or program_messages or site)):
     raise ValueError(
         'If the welcome email is supposed to be sent, all of program, '
@@ -208,7 +208,7 @@ def assignMentorRoleForOrg(profile, org_key,
 
   profile.mentor_for = list(set(profile.mentor_for + [org_key]))
 
-  if (sent_org_member_welcome_email and
+  if (send_org_member_welcome_email and
       profile_model.MessageType.ORG_MEMBER_WELCOME_MSG
           not in profile.sent_messages):
     profile.sent_messages.append(
@@ -218,7 +218,7 @@ def assignMentorRoleForOrg(profile, org_key,
   profile.put()
 
 def assignOrgAdminRoleForOrg(profile, org_key,
-    sent_org_member_welcome_email=None, program=None,
+    send_org_member_welcome_email=None, program=None,
     program_messages=None, site=None):
   """Assigns the specified profile an organization administrator role
   for the specified organization.
@@ -226,7 +226,7 @@ def assignOrgAdminRoleForOrg(profile, org_key,
   Args:
     profile: Profile entity.
     org_key: Organization key.
-    sent_org_member_welcome_email: Optional bool value. If set to True 
+    send_org_member_welcome_email: Optional bool value. If set to True 
       the welcome email will be sent to the user provided he or she
       has not received one so far.
     program: Optional program_model.Program entity. It needs to be specified
@@ -236,7 +236,7 @@ def assignOrgAdminRoleForOrg(profile, org_key,
     site: Optional site_model.Site entity. It needs
       to be specified if the welcome email is supposed to be sent out.
   """
-  if (sent_org_member_welcome_email and
+  if (send_org_member_welcome_email and
       not (program or program_messages or site)):
     raise ValueError(
         'If the welcome email is supposed to be sent, all of program, '
@@ -248,7 +248,7 @@ def assignOrgAdminRoleForOrg(profile, org_key,
 
     profile.admin_for.append(org_key)
 
-    if (sent_org_member_welcome_email and
+    if (send_org_member_welcome_email and
         profile_model.MessageType.ORG_MEMBER_WELCOME_MSG
             not in profile.sent_messages):
       profile.sent_messages.append(

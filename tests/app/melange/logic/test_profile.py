@@ -375,7 +375,7 @@ class AssignMentorRoleForOrgTest(test_utils.DjangoTestCase):
     program_messages = program_utils.seedProgramMessages(
         program_key=self.program.key())
     profile_logic.assignMentorRoleForOrg(
-        self.profile, self.org.key, sent_org_member_welcome_email=True,
+        self.profile, self.org.key, send_org_member_welcome_email=True,
         program=self.program, program_messages=program_messages)
 
     self.assertIn(
@@ -442,7 +442,7 @@ class AssignOrgAdminRoleForOrgTest(test_utils.DjangoTestCase):
     program_messages = program_utils.seedProgramMessages(
         program_key=self.program.key())
     profile_logic.assignOrgAdminRoleForOrg(
-        self.profile, self.org.key, sent_org_member_welcome_email=True,
+        self.profile, self.org.key, send_org_member_welcome_email=True,
         program=self.program, program_messages=program_messages)
 
     self.assertIn(

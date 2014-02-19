@@ -1409,12 +1409,12 @@ def handleUserRoleSelectionTxn(
 
     if connection.orgOfferedMentorRole():
       profile_logic.assignMentorRoleForOrg(
-          profile, connection.organization, sent_org_member_welcome_email=True,
+          profile, connection.organization, send_org_member_welcome_email=True,
           program=program, program_messages=program_messages, site=site)
       # TODO(daniel): generate connection message
     elif connection.orgOfferedOrgAdminRole():
       profile_logic.assignOrgAdminRoleForOrg(
-          profile, connection.organization, sent_org_member_welcome_email=True,
+          profile, connection.organization, send_org_member_welcome_email=True,
           program=program, program_messages=program_messages, site=site)
       # TODO(daniel): generate connection message
 
@@ -1499,7 +1499,7 @@ def handleMentorRoleSelection(connection, admin, conversation_updater,
       profile = connection.key.parent().get()
 
       profile_logic.assignMentorRoleForOrg(
-          profile, connection.organization, sent_org_member_welcome_email=True,
+          profile, connection.organization, send_org_member_welcome_email=True,
           program=program, program_messages=program_messages, site=site)
 
       if conversation_updater:
@@ -1544,7 +1544,7 @@ def handleOrgAdminRoleSelection(connection, admin, conversation_updater,
       profile = connection.key.parent().get()
 
       profile_logic.assignOrgAdminRoleForOrg(
-          profile, connection.organization, sent_org_member_welcome_email=True,
+          profile, connection.organization, send_org_member_welcome_email=True,
           program=program, program_messages=program_messages, site=site)
 
       if conversation_updater:
