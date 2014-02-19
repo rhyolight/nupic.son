@@ -200,9 +200,8 @@ def setStatus(organization, program, site, program_messages,
         for org_admin in org_admins:
           if (profile_model.MessageType.ORG_MEMBER_WELCOME_MSG
               not in org_admin.sent_messages):
-                profile_logic.dispatchOrgMemberWelcomeEmail(
-                    org_admin, program, program_messages, site,
-                    parent=organization)
+            profile_logic.dispatchOrgMemberWelcomeEmail(
+                org_admin, program, program_messages, site, parent=organization)
       elif new_status == org_model.Status.REJECTED:
         notification_context = (
             notifications.OrganizationRejectedContextProvider()

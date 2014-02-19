@@ -187,7 +187,7 @@ def assignMentorRoleForOrg(profile, org_key,
   Args:
     profile: Profile entity.
     org_key: Organization key.
-    send_org_member_welcome_email: Optional bool value. If set to True 
+    send_org_member_welcome_email: Optional bool value. If set to True
       the welcome email will be sent to the user provided he or she
       has not received one so far.
     program: Optional program_model.Program entity. It needs to be specified
@@ -226,7 +226,7 @@ def assignOrgAdminRoleForOrg(profile, org_key,
   Args:
     profile: Profile entity.
     org_key: Organization key.
-    send_org_member_welcome_email: Optional bool value. If set to True 
+    send_org_member_welcome_email: Optional bool value. If set to True
       the welcome email will be sent to the user provided he or she
       has not received one so far.
     program: Optional program_model.Program entity. It needs to be specified
