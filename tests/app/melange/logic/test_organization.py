@@ -304,6 +304,9 @@ class GetApplicationResponsesQuery(unittest.TestCase):
     self.assertSetEqual(self.app_responses, app_responses)
 
 
+# NOTE: If this number if greater than 3, the test case fails.
+_ADMIN_NUMBER = 3
+
 class SetStatusTest(test_utils.DjangoTestCase):
   """Unit tests for setStatus function."""
 
@@ -334,6 +337,28 @@ class SetStatusTest(test_utils.DjangoTestCase):
     self.assertEmailSent(
         to=self.profile.contact.email,
         subject=profile_logic._DEF_ORG_MEMBER_WELCOME_MAIL_SUBJECT)
+
+  def testAllAdminsAreSentEmails(self):
+    """Tests that all admins are sent emails if the org is accepted."""
+    # list of admins to which emails should be sent
+    admins = [self.profile]
+    for _ in range(_ADMIN_NUMBER):
+      admins.append(profile_utils.seedNDBProfile(
+          self.program.key(), admin_for=[self.org.key]))
+
+    org_logic.setStatus(
+        self.org, self.program, self.site, self.program.getProgramMessages(),
+        org_model.Status.ACCEPTED, org_admins=admins)
+
+    # check that acceptance / rejection email have been sent
+    for admin in admins:
+      self.assertEmailSent(to=admin.contact.email)
+
+    # check that welcome emials have been sent
+    for admin in admins:
+      self.assertEmailSent(
+          to=admin.contact.email,
+          subject=profile_logic._DEF_ORG_MEMBER_WELCOME_MAIL_SUBJECT)
 
   def testRejectOrganization(self):
     """Tests that organization is successfully rejected."""
