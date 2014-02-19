@@ -178,7 +178,7 @@ def assignNoRoleForOrg(profile, org_key):
 
 
 def assignMentorRoleForOrg(profile, org_key,
-    sent_org_member_welcome_email=None):
+    sent_org_member_welcome_email=None, program=None, program_messages=None):
   """Assigns the specified profile a mentor role for the specified
   organization. If a user is currently an organization administrator,
   they will be lowered to a mentor role.
@@ -189,7 +189,16 @@ def assignMentorRoleForOrg(profile, org_key,
     sent_org_member_welcome_email: Optional bool value. If set to True 
       the welcome email will be sent to the user provided he or she
       has not received one so far.
+    program: Optional program_model.Program entity. It needs to be specified
+      if the welcome email is supposed to be sent out.
+    program_messages: Optional program_model.ProgramMessages entity. It needs
+      to be specified if the welcome email is supposed to be sent out.
   """
+  if sent_org_member_welcome_email and not (program or program_messages):
+    raise ValueError(
+        'If the welcome email is supposed to be sent, both program '
+        'and program_messages attributes must be set.')
+
   if org_key in profile.admin_for:
     profile.admin_for.remove(org_key)
 
@@ -200,7 +209,7 @@ def assignMentorRoleForOrg(profile, org_key,
           not in profile.sent_messages):
     profile.sent_messages.append(
         profile_model.MessageType.ORG_MEMBER_WELCOME_MSG)
-    # TODO(daniel): send actual email
+    dispatchOrgMemberWelcomeEmail(profile, program, program_messages)
 
   profile.put()
 

@@ -315,11 +315,13 @@ class AssignNoRoleForOrgTest(unittest.TestCase):
     self.assertListEqual(self.profile.admin_for, [])
 
 
-class AssignMentorRoleForOrgTest(unittest.TestCase):
+class AssignMentorRoleForOrgTest(test_utils.DjangoTestCase):
   """Unit tests for assignMentorRoleForOrg function."""
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
+    self.init()
+
     # seed a program
     self.program = program_utils.seedProgram()
 
@@ -370,15 +372,16 @@ class AssignMentorRoleForOrgTest(unittest.TestCase):
 
   def testOrgAdminWelcomeEmailSent(self):
     """Tests that welcome email is sent if needed."""
+    program_messages = program_utils.seedProgramMessages(
+        program_key=self.program.key())
     profile_logic.assignMentorRoleForOrg(
-        self.profile, self.org.key, sent_org_member_welcome_email=True)
+        self.profile, self.org.key, sent_org_member_welcome_email=True,
+        program=self.program, program_messages=program_messages)
 
     self.assertIn(
         ndb_profile_model.MessageType.ORG_MEMBER_WELCOME_MSG,
         self.profile.sent_messages)
-
-    # TODO(daniel): uncomment this
-    # self.assertEmailSent(to=self.profile.contant.email)
+    self.assertEmailSent(to=self.profile.contact.email)
 
 
 class AssignOrgAdminRoleForOrgTest(unittest.TestCase):
