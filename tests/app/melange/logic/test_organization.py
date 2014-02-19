@@ -23,6 +23,7 @@ from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from melange.logic import organization as org_logic
+from melange.logic import profile as profile_logic
 from melange.models import organization as org_model
 from melange.models import survey as survey_model
 
@@ -330,6 +331,9 @@ class SetStatusTest(test_utils.DjangoTestCase):
 
     self.assertEqual(org.status, org_model.Status.ACCEPTED)
     self.assertEmailSent(to=self.profile.contact.email)
+    self.assertEmailSent(
+        to=self.profile.contact.email,
+        subject=profile_logic._DEF_ORG_MEMBER_WELCOME_MAIL_SUBJECT)
 
   def testRejectOrganization(self):
     """Tests that organization is successfully rejected."""

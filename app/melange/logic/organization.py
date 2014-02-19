@@ -23,7 +23,9 @@ from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from melange import types
+from melange.logic import profile as profile_logic
 from melange.models import organization as org_model
+from melange.models import profile as profile_model
 from melange.models import survey as survey_model
 from melange.utils import rich_bool
 
@@ -193,6 +195,14 @@ def setStatus(organization, program, site, program_messages,
             notifications.OrganizationAcceptedContextProvider()
                 .getContext(
                     recipients, organization, program, site, program_messages))
+
+        # organization administrators are also sent the welcome email
+        for org_admin in org_admins:
+          if (profile_model.MessageType.ORG_MEMBER_WELCOME_MSG
+              not in org_admin.sent_messages):
+                profile_logic.dispatchOrgMemberWelcomeEmail(
+                    org_admin, program, program_messages, site,
+                    parent=organization)
       elif new_status == org_model.Status.REJECTED:
         notification_context = (
             notifications.OrganizationRejectedContextProvider()

@@ -391,7 +391,8 @@ def createStudentData(student_data_properties, models=types.MELANGE_MODELS):
   return models.student_data_model(**student_data_properties)
 
 
-def dispatchOrgMemberWelcomeEmail(profile, program, program_messages, site):
+def dispatchOrgMemberWelcomeEmail(
+    profile, program, program_messages, site, parent=None):
   """Dispatches a task to send organization member welcome email for
   the program to the specified profile.
 
@@ -400,9 +401,14 @@ def dispatchOrgMemberWelcomeEmail(profile, program, program_messages, site):
     program: program_model.Program entity.
     program_messages: program_model.ProgramMessages entity.
     site: site_model.Site entity.
+    parent: Optional entity to use as the parent of the entity which is
+      created during the process. If not specified, the specified profile
+      entity is used.
   """
   if program_messages.mentor_welcome_msg:
     sender, sender_name = mail_dispatcher.getDefaultMailSender(site=site)
+
+    parent = parent or profile
 
     context = {
         'to': profile.contact.email,
@@ -412,4 +418,4 @@ def dispatchOrgMemberWelcomeEmail(profile, program, program_messages, site):
         'program_name': program.name
     }
     mail_dispatcher.getSendMailFromTemplateStringTxn(
-        program_messages.mentor_welcome_msg, context, parent=profile)()
+        program_messages.mentor_welcome_msg, context, parent=parent)()
