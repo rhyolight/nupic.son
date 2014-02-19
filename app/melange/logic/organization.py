@@ -184,7 +184,7 @@ def setStatus(organization, program, site, program_messages,
     organization.status = new_status
     organization.put()
 
-    if (org_admins and program_messages and
+    if (org_admins and
         new_status in [org_model.Status.ACCEPTED, org_model.Status.REJECTED]):
 
       # recipients of organization acceptance or rejection email
