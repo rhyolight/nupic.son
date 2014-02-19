@@ -174,21 +174,32 @@ def assignNoRoleForOrg(profile, org_key):
   profile.put()
 
 
-def assignMentorRoleForOrg(profile, org_key):
+def assignMentorRoleForOrg(profile, org_key,
+    sent_org_member_welcome_email=None):
   """Assigns the specified profile a mentor role for the specified
   organization. If a user is currently an organization administrator,
   they will be lowered to a mentor role.
 
   Args:
     profile: Profile entity.
-    organization: Organization key.
+    org_key: Organization key.
+    sent_org_member_welcome_email: Optional bool value. If set to True 
+      the welcome email will be sent to the user provided he or she
+      has not received one so far.
   """
   if org_key in profile.admin_for:
     profile.admin_for.remove(org_key)
 
   profile.mentor_for = list(set(profile.mentor_for + [org_key]))
-  profile.put()
 
+  if (sent_org_member_welcome_email and
+      profile_model.MessageType.ORG_MEMBER_WELCOME_MSG
+          not in profile.sent_messages):
+    profile.sent_messages.append(
+        profile_model.MessageType.ORG_MEMBER_WELCOME_MSG)
+    # TODO(daniel): send actual email
+
+  profile.put()
 
 def assignOrgAdminRoleForOrg(profile, org_key):
   """Assigns the specified profile an organization administrator role
