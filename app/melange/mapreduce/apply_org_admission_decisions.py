@@ -52,7 +52,6 @@ def process(org_key):
 
   org_key = ndb.Key.from_old_key(org_key)
   org_admins = profile_logic.getOrgAdmins(org_key)
-  recipients = [org_admin.contact.email for org_admin in org_admins]
 
   # We are "prefetching" the ProgramMessages entity here instead of fetching
   # it where it is required i.e. when the message templates are required
@@ -73,10 +72,10 @@ def process(org_key):
       if organization.status == org_model.Status.PRE_ACCEPTED:
         org_logic.setStatus(
             organization, program, site, program_messages,
-            org_model.Status.ACCEPTED, recipients)
+            org_model.Status.ACCEPTED, org_admins=org_admins)
       elif organization.status == org_model.Status.PRE_REJECTED:
         org_logic.setStatus(
             organization, program, site, program_messages,
-            org_model.Status.REJECTED, recipients)
+            org_model.Status.REJECTED, org_admins=org_admins)
 
   updateOrganizationStatus()
