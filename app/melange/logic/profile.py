@@ -198,7 +198,7 @@ def assignMentorRoleForOrg(profile, org_key,
       to be specified if the welcome email is supposed to be sent out.
   """
   if (send_org_member_welcome_email and
-      not (program or program_messages or site)):
+      not (program and program_messages and site)):
     raise ValueError(
         'If the welcome email is supposed to be sent, all of program, '
         'program_messages and site attributes must be set.')
@@ -237,7 +237,7 @@ def assignOrgAdminRoleForOrg(profile, org_key,
       to be specified if the welcome email is supposed to be sent out.
   """
   if (send_org_member_welcome_email and
-      not (program or program_messages or site)):
+      not (program and program_messages and site)):
     raise ValueError(
         'If the welcome email is supposed to be sent, all of program, '
         'program_messages and site attributes must be set.')
