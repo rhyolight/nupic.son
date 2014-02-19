@@ -170,7 +170,7 @@ def setStatus(organization, program, site, program_messages,
     organization.status = new_status
     organization.put()
 
-    if (recipients and
+    if (recipients and program_messages and
         new_status in [org_model.Status.ACCEPTED, org_model.Status.REJECTED]):
       if new_status == org_model.Status.ACCEPTED:
         notification_context = (
