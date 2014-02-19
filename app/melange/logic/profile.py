@@ -22,6 +22,7 @@ from melange.models import profile as profile_model
 from melange.utils import rich_bool
 from melange.appengine import db as melange_db
 
+from soc.logic import mail_dispatcher
 from soc.models import program as program_model
 
 
@@ -30,6 +31,8 @@ PROFILE_EXISTS = unicode(
     'A profile has already been registered for this program and this user.')
 PROFILE_DOES_NOT_EXIST = unicode(
     'No profile exists for the specified key: %s')
+
+_DEF_ORG_MEMBER_WELCOME_MAIL_SUBJECT = unicode('Welcome as organization member')
 
 
 def canResignAsOrgAdminForOrg(profile, org_key, models=types.MELANGE_MODELS):
@@ -348,3 +351,27 @@ def createStudentData(student_data_properties, models=types.MELANGE_MODELS):
     Newly created student data entity.
   """
   return models.student_data_model(**student_data_properties)
+
+
+def dispatchOrgMemberWelcomeEmail(profile, program, program_messages):
+  """Dispatches a task to send organization member welcome email for
+  the program to the specified profile.
+
+  Args:
+    profile: profile_model.Profile entity to which the email should be sent.
+    program: program_model.Program entity.
+    program_messages: program_model.ProgramMessages entity.
+  """
+  if program_messages.mentor_welcome_msg:
+
+    sender, sender_name = mail_dispatcher.getDefaultMailSender()
+
+    context = {
+        'to': profile.contact.email,
+        'sender': sender,
+        'sender_name': sender_name,
+        'subject': _DEF_ORG_MEMBER_WELCOME_MAIL_SUBJECT,
+        'program_name': program.name
+    }
+    mail_dispatcher.getSendMailFromTemplateStringTxn(
+        program_messages.mentor_welcome_msg, context, parent=profile)()

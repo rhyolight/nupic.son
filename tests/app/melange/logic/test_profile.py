@@ -33,6 +33,7 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from tests import org_utils
 from tests import profile_utils
 from tests import program_utils
+from tests import test_utils
 
 
 class CanResignAsOrgAdminForOrgTest(unittest.TestCase):
@@ -652,3 +653,25 @@ class CreateStudentDataTest(unittest.TestCase):
     for key in TEST_EDUCATION_PROPERTIES:
       self.assertEqual(
           student_data.education.to_dict()[key], TEST_EDUCATION_PROPERTIES[key])
+
+
+class DispatchOrgMemberWelcomeEmailTest(test_utils.DjangoTestCase):
+  """Unit tests for dispatchOrgMemberWelcomeEmail function."""
+
+  def setUp(self):
+    self.init()
+
+  def testOrgMemberWelcomeEmailSent(self):
+    """Tests that welcome email is sent properly."""
+    program = program_utils.seedProgram()
+    program_messages = program_utils.seedProgramMessages(
+        program_key=program.key())
+
+    profile = profile_utils.seedNDBProfile(program.key())
+
+    profile_logic.dispatchOrgMemberWelcomeEmail(
+        profile, program, program_messages)
+
+    self.assertEmailSent(
+        to=profile.contact.email,
+        subject=profile_logic._DEF_ORG_MEMBER_WELCOME_MAIL_SUBJECT)
