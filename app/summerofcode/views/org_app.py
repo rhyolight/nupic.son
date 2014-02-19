@@ -1174,7 +1174,7 @@ def createOrganizationTxn(
 
   for admin_key in admin_keys:
     connection_view.createConnectionTxn(
-        data, admin_key, result.extra,
+        data, admin_key, data.program, result.extra,
         conversation_updater.CONVERSATION_UPDATER,
         org_role=connection_model.ORG_ADMIN_ROLE,
         user_role=connection_model.ROLE)

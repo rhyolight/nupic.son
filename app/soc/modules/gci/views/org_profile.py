@@ -196,7 +196,7 @@ def createOrganizationTxn(data, profile_keys, form, key_name):
 
   for profile_key in profile_keys:
     connection_view.createConnectionTxn(
-        data, profile_key, organization,
+        data, profile_key, data.program, organization,
         conversation_updater.CONVERSATION_UPDATER,
         org_role=connection_model.ORG_ADMIN_ROLE,
         user_role=connection_model.ROLE)
