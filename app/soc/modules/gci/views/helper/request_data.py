@@ -77,7 +77,7 @@ class TimelineHelper(request_data.TimelineHelper):
       return ("Org Application Deadline", self.orgSignupEnd())
 
     if time.isBetween(self.orgSignupEnd(), self.orgsAnnouncedOn()):
-      return ("Accepted Orgs Announced In", self.orgsAnnouncedOn())
+      return ("Accepted Orgs Announced On", self.orgsAnnouncedOn())
 
     if self.orgsAnnounced() and self.beforeStudentSignupStart():
       return ("Student Application Opens", self.studentSignupStart())
