@@ -63,6 +63,7 @@ from google.appengine.ext import db
 
 from melange.appengine import system
 from soc.logic import dicts
+from soc.logic import site as site_logic
 from soc.tasks import mailer
 
 
@@ -189,25 +190,20 @@ def sendMail(context, parent=None, run=True, transactional=True):
     return txn
 
 
-def getDefaultMailSender(data=None):
+def getDefaultMailSender(site=None):
   """Returns the sender that currently can be used to send emails.
 
   Args:
-    data: an option RequestData object
+    site: Optional site_model.Site entity. If not supplied, it will be retrieved
+      from the datastore or created.
 
   Returns:
     - A tuple containing (sender_name, sender_address)
-    Consisting of:
   """
-  from soc.logic import site
+  if not site:
+    site = site_logic.singleton()
 
   # check if there is a noreply email address set
-
-  if data:
-    site_entity = data.site
-  else:
-    site_entity = site.singleton()
-
   no_reply_email = system.getApplicationNoReplyEmail()
 
-  return (site_entity.site_name, no_reply_email)
+  return (site.site_name, no_reply_email)

@@ -451,7 +451,7 @@ class StartConnectionAsOrg(base.RequestHandler):
       connections = []
       for profile in profiles:
         connections.append(createConnectionTxn(
-            data, profile.key, data.url_ndb_org, None,
+            data, profile.key, data.program, data.url_ndb_org, None,
             message=form.cleaned_data['message'],
             notification_context_provider=notification_context_provider,
             recipients=[profile.contact.email],
@@ -551,8 +551,8 @@ class StartConnectionAsUser(base.RequestHandler):
           links.ABSOLUTE_LINKER, self.url_names)
 
       connection = createConnectionTxn(
-          data, data.ndb_profile.key, data.url_ndb_org, None,
-          message=form.cleaned_data['message'],
+          data, data.ndb_profile.key, data.program, data.url_ndb_org,
+          None, message=form.cleaned_data['message'],
           notification_context_provider=context_provider,
           recipients=emails, user_role=connection_model.ROLE)
 
@@ -872,7 +872,9 @@ class UserActionsFormHandler(form_handler.FormHandler):
       # the call below. without these now XG transactions may be needed
       data.program  # pylint: disable=pointless-statement
       data.site  # pylint: disable=pointless-statement
-      handleUserRoleSelectionTxn(data, data.url_connection, None)
+      handleUserRoleSelectionTxn(
+          data.url_connection, None, data.program,
+          data.program.getProgramMessages(), data.site)
 
     return is_eligible
 
@@ -942,7 +944,9 @@ class OrgActionsFormHandler(form_handler.FormHandler):
     is_eligible = profile_logic.isMentorRoleEligibleForOrg(
         data.url_ndb_profile, data.url_connection.organization)
     if is_eligible:
-      handleMentorRoleSelection(data.url_connection, data.ndb_profile, None)
+      handleMentorRoleSelection(
+          data.url_connection, data.ndb_profile, None, data.program,
+          data.program.getProgramMessages(), data.site)
     return is_eligible
 
   def _handleOrgAdminSelection(self, data):
@@ -958,7 +962,9 @@ class OrgActionsFormHandler(form_handler.FormHandler):
       part is a string representation of the reason why the picked selection
       is not possible.
     """
-    handleOrgAdminRoleSelection(data.url_connection, data.ndb_profile, None)
+    handleOrgAdminRoleSelection(
+        data.url_connection, data.ndb_profile, None, data.program,
+        data.program.getProgramMessages(), data.site)
     return rich_bool.TRUE
 
 
@@ -1201,19 +1207,22 @@ def sendMentorWelcomeMail(data, profile, message):
 
 @ndb.transactional
 def createConnectionTxn(
-    data, profile_key, organization, conversation_updater, message=None,
-    notification_context_provider=None, recipients=None,
-    org_role=connection_model.NO_ROLE, user_role=connection_model.NO_ROLE,
-    org_admin=None):
+    data, profile_key, program, organization,
+    conversation_updater, message=None, notification_context_provider=None,
+    recipients=None, org_role=connection_model.NO_ROLE,
+    user_role=connection_model.NO_ROLE, org_admin=None,
+    send_org_admin_welcome_email=None, program_messages=None):
   """Creates a new Connection entity, attach any messages provided by the
   initiator and send a notification email to the recipient(s).
 
   Args:
     data: RequestData object for the current request.
     profile_key: Profile key with which to connect.
+    program: program_model.Program entity for which the connection
+      is to be created.
     organization: Organization with which to connect.
     conversation_updater: A ConversationUpdater object to be called if the
-                          profile's conversations need updating.
+      profile's conversations need updating.
     message: User-provided message for the connection.
     context: The notification context method.
     notification_context_provider: A provider to obtain context of the
@@ -1224,6 +1233,11 @@ def createConnectionTxn(
     org_admin: profile entity of organization administrator who started
       the connection. Should be supplied only if the connection was initialized
       by organization.
+    send_org_admin_welcome_email: Optional bool value. If True, the organization
+      member welcome email will be sent, provided an actual role is assigned.
+    program_messages: program_model.ProgramMessages entity for the
+      specified program. It needs to be passed only if the welcome email
+      is requested.
 
   Returns:
     The newly created Connection entity.
@@ -1261,7 +1275,7 @@ def createConnectionTxn(
     # dispatch an email to the users.
     if notification_context_provider and recipients:
       notification_context = notification_context_provider.getContext(
-          recipients, organization, profile, data.program, data.site,
+          recipients, organization, profile, program, data.site,
           connection.key, message)
       sub_txn = mailer.getSpawnMailTaskTxn(
           notification_context, parent=connection)
@@ -1360,7 +1374,8 @@ def handleUserNoRoleSelectionTxn(connection, conversation_updater):
 
 
 @ndb.transactional
-def handleUserRoleSelectionTxn(data, connection, conversation_updater):
+def handleUserRoleSelectionTxn(
+    connection, conversation_updater, program, program_messages, site):
   """Updates user role of the specified connection and all corresponding
   entities with connection_model.ROLE selection.
 
@@ -1368,10 +1383,13 @@ def handleUserRoleSelectionTxn(data, connection, conversation_updater):
   have a role for the organization prior to calling this function.
 
   Args:
-    data: RequestData object for the current request.
     connection: connection entity.
     conversation_updater: A ConversationUpdater object to be called if the
-                          profile's conversations need updating.
+      profile's conversations need updating.
+    program: program_model.Program entity for the specified connection.
+    program_messages: program_model.ProgramMessages entity for the specified
+      program.
+    site: site_model.Site entity.
   """
   connection = connection.key.get()
 
@@ -1390,20 +1408,15 @@ def handleUserRoleSelectionTxn(data, connection, conversation_updater):
     profile = connection.key.parent().get()
 
     if connection.orgOfferedMentorRole():
-      send_email = not profile.is_mentor
-      profile_logic.assignMentorRoleForOrg(profile, connection.organization)
+      profile_logic.assignMentorRoleForOrg(
+          profile, connection.organization, send_org_member_welcome_email=True,
+          program=program, program_messages=program_messages, site=site)
       # TODO(daniel): generate connection message
     elif connection.orgOfferedOrgAdminRole():
-      send_email = not profile.is_mentor
-      profile_logic.assignOrgAdminRoleForOrg(profile, connection.organization)
+      profile_logic.assignOrgAdminRoleForOrg(
+          profile, connection.organization, send_org_member_welcome_email=True,
+          program=program, program_messages=program_messages, site=site)
       # TODO(daniel): generate connection message
-    else:
-      # no role has been offered by organization
-      send_email = False
-
-    if send_email:
-      message = 'TODO(daniel): supply actual message.'
-      sendMentorWelcomeMail(data, profile, message)
 
     if conversation_updater:
       conversation_updater.updateConversationsForProfile(profile)
@@ -1448,7 +1461,8 @@ def handleOrgNoRoleSelection(connection, org_admin, conversation_updater):
 
 
 @ndb.transactional
-def handleMentorRoleSelection(connection, admin, conversation_updater):
+def handleMentorRoleSelection(connection, admin, conversation_updater,
+    program, program_messages, site):
   """Updates organization role of the specified connection and all
   corresponding entities with connection_model.MENTOR_ROLE selection.
 
@@ -1461,6 +1475,10 @@ def handleMentorRoleSelection(connection, admin, conversation_updater):
       organization role for the connection.
     conversation_updater: A ConversationUpdater object to be called if the
       profile's conversations need updating.
+    program: program_model.Program entity for the specified connection.
+    program_messages: program_model.ProgramMessages entity for the specified
+      program.
+    site: site_model.Site entity.
   """
 
   connection = connection.key.get()
@@ -1479,20 +1497,18 @@ def handleMentorRoleSelection(connection, admin, conversation_updater):
 
     if connection.userRequestedRole():
       profile = connection.key.parent().get()
-      send_email = not profile.is_mentor
 
-      profile_logic.assignMentorRoleForOrg(profile, connection.organization)
+      profile_logic.assignMentorRoleForOrg(
+          profile, connection.organization, send_org_member_welcome_email=True,
+          program=program, program_messages=program_messages, site=site)
 
       if conversation_updater:
         conversation_updater.updateConversationsForProfile(profile)
 
-      if send_email:
-        pass
-        # TODO(daniel): send actual welcome email
-
 
 @ndb.transactional
-def handleOrgAdminRoleSelection(connection, admin, conversation_updater):
+def handleOrgAdminRoleSelection(connection, admin, conversation_updater,
+    program, program_messages, site):
   """Updates organization role of the specified connection and all
   corresponding entities with connection_model.ORG_ADMIN_ROLE selection.
 
@@ -1505,6 +1521,10 @@ def handleOrgAdminRoleSelection(connection, admin, conversation_updater):
       organization role for the connection.
     conversation_updater: A ConversationUpdater object to be called if the
       profile's conversations need updating.
+    program: program_model.Program entity for the specified connection.
+    program_messages: program_model.ProgramMessages entity for the specified
+      program.
+    site: site_model.Site entity.
   """
   connection = connection.key.get()
 
@@ -1522,16 +1542,13 @@ def handleOrgAdminRoleSelection(connection, admin, conversation_updater):
 
     if connection.userRequestedRole():
       profile = connection.key.parent().get()
-      send_email = not profile.is_mentor
 
-      profile_logic.assignOrgAdminRoleForOrg(profile, connection.organization)
+      profile_logic.assignOrgAdminRoleForOrg(
+          profile, connection.organization, send_org_member_welcome_email=True,
+          program=program, program_messages=program_messages, site=site)
 
       if conversation_updater:
         conversation_updater.updateConversationsForProfile(profile)
-
-      if send_email:
-        pass
-        # TODO(daniel): send actual welcome email
 
 
 @ndb.transactional

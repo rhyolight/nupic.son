@@ -86,7 +86,7 @@ def sendMail(to_user, subject, message_properties, template):
   site_name = site_entity.site_name
 
   # get the default mail sender
-  default_sender = mail_dispatcher.getDefaultMailSender()
+  default_sender = mail_dispatcher.getDefaultMailSender(site=site_entity)
 
   if not default_sender:
     # no valid sender found, abort

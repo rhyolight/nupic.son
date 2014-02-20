@@ -23,7 +23,9 @@ from google.appengine.ext import db
 from google.appengine.ext import ndb
 
 from melange import types
+from melange.logic import profile as profile_logic
 from melange.models import organization as org_model
+from melange.models import profile as profile_model
 from melange.models import survey as survey_model
 from melange.utils import rich_bool
 
@@ -150,8 +152,19 @@ def setApplicationResponse(org_key, survey_key, properties):
 
 @ndb.transactional
 def setStatus(organization, program, site, program_messages,
-              new_status, recipients=None):
+              new_status, org_admins=None):
   """Sets status of the specified organization.
+
+  This function may be called to accept the organization into the program
+  or rejected it from the program, if new status is set to ACCEPTED or REJECTED,
+  respectively. If the optional list of organization administrators
+  is specified along with the program specific messages, they will be sent
+  acceptance or rejection message.
+
+  Additionally, if the organization status is set to ACCEPTED and the optional
+  list of organization administrators is specified along with the program
+  specific messages, the administrators will be sent the organization member
+  welcome message.
 
   Args:
     organization: Organization entity.
@@ -161,7 +174,8 @@ def setStatus(organization, program, site, program_messages,
           templates provided by the program admins.
     new_status: New status of the organization. Must be one of
       org_model.Status constants.
-    recipients: List of one or more recipients for the notification email.
+    org_admins: Optional list of organization administrators for the specified
+      organization.
 
   Returns:
     The updated organization entity.
@@ -170,18 +184,29 @@ def setStatus(organization, program, site, program_messages,
     organization.status = new_status
     organization.put()
 
-    if (recipients and
+    if (org_admins and
         new_status in [org_model.Status.ACCEPTED, org_model.Status.REJECTED]):
+
+      # recipients of organization acceptance or rejection email
+      recipients = [org_admin.contact.email for org_admin in org_admins]
+
       if new_status == org_model.Status.ACCEPTED:
         notification_context = (
             notifications.OrganizationAcceptedContextProvider()
-                .getContext(recipients, organization, program,
-                            site, program_messages))
+                .getContext(
+                    recipients, organization, program, site, program_messages))
+
+        # organization administrators are also sent the welcome email
+        for org_admin in org_admins:
+          if (profile_model.MessageType.ORG_MEMBER_WELCOME_MSG
+              not in org_admin.sent_messages):
+            profile_logic.dispatchOrgMemberWelcomeEmail(
+                org_admin, program, program_messages, site, parent=organization)
       elif new_status == org_model.Status.REJECTED:
         notification_context = (
             notifications.OrganizationRejectedContextProvider()
-                .getContext(recipients, organization, program,
-                            site, program_messages))
+                .getContext(
+                    recipients, organization, program, site, program_messages))
 
       sub_txn = mailer.getSpawnMailTaskTxn(
           notification_context, parent=organization)

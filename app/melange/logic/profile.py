@@ -22,6 +22,7 @@ from melange.models import profile as profile_model
 from melange.utils import rich_bool
 from melange.appengine import db as melange_db
 
+from soc.logic import mail_dispatcher
 from soc.models import program as program_model
 
 
@@ -30,6 +31,8 @@ PROFILE_EXISTS = unicode(
     'A profile has already been registered for this program and this user.')
 PROFILE_DOES_NOT_EXIST = unicode(
     'No profile exists for the specified key: %s')
+
+_DEF_ORG_MEMBER_WELCOME_MAIL_SUBJECT = unicode('Welcome as organization member')
 
 
 def canResignAsOrgAdminForOrg(profile, org_key, models=types.MELANGE_MODELS):
@@ -174,35 +177,84 @@ def assignNoRoleForOrg(profile, org_key):
   profile.put()
 
 
-def assignMentorRoleForOrg(profile, org_key):
+def assignMentorRoleForOrg(profile, org_key,
+    send_org_member_welcome_email=None, program=None,
+    program_messages=None, site=None):
   """Assigns the specified profile a mentor role for the specified
   organization. If a user is currently an organization administrator,
   they will be lowered to a mentor role.
 
   Args:
     profile: Profile entity.
-    organization: Organization key.
+    org_key: Organization key.
+    send_org_member_welcome_email: Optional bool value. If set to True
+      the welcome email will be sent to the user provided he or she
+      has not received one so far.
+    program: Optional program_model.Program entity. It needs to be specified
+      if the welcome email is supposed to be sent out.
+    program_messages: Optional program_model.ProgramMessages entity. It needs
+      to be specified if the welcome email is supposed to be sent out.
+    site: Optional site_model.Site entity. It needs
+      to be specified if the welcome email is supposed to be sent out.
   """
+  if (send_org_member_welcome_email and
+      not (program and program_messages and site)):
+    raise ValueError(
+        'If the welcome email is supposed to be sent, all of program, '
+        'program_messages and site attributes must be set.')
+
   if org_key in profile.admin_for:
     profile.admin_for.remove(org_key)
 
   profile.mentor_for = list(set(profile.mentor_for + [org_key]))
+
+  if (send_org_member_welcome_email and
+      profile_model.MessageType.ORG_MEMBER_WELCOME_MSG
+          not in profile.sent_messages):
+    profile.sent_messages.append(
+        profile_model.MessageType.ORG_MEMBER_WELCOME_MSG)
+    dispatchOrgMemberWelcomeEmail(profile, program, program_messages, site)
+
   profile.put()
 
-
-def assignOrgAdminRoleForOrg(profile, org_key):
+def assignOrgAdminRoleForOrg(profile, org_key,
+    send_org_member_welcome_email=None, program=None,
+    program_messages=None, site=None):
   """Assigns the specified profile an organization administrator role
   for the specified organization.
 
   Args:
     profile: Profile entity.
     org_key: Organization key.
+    send_org_member_welcome_email: Optional bool value. If set to True
+      the welcome email will be sent to the user provided he or she
+      has not received one so far.
+    program: Optional program_model.Program entity. It needs to be specified
+      if the welcome email is supposed to be sent out.
+    program_messages: Optional program_model.ProgramMessages entity. It needs
+      to be specified if the welcome email is supposed to be sent out.
+    site: Optional site_model.Site entity. It needs
+      to be specified if the welcome email is supposed to be sent out.
   """
+  if (send_org_member_welcome_email and
+      not (program and program_messages and site)):
+    raise ValueError(
+        'If the welcome email is supposed to be sent, all of program, '
+        'program_messages and site attributes must be set.')
+
   if org_key not in profile.admin_for:
     if org_key not in profile.mentor_for:
       profile.mentor_for.append(org_key)
 
     profile.admin_for.append(org_key)
+
+    if (send_org_member_welcome_email and
+        profile_model.MessageType.ORG_MEMBER_WELCOME_MSG
+            not in profile.sent_messages):
+      profile.sent_messages.append(
+          profile_model.MessageType.ORG_MEMBER_WELCOME_MSG)
+      dispatchOrgMemberWelcomeEmail(profile, program, program_messages, site)
+
     profile.put()
 
 
@@ -337,3 +389,33 @@ def createStudentData(student_data_properties, models=types.MELANGE_MODELS):
     Newly created student data entity.
   """
   return models.student_data_model(**student_data_properties)
+
+
+def dispatchOrgMemberWelcomeEmail(
+    profile, program, program_messages, site, parent=None):
+  """Dispatches a task to send organization member welcome email for
+  the program to the specified profile.
+
+  Args:
+    profile: profile_model.Profile entity to which the email should be sent.
+    program: program_model.Program entity.
+    program_messages: program_model.ProgramMessages entity.
+    site: site_model.Site entity.
+    parent: Optional entity to use as the parent of the entity which is
+      created during the process. If not specified, the specified profile
+      entity is used.
+  """
+  if program_messages.mentor_welcome_msg:
+    sender, sender_name = mail_dispatcher.getDefaultMailSender(site=site)
+
+    parent = parent or profile
+
+    context = {
+        'to': profile.contact.email,
+        'sender': sender,
+        'sender_name': sender_name,
+        'subject': _DEF_ORG_MEMBER_WELCOME_MAIL_SUBJECT,
+        'program_name': program.name
+    }
+    mail_dispatcher.getSendMailFromTemplateStringTxn(
+        program_messages.mentor_welcome_msg, context, parent=parent)()

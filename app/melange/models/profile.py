@@ -77,6 +77,12 @@ class Status(messages.Enum):
   BANNED = 2
 
 
+class MessageType(messages.Enum):
+  """Class that enumerates types of messages to be sent to the profile."""
+  #: The welcome message that is sent to all organization members
+  ORG_MEMBER_WELCOME_MSG = 1
+
+
 class StudentData(ndb.Model):
   """Model that represents student information to be associated with
   the specified profile.
@@ -228,6 +234,10 @@ class Profile(ndb.Model):
   #: Field storing whether the registered profile has an organization
   #: administrator role for at least one organization in the program.
   is_admin = ndb.ComputedProperty(lambda self: bool(self.admin_for))
+
+  #: Field storing type of program wide messages that have been sent to
+  #: the profile so far.
+  sent_messages = msgprop.EnumProperty(MessageType, repeated=True)
 
   #: Field storing the status of the registered profile.
   status = msgprop.EnumProperty(Status, default=Status.ACTIVE)

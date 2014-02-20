@@ -33,6 +33,7 @@ from soc.modules.seeder.logic.seeder import logic as seeder_logic
 from tests import org_utils
 from tests import profile_utils
 from tests import program_utils
+from tests import test_utils
 
 
 class CanResignAsOrgAdminForOrgTest(unittest.TestCase):
@@ -314,11 +315,13 @@ class AssignNoRoleForOrgTest(unittest.TestCase):
     self.assertListEqual(self.profile.admin_for, [])
 
 
-class AssignMentorRoleForOrgTest(unittest.TestCase):
+class AssignMentorRoleForOrgTest(test_utils.DjangoTestCase):
   """Unit tests for assignMentorRoleForOrg function."""
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
+    self.init()
+
     # seed a program
     self.program = program_utils.seedProgram()
 
@@ -367,12 +370,27 @@ class AssignMentorRoleForOrgTest(unittest.TestCase):
     self.assertTrue(self.profile.is_admin)
     self.assertListEqual(self.profile.admin_for, [other_org.key])
 
+  def testOrgAdminWelcomeEmailSent(self):
+    """Tests that welcome email is sent if needed."""
+    program_messages = program_utils.seedProgramMessages(
+        program_key=self.program.key())
+    profile_logic.assignMentorRoleForOrg(
+        self.profile, self.org.key, send_org_member_welcome_email=True,
+        program=self.program, program_messages=program_messages)
 
-class AssignOrgAdminRoleForOrgTest(unittest.TestCase):
+    self.assertIn(
+        ndb_profile_model.MessageType.ORG_MEMBER_WELCOME_MSG,
+        self.profile.sent_messages)
+    self.assertEmailSent(to=self.profile.contact.email)
+
+
+class AssignOrgAdminRoleForOrgTest(test_utils.DjangoTestCase):
   """Unit tests for assignOrgAdminRoleForOrg function."""
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
+    self.init()
+
     # seed a program
     self.program = program_utils.seedProgram()
 
@@ -418,6 +436,19 @@ class AssignOrgAdminRoleForOrgTest(unittest.TestCase):
     self.assertIn(other_org.key, self.profile.mentor_for)
     self.assertTrue(self.profile.is_admin)
     self.assertListEqual(self.profile.admin_for, [self.org.key])
+
+  def testOrgAdminWelcomeEmailSent(self):
+    """Tests that welcome email is sent if needed."""
+    program_messages = program_utils.seedProgramMessages(
+        program_key=self.program.key())
+    profile_logic.assignOrgAdminRoleForOrg(
+        self.profile, self.org.key, send_org_member_welcome_email=True,
+        program=self.program, program_messages=program_messages)
+
+    self.assertIn(
+        ndb_profile_model.MessageType.ORG_MEMBER_WELCOME_MSG,
+        self.profile.sent_messages)
+    self.assertEmailSent(to=self.profile.contact.email)
 
 
 class GetProfileForUsernameTest(unittest.TestCase):
@@ -640,3 +671,27 @@ class CreateStudentDataTest(unittest.TestCase):
     for key in TEST_EDUCATION_PROPERTIES:
       self.assertEqual(
           student_data.education.to_dict()[key], TEST_EDUCATION_PROPERTIES[key])
+
+
+class DispatchOrgMemberWelcomeEmailTest(test_utils.DjangoTestCase):
+  """Unit tests for dispatchOrgMemberWelcomeEmail function."""
+
+  def setUp(self):
+    self.init()
+
+  def testOrgMemberWelcomeEmailSent(self):
+    """Tests that welcome email is sent properly."""
+    site = program_utils.seedSite()
+
+    program = program_utils.seedProgram()
+    program_messages = program_utils.seedProgramMessages(
+        program_key=program.key())
+
+    profile = profile_utils.seedNDBProfile(program.key())
+
+    profile_logic.dispatchOrgMemberWelcomeEmail(
+        profile, program, program_messages, site)
+
+    self.assertEmailSent(
+        to=profile.contact.email,
+        subject=profile_logic._DEF_ORG_MEMBER_WELCOME_MAIL_SUBJECT)
