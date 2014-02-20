@@ -1,0 +1,8 @@
+{% if not has_profile or is_student %}
+  <h3>Students</h3>
+  <p id="block-apply-text-action" class="description">
+  Registration opens on {{ student_signup_start }} UTC.
+  </p>
+  If you plan to participate as a student, you should not register
+  as an organization member now.
+{% endif %}

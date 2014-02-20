@@ -131,6 +131,29 @@ class Apply(Template):
           secure=True)
       context['org_apply_link'] = links.LINKER.program(
           self.data.program, urls.UrlNames.ORG_PROFILE_CREATE)
+    elif self.data.timeline.orgsAnnounced():
+      context['orgs_announced'] = True
+
+      if self.data.ndb_profile:
+        context['has_profile'] = True
+        context['start_connection_url'] = links.LINKER.program(
+            self.data.program, urls.UrlNames.CONNECTION_PICK_ORG)
+        context['is_student'] = self.data.ndb_profile.is_student
+      else:
+        context['has_profile'] = False
+        context['org_member_profile_url'] = links.LINKER.program(
+            self.data.program, urls.UrlNames.PROFILE_REGISTER_AS_ORG_MEMBER)
+        context['student_profile_url'] = links.LINKER.program(
+            self.data.program, urls.UrlNames.PROFILE_REGISTER_AS_STUDENT)
+        context['is_student'] = False
+
+      context['before_student_signup'] = (
+          self.data.timeline.beforeStudentSignup())
+      if context['before_student_signup']:
+        context['student_signup_start'] = (
+            self.data.timeline.studentSignupStart())
+
+      context['active_student_singup'] = self.data.timeline.studentSignup()
 
     context['student_signup'] = self.data.timeline.studentSignup()
     context['mentor_signup'] = self.data.timeline.mentorSignup()
