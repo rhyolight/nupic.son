@@ -468,7 +468,7 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
 
     self.assertTasksInQueue(n=1, url='/tasks/gci/ranking/update')
 
-    self.assertTaskBasicView()
+    self.assertBasicTaskView()
 
   def testPostButtonNeedsWork(self):
     """Tests the needs more work for task button."""
