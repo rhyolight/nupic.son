@@ -21,54 +21,63 @@ from google.appengine.ext import ndb
 from django.utils import html
 
 from soc.modules.gci.logic import org_score as org_score_logic
-from soc.modules.gci.logic.helper.notifications import (
-    DEF_NEW_TASK_COMMENT_SUBJECT)
+from soc.modules.gci.logic.helper import notifications
 from soc.modules.gci.models import comment as comment_model
 from soc.modules.gci.models import task as task_model
 
 from tests import forms_to_submit_utils
 from tests import profile_utils
 from tests import task_utils
-from tests.test_utils import GCIDjangoTestCase
-from tests.test_utils import TaskQueueTestCase
+from tests import test_utils
 
 
-class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
-  """Tests GCITask public view.
-  """
+def _taskPageURL(task):
+  """Returns the URL of the task page."""
+  # TODO(nathaniel): Make use of a constant here.
+  return '/gci/task/view/%s/%s' % (task.program.key().name(), task.key().id())
+
+
+def _taskUpdateURL(task):
+  """Returns the URL of the task update GAE task."""
+  # TODO(nathaniel): I'll bet there should be a constant for this.
+  return '/tasks/gci/task/update/%s' % task.key().id()
+
+
+def _createTestTask(program, org):
+  mentor = profile_utils.seedNDBProfile(
+      program.key(), mentor_for=[ndb.Key.from_old_key(org.key())])
+  return task_utils.seedTask(program, org, mentors=[mentor.key.to_old_key()])
+
+
+class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
+  """Tests GCITask public view."""
 
   def setUp(self):
-    """Creates a published task for self.org.
-    """
+    """Creates a published task for self.org."""
     super(TaskViewTest, self).setUp()
     self.init()
     self.timeline_helper.tasksPubliclyVisible()
 
     # Create a task, status open
-    mentor = profile_utils.seedNDBProfile(
-        self.program.key(), mentor_for=[ndb.Key.from_old_key(self.org.key())])
-    self.task = task_utils.seedTask(
-        self.program, self.org, mentors=[mentor.key.to_old_key()])
+    self.task = _createTestTask(self.program, self.org)
     self.createSubscribersForTask()
 
-  #TODO(orc.avs): move notification tests to logic
+  # TODO(orc.avs): move notification tests to logic
   def createSubscribersForTask(self):
-    """Creates subscribers for the task.
-    """
+    """Creates subscribers for the task."""
     for _ in range(4):
       subscriber = profile_utils.seedNDBProfile(self.program.key())
       self.task.subscribers.append(subscriber.key.to_old_key())
     self.task.put()
 
   def assertMailSentToSubscribers(self, comment):
-    """Check if a notification email sent to the subscribers of the task.
-    """
+    """Check if a notification email sent to the subscribers of the task."""
     subscribers = ndb.get_multi(
         map(ndb.Key.from_old_key, self.task.subscribers))
 
     author_key = ndb.Key.from_old_key(
         comment_model.GCIComment.created_by.get_value_for_datastore(comment))
-    subject = DEF_NEW_TASK_COMMENT_SUBJECT % {
+    subject = notifications.DEF_NEW_TASK_COMMENT_SUBJECT % {
         'commented_by': author_key.id(),
         'program_name': self.task.program.name,
         'task_title': self.task.title
@@ -81,7 +90,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     # Use a non-logged-in request to the page for that task
     profile_utils.logout()
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.get(url)
 
     # Expect a proper response (200)
@@ -108,7 +117,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
         'content': comment_content,
     }
 
-    url = '%s?reply' %self._taskPageUrl(self.task)
+    url = '%s?reply' % _taskPageURL(self.task)
     response = self.post(url, comment_data)
 
     self.assertResponseRedirect(response)
@@ -129,7 +138,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertIsNone(comment.reply)
     self.assertMailSentToSubscribers(comment)
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.get(url)
 
   def testPostCommentWithEmptyTitle(self):
@@ -149,7 +158,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
         'content': comment_content,
     }
 
-    url = '%s?reply' %self._taskPageUrl(self.task)
+    url = '%s?reply' % _taskPageURL(self.task)
     response = self.post(url, comment_data_with_empty_title)
 
     self.assertResponseRedirect(response)
@@ -178,7 +187,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
         self.program.key(), user=user,
         admin_for=[ndb.Key.from_old_key(self.org.key())])
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_unpublish')
 
     task = task_model.GCITask.get(self.task.key())
@@ -198,7 +207,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
         self.program.key(), user=user,
         admin_for=[ndb.Key.from_old_key(self.org.key())])
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
 
     # try to unpublish a reopened task
     task = task_model.GCITask.get(self.task.key())
@@ -213,9 +222,8 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertEqual(task.status, task_model.REOPENED)
 
   def testPostButtonUnpublishByUserWithNoRole(self):
-    """Tests the unpublish button by a user with no role.
-    """
-    url = self._taskPageUrl(self.task)
+    """Tests the unpublish button by a user with no role."""
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_unpublish')
 
     self.assertResponseForbidden(response)
@@ -228,7 +236,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
         self.program.key(), user=user,
         mentor_for=[ndb.Key.from_old_key(self.org.key())])
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_unpublish')
 
     self.assertResponseForbidden(response)
@@ -239,7 +247,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     profile_utils.loginNDB(user)
     profile_utils.seedNDBStudent(self.program, user=user)
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_unpublish')
 
     self.assertResponseForbidden(response)
@@ -255,7 +263,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.task.status = 'Unpublished'
     self.task.put()
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_publish')
 
     task = task_model.GCITask.get(self.task.key())
@@ -278,7 +286,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.task.status = task_model.UNAPPROVED
     self.task.put()
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_publish')
 
     task = task_model.GCITask.get(self.task.key())
@@ -286,12 +294,11 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertEqual(task.status, task_model.OPEN)
 
   def testPostButtonPublishByUserWithNoRole(self):
-    """Tests the publish button pressed by a user with no role.
-    """
+    """Tests the publish button pressed by a user with no role."""
     self.task.status = 'Unpublished'
     self.task.put()
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_publish')
 
     self.assertResponseForbidden(response)
@@ -307,7 +314,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.task.status = 'Unpublished'
     self.task.put()
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_publish')
 
     self.assertResponseForbidden(response)
@@ -321,7 +328,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.task.status = 'Unpublished'
     self.task.put()
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_publish')
 
     self.assertResponseForbidden(response)
@@ -334,7 +341,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
         self.program.key(), user=user,
         admin_for=[ndb.Key.from_old_key(self.org.key())])
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_delete')
 
     task = task_model.GCITask.get(self.task.key())
@@ -355,7 +362,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.task.student = student.key.to_old_key()
     self.task.put()
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_assign')
 
     # check if the task is properly assigned and a deadline has been set
@@ -373,7 +380,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertMailSentToSubscribers(comments[0])
 
     # check if the update task has been enqueued
-    self.assertTasksInQueue(n=1, url=self._taskUpdateUrl(task))
+    self.assertTasksInQueue(n=1, url=_taskUpdateURL(task))
 
   def testPostButtonUnassign(self):
     """Tests the unassign button."""
@@ -389,7 +396,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.task.student = student.key.to_old_key()
     self.task.put()
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_unassign')
 
     # check if the task is properly unassigned
@@ -418,7 +425,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.task.student = student.key.to_old_key()
     self.task.put()
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_close')
 
     # check if the task is properly closed
@@ -463,7 +470,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.task.student = student.key.to_old_key()
     self.task.put()
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_needs_work')
 
     # check if the task is properly closed
@@ -498,7 +505,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.task.deadline = deadline
     self.task.put()
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(
         url, 'button_extend_deadline', {'hours': 1})
 
@@ -522,7 +529,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
         self.program, user=user,
         student_data_properties={'enrollment_form': form, 'consent_form':form})
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_claim')
 
     # check if the task is properly claimed
@@ -548,7 +555,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.task.student = student.key.to_old_key()
     self.task.put()
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_unclaim')
 
     # check if the task is properly opened
@@ -573,7 +580,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
 
     self.assertNotIn(profile.key.to_old_key(), self.task.subscribers)
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_subscribe')
 
     task = task_model.GCITask.get(self.task.key())
@@ -581,8 +588,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.assertIn(profile.key.to_old_key(), task.subscribers)
 
   def testPostButtonUnsubscribe(self):
-    """Tests the unsubscribe button.
-    """
+    """Tests the unsubscribe button."""
     user = profile_utils.seedNDBUser()
     profile_utils.loginNDB(user)
     profile = profile_utils.seedNDBProfile(
@@ -593,7 +599,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.task.subscribers.append(profile.key.to_old_key())
     self.task.put()
 
-    url = self._taskPageUrl(self.task)
+    url = _taskPageURL(self.task)
     response = self.buttonPost(url, 'button_unsubscribe')
 
     task = task_model.GCITask.get(self.task.key())
@@ -620,7 +626,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
         'url_to_work': work_url
     }
 
-    url = '%s?submit_work' %self._taskPageUrl(self.task)
+    url = '%s?submit_work' % _taskPageURL(self.task)
     response = self.post(url, work_data)
 
     self.assertResponseRedirect(response)
@@ -646,7 +652,7 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
 
     task_utils.seedWorkSubmission(self.task)
 
-    url = '%s?send_for_review' % self._taskPageUrl(self.task)
+    url = '%s?send_for_review' % _taskPageURL(self.task)
     response = self.post(url)
 
     task = task_model.GCITask.get(self.task.key())
@@ -662,13 +668,12 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
     self.task.status = 'Closed'
     self.task.student = student.key.to_old_key()
     # set deadline to far future
-    self.task.deadline = datetime.datetime.utcnow() + \
-        datetime.timedelta(days=1)
+    self.task.deadline = datetime.datetime.utcnow() + datetime.timedelta(days=1)
     self.task.put()
 
     task_utils.seedWorkSubmission(self.task)
 
-    url = '%s?send_for_review' % self._taskPageUrl(self.task)
+    url = '%s?send_for_review' % _taskPageURL(self.task)
     response = self.post(url)
 
     self.assertResponseForbidden(response)
@@ -690,24 +695,14 @@ class TaskViewTest(GCIDjangoTestCase, TaskQueueTestCase):
 
     self.assertEqual(len(self.task.workSubmissions()), 1)
 
-    url = '%s?delete_submission' %self._taskPageUrl(self.task)
+    url = '%s?delete_submission' % _taskPageURL(self.task)
     response = self.post(url, {work.key().id(): ''})
 
     self.assertResponseRedirect(response)
     self.assertEqual(len(self.task.workSubmissions()), 0)
 
-  def _taskPageUrl(self, task):
-    """Returns the url of the task page.
-    """
-    return '/gci/task/view/%s/%s' % (task.program.key().name(), task.key().id())
 
-  def _taskUpdateUrl(self, task):
-    """Returns the url to the task update GAE Task.
-    """
-    return '/tasks/gci/task/update/%s' %task.key().id()
-
-
-class WorkSubmissionDownloadTest(GCIDjangoTestCase):
+class WorkSubmissionDownloadTest(test_utils.GCIDjangoTestCase):
   """Tests the WorkSubmissionDownload class."""
 
   def setUp(self):
@@ -717,10 +712,7 @@ class WorkSubmissionDownloadTest(GCIDjangoTestCase):
     self.timeline_helper.tasksPubliclyVisible()
 
     # Create an open task.
-    mentor = profile_utils.seedNDBProfile(
-        self.program.key(), mentor_for=[ndb.Key.from_old_key(self.org.key())])
-    self.task = task_utils.seedTask(
-        self.program, self.org, mentors=[mentor.key.to_old_key()])
+    self.task = _createTestTask(self.program, self.org)
 
   def testXSS(self):
     xss_payload = '><img src=http://www.google.com/images/srpr/logo4w.png>'
