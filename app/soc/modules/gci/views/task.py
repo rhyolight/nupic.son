@@ -226,7 +226,7 @@ class TaskViewPage(base.GCIRequestHandler):
             task_id, parent=data.task)
 
         if not work:
-          check.fail(DEF_NO_WORK_FOUND %id)
+          check.fail(DEF_NO_WORK_FOUND % id)
 
         user_key = ndb.Key.from_old_key(
             task_model.GCIWorkSubmission.user.get_value_for_datastore(work))
@@ -256,7 +256,7 @@ class TaskViewPage(base.GCIRequestHandler):
     if task.deadline:
       # TODO(nathaniel): This is math - move it to a helper function.
       context['complete_percentage'] = timeline_helper.completePercentage(
-          end=task.deadline, duration=(task.time_to_complete*3600))
+          end=task.deadline, duration=(task.time_to_complete * 3600))
 
     if data.is_visible:
       context['work_submissions'] = WorkSubmissions(data)
@@ -468,8 +468,10 @@ class TaskInformation(Template):
     context = {
         'task': task,
         'mentors': mentors,
-        'is_mentor': self.data.mentorFor(task.org),
-        'is_task_mentor': profile.key() in task.mentors if profile else None,
+        'is_mentor': self.data.mentorFor(
+            task_model.GCITask.org.get_value_for_datastore(task)),
+        'is_task_mentor':
+            profile.key.to_old_key() in task.mentors if profile else None,
         'is_owner': task_logic.isOwnerOfTask(task, self.data.ndb_profile),
         'is_claimed': task.status in ACTIVE_CLAIMED_TASK,
         'profile': self.data.ndb_profile,
@@ -627,7 +629,7 @@ class WorkSubmissions(Template):
       if self.data.GET.get('ws_error', None) == '1':
         context['ws_error'] = True
 
-      url = '%s?submit_work' %(
+      url = '%s?submit_work' % (
           self.data.redirect.id().urlOf(url_names.GCI_VIEW_TASK))
       context['direct_post_url'] = url
 
