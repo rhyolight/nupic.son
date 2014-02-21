@@ -370,13 +370,14 @@ class AssignMentorRoleForOrgTest(test_utils.DjangoTestCase):
     self.assertTrue(self.profile.is_admin)
     self.assertListEqual(self.profile.admin_for, [other_org.key])
 
-  def testOrgAdminWelcomeEmailSent(self):
+  def testOrgMemberWelcomeEmailSent(self):
     """Tests that welcome email is sent if needed."""
     program_messages = program_utils.seedProgramMessages(
         program_key=self.program.key())
+    site = program_utils.seedSite()
     profile_logic.assignMentorRoleForOrg(
         self.profile, self.org.key, send_org_member_welcome_email=True,
-        program=self.program, program_messages=program_messages)
+        program=self.program, program_messages=program_messages, site=site)
 
     self.assertIn(
         ndb_profile_model.MessageType.ORG_MEMBER_WELCOME_MSG,
@@ -437,13 +438,14 @@ class AssignOrgAdminRoleForOrgTest(test_utils.DjangoTestCase):
     self.assertTrue(self.profile.is_admin)
     self.assertListEqual(self.profile.admin_for, [self.org.key])
 
-  def testOrgAdminWelcomeEmailSent(self):
+  def testOrgMemberWelcomeEmailSent(self):
     """Tests that welcome email is sent if needed."""
     program_messages = program_utils.seedProgramMessages(
         program_key=self.program.key())
+    site = program_utils.seedSite()
     profile_logic.assignOrgAdminRoleForOrg(
         self.profile, self.org.key, send_org_member_welcome_email=True,
-        program=self.program, program_messages=program_messages)
+        program=self.program, program_messages=program_messages, site=site)
 
     self.assertIn(
         ndb_profile_model.MessageType.ORG_MEMBER_WELCOME_MSG,
