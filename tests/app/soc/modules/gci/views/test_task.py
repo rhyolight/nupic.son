@@ -70,6 +70,13 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
       self.task.subscribers.append(subscriber.key.to_old_key())
     self.task.put()
 
+  def assertBasicTaskView(self):
+    """Checks that the task loads."""
+    response = self.get(_taskPageURL(self.task))
+    self.assertResponseOK(response)
+    self.assertGCITemplatesUsed(response)
+    self.assertTemplateUsed(response, 'modules/gci/task/public.html')
+
   def assertMailSentToSubscribers(self, comment):
     """Check if a notification email sent to the subscribers of the task."""
     subscribers = ndb.get_multi(
@@ -90,13 +97,7 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     # Use a non-logged-in request to the page for that task
     profile_utils.logout()
 
-    url = _taskPageURL(self.task)
-    response = self.get(url)
-
-    # Expect a proper response (200)
-    self.assertResponseOK(response)
-    self.assertGCITemplatesUsed(response)
-    self.assertTemplateUsed(response, 'modules/gci/task/public.html')
+    self.assertBasicTaskView()
 
   def testPostComment(self):
     """Tests leaving a comment on a task."""
@@ -138,8 +139,7 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     self.assertIsNone(comment.reply)
     self.assertMailSentToSubscribers(comment)
 
-    url = _taskPageURL(self.task)
-    response = self.get(url)
+    self.assertBasicTaskView()
 
   def testPostCommentWithEmptyTitle(self):
     """Tests leaving a comment with an empty title."""
@@ -179,6 +179,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     self.assertIsNone(comment.reply)
     self.assertMailSentToSubscribers(comment)
 
+    self.assertBasicTaskView()
+
   def testPostButtonUnpublish(self):
     """Tests the unpublish button."""
     user = profile_utils.seedNDBUser()
@@ -198,6 +200,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     comments = self.task.comments()
     self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
+
+    self.assertBasicTaskView()
 
   def testPostButtonUnpublishReopenedTaskForbidden(self):
     """Tests the unpublish button on."""
@@ -275,6 +279,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
+    self.assertBasicTaskView()
+
   def testPostButtonPublishUnapprovedTask(self):
     """Tests the publish button."""
     user = profile_utils.seedNDBUser()
@@ -292,6 +298,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, task_model.OPEN)
+
+    self.assertBasicTaskView()
 
   def testPostButtonPublishByUserWithNoRole(self):
     """Tests the publish button pressed by a user with no role."""
@@ -382,6 +390,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     # check if the update task has been enqueued
     self.assertTasksInQueue(n=1, url=_taskUpdateURL(task))
 
+    self.assertBasicTaskView()
+
   def testPostButtonUnassign(self):
     """Tests the unassign button."""
     user = profile_utils.seedNDBUser()
@@ -410,6 +420,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     comments = self.task.comments()
     self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
+
+    self.assertBasicTaskView()
 
   def testPostButtonClose(self):
     """Tests the close task button."""
@@ -456,6 +468,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
 
     self.assertTasksInQueue(n=1, url='/tasks/gci/ranking/update')
 
+    self.assertTaskBasicView()
+
   def testPostButtonNeedsWork(self):
     """Tests the needs more work for task button."""
     user = profile_utils.seedNDBUser()
@@ -486,6 +500,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     comments = self.task.comments()
     self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
+
+    self.assertBasicTaskView()
 
   def testPostButtonExtendDeadline(self):
     """Tests the extend deadline button."""
@@ -520,6 +536,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
+    self.assertBasicTaskView()
+
   def testPostButtonClaim(self):
     """Tests the claim task button."""
     form = forms_to_submit_utils.FormsToSubmitHelper().createBlobStoreForm()
@@ -544,6 +562,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     comments = self.task.comments()
     self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
+
+    self.assertBasicTaskView()
 
   def testPostButtonUnclaim(self):
     """Tests the unclaim task button."""
@@ -570,6 +590,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     self.assertEqual(len(comments), 1)
     self.assertMailSentToSubscribers(comments[0])
 
+    self.assertBasicTaskView()
+
   def testPostButtonSubscribe(self):
     """Tests the subscribe button."""
     user = profile_utils.seedNDBUser()
@@ -586,6 +608,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertIn(profile.key.to_old_key(), task.subscribers)
+
+    self.assertBasicTaskView()
 
   def testPostButtonUnsubscribe(self):
     """Tests the unsubscribe button."""
@@ -605,6 +629,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertNotIn(profile.key.to_old_key(), task.subscribers)
+
+    self.assertBasicTaskView()
 
   def testPostSubmitWork(self):
     """Tests for submitting work."""
@@ -637,6 +663,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     work = one_work[0]
     self.assertEqual(work_url, work.url_to_work)
 
+    self.assertBasicTaskView()
+
   def testPostSendForReview(self):
     """Tests for submitting work."""
     user = profile_utils.seedNDBUser()
@@ -658,6 +686,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     task = task_model.GCITask.get(self.task.key())
     self.assertResponseRedirect(response)
     self.assertEqual(task.status, 'NeedsReview')
+
+    self.assertBasicTaskView()
 
   def testPostSendForReviewClosedTaskForbidden(self):
     """Tests for submitting work for a task whose status is Closed."""
@@ -681,6 +711,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
     task = task_model.GCITask.get(self.task.key())
     self.assertEqual(task.status, 'Closed')
 
+    self.assertBasicTaskView()
+
   def testPostDeleteSubmission(self):
     """Tests for deleting work."""
     user = profile_utils.seedNDBUser()
@@ -700,6 +732,8 @@ class TaskViewTest(test_utils.GCIDjangoTestCase, test_utils.TaskQueueTestCase):
 
     self.assertResponseRedirect(response)
     self.assertEqual(len(self.task.workSubmissions()), 0)
+
+    self.assertBasicTaskView()
 
 
 class WorkSubmissionDownloadTest(test_utils.GCIDjangoTestCase):
