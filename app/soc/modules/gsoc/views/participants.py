@@ -270,7 +270,7 @@ class StudentsList(Template):
     response_builder = lists.RawQueryContentResponseBuilder(
         self.data.request, self._list_config, query, starter)
 
-    return response_builder.build()
+    return response_builder.buildNDB()
 
   def context(self):
     """See template.Template.context for specification."""
