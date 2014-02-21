@@ -1472,7 +1472,7 @@ def _getShowProfileTemplate(data, profile):
   fields[TEE_SIZE_LABEL] = profile.tee_size
   fields[GENDER_LABEL] = profile.gender
   fields[PROGRAM_KNOWLEDGE_LABEL] = profile.program_knowledge
-  groups.append(readonly.Group(_CONTACT_GROUP, fields.items()))
+  groups.append(readonly.Group(_OTHER_INFORMATION_GROUP, fields.items()))
 
   return readonly.Readonly(
       data, 'summerofcode/_readonly_template.html', groups)
