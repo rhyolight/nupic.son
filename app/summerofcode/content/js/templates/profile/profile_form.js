@@ -53,5 +53,28 @@
         jQuery.uniform.update();
       }
     });
+
+    var url = "?fmt=json&field=school_name";
+    jQuery.ajax({
+      url: url,
+      success: function(data) {
+        var getSchools = function() {
+          var country = jQuery("#school_country").attr('value');
+          var schools = data[country];
+          if(!schools) {
+              return [];
+          }
+          return schools;
+        };
+        var onchange = function() {
+          jQuery("#school_name").autocomplete({
+              'source': getSchools()
+          });
+        };
+        jQuery("#school_country").change(onchange);
+        // trigger autocomplete for the currently selected country
+        onchange();
+      }
+    });
   }
 );

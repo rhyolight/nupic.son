@@ -39,6 +39,7 @@ from melange.views.helper import form_handler
 
 from soc.logic import cleaning
 from soc.logic import validate
+from soc.models import universities
 
 from soc.views import forms as soc_forms
 from soc.views.helper import url_patterns
@@ -1260,6 +1261,10 @@ class ProfileRegisterAsStudentPage(base.GSoCRequestHandler):
     # TODO(daniel): eliminate passing self object.
     handler = CreateProfileFormHandler(self, form)
     return handler.handle(data, check, mutator)
+
+  def jsonContext(self, data, check, mutator):
+    """See base.RequestHandler.jsonContext for specification."""
+    return universities.UNIVERSITIES
 
 
 class CreateProfileFormHandler(form_handler.FormHandler):
