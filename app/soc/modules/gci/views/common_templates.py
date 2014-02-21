@@ -20,6 +20,7 @@ from melange.request import links
 
 from soc.views.template import Template
 
+from soc.modules.gci.models import organization as org_model
 from soc.modules.gci.logic import program as program_logic
 from soc.modules.gci.logic import ranking as ranking_logic
 from soc.modules.gci.logic.ranking import winnersForProgram
@@ -127,7 +128,8 @@ class OrgNominatedWinners(Template):
 
     def organization(self):
       """Returns GCIOrganization associated with the winner."""
-      return self.profile.student_data.winner_for.get()
+      return org_model.GCIOrganization.get(
+          self.profile.student_data.winner_for.to_old_key())
 
     def avatarPrefix(self):
       """Returns avatar prefix associated with the winner."""
