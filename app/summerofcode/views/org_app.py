@@ -671,7 +671,9 @@ class OrgPreferencesEditPage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.RequestHandler.context for specification."""
-    form = _OrgPreferencesForm(data=data.POST or None)
+    form_data = data.url_ndb_org.to_dict()
+
+    form = _OrgPreferencesForm(data=data.POST or form_data)
     return {
         'error': bool(form.errors),
         'forms': [form],
