@@ -435,7 +435,7 @@ class CleanValidAddressCharactersTest(unittest.TestCase):
     with self.assertRaises(forms.ValidationError):
       cleaning.cleanValidAddressCharacters(u'\ua000')
     with self.assertRaises(forms.ValidationError):
-      cleaning.cleanValidAddressCharacters('\u0105')
+      cleaning.cleanValidAddressCharacters(u'\u0105')
     with self.assertRaises(forms.ValidationError):
       cleaning.cleanValidAddressCharacters('#')
     with self.assertRaises(forms.ValidationError):
