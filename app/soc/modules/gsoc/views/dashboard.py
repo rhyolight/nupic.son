@@ -189,6 +189,7 @@ class DashboardPage(base.GSoCRequestHandler):
           }))
 
     dashboards.append(main)
+    dashboards.append(dashboard_view.ConnectionsDashboard(data))
 
     return {
         'page_name': data.program.name,
@@ -1397,7 +1398,7 @@ class TodoComponent(Component):
         url = links.ABSOLUTE_LINKER.program(
             data.program, urls.UrlNames.PROFILE_EDIT, secure=True)
         return url + '#form_row_school_name'
-      if key.isdigit(): # provided key represents a project ID
+      if key.isdigit():  # provided key represents a project ID
         return links.LINKER.userId(
             data.ndb_profile.key.to_old_key(), int(key),
             url_names.GSOC_PROJECT_UPDATE)
