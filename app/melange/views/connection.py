@@ -170,11 +170,12 @@ def cleanUsers(tokens, program_key):
             raise django_forms.ValidationError(
                 cleaning.USER_DOES_NOT_EXIST_ERROR_MSG % identifier)
     except django_forms.ValidationError as e:
-      error_list.append(e.messages)
+      error_list.append(' '.join(e.messages))
 
   # form is not valid if at least one error occurred
   if error_list:
-    raise django_forms.ValidationError(error_list)
+    raise django_forms.ValidationError(
+        ' '.join(error_list))
 
   # TODO(daniel): anonymous connections should be supported
   if users or emails:
