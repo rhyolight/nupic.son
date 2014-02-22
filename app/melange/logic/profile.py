@@ -406,7 +406,7 @@ def dispatchOrgMemberWelcomeEmail(
       entity is used.
   """
   if program_messages.mentor_welcome_msg:
-    sender, sender_name = mail_dispatcher.getDefaultMailSender(site=site)
+    sender_name, sender = mail_dispatcher.getDefaultMailSender(site=site)
 
     parent = parent or profile
 
