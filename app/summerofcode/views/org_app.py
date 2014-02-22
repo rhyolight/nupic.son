@@ -135,7 +135,8 @@ SLOTS_REQUEST_MAX_HELP_TEXT = translation.ugettext(
     'there was an unlimited amount of slots available.')
 
 MAX_SCORE_HELP_TEXT = translation.ugettext(
-    'The maximum number of points that can be given to a proposal by '
+    'Mentors review proposals when student registration is open. This value '
+    'specifies the maximum number of points that can be given to a proposal by '
     'one mentor. Please keep in mind changing this value does not have impact '
     'on the existing scores. In particular, scores, which have been higher '
     'than the updated maximum value, are still considered valid.')
