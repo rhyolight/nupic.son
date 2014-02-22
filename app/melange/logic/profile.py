@@ -419,3 +419,17 @@ def dispatchOrgMemberWelcomeEmail(
     }
     mail_dispatcher.getSendMailFromTemplateStringTxn(
         program_messages.mentor_welcome_msg, context, parent=parent)()
+
+
+def createtNotificationSettings(notification_settings_properties):
+  """Creates a new notification settings object based on
+  the specified properties.
+
+  Args:
+    notification_settings_properties: A dict mapping notification
+      settings properties to their values.
+
+  Returns:
+    Newly created notification settings object.
+  """
+  return profile_model.NotificationSettings(**notification_settings_properties)

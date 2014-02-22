@@ -139,6 +139,20 @@ class StudentData(ndb.Model):
   is_winner = ndb.ComputedProperty(lambda self: bool(self.winner_for))
 
 
+class NotificationSettings(ndb.Model):
+  """Model that represents what type of notifications should be delivered
+  to the specified profile.
+  """
+  #: The user is notified of new connections started with one of
+  #: the organizations that are managed by the user and of any updates to
+  #: existing connections with these organizations.
+  org_connections = ndb.BooleanProperty(default=True)
+
+  #: The user is notified of new connections started with him or her and
+  #: of any updates to existing connections.
+  user_connections = ndb.BooleanProperty(default=True)
+
+
 class Profile(ndb.Model):
   """Model that represents profile that is registered on per-program basis
   for a user.
@@ -245,6 +259,10 @@ class Profile(ndb.Model):
   #: Field storing keys of Terms Of Service documents that have been accepted
   #: by the registered profile.
   accepted_tos = ndb.KeyProperty(repeated=True)
+
+  #: Notification settings for the registered profile.
+  notification_settings = ndb.StructuredProperty(
+      NotificationSettings, required=True, default=NotificationSettings())
 
   @property
   def profile_id(self):

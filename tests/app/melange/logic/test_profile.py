@@ -697,3 +697,21 @@ class DispatchOrgMemberWelcomeEmailTest(test_utils.DjangoTestCase):
     self.assertEmailSent(
         to=profile.contact.email,
         subject=profile_logic._DEF_ORG_MEMBER_WELCOME_MAIL_SUBJECT)
+
+
+TEST_NOTIFICATION_SETTINGS_PROPERTIES = {
+    'org_connections': True,
+    'user_connections': False,
+    }
+
+class CreatetNotificationSettingsTest(unittest.TestCase):
+  """Unit tests for createtNotificationSettings function."""
+
+  def testNotificationSettingsCreated(self):
+    """Tests that notification settings is created properly if data is valid."""
+    notification_settings = profile_logic.createtNotificationSettings(
+        TEST_NOTIFICATION_SETTINGS_PROPERTIES)
+
+    # check properties
+    self.assertEqual(
+        notification_settings.to_dict(), TEST_NOTIFICATION_SETTINGS_PROPERTIES)
