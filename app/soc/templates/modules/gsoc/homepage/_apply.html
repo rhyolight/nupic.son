@@ -52,6 +52,23 @@ limitations under the License.
 	  with your Google account to begin registration.
 	{% endif %}
   </div>
+{% elif orgs_announced %}
+  <div id="apply-students" class="block block-students">
+    <img src="/soc/content/{{ app_version }}/images/gsoc/students-apply-now.jpg" height="107" width="429" alt="" id="block-apply-image" />
+  {% if before_student_signup %}
+	{% include 'modules/gsoc/homepage/_active_org_member_signup.html' %}
+	{% if not has_profile %}<hr>{% endif %}
+	{% include 'modules/gsoc/homepage/_before_student_signup.html' %}
+  {% elif active_student_signup %}
+	{% include 'modules/gsoc/homepage/_active_student_signup.html' %}
+	{% if not has_profile %}<hr>{% endif %}
+	{% include 'modules/gsoc/homepage/_active_org_member_signup.html' %}
+  {% else %}
+	{% include 'modules/gsoc/homepage/_after_student_signup.html' %}
+	{% if not has_profile %}<hr>{% endif %}
+	{% include 'modules/gsoc/homepage/_active_org_member_signup.html' %}
+  {% endif %}
+  </div>
 {% endif %}
 
 {% if False %}

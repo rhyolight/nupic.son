@@ -1,0 +1,19 @@
+<h3>Students</h3>
+<p id="block-apply-text-action" class="description">
+Registration is open
+</p>
+{% if login_link %}
+<p id="block-apply-text-action" class="action">
+  <a href="{{ login_link }}">Log in</a>
+</p>
+with your Google account to begin.
+{% elif has_profile %}
+<!-- TODO(daniel): ask for forms -->
+{% else %}
+<p id="block-apply-text-action" class="action">
+  <a href="{{ student_profile_url }}">Create profile</a>
+</p>
+before you can submit your forms and submit proposals.
+{% endif %}
+
+

@@ -1,0 +1,18 @@
+<h3>Mentors & Administrators</h3>
+<p id="block-apply-text-action" class="description">
+Registration with participating organizations is now open.
+</p>
+{% if login_link %}
+<p id="block-apply-text-action" class="action">
+  <a href="{{ login_link }}">Log in</a>
+</p>
+with your Google account to begin.
+{% elif has_profile %}
+<p id="block-apply-text-action" class="action">
+  <a href="{{ start_connection_url }}">Start connection</a>
+</p>
+{% else %}
+<p id="block-apply-text-action" class="action">
+  <a href="{{ org_member_profile_url }}">Create profile</a>
+</p>
+{% endif %}

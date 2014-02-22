@@ -35,6 +35,13 @@ _ORG_MEMBER_REGISTER_MESSAGE_BEFORE_STUDENT_SIGN_UP = translation.ugettext(
     'organization member profile, you <strong>will not</strong> be able to '
     'sign up as a student anymore.')
 
+_START_CONNECTION_AS_USER = translation.ugettext(
+    'You are about to start a connection with %s. This indicates that you '
+    'are willing to accept a role for this organization. Having reviewed your '
+    'application, organization administrators may designate you as a mentor or '
+    'another organization administrator.')
+
+
 def orgMemberRegistrationTopMessage(data):
   """Returns a top message to be displayed on the top of the page to register
   as an organization member.
@@ -59,3 +66,17 @@ def orgMemberRegistrationTopMessage(data):
                 secure=True))
   else:
     return None
+
+
+def startConnectionAsUserTopMessage(data):
+  """Returns a top message to be displayed on the top of the page to start
+  connection as user.
+
+  Args:
+    data: request_data.RequestData for the current request.
+
+  Returns:
+    top_message.TopMessage to be displayed on the top of the page.
+  """
+  return top_message.TopMessage(
+      data, TEMPLATE_PATH, _START_CONNECTION_AS_USER % data.url_ndb_org.name)

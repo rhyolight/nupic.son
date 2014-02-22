@@ -48,6 +48,8 @@ from soc.views.helper import url_patterns
 # TODO(daniel): do not import GSoC specific things in this module
 from soc.modules.gsoc.logic import profile as soc_profile_logic
 
+from summerofcode.templates import top_message
+
 
 ACTIONS_FORM_NAME = 'actions_form'
 MESSAGE_FORM_NAME = 'message_form'
@@ -533,6 +535,7 @@ class StartConnectionAsUser(base.RequestHandler):
   def context(self, data, check, mutator):
     """See base.RequestHandler.context for specification."""
     return {
+        'form_top_msg': top_message.startConnectionAsUserTopMessage(data),
         'page_name': START_CONNECTION_AS_USER_PAGE_NAME,
         'organization': data.organization.org_id,
         'forms': [_formToStartConnectionAsUser()]
