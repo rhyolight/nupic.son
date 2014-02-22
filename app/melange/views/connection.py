@@ -460,9 +460,8 @@ class StartConnectionAsOrg(base.RequestHandler):
             org_role=form.cleaned_data['role'],
             org_admin=data.ndb_profile))
 
-      # TODO(daniel): add some message with whom connections are started
-      url = self.linker.organization(
-          data.url_ndb_org.key, self.url_names.CONNECTION_START_AS_ORG)
+      url = self.linker.profile(
+          data.ndb_profile, self.url_names.CONNECTION_LIST_FOR_ORG_ADMIN)
       return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-call.

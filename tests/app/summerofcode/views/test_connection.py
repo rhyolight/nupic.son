@@ -236,7 +236,8 @@ class StartConnectionAsOrgTest(test_utils.GSoCDjangoTestCase):
             first_profile.profile_id, second_profile.profile_id)
         }
     response = self.post(_getStartAsOrgUrl(self.org), post_data)
-    self.assertResponseRedirect(response, _getStartAsOrgUrl(self.org))
+    self.assertResponseRedirect(
+        response, _getListConnectionsForOrgAdminUrl(profile))
 
     # check that connection with the first profile is created
     connection = connection_model.Connection.query(
