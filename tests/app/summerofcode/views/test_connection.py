@@ -78,6 +78,19 @@ def _getManageAsUserUrl(connection):
       connection.key.parent().id(), connection.key.id())
 
 
+def _getListConnectionsForOrgAdminUrl(profile):
+  """Returns URL to 'List Connections For Org Admin' page for the specified
+  profile entity.
+
+  Args:
+    profile: profile entity.
+
+  Returns:
+    The URL to 'List Connection For Org Admin' for the specified profile.
+  """
+  return '/gsoc/connection/list/org/%s' % profile.key.id()
+
+
 def _getListForUserUrl(program):
   """Returns URL to 'List Connections For User' page for the specified user.
 
@@ -114,19 +127,6 @@ def _getManageAsOrgUrl(connection):
   """
   return '/gsoc/connection/manage/org/%s/%s' % (
       connection.key.parent().id(), connection.key.id())
-
-
-def _getListConnectionsForOrgAdminUrl(profile):
-  """Returns URL to 'List Connections For Org Admin' page for the specified
-  profile entity.
-
-  Args:
-    profile: profile entity.
-
-  Returns:
-    The URL to 'List Connection For Org Admin' for the specified profile.
-  """
-  return '/gsoc/connection/list/org/%s' % profile.key.id()
 
 
 def _getMarkAsSeenByOrgUrl(connection):
@@ -547,3 +547,52 @@ class PickOrganizationToConnectPageTest(test_utils.GSoCDjangoTestCase):
 
     # check that the organization is listed
     self.assertEqual(len(list_data), 1)
+
+
+_NUMBER_OF_CONNECTIONS = 3
+_NUMBER_OF_CONNECTIONS_FOR_OTHER_ORG = 5
+
+class OrgAdminConnectionListTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for OrgAdminConnectionList class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+  def testPageLoads(self):
+    """Tests that page loads properly."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    url = _getListConnectionsForOrgAdminUrl(profile)
+    response = self.get(url)
+    self.assertResponseOK(response)
+
+  def testListData(self):
+    """Tests that all connections for orgs administrated by user are listed."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile = profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    # seed a few connections for organization
+    for _ in range(_NUMBER_OF_CONNECTIONS):
+      other_profile = profile_utils.seedNDBProfile(self.program.key())
+      connection_utils.seed_new_connection(other_profile.key, self.org.key)
+
+    # seed another organization which is not administrated by the user
+    other_org = org_utils.seedSOCOrganization(self.program.key())
+
+    # seed a few connections for the other organization
+    for _ in range(_NUMBER_OF_CONNECTIONS_FOR_OTHER_ORG):
+      other_profile = profile_utils.seedNDBProfile(self.program.key())
+      connection_utils.seed_new_connection(other_profile.key, other_org.key)
+
+    list_data = self.getListData(
+        _getListConnectionsForOrgAdminUrl(profile), 0)
+
+    # check that four connections are listed: the three ones created above
+    # plus one for the organization admin itself
+    self.assertEqual(len(list_data), _NUMBER_OF_CONNECTIONS + 1)

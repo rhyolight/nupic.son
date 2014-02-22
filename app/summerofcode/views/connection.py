@@ -46,6 +46,12 @@ START_CONNECTION_AS_USER = connection_view.StartConnectionAsUser(
     START_CONNECTION_AS_USER_ACCESS_CHECKER)
 
 
+LIST_CONNECTION_FOR_ORG_ADMIN = connection_view.ListConnectionsForOrgAdmin(
+    gsoc_base._GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
+    error.SOC_ERROR_HANDLER, soc_url_patterns.SOC_URL_PATTERN_CONSTRUCTOR,
+    soc_urls.UrlNames, 'summerofcode/connection/connection_list.html')
+
+
 LIST_CONNECTION_FOR_USER = connection_view.ListConnectionsForUser(
     gsoc_base._GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
     error.SOC_ERROR_HANDLER, soc_url_patterns.SOC_URL_PATTERN_CONSTRUCTOR,
