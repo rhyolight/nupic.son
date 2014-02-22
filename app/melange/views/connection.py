@@ -228,7 +228,8 @@ def _formToStartConnectionAsOrg(**kwargs):
   form = ConnectionForm(**kwargs)
   form.fields['role'].label = CONNECTION_FORM_ORG_ROLE_LABEL
   form.fields['role'].help_text = START_CONNECTION_FORM_ORG_ROLE_HELP_TEXT
-  form.fields['role'].choices = ACTUAL_ORG_ROLE_CHOICES
+  form.fields['role'].widget = django_forms.Select(
+      choices=ACTUAL_ORG_ROLE_CHOICES)
 
   form.setHelpTextForMessage(CONNECTION_AS_ORG_FORM_MESSAGE_HELP_TEXT)
   return form
