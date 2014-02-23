@@ -171,7 +171,7 @@ class OrgAdminConnectionList(ConnectionList):
     # more than one organization
     if len(self.data.url_ndb_profile.admin_for) > 1:
       list_config.addPlainTextColumn('organization', 'Organization',
-          lambda e, *args: e.organization.name)
+          lambda e, *args: e.organization.get().name)
 
     list_config.addPlainTextColumn('role', 'Role',
         lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()])
