@@ -325,23 +325,32 @@ def getAcceptedOrganizationsWithLogoURLs(
     query = models.ndb_org_model.query(
         models.ndb_org_model.program == ndb.Key.from_old_key(program_key),
         models.ndb_org_model.status == org_model.Status.ACCEPTED)
-    found_orgs, cursor, _ = query.fetch_page(
-        limit - len(orgs), start_cursor=cursor)
+    requested = limit - len(orgs)
+    found_orgs, next_cursor, _ = query.fetch_page(
+        requested, start_cursor=cursor)
+
+    found_org_found_again = False
     for found_org in found_orgs:
       if found_org.key in all_found_org_keys:
         # We've wrapped all the way around the list of orgs and come back
         # to the start. Return what we have.
-        break
+        found_org_found_again = True
+        break  # A labeled break here would save us the local field. :-(
       all_found_org_keys.add(found_org.key)
       if found_org.logo_url:
         orgs.append(found_org)
-    if len(found_orgs) < limit - len(orgs):
+    if found_org_found_again:
+      break
+
+    if len(found_orgs) < requested:
       if cursor:
         # Wrap around to the beginning.
         cursor = None
       else:
         # Even from the beginning there just aren't enough orgs? Give up.
         break
+    else:
+      cursor = next_cursor
 
   # If the requested number of organizations have been found, cache them.
   if len(orgs) == limit:
