@@ -21,8 +21,9 @@ iconic dashboard (Dashboard) and component list (Component).
 from django.utils import translation
 
 # TODO(daniel): URLs must be injected depending on the program
-from codein.views.helper import urls
+from summerofcode.views.helper import urls
 
+from melange.models import organization as org_model
 from melange.request import links
 
 from soc.views import template
@@ -113,9 +114,7 @@ def _initMainDashboardSubpages(data):
   Returns:
     initial list of subpages to set for the main dashboard.
   """
-  if False:
-  # TODO(daniel): re-enable when connection views are back
-  #if not data.profile.is_student and data.timeline.orgsAnnounced():
+  if not data.ndb_profile.is_student and data.timeline.orgsAnnounced():
     connection_dashboard = ConnectionsDashboard(data)
 
     return [{
@@ -178,7 +177,7 @@ def _initConnectionDashboardSubpages(data):
               'organizations and communicate with administrators.'),
           'title': translation.ugettext('See your connections'),
           'link': links.LINKER.program(
-              data.program, urls.UrlNames.CONNECTION_PICK_ORG)
+              data.program, urls.UrlNames.CONNECTION_LIST_FOR_USER)
       },
       {
           'name': 'connect',
@@ -191,7 +190,9 @@ def _initConnectionDashboardSubpages(data):
       }]
 
   # add organization admin specific items
-  if data.ndb_profile.is_admin:
+  if (data.ndb_profile.is_admin and
+      org_model.Status.ACCEPTED
+          in [org_key.get().status for org_key in data.ndb_profile.admin_for]):
     subpages.append({
         'name': 'list_connections_for_org_admin',
         'description': translation.ugettext(
@@ -202,15 +203,15 @@ def _initConnectionDashboardSubpages(data):
             data.ndb_profile, urls.UrlNames.CONNECTION_LIST_FOR_ORG_ADMIN)
         })
 
-    for org in data.org_admin_for:
+    for org in [org_key.get() for org_key in data.ndb_profile.admin_for]:
       subpages.append({
-          'name': 'connect_for_%s' % org.link_id,
+          'name': 'connect_for_%s' % org.org_id,
           'description': translation.ugettext(
               'Connect with users and offer them role in your '
               'organization.'),
           'title': translation.ugettext('Connect users with %s' % org.name),
           'link': links.LINKER.organization(
-              org.key(), urls.UrlNames.CONNECTION_START_AS_ORG)
+              org.key, urls.UrlNames.CONNECTION_START_AS_ORG)
           })
 
   return subpages

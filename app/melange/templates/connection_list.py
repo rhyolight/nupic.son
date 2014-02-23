@@ -157,12 +157,12 @@ class OrgAdminConnectionList(ConnectionList):
     list_config.addPlainTextColumn('key', 'Key',
         lambda e, *args: e.keyName(), hidden=True)
 
-    list_config.addPlainTextColumn('user', 'User',
-        lambda e, *args: e.parent_key().parent().name())
+    list_config.addPlainTextColumn('username', 'Username',
+        lambda e, *args: e.key.parent().parent().id())
 
     # organization column is added only when the user is an admin for
     # more than one organization
-    if len(self.data.url_profile.org_admin_for) > 1:
+    if len(self.data.url_ndb_profile.admin_for) > 1:
       list_config.addPlainTextColumn('organization', 'Organization',
           lambda e, *args: e.organization.name)
 
@@ -173,7 +173,7 @@ class OrgAdminConnectionList(ConnectionList):
 
     list_config.setRowAction(
         lambda e, *args: links.LINKER.userId(
-            e.parent_key(), e.key().id(),
+            e.key.parent(), e.key.id(),
             self.url_names.CONNECTION_MANAGE_AS_ORG))
 
     return list_config

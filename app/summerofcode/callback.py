@@ -39,6 +39,7 @@ class Callback(object):
 
   def registerViews(self):
     """Instantiates all view objects."""
+    self.views.append(connection.LIST_CONNECTION_FOR_ORG_ADMIN)
     self.views.append(connection.LIST_CONNECTION_FOR_USER)
     self.views.append(connection.MANAGE_CONNECTION_AS_ORG)
     self.views.append(connection.MANAGE_CONNECTION_AS_USER)

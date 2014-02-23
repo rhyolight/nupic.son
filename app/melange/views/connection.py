@@ -172,11 +172,12 @@ def cleanUsers(tokens, program_key):
             raise django_forms.ValidationError(
                 cleaning.USER_DOES_NOT_EXIST_ERROR_MSG % identifier)
     except django_forms.ValidationError as e:
-      error_list.append(e.messages)
+      error_list.append(' '.join(e.messages))
 
   # form is not valid if at least one error occurred
   if error_list:
-    raise django_forms.ValidationError(error_list)
+    raise django_forms.ValidationError(
+        ' '.join(error_list))
 
   # TODO(daniel): anonymous connections should be supported
   if users or emails:
@@ -230,7 +231,8 @@ def _formToStartConnectionAsOrg(**kwargs):
   form = ConnectionForm(**kwargs)
   form.fields['role'].label = CONNECTION_FORM_ORG_ROLE_LABEL
   form.fields['role'].help_text = START_CONNECTION_FORM_ORG_ROLE_HELP_TEXT
-  form.fields['role'].choices = ACTUAL_ORG_ROLE_CHOICES
+  form.fields['role'].widget = django_forms.Select(
+      choices=ACTUAL_ORG_ROLE_CHOICES)
 
   form.setHelpTextForMessage(CONNECTION_AS_ORG_FORM_MESSAGE_HELP_TEXT)
   return form
@@ -460,9 +462,8 @@ class StartConnectionAsOrg(base.RequestHandler):
             org_role=form.cleaned_data['role'],
             org_admin=data.ndb_profile))
 
-      # TODO(daniel): add some message with whom connections are started
-      url = self.linker.organization(
-          data.url_ndb_org.key, self.url_names.CONNECTION_START_AS_ORG)
+      url = self.linker.profile(
+          data.ndb_profile, self.url_names.CONNECTION_LIST_FOR_ORG_ADMIN)
       return http.HttpResponseRedirect(url)
     else:
       # TODO(nathaniel): problematic self-call.
@@ -1009,6 +1010,70 @@ class MessageFormHandler(form_handler.FormHandler):
     else:
       # TODO(nathaniel): problematic self-use.
       return self._view.get(data, check, mutator)
+
+
+LIST_CONNECTIONS_FOR_ORG_ADMIN_ACCESS_CHECKER = (
+    access.ConjuctionAccessChecker([
+        access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+        access.NON_STUDENT_URL_PROFILE_ACCESS_CHECKER,
+        access.IS_URL_USER_ACCESS_CHECKER]))
+
+class ListConnectionsForOrgAdmin(base.RequestHandler):
+  """View to list all connections for an organization administrator."""
+
+  access_checker = LIST_CONNECTIONS_FOR_ORG_ADMIN_ACCESS_CHECKER
+
+  def __init__(self, initializer, linker, renderer, error_handler,
+      url_pattern_constructor, url_names, template_path):
+    """Initializes a new instance of the request handler for the specified
+    parameters.
+
+    Args:
+      initializer: Implementation of initialize.Initializer interface.
+      linker: Instance of links.Linker class.
+      renderer: Implementation of render.Renderer interface.
+      error_handler: Implementation of error.ErrorHandler interface.
+      url_pattern_constructor:
+        Implementation of url_patterns.UrlPatternConstructor.
+      url_names: Instance of url_names.UrlNames.
+      template_path: The path of the template to be used.
+    """
+    super(ListConnectionsForOrgAdmin, self).__init__(
+        initializer, linker, renderer, error_handler)
+    self.url_pattern_constructor = url_pattern_constructor
+    self.url_names = url_names
+    self.template_path = template_path
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.djangoURLPatterns for specification."""
+    return [
+        self.url_pattern_constructor.construct(
+            r'connection/list/org/%s$' % url_patterns.PROFILE,
+            self, name=self.url_names.CONNECTION_LIST_FOR_ORG_ADMIN)
+    ]
+
+  def templatePath(self):
+    """See base.RequestHandler.templatePath for specification."""
+    return self.template_path
+
+  def context(self, data, check, mutator):
+    """See base.RequestHandler.context for specification."""
+    return {
+        # TODO(daniel): template path should not be hardcoded here.
+        'connection_list':
+            connection_list.OrgAdminConnectionList(
+                self.url_names, 'summerofcode/_list_component.html', data),
+        'page_name': LIST_CONNECTIONS_FOR_ORG_ADMIN_PAGE_NAME,
+        }
+
+  def jsonContext(self, data, check, mutator):
+    """See base.RequestHandler.jsonContext for specification."""
+    list_content = connection_list.OrgAdminConnectionList(
+        self.url_names, self.template_path, data).getListData()
+    if list_content:
+      return list_content.content()
+    else:
+      raise exception.BadRequest(message='This data cannot be accessed.')
 
 
 LIST_CONNECTIONS_FOR_USER_ACCESS_CHECKER = access.ConjuctionAccessChecker([

@@ -30,7 +30,7 @@ from summerofcode.views.helper import urls as soc_urls
 START_CONNECTION_AS_ORG = connection_view.StartConnectionAsOrg(
     gsoc_base._GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
     error.SOC_ERROR_HANDLER, soc_url_patterns.SOC_URL_PATTERN_CONSTRUCTOR,
-    soc_urls.UrlNames, 'modules/gsoc/form_base.html')
+    soc_urls.UrlNames, 'summerofcode/connection/start_connection.html')
 
 
 START_CONNECTION_AS_USER_ACCESS_CHECKER = access.ConjuctionAccessChecker([
@@ -44,6 +44,12 @@ START_CONNECTION_AS_USER = connection_view.StartConnectionAsUser(
     error.SOC_ERROR_HANDLER, soc_url_patterns.SOC_URL_PATTERN_CONSTRUCTOR,
     soc_urls.UrlNames, 'modules/gsoc/form_base.html',
     START_CONNECTION_AS_USER_ACCESS_CHECKER)
+
+
+LIST_CONNECTION_FOR_ORG_ADMIN = connection_view.ListConnectionsForOrgAdmin(
+    gsoc_base._GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
+    error.SOC_ERROR_HANDLER, soc_url_patterns.SOC_URL_PATTERN_CONSTRUCTOR,
+    soc_urls.UrlNames, 'summerofcode/connection/connection_list.html')
 
 
 LIST_CONNECTION_FOR_USER = connection_view.ListConnectionsForUser(
