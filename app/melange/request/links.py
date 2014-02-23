@@ -262,6 +262,20 @@ class AbsoluteLinker(object):
     relative_url = self._linker.program(program, url_name)
     return getAbsoluteUrl(relative_url, self._hostname, secure=secure)
 
+  def organization(self, org_key, url_name, secure=False):
+    """Returns the absolute URL of a organization's named page.
+
+    Args:
+      org_key: Organization key.
+      url_name: The name with which a URL was registered with Django.
+      secure: Whether the returned URL should support HTTPS or not.
+
+    Returns:
+      The URL of the page matching the given name for the given program.
+    """
+    relative_url = self._linker.organization(org_key, url_name)
+    return getAbsoluteUrl(relative_url, self._hostname, secure=secure)
+
   def userId(self, profile_key, entity_id, url_name, secure=False):
     """Returns the absolute URL of a page whose address contains parts
     associated with the specified profile and numeric identifier
