@@ -52,7 +52,11 @@ limitations under the License.
             </strong>
             <a href="#c{{ message.key.id }}">{{ message.created }}</a>
           </p>
-          {{ message.content }}
+          {% if message.is_auto_generated %}
+            {{ message.content|safe }}
+          {% else %}
+            {{ message.content }}
+          {% endif %}
         </div>
 
       {% endfor %}

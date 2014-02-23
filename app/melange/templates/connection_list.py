@@ -148,8 +148,15 @@ class OrgAdminConnectionList(ConnectionList):
 
   def _getQuery(self):
     """See ConnectionList._getQuery for specification."""
-    return connection_logic.queryForOrganizations(
-        self.data.url_ndb_profile.admin_for)
+    if len(self.data.url_ndb_profile.admin_for) > 1:
+      # explicit order by __key__ is required for MultiQuery,
+      # i.e. a query with IN filter.
+      return connection_logic.queryForOrganizations(
+          self.data.url_ndb_profile.admin_for).order(
+              connection_model.Connection._key)
+    else:
+      return connection_logic.queryForOrganizations(
+          self.data.url_ndb_profile.admin_for)
 
   def _getListConfig(self):
     """See ConnectionList._getListConfig for specification."""
@@ -164,7 +171,7 @@ class OrgAdminConnectionList(ConnectionList):
     # more than one organization
     if len(self.data.url_ndb_profile.admin_for) > 1:
       list_config.addPlainTextColumn('organization', 'Organization',
-          lambda e, *args: e.organization.name)
+          lambda e, *args: e.organization.get().name)
 
     list_config.addPlainTextColumn('role', 'Role',
         lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()])
