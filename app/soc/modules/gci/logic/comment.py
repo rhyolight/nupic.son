@@ -46,8 +46,12 @@ def storeAndNotifyTxn(comment, task=None):
   elif task.key() != comment.parent_key():
     raise ValueError("The specified task must be the parent of the comment")
 
-  author_key = ndb.Key.from_old_key(
-      comment_model.GCIComment.created_by.get_value_for_datastore(comment))
+  if comment_model.GCIComment.created_by.get_value_for_datastore(comment):
+    author_key = ndb.Key.from_old_key(
+        comment_model.GCIComment.created_by.get_value_for_datastore(comment))
+  else:
+    author_key = None
+
   to_emails = []
   profiles = ndb.get_multi(map(ndb.Key.from_old_key, task.subscribers))
   for profile in profiles:

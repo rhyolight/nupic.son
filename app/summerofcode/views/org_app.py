@@ -135,7 +135,8 @@ SLOTS_REQUEST_MAX_HELP_TEXT = translation.ugettext(
     'there was an unlimited amount of slots available.')
 
 MAX_SCORE_HELP_TEXT = translation.ugettext(
-    'The maximum number of points that can be given to a proposal by '
+    'Mentors review proposals when student registration is open. This value '
+    'specifies the maximum number of points that can be given to a proposal by '
     'one mentor. Please keep in mind changing this value does not have impact '
     'on the existing scores. In particular, scores, which have been higher '
     'than the updated maximum value, are still considered valid.')
@@ -670,7 +671,9 @@ class OrgPreferencesEditPage(base.GSoCRequestHandler):
 
   def context(self, data, check, mutator):
     """See base.RequestHandler.context for specification."""
-    form = _OrgPreferencesForm(data=data.POST or None)
+    form_data = data.url_ndb_org.to_dict()
+
+    form = _OrgPreferencesForm(data=data.POST or form_data)
     return {
         'error': bool(form.errors),
         'forms': [form],
