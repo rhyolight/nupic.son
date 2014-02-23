@@ -550,8 +550,9 @@ class PickOrganizationToConnectPageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(len(list_data), 1)
 
 
-_NUMBER_OF_CONNECTIONS = 3
-_NUMBER_OF_CONNECTIONS_FOR_OTHER_ORG = 5
+_NUMBER_OF_CONNECTIONS_FOR_MAIN_ORG = 3
+_NUMBER_OF_CONNECTIONS_FOR_SECOND_ORG = 2
+_NUMBER_OF_CONNECTIONS_FOR_THIRD_ORG = 5
 
 class OrgAdminConnectionListTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for OrgAdminConnectionList class."""
@@ -573,27 +574,38 @@ class OrgAdminConnectionListTest(test_utils.GSoCDjangoTestCase):
 
   def testListData(self):
     """Tests that all connections for orgs administrated by user are listed."""
+    # seed another organization which is administrated by the user
+    second_org = org_utils.seedSOCOrganization(self.program.key())
+
     user = profile_utils.seedNDBUser()
     profile_utils.loginNDB(user)
     profile = profile_utils.seedNDBProfile(
-        self.program.key(), user=user, admin_for=[self.org.key])
+        self.program.key(), user=user,
+        admin_for=[self.org.key, second_org.key])
 
-    # seed a few connections for organization
-    for _ in range(_NUMBER_OF_CONNECTIONS):
+    # seed a few connections for first organization
+    for _ in range(_NUMBER_OF_CONNECTIONS_FOR_MAIN_ORG):
       other_profile = profile_utils.seedNDBProfile(self.program.key())
       connection_utils.seed_new_connection(other_profile.key, self.org.key)
 
+    for _ in range(_NUMBER_OF_CONNECTIONS_FOR_SECOND_ORG):
+      other_profile = profile_utils.seedNDBProfile(self.program.key())
+      connection_utils.seed_new_connection(other_profile.key, second_org.key)
+
     # seed another organization which is not administrated by the user
-    other_org = org_utils.seedSOCOrganization(self.program.key())
+    third_org = org_utils.seedSOCOrganization(self.program.key())
 
     # seed a few connections for the other organization
-    for _ in range(_NUMBER_OF_CONNECTIONS_FOR_OTHER_ORG):
+    for _ in range(_NUMBER_OF_CONNECTIONS_FOR_THIRD_ORG):
       other_profile = profile_utils.seedNDBProfile(self.program.key())
-      connection_utils.seed_new_connection(other_profile.key, other_org.key)
+      connection_utils.seed_new_connection(other_profile.key, third_org.key)
 
     list_data = self.getListData(
         _getListConnectionsForOrgAdminUrl(profile), 0)
 
-    # check that four connections are listed: the three ones created above
-    # plus one for the organization admin itself
-    self.assertEqual(len(list_data), _NUMBER_OF_CONNECTIONS + 1)
+    # check that all connections are listed: the ones created above for the main
+    # org and the second plus two for the organization admin itself
+    self.assertEqual(
+        len(list_data),
+        _NUMBER_OF_CONNECTIONS_FOR_MAIN_ORG +
+        _NUMBER_OF_CONNECTIONS_FOR_SECOND_ORG + 2)
