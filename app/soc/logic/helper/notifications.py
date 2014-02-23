@@ -362,7 +362,8 @@ class OrganizationAcceptedContextProvider(object):
   is accepted into a program.
   """
 
-  def getContext(self, emails, organization, program, site, program_messages):
+  def getContext(
+      self, emails, organization, program, site, program_messages, url_names):
     """Provides notification context of an email to send out when the specified
     organization is accepted into the program.
 
@@ -373,13 +374,17 @@ class OrganizationAcceptedContextProvider(object):
       site: Site entity.
       program_messages: ProgramMessages entity that holds the message
           templates provided by the program admins.
+      url_names: Instance of url_names.UrlNames.
     """
     subject = DEF_ACCEPTED_ORG % {
         'org': organization.name,
         }
 
-    # TODO(daniel): consult what properties are needed.
-    message_properties = {}
+    message_properties = {
+        'org': organization.name,
+        'url': links.ABSOLUTE_LINKER.organization(
+            organization.key, url_names.ORG_HOME)
+    }
 
     return getContextFromTemplateString(
         site, program, emails, message_properties, subject,

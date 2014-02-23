@@ -314,7 +314,8 @@ class SetStatusTest(test_utils.DjangoTestCase):
     """See unittest.TestCase.setUp for specification."""
     self.init()
 
-    self.program = program_utils.seedProgram()
+    # TODO(daniel): it should not seed GSoC Program here
+    self.program = program_utils.seedGSoCProgram()
 
     properties = {'parent': self.program}
     seeder_logic.seed(program_model.ProgramMessages, properties=properties)

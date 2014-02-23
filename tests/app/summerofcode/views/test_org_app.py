@@ -24,7 +24,7 @@ from melange.models import organization as org_model
 from melange.models import survey as survey_model
 
 from soc.models import licenses
-from soc.views.helper import request_data
+from soc.modules.gsoc.views.helper import request_data
 
 from summerofcode.models import organization as soc_org_model
 from summerofcode.templates import tabs
@@ -32,7 +32,6 @@ from summerofcode.views import org_app as org_app_view
 
 from tests import org_utils
 from tests import profile_utils
-from tests import program_utils
 from tests import test_utils
 
 
@@ -564,14 +563,12 @@ class _MockView(object):
 
 _NUMBER_OF_ORG_ADMINS = 2
 
-class ApplyOrgAdmissionDecisionHandlerTest(test_utils.DjangoTestCase):
+class ApplyOrgAdmissionDecisionHandlerTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for ApplyOrgAdmissionDecisionHandler class."""
 
   def setUp(self):
     """See unittest.TestCase.setUp for specification."""
     self.init()
-    self.sponsor = program_utils.seedSponsor()
-    self.program = program_utils.seedProgram(sponsor_key=self.sponsor.key())
 
     self.pre_accepted_org = org_utils.seedSOCOrganization(
         self.program.key(), status=org_model.Status.PRE_ACCEPTED)

@@ -22,6 +22,8 @@ from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
+from codein.views.helper import urls as ci_urls
+
 from melange import types
 from melange.logic import profile as profile_logic
 from melange.models import organization as org_model
@@ -31,6 +33,8 @@ from melange.utils import rich_bool
 
 from soc.logic.helper import notifications
 from soc.tasks import mailer
+
+from summerofcode.views.helper import urls as soc_urls
 
 
 ORG_ID_IN_USE = 'Organization ID %s is already in use for this program.'
@@ -190,11 +194,20 @@ def setStatus(organization, program, site, program_messages,
       # recipients of organization acceptance or rejection email
       recipients = [org_admin.contact.email for org_admin in org_admins]
 
+      # TODO(daniel): this should be injected here!
+      if program.kind() == 'GSoCProgram':
+        url_names = soc_urls.UrlNames
+      elif program.kind() == 'GCIProgram':
+        url_names = ci_urls.UrlNames
+      else:
+        raise ValueError('Invalid program type %s' % program.kind())
+
       if new_status == org_model.Status.ACCEPTED:
         notification_context = (
             notifications.OrganizationAcceptedContextProvider()
                 .getContext(
-                    recipients, organization, program, site, program_messages))
+                    recipients, organization, program, site,
+                    program_messages, url_names))
 
         # organization administrators are also sent the welcome email
         for org_admin in org_admins:
