@@ -40,6 +40,7 @@ from soc.modules.gsoc.views import forms
 from soc.modules.gsoc.views.helper import url_names
 from soc.modules.gsoc.views.helper import url_patterns
 
+from summerofcode.views.helper import urls
 
 TEST_EMAIL_HELP_TEXT = translation.ugettext(
     'Email address to which test messages must be sent. If provided, a '
@@ -172,12 +173,15 @@ class GSoCProgramMessagesForm(forms.GSoCModelForm):
       return
 
     self.request_data.redirect.program()
-    apply_url = 'update this part as it has been changed'
 
+    test_org_key = ndb.Key(
+        self.request_data.models.org_model._get_kind(),
+        '/'.join([self.request_data.program.key().name(), TEST_ORG_ID]))
     org_app_context = {
-      'url': apply_url + '?org_id=' + TEST_ORG_ID,
-      'org': TEST_ORG_NAME,
-      }
+        'url': links.ABSOLUTE_LINKER.organization(
+            test_org_key, urls.UrlNames.ORG_HOME),
+        'org': TEST_ORG_NAME,
+        }
 
     proposal_context = {
         'proposal_title': TEST_PROPOSAL_TITLE,
