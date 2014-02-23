@@ -5,7 +5,7 @@ import re
 
 import setuptools
 
-MATCH_VERSION = re.compile('version: ([0-9\-]+)')
+MATCH_VERSION = re.compile(r'version: ([0-9\-]+)')
 
 MELANGE_NAME = 'melange'
 MELANGE_DESCRIPTION = (

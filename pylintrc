@@ -32,7 +32,8 @@ errors-only=yes
 # Warnings, style issues, and other inspections as a matter of policy must not
 # be violated in Melange. At least not nakedly, anyway - an explanatory comment
 # must appear wherever these are suppressed.
-enable=arguments-differ,bad-indentation,cyclic-import,dangerous-default-value,
+enable=anomalous-backslash-in-string,anomalous-unicode-escape-in-string,
+    arguments-differ,bad-indentation,cyclic-import,dangerous-default-value,
     logging-not-lazy,no-space-before-operator,pointless-statement,
     reimported,relative-import,trailing-whitespace,unused-import,
     old-raise-syntax,

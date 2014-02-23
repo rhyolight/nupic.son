@@ -40,7 +40,7 @@ DEF_INVALID_EMAIL_ADDRESS = translation.ugettext(
 DEF_INVALID_LINK_ID = translation.ugettext(
     '"%s" is not a properly-formed username.')
 
-DEF_VALID_SHIPPING_CHARS = re.compile('^[A-Za-z0-9\s-]+$')
+DEF_VALID_SHIPPING_CHARS = re.compile(r'^[A-Za-z0-9\s-]+$')
 
 DEF_LINK_ID_IN_USE = translation.ugettext(
     'This username is already in use, please specify another one')
