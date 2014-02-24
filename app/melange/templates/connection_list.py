@@ -175,6 +175,8 @@ class OrgAdminConnectionList(ConnectionList):
 
     list_config.addPlainTextColumn('role', 'Role',
         lambda e, *args: connection_model.VERBOSE_ROLE_NAMES[e.getRole()])
+    list_config.addPlainTextColumn('seen', 'Seen By Org',
+        lambda e, *args: 'Yes' if e.seen_by_org else 'No')
     list_config.addDateColumn('last_modified', 'Last Modified On',
         lambda e, *args: e.last_modified)
 
