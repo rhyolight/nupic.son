@@ -42,7 +42,8 @@ from summerofcode.views.helper import urls as soc_urls
 DEF_LINKER_URL_NAMES_REQUIRED = translation.ugettext(
     'Linker and UrlNames instances are required for accepting organizations.')
 
-ORG_ID_IN_USE = 'Organization ID %s is already in use for this program.'
+ORG_ID_IN_USE = translation.ugettext(
+    'Organization ID %s is already in use for this program.')
 
 def createOrganization(
     org_id, program_key, org_properties, models=types.MELANGE_MODELS):
