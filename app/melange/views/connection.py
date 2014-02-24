@@ -1345,20 +1345,6 @@ class MarkConnectionAsSeenByUser(base.RequestHandler):
     return http.HttpResponse()
 
 
-def sendMentorWelcomeMail(data, profile, message):
-  """Send out a welcome email to new mentors.
-
-  Args:
-    data: RequestData object for the current request.
-    profile: profile entity to which to send emails.
-    messages: message to be sent.
-  """
-  mentor_mail = notifications.getMentorWelcomeMailContext(
-      profile, data, message)
-  if mentor_mail:
-    mailer.getSpawnMailTaskTxn(mentor_mail, parent=profile)()
-
-
 @ndb.transactional
 def createConnectionTxn(
     data, profile_key, program, organization,
