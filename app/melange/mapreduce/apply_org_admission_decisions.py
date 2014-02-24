@@ -56,7 +56,7 @@ def process(org_key):
   elif program_key.kind() == 'GCIProgram':
     url_names = ci_urls.UrlNames
   else:
-    raise ValueError('Invalid program type %s' % program.kind())
+    raise ValueError('Invalid program type %s' % program_key.kind())
 
   program = db.get(program_key)
 
