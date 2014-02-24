@@ -390,8 +390,9 @@ class OrganizationAcceptedContextProvider(object):
 
     message_properties = {
         'org': organization.name,
-        'url': links.ABSOLUTE_LINKER.organization(
-            organization.key, url_names.ORG_HOME)
+        'program_name': program.name,
+        'url': self.linker.organization(
+            organization.key, self.url_names.ORG_PROFILE_EDIT),
     }
 
     return getContextFromTemplateString(
@@ -420,8 +421,10 @@ class OrganizationRejectedContextProvider(object):
         'org': organization.name,
         }
 
-    # TODO(daniel): consult what properties are needed.
-    message_properties = {}
+    message_properties = {
+        'org': organization.name,
+        'program_name': program.name,
+        }
 
     return getContextFromTemplateString(
         site, program, emails, message_properties, subject,
