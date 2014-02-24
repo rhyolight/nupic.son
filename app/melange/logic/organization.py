@@ -24,8 +24,6 @@ from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.ext import ndb
 
-from codein.views.helper import urls as ci_urls
-
 from melange import types
 from melange.logic import profile as profile_logic
 from melange.models import organization as org_model
@@ -35,8 +33,6 @@ from melange.utils import rich_bool
 
 from soc.logic.helper import notifications
 from soc.tasks import mailer
-
-from summerofcode.views.helper import urls as soc_urls
 
 
 DEF_LINKER_URL_NAMES_REQUIRED = translation.ugettext(
