@@ -642,10 +642,9 @@ class ManageConnectionAsUser(base.RequestHandler):
 
     messages = connection_logic.getConnectionMessages(data.url_connection.key)
 
-    # TODO(daniel): add mark as seen by user
-    # mark_as_seen_url = links.LINKER.userId(
-    #    data.url_ndb_profile.key, data.url_connection.key.id(),
-    #    self.url_names.CONNECTION_MARK_AS_SEEN_BY_USER)
+    mark_as_seen_url = links.LINKER.userId(
+        data.url_ndb_profile.key, data.url_connection.key.id(),
+        self.url_names.CONNECTION_MARK_AS_SEEN_BY_USER)
 
     return {
         'page_name': MANAGE_CONNECTION_PAGE_NAME,
@@ -653,7 +652,7 @@ class ManageConnectionAsUser(base.RequestHandler):
         'message_form': message_form,
         'items': summary_items,
         'messages': messages,
-     #   'mark_as_seen_url': mark_as_seen_url,
+        'mark_as_seen_url': mark_as_seen_url,
         }
 
   def post(self, data, check, mutator):
