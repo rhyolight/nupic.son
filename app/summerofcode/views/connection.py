@@ -70,6 +70,12 @@ MANAGE_CONNECTION_AS_USER = connection_view.ManageConnectionAsUser(
     soc_urls.UrlNames, 'summerofcode/connection/manage_connection.html')
 
 
+MARK_CONNECTION_AS_SEEN_BY_ORG = connection_view.MarkConnectionAsSeenByOrg(
+    gsoc_base._GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
+    error.SOC_ERROR_HANDLER, soc_url_patterns.SOC_URL_PATTERN_CONSTRUCTOR,
+    soc_urls.UrlNames)
+
+
 PICK_ORGANIZATION_TO_CONNECT = connection_view.PickOrganizationToConnectPage(
     gsoc_base._GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
     error.SOC_ERROR_HANDLER, soc_url_patterns.SOC_URL_PATTERN_CONSTRUCTOR,

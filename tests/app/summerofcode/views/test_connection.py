@@ -139,7 +139,7 @@ def _getMarkAsSeenByOrgUrl(connection):
   Returns:
     The URL to 'Mark Connection As Seen By Org' for the specified connection.
   """
-  return '/gci/connection/mark_as_seen/org/%s/%s' % (
+  return '/gsoc/connection/mark_as_seen/org/%s/%s' % (
       connection.key.parent().id(), connection.key.id())
 
 
@@ -609,3 +609,42 @@ class OrgAdminConnectionListTest(test_utils.GSoCDjangoTestCase):
         len(list_data),
         _NUMBER_OF_CONNECTIONS_FOR_MAIN_ORG +
         _NUMBER_OF_CONNECTIONS_FOR_SECOND_ORG + 2)
+
+
+class MarkConnectionAsSeenByOrgTest(test_utils.GSoCDjangoTestCase):
+  """Unit tests for MarkConnectionAsSeenByOrg class."""
+
+  def setUp(self):
+    """See unittest.TestCase.setUp for specification."""
+    self.init()
+
+    # seed another profile for a connected user
+    other_profile = profile_utils.seedNDBProfile(self.program.key())
+    self.connection = connection_utils.seed_new_connection(
+        other_profile.key, self.org.key, seen_by_org=False)
+
+  @unittest.skip(
+      'This request should fail instead of raising NotImplementedError')
+  def testGetMethodForbidden(self):
+    """Tests that GET method is not permitted."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    response = self.get(_getMarkAsSeenByOrgUrl(self.connection))
+    self.assertResponseForbidden(response)
+
+  def testConnectionMarkedAsSeen(self):
+    """Tests that connection is successfully marked as seen by organization."""
+    user = profile_utils.seedNDBUser()
+    profile_utils.loginNDB(user)
+    profile_utils.seedNDBProfile(
+        self.program.key(), user=user, admin_for=[self.org.key])
+
+    response = self.post(_getMarkAsSeenByOrgUrl(self.connection))
+    self.assertResponseOK(response)
+
+    # check that connection is marked as seen by organization
+    connection = self.connection.key.get()
+    self.assertTrue(connection.seen_by_org)
