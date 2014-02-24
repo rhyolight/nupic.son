@@ -179,7 +179,7 @@ class GSoCProgramMessagesForm(forms.GSoCModelForm):
         '/'.join([self.request_data.program.key().name(), TEST_ORG_ID]))
     org_app_context = {
         'url': links.ABSOLUTE_LINKER.organization(
-            test_org_key, urls.UrlNames.ORG_HOME),
+            test_org_key, urls.UrlNames.ORG_PROFILE_EDIT),
         'org': TEST_ORG_NAME,
         }
 
