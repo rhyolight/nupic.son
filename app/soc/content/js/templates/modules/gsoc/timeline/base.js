@@ -29,7 +29,14 @@ melange.templates.inherit(
       "#application_review_deadline",
       "#student_application_matched_deadline",
       "#accepted_students_announced_deadline",
-      "#form_submission_start"
+      "#form_submission_start",
+      "#bonding_start",
+      "#bonding_end",
+      "#coding_start",
+      "#coding_end",
+      "#suggested_coding_deadline",
+      "#mentor_summit_start",
+      "#mentor_summit_end"
     ].join(",");
     jQuery(fields_to_enhance).datetimepicker(config);
   }
