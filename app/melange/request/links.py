@@ -271,7 +271,7 @@ class AbsoluteLinker(object):
       secure: Whether the returned URL should support HTTPS or not.
 
     Returns:
-      The URL of the page matching the given name for the given program.
+      The URL of the page matching the given name for the given org key.
     """
     relative_url = self._linker.organization(org_key, url_name)
     return getAbsoluteUrl(relative_url, self._hostname, secure=secure)
