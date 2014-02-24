@@ -1302,6 +1302,50 @@ class MarkConnectionAsSeenByOrg(base.RequestHandler):
     return http.HttpResponse()
 
 
+MARK_CONNECION_AS_SEEN_BY_USER_ACCESS_CHECKER = (
+    access.ConjuctionAccessChecker([
+        access.PROGRAM_ACTIVE_ACCESS_CHECKER,
+        UrlConnectionIsForCurrentUserAccessChecker(),
+    ]))
+
+class MarkConnectionAsSeenByUser(base.RequestHandler):
+  """Handler to mark connection as seen by user."""
+
+  access_checker = MARK_CONNECION_AS_SEEN_BY_USER_ACCESS_CHECKER
+
+  def __init__(self, initializer, linker, renderer, error_handler,
+      url_pattern_constructor, url_names):
+    """Initializes a new instance of the request handler for the specified
+    parameters.
+
+    Args:
+      initializer: Implementation of initialize.Initializer interface.
+      linker: Instance of links.Linker class.
+      renderer: Implementation of render.Renderer interface.
+      error_handler: Implementation of error.ErrorHandler interface.
+      url_pattern_constructor:
+        Implementation of url_patterns.UrlPatternConstructor.
+      url_names: Instance of url_names.UrlNames.
+    """
+    super(MarkConnectionAsSeenByUser, self).__init__(
+        initializer, linker, renderer, error_handler)
+    self.url_pattern_constructor = url_pattern_constructor
+    self.url_names = url_names
+
+  def djangoURLPatterns(self):
+    """See base.RequestHandler.djangoURLPatterns for specification."""
+    return [
+        self.url_pattern_constructor.construct(
+            r'connection/mark_as_seen/user/%s$' % url_patterns.USER_ID,
+            self, name=self.url_names.CONNECTION_MARK_AS_SEEN_BY_USER)
+    ]
+
+  def post(self, data, check, mutator):
+    """See base.RequestHandler.post for specification."""
+    markConnectionAsSeenByUser(data.url_connection.key)
+    return http.HttpResponse()
+
+
 def sendMentorWelcomeMail(data, profile, message):
   """Send out a welcome email to new mentors.
 

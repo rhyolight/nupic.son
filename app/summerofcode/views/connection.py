@@ -76,6 +76,12 @@ MARK_CONNECTION_AS_SEEN_BY_ORG = connection_view.MarkConnectionAsSeenByOrg(
     soc_urls.UrlNames)
 
 
+MARK_CONNECTION_AS_SEEN_BY_USER = connection_view.MarkConnectionAsSeenByUser(
+    gsoc_base._GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
+    error.SOC_ERROR_HANDLER, soc_url_patterns.SOC_URL_PATTERN_CONSTRUCTOR,
+    soc_urls.UrlNames)
+
+
 PICK_ORGANIZATION_TO_CONNECT = connection_view.PickOrganizationToConnectPage(
     gsoc_base._GSOC_INITIALIZER, links.SOC_LINKER, render.SOC_RENDERER,
     error.SOC_ERROR_HANDLER, soc_url_patterns.SOC_URL_PATTERN_CONSTRUCTOR,
