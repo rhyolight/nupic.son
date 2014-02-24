@@ -17,6 +17,8 @@
 import collections
 import datetime
 
+from django.utils import translation
+
 from google.appengine.api import datastore_errors
 from google.appengine.api import memcache
 from google.appengine.ext import db
@@ -36,6 +38,9 @@ from soc.tasks import mailer
 
 from summerofcode.views.helper import urls as soc_urls
 
+
+DEF_LINKER_URL_NAMES_REQUIRED = translation.ugettext(
+    'Linker and UrlNames instances are required for accepting organizations.')
 
 ORG_ID_IN_USE = 'Organization ID %s is already in use for this program.'
 
@@ -156,7 +161,7 @@ def setApplicationResponse(org_key, survey_key, properties):
 
 @ndb.transactional
 def setStatus(organization, program, site, program_messages,
-              new_status, org_admins=None):
+              new_status, linker=None, url_names=None, org_admins=None):
   """Sets status of the specified organization.
 
   This function may be called to accept the organization into the program
@@ -178,6 +183,10 @@ def setStatus(organization, program, site, program_messages,
           templates provided by the program admins.
     new_status: New status of the organization. Must be one of
       org_model.Status constants.
+    linker: Instance of links.Linker class (Optional: required only for
+      sending notifications).
+    url_names: Instance of url_names.UrlNames (Optional: required only for
+      sending notifications).
     org_admins: Optional list of organization administrators for the specified
       organization.
 
@@ -194,20 +203,16 @@ def setStatus(organization, program, site, program_messages,
       # recipients of organization acceptance or rejection email
       recipients = [org_admin.contact.email for org_admin in org_admins]
 
-      # TODO(daniel): this should be injected here!
-      if program.kind() == 'GSoCProgram':
-        url_names = soc_urls.UrlNames
-      elif program.kind() == 'GCIProgram':
-        url_names = ci_urls.UrlNames
-      else:
-        raise ValueError('Invalid program type %s' % program.kind())
-
       if new_status == org_model.Status.ACCEPTED:
+        if not (linker and url_names):
+          raise ValueError(DEF_LINKER_URL_NAMES_REQUIRED)
+
         notification_context = (
-            notifications.OrganizationAcceptedContextProvider()
+            notifications.OrganizationAcceptedContextProvider(linker,
+                                                              url_names)
                 .getContext(
                     recipients, organization, program, site,
-                    program_messages, url_names))
+                    program_messages))
 
         # organization administrators are also sent the welcome email
         for org_admin in org_admins:
@@ -219,7 +224,8 @@ def setStatus(organization, program, site, program_messages,
         notification_context = (
             notifications.OrganizationRejectedContextProvider()
                 .getContext(
-                    recipients, organization, program, site, program_messages))
+                    recipients, organization, program, site,
+                    program_messages))
 
       sub_txn = mailer.getSpawnMailTaskTxn(
           notification_context, parent=organization)

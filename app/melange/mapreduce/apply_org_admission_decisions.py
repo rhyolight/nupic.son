@@ -23,6 +23,9 @@ from mapreduce import context as mapreduce_context
 from melange.logic import organization as org_logic
 from melange.logic import profile as profile_logic
 from melange.models import organization as org_model
+from melange.request import links
+
+from codein.views.helper import urls as ci_urls
 
 from soc.logic import site as site_logic
 
@@ -31,6 +34,8 @@ from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gsoc.models.program import GSoCProgram
 from summerofcode.models.organization import SOCOrganization
 # pylint: enable=unused-import
+
+from summerofcode.views.helper import urls as soc_urls
 
 
 def process(org_key):
@@ -45,6 +50,13 @@ def process(org_key):
   """
   context = mapreduce_context.get()
   program_key = db.Key(context.mapreduce_spec.mapper.params['program_key'])
+
+  if program_key.kind() == 'GSoCProgram':
+    url_names = soc_urls.UrlNames
+  elif program_key.kind() == 'GCIProgram':
+    url_names = ci_urls.UrlNames
+  else:
+    raise ValueError('Invalid program type %s' % program.kind())
 
   program = db.get(program_key)
 
@@ -72,10 +84,12 @@ def process(org_key):
       if organization.status == org_model.Status.PRE_ACCEPTED:
         org_logic.setStatus(
             organization, program, site, program_messages,
-            org_model.Status.ACCEPTED, org_admins=org_admins)
+            org_model.Status.ACCEPTED, links.ABSOLUTE_LINKER, url_names,
+            org_admins=org_admins)
       elif organization.status == org_model.Status.PRE_REJECTED:
         org_logic.setStatus(
             organization, program, site, program_messages,
-            org_model.Status.REJECTED, org_admins=org_admins)
+            org_model.Status.REJECTED, links.ABSOLUTE_LINKER, url_names,
+            org_admins=org_admins)
 
   updateOrganizationStatus()
