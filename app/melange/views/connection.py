@@ -115,6 +115,7 @@ ORGANIZATION_ITEM_LABEL = translation.ugettext('Organization')
 USER_ITEM_LABEL = translation.ugettext('User')
 USER_ROLE_ITEM_LABEL = translation.ugettext('User Requests Role')
 ORG_ROLE_ITEM_LABEL = translation.ugettext('Role Granted by Organization')
+ACTUAL_ROLE_ITEM_LABEL = translation.ugettext('Actual Role')
 INITIALIZED_ON_LABEL = translation.ugettext('Initialized On')
 
 USER_ROLE_CHOICES = (
@@ -205,7 +206,7 @@ def _getValueForUserRoleItem(data):
 
 def _getValueForOrgRoleItem(data):
   """Returns value to be displayed for Organization Role item of connection
-  summary
+  summary.
 
   Args:
     data: request_data.RequestData for the current request.
@@ -219,6 +220,18 @@ def _getValueForOrgRoleItem(data):
     return translation.ugettext('Mentor')
   else:
     return translation.ugettext('Organization Administrator')
+
+
+def _getValueForActualRoleItem(data):
+  """Returns value to be displayed for Actual Role item of connection summary.
+
+  Args:
+    data: request_data.RequestData for the current request.
+
+  Returns:
+    A string containing a value for Organization Role item.
+  """
+  return connection_model.VERBOSE_ROLE_NAMES[data.url_connection.getRole()]
 
 
 def _formToStartConnectionAsOrg(**kwargs):
@@ -638,6 +651,7 @@ class ManageConnectionAsUser(base.RequestHandler):
         data.url_connection.organization.get().name)
     summary_items[USER_ROLE_ITEM_LABEL] = _getValueForUserRoleItem(data)
     summary_items[ORG_ROLE_ITEM_LABEL] = _getValueForOrgRoleItem(data)
+    summary_items[ACTUAL_ROLE_ITEM_LABEL] = _getValueForActualRoleItem(data)
     summary_items[INITIALIZED_ON_LABEL] = data.url_connection.created_on
 
     messages = connection_logic.getConnectionMessages(data.url_connection.key)
@@ -758,6 +772,7 @@ class ManageConnectionAsOrg(base.RequestHandler):
         data.url_connection.organization.get().name)
     summary_items[USER_ROLE_ITEM_LABEL] = _getValueForUserRoleItem(data)
     summary_items[ORG_ROLE_ITEM_LABEL] = _getValueForOrgRoleItem(data)
+    summary_items[ACTUAL_ROLE_ITEM_LABEL] = _getValueForActualRoleItem(data)
     summary_items[INITIALIZED_ON_LABEL] = data.url_connection.created_on
 
     messages = connection_logic.getConnectionMessages(data.url_connection.key)
