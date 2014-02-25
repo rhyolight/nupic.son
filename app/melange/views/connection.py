@@ -112,7 +112,8 @@ MESSAGE_CONNECTION_CANNOT_BE_ACCESSED = translation.ugettext(
     'Requested connection cannot by accessed by this user.')
 
 ORGANIZATION_ITEM_LABEL = translation.ugettext('Organization')
-USER_ITEM_LABEL = translation.ugettext('User')
+USER_ID_ITEM_LABEL = translation.ugettext('Username')
+PUBLIC_NAME_ITEM_LABEL = translation.ugettext('Public Name')
 USER_ROLE_ITEM_LABEL = translation.ugettext('User Requests Role')
 ORG_ROLE_ITEM_LABEL = translation.ugettext('Role Granted by Organization')
 ACTUAL_ROLE_ITEM_LABEL = translation.ugettext('Actual Role')
@@ -646,7 +647,7 @@ class ManageConnectionAsUser(base.RequestHandler):
     message_form = MessageForm(data=data.POST or None, name=MESSAGE_FORM_NAME)
 
     summary_items = collections.OrderedDict()
-    summary_items[USER_ITEM_LABEL] = data.url_ndb_profile.public_name
+    summary_items[USER_ID_ITEM_LABEL] = data.url_ndb_profile.profile_id
     summary_items[ORGANIZATION_ITEM_LABEL] = (
         data.url_connection.organization.get().name)
     summary_items[USER_ROLE_ITEM_LABEL] = _getValueForUserRoleItem(data)
@@ -767,7 +768,8 @@ class ManageConnectionAsOrg(base.RequestHandler):
     message_form = MessageForm(data=data.POST or None, name=MESSAGE_FORM_NAME)
 
     summary_items = collections.OrderedDict()
-    summary_items[USER_ITEM_LABEL] = data.url_ndb_profile.public_name
+    summary_items[USER_ID_ITEM_LABEL] = data.url_ndb_profile.profile_id
+    summary_items[PUBLIC_NAME_ITEM_LABEL] = data.url_ndb_profile.public_name
     summary_items[ORGANIZATION_ITEM_LABEL] = (
         data.url_connection.organization.get().name)
     summary_items[USER_ROLE_ITEM_LABEL] = _getValueForUserRoleItem(data)
