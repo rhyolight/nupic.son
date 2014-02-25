@@ -387,6 +387,14 @@ mapreduce:
     - name: entity_kind
       value: soc.modules.gci.models.bulk_create_data.GCIBulkCreateData
 
+- name: RejectOrgAdmins
+  mapper:
+    input_reader: mapreduce.input_readers.DatastoreKeyInputReader
+    handler: soc.mapreduce.reject_org_admins.processProfile
+    params:
+    - name: entity_kind
+      value: melange.models.profile.Profile
+
 - name: ModelCounter
   mapper:
     input_reader: mapreduce.input_readers.DatastoreKeyInputReader
