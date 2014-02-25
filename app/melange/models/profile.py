@@ -226,6 +226,15 @@ class Profile(ndb.Model):
   #: a student role for the program
   is_student = ndb.ComputedProperty(lambda self: bool(self.student_data))
 
+  #: Field storing keys of rejected organizations on behalf of which
+  #: the registered profile applied to the program. It indicates that the
+  #: user administers such an organization, but it has not been accepted
+  #: into the program.
+  #: This field is used to distinguish between organization administrators
+  #: for accepted organizations and users whose organizations unsuccessfully
+  #: applied. The second groups may still have some privileges.
+  rejected_for = ndb.KeyProperty(repeated=True)
+
   #: Field storing keys of organizations for which the registered profile
   #: has a mentor role.
   #: This information is also stored in a connection entity between the
