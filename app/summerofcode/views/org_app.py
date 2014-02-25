@@ -1180,7 +1180,7 @@ def createOrganizationTxn(
         data, admin_key, data.program, result.extra,
         conversation_updater.CONVERSATION_UPDATER,
         org_role=connection_model.ORG_ADMIN_ROLE,
-        user_role=connection_model.ROLE)
+        user_role=connection_model.ROLE, seen_by_org=True, seen_by_user=True)
 
   return result
 
