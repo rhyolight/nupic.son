@@ -473,7 +473,7 @@ class StartConnectionAsOrg(base.RequestHandler):
             notification_context_provider=notification_context_provider,
             recipients=[profile.contact.email],
             org_role=form.cleaned_data['role'],
-            org_admin=data.ndb_profile))
+            org_admin=data.ndb_profile, seen_by_org=True))
 
       url = self.linker.profile(
           data.ndb_profile, self.url_names.CONNECTION_LIST_FOR_ORG_ADMIN)
@@ -571,7 +571,7 @@ class StartConnectionAsUser(base.RequestHandler):
           data, data.ndb_profile.key, data.program, data.url_ndb_org,
           None, message=form.cleaned_data['message'],
           notification_context_provider=context_provider,
-          recipients=emails, user_role=connection_model.ROLE)
+          recipients=emails, user_role=connection_model.ROLE, seen_by_user=True)
 
       url = links.LINKER.userId(
           data.ndb_profile.key, connection.key.id(),
@@ -1366,7 +1366,8 @@ def createConnectionTxn(
     conversation_updater, message=None, notification_context_provider=None,
     recipients=None, org_role=connection_model.NO_ROLE,
     user_role=connection_model.NO_ROLE, org_admin=None,
-    send_org_admin_welcome_email=None, program_messages=None):
+    send_org_admin_welcome_email=None, program_messages=None,
+    seen_by_org=None, seen_by_user=None):
   """Creates a new Connection entity, attach any messages provided by the
   initiator and send a notification email to the recipient(s).
 
@@ -1393,6 +1394,11 @@ def createConnectionTxn(
     program_messages: program_model.ProgramMessages entity for the
       specified program. It needs to be passed only if the welcome email
       is requested.
+    seen_by_org: A bool telling whether the connection should be marked
+      as seen by the organization.
+    seen_by_user: A bool telling whether the connection should be marked
+      as seen by the user.
+
 
   Returns:
     The newly created Connection entity.
@@ -1406,7 +1412,8 @@ def createConnectionTxn(
   else:
     # create the new connection.
     connection = connection_logic.createConnection(
-        profile, organization.key, user_role, org_role)
+        profile, organization.key, user_role, org_role,
+        seen_by_org=seen_by_org, seen_by_user=seen_by_user)
 
     # handle possible role assignment
     if connection.getRole() == connection_model.MENTOR_ROLE:

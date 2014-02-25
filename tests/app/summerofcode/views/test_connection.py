@@ -247,6 +247,11 @@ class StartConnectionAsOrgTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(connection.org_role, connection_model.MENTOR_ROLE)
     self.assertEqual(connection.user_role, connection_model.NO_ROLE)
 
+    # connection has been seen by the organization, since it creates it
+    # and has not been seen by the user yet
+    self.assertTrue(connection.seen_by_org)
+    self.assertFalse(connection.seen_by_user)
+
     # check that auto-generated message is created
     message = connection_model.ConnectionMessage.query(
         ancestor=connection.key).get()
@@ -361,6 +366,11 @@ class StartConnectionAsUserTest(test_utils.GSoCDjangoTestCase):
     self.assertIsNotNone(connection)
     self.assertEqual(connection.org_role, connection_model.NO_ROLE)
     self.assertEqual(connection.user_role, connection_model.ROLE)
+
+    # connection has not been seen by the organization yet
+    # and has been seen by the user since he or she created it
+    self.assertFalse(connection.seen_by_org)
+    self.assertTrue(connection.seen_by_user)
 
     # check that auto-generated message is created
     message = connection_model.ConnectionMessage.query(
