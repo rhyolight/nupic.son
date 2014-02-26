@@ -245,7 +245,6 @@ class UpdateProposal(base.GSoCRequestHandler):
       proposal_form.instance = proposal
       proposal = proposal_form.save(commit=True)
 
-      print to_emails
       context = notifications.updatedProposalContext(data, proposal, to_emails)
       sub_txn = mailer.getSpawnMailTaskTxn(context, parent=proposal)
       sub_txn()
