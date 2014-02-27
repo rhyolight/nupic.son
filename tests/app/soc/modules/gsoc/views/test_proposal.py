@@ -213,7 +213,6 @@ class ProposalTest(GSoCDjangoTestCase):
     # to created_on
     self.assertNotEqual(proposal.created_on, proposal.last_modified_on)
 
-    print mentor.contact.email
     self.assertEmailSent(to=mentor.contact.email)
 
   def testUpdateProposalAfterDeadline(self):
