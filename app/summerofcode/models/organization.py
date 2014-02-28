@@ -30,6 +30,9 @@ class SOCOrganization(org_model.Organization):
   ideas_page = ndb.StringProperty(
       indexed=False, validator=db.link_validator)
 
+  #: Proposal template that would have been desired by the organization.
+  contrib_template = ndb.TextProperty()
+
   #: Number of slots that have been allocated to this organization by
   #: program administrators.
   slot_allocation = ndb.IntegerProperty(default=0)

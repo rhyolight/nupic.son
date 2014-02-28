@@ -81,7 +81,7 @@ class ProposalPage(base.GSoCRequestHandler):
     else:
       # TODO(daniel): add contribution template to organization model
       #initial = {'content': data.organization.contrib_template}
-      initial = {}
+      initial = {'content':data.url_ndb_org.contrib_template}
       proposal_form = ProposalForm(initial=initial)
 
     return {

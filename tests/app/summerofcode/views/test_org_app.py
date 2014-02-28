@@ -651,6 +651,7 @@ class ApplyOrgAdmissionDecisionHandlerTest(test_utils.GSoCDjangoTestCase):
 TEST_MAX_SCORE = 7
 TEST_SLOT_REQUEST_MIN = 3
 TEST_SLOT_REQUEST_MAX = 10
+TEST_CONTRIB_TEMPLATE = u'Test Application Template'
 
 class OrgPreferencesEditPageTest(test_utils.GSoCDjangoTestCase):
   """Unit tests for OrgPreferencesEditPage class."""
@@ -682,7 +683,8 @@ class OrgPreferencesEditPageTest(test_utils.GSoCDjangoTestCase):
     postdata = {
         'slot_request_min': unicode(TEST_SLOT_REQUEST_MIN),
         'slot_request_max': unicode(TEST_SLOT_REQUEST_MAX),
-        'max_score': unicode(TEST_MAX_SCORE)
+        'max_score': unicode(TEST_MAX_SCORE),
+        'contrib_template': TEST_CONTRIB_TEMPLATE 
         }
     response = self.post(_getOrgPreferencesEditUrl(self.org), postdata=postdata)
     self.assertResponseRedirect(
@@ -692,6 +694,7 @@ class OrgPreferencesEditPageTest(test_utils.GSoCDjangoTestCase):
     self.assertEqual(org.max_score, TEST_MAX_SCORE)
     self.assertEqual(org.slot_request_min, TEST_SLOT_REQUEST_MIN)
     self.assertEqual(org.slot_request_max, TEST_SLOT_REQUEST_MAX)
+    self.assertEqual(org.contrib_template, TEST_CONTRIB_TEMPLATE)
 
   def testOrgsTabs(self):
     """Tests that correct organization related tabs are present in context."""

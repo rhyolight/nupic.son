@@ -141,6 +141,11 @@ MAX_SCORE_HELP_TEXT = translation.ugettext(
     'on the existing scores. In particular, scores, which have been higher '
     'than the updated maximum value, are still considered valid.')
 
+CONTRIB_TEMPLATE_HELP_TEXT = translation.ugettext(
+    'This template can be used by contributors, such as students '
+    'and other non-member participants, when they apply to contribute '
+    'to the organization.')
+
 ORG_ID_LABEL = translation.ugettext('Organization ID')
 
 ORG_NAME_LABEL = translation.ugettext('Organization name')
@@ -180,6 +185,8 @@ SLOTS_REQUEST_MIN_LABEL = translation.ugettext('Min slots requested')
 SLOTS_REQUEST_MAX_LABEL = translation.ugettext('Max slots requested')
 
 MAX_SCORE_LABEL = translation.ugettext('Max score')
+
+CONTRIB_TEMPLATE_LABEL = translation.ugettext('Application template')
 
 # TODO(daniel): list of countries should be program-specific
 ELIGIBLE_COUNTRY_LABEL = translation.ugettext(
@@ -227,7 +234,7 @@ _CONTACT_PROPERTIES_FORM_KEYS = [
     'mailing_list', 'twitter', 'web_page']
 
 _ORG_PREFERENCES_PROPERTIES_FORM_KEYS = [
-    'max_score', 'slot_request_max', 'slot_request_min']
+    'max_score', 'slot_request_max', 'slot_request_min', 'contrib_template']
 
 _ORG_PROFILE_PROPERTIES_FORM_KEYS = [
     'description', 'ideas_page', 'logo_url', 'name', 'org_id', 'tags',
@@ -488,6 +495,10 @@ class _OrgPreferencesForm(gsoc_forms.GSoCModelForm):
       label=MAX_SCORE_LABEL, help_text=MAX_SCORE_HELP_TEXT,
       min_value=MAX_SCORE_MIN_VALUE, max_value=MAX_SCORE_MAX_VALUE)
 
+  contrib_template = django_forms.CharField(
+      widget=django_forms.Textarea, label=CONTRIB_TEMPLATE_LABEL,
+      help_text=CONTRIB_TEMPLATE_HELP_TEXT, required=False)
+
   Meta = object
 
   def getOrgProperties(self):
@@ -660,7 +671,7 @@ class OrgPreferencesEditPage(base.GSoCRequestHandler):
 
   def templatePath(self):
     """See base.RequestHandler.templatePath for specification."""
-    return 'modules/gsoc/form_base.html'
+    return 'modules/gsoc/org_profile/base.html'
 
   def djangoURLPatterns(self):
     """See base.RequestHandler.djangoURLPatterns for specification."""
