@@ -1323,19 +1323,20 @@ class ParticipantsComponent(Component):
     self.data = data
     list_config = lists.ListConfiguration()
     list_config.addPlainTextColumn(
-        'name', 'Name', lambda ent, *args: ent.name())
-    list_config.addSimpleColumn('email', "Email")
-
-    get = lambda i, orgs: orgs[i].name
+        'public_name', 'Public Name', lambda entity, *args: entity.public_name)
+    list_config.addPlainTextColumn(
+        'email', 'Email', lambda entity, *args: entity.contact.email)
 
     list_config.addPlainTextColumn(
         'mentor_for', 'Mentor for',
-        lambda ent, orgs, *args: ', '.join(
-            [get(i, orgs) for i in ent.mentor_for if data.orgAdminFor(i)]))
+        lambda entity, *args: ', '.join(
+            [org_key.get().name for org_key in entity.mentor_for
+            if org_key in data.ndb_profile.admin_for]))
     list_config.addPlainTextColumn(
-        'admin_for', 'Organization admin for',
-        lambda ent, orgs, *args: ', '.join(
-            [get(i, orgs) for i in ent.org_admin_for if data.orgAdminFor(i)]))
+        'admin_for', 'Organization Admin for',
+        lambda entity, *args: ', '.join(
+            [org_key.get().name for org_key in entity.admin_for
+            if org_key in data.ndb_profile.admin_for]))
 
     self._list_config = list_config
 
@@ -1351,9 +1352,11 @@ class ParticipantsComponent(Component):
     if idx != 9:
       return None
 
-    query = self.data.ndb_profile_model.query(
+    query = self.data.models.ndb_profile_model.query(
         profile_model.Profile.mentor_for.IN(self.data.ndb_profile.admin_for))
-    prefetcher = ParticipantsComponent.AdministeredOrgsPrefetcher(self.data)
+    prefetcher = None
+    # TODO(daniel): re-enable prefetching
+    # prefetcher = ParticipantsComponent.AdministeredOrgsPrefetcher(self.data)
 
     starter = lists.keyStarter
 
