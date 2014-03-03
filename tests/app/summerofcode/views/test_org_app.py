@@ -231,6 +231,8 @@ class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
     self.assertIsNotNone(connection)
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertTrue(connection.seen_by_org)
+    self.assertTrue(connection.seen_by_user)
 
     # check that a connection with backup admin has been started
     backup_admin = backup_admin.key.get()
@@ -241,6 +243,8 @@ class OrgProfileCreatePageTest(test_utils.GSoCDjangoTestCase):
     self.assertIsNotNone(connection)
     self.assertEqual(connection.org_role, connection_model.ORG_ADMIN_ROLE)
     self.assertEqual(connection.user_role, connection_model.ROLE)
+    self.assertTrue(connection.seen_by_org)
+    self.assertTrue(connection.seen_by_user)
 
   def testInvalidData(self):
     """Tests that organization is not created if data is not valid."""

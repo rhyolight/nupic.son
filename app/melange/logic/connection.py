@@ -177,7 +177,7 @@ def canCreateConnection(profile, org_key):
     return rich_bool.TRUE
 
 
-def createConnection(profile, org_key, user_role, org_role):
+def createConnection(profile, org_key, user_role, org_role, **kwargs):
   """Creates a new connection for the specified profile, organization
   and designated roles.
 
@@ -186,6 +186,7 @@ def createConnection(profile, org_key, user_role, org_role):
     org_key: Organization key with which to establish the connection.
     user_role: The user's role for the connection.
     org_role: The org's role for the connection.
+    kwargs: Other properties for the connection along with initial values.
 
   Returns:
       The newly created Connection instance.
@@ -198,7 +199,7 @@ def createConnection(profile, org_key, user_role, org_role):
 
   connection = connection_model.Connection(
       parent=profile.key, organization=org_key,
-      user_role=user_role, org_role=org_role)
+      user_role=user_role, org_role=org_role, **kwargs)
   connection.put()
 
   return connection
@@ -389,7 +390,7 @@ def generateMessageOnUpdateByUser(connection, old_user_role):
     lines = []
     if connection.user_role == connection_model.NO_ROLE:
       lines.append(_USER_DOES_NOT_REQUEST_ROLE)
-    else: # user requests role
+    else:  # user requests role
       lines.append(_USER_REQUESTS_ROLE)
 
     content = '\n'.join(lines)
