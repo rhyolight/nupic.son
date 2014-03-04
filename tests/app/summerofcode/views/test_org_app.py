@@ -684,7 +684,7 @@ class OrgPreferencesEditPageTest(test_utils.GSoCDjangoTestCase):
         'slot_request_min': unicode(TEST_SLOT_REQUEST_MIN),
         'slot_request_max': unicode(TEST_SLOT_REQUEST_MAX),
         'max_score': unicode(TEST_MAX_SCORE),
-        'contrib_template': TEST_CONTRIB_TEMPLATE 
+        'contrib_template': TEST_CONTRIB_TEMPLATE
         }
     response = self.post(_getOrgPreferencesEditUrl(self.org), postdata=postdata)
     self.assertResponseRedirect(
