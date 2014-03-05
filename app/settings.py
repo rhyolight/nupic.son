@@ -24,7 +24,7 @@ DEBUG = os.environ['SERVER_SOFTWARE'].startswith('Dev')
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    # ('Your Name', 'your_email@domain.com'),
+    ('Matthew Taylor', 'matt@numenta.org'),
 )
 
 MANAGERS = ADMINS
