@@ -26,7 +26,7 @@ from google.appengine.ext import ndb
 
 from django import http
 
-# from melange.models import education
+from melange.models import education
 from melange.models import address
 from melange.models import contact
 from melange.models import profile as profile_model
@@ -48,7 +48,7 @@ from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.score import GCIScore
 from soc.modules.gci.models.timeline import GCITimeline
 from soc.modules.gci.models.profile import GCIStudentInfo
-# from soc.modules.gci.models.task import DifficultyLevel
+from soc.modules.gci.models.task import DifficultyLevel
 from soc.modules.gci.models.task import GCITask
 
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
@@ -68,6 +68,7 @@ def seed(request, *args, **kwargs):
   site_properties = {
       'key_name': 'site',
       'latest_gsoc': 'numenta/son2014',
+      # 'latest_gci': 'numenta/gci2013',
       }
   site = Site(**site_properties)
   site.put()
@@ -109,20 +110,31 @@ def seed(request, *args, **kwargs):
   past_before = before - datetime.timedelta(2 * 365)
   past_after = after - datetime.timedelta(2 * 365)
 
+  first_day = datetime.datetime(2014, 5, 1)
+  last_day = datetime.datetime(2014, 9, 1)
+  signup_deadline = first_day + datetime.timedelta(30)
+  signup_start = first_day
+  students_announced = signup_deadline + datetime.timedelta(15)
+
   timeline_properties = {
       'key_name': 'numenta/son2014',
       'link_id': 'son2014',
       'scope': numenta,
-      'program_start': before,
-      'program_end': after,
-      'accepted_organization_announced_deadline': before,
-      'accepted_students_announced_deadline' : after,
-      'student_signup_start': before,
-      'student_signup_end': after,
-      'application_review_deadline': after,
-      'student_application_matched_deadline': after,
-      'accepted_students_announced_deadline': after,
-      'form_submission_start': before,
+      'program_start': datetime.datetime(2014, 3, 5),
+
+      'accepted_organization_announced_deadline': datetime.datetime(2014, 3, 1),
+      'form_submission_start': datetime.datetime(2014, 3, 10),
+      'student_signup_start': datetime.datetime(2014, 3, 5),
+      'student_signup_end': datetime.datetime(2014, 4, 1),
+      'application_review_deadline': datetime.datetime(2014, 4, 10),
+      'student_application_matched_deadline': datetime.datetime(2014, 4, 12),
+      'accepted_students_announced_deadline' : datetime.datetime(2014, 4, 15),
+      'bonding_start': datetime.datetime(2014, 4, 15),
+      'bonding_end': datetime.datetime(2014, 5, 1),
+      'coding_start': datetime.datetime(2014, 5, 1),
+      'coding_end': datetime.datetime(2014, 8, 1),
+
+      'program_end': datetime.datetime(2014, 9, 1),
   }
   son2014_timeline = GSoCTimeline(**timeline_properties)
   son2014_timeline.put()
@@ -133,7 +145,7 @@ def seed(request, *args, **kwargs):
       'program_id': 'son2014',
       'sponsor': numenta,
       'scope': numenta,
-      'name': 'Season of NuPIC 2014',
+      'name': 'Numenta Season of NuPIC 2014',
       'short_name': 'SoN 2014',
       'description': 'This is the program for SoN 2014.',
       'apps_tasks_limit': 42,
@@ -143,6 +155,35 @@ def seed(request, *args, **kwargs):
       }
   son2014 = GSoCProgram(**program_properties)
   son2014.put()
+
+  # timeline_properties.update({
+  #     'key_name': 'numenta/gsoc2010',
+  #     'link_id': 'gsoc2010',
+  #     'program_start': past_before,
+  #     'program_end': past_after,
+  #     'accepted_organization_announced_deadline': past_before,
+  #     'accepted_students_announced_deadline' : past_after,
+  #     'student_signup_start': past_before,
+  #     'student_signup_end': past_after,
+  #     'application_review_deadline': past_after,
+  #     'student_application_matched_deadline': past_after,
+  #     'accepted_students_announced_deadline': past_after,
+  #     'form_submission_start': past_before,
+  # })
+  # gsoc2010_timeline = GSoCTimeline(**timeline_properties)
+  # gsoc2010_timeline.put()
+
+  # program_properties.update({
+  #     'key_name': 'numenta/gsoc2010',
+  #     'link_id': 'gsoc2010',
+  #     'program_id': 'gsoc2010',
+  #     'name': 'Numenta Season of NuPIC 2010',
+  #     'description': 'This is the program for GSoC 2010.',
+  #     'short_name': 'GSoC 2010',
+  #     'timeline': gsoc2010_timeline,
+  # })
+  # gsoc2010 = GSoCProgram(**program_properties)
+  # gsoc2010.put()
 
   # TODO(drew): Replace son2014.prefix with whatever its replacement becomes
   # once prefix is removed from program and no longer used in the query for
@@ -161,14 +202,47 @@ def seed(request, *args, **kwargs):
   org_app_survey_properties['key_name'] = ('%s/%s/orgapp' % (
       son2014.prefix, son2014.key().name()))
   org_app_survey_properties['program'] = son2014
-  org_app_survey_properties['survey_start'] = past_before
-  org_app_survey_properties['survey_end'] = past_after
+  org_app_survey_properties['survey_start'] = first_day
+  org_app_survey_properties['survey_end'] = last_day
   org_app_survey_model.OrgAppSurvey(**org_app_survey_properties).put()
 
+  # timeline_properties = {
+  #       'key_name': 'numenta/gci2013',
+  #       'link_id': 'gci2013',
+  #       'scope': numenta,
+  #       'program_start': before,
+  #       'program_end': after,
+  #       'accepted_organization_announced_deadline': before,
+  #       'student_signup_start': before,
+  #       'student_signup_end': after,
+  #       'tasks_publicly_visible': before,
+  #       'task_claim_deadline': after,
+  #       'stop_all_work_deadline': after,
+  # }
+  # gci2013_timeline = GCITimeline(**timeline_properties)
+  # gci2013_timeline.put()
+
+  # program_properties.update({
+  #     'key_name': 'numenta/gci2013',
+  #     'link_id': 'gci2013',
+  #     'program_id': 'gci2013',
+  #     'name': 'Numenta Code In Contest 2013',
+  #     'short_name': 'GCI 2009',
+  #     'description': 'This is the program for GCI 2013.',
+  #     'timeline': gci2013_timeline,
+  #     })
+  # gci2013 = GCIProgram(**program_properties)
+  # gci2013.put()
+
+  # site.active_program = gci2013
   site.active_program = son2014
   site.put()
 
-  current_user.host_for = [ndb.Key.from_old_key(son2014.key())]
+  current_user.host_for = [
+      # ndb.Key.from_old_key(gsoc2010.key()),
+      ndb.Key.from_old_key(son2014.key()),
+      # ndb.Key.from_old_key(gci2013.key())
+  ]
   current_user.put()
 
   # group_properties.update({
@@ -214,76 +288,57 @@ def seed(request, *args, **kwargs):
       'contact' : contact_info,
       'residential_address' : address_properties,
       'shipping_address' : address_properties,
-      'birth_date' : datetime.date.today() - gsoc_delta,
+      'birth_date' : datetime.datetime(1978, 7, 11),
       'program_knowledge' : 'Creator',
       }
   profile = profile_model.Profile(**profile_properties)
 
-  # group_properties.update({
-  #     'key_name': 'numenta/son2014/',
-  #     'link_id': 'org_%d' % i,
-  #     'name': 'Organization %d' % i,
-  #     'short_name': 'Org %d' % i,
-  #     'description': 'Organization %d!' % i,
-  #     })
+  # ndb_orgs = []
+  # for i in range(2):
+  group_properties.update({
+      'key_name': 'numenta/son2014/numenta_org',
+      'link_id': 'numenta_org',
+      'name': 'Numenta Inc.',
+      'short_name': 'Numenta',
+      'description': 'This is the organization for Numenta, Inc.',
+      })
 
   org_properties = {
-      'name': 'NuPIC',
-      'org_id': 'nupic',
+      'name': 'Numenta Inc.',
+      'org_id': 'numenta_org',
       'program': ndb.Key.from_old_key(son2014.key()),
-      'description': 'The NuPIC organization.',
+      'description': 'This is the organization for Numenta, Inc.',
       }
   org = soc_org_model.SOCOrganization(
-      id='numenta/son2014/nupic', **org_properties)
+      id='numenta/son2014/numenta_org', **org_properties)
   org.put()
 
   profile.admin_for.append(org.key)
   profile.mentor_for.append(org.key)
   profile.put()
 
-  # ndb_orgs = []
-  # for i in range(15):
-  #   group_properties.update({
-  #       'key_name': 'numenta/son2014/org_%d' % i,
-  #       'link_id': 'org_%d' % i,
-  #       'name': 'Organization %d' % i,
-  #       'short_name': 'Org %d' % i,
-  #       'description': 'Organization %d!' % i,
-  #       })
-
-  #   org_properties = {
-  #       'name': 'Organization %d' % i,
-  #       'org_id': 'org_%d' % i,
-  #       'program': ndb.Key.from_old_key(son2014.key()),
-  #       'description': 'Organization %d!' % i,
-  #       }
-  #   org = soc_org_model.SOCOrganization(
-  #       id='numenta/son2014/org_%d' % i, **org_properties)
-  #   org.put()
-  #   ndb_orgs.append(org)
-
-  #   # Admin (and thus mentor) for the first org
-  #   if i == 0:
-  #     profile.admin_for.append(org.key)
-  #     profile.mentor_for.append(org.key)
-  #     profile.put()
-
-  #   # Mentor for the second org
-  #   if i == 1:
-  #     profile.mentor_for.append(org.key)
-  #     profile.put()
+  # profile_properties.update({
+  #     'id': son2014.key().name() + '/' + current_user.key.id(),
+  #     'parent': current_user.key,
+  #     'program': ndb.Key.from_old_key(son2014.key()),
+  #     'admin_for': [ndb.Key.from_old_key(son2014.key())],
+  #     'mentor_for': [ndb.Key.from_old_key(son2014.key())],
+  #     })
+  # numenta_admin = profile_model.Profile(**profile_properties)
+  # # TODO: add GCI orgs
+  # numenta_admin.put()
 
   # task_properties = {
   #     'status': 'Open',
-  #     'modified_by': melange_admin.key.to_old_key(),
-  #     'subscribers': [melange_admin.key.to_old_key()],
-  #     'title': 'Awesomeness',
-  #     'created_by': melange_admin.key.to_old_key(),
+  #     'modified_by': numenta_admin.key.to_old_key(),
+  #     'subscribers': [numenta_admin.key.to_old_key()],
+  #     'title': 'Awesomeness (test task)',
+  #     'created_by': numenta_admin.key.to_old_key(),
   #     'created_on': now,
-  #     'program': gci2013,
+  #     'program': son2014,
   #     'time_to_complete': 1337,
   #     'modified_on': now,
-  #     'org': melange.key(),
+  #     'org': org.key,
   #     'description': '<p>AWESOME</p>',
   #     'difficulty_level': DifficultyLevel.MEDIUM,
   #     'types': ['Code']
@@ -291,125 +346,125 @@ def seed(request, *args, **kwargs):
   # gci_task = GCITask(**task_properties)
   # gci_task.put()
 
-  # user_properties = {
-  #     'id': 'student',
-  #     'account_id': '12345',
-  #     'account': users.User(email='student@example.com'),
-  #     }
-  # student_user = user.User(**user_properties)
-  # student_user.put()
+  user_properties = {
+      'id': 'student',
+      'account_id': '12345',
+      'account': users.User(email='student@example.com'),
+      }
+  student_user = user.User(**user_properties)
+  student_user.put()
 
-  # gci_delta = datetime.timedelta(days=(365 * 14))
+  gci_delta = datetime.timedelta(days=(365 * 14))
 
-  # contact_properties = contact.Contact(
-  #     email='student@email.com',
-  #     web_page='http://www.homepage.com/',
-  #     blog='http://www.blog.com/',
-  #     phone='1650253000')
-  # contact_properties.put()
+  contact_properties = contact.Contact(
+      email='student@email.com',
+      web_page='http://www.homepage.com/',
+      blog='http://www.blog.com/',
+      phone='1650253000')
+  contact_properties.put()
 
-  # graduation_year = datetime.date.today() + datetime.timedelta(days=365)
+  graduation_year = datetime.date.today() + datetime.timedelta(days=365)
 
-  # student_data = soc_profile.SOCStudentData(
-  #     education=education.Education(
-  #         school_id="123",
-  #         school_country="United States",
-  #         expected_graduation=int(graduation_year.strftime('%Y')),
-  #         major='Some Major',
-  #         degree=education.Degree.UNDERGRADUATE)
-  #     )
-  # student_data.put()
+  student_data = soc_profile.SOCStudentData(
+      education=education.Education(
+          school_id="123",
+          school_country="United States",
+          expected_graduation=int(graduation_year.strftime('%Y')),
+          major='Some Major',
+          degree=education.Degree.UNDERGRADUATE)
+      )
+  student_data.put()
+
+  student_id = 'student'
+  student_properties = {
+      'id': son2014.key().name() + "/" + student_id,
+      'parent': student_user.key,
+      'program': ndb.Key.from_old_key(son2014.key()),
+      'public_name': 'Student',
+      'first_name': 'Student',
+      'last_name': 'Student',
+      'contact' : contact_properties,
+      'residential_address' : address_properties,
+      'shipping_address' : address_properties,
+      'birth_date': datetime.date.today() - gci_delta,
+      'tee_size': profile_model.TeeSize.L,
+      'tee_style': profile_model.TeeStyle.MALE,
+      'gender' : profile_model.Gender.MALE,
+      'program_knowledge': 'Friend referral.',
+      'student_data' : student_data,
+      }
+  nupic_student = profile_model.Profile(**student_properties)
+  nupic_student.put()
+
+  student_id = 'student2'
+  user_properties = {
+      'id': student_id,
+      'account_id': 'student2',
+      'account': users.User(email='student2@example.com'),
+      }
+  student_user2 = user.User(**user_properties)
+  student_user2.put()
+
+  student_properties.update({
+      'id': son2014.key().name() + "/" + student_id,
+      'parent': student_user2.key,
+      'first_name' : 'Student 2',
+      'last_name' : 'Example'
+  })
+  nupic_student2 = profile_model.Profile(**student_properties)
+  nupic_student2.put()
+
+  proposal_properties = {
+      'parent': nupic_student.key.to_old_key(),
+      'program': son2014,
+      'title': 'test proposal',
+      'abstract': 'test abstract',
+      'content': 'test content',
+      'mentor': profile.key.to_old_key(),
+      'status': 'accepted',
+      'has_mentor': True,
+      'org': org.key.to_old_key(),
+      'possible_mentors': [profile.key.to_old_key()]
+      }
+  nupic_proposal = GSoCProposal(**proposal_properties)
+  nupic_proposal.put()
+
+  project_properties = {
+      'title': 'NuPIC test project 1',
+      'abstract': 'test abstract',
+      'status': 'accepted',
+      'parent': nupic_student.key.to_old_key(),
+      'mentors': [profile.key.to_old_key()],
+      'program':  son2014,
+      'org': org.key.to_old_key(),
+      'proposal' : nupic_proposal.key(),
+       }
+  nupic_project = GSoCProject(**project_properties)
+  nupic_project.put()
+  org.slot_allocation = 1
+  org.put()
+
+  student_data.number_of_projects = 1
+  student_data.number_of_proposals = 1
+  student_data.project_for_orgs = [org.key]
+
+  nupic_student.put()
+  nupic_student2.put()
+
+  project_properties.update({
+      'student': nupic_student2,
+      'title': 'NuPIC test project 2'
+      })
+  nupic_project2 = GSoCProject(**project_properties)
+  nupic_project2.put()
+  org.slot_allocation += 1
+  org.put()
 
   # student_id = 'student'
-  # student_properties = {
-  #     'id': son2014.key().name() + "/" + student_id,
+  # student_properties.update({
+  #     'id': son2014.key().name() + '/' + student_id,
   #     'parent': student_user.key,
   #     'program': ndb.Key.from_old_key(son2014.key()),
-  #     'public_name': 'Student',
-  #     'first_name': 'Student',
-  #     'last_name': 'Student',
-  #     'contact' : contact_properties,
-  #     'residential_address' : address_properties,
-  #     'shipping_address' : address_properties,
-  #     'birth_date': datetime.date.today() - gci_delta,
-  #     'tee_size': profile_model.TeeSize.L,
-  #     'tee_style': profile_model.TeeStyle.MALE,
-  #     'gender' : profile_model.Gender.MALE,
-  #     'program_knowledge': 'Friend referral.',
-  #     'student_data' : student_data,
-  #     }
-  # melange_student = profile_model.Profile(**student_properties)
-  # melange_student.put()
-
-  # student_id = 'student2'
-  # user_properties = {
-  #     'id': student_id,
-  #     'account_id': 'student2',
-  #     'account': users.User(email='student2@example.com'),
-  #     }
-  # student_user2 = user.User(**user_properties)
-  # student_user2.put()
-
-  # student_properties.update({
-  #     'id': son2014.key().name() + "/" + student_id,
-  #     'parent': student_user2.key,
-  #     'first_name' : 'Student 2',
-  #     'last_name' : 'Example'
-  # })
-  # melange_student2 = profile_model.Profile(**student_properties)
-  # melange_student2.put()
-
-  # proposal_properties = {
-  #     'parent': melange_student.key.to_old_key(),
-  #     'program': son2014,
-  #     'title': 'test proposal',
-  #     'abstract': 'test abstract',
-  #     'content': 'test content',
-  #     'mentor': profile.key.to_old_key(),
-  #     'status': 'accepted',
-  #     'has_mentor': True,
-  #     'org': ndb_orgs[0].key.to_old_key(),
-  #     'possible_mentors': [profile.key.to_old_key()]
-  #     }
-  # melange_proposal = GSoCProposal(**proposal_properties)
-  # melange_proposal.put()
-
-  # project_properties = {
-  #     'title': 'test project',
-  #     'abstract': 'test abstract',
-  #     'status': 'accepted',
-  #     'parent': melange_student.key.to_old_key(),
-  #     'mentors': [profile.key.to_old_key()],
-  #     'program':  son2014,
-  #     'org': ndb_orgs[0].key.to_old_key(),
-  #     'proposal' : melange_proposal.key(),
-  #      }
-  # melange_project = GSoCProject(**project_properties)
-  # melange_project.put()
-  # ndb_orgs[1].slot_allocation = 1
-  # ndb_orgs[1].put()
-
-  # student_data.number_of_projects = 1
-  # student_data.number_of_proposals = 1
-  # student_data.project_for_orgs = [ndb_orgs[1].key]
-
-  # melange_student.put()
-  # melange_student2.put()
-
-  # project_properties.update({
-  #     'student': melange_student2,
-  #     'title': 'test project2'
-  #     })
-  # melange_project2 = GSoCProject(**project_properties)
-  # melange_project2.put()
-  # ndb_orgs[1].slot_allocation += 1
-  # ndb_orgs[1].put()
-
-  # student_id = 'student'
-  # student_properties.update({
-  #     'id': gci2013.key().name() + '/' + student_id,
-  #     'parent': student_user.key,
-  #     'program': ndb.Key.from_old_key(gci2013.key()),
   # })
   # gci_student = profile_model.Profile(**student_properties)
   # gci_student.put()
