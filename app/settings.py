@@ -39,9 +39,7 @@ DATABASES = {
 }
 
 ALLOWED_HOSTS = (
-    '.google-melange.com',
-    '.google-melange.appspot.com',
-    '.melange-dev-hrd.appspot.com',
+    '.seasonofnupic.appspot.com',
 )
 
 # Local time zone for this installation. Choices can be found here:
