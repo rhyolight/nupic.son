@@ -48,7 +48,6 @@ from soc.modules.gci.models.program import GCIProgram
 from soc.modules.gci.models.score import GCIScore
 from soc.modules.gci.models.timeline import GCITimeline
 from soc.modules.gci.models.profile import GCIStudentInfo
-from soc.modules.gci.models.task import DifficultyLevel
 from soc.modules.gci.models.task import GCITask
 
 from soc.modules.gsoc.models.profile import GSoCStudentInfo
@@ -105,36 +104,45 @@ def seed(request, *args, **kwargs):
   numenta.put()
 
   now = datetime.datetime.now()
-  before = now - datetime.timedelta(365)
-  after = now + datetime.timedelta(365)
-  past_before = before - datetime.timedelta(2 * 365)
-  past_after = after - datetime.timedelta(2 * 365)
+  # before = now - datetime.timedelta(365)
+  # after = now + datetime.timedelta(365)
+  # past_before = before - datetime.timedelta(2 * 365)
+  # past_after = after - datetime.timedelta(2 * 365)
 
-  first_day = datetime.datetime(2014, 5, 1)
-  last_day = datetime.datetime(2014, 9, 1)
-  signup_deadline = first_day + datetime.timedelta(30)
-  signup_start = first_day
-  students_announced = signup_deadline + datetime.timedelta(15)
+  # first_day = datetime.datetime(2014, 5, 1)
+  # last_day = datetime.datetime(2014, 9, 1)
+  # signup_deadline = first_day + datetime.timedelta(30)
+  # signup_start = first_day
+  # students_announced = signup_deadline + datetime.timedelta(15)
+  program_start = datetime.datetime(2014, 3, 5)
+  program_end = datetime.datetime(2014, 9, 1)
 
   timeline_properties = {
       'key_name': 'numenta/son2014',
       'link_id': 'son2014',
       'scope': numenta,
-      'program_start': datetime.datetime(2014, 3, 5),
+
+      'program_start': program_start,
+      'program_end': program_end,
 
       'accepted_organization_announced_deadline': datetime.datetime(2014, 3, 1),
-      'form_submission_start': datetime.datetime(2014, 3, 10),
+      'accepted_students_announced_deadline' : datetime.datetime(2014, 4, 15),
+
       'student_signup_start': datetime.datetime(2014, 3, 5),
       'student_signup_end': datetime.datetime(2014, 4, 1),
+
       'application_review_deadline': datetime.datetime(2014, 4, 10),
+
+      'form_submission_start': datetime.datetime(2014, 3, 5),
+
       'student_application_matched_deadline': datetime.datetime(2014, 4, 12),
-      'accepted_students_announced_deadline' : datetime.datetime(2014, 4, 15),
+
       'bonding_start': datetime.datetime(2014, 4, 15),
       'bonding_end': datetime.datetime(2014, 5, 1),
+
       'coding_start': datetime.datetime(2014, 5, 1),
       'coding_end': datetime.datetime(2014, 8, 1),
 
-      'program_end': datetime.datetime(2014, 9, 1),
   }
   son2014_timeline = GSoCTimeline(**timeline_properties)
   son2014_timeline.put()
@@ -194,16 +202,16 @@ def seed(request, *args, **kwargs):
     'title' : 'Org App Survey',
     'content' : 'Here is some content.',
     'modified_by' : current_user.key.to_old_key(),
-    'survey_start' : before,
-    'survey_end' : after
+    'survey_start' : program_start,
+    'survey_end' : program_end
   }
   org_app_survey_model.OrgAppSurvey(**org_app_survey_properties).put()
 
   org_app_survey_properties['key_name'] = ('%s/%s/orgapp' % (
       son2014.prefix, son2014.key().name()))
   org_app_survey_properties['program'] = son2014
-  org_app_survey_properties['survey_start'] = first_day
-  org_app_survey_properties['survey_end'] = last_day
+  org_app_survey_properties['survey_start'] = program_start
+  org_app_survey_properties['survey_end'] = program_end
   org_app_survey_model.OrgAppSurvey(**org_app_survey_properties).put()
 
   # timeline_properties = {
