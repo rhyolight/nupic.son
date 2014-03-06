@@ -40,6 +40,7 @@ DATABASES = {
 
 ALLOWED_HOSTS = (
     '.seasonofnupic.appspot.com',
+    'son.numenta.org',
 )
 
 # Local time zone for this installation. Choices can be found here:

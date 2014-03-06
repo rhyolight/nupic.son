@@ -123,25 +123,24 @@ def seed(request, *args, **kwargs):
       'scope': numenta,
 
       'program_start': program_start,
-      'program_end': program_end,
 
-      'accepted_organization_announced_deadline': datetime.datetime(2014, 3, 1),
-      'accepted_students_announced_deadline' : datetime.datetime(2014, 4, 15),
+      'accepted_organization_announced_deadline': datetime.datetime(2014, 3, 5),
 
+      'form_submission_start': datetime.datetime(2014, 3, 5),
       'student_signup_start': datetime.datetime(2014, 3, 5),
       'student_signup_end': datetime.datetime(2014, 4, 1),
 
       'application_review_deadline': datetime.datetime(2014, 4, 10),
-
-      'form_submission_start': datetime.datetime(2014, 3, 5),
-
       'student_application_matched_deadline': datetime.datetime(2014, 4, 12),
+      'accepted_students_announced_deadline' : datetime.datetime(2014, 4, 15),
 
       'bonding_start': datetime.datetime(2014, 4, 15),
       'bonding_end': datetime.datetime(2014, 5, 1),
 
       'coding_start': datetime.datetime(2014, 5, 1),
       'coding_end': datetime.datetime(2014, 8, 1),
+
+      'program_end': program_end,
 
   }
   son2014_timeline = GSoCTimeline(**timeline_properties)
